@@ -27,9 +27,10 @@ function TabPanel(props: TabPanelProps) {
             id={`full-width-tabpanel-${index}`}
             aria-labelledby={`full-width-tab-${index}`}
             {...other}
+            className=''
         >
             {value === index && (
-                <Box sx={{ p: 3 }}>
+                <Box sx={{ p: 0 }}>
                     <Typography>{children}</Typography>
                 </Box>
             )}
@@ -49,7 +50,7 @@ export default function FullWidthTabs() {
         palette: {
             primary: {
                 light: '#ffffff',
-                main: '#3f50b5',
+                main: '#ffffff',
                 dark: '#002884',
                 contrastText: '#fff',
             },
@@ -112,7 +113,7 @@ export default function FullWidthTabs() {
                 <TableTwo />
             </TabPanel>
             <TabPanel value={value} index={2} dir={theme.direction}>
-                <TableThree />
+                <TableTwo />
             </TabPanel>
             {/* </SwipeableViews> */}
         </Box>

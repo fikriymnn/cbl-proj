@@ -5,9 +5,9 @@ import { BRAND } from '../../types/brand';
 // import BrandFour from '../../images/brand/brand-04.svg';
 // import BrandFive from '../../images/brand/brand-05.svg';
 import { useState } from 'react';
-import Modal from '../Modal';
+import Modal from '../Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
-import Logo from '../../images/logo/logo-cbl 1.svg';
+// import Logo from '../../images/logo/logo-cbl 1.svg';
 
 const brandData: BRAND[] = [
   {
@@ -15,16 +15,9 @@ const brandData: BRAND[] = [
     name: 'EX000003',
     date: "12/22/24 07:00UTC",
     machine: 'iCutter GT40',
-    status: "pending verification",
-    action: 4.8,
-  },
-  {
-
-    name: 'EX000003',
-    date: "12/22/24 07:00UTC",
-    machine: 'iCutter GT40',
-    status: "monitoring",
-    action: 4.3,
+    status: "pending",
+    schedule: "unscheduled",
+    action: 'request mtc',
   },
   {
 
@@ -32,23 +25,17 @@ const brandData: BRAND[] = [
     date: "12/22/24 07:00UTC",
     machine: 'iCutter GT40',
     status: "pending",
+    schedule: "schedule requested",
+    action: 'detail',
+  },
+  {
+
+    name: 'EX000003',
+    date: "12/22/24 07:00UTC",
+    machine: 'iCutter GT40',
+    status: "pending",
+    schedule: ["schedule declined", "12/04/24 to 24/04/24"],
     action: 3.7,
-  },
-  {
-
-    name: 'EX000003',
-    date: "12/22/24 07:00UTC",
-    machine: 'iCutter GT40',
-    status: "on progress",
-    action: 2.5,
-  },
-  {
-
-    name: 'EX000003',
-    date: "12/22/24 07:00UTC",
-    machine: 'iCutter GT40',
-    status: "pending",
-    action: 4.2,
   },
 ];
 
@@ -80,28 +67,26 @@ const TableOne = () => {
         >
           <div className="flex items-center  w-1/12 gap-3 p-2.5 ">
 
-            <p className="hidden  text-slate-600 font-semibold dark:text-white sm:block">
+            <p className="hidden text-[14px] text-slate-600 font-semibold dark:text-white sm:block">
               No
             </p>
           </div>
 
           <div className="flex items-center w-3/12 justify-center p-2.5 ">
-            <p className="text-slate-600 font-semibold text-center dark:text-white">Ticket Code</p>
+            <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">Ticket Code</p>
           </div>
-          <div className="flex items-center w-3/12 justify-center p-2.5 ">
+          <div className="flex items-center text-[14px] w-3/12 justify-center p-2.5 ">
             <p className="text-slate-600 font-semibold text-center dark:text-white">Incoming Date</p>
           </div>
 
-          <div className="flex items-center w-3/12 justify-center p-2.5 ">
+          <div className="flex items-center text-[14px] w-3/12 justify-center p-2.5 ">
             <p className="text-slate-600 font-semibold text-center">Machine Name</p>
           </div>
 
-          <div className="hidden items-center justify-center w-3/12 p-2.5 sm:flex ">
-            <p className="text-slate-600 font-semibold text-center dark:text-white">Status</p>
-          </div>
 
-          <div className="hidden items-center justify-center w-3/12 p-2.5 sm:flex ">
-            <p className="text-slate-600 font-semibold text-center">Detail</p>
+
+          <div className="hidden items-center justify-center w-5/12 p-2.5 sm:flex ">
+            <p className="text-slate-600 text-[14px] font-semibold text-center">Detail</p>
           </div>
         </div>
         {brandData.map((brand, key) => (
@@ -114,45 +99,37 @@ const TableOne = () => {
           >
             <div className="flex items-center w-1/12   gap-3 p-2.5 ">
 
-              <p className="hidden text-black dark:text-white sm:block">
+              <p className="hidden text-[14px] text-black dark:text-white sm:block">
                 {key + 1}
               </p>
             </div>
 
             <div className="flex items-center w-3/12 justify-center p-2.5 ">
-              <p className="text-black text-center dark:text-white">{brand.name}</p>
+              <p className="text-black text-center text-[14px] dark:text-white">{brand.name}</p>
             </div>
             <div className="flex items-center w-3/12 justify-center p-2.5 ">
-              <p className="text-black text-center dark:text-white">{brand.date}</p>
+              <p className="text-black text-center text-[14px] dark:text-white">{brand.date}</p>
             </div>
 
             <div className="flex items-center w-3/12 justify-center p-2.5 ">
-              <p className="text-black text-center">{brand.machine}</p>
+              <p className="text-black text-center text-[14px]">{brand.machine}</p>
             </div>
 
-            <div className="hidden items-center justify-center w-3/12 p-2.5 sm:flex ">
-              <td className=" border-[#eee]  px-4 dark:border-strokedark">
-                <p
-                  className={`inline-flex rounded-full bg-opacity-10  text-center px-3 text-sm font-medium ${brand.status === 'monitoring'
-                    ? 'bg-success text-success'
-                    : brand.status === 'on progress'
-                      ? 'bg-blue-600 text-blue-bg-blue-600'
-                      : brand.status === 'pending' || "pending verification" ? 'bg-warning text-warning' : 'bg-white'
-                    }`}
-                >
-                  {brand.status}
-                </p>
-              </td>
-            </div>
 
-            <div className="hidden items-center justify-center w-3/12 p-2.5 sm:flex">
-              <td className=" border-[#eee]  px-4 dark:border-strokedark">
-                <div className="container mx-auto">
+
+            <div className="hidden items-center justify-center w-5/12 p-2.5 sm:flex">
+              <td className=" border-[#eee]   dark:border-strokedark">
+                <div className="container mx-auto flex  gap-3">
 
                   <button type="button" onClick={openModal1}
-                    className={`inline-flex rounded-full   px-3 text-sm font-medium primary-blue text-white hover:bg-blue-400 `}
+                    className={`inline-flex rounded-[3px] my-auto  px-2 text-sm font-bold text-[12px] bg-[#2EB300] text-white hover:bg-blue-400 `}
                   >
-                    Detail
+                    DO MAINTENANCE
+                  </button>
+                  <button type="button" onClick={openModal1}
+                    className={`inline-flex rounded-[3px] my-auto px-2 text-sm font-bold text-[12px] bg-white border-[#0065DE] border text-primary justify-center items-center hover:bg-blue-400 `}
+                  >
+                    DETAIL
                   </button>
                   {showModal1 && (
                     <Modal title="Incoming Maintenance Ticket"

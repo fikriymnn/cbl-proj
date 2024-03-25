@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+// import React, { useState } from 'react';
 
 const Modal = ({ children, title, isOpen, onClose, ticketCode, prepName, incDate, prepCode }: { children: any, title: any, isOpen: any, onClose: any, ticketCode: any, prepName: any, incDate: any, prepCode: any }) => {
     if (!isOpen) return null;
@@ -31,7 +31,7 @@ const Modal = ({ children, title, isOpen, onClose, ticketCode, prepName, incDate
                 <div className="px-4 pb-4">
 
                     <div className="pt-4">
-                        <label htmlFor="ticketCode" className="form-label block  text-black text-xs font-bold">
+                        <label htmlFor="ticketCode" className="form-label block  text-black text-xs font-extrabold">
                             TICKET CODE
                         </label>
                         <span id="ticketCode" className="text-neutral-500 text-xl font-normal ">
@@ -40,7 +40,7 @@ const Modal = ({ children, title, isOpen, onClose, ticketCode, prepName, incDate
                     </div>
                     <div className=" flex pt-3">
                         <div>
-                            <label htmlFor="preparationName" className="form-label block  text-black text-xs font-bold">
+                            <label htmlFor="preparationName" className="form-label block  text-black text-xs font-extrabold">
                                 PREPARATION NAME
                             </label>
                             <span id="preparationName" className="text-neutral-500 text-xl font-normal">
@@ -48,7 +48,7 @@ const Modal = ({ children, title, isOpen, onClose, ticketCode, prepName, incDate
                             </span>
                         </div>
                         <div className='pl-[180px]'>
-                            <label htmlFor="prepCode" className="form-label block  text-black text-xs font-bold">
+                            <label htmlFor="prepCode" className="form-label block  text-black text-xs font-extrabold">
                                 PREP CODE
                             </label>
                             <span id="prepCode" className="text-neutral-500 text-xl font-normal">
@@ -59,10 +59,10 @@ const Modal = ({ children, title, isOpen, onClose, ticketCode, prepName, incDate
 
                     </div>
                     <div className="pt-3">
-                        <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-bold">
+                        <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-extrabold">
                             INCOMIN DATE
                         </label>
-                        <span id="incomingDate" className="text-neutral-500 text-xl font-normal">
+                        <span id="incomingDate" className=" text-neutral-500 text-xl font-normal">
                             {incDate}
                         </span>
                     </div>
