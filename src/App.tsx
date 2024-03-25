@@ -16,6 +16,7 @@ import Tables from './pages/Tables';
 import Alerts from './pages/UiElements/Alerts';
 import Buttons from './pages/UiElements/Buttons';
 import Login from './pages/Authentication/Login';
+import Cobain from './pages/Cobain';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -139,6 +140,15 @@ function App() {
             <>
               <PageTitle title="Signin | TailAdmin - Tailwind CSS Admin Dashboard Template" />
               <SignIn />
+            </>
+          }
+        />
+        <Route
+          path="/cobain"
+          element={
+            <>
+              <PageTitle title="Signin | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <Cobain />
             </>
           }
         />
