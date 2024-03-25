@@ -3,7 +3,7 @@ import Breadcrumb from '../components/Breadcrumbs/Breadcrumb';
 import FullWidthTabs from '../components/Tables/FullWidthTabs';
 import DefaultLayout from '../layout/DefaultLayout';
 
-const Calendar = () => {
+const Machine = () => {
 
   return (
     <DefaultLayout>
@@ -16,4 +16,4 @@ const Calendar = () => {
   );
 };
 
-export default Calendar;
+export default Machine;
