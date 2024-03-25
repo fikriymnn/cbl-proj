@@ -5,7 +5,7 @@ import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
 import SignIn from './pages/Authentication/SignIn';
 import SignUp from './pages/Authentication/SignUp';
-import Calendar from './pages/Calendar';
+import Calendar from './pages/Machine';
 import Chart from './pages/Chart';
 import ECommerce from './pages/Dashboard/ECommerce';
 import FormElements from './pages/Form/FormElements';
@@ -18,6 +18,7 @@ import Buttons from './pages/UiElements/Buttons';
 import Login from './pages/Authentication/Login';
 import Cobain from './pages/Cobain';
 import ProtectedRoute from './components/Protectedroute';
+import Machine from './pages/Machine';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -47,32 +48,22 @@ function App() {
           }
         />
         <Route
-          path="/calendar"
+          path="/dashboard"
           element={
             <>
-              <PageTitle title="Calendar | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-              <ProtectedRoute>
-                <Calendar />
-              </ProtectedRoute>
-
+              <PageTitle title="Settings | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <ECommerce />
             </>
           }
         />
         <Route
-          path="/profile"
-          element={
-            <>
-              <PageTitle title="Profile | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-              <Profile />
-            </>
-          }
-        />
-        <Route
-          path="/forms/form-elements"
+          path="/maintenance/machine"
           element={
             <>
               <PageTitle title="Form Elements | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-              <FormElements />
+              <ProtectedRoute>
+                <Machine />
+              </ProtectedRoute>
             </>
           }
         />
