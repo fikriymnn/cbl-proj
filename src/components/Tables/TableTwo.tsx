@@ -1,104 +1,183 @@
-import { Product } from '../../types/product';
-import ProductOne from '../../images/product/product-01.png';
-import ProductTwo from '../../images/product/product-02.png';
-import ProductThree from '../../images/product/product-03.png';
-import ProductFour from '../../images/product/product-04.png';
+import { BRAND } from '../../types/brand';
+// import BrandOne from '../../images/brand/brand-01.svg';
+// import BrandTwo from '../../images/brand/brand-02.svg';
+// import BrandThree from '../../images/brand/brand-03.svg';
+// import BrandFour from '../../images/brand/brand-04.svg';
+// import BrandFive from '../../images/brand/brand-05.svg';
+import { useState } from 'react';
+import Modal from '../Modal';
+// import Gambar from '../../images/BACKGROUND.png';
+import Logo from '../../images/logo/logo-cbl 1.svg';
 
-const productData: Product[] = [
+const brandData: BRAND[] = [
   {
-    image: ProductOne,
-    name: 'Apple Watch Series 7',
-    category: 'Electronics',
-    price: 296,
-    sold: 22,
-    profit: 45,
+
+    name: 'EX000003',
+    date: "12/22/24 07:00UTC",
+    machine: 'iCutter GT40',
+    status: "pending",
+    schedule: "unscheduled",
+    action: 'request mtc',
   },
   {
-    image: ProductTwo,
-    name: 'Macbook Pro M1',
-    category: 'Electronics',
-    price: 546,
-    sold: 12,
-    profit: 125,
+
+    name: 'EX000003',
+    date: "12/22/24 07:00UTC",
+    machine: 'iCutter GT40',
+    status: "pending",
+    schedule: "schedule requested",
+    action: 'detail',
   },
   {
-    image: ProductThree,
-    name: 'Dell Inspiron 15',
-    category: 'Electronics',
-    price: 443,
-    sold: 64,
-    profit: 247,
-  },
-  {
-    image: ProductFour,
-    name: 'HP Probook 450',
-    category: 'Electronics',
-    price: 499,
-    sold: 72,
-    profit: 103,
+
+    name: 'EX000003',
+    date: "12/22/24 07:00UTC",
+    machine: 'iCutter GT40',
+    status: "pending",
+    schedule: ["12/04/24 to 24/04/24"],
+    action: 'reschedule',
   },
 ];
 
 const TableTwo = () => {
+  const [showModal1, setShowModal1] = useState(false);
+  const [showModal2, setShowModal2] = useState(false);
+
+  const openModal1 = () => setShowModal1(true);
+  const closeModal1 = () => setShowModal1(false);
+
+  const openModal2 = () => {
+    setShowModal2(true);
+    setShowModal1(false);
+  };
+
+  const closeModal2 = () => setShowModal2(false);
   return (
-    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-      <div className="py-6 px-4 md:px-6 xl:px-7.5">
-        <h4 className="text-xl font-semibold text-black dark:text-white">
-          Top Products
-        </h4>
-      </div>
+    <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+      <h4 className="mb-6 text-xl font-semibold text-black dark:text-white text-[14px]">
+        Incoming Maintenance Ticket
+      </h4>
 
-      <div className="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5">
-        <div className="col-span-3 flex items-center">
-          <p className="font-medium">Product Name</p>
-        </div>
-        <div className="col-span-2 hidden items-center sm:flex">
-          <p className="font-medium">Category</p>
-        </div>
-        <div className="col-span-1 flex items-center">
-          <p className="font-medium">Price</p>
-        </div>
-        <div className="col-span-1 flex items-center">
-          <p className="font-medium">Sold</p>
-        </div>
-        <div className="col-span-1 flex items-center">
-          <p className="font-medium">Profit</p>
-        </div>
-      </div>
+      <div className="flex flex-col">
 
-      {productData.map((product, key) => (
         <div
-          className="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
-          key={key}
+          className='flex border-b border-stroke dark:border-strokedark'
+
+
         >
-          <div className="col-span-3 flex items-center">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <div className="h-12.5 w-15 rounded-md">
-                <img src={product.image} alt="Product" />
-              </div>
-              <p className="text-sm text-black dark:text-white">
-                {product.name}
+          <div className="flex items-center  w-1/12 gap-3 p-2.5 ">
+
+            <p className="hidden  text-slate-600 font-semibold dark:text-white text-[14px] sm:block">
+              No
+            </p>
+          </div>
+
+          <div className="flex items-center w-3/12 justify-center p-2.5 ">
+            <p className="text-slate-600 font-semibold text-center dark:text-white text-[14px]">Ticket Code</p>
+          </div>
+          <div className="flex items-center w-3/12 justify-center p-2.5 ">
+            <p className="text-slate-600 font-semibold text-center dark:text-white text-[14px]">Incoming Date</p>
+          </div>
+
+          <div className="flex items-center w-3/12 justify-center p-2.5 ">
+            <p className="text-slate-600 font-semibold text-center">Machine Name</p>
+          </div>
+
+          <div className="hidden items-center justify-center w-3/12 p-2.5 sm:flex ">
+            <p className="text-slate-600 font-semibold text-center dark:text-white text-[14px]">Status</p>
+          </div>
+          <div className="hidden items-center justify-center w-3/12 p-2.5 sm:flex ">
+            <p className="text-slate-600 font-semibold text-center dark:text-white text-[14px]">Schedule</p>
+          </div>
+
+          <div className="hidden items-center justify-center w-3/12 p-2.5 sm:flex ">
+            <p className="text-slate-600 font-semibold text-center">Detail</p>
+          </div>
+        </div>
+        {brandData.map((brand, key) => (
+          <div
+            className={`flex ${key === brandData.length - 1
+              ? ''
+              : 'border-b border-stroke dark:border-strokedark'
+              }`}
+            key={key}
+          >
+            <div className="flex items-center w-1/12   gap-3 p-2.5 ">
+
+              <p className="hidden text-black dark:text-white text-[14px] sm:block">
+                {key + 1}
               </p>
             </div>
+
+            <div className="flex items-center w-3/12 justify-center p-2.5 ">
+              <p className="text-black text-center dark:text-white text-[14px]">{brand.name}</p>
+            </div>
+            <div className="flex items-center w-3/12 justify-center p-2.5 ">
+              <p className="text-black text-center dark:text-white text-[14px]">{brand.date}</p>
+            </div>
+
+            <div className="flex items-center w-3/12 justify-center p-2.5 text-[14px]">
+              <p className="text-black text-center">{brand.machine}</p>
+            </div>
+
+            <div className="hidden items-center justify-center w-3/12 p-2.5 sm:flex text-[14px] ">
+              <td className=" border-[#eee]  px-4 dark:border-strokedark">
+                <p
+                  className={`inline-flex rounded-full bg-opacity-10  text-center px-3 text-sm font-medium ${brand.status === 'monitoring'
+                    ? 'bg-success text-success'
+                    : brand.status === 'on progress'
+                      ? 'bg-blue-600 text-blue-bg-blue-600'
+                      : brand.status === 'pending' || "pending verification" ? 'bg-warning text-warning' : 'bg-white'
+                    }`}
+                >
+                  {brand.status}
+                </p>
+              </td>
+            </div>
+            <div className="hidden items-center justify-center w-3/12 p-2.5 sm:flex ">
+              <td className=" border-[#eee]  px-4 dark:border-strokedark">
+                <p
+                  className={`inline-flex rounded-full bg-opacity-10 text-[14px] text-center px-3 text-sm font-medium ${brand.schedule === 'unscheduled'
+                    ? 'bg-success text-success'
+                    : brand.schedule === "schedule requested" ? 'bg-warning text-warning' : 'bg-white'
+                    }`}
+                >
+                  {brand.schedule}
+                </p>
+              </td>
+            </div>
+
+            <div className="hidden items-center justify-center w-3/12 p-2.5 sm:flex">
+              <td className=" border-[#eee] text-[14px]  dark:border-strokedark">
+                <div className="container mx-auto ">
+
+                  <button type="button" onClick={openModal1}
+                    className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action === 'detail' ? 'bg-white text-primary' : 'primary-blue text-white'} `}
+                  >
+                    <p className='mx-auto'>
+
+                      {brand.action}
+                    </p>
+                  </button>
+                  {showModal1 && (
+                    <Modal title="Incoming Maintenance Ticket"
+                      isOpen={showModal1}
+                      onClose={closeModal1}
+                      ticketCode={'CTR03591'}
+                      prepName={'GMC Ink 229'}
+                      incDate={'28 May, 2024 06:37AM'}
+                      prepCode={'3.2'} >
+                      <p></p>
+                    </Modal>
+                  )}
+
+                </div>
+
+              </td>
+            </div>
           </div>
-          <div className="col-span-2 hidden items-center sm:flex">
-            <p className="text-sm text-black dark:text-white">
-              {product.category}
-            </p>
-          </div>
-          <div className="col-span-1 flex items-center">
-            <p className="text-sm text-black dark:text-white">
-              ${product.price}
-            </p>
-          </div>
-          <div className="col-span-1 flex items-center">
-            <p className="text-sm text-black dark:text-white">{product.sold}</p>
-          </div>
-          <div className="col-span-1 flex items-center">
-            <p className="text-sm text-meta-3">${product.profit}</p>
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };
