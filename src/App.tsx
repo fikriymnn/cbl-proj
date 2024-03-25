@@ -17,6 +17,7 @@ import Alerts from './pages/UiElements/Alerts';
 import Buttons from './pages/UiElements/Buttons';
 import Login from './pages/Authentication/Login';
 import Cobain from './pages/Cobain';
+import ProtectedRoute from './components/Protectedroute';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -40,6 +41,7 @@ function App() {
           element={
             <>
               <PageTitle title="eCommerce Dashboard | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+
               <ECommerce />
             </>
           }
@@ -49,7 +51,10 @@ function App() {
           element={
             <>
               <PageTitle title="Calendar | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-              <Calendar />
+              <ProtectedRoute>
+                <Calendar />
+              </ProtectedRoute>
+
             </>
           }
         />

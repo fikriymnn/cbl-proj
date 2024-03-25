@@ -23,7 +23,7 @@ const App = () => {
                 Open Modal 1
             </button>
             {showModal1 && (
-                <Modal title="Modal 1" isOpen={showModal1} onClose={closeModal1} imageUrl={Logo}>
+                <Modal title="Modal 1" isOpen={showModal1} onClose={closeModal1}>
                     <p>This is the content of Modal 1.</p>
                     <button type="button" onClick={openModal2} className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
                         Next Step - Open Modal 2
@@ -31,7 +31,7 @@ const App = () => {
                 </Modal>
             )}
             {showModal2 && (
-                <Modal title="Modal 2" isOpen={showModal2} onClose={closeModal2} imageUrl={Gambar}>
+                <Modal title="Modal 2" isOpen={showModal2} onClose={closeModal2} >
                     <p>This is the content of Modal 2.</p>
                 </Modal>
             )}
