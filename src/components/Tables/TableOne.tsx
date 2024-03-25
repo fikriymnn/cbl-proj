@@ -5,9 +5,9 @@ import { BRAND } from '../../types/brand';
 // import BrandFour from '../../images/brand/brand-04.svg';
 // import BrandFive from '../../images/brand/brand-05.svg';
 import { useState } from 'react';
-import Modal from '../Modal';
+import Modal from '../Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
-import Logo from '../../images/logo/logo-cbl 1.svg';
+// import Logo from '../../images/logo/logo-cbl 1.svg';
 
 const brandData: BRAND[] = [
   {
