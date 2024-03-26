@@ -97,8 +97,8 @@ export default function MaterialFullWidthTabs() {
 
                     >
                         <Tab label="Incoming" {...a11yProps(0)} className='' />
-                        <Tab label="OS 2" {...a11yProps(1)} />
-                        <Tab label="OS 3" {...a11yProps(2)} />
+                        {/* <Tab label="OS 2" {...a11yProps(1)} />
+                        <Tab label="OS 3" {...a11yProps(2)} /> */}
                         {/* <Tab label={<Typography variant='h1'>OS 4</Typography>} /> */}
                     </Tabs>
                 </ThemeProvider>
@@ -113,7 +113,7 @@ export default function MaterialFullWidthTabs() {
                 <TableIncomingPrep />
 
             </TabPanel>
-            <TabPanel value={value} index={1} dir={theme.direction}>
+            {/* <TabPanel value={value} index={1} dir={theme.direction}>
 
 
 
@@ -125,7 +125,7 @@ export default function MaterialFullWidthTabs() {
 
                 <TableOS />
 
-            </TabPanel>
+            </TabPanel> */}
             {/* </SwipeableViews> */}
         </Box>
     );
