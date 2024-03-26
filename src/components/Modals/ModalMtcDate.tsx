@@ -1,10 +1,10 @@
 // import React, { useState } from 'react';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
-const ModalPopupPen = ({ children, title, isOpen, onClose, ticketCode, machineName, incDate, machineCode, mtcSchedule, status }:
-    {
-        children: any, title: any, isOpen: any, onClose: any,
-        ticketCode: any, machineName: any, incDate: any, machineCode: any, mtcSchedule: any, status: any
-    }) => {
+const ModalMtcDate = ({ children, title, isOpen, onClose, machineName }:
+    { children: any, title: any, isOpen: any, onClose: any, machineName: any }) => {
     if (!isOpen) return null;
 
     return (
@@ -36,56 +36,29 @@ const ModalPopupPen = ({ children, title, isOpen, onClose, ticketCode, machineNa
 
                     <div className="pt-4">
                         <label htmlFor="ticketCode" className="form-label block  text-black text-xs font-extrabold">
-                            TICKET CODE
+                            MACHINE NAME
                         </label>
                         <span id="ticketCode" className="text-neutral-500 text-xl font-normal ">
-                            {ticketCode}
+                            {machineName}
                         </span>
                     </div>
-                    <div className=" flex pt-3">
-                        <div>
-                            <label htmlFor="preparationName" className="form-label block  text-black text-xs font-extrabold">
-                                MACHINE NAME
-                            </label>
-                            <span id="preparationName" className="text-neutral-500 text-xl font-normal">
-                                {machineName}
-                            </span>
-                        </div>
-                        <div className='pl-[180px]'>
-                            <label htmlFor="machineCode" className="form-label block  text-black text-xs font-extrabold">
-                                MACHINE CODE
-                            </label>
-                            <span id="machineCode" className="text-neutral-500 text-xl font-normal">
-                                {machineCode}
-                            </span>
-                        </div>
+                    <div className="pt-4">
+                        <label htmlFor="ticketCode" className="form-label block  text-black text-xs font-extrabold">
+                            PICK A DATE
+                        </label>
+                    </div>
+                    <div className='pt-1 w-full'>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DatePicker slotProps={{ textField: { fullWidth: true, size: 'small' } }} />
+                        </LocalizationProvider>
+                    </div>
+                    <div className="pt-5">
+                        <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                            REQUEST DATE
+                        </button>
+                    </div>
 
 
-                    </div>
-                    <div className="pt-3">
-                        <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-extrabold">
-                            INCOMING DATE
-                        </label>
-                        <span id="incomingDate" className="text-neutral-500 text-xl font-normal">
-                            {incDate}
-                        </span>
-                    </div>
-                    <div className="pt-3">
-                        <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-extrabold">
-                            MAINTENANCE SCHEDULE
-                        </label>
-                        <span id="incomingDate" className="text-yellow-400 text-xl font-normal">
-                            {mtcSchedule}
-                        </span>
-                    </div>
-                    <div className="pt-3">
-                        <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-extrabold">
-                            STATUS
-                        </label>
-                        <span id="incomingDate" className="w-full text-yellow-400 text-xl font-normal">
-                            {status}
-                        </span>
-                    </div>
                 </div>
                 <button
                     type="button"
@@ -94,6 +67,7 @@ const ModalPopupPen = ({ children, title, isOpen, onClose, ticketCode, machineNa
                 >
                 </button>
                 {children}
+
             </div>
 
         </div>
@@ -101,4 +75,4 @@ const ModalPopupPen = ({ children, title, isOpen, onClose, ticketCode, machineNa
     );
 };
 
-export default ModalPopupPen;
+export default ModalMtcDate;

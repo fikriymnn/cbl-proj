@@ -4,12 +4,13 @@ import CardDataStats from '../../components/CardDataStats';
 import DefaultLayout from '../../layout/DefaultLayout';
 import Production from '../../images/icon/production.svg';
 import Maintenance from '../../images/icon/maintenance.svg';
-import TableOne from '../../components/Tables/TableOne'
+import TableOne from '../../components/Tables/Maintenance/TableIncomingMaintenance'
 
 const ECommerce: React.FC = () => {
   return (
     <DefaultLayout>
-      <div className="flex gap-3 mb-[24px]">
+      <p className='font-semibold text-[28px] text-primary mb-[18px]'>Overview Dashboard</p>
+      <div className="flex gap-3 ">
         <CardDataStats title="Total views" total="$3.456K" rate="0.43%" levelUp>
           <div className='flex gap-3'>
 
@@ -27,6 +28,17 @@ const ECommerce: React.FC = () => {
           </div>
         </CardDataStats>
 
+      </div>
+      <div className='w-full h-60 p-4 bg-white my-[26px] rounded-[10px] flex flex-col'>
+        <div className='flex items-start gap-3'>
+
+          <img src={Production} alt="Logo" className='w-5' />
+          <p className='text-primary text-sm'>Production Overview</p>
+        </div>
+        <div className='w-full h-full flex justify-center items-center '>
+
+          <p> Production Overview Table and or Graphics </p>
+        </div>
       </div>
 
       <TableOne />

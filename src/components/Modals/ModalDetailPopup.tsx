@@ -4,7 +4,7 @@ const Modal = ({ children, title, isOpen, onClose, ticketCode, prepName, incDate
     if (!isOpen) return null;
 
     return (
-        <div className="fixed z-10 inset-0 overflow-y-auto bg-gray-500 bg-opacity-75 p-4 md:p-8 flex justify-center items-center">
+        <div className="fixed z-50 inset-0 overflow-y-auto backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
             <div className="w-full max-w-md bg-white rounded-xl shadow-md">
                 <div className="flex w-full items-center pt-4 px-3">
                     <svg
@@ -60,7 +60,7 @@ const Modal = ({ children, title, isOpen, onClose, ticketCode, prepName, incDate
                     </div>
                     <div className="pt-3">
                         <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-extrabold">
-                            INCOMIN DATE
+                            INCOMING DATE
                         </label>
                         <span id="incomingDate" className=" text-neutral-500 text-xl font-normal">
                             {incDate}
@@ -75,6 +75,7 @@ const Modal = ({ children, title, isOpen, onClose, ticketCode, prepName, incDate
                 >
                 </button>
                 {children}
+
             </div>
 
         </div>

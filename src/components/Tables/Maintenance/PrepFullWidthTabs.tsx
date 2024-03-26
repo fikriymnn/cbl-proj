@@ -6,9 +6,11 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import TableOne from './TableOne';
-import TableTwo from './TableTwo';
-import TableThree from './TableThree';
+import TableOne from './TableIncomingMaintenance';
+import TableTwo from './TableOS';
+import TableThree from '../TableThree';
+import TableIncomingPrep from './TableIncomingPrep';
+import TableOS from './TableOS';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -45,7 +47,7 @@ function a11yProps(index: number) {
     };
 }
 
-export default function FullWidthTabs() {
+export default function PrepFullWidthTabs() {
     const theme = createTheme({
         palette: {
             primary: {
@@ -95,8 +97,8 @@ export default function FullWidthTabs() {
 
                     >
                         <Tab label="Incoming" {...a11yProps(0)} className='' />
-                        <Tab label="OS 2" {...a11yProps(1)} />
-                        <Tab label="OS 3" {...a11yProps(2)} />
+                        {/* <Tab label="OS 2" {...a11yProps(1)} />
+                        <Tab label="OS 3" {...a11yProps(2)} /> */}
                         {/* <Tab label={<Typography variant='h1'>OS 4</Typography>} /> */}
                     </Tabs>
                 </ThemeProvider>
@@ -107,14 +109,22 @@ export default function FullWidthTabs() {
         onChangeIndex={handleChangeIndex}
       > */}
             <TabPanel value={value} index={0} dir={theme.direction}>
-                <TableOne />
+
+                <TableIncomingPrep />
+
             </TabPanel>
-            <TabPanel value={value} index={1} dir={theme.direction}>
-                <TableTwo />
+            {/* <TabPanel value={value} index={1} dir={theme.direction}>
+
+                <TableOS />
+
+
             </TabPanel>
             <TabPanel value={value} index={2} dir={theme.direction}>
-                <TableTwo />
-            </TabPanel>
+
+
+                <TableOS />
+
+            </TabPanel> */}
             {/* </SwipeableViews> */}
         </Box>
     );

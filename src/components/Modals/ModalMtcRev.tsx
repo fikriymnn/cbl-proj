@@ -1,9 +1,9 @@
 // import React, { useState } from 'react';
 
-const ModalPopupPen = ({ children, title, isOpen, onClose, ticketCode, machineName, incDate, machineCode, mtcSchedule, status }:
+const ModalPopupRev = ({ children, title, isOpen, onClose, ticketCode, machineName, incDate, machineCode, mtcDate }:
     {
         children: any, title: any, isOpen: any, onClose: any,
-        ticketCode: any, machineName: any, incDate: any, machineCode: any, mtcSchedule: any, status: any
+        ticketCode: any, machineName: any, incDate: any, machineCode: any, mtcDate: any
     }) => {
     if (!isOpen) return null;
 
@@ -72,19 +72,22 @@ const ModalPopupPen = ({ children, title, isOpen, onClose, ticketCode, machineNa
                     </div>
                     <div className="pt-3">
                         <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-extrabold">
-                            MAINTENANCE SCHEDULE
+                            MAINTENANCE DATE
                         </label>
-                        <span id="incomingDate" className="text-yellow-400 text-xl font-normal">
-                            {mtcSchedule}
+                        <span id="incomingDate" className="text-lime-600 text-xl font-normal">
+                            {mtcDate}
                         </span>
                     </div>
-                    <div className="pt-3">
-                        <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-extrabold">
-                            STATUS
-                        </label>
-                        <span id="incomingDate" className="w-full text-yellow-400 text-xl font-normal">
-                            {status}
-                        </span>
+
+                    <div className="pt-5">
+                        <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                            APPROVE REQUEST
+                        </button>
+                    </div>
+                    <div className="pt-2">
+                        <button className="w-full h-12 text-center text-white text-xs font-bold bg-red-600 rounded-md">
+                            DECLINE REQUEST
+                        </button>
                     </div>
                 </div>
                 <button
@@ -101,4 +104,4 @@ const ModalPopupPen = ({ children, title, isOpen, onClose, ticketCode, machineNa
     );
 };
 
-export default ModalPopupPen;
+export default ModalPopupRev;

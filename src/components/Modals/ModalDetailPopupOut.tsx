@@ -1,9 +1,9 @@
 // import React, { useState } from 'react';
 
-const ModalPopupPen = ({ children, title, isOpen, onClose, ticketCode, machineName, incDate, machineCode, mtcSchedule, status }:
+const ModalPopupOut = ({ children, title, isOpen, onClose, ticketCode, machineName, incDate, machineCode, mtcDate, outDate }:
     {
         children: any, title: any, isOpen: any, onClose: any,
-        ticketCode: any, machineName: any, incDate: any, machineCode: any, mtcSchedule: any, status: any
+        ticketCode: any, machineName: any, incDate: any, machineCode: any, mtcDate: any, outDate: any
     }) => {
     if (!isOpen) return null;
 
@@ -72,18 +72,18 @@ const ModalPopupPen = ({ children, title, isOpen, onClose, ticketCode, machineNa
                     </div>
                     <div className="pt-3">
                         <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-extrabold">
-                            MAINTENANCE SCHEDULE
+                            MAINTENANCE DATE
                         </label>
-                        <span id="incomingDate" className="text-yellow-400 text-xl font-normal">
-                            {mtcSchedule}
+                        <span id="incomingDate" className="text-neutral-500 text-xl font-normal">
+                            {mtcDate}
                         </span>
                     </div>
                     <div className="pt-3">
                         <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-extrabold">
-                            STATUS
+                            OUTCOMMING DATE
                         </label>
-                        <span id="incomingDate" className="w-full text-yellow-400 text-xl font-normal">
-                            {status}
+                        <span id="incomingDate" className="w-full text-neutral-500 text-xl font-normal">
+                            {outDate}
                         </span>
                     </div>
                 </div>
@@ -101,4 +101,4 @@ const ModalPopupPen = ({ children, title, isOpen, onClose, ticketCode, machineNa
     );
 };
 
-export default ModalPopupPen;
+export default ModalPopupOut;

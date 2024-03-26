@@ -1,13 +1,13 @@
-import { BRAND } from '../../types/brand';
+import { BRAND } from '../../../types/brand';
 // import BrandOne from '../../images/brand/brand-01.svg';
 // import BrandTwo from '../../images/brand/brand-02.svg';
 // import BrandThree from '../../images/brand/brand-03.svg';
 // import BrandFour from '../../images/brand/brand-04.svg';
 // import BrandFive from '../../images/brand/brand-05.svg';
 import { useState } from 'react';
-import Modal from '../Modals/ModalDetailPopup';
+import Modal from '../../../components/Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
-// import Logo from '../../images/logo/logo-cbl 1.svg';
+import Logo from '../../images/logo/logo-cbl 1.svg';
 
 const brandData: BRAND[] = [
   {
@@ -39,7 +39,7 @@ const brandData: BRAND[] = [
   },
 ];
 
-const TableOne = () => {
+const TableIncomingMaintenance = () => {
   const [showModal1, setShowModal1] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
 
@@ -53,7 +53,7 @@ const TableOne = () => {
 
   const closeModal2 = () => setShowModal2(false);
   return (
-    <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+    <div className="rounded-[10px] border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
         Incoming Maintenance Ticket
       </h4>
@@ -154,4 +154,4 @@ const TableOne = () => {
   );
 };
 
-export default TableOne;
+export default TableIncomingMaintenance;
