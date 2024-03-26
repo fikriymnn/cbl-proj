@@ -1,6 +1,6 @@
 // import React, { useState } from 'react';
 
-const ModalPopupPen = ({ children, title, isOpen, onClose, ticketCode, machineName, incDate, machineCode, mtcSchedule, status }:
+const ModalPopupOnProg = ({ children, title, isOpen, onClose, ticketCode, machineName, incDate, machineCode, mtcSchedule, status }:
     {
         children: any, title: any, isOpen: any, onClose: any,
         ticketCode: any, machineName: any, incDate: any, machineCode: any, mtcSchedule: any, status: any
@@ -74,7 +74,7 @@ const ModalPopupPen = ({ children, title, isOpen, onClose, ticketCode, machineNa
                         <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-extrabold">
                             MAINTENANCE SCHEDULE
                         </label>
-                        <span id="incomingDate" className="text-yellow-400 text-xl font-normal">
+                        <span id="incomingDate" className="text-lime-600 text-xl font-normal">
                             {mtcSchedule}
                         </span>
                     </div>
@@ -82,7 +82,7 @@ const ModalPopupPen = ({ children, title, isOpen, onClose, ticketCode, machineNa
                         <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-extrabold">
                             STATUS
                         </label>
-                        <span id="incomingDate" className="w-full text-yellow-400 text-xl font-normal">
+                        <span id="incomingDate" className="w-full text-lime-600 text-xl font-normal">
                             {status}
                         </span>
                     </div>
@@ -101,4 +101,4 @@ const ModalPopupPen = ({ children, title, isOpen, onClose, ticketCode, machineNa
     );
 };
 
-export default ModalPopupPen;
+export default ModalPopupOnProg;
