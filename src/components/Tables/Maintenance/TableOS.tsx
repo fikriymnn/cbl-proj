@@ -1,6 +1,6 @@
 import { BRAND } from '../../../types/brand';
 import { useState } from 'react';
-import Modal from '../../Modal';
+import Modal from '../../../components/Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
 import Logo from '../../images/logo/logo-cbl 1.svg';
 

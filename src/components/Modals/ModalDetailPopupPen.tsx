@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+// import React, { useState } from 'react';
 
-const Modal = ({ children, title, isOpen, onClose, ticketCode, prepName, incDate, prepCode }: { children: any, title: any, isOpen: any, onClose: any, ticketCode: any, prepName: any, incDate: any, prepCode: any }) => {
+const ModalPopupPen = ({ children, title, isOpen, onClose, ticketCode, machineName, incDate, machineCode, mtcSchedule, status }:
+    {
+        children: any, title: any, isOpen: any, onClose: any,
+        ticketCode: any, machineName: any, incDate: any, machineCode: any, mtcSchedule: any, status: any
+    }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed z-10 inset-0 overflow-y-auto bg-gray-500 bg-opacity-75 p-4 md:p-8 flex justify-center items-center">
+        <div className="fixed z-50 inset-0 overflow-y-auto backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
             <div className="w-full max-w-md bg-white rounded-xl shadow-md">
                 <div className="flex w-full items-center pt-4 px-3">
                     <svg
@@ -31,7 +35,7 @@ const Modal = ({ children, title, isOpen, onClose, ticketCode, prepName, incDate
                 <div className="px-4 pb-4">
 
                     <div className="pt-4">
-                        <label htmlFor="ticketCode" className="form-label block  text-black text-xs font-bold">
+                        <label htmlFor="ticketCode" className="form-label block  text-black text-xs font-extrabold">
                             TICKET CODE
                         </label>
                         <span id="ticketCode" className="text-neutral-500 text-xl font-normal ">
@@ -40,33 +44,48 @@ const Modal = ({ children, title, isOpen, onClose, ticketCode, prepName, incDate
                     </div>
                     <div className=" flex pt-3">
                         <div>
-                            <label htmlFor="preparationName" className="form-label block  text-black text-xs font-bold">
-                                PREPARATION NAME
+                            <label htmlFor="preparationName" className="form-label block  text-black text-xs font-extrabold">
+                                MACHINE NAME
                             </label>
                             <span id="preparationName" className="text-neutral-500 text-xl font-normal">
-                                {prepName}
+                                {machineName}
                             </span>
                         </div>
                         <div className='pl-[180px]'>
-                            <label htmlFor="prepCode" className="form-label block  text-black text-xs font-bold">
-                                PREP CODE
+                            <label htmlFor="machineCode" className="form-label block  text-black text-xs font-extrabold">
+                                MACHINE CODE
                             </label>
-                            <span id="prepCode" className="text-neutral-500 text-xl font-normal">
-                                {prepCode}
+                            <span id="machineCode" className="text-neutral-500 text-xl font-normal">
+                                {machineCode}
                             </span>
                         </div>
 
 
                     </div>
                     <div className="pt-3">
-                        <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-bold">
-                            INCOMIN DATE
+                        <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-extrabold">
+                            INCOMING DATE
                         </label>
                         <span id="incomingDate" className="text-neutral-500 text-xl font-normal">
                             {incDate}
                         </span>
                     </div>
-
+                    <div className="pt-3">
+                        <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-extrabold">
+                            MAINTENANCE SCHEDULE
+                        </label>
+                        <span id="incomingDate" className="text-yellow-400 text-xl font-normal">
+                            {mtcSchedule}
+                        </span>
+                    </div>
+                    <div className="pt-3">
+                        <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-extrabold">
+                            STATUS
+                        </label>
+                        <span id="incomingDate" className="w-full text-yellow-400 text-xl font-normal">
+                            {status}
+                        </span>
+                    </div>
                 </div>
                 <button
                     type="button"
@@ -82,4 +101,4 @@ const Modal = ({ children, title, isOpen, onClose, ticketCode, prepName, incDate
     );
 };
 
-export default Modal;
+export default ModalPopupPen;
