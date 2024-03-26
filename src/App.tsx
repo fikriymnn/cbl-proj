@@ -5,7 +5,7 @@ import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
 import SignIn from './pages/Authentication/SignIn';
 import SignUp from './pages/Authentication/SignUp';
-import Calendar from './pages/Machine';
+import Calendar from './pages/Maintenance/Machine';
 import Chart from './pages/Chart';
 import ECommerce from './pages/Dashboard/ECommerce';
 import FormElements from './pages/Form/FormElements';
@@ -18,7 +18,11 @@ import Buttons from './pages/UiElements/Buttons';
 import Login from './pages/Authentication/Login';
 import Cobain from './pages/Cobain';
 import ProtectedRoute from './components/Protectedroute';
-import Machine from './pages/Machine';
+import Machine from './pages/Maintenance/Machine';
+import Preparation from './pages/Maintenance/Preparation';
+import MAN from './pages/Maintenance/MAN';
+import Material from './pages/Maintenance/Material';
+import MaintenanceQC from './pages/QualityControl/maintenanceQC';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -68,59 +72,51 @@ function App() {
           }
         />
         <Route
-          path="/forms/form-layout"
+          path="/maintenance/preparation"
           element={
             <>
-              <PageTitle title="Form Layout | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-              <FormLayout />
+              <PageTitle title="Form Elements | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <ProtectedRoute>
+                <Preparation />
+              </ProtectedRoute>
             </>
           }
         />
         <Route
-          path="/tables"
+          path="/maintenance/material"
           element={
             <>
-              <PageTitle title="Tables | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-              <Tables />
+              <PageTitle title="Form Elements | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <ProtectedRoute>
+                <Material />
+              </ProtectedRoute>
             </>
           }
         />
         <Route
-          path="/settings"
+          path="/maintenance/MAN"
           element={
             <>
-              <PageTitle title="Settings | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-              <Settings />
+              <PageTitle title="Form Elements | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <ProtectedRoute>
+                <MAN />
+              </ProtectedRoute>
             </>
           }
         />
+
         <Route
-          path="/chart"
+          path="/quality_control/maintenance"
           element={
             <>
-              <PageTitle title="Basic Chart | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-              <Chart />
+              <PageTitle title="Form Elements | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <ProtectedRoute>
+                <MaintenanceQC />
+              </ProtectedRoute>
             </>
           }
         />
-        <Route
-          path="/ui/alerts"
-          element={
-            <>
-              <PageTitle title="Alerts | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-              <Alerts />
-            </>
-          }
-        />
-        <Route
-          path="/ui/buttons"
-          element={
-            <>
-              <PageTitle title="Buttons | TailAdmin - Tailwind CSS Admin Dashboard Template" />
-              <Buttons />
-            </>
-          }
-        />
+
         <Route
           path="/auth/login"
           element={
