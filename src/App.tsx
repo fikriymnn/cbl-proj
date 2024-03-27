@@ -23,6 +23,7 @@ import Preparation from './pages/Maintenance/Preparation';
 import MAN from './pages/Maintenance/MAN';
 import Material from './pages/Maintenance/Material';
 import MaintenanceQC from './pages/QualityControl/maintenanceQC';
+import HistoryMtc from './pages/History/Maintenance';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -116,7 +117,17 @@ function App() {
             </>
           }
         />
-
+        <Route
+          path="/history"
+          element={
+            <>
+              <PageTitle title="Form Elements | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <ProtectedRoute>
+                <HistoryMtc />
+              </ProtectedRoute>
+            </>
+          }
+        />
         <Route
           path="/auth/login"
           element={
