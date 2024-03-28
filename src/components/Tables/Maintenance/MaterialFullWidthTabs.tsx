@@ -73,9 +73,43 @@ export default function MaterialFullWidthTabs() {
     const handleChangeIndex = (index: number) => {
         setValue(index);
     };
+    const commonStyles = {
+        bgcolor: 'background.paper',
+        borderColor: 'text.primary',
+        width: 'w-full',
+        borderTopRightRadius: "12px",
+        borderTopLeftRadius: "12px",
 
+
+    };
     return (
-        <Box sx={{ bgcolor: 'background.paper', width: 'w-full' }}>
+        <Box sx={{
+            ...commonStyles,
+            "& .MuiPaper-root": {
+                borderTopRightRadius: "12px",
+                borderTopLeftRadius: "12px",
+                background: "#D8EAFF",
+                boxShadow: 0
+            },
+            "& .MuiBox-root": {
+                borderTopRightRadius: "12px",
+                borderTopLeftRadius: "12px",
+                background: "#D8EAFF",
+                boxShadow: 0
+            },
+            "& .MuiTabs-root": {
+                borderTopRightRadius: "12px",
+                borderTopLeftRadius: "12px",
+
+            },
+            "& .MuiTabs-flexcontainer": {
+                borderTopRightRadius: "12px",
+                borderTopLeftRadius: "12px",
+            },
+            '& fieldset': {
+                borderRadius: '12px',
+            },
+        }}>
             <AppBar position="static" className=''>
                 <ThemeProvider theme={theme}>
 
@@ -93,7 +127,7 @@ export default function MaterialFullWidthTabs() {
                         textColor="inherit"
                         variant="standard"
                         aria-label="full width tabs example"
-                        className='bg-white text-[#00499F] font-semibold'
+                        className='bg-white text-[#00499F] font-semibold mb-2'
 
                     >
                         <Tab label="Incoming" {...a11yProps(0)} className='' />

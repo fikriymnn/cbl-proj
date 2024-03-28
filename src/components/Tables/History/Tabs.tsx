@@ -73,10 +73,45 @@ export default function TabsHistory() {
     const handleChangeIndex = (index: number) => {
         setValue(index);
     };
+    const commonStyles = {
+        bgcolor: 'background.paper',
+        borderColor: 'text.primary',
+        width: 'w-full',
+        borderTopRightRadius: "12px",
+        borderTopLeftRadius: "12px",
 
+
+    };
     return (
-        <Box sx={{ bgcolor: 'background.paper', width: 'w-full' }}>
-            <AppBar position="static" className=''>
+        <Box sx={{
+            ...commonStyles,
+            "& .MuiPaper-root": {
+                borderTopRightRadius: "12px",
+                borderTopLeftRadius: "12px",
+                background: "#D8EAFF",
+                boxShadow: 0
+            },
+            "& .MuiBox-root": {
+                borderTopRightRadius: "12px",
+                borderTopLeftRadius: "12px",
+                background: "#D8EAFF",
+                boxShadow: 0
+            },
+            "& .MuiTabs-root": {
+                borderTopRightRadius: "20px",
+                borderTopLeftRadius: "20px",
+
+            },
+            "& .MuiTabs-flexcontainer": {
+                borderTopRightRadius: "12px",
+                borderTopLeftRadius: "12px",
+            },
+            '& fieldset': {
+                borderRadius: '12px',
+            },
+
+        }}>
+            <AppBar position="static">
                 <ThemeProvider theme={theme}>
 
                     <Tabs
@@ -89,14 +124,29 @@ export default function TabsHistory() {
                                 height: '4px'
                             }
                         }}
+                        sx={{
+                            ...commonStyles,
+                            "& .MuiTab-root": {
+                                borderTopRightRadius: "12px",
+                                borderTopLeftRadius: "12px",
+                            },
 
+
+                        }}
                         textColor="inherit"
                         variant="standard"
                         aria-label="full width tabs example"
-                        className='bg-white text-[#00499F] font-semibold'
+                        className='bg-white text-[#00499F] font-semibold mb-2'
 
                     >
-                        <Tab label="Machine" {...a11yProps(0)} className='' />
+                        <Tab sx={{
+                            ...commonStyles,
+                            "& .MuiButtonBase-root": {
+                                borderTopRightRadius: "16px",
+                                borderTopLeftRadius: "16px",
+                            },
+
+                        }} label="Machine" {...a11yProps(0)} className='' />
                         <Tab label="Preparation" {...a11yProps(1)} />
                         <Tab label="Materials" {...a11yProps(2)} />
                         <Tab label="MAN" {...a11yProps(3)} />
