@@ -1,14 +1,10 @@
 import * as React from 'react';
-// import SwipeableViews from 'react-swipeable-views';
 import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import TableOne from './TableIncomingMaintenance';
-import TableTwo from './TableOS';
-import TableThree from '../TableThree';
 import TableIncomingMaintenance from './TableIncomingMaintenance';
 import TableOS from './TableOS';
 
@@ -69,63 +65,42 @@ export default function MachineFullWidthTabs() {
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
     };
-
     const handleChangeIndex = (index: number) => {
         setValue(index);
     };
-
     return (
-        <Box sx={{ bgcolor: 'background.paper', width: 'w-full' }}>
-            <AppBar position="static" className=''>
+        <Box sx={{ bgcolor: '#fff', width: 'w-full' }} >
+            <AppBar position="static" className='rounded-md'>
                 <ThemeProvider theme={theme}>
-
                     <Tabs
                         value={value}
                         onChange={handleChange}
-                        indicatorColor="primary"
+
                         TabIndicatorProps={{
                             style: {
                                 backgroundColor: '#00499F',
                                 height: '4px'
                             }
                         }}
-
                         textColor="inherit"
                         variant="standard"
                         aria-label="full width tabs example"
-                        className='bg-white text-[#00499F] font-semibold'
-
-                    >
-                        <Tab label="Incoming" {...a11yProps(0)} className='' />
-                        <Tab label="OS 2" {...a11yProps(1)} />
-                        <Tab label="OS 3" {...a11yProps(2)} />
-                        {/* <Tab label={<Typography variant='h1'>OS 4</Typography>} /> */}
+                        className='bg-white text-[#00499F] font-semibold'>
+                        <Tab label="Incoming" {...a11yProps(0)} className='rounded-xl' />
+                        <Tab label="OS 2" {...a11yProps(1)} className='rounded-xl' />
+                        <Tab label="OS 3" {...a11yProps(2)} className='rounded-xl' />
                     </Tabs>
                 </ThemeProvider>
             </AppBar>
-            {/* <SwipeableViews
-        axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
-        index={value}
-        onChangeIndex={handleChangeIndex}
-      > */}
             <TabPanel value={value} index={0} dir={theme.direction}>
-
                 <TableIncomingMaintenance />
-
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
-
                 <TableOS />
-
-
             </TabPanel>
             <TabPanel value={value} index={2} dir={theme.direction}>
-
-
                 <TableOS />
-
             </TabPanel>
-            {/* </SwipeableViews> */}
         </Box>
     );
 }
