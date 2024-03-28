@@ -4,6 +4,10 @@ import Modal from '../../../components/Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
 import Logo from '../../images/logo/logo-cbl 1.svg';
 import ModalMtcDate from '../../Modals/ModalMtcDate';
+import ModalPopupReq from '../../Modals/ModalDetailPopupReq';
+import ModalPopupBgn from '../../Modals/ModalPopupBgn';
+import ModalPopupOnProg2 from '../../Modals/ModalDetailPopupOnprog2';
+import ModalPopupMon from '../../Modals/ModalDetailPopupMon';
 
 const brandData: BRAND[] = [
     {
@@ -75,6 +79,12 @@ const brandData: BRAND[] = [
 const TableMANHistory = () => {
     const [showModal1, setShowModal1] = useState(false);
     const [showModal2, setShowModal2] = useState(false);
+    const [showModal3, setShowModal3] = useState(false);
+    const [showModal4, setShowModal4] = useState(false);
+    const [showModal5, setShowModal5] = useState(false);
+    const [showModal6, setShowModal6] = useState(false);
+    const [showModal7, setShowModal7] = useState(false);
+
 
     const openModal1 = () => setShowModal1(true);
     const closeModal1 = () => setShowModal1(false);
@@ -82,8 +92,25 @@ const TableMANHistory = () => {
     const openModal2 = () => setShowModal2(true);
     const closeModal2 = () => setShowModal2(false);
 
-    const [status, setStatus] = useState(''); // Initial status
-    const [status2, setStatus2] = useState('');
+    const openModal3 = () => setShowModal3(true);
+    const closeModal3 = () => setShowModal3(false);
+
+    const openModal4 = () => setShowModal4(true);
+    const closeModal4 = () => setShowModal4(false);
+
+    const openModal5 = () => setShowModal5(true);
+    const closeModal5 = () => setShowModal5(false);
+
+    const openModal6 = () => setShowModal6(true);
+    const closeModal6 = () => setShowModal6(false);
+
+    const openModal7 = () => setShowModal7(true);
+    const closeModal7 = () => setShowModal7(false);
+
+    // const [status, setStatus] = useState(''); // Initial status
+    // const [status2, setStatus2] = useState('');
+    // const [status3, setStatus3] = useState('');
+    // const [status4, setStatus4] = useState('');
 
 
     return (
@@ -203,27 +230,6 @@ const TableMANHistory = () => {
                         <div className="hidden items-center justify-center w-[250px] p-1 sm:flex">
                             <td className=" border-[#eee] text-[14px]  dark:border-strokedark">
                                 <div className="container mx-auto ">
-
-                                    {/* <button type="button"
-                                        className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action === 'detail' ? 'bg-white text-primary' : 'primary-blue text-white'} `}
-                                    >
-                                        <p className='mx-auto'>
-
-                                            {brand.action}
-                                        </p>
-                                    </button> */}
-                                    {/* {showModal1 && (
-                                        <Modal title="Incoming Maintenance Ticket"
-                                            isOpen={showModal1}
-                                            onClose={closeModal1}
-                                            ticketCode={'CTR03591'}
-                                            prepName={'GMC Ink 229'}
-                                            incDate={'28 May, 2024 06:37AM'}
-                                            prepCode={'3.2'} >
-                                            <p></p>
-                                        </Modal>
-                                    )} */}
-
                                 </div>
 
                             </td>
@@ -232,45 +238,51 @@ const TableMANHistory = () => {
                                 {brand.action === 'begin mtc' && (
                                     <>
                                         <button
-                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'begin mtc' && 'hidden'
+                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'begin mtc' && 'hidden'
                                                 }`} // Dynamic class assignment
-                                            onClick={openModal1}
+                                            onClick={openModal4}
                                         >
-                                            Request MTC
+                                            {brand.action}
 
                                         </button>
-                                        {showModal1 && (
-                                            <Modal title="Incoming Maintenance Ticket"
-                                                isOpen={showModal1}
-                                                onClose={closeModal1}
-                                                ticketCode={'CTR03591'}
-                                                prepName={'GMC Ink 229'}
-                                                incDate={'28 May, 2024 06:37AM'}
-                                                prepCode={'3.2'} >
-                                                <p></p>
-                                            </Modal>
+                                        <ModalPopupBgn
+                                            title="Maintenance"
+                                            isOpen={showModal4}
+                                            onClose={closeModal4}
+                                            ticketCode={'CTR03591'}
+                                            machineName={'GMC Printer 2'}
+                                            incDate={'05 May, 2024 06:37AM'}
+                                            machineCode={'3.2'} children={''}
+                                            mtcSchedule={'12 April, 2024 to 24 April, 2024'}
 
-                                        )}
+                                        >
+                                        </ModalPopupBgn>
                                     </>
                                 )
                                 }
-                                {brand.action === 'detail' && (
+                                {brand.action === 'detail' && brand.status === 'pending' && (
                                     <>
 
                                         <button
-                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'detail' && 'hidden'
+                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-blue-600 text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'detail' && 'hidden'
                                                 }`}
                                             onClick={openModal2}
                                         >
-                                            Detail
+                                            {brand.action}
                                         </button>
                                         {showModal2 && (
-                                            <ModalMtcDate title="Request Maintenance Schedule"
+                                            <ModalPopupReq
+                                                title="Maintenance"
                                                 isOpen={showModal2}
                                                 onClose={closeModal2}
-                                                machineName={'GMC Printer 2'}>
-                                                <p></p>
-                                            </ModalMtcDate>
+                                                ticketCode={'CTR03591'}
+                                                machineName={'GMC Printer 2'}
+                                                incDate={'05 May, 2024 06:37AM'}
+                                                machineCode={'3.2'} children={''}
+                                                mtcSchedule={'12 April, 2024 to 24 April, 2024'}
+                                                status={"Maintenance Schedule Requested "}>
+
+                                            </ModalPopupReq>
 
                                         )}
                                     </>
@@ -278,36 +290,118 @@ const TableMANHistory = () => {
                                 {brand.action === 'reschedule' && (
                                     <>
                                         <button
-                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'reschedule' && 'hidden'
+                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'reschedule' && 'hidden'
                                                 }`}
-
+                                            onClick={openModal3}
                                         >
-                                            Reschedule
+                                            {brand.action}
                                         </button>
+                                        <ModalMtcDate title="Request Maintenance Schedule"
+                                            isOpen={showModal3}
+                                            onClose={closeModal3}
+                                            machineName={'GMC Printer 2'}>
+                                            <p></p>
+                                        </ModalMtcDate>
                                     </>
                                 )}
                                 {brand.action === 'action' && (
                                     <>
 
                                         <button
-                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'action' && 'hidden'
+                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1  text-blue-600 hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'action' && 'hidden'
                                                 }`}
-
+                                            onClick={openModal5}
                                         >
-                                            Action
+                                            {brand.action}
                                         </button>
+                                        <ModalPopupOnProg2
+                                            title="Maintenance"
+                                            isOpen={showModal5}
+                                            onClose={closeModal5}
+                                            ticketCode={'CTR03591'}
+                                            machineName={'GMC Printer 2'}
+                                            incDate={'05 May, 2024 06:37AM'}
+                                            machineCode={'3.2'} children={''}
+                                            mtcSchedule={'12 April, 2024 to 24 April, 2024'}
+                                            status={"Maintenance On Progress"}>
+
+                                        </ModalPopupOnProg2>
                                     </>
                                 )}
                                 {brand.action === 'request mtc' && (
                                     <>
 
                                         <button
-                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'request mtc' && 'hidden'
+                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1  text-white bg-blue-600 hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'request mtc' && 'hidden'
                                                 }`}
 
-                                        >
-                                            Request MTC
+
+                                            onClick={openModal3} >
+                                            {brand.action}
                                         </button>
+                                        <ModalMtcDate title="Request Maintenance Schedule"
+                                            isOpen={showModal3}
+                                            onClose={closeModal3}
+                                            machineName={'GMC Printer 2'}>
+                                            <p></p>
+                                        </ModalMtcDate>
+                                    </>
+                                )}
+                                {brand.action === 'detail' && brand.status === 'pending verification' && (
+                                    <>
+
+                                        <button
+                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1  text-blue-600  hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'detail' && 'hidden'
+                                                }`}
+                                            onClick={openModal6}
+                                        >
+                                            {brand.action}
+                                        </button>
+                                        {showModal6 && (
+                                            <ModalPopupReq
+                                                title="Maintenance"
+                                                isOpen={showModal6}
+                                                onClose={closeModal6}
+                                                ticketCode={'CTR03591'}
+                                                machineName={'GMC Printer 2'}
+                                                incDate={'05 May, 2024 06:37AM'}
+                                                machineCode={'3.2'} children={''}
+                                                mtcSchedule={'12 April, 2024 to 24 April, 2024'}
+                                                status={"Waiting to be verified by QC "}>
+
+                                            </ModalPopupReq>
+
+                                        )}
+                                    </>
+                                )}
+                                {brand.action === 'detail' && brand.status === 'monitoring' && (
+                                    <>
+
+                                        <button
+                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] text-blue-600 justify-center ${brand.action !== 'detail' && 'hidden'
+                                                }`}
+                                            onClick={openModal7}
+                                        >
+                                            {brand.action}
+                                        </button>
+                                        {showModal7 && (
+
+
+                                            <ModalPopupMon
+                                                title="Maintenance"
+                                                isOpen={showModal7}
+                                                onClose={closeModal7}
+                                                ticketCode={'CTR03591'}
+                                                machineName={'GMC Printer 2'}
+                                                incDate={'05 May, 2024 06:37AM'}
+                                                machineCode={'3.2'} children={''}
+                                                mtcSchedule={'12 April, 2024 to 24 April, 2024'}
+                                                status={"Maintenance verified, Monitoring after maintenance for 3 months."}>
+
+                                            </ModalPopupMon>
+                                        )}
+
+
                                     </>
                                 )}
                             </div>
