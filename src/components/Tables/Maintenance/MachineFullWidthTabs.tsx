@@ -68,9 +68,18 @@ export default function MachineFullWidthTabs() {
     const handleChangeIndex = (index: number) => {
         setValue(index);
     };
+    const commonStyles = {
+        bgcolor: 'background.paper',
+        borderColor: 'text.primary',
+        width: 'w-full',
+        borderTopRightRadius: "12px",
+        borderTopLeftRadius: "12px",
+
+
+    };
     return (
-        <Box sx={{ bgcolor: '#fff', width: 'w-full' }} >
-            <AppBar position="static" className='rounded-md'>
+        <Box sx={{ bgcolor: 'background.paper', width: 'w-full' }}>
+            <AppBar position="static" className=''>
                 <ThemeProvider theme={theme}>
                     <Tabs
                         value={value}
@@ -85,10 +94,13 @@ export default function MachineFullWidthTabs() {
                         textColor="inherit"
                         variant="standard"
                         aria-label="full width tabs example"
-                        className='bg-white text-[#00499F] font-semibold'>
-                        <Tab label="Incoming" {...a11yProps(0)} className='rounded-xl' />
-                        <Tab label="OS 2" {...a11yProps(1)} className='rounded-xl' />
-                        <Tab label="OS 3" {...a11yProps(2)} className='rounded-xl' />
+                        className='bg-white text-[#00499F] font-semibold'
+
+                    >
+                        <Tab label="Incoming" {...a11yProps(0)} className='' />
+                        <Tab label="OS 2" {...a11yProps(1)} />
+                        <Tab label="OS 3" {...a11yProps(2)} />
+                        {/* <Tab label={<Typography variant='h1'>OS 4</Typography>} /> */}
                     </Tabs>
                 </ThemeProvider>
             </AppBar>
