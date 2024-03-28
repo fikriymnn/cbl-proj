@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Modal from '../../../components/Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
 import Logo from '../../images/logo/logo-cbl 1.svg';
+import Modal2 from '../../Modals/ModalDetailPopup2';
 
 const brandData: BRAND[] = [
   {
@@ -72,6 +73,7 @@ const brandData: BRAND[] = [
 ];
 
 const TableOS = () => {
+  const [modalDetail, setModalDetail] = useState<Number>(2);
   const [showModal1, setShowModal1] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
 
@@ -82,6 +84,7 @@ const TableOS = () => {
     setShowModal2(true);
     setShowModal1(false);
   };
+
 
   const closeModal2 = () => setShowModal2(false);
   return (
@@ -181,15 +184,21 @@ const TableOS = () => {
               <td className=" border-[#eee] text-[12px]  dark:border-strokedark">
                 <div className="container mx-auto ">
 
-                  <button type="button" onClick={openModal1}
+                  <button type="button" onClick={() => {
+                    setModalDetail(1);
+                    setShowModal1(true);
+                  }}
                     className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action === 'detail' ? 'bg-white text-primary' : 'primary-blue text-white'} `}
                   >
                     <p className='mx-auto'>
-
                       {brand.action}
+
                     </p>
                   </button>
-                  {showModal1 && (
+
+
+                  {showModal1 && modalDetail === 1 ? (
+
                     <Modal title="Incoming Maintenance Ticket"
                       isOpen={showModal1}
                       onClose={closeModal1}
@@ -199,7 +208,9 @@ const TableOS = () => {
                       prepCode={'3.2'} >
                       <p></p>
                     </Modal>
-                  )}
+                  ) : modalDetail === 2 ? (
+                    <Modal2 children={undefined} title={undefined} isOpen={undefined} onClose={undefined} ticketCode={undefined} prepName={undefined} incDate={undefined} />
+                  ) : false}
 
                 </div>
 
