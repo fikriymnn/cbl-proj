@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Modal from '../../../components/Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
 import Logo from '../../images/logo/logo-cbl 1.svg';
+import Modal2 from '../../Modals/ModalDetailPopup2';
 
 const brandData: BRAND[] = [
   {
@@ -72,6 +73,7 @@ const brandData: BRAND[] = [
 ];
 
 const TableOS = () => {
+  const [modalDetail, setModalDetail] = useState<Number>(2);
   const [showModal1, setShowModal1] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
 
@@ -82,6 +84,7 @@ const TableOS = () => {
     setShowModal2(true);
     setShowModal1(false);
   };
+
 
   const closeModal2 = () => setShowModal2(false);
   return (
@@ -97,16 +100,16 @@ const TableOS = () => {
         >
           <div className="flex items-center w-[3%] gap-3 p-1 ">
 
-            <p className="hidden  text-slate-600 font-semibold dark:text-white text-[14px] sm:block">
+            <p className="hidden  text-slate-600 font-semibold dark:text-white text-[12px] sm:block">
               No
             </p>
           </div>
 
           <div className="flex items-center w-[250px] justify-center p-1 ">
-            <p className="text-slate-600 font-semibold text-center dark:text-white text-[14px]">Ticket Code</p>
+            <p className="text-slate-600 font-semibold text-center dark:text-white text-[12px]">Ticket Code</p>
           </div>
           <div className="flex items-center w-[250px] justify-center p-1 ">
-            <p className="text-slate-600 font-semibold text-center dark:text-white text-[14px]">Incoming Date</p>
+            <p className="text-slate-600 font-semibold text-center dark:text-white text-[12px]">Incoming Date</p>
           </div>
 
           <div className="flex items-center w-[250px] justify-center p-1 ">
@@ -114,10 +117,10 @@ const TableOS = () => {
           </div>
 
           <div className="hidden items-center justify-center w-[250px] p-1 sm:flex ">
-            <p className="text-slate-600 font-semibold text-center dark:text-white text-[14px]">Status</p>
+            <p className="text-slate-600 font-semibold text-center dark:text-white text-[12px]">Status</p>
           </div>
           <div className="hidden items-center justify-center w-[250px] p-1 sm:flex ">
-            <p className="text-slate-600 font-semibold text-center dark:text-white text-[14px]">Schedule</p>
+            <p className="text-slate-600 font-semibold text-center dark:text-white text-[12px]">Schedule</p>
           </div>
 
           <div className="hidden items-center justify-center w-[250px] p-1 sm:flex ">
@@ -134,26 +137,26 @@ const TableOS = () => {
           >
             <div className="flex items-center w-[3%]   gap-3 p-1 ">
 
-              <p className="hidden text-black dark:text-white text-[14px] sm:block">
+              <p className="hidden text-black dark:text-white text-[12px] sm:block">
                 {key + 1}
               </p>
             </div>
 
             <div className="flex items-center w-[250px]  justify-center p-1 ">
-              <p className="text-black text-center dark:text-white text-[14px]">{brand.name}</p>
+              <p className="text-black text-center dark:text-white text-[12px]">{brand.name}</p>
             </div>
             <div className="flex items-center w-[250px] justify-center p-1 ">
-              <p className="text-black text-center dark:text-white text-[14px]">{brand.date}</p>
+              <p className="text-black text-center dark:text-white text-[12px]">{brand.date}</p>
             </div>
 
-            <div className="flex items-center w-[250px] justify-center p-1 text-[14px]">
+            <div className="flex items-center w-[250px] justify-center p-1 text-[12px]">
               <p className="text-black text-center line-clamp-2">{brand.machine}</p>
             </div>
 
-            <div className="hidden items-center justify-center w-[250px] p-1 sm:flex text-[14px] ">
+            <div className="hidden items-center justify-center w-[250px] p-1 sm:flex text-[12px] ">
               <td className=" border-[#eee]  px-4 dark:border-strokedark">
                 <p
-                  className={`inline-flex rounded-full uppercase bg-opacity-10  text-center px-3 text-sm font-medium ${brand.status === 'monitoring'
+                  className={`inline-flex rounded-full uppercase bg-opacity-10  text-center px-3 text-[12px] font-normal ${brand.status === 'monitoring'
                     ? 'bg-blue-600 text-blue-600'
                     : brand.status === 'on progress'
                       ? 'bg-success text-success'
@@ -167,7 +170,7 @@ const TableOS = () => {
             <div className="hidden items-center justify-center w-[250px] p-1 sm:flex ">
               <td className=" border-[#eee]  px-4 dark:border-strokedark">
                 <p
-                  className={`inline-flex rounded-full uppercase bg-opacity-10 text-[14px] text-center px-3 text-sm font-medium ${brand.schedule === 'unscheduled'
+                  className={`inline-flex rounded-full uppercase bg-opacity-10  text-center px-3 text-[12px] font-normal ${brand.schedule === 'unscheduled'
                     ? 'bg-warning text-warning'
                     : brand.schedule === "schedule requested" ? 'bg-orange-400 text-orange-400' : brand.schedule === 'schedule declined' ? 'bg-danger text-danger' : 'bg-white'
                     }`}
@@ -178,18 +181,24 @@ const TableOS = () => {
             </div>
 
             <div className="hidden items-center justify-center w-[250px] p-1 sm:flex">
-              <td className=" border-[#eee] text-[14px]  dark:border-strokedark">
+              <td className=" border-[#eee] text-[12px]  dark:border-strokedark">
                 <div className="container mx-auto ">
 
-                  <button type="button" onClick={openModal1}
+                  <button type="button" onClick={() => {
+                    setModalDetail(1);
+                    setShowModal1(true);
+                  }}
                     className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action === 'detail' ? 'bg-white text-primary' : 'primary-blue text-white'} `}
                   >
                     <p className='mx-auto'>
-
                       {brand.action}
+
                     </p>
                   </button>
-                  {showModal1 && (
+
+
+                  {showModal1 && modalDetail === 1 ? (
+
                     <Modal title="Incoming Maintenance Ticket"
                       isOpen={showModal1}
                       onClose={closeModal1}
@@ -199,7 +208,9 @@ const TableOS = () => {
                       prepCode={'3.2'} >
                       <p></p>
                     </Modal>
-                  )}
+                  ) : modalDetail === 2 ? (
+                    <Modal2 children={undefined} title={undefined} isOpen={undefined} onClose={undefined} ticketCode={undefined} prepName={undefined} incDate={undefined} />
+                  ) : false}
 
                 </div>
 

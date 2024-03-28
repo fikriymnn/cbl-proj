@@ -177,7 +177,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/maintenance/machine"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-5 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                'group relative flex items-center gap-5 py-2 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                               }
                             >
@@ -188,7 +188,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/maintenance/preparation"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-5 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                'group relative flex items-center gap-5 py-2 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                               }
                             >
@@ -199,7 +199,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/maintenance/material"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-5 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                'group relative flex items-center gap-5 py-2 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                               }
                             >
@@ -210,7 +210,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/maintenance/MAN"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-5 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                'group relative flex items-center gap-5 py-2 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                               }
                             >
@@ -277,7 +277,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/quality_control/maintenance"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-5 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                'group relative flex items-center gap-5 py-2 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                               }
                             >
@@ -344,7 +344,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/history"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-5 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                'group relative flex items-center gap-5 py-2 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                               }
                             >
