@@ -84,6 +84,8 @@ const TableMatHistory = () => {
   };
 
   const closeModal2 = () => setShowModal2(false);
+
+
   return (
     <div className="rounded-sm border border-stroke rounded-b-xl bg-white px-5 pt-2 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
 
@@ -223,6 +225,7 @@ const TableMatHistory = () => {
 
               </td>
             </div>
+
           </div>
         ))}
       </div>
