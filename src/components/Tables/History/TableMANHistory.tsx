@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Modal from '../../../components/Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
 import Logo from '../../images/logo/logo-cbl 1.svg';
+import ModalMtcDate from '../../Modals/ModalMtcDate';
 
 const brandData: BRAND[] = [
     {
@@ -78,12 +79,13 @@ const TableMANHistory = () => {
     const openModal1 = () => setShowModal1(true);
     const closeModal1 = () => setShowModal1(false);
 
-    const openModal2 = () => {
-        setShowModal2(true);
-        setShowModal1(false);
-    };
-
+    const openModal2 = () => setShowModal2(true);
     const closeModal2 = () => setShowModal2(false);
+
+    const [status, setStatus] = useState(''); // Initial status
+    const [status2, setStatus2] = useState('');
+
+
     return (
         <div className="rounded-sm border border-stroke rounded-b-xl bg-white px-5 pt-2 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
 
@@ -202,15 +204,15 @@ const TableMANHistory = () => {
                             <td className=" border-[#eee] text-[14px]  dark:border-strokedark">
                                 <div className="container mx-auto ">
 
-                                    <button type="button" onClick={openModal1}
+                                    {/* <button type="button"
                                         className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action === 'detail' ? 'bg-white text-primary' : 'primary-blue text-white'} `}
                                     >
                                         <p className='mx-auto'>
 
                                             {brand.action}
                                         </p>
-                                    </button>
-                                    {showModal1 && (
+                                    </button> */}
+                                    {/* {showModal1 && (
                                         <Modal title="Incoming Maintenance Ticket"
                                             isOpen={showModal1}
                                             onClose={closeModal1}
@@ -220,11 +222,95 @@ const TableMANHistory = () => {
                                             prepCode={'3.2'} >
                                             <p></p>
                                         </Modal>
-                                    )}
+                                    )} */}
 
                                 </div>
 
                             </td>
+                            <div>
+                                {/* Conditionally render buttons based on status */}
+                                {brand.action === 'begin mtc' && (
+                                    <>
+                                        <button
+                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'begin mtc' && 'hidden'
+                                                }`} // Dynamic class assignment
+                                            onClick={openModal1}
+                                        >
+                                            Request MTC
+
+                                        </button>
+                                        {showModal1 && (
+                                            <Modal title="Incoming Maintenance Ticket"
+                                                isOpen={showModal1}
+                                                onClose={closeModal1}
+                                                ticketCode={'CTR03591'}
+                                                prepName={'GMC Ink 229'}
+                                                incDate={'28 May, 2024 06:37AM'}
+                                                prepCode={'3.2'} >
+                                                <p></p>
+                                            </Modal>
+
+                                        )}
+                                    </>
+                                )
+                                }
+                                {brand.action === 'detail' && (
+                                    <>
+
+                                        <button
+                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'detail' && 'hidden'
+                                                }`}
+                                            onClick={openModal2}
+                                        >
+                                            Detail
+                                        </button>
+                                        {showModal2 && (
+                                            <ModalMtcDate title="Request Maintenance Schedule"
+                                                isOpen={showModal2}
+                                                onClose={closeModal2}
+                                                machineName={'GMC Printer 2'}>
+                                                <p></p>
+                                            </ModalMtcDate>
+
+                                        )}
+                                    </>
+                                )}
+                                {brand.action === 'reschedule' && (
+                                    <>
+                                        <button
+                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'reschedule' && 'hidden'
+                                                }`}
+
+                                        >
+                                            Reschedule
+                                        </button>
+                                    </>
+                                )}
+                                {brand.action === 'action' && (
+                                    <>
+
+                                        <button
+                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'action' && 'hidden'
+                                                }`}
+
+                                        >
+                                            Action
+                                        </button>
+                                    </>
+                                )}
+                                {brand.action === 'request mtc' && (
+                                    <>
+
+                                        <button
+                                            className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'request mtc' && 'hidden'
+                                                }`}
+
+                                        >
+                                            Request MTC
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
                 ))}
