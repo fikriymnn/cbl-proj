@@ -8,6 +8,7 @@ import { useState } from 'react';
 import Modal from '../../../components/Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
 import Logo from '../../images/logo/logo-cbl 1.svg';
+import ModalMtc from '../../Modals/ModalMtcType';
 
 const brandData: BRAND[] = [
     {
@@ -121,16 +122,26 @@ const TableIncomingPrep = () => {
                             <td className=" border-[#eee]   dark:border-strokedark">
                                 <div className="container mx-auto flex  gap-3">
 
-                                    <button type="button" onClick={openModal1}
+                                    <button type="button" onClick={openModal2}
                                         className={`inline-flex rounded-[3px] my-auto  px-2 text-sm font-bold text-[12px] bg-[#2EB300] text-white hover:bg-blue-400 `}
                                     >
                                         DO MAINTENANCE
                                     </button>
+                                    {showModal2 && (
+                                        <ModalMtc
+                                            title="Select Maintenance Type"
+                                            isOpen={showModal2}
+                                            onClose={closeModal2}
+                                            machineName={'GMC Printer 2'}                    >
+                                            <p></p>
+                                        </ModalMtc>
+                                    )}
                                     <button type="button" onClick={openModal1}
                                         className={`inline-flex rounded-[3px] my-auto px-2 text-sm font-bold text-[12px] bg-white border-[#0065DE] border text-primary justify-center items-center hover:bg-blue-400 `}
                                     >
                                         DETAIL
                                     </button>
+
                                     {showModal1 && (
                                         <Modal title="Incoming Maintenance Ticket"
                                             isOpen={showModal1}
