@@ -1,10 +1,14 @@
 import * as React from 'react';
+// import SwipeableViews from 'react-swipeable-views';
 import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import TableOne from './TableIncomingMaintenance';
+import TableTwo from './TableOS';
+import TableThree from '../TableThree';
 import TableIncomingMaintenance from './TableIncomingMaintenance';
 import TableOS from './TableOS';
 
@@ -65,6 +69,7 @@ export default function MachineFullWidthTabs() {
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
     };
+
     const handleChangeIndex = (index: number) => {
         setValue(index);
     };
@@ -78,23 +83,51 @@ export default function MachineFullWidthTabs() {
 
     };
     return (
-        <Box sx={{ bgcolor: 'background.paper', width: 'w-full' }}>
+        <Box sx={{
+            ...commonStyles,
+            "& .MuiPaper-root": {
+                borderTopRightRadius: "12px",
+                borderTopLeftRadius: "12px",
+                background: "#D8EAFF",
+                boxShadow: 0
+            },
+            "& .MuiBox-root": {
+                borderTopRightRadius: "12px",
+                borderTopLeftRadius: "12px",
+                background: "#D8EAFF",
+                boxShadow: 0
+            },
+            "& .MuiTabs-root": {
+                borderTopRightRadius: "12px",
+                borderTopLeftRadius: "12px",
+
+            },
+            "& .MuiTabs-flexcontainer": {
+                borderTopRightRadius: "12px",
+                borderTopLeftRadius: "12px",
+            },
+            '& fieldset': {
+                borderRadius: '12px',
+            },
+        }}>
             <AppBar position="static" className=''>
                 <ThemeProvider theme={theme}>
+
                     <Tabs
                         value={value}
                         onChange={handleChange}
-
+                        indicatorColor="primary"
                         TabIndicatorProps={{
                             style: {
                                 backgroundColor: '#00499F',
                                 height: '4px'
                             }
                         }}
+
                         textColor="inherit"
                         variant="standard"
                         aria-label="full width tabs example"
-                        className='bg-white text-[#00499F] font-semibold'
+                        className='bg-white text-[#00499F] font-semibold mb-2'
 
                     >
                         <Tab label="Incoming" {...a11yProps(0)} className='' />
@@ -104,15 +137,29 @@ export default function MachineFullWidthTabs() {
                     </Tabs>
                 </ThemeProvider>
             </AppBar>
+            {/* <SwipeableViews
+        axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
+        index={value}
+        onChangeIndex={handleChangeIndex}
+      > */}
             <TabPanel value={value} index={0} dir={theme.direction}>
+
                 <TableIncomingMaintenance />
+
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
+
                 <TableOS />
+
+
             </TabPanel>
             <TabPanel value={value} index={2} dir={theme.direction}>
+
+
                 <TableOS />
+
             </TabPanel>
+            {/* </SwipeableViews> */}
         </Box>
     );
 }
