@@ -117,7 +117,7 @@ const TableOs = () => {
     <div className="rounded-sm border border-stroke rounded-b-xl bg-white px-5 pt-2 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
 
 
-      <div className="flex flex-col">
+      <div className="flex  flex-col">
         <div className="relative flex w-full justify-end justify-items-end border-b border-stroke dark:border-strokedark pb-2">
           <input
             type="text"
@@ -175,8 +175,9 @@ const TableOs = () => {
           </div>
         </div>
         {brandData.map((brand, key) => (
+
           <div
-            className={`flex ${key === brandData.length - 1
+            className={`flex  ${key === brandData.length - 1
               ? ''
               : 'border-b border-stroke dark:border-strokedark'
               }`}
