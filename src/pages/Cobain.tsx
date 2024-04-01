@@ -11,6 +11,10 @@ import ModalPopupOnProg2 from '../components/Modals/ModalDetailPopupOnprog2';
 import ModalPopupBgn from '../components/Modals/ModalPopupBgn';
 import ModalPopupReq2 from '../components/Modals/ModalPopupReq';
 import ModalPopupRev from '../components/Modals/ModalMtcRev';
+import ModalMtcStockCheck from '../components/Modals/ModalMtcStockCheck';
+import ModalMtcStockCheck2 from '../components/Modals/ModalMtcStockCheck2';
+import ModalPurchasing from '../components/Modals/ModalPurchasing';
+import ModalReplaced from '../components/Modals/ModalReplaced';
 
 
 const App = () => {
@@ -28,7 +32,10 @@ const App = () => {
     const [showModal12, setShowModal12] = useState(false);
     const [showModal13, setShowModal13] = useState(false);
     const [showModal14, setShowModal14] = useState(false);
-
+    const [showModal15, setShowModal15] = useState(false);
+    const [showModal16, setShowModal16] = useState(false);
+    const [showModal17, setShowModal17] = useState(false);
+    const [showModal18, setShowModal18] = useState(false);
 
     const openModal1 = () => setShowModal1(true);
     const closeModal1 = () => setShowModal1(false);
@@ -71,6 +78,18 @@ const App = () => {
 
     const openModal14 = () => setShowModal14(true);
     const closeModal14 = () => setShowModal14(false);
+
+    const openModal15 = () => setShowModal15(true);
+    const closeModal15 = () => setShowModal15(false);
+
+    const openModal16 = () => setShowModal16(true);
+    const closeModal16 = () => setShowModal16(false);
+
+    const openModal17 = () => setShowModal17(true);
+    const closeModal17 = () => setShowModal17(false);
+
+    const openModal18 = () => setShowModal18(true);
+    const closeModal18 = () => setShowModal18(false);
     return (
         <div>
             <div className="container mx-auto">
@@ -320,6 +339,60 @@ const App = () => {
                         machineCode={'3.2'} children={''} mtcDate={'12 April, 2024 to 24 April, 2024'}
                     >
                     </ModalPopupRev>
+                )}
+            </div>
+            <div>
+                <button type="button"
+                    onClick={openModal15}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open Modal Check Stock
+                </button>
+                {showModal15 && (
+                    <ModalMtcStockCheck
+                        machineName={'CTR03591'}
+                        machineCode={'3.2'}
+                        isOpen={showModal15}
+                        onClose={closeModal15} />
+
+                )}
+                <button type="button"
+                    onClick={openModal16}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open Modal Check Stock 2
+                </button>
+                {showModal16 && (
+                    <ModalMtcStockCheck2
+                        machineName={'CTR03591'}
+                        machineCode={'3.2'}
+                        isOpen={showModal16}
+                        onClose={closeModal16} />
+
+                )}
+                <button type="button"
+                    onClick={openModal17}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open Modal Purchasing
+                </button>
+                {showModal17 && (
+                    <ModalPurchasing
+
+                        isOpen={showModal17}
+                        onClose={closeModal17} />
+
+                )}
+                <button type="button"
+                    onClick={openModal18}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open Modal Replaced
+                </button>
+                {showModal18 && (
+                    <ModalReplaced
+
+                        isOpen={showModal18}
+                        onClose={closeModal18}
+                    >
+                        <p></p>
+                    </ModalReplaced>
                 )}
             </div>
         </div >
