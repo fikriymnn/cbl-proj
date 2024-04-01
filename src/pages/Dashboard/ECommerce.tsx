@@ -5,6 +5,7 @@ import DefaultLayout from '../../layout/DefaultLayout';
 import Production from '../../images/icon/production.svg';
 import Maintenance from '../../images/icon/maintenance.svg';
 import TableOne from '../../components/Tables/Maintenance/TableIncomingMaintenance'
+import HorizontalBars from '../../components/Charts/HorizontalBars';
 
 const ECommerce: React.FC = () => {
   return (
@@ -29,15 +30,15 @@ const ECommerce: React.FC = () => {
         </CardDataStats>
 
       </div>
-      <div className='w-full h-60 p-4 bg-white my-[26px] rounded-[10px] flex flex-col'>
+      <div className='w-full p-4 bg-white my-[26px] rounded-[10px] flex flex-col'>
         <div className='flex items-start gap-3'>
 
           <img src={Production} alt="Logo" className='w-5' />
           <p className='text-primary text-sm'>Production Overview</p>
         </div>
-        <div className='w-full h-full flex justify-center items-center '>
+        <div className=''>
 
-          <p> Production Overview Table and or Graphics </p>
+          <HorizontalBars />
         </div>
       </div>
 

@@ -8,6 +8,7 @@ import { useState } from 'react';
 import Modal from '../../../components/Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
 import Logo from '../../images/logo/logo-cbl 1.svg';
+import ModalPopupReq2 from '../../Modals/ModalPopupReq';
 
 const brandData: BRAND[] = [
     {
@@ -130,22 +131,56 @@ const TableIncomingQC = () => {
                                 <div className="container mx-auto flex  gap-3">
 
 
-                                    <button type="button" onClick={openModal1}
-                                        className={`uppercase px-2 inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action === 'detail' ? 'bg-white text-primary' : 'primary-blue text-white'} `}>
-                                        {brand.action}
-                                    </button>
-                                    {showModal1 && (
-                                        <Modal title="Incoming Maintenance Ticket"
-                                            isOpen={showModal1}
-                                            onClose={closeModal1}
-                                            ticketCode={'CTR03591'}
-                                            prepName={'GMC Ink 229'}
-                                            incDate={'28 May, 2024 06:37AM'}
-                                            prepCode={'3.2'} >
-                                            <p></p>
-                                        </Modal>
-                                    )}
 
+                                    {brand.action === 'review maintenance' && (
+                                        <>
+                                            <button
+                                                className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'review maintenance' && 'hidden'
+                                                    }`} // Dynamic class assignment
+                                                onClick={openModal2}
+                                            >
+                                                {brand.action}
+
+                                            </button>
+                                            {showModal2 && (
+                                                <ModalPopupReq2
+                                                    title="Maintenance Request"
+                                                    isOpen={showModal2}
+                                                    onClose={closeModal2}
+                                                    ticketCode={'CTR03591'}
+                                                    machineName={'GMC Printer 2'}
+                                                    incDate={'05 May, 2024 06:37AM'}
+                                                    machineCode={'3.2'} children={''} reqSchedule={'12 April, 2024 to 24 April, 2024'}
+                                                >
+                                                </ModalPopupReq2>
+                                            )}
+                                        </>
+                                    )
+                                    }
+                                    {brand.action === 'detail' && (
+                                        <>
+
+                                            <button
+                                                className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-blue-600 text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'detail' && 'hidden'
+                                                    }`}
+                                                onClick={openModal1}
+                                            >
+                                                {brand.action}
+                                            </button>
+                                            {showModal1 && (
+                                                <Modal title="Incoming Maintenance Ticket"
+                                                    isOpen={showModal1}
+                                                    onClose={closeModal1}
+                                                    ticketCode={'CTR03591'}
+                                                    prepName={'GMC Ink 229'}
+                                                    incDate={'28 May, 2024 06:37AM'}
+                                                    prepCode={'3.2'} >
+                                                    <p></p>
+                                                </Modal>
+
+                                            )}
+                                        </>
+                                    )}
                                 </div>
 
                             </td>

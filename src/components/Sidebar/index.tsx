@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import Logo from '../../images/logo/logo-cbl 2.svg';
+import Dashboard from '../../images/icon/dashboard.svg'
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -58,7 +59,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   return (
     <aside
       ref={sidebar}
-      className={`absolute left-0 top-0 z-49 flex h-screen  flex-col overflow-y-hidden w-[278px] bg-gradient-to-b from-[#016AE6] to-[#014BA2] duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      className={`absolute left-0 top-0 z-99999 xl:z-40 flex h-screen  flex-col overflow-y-hidden w-[278px] bg-gradient-to-b from-[#016AE6] to-[#014BA2] duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
     >
       {/* <!-- SIDEBAR HEADER --> */}
@@ -108,18 +109,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     '!bg-white text-primary '
                     }`}
                 >
-                  <svg
-                    className="fill-current"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 18 18"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M15.7499 2.9812H14.2874V2.36245C14.2874 2.02495 14.0062 1.71558 13.6405 1.71558C13.2749 1.71558 12.9937 1.99683 12.9937 2.36245V2.9812H4.97803V2.36245C4.97803 2.02495 4.69678 1.71558 4.33115 1.71558C3.96553 1.71558 3.68428 1.99683 3.68428 2.36245V2.9812H2.2499C1.29365 2.9812 0.478027 3.7687 0.478027 4.75308V14.5406C0.478027 15.4968 1.26553 16.3125 2.2499 16.3125H15.7499C16.7062 16.3125 17.5218 15.525 17.5218 14.5406V4.72495C17.5218 3.7687 16.7062 2.9812 15.7499 2.9812ZM1.77178 8.21245H4.1624V10.9968H1.77178V8.21245ZM5.42803 8.21245H8.38115V10.9968H5.42803V8.21245ZM8.38115 12.2625V15.0187H5.42803V12.2625H8.38115ZM9.64678 12.2625H12.5999V15.0187H9.64678V12.2625ZM9.64678 10.9968V8.21245H12.5999V10.9968H9.64678ZM13.8374 8.21245H16.228V10.9968H13.8374V8.21245ZM2.2499 4.24683H3.7124V4.83745C3.7124 5.17495 3.99365 5.48433 4.35928 5.48433C4.7249 5.48433 5.00615 5.20308 5.00615 4.83745V4.24683H13.0499V4.83745C13.0499 5.17495 13.3312 5.48433 13.6968 5.48433C14.0624 5.48433 14.3437 5.20308 14.3437 4.83745V4.24683H15.7499C16.0312 4.24683 16.2562 4.47183 16.2562 4.75308V6.94683H1.77178V4.75308C1.77178 4.47183 1.96865 4.24683 2.2499 4.24683ZM1.77178 14.5125V12.2343H4.1624V14.9906H2.2499C1.96865 15.0187 1.77178 14.7937 1.77178 14.5125ZM15.7499 15.0187H13.8374V12.2625H16.228V14.5406C16.2562 14.7937 16.0312 15.0187 15.7499 15.0187Z"
-                      fill=""
-                    />
+
+                  <svg className="fill-current" width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0.998291 -0.00927734C0.445991 -0.00927734 -0.00170898 0.438723 -0.00170898 0.990723V13.9907C-0.00170898 16.1997 1.78919 17.9907 3.99829 17.9907H16.9983C17.5503 17.9907 17.9983 17.5427 17.9983 16.9907C17.9983 16.4387 17.5503 15.9907 16.9983 15.9907H3.99829C2.89369 15.9907 1.99829 15.0957 1.99829 13.9907V0.990723C1.99829 0.438723 1.55059 -0.00927734 0.998291 -0.00927734ZM10.9983 1.99072V3.99072H14.5603L11.7793 6.77173C11.6893 6.86273 11.4083 6.99072 11.2793 6.99072H9.71729C9.05829 6.99072 8.24529 7.30573 7.77929 7.77173L4.27949 11.2717C3.88899 11.6627 3.88899 12.3187 4.27949 12.7097C4.47479 12.9047 4.74239 12.9907 4.99829 12.9907C5.25419 12.9907 5.52179 12.9047 5.71709 12.7097L9.21729 9.20972C9.30729 9.11872 9.58829 8.99072 9.71729 8.99072H11.2793C11.9383 8.99072 12.7513 8.67572 13.2173 8.20972L15.9983 5.42871V8.99072H17.9983V2.99072C17.9983 2.43872 17.5503 1.99072 16.9983 1.99072H10.9983Z" fill="" />
                   </svg>
                   Dashboard
                 </NavLink>

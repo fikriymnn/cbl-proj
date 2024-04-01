@@ -46,7 +46,7 @@ function App() {
           index
           element={
             <>
-              <PageTitle title="eCommerce Dashboard | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <PageTitle title="PT CBL" />
 
               <ECommerce />
             </>
@@ -56,7 +56,7 @@ function App() {
           path="/dashboard"
           element={
             <>
-              <PageTitle title="Settings | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <PageTitle title="PT CBL" />
               <ECommerce />
             </>
           }
@@ -65,7 +65,7 @@ function App() {
           path="/maintenance/machine"
           element={
             <>
-              <PageTitle title="Form Elements | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <Machine />
               </ProtectedRoute>
@@ -76,7 +76,7 @@ function App() {
           path="/maintenance/preparation"
           element={
             <>
-              <PageTitle title="Form Elements | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <Preparation />
               </ProtectedRoute>
@@ -87,7 +87,7 @@ function App() {
           path="/maintenance/material"
           element={
             <>
-              <PageTitle title="Form Elements | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <Material />
               </ProtectedRoute>
@@ -98,7 +98,7 @@ function App() {
           path="/maintenance/MAN"
           element={
             <>
-              <PageTitle title="Form Elements | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MAN />
               </ProtectedRoute>
@@ -110,7 +110,7 @@ function App() {
           path="/quality_control/maintenance"
           element={
             <>
-              <PageTitle title="Form Elements | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MaintenanceQC />
               </ProtectedRoute>
@@ -121,7 +121,7 @@ function App() {
           path="/history"
           element={
             <>
-              <PageTitle title="Form Elements | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <HistoryMtc />
               </ProtectedRoute>
@@ -132,7 +132,7 @@ function App() {
           path="/auth/login"
           element={
             <>
-              <PageTitle title="Login | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <PageTitle title="PT CBLe" />
               <Login />
             </>
           }
@@ -141,7 +141,7 @@ function App() {
           path="/auth/signin"
           element={
             <>
-              <PageTitle title="Signin | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <PageTitle title="PT CBL" />
               <SignIn />
             </>
           }
@@ -150,7 +150,7 @@ function App() {
           path="/cobain"
           element={
             <>
-              <PageTitle title="Signin | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <PageTitle title="PT CBL" />
               <Cobain />
             </>
           }
@@ -159,7 +159,7 @@ function App() {
           path="/auth/signup"
           element={
             <>
-              <PageTitle title="Signup | TailAdmin - Tailwind CSS Admin Dashboard Template" />
+              <PageTitle title="PT CBL" />
               <SignUp />
             </>
           }
