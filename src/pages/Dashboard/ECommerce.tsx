@@ -30,15 +30,29 @@ const ECommerce: React.FC = () => {
         </CardDataStats>
 
       </div>
-      <div className='w-full p-4 bg-white my-[26px] rounded-[10px] flex flex-col'>
-        <div className='flex items-start gap-3'>
+      <div className='grid grid-cols-2 gap-7'>
 
-          <img src={Production} alt="Logo" className='w-5' />
-          <p className='text-primary text-sm'>Production Overview</p>
+        <div className='w-full p-4 bg-white my-[26px] rounded-[10px] flex flex-col'>
+          <div className='flex items-start gap-3'>
+
+            <img src={Production} alt="Logo" className='w-5' />
+            <p className='text-primary text-sm'>Production Overview</p>
+          </div>
+          <div className='flex justify-center items-center p-5'>
+
+            <HorizontalBars />
+          </div>
         </div>
-        <div className=''>
+        <div className='w-full p-4 bg-white my-[26px] rounded-[10px] flex flex-col'>
+          <div className='flex items-start gap-3'>
 
-          <HorizontalBars />
+            <img src={Production} alt="Logo" className='w-5' />
+            <p className='text-primary text-sm'>Production Overview</p>
+          </div>
+          <div className='flex justify-end items-end p-5'>
+
+            <HorizontalBars />
+          </div>
         </div>
       </div>
 

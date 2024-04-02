@@ -3,6 +3,9 @@ import { NavLink, useLocation } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import Logo from '../../images/logo/logo-cbl 2.svg';
 import Dashboard from '../../images/icon/dashboard.svg'
+import Inspect from '../../images/icon/inspect.svg'
+import QC from '../../images/icon/qcc.svg'
+import History from '../../images/icon/history.svg'
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -102,10 +105,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
             </h3>
 
             <ul className="mb-6 flex flex-col gap-1.5">
+
               <li>
                 <NavLink
-                  to="/"
-                  className={`group relative flex items-center gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${pathname.includes('/') &&
+                  to="/dashboard"
+                  className={`group relative flex items-center text-white mb-4 gap-5 rounded-sm py-3 px-4 font-medium  duration-300 ease-in-out  ${pathname.includes('/dashboard') &&
                     '!bg-white text-primary '
                     }`}
                 >
@@ -126,7 +130,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/maintenance' ||
+                        className={`group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/maintenance' ||
                           pathname.includes('maintenance')) &&
                           ' dark:bg-meta-4'
                           }`}
@@ -169,10 +173,24 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/maintenance/machine"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-5 py-2 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                               }
                             >
+                              <svg className="fill-current" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <g clip-path="url(#clip0_481_1955)">
+                                  <path d="M15.5 16.5C15.7652 16.5 16.0196 16.3946 16.2071 16.2071C16.3946 16.0196 16.5 15.7652 16.5 15.5V14H17.25C17.4489 14 17.6397 13.921 17.7803 13.7803C17.921 13.6397 18 13.4489 18 13.25C18 13.0511 17.921 12.8603 17.7803 12.7197C17.6397 12.579 17.4489 12.5 17.25 12.5H16.5V11.5H17.25C17.4489 11.5 17.6397 11.421 17.7803 11.2803C17.921 11.1397 18 10.9489 18 10.75C18 10.5511 17.921 10.3603 17.7803 10.2197C17.6397 10.079 17.4489 10 17.25 10H16.5V8.5C16.5 8.23478 16.3946 7.98043 16.2071 7.79289C16.0196 7.60536 15.7652 7.5 15.5 7.5H14V6.75C14 6.55109 13.921 6.36032 13.7803 6.21967C13.6397 6.07902 13.4489 6 13.25 6C13.0511 6 12.8603 6.07902 12.7197 6.21967C12.579 6.36032 12.5 6.55109 12.5 6.75V7.5H11.5V6.75C11.5 6.55109 11.421 6.36032 11.2803 6.21967C11.1397 6.07902 10.9489 6 10.75 6C10.5511 6 10.3603 6.07902 10.2197 6.21967C10.079 6.36032 10 6.55109 10 6.75V7.5H8.5C8.23478 7.5 7.98043 7.60536 7.79289 7.79289C7.60536 7.98043 7.5 8.23478 7.5 8.5V10H6.75C6.55109 10 6.36032 10.079 6.21967 10.2197C6.07902 10.3603 6 10.5511 6 10.75C6 10.9489 6.07902 11.1397 6.21967 11.2803C6.36032 11.421 6.55109 11.5 6.75 11.5H7.5V12.5H6.75C6.55109 12.5 6.36032 12.579 6.21967 12.7197C6.07902 12.8603 6 13.0511 6 13.25C6 13.4489 6.07902 13.6397 6.21967 13.7803C6.36032 13.921 6.55109 14 6.75 14H7.5V15.5C7.5 15.7652 7.60536 16.0196 7.79289 16.2071C7.98043 16.3946 8.23478 16.5 8.5 16.5H10V17.25C10 17.4489 10.079 17.6397 10.2197 17.7803C10.3603 17.921 10.5511 18 10.75 18C10.9489 18 11.1397 17.921 11.2803 17.7803C11.421 17.6397 11.5 17.4489 11.5 17.25V16.5H12.5V17.25C12.5 17.4489 12.579 17.6397 12.7197 17.7803C12.8603 17.921 13.0511 18 13.25 18C13.4489 18 13.6397 17.921 13.7803 17.7803C13.921 17.6397 14 17.4489 14 17.25V16.5H15.5ZM9 9H15V15H9V9Z" fill="" />
+                                  <path d="M13.5 10.5H10.5V13.5H13.5V10.5Z" fill="" />
+                                  <path d="M22.8 9.34999L20.5 7.44999V3.74999C20.4984 3.65411 20.4693 3.56071 20.4161 3.48093C20.3629 3.40114 20.2879 3.33833 20.2 3.29999L15.25 1.04999H15.05L14.75 1.14999L14.5 1.29999V4.29999C14.5 4.4989 14.579 4.68967 14.7197 4.83032C14.8603 4.97097 15.0511 5.04999 15.25 5.04999C15.4489 5.04999 15.6397 4.97097 15.7803 4.83032C15.921 4.68967 16 4.4989 16 4.29999V3.59999L18.5 4.74999V8.44999L19.25 9.04999L21 10.45V13.55L19.25 14.95L18.5 15.55V19.25L16 20.4V19.75C16 19.5511 15.921 19.3603 15.7803 19.2197C15.6397 19.079 15.4489 19 15.25 19C15.0511 19 14.8603 19.079 14.7197 19.2197C14.579 19.3603 14.5 19.5511 14.5 19.75V22.75L14.75 22.9L15.05 23H15.25L20.2 20.75C20.2879 20.7116 20.3629 20.6488 20.4161 20.5691C20.4693 20.4893 20.4984 20.3959 20.5 20.3V16.55L22.8 14.65C22.8653 14.6065 22.9181 14.5468 22.9532 14.4766C22.9883 14.4064 23.0044 14.3283 23 14.25V9.74999C23.0103 9.67098 22.9968 9.59069 22.9611 9.51943C22.9255 9.44816 22.8694 9.38916 22.8 9.34999Z" fill="" />
+                                  <path d="M8.94993 1H8.74993L3.79993 3.3C3.71204 3.33834 3.63703 3.40115 3.58384 3.48094C3.53065 3.56072 3.50152 3.65412 3.49993 3.75V7.45L1.19993 9.35C1.13055 9.38917 1.07444 9.44817 1.03881 9.51944C1.00318 9.59071 0.989641 9.67099 0.999934 9.75V14.25C0.995514 14.3283 1.01164 14.4064 1.04673 14.4766C1.08181 14.5468 1.13462 14.6065 1.19993 14.65L3.49993 16.55V20.25C3.50152 20.3459 3.53065 20.4393 3.58384 20.5191C3.63703 20.5988 3.71204 20.6617 3.79993 20.7L8.74993 22.95H8.94993L9.24993 22.85L9.49993 22.7V19.7C9.49993 19.5011 9.42092 19.3103 9.28026 19.1697C9.13961 19.029 8.94885 18.95 8.74993 18.95C8.55102 18.95 8.36026 19.029 8.2196 19.1697C8.07895 19.3103 7.99993 19.5011 7.99993 19.7V20.35L5.49993 19.2V15.55L4.74993 14.95L2.99993 13.55V10.45L4.74993 9.05L5.49993 8.45V4.75L7.99993 3.6V4.25C7.99993 4.44891 8.07895 4.63968 8.2196 4.78033C8.36026 4.92098 8.55102 5 8.74993 5C8.94885 5 9.13961 4.92098 9.28026 4.78033C9.42092 4.63968 9.49993 4.44891 9.49993 4.25V1.25L9.24993 1.1L8.94993 1Z" fill="" />
+                                </g>
+                                <defs>
+                                  <clipPath id="clip0_481_1955">
+                                    <rect width="24" height="24" fill="" />
+                                  </clipPath>
+                                </defs>
+                              </svg>
+
                               Machine
                             </NavLink>
                           </li>
@@ -180,10 +198,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/maintenance/preparation"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-5 py-2 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                               }
                             >
+                              <svg className='fill-current' width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12.9817 20.5134C12.9852 20.5129 12.9885 20.5122 12.992 20.5118L12.9875 20.5073L12.9817 20.5134Z" fill="" />
+                                <path d="M18.7769 2.56451V4.27428H19.6619V6.83881H4.27446V4.27428H5.12103V2.56451H2.5647V22.2262H13.6778V20.5165H4.27446V8.54858H21.3717V2.56451H18.7769Z" fill="" />
+                                <path d="M8.54883 2.56454H15.3865V4.27431H8.54883V2.56454ZM5.9843 1.70978H7.69406V5.12931H5.9843V1.70978ZM16.2424 1.70978H17.9522V5.12931H16.2424V1.70978ZM14.5327 13.6777V22.2263H21.3715V13.6777L17.952 9.40337L14.5327 13.6777ZM19.1742 13.6681H16.7297L17.952 12.1402L19.1742 13.6681ZM16.2422 20.5165V15.3778H19.6617V20.5165H16.2422ZM5.12109 10.2495H13.6697V11.9592H5.12109V10.2495ZM5.12883 13.677H11.0899V15.3867H5.12883V13.677ZM5.12883 17.1045H11.1136V18.8142H5.12883V17.1045Z" fill="" />
+                              </svg>
+
                               Preparation
                             </NavLink>
                           </li>
@@ -191,10 +215,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/maintenance/material"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-5 py-2 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                               }
                             >
+                              <svg className='stroke-current' width="27" height="24" viewBox="0 0 27 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12.7905 3.41037C13.374 3.08961 14.0836 3.08961 14.6672 3.41036L21.9268 7.40058C22.2335 7.56916 22.4238 7.889 22.4238 8.23611V16.1071C22.4238 16.8013 22.0433 17.441 21.4299 17.7782L14.6672 21.4953C14.0836 21.816 13.374 21.816 12.7905 21.4953L6.02777 17.7782C5.41437 17.441 5.03394 16.8013 5.03394 16.1071V8.23611C5.03394 7.889 5.22415 7.56916 5.53086 7.40058L12.7905 3.41037Z" stroke="" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M5.03394 7.69812L13.7289 12.5283M13.7289 12.5283L22.4238 7.69812M13.7289 12.5283V22.1887" stroke="" stroke-width="2" stroke-linejoin="round" />
+                                <path d="M9.61011 9.96226L18.305 5.43396" stroke="" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                <path d="M7.77954 12.6793L10.9829 14.4906" stroke="" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                              </svg>
+
                               Materials
                             </NavLink>
                           </li>
@@ -202,12 +233,84 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/maintenance/MAN"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-5 py-2 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                               }
                             >
+                              <svg className='fill-current' width="17" height="21" viewBox="0 0 17 21" fill="" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M16.6667 6.25L10.4167 0H2.08333C1.5308 0 1.00089 0.219493 0.610194 0.610194C0.219493 1.00089 0 1.5308 0 2.08333V18.75C0 19.3025 0.219493 19.8324 0.610194 20.2231C1.00089 20.6138 1.5308 20.8333 2.08333 20.8333H14.5833C15.1359 20.8333 15.6658 20.6138 16.0565 20.2231C16.4472 19.8324 16.6667 19.3025 16.6667 18.75V6.25ZM5.20833 17.7083H3.125V8.33333H5.20833V17.7083ZM9.375 17.7083H7.29167V11.4583H9.375V17.7083ZM13.5417 17.7083H11.4583V14.5833H13.5417V17.7083ZM10.4167 7.29167H9.375V2.08333L14.5833 7.29167H10.4167Z" fill="" />
+                              </svg>
+
                               MAN
                             </NavLink>
+                          </li>
+                          <li>
+                            <SidebarLinkGroup
+                              activeCondition={
+                                pathname === '/quality_control' || pathname.includes('quality_control')
+                              }
+                            >
+                              {(handleClick, open) => {
+                                return (
+                                  <React.Fragment>
+                                    <NavLink
+                                      to="#"
+                                      className={`group relative flex items-center gap-5 mb-4 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/quality_control' ||
+                                        pathname.includes('quality_control')) &&
+                                        ' dark:bg-meta-4'
+                                        }`}
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        sidebarExpanded
+                                          ? handleClick()
+                                          : setSidebarExpanded(true);
+                                      }}
+                                    >
+
+                                      <img src={Inspect} alt="Logo" />
+                                      Inspection
+                                      <svg
+                                        className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-180'
+                                          }`}
+                                        width="20"
+                                        height="20"
+                                        viewBox="0 0 20 20"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path
+                                          fillRule="evenodd"
+                                          clipRule="evenodd"
+                                          d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
+                                          fill=""
+                                        />
+                                      </svg>
+                                    </NavLink>
+                                    {/* <!-- Dropdown Menu Start --> */}
+                                    <div
+                                      className={`translate transform overflow-hidden ${!open && 'hidden'
+                                        }`}
+                                    >
+                                      <ul className=" flex flex-col gap-5 pl-6">
+                                        <li>
+                                          <NavLink
+                                            to="/inspection/pm_1"
+                                            className={({ isActive }) =>
+                                              'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                              (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                            }
+                                          >
+                                            PM 1
+                                          </NavLink>
+                                        </li>
+
+                                      </ul>
+                                    </div>
+                                    {/* <!-- Dropdown Menu End --> */}
+                                  </React.Fragment>
+                                );
+                              }}
+                            </SidebarLinkGroup>
                           </li>
                         </ul>
                       </div>
@@ -226,7 +329,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/quality_control' ||
+                        className={`group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/quality_control' ||
                           pathname.includes('quality_control')) &&
                           ' dark:bg-meta-4'
                           }`}
@@ -237,9 +340,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             : setSidebarExpanded(true);
                         }}
                       >
-                        <svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M8.75526 20.0438C9.92464 21.2131 10.9927 21.2039 12.1529 20.0438L13.5708 18.635C13.7181 18.4969 13.847 18.4416 14.0404 18.4416H16.0292C17.6774 18.4416 18.4417 17.6866 18.4417 16.0293V14.0404C18.4417 13.8471 18.4969 13.7182 18.6349 13.5708L20.0345 12.1529C21.2131 10.9927 21.2038 9.92465 20.0345 8.75527L18.6349 7.33729C18.4969 7.19916 18.4417 7.06107 18.4417 6.87694V4.87887C18.4417 3.23991 17.6866 2.46649 16.0292 2.46649H14.0404C13.847 2.46649 13.7181 2.42045 13.5708 2.28232L12.1529 0.873575C10.9927 -0.295803 9.92464 -0.286571 8.75526 0.873575L7.33728 2.28232C7.19919 2.42045 7.06106 2.46649 6.87689 2.46649H4.87886C3.2307 2.46649 2.46648 3.22153 2.46648 4.87887V6.87694C2.46648 7.06107 2.42044 7.19916 2.28235 7.33729L0.873561 8.75527C-0.295779 9.92465 -0.286586 10.9927 0.873561 12.1529L2.28235 13.5708C2.42044 13.7182 2.46648 13.8471 2.46648 14.0404V16.0293C2.46648 17.6774 3.2307 18.4416 4.87886 18.4416H6.87689C7.06106 18.4416 7.19919 18.4969 7.33728 18.635L8.75526 20.0438ZM9.78651 19.0125L8.05546 17.2723C7.8529 17.0605 7.64115 16.9777 7.3557 16.9777H4.87886C4.0594 16.9777 3.93046 16.8487 3.93046 16.0293V13.5524C3.93046 13.2762 3.84761 13.0644 3.64505 12.8618L1.90481 11.1308C1.32476 10.5415 1.32476 10.3758 1.90481 9.78652L3.64505 8.05551C3.84761 7.85292 3.93046 7.64117 3.93046 7.35572V4.87887C3.93046 4.05018 4.0502 3.93051 4.87886 3.93051H7.3557C7.64115 3.93051 7.8529 3.85681 8.05546 3.64506L9.78651 1.90483C10.3758 1.32473 10.5415 1.32473 11.1308 1.90483L12.8618 3.64506C13.0644 3.85681 13.2762 3.93051 13.5524 3.93051H16.0292C16.8487 3.93051 16.9776 4.05937 16.9776 4.87887V7.35572C16.9776 7.64117 17.0697 7.85292 17.2723 8.05551L19.0124 9.78652C19.5925 10.3758 19.5925 10.5415 19.0124 11.1308L17.2723 12.8618C17.0697 13.0644 16.9776 13.2762 16.9776 13.5524V16.0293C16.9776 16.8487 16.8487 16.9777 16.0292 16.9777H13.5524C13.2762 16.9777 13.0644 17.0605 12.8618 17.2723L11.1308 19.0125C10.5415 19.5926 10.3758 19.5926 9.78651 19.0125ZM9.02228 14.8691C9.28931 14.8691 9.49187 14.7586 9.62999 14.5929L14.7402 7.4478C14.8415 7.30044 14.8967 7.13474 14.8967 6.97822C14.8967 6.57307 14.5837 6.25081 14.1601 6.25081C13.8563 6.25081 13.6905 6.35209 13.5064 6.61911L8.99467 12.9724L6.66514 10.4034C6.50863 10.2285 6.33369 10.1548 6.10347 10.1548C5.65232 10.1548 5.33005 10.4587 5.33005 10.8822C5.33005 11.0664 5.39448 11.2413 5.52342 11.3702L8.45142 14.6297C8.58955 14.777 8.76449 14.8691 9.02228 14.8691Z" fill="white" />
-                        </svg>
+                        <img src={QC} alt="Logo" />
 
                         Quality Control
                         <svg
@@ -269,7 +370,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/quality_control/maintenance"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-5 py-2 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                               }
                             >
@@ -305,9 +406,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             : setSidebarExpanded(true);
                         }}
                       >
-                        <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M20.6667 8.25L14.4167 2H6.08333C5.5308 2 5.00089 2.21949 4.61019 2.61019C4.21949 3.00089 4 3.5308 4 4.08333V20.75C4 21.3025 4.21949 21.8324 4.61019 22.2231C5.00089 22.6138 5.5308 22.8333 6.08333 22.8333H18.5833C19.1359 22.8333 19.6658 22.6138 20.0565 22.2231C20.4472 21.8324 20.6667 21.3025 20.6667 20.75V8.25ZM9.20833 19.7083H7.125V10.3333H9.20833V19.7083ZM13.375 19.7083H11.2917V13.4583H13.375V19.7083ZM17.5417 19.7083H15.4583V16.5833H17.5417V19.7083ZM14.4167 9.29167H13.375V4.08333L18.5833 9.29167H14.4167Z" fill="white" />
-                        </svg>
+                        <img src={History} alt="Logo" />
                         History
                         <svg
                           className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-180'
@@ -336,10 +435,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <NavLink
                               to="/history"
                               className={({ isActive }) =>
-                                'group relative flex items-center gap-5 py-2 rounded-md px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                               }
                             >
+
                               History
                             </NavLink>
                           </li>

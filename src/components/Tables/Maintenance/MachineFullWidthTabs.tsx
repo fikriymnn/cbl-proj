@@ -81,6 +81,7 @@ export default function MachineFullWidthTabs() {
         borderTopLeftRadius: "12px",
 
 
+
     };
     return (
         <Box sx={{
@@ -127,7 +128,7 @@ export default function MachineFullWidthTabs() {
                         textColor="inherit"
                         variant="standard"
                         aria-label="full width tabs example"
-                        className='bg-white text-[#00499F] font-semibold mb-2'
+                        className='bg-white text-[#00499F] font-semibold mb-2 '
 
                     >
                         <Tab label="Incoming" {...a11yProps(0)} className='' />
