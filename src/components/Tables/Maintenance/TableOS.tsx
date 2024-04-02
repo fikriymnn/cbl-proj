@@ -9,7 +9,7 @@ import ModalPopupBgn from '../../Modals/ModalPopupBgn';
 import ModalPopupOnProg2 from '../../Modals/ModalDetailPopupOnprog2';
 import ModalPopupMon from '../../Modals/ModalDetailPopupMon';
 
-const brandData: BRAND[] = [
+const brandData = [
   {
 
     name: 'EX000003',
@@ -18,6 +18,8 @@ const brandData: BRAND[] = [
     status: "pending",
     schedule: "unscheduled",
     action: 'request mtc',
+    executor: 'Saya ',
+    response_time: '3 minutes'
   },
   {
 
@@ -72,6 +74,8 @@ const brandData: BRAND[] = [
     status: "monitoring",
     schedule: "12/04/24 to 24/04/24",
     action: 'detail',
+    executor: 'Acep Kurna',
+    response_time: '31 minutes'
   },
 
 ];
@@ -114,10 +118,10 @@ const TableOs = () => {
 
 
   return (
-    <div className="rounded-sm border border-stroke rounded-b-xl bg-white px-5 pt-2 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+    <div className="rounded-sm z-1 rounded-b-xl bg-white  pt-2  shadow-default dark:border-strokedark dark:bg-boxdark ">
 
 
-      <div className="flex  flex-col">
+      <div className="flex w-full flex-col">
         <div className="relative flex w-full justify-end justify-items-end border-b border-stroke dark:border-strokedark pb-2">
           <input
             type="text"
@@ -125,7 +129,7 @@ const TableOs = () => {
             placeholder="Search"
             id="searchInput"
           />
-          <div className="flex items-center">
+          <div className="flex items-center mr-5">
             <svg
               width="14"
               height="14"
@@ -141,271 +145,283 @@ const TableOs = () => {
           </div>
         </div>
         <div
-          className='flex border-b border-stroke dark:border-strokedark'
+          className='flex border-b pl-10  border-[#D8EAFF] gap-5 text-left  dark:border-strokedark'
 
 
         >
-          <div className="flex items-center w-[3%] gap-3 p-1 ">
+          <div className="flex items-center  gap-3  ">
 
-            <p className="hidden  text-slate-600 font-semibold dark:text-white text-[14px] sm:block">
+            <p className="  text-slate-600 text-left w-[20px] font-semibold dite text-[14px] sm:block">
               No
             </p>
           </div>
+          <div className='grid grid-cols-6 gap-8 w-full'>
 
-          <div className="flex items-center w-[250px] justify-center p-1 ">
-            <p className="text-slate-600 font-semibold text-center dark:text-white text-[14px]">Ticket Code</p>
-          </div>
-          <div className="flex items-center w-[250px] justify-center p-1 ">
-            <p className="text-slate-600 font-semibold text-center dark:text-white text-[14px]">Incoming Date</p>
-          </div>
+            <div className="flex items-center    ">
+              <p className="text-slate-600 text-left w-[100px] font-semibold  dark:text-white text-[14px]">Ticket Code</p>
+            </div>
+            <div className="flex items-center    ">
+              <p className="text-slate-600 text-left w-[100px] font-semibold  dark:text-white text-[14px]">Incoming Date</p>
+            </div>
 
-          <div className="flex items-center w-[250px] justify-center p-1 ">
-            <p className="text-slate-600 font-semibold text-center">Machine Name</p>
-          </div>
+            <div className="flex items-center    ">
+              <p className="text-slate-600 text-left w-[100px] font-semibold ">Machine Name</p>
+            </div>
 
-          <div className="hidden items-center justify-center w-[250px] p-1 sm:flex ">
-            <p className="text-slate-600 font-semibold text-center dark:text-white text-[14px]">Status</p>
-          </div>
-          <div className="hidden items-center justify-center w-[250px] p-1 sm:flex ">
-            <p className="text-slate-600 font-semibold text-center dark:text-white text-[14px]">Schedule</p>
-          </div>
+            <div className=" items-center    sm:flex ">
+              <p className="text-slate-600 text-left w-[100px] font-semibold  dark:text-white text-[14px]">Status</p>
+            </div>
+            <div className=" items-center    sm:flex ">
+              <p className="text-slate-600 text-left w-[100px] font-semibold  dark:text-white text-[14px]">Schedule</p>
+            </div>
 
-          <div className="hidden items-center justify-center w-[250px] p-1 sm:flex ">
-            <p className="text-slate-600 font-semibold text-center">Detail</p>
+            <div className=" items-center    sm:flex ">
+              <p className="text-slate-600 text-left w-[100px] font-semibold ">Detail</p>
+            </div>
           </div>
         </div>
         {brandData.map((brand, key) => (
 
           <div
-            className={`flex  ${key === brandData.length - 1
+            className={`  border-y-8 border-[#D8EAFF] ${key === brandData.length - 1
               ? ''
               : 'border-b border-stroke dark:border-strokedark'
               }`}
             key={key}
           >
-            <div className="flex items-center w-[3%]   gap-3 p-1 ">
+            <div className='flex w-full gap-5 pl-10'>
 
-              <p className="hidden text-black dark:text-white text-[14px] sm:block">
-                {key + 1}
-              </p>
-            </div>
+              <div className="flex items-center    gap-3  py-[17px]">
 
-            <div className="flex items-center w-[250px]  justify-center p-1 ">
-              <p className="text-black text-center dark:text-white text-[14px]">{brand.name}</p>
-            </div>
-            <div className="flex items-center w-[250px] justify-center p-1 ">
-              <p className="text-black text-center dark:text-white text-[14px]">{brand.date}</p>
-            </div>
-
-            <div className="flex items-center w-[250px] justify-center p-1 text-[14px]">
-              <p className="text-black text-center line-clamp-2">{brand.machine}</p>
-            </div>
-
-            <div className="hidden items-center justify-center w-[250px] p-1 sm:flex text-[14px] ">
-              <td className=" border-[#eee]  px-4 dark:border-strokedark">
-                <p
-                  className={`inline-flex rounded-full uppercase bg-opacity-10  text-center px-3 text-sm font-medium ${brand.status === 'monitoring'
-                    ? 'bg-blue-600 text-blue-600'
-                    : brand.status === 'on progress'
-                      ? 'bg-success text-success'
-                      : brand.status === 'pending' || "pending verification" ? 'bg-orange-400 text-orange-400' : 'bg-white'
-                    }`}
-                >
-                  {brand.status}
+                <p className=" w-[20px] text-black dark:text-white text-[14px] sm:block">
+                  {key + 1}
                 </p>
-              </td>
-            </div>
-            <div className="hidden items-center justify-center w-[250px] p-1 sm:flex ">
-              <td className=" border-[#eee]  px-4 dark:border-strokedark">
-                <p
-                  className={`inline-flex rounded-full uppercase bg-opacity-10 text-[14px] text-center px-3 text-sm font-medium ${brand.schedule === 'unscheduled'
-                    ? 'bg-warning text-warning'
-                    : brand.schedule === "schedule requested" ? 'bg-orange-400 text-orange-400' : brand.schedule === 'schedule declined' ? 'bg-danger text-danger' : 'bg-white'
-                    }`}
-                >
-                  {brand.schedule}
-                </p>
-              </td>
-            </div>
+              </div>
+              <div className='grid grid-cols-6 gap-8  '>
 
-            <div className="hidden items-center justify-center w-[250px] p-1 sm:flex">
-              <td className=" border-[#eee] text-[14px]  dark:border-strokedark">
-                <div className="container mx-auto ">
+
+                <div className="flex items-center   justify-center  py-[17px] ">
+                  <p className="text-black  w-[100px]  text-left dark:text-white text-[14px]">{brand.name}</p>
+                </div>
+                <div className="flex items-center  justify-center  py-[17px] ">
+                  <p className="text-black  w-[100px]  text-left dark:text-white text-[14px]">{brand.date}</p>
                 </div>
 
-              </td>
-              <div>
-                {/* Conditionally render buttons based on status */}
-                {brand.action === 'begin mtc' && (
-                  <>
-                    <button
-                      className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'begin mtc' && 'hidden'
-                        }`} // Dynamic class assignment
-                      onClick={openModal4}
-                    >
-                      {brand.action}
+                <div className="flex items-center  justify-center  py-[17px] text-[14px]">
+                  <p className="text-black  w-[100px]  text-left line-clamp-2">{brand.machine}</p>
+                </div>
 
-                    </button>
-                    <ModalPopupBgn
-                      title="Maintenance"
-                      isOpen={showModal4}
-                      onClose={closeModal4}
-                      ticketCode={'CTR03591'}
-                      machineName={'GMC Printer 2'}
-                      incDate={'05 May, 2024 06:37AM'}
-                      machineCode={'3.2'} children={''}
-                      mtcSchedule={'12 April, 2024 to 24 April, 2024'}
-
-                    >
-                    </ModalPopupBgn>
-                  </>
-                )
-                }
-                {brand.action === 'detail' && brand.status === 'pending' && (
-                  <>
-
-                    <button
-                      className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-blue-600 text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'detail' && 'hidden'
+                <div className=" items-center justify-center   sm:flex text-[14px] ">
+                  <td className=" border-[#eee]  dark:border-strokedark">
+                    <p
+                      className={`inline-flex rounded-[10px] w-[100px]  uppercase bg-opacity-10 justify-center text-center  text-sm font-medium ${brand.status === 'monitoring'
+                        ? 'bg-blue-600 text-blue-600'
+                        : brand.status === 'on progress'
+                          ? 'bg-success text-success'
+                          : brand.status === 'pending' || "pending verification" ? 'bg-orange-400 text-orange-400' : 'bg-white'
                         }`}
-                      onClick={openModal2}
                     >
-                      {brand.action}
-                    </button>
-                    {showModal2 && (
-                      <ModalPopupReq
-                        title="Maintenance"
-                        isOpen={showModal2}
-                        onClose={closeModal2}
-                        ticketCode={'CTR03591'}
-                        machineName={'GMC Printer 2'}
-                        incDate={'05 May, 2024 06:37AM'}
-                        machineCode={'3.2'} children={''}
-                        mtcSchedule={'12 April, 2024 to 24 April, 2024'}
-                        status={"Maintenance Schedule Requested "}>
+                      {brand.status}
+                    </p>
+                  </td>
+                </div>
+                <div className=" items-center justify-center   sm:flex ">
+                  <td className=" border-[#eee]  dark:border-strokedark">
+                    <p
+                      className={`inline-flex rounded-[10px] w-[120px] justify-center uppercase bg-opacity-10 text-[14px] text-center  text-sm font-medium ${brand.schedule === 'unscheduled'
+                        ? 'bg-warning text-warning'
+                        : brand.schedule === "schedule requested" ? 'bg-orange-400 text-orange-400' : brand.schedule === 'schedule declined' ? 'bg-danger text-danger' : 'bg-white'
+                        }`}
+                    >
+                      {brand.schedule}
+                    </p>
+                  </td>
+                </div>
 
-                      </ModalPopupReq>
+                <div className=" items-center justify-center   sm:flex">
+                  <td className=" border-[#eee] text-[14px]  dark:border-strokedark">
+                    <div className="container mx-auto ">
+                    </div>
 
+                  </td>
+                  <div>
+                    {/* Conditionally render buttons based on status */}
+                    {brand.action === 'begin mtc' && (
+                      <>
+                        <button
+                          className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'begin mtc' && ''
+                            }`} // Dynamic class assignment
+                          onClick={openModal4}
+                        >
+                          {brand.action}
+
+                        </button>
+                        <ModalPopupBgn
+                          title="Maintenance"
+                          isOpen={showModal4}
+                          onClose={closeModal4}
+                          ticketCode={'CTR03591'}
+                          machineName={'GMC Printer 2'}
+                          incDate={'05 May, 2024 06:37AM'}
+                          machineCode={'3.2'} children={''}
+                          mtcSchedule={'12 April, 2024 to 24 April, 2024'}
+
+                        >
+                        </ModalPopupBgn>
+                      </>
+                    )
+                    }
+                    {brand.action === 'detail' && brand.status === 'pending' && (
+                      <>
+
+                        <button
+                          className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-blue-600 text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'detail' && ''
+                            }`}
+                          onClick={openModal2}
+                        >
+                          {brand.action}
+                        </button>
+                        {showModal2 && (
+                          <ModalPopupReq
+                            title="Maintenance"
+                            isOpen={showModal2}
+                            onClose={closeModal2}
+                            ticketCode={'CTR03591'}
+                            machineName={'GMC Printer 2'}
+                            incDate={'05 May, 2024 06:37AM'}
+                            machineCode={'3.2'} children={''}
+                            mtcSchedule={'12 April, 2024 to 24 April, 2024'}
+                            status={"Maintenance Schedule Requested "}>
+
+                          </ModalPopupReq>
+
+                        )}
+                      </>
                     )}
-                  </>
-                )}
-                {brand.action === 'reschedule' && (
-                  <>
-                    <button
-                      className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'reschedule' && 'hidden'
-                        }`}
-                      onClick={openModal3}
-                    >
-                      {brand.action}
-                    </button>
-                    <ModalMtcDate title="Request Maintenance Schedule"
-                      isOpen={showModal3}
-                      onClose={closeModal3}
-                      machineName={'GMC Printer 2'}>
-                      <p></p>
-                    </ModalMtcDate>
-                  </>
-                )}
-                {brand.action === 'action' && (
-                  <>
-
-                    <button
-                      className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1  text-blue-600 hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'action' && 'hidden'
-                        }`}
-                      onClick={openModal5}
-                    >
-                      {brand.action}
-                    </button>
-                    <ModalPopupOnProg2
-                      title="Maintenance"
-                      isOpen={showModal5}
-                      onClose={closeModal5}
-                      ticketCode={'CTR03591'}
-                      machineName={'GMC Printer 2'}
-                      incDate={'05 May, 2024 06:37AM'}
-                      machineCode={'3.2'} children={''}
-                      mtcSchedule={'12 April, 2024 to 24 April, 2024'}
-                      status={"Maintenance On Progress"}>
-
-                    </ModalPopupOnProg2>
-                  </>
-                )}
-                {brand.action === 'request mtc' && (
-                  <>
-
-                    <button
-                      className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1  text-white bg-blue-600 hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'request mtc' && 'hidden'
-                        }`}
-
-
-                      onClick={openModal3} >
-                      {brand.action}
-                    </button>
-                    <ModalMtcDate title="Request Maintenance Schedule"
-                      isOpen={showModal3}
-                      onClose={closeModal3}
-                      machineName={'GMC Printer 2'}>
-                      <p></p>
-                    </ModalMtcDate>
-                  </>
-                )}
-                {brand.action === 'detail' && brand.status === 'pending verification' && (
-                  <>
-
-                    <button
-                      className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1  text-blue-600  hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'detail' && 'hidden'
-                        }`}
-                      onClick={openModal6}
-                    >
-                      {brand.action}
-                    </button>
-                    {showModal6 && (
-                      <ModalPopupReq
-                        title="Maintenance"
-                        isOpen={showModal6}
-                        onClose={closeModal6}
-                        ticketCode={'CTR03591'}
-                        machineName={'GMC Printer 2'}
-                        incDate={'05 May, 2024 06:37AM'}
-                        machineCode={'3.2'} children={''}
-                        mtcSchedule={'12 April, 2024 to 24 April, 2024'}
-                        status={"Waiting to be verified by QC "}>
-
-                      </ModalPopupReq>
-
+                    {brand.action === 'reschedule' && (
+                      <>
+                        <button
+                          className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'reschedule' && ''
+                            }`}
+                          onClick={openModal3}
+                        >
+                          {brand.action}
+                        </button>
+                        <ModalMtcDate title="Request Maintenance Schedule"
+                          isOpen={showModal3}
+                          onClose={closeModal3}
+                          machineName={'GMC Printer 2'}>
+                          <p></p>
+                        </ModalMtcDate>
+                      </>
                     )}
-                  </>
-                )}
-                {brand.action === 'detail' && brand.status === 'monitoring' && (
-                  <>
+                    {brand.action === 'action' && (
+                      <>
 
-                    <button
-                      className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] text-blue-600 justify-center ${brand.action !== 'detail' && 'hidden'
-                        }`}
-                      onClick={openModal7}
-                    >
-                      {brand.action}
-                    </button>
-                    {showModal7 && (
+                        <button
+                          className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1  text-blue-600 hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'action' && ''
+                            }`}
+                          onClick={openModal5}
+                        >
+                          {brand.action}
+                        </button>
+                        <ModalPopupOnProg2
+                          title="Maintenance"
+                          isOpen={showModal5}
+                          onClose={closeModal5}
+                          ticketCode={'CTR03591'}
+                          machineName={'GMC Printer 2'}
+                          incDate={'05 May, 2024 06:37AM'}
+                          machineCode={'3.2'} children={''}
+                          mtcSchedule={'12 April, 2024 to 24 April, 2024'}
+                          status={"Maintenance On Progress"}>
 
-
-                      <ModalPopupMon
-                        title="Maintenance"
-                        isOpen={showModal7}
-                        onClose={closeModal7}
-                        ticketCode={'CTR03591'}
-                        machineName={'GMC Printer 2'}
-                        incDate={'05 May, 2024 06:37AM'}
-                        machineCode={'3.2'} children={''}
-                        mtcSchedule={'12 April, 2024 to 24 April, 2024'}
-                        status={"Maintenance verified, Monitoring after maintenance for 3 months."}>
-
-                      </ModalPopupMon>
+                        </ModalPopupOnProg2>
+                      </>
                     )}
+                    {brand.action === 'request mtc' && (
+                      <>
+
+                        <button
+                          className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1  text-white bg-blue-600 hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'request mtc' && ''
+                            }`}
 
 
-                  </>
-                )}
+                          onClick={openModal3} >
+                          {brand.action}
+                        </button>
+                        <ModalMtcDate title="Request Maintenance Schedule"
+                          isOpen={showModal3}
+                          onClose={closeModal3}
+                          machineName={'GMC Printer 2'}>
+                          <p></p>
+                        </ModalMtcDate>
+                      </>
+                    )}
+                    {brand.action === 'detail' && brand.status === 'pending verification' && (
+                      <>
+
+                        <button
+                          className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1  text-blue-600  hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'detail' && ''
+                            }`}
+                          onClick={openModal6}
+                        >
+                          {brand.action}
+                        </button>
+                        {showModal6 && (
+                          <ModalPopupReq
+                            title="Maintenance"
+                            isOpen={showModal6}
+                            onClose={closeModal6}
+                            ticketCode={'CTR03591'}
+                            machineName={'GMC Printer 2'}
+                            incDate={'05 May, 2024 06:37AM'}
+                            machineCode={'3.2'} children={''}
+                            mtcSchedule={'12 April, 2024 to 24 April, 2024'}
+                            status={"Waiting to be verified by QC "}>
+
+                          </ModalPopupReq>
+
+                        )}
+                      </>
+                    )}
+                    {brand.action === 'detail' && brand.status === 'monitoring' && (
+                      <>
+
+                        <button
+                          className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] text-blue-600 justify-center ${brand.action !== 'detail' && ''
+                            }`}
+                          onClick={openModal7}
+                        >
+                          {brand.action}
+                        </button>
+                        {showModal7 && (
+
+
+                          <ModalPopupMon
+                            title="Maintenance"
+                            isOpen={showModal7}
+                            onClose={closeModal7}
+                            ticketCode={'CTR03591'}
+                            machineName={'GMC Printer 2'}
+                            incDate={'05 May, 2024 06:37AM'}
+                            machineCode={'3.2'} children={''}
+                            mtcSchedule={'12 April, 2024 to 24 April, 2024'}
+                            status={"Maintenance verified, Monitoring after maintenance for 3 months."}>
+
+                          </ModalPopupMon>
+                        )}
+
+
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
+            </div>
+            <div className='pl-10 border-t border-[#D9D9D9] py-2'>
+              <p>Executor : {brand.executor == null ? " - " : brand.executor}</p>
+              <p>Response Time: {brand.response_time == null ? " - " : brand.response_time}</p>
             </div>
           </div>
         ))}
