@@ -5,16 +5,7 @@ import Loader from './common/Loader';
 import PageTitle from './components/PageTitle';
 import SignIn from './pages/Authentication/SignIn';
 import SignUp from './pages/Authentication/SignUp';
-import Calendar from './pages/Maintenance/Machine';
-import Chart from './pages/Chart';
 import ECommerce from './pages/Dashboard/ECommerce';
-import FormElements from './pages/Form/FormElements';
-import FormLayout from './pages/Form/FormLayout';
-import Profile from './pages/Profile';
-import Settings from './pages/Settings';
-import Tables from './pages/Tables';
-import Alerts from './pages/UiElements/Alerts';
-import Buttons from './pages/UiElements/Buttons';
 import Login from './pages/Authentication/Login';
 import Cobain from './pages/Cobain';
 import ProtectedRoute from './components/Protectedroute';
@@ -24,6 +15,7 @@ import MAN from './pages/Maintenance/MAN';
 import Material from './pages/Maintenance/Material';
 import MaintenanceQC from './pages/QualityControl/maintenanceQC';
 import HistoryMtc from './pages/History/Maintenance';
+import Pm1 from './pages/inspection/Pm1';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -68,6 +60,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <Machine />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/inspection/pm_1"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <Pm1 />
               </ProtectedRoute>
             </>
           }
@@ -132,7 +135,7 @@ function App() {
           path="/auth/login"
           element={
             <>
-              <PageTitle title="PT CBLe" />
+              <PageTitle title="PT CBL" />
               <Login />
             </>
           }
