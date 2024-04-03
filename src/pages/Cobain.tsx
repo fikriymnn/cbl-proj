@@ -254,7 +254,7 @@ const App = () => {
                 </button>
                 {showModal9 && (
                     <ModalMtcDate
-                        title="Request Maintenance Schedule"
+
                         isOpen={showModal9}
                         onClose={closeModal9}
                         machineName={'GMC Printer 2'}                    >
@@ -359,8 +359,10 @@ const App = () => {
                         machineName={'CTR03591'}
                         machineCode={'3.2'}
                         isOpen={showModal15}
-                        onClose={closeModal15} />
+                        onClose={closeModal15} >
+                        <p></p>
 
+                    </ModalMtcStockCheck>
                 )}
                 <button type="button"
                     onClick={openModal16}
@@ -372,7 +374,11 @@ const App = () => {
                         machineName={'CTR03591'}
                         machineCode={'3.2'}
                         isOpen={showModal16}
-                        onClose={closeModal16} />
+                        onClose={closeModal16} >
+                        <p>
+
+                        </p>
+                    </ModalMtcStockCheck2>
 
                 )}
                 <button type="button"

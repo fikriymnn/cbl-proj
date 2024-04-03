@@ -5,7 +5,8 @@ import Logo from '../../images/logo/logo-cbl 2.svg';
 import Dashboard from '../../images/icon/dashboard.svg'
 import Inspect from '../../images/icon/inspect.svg'
 import QC from '../../images/icon/qcc.svg'
-import History from '../../images/icon/history.svg'
+import History from '../../images/icon/history2.svg'
+import Master from '../../images/icon/master.svg'
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -66,7 +67,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
         }`}
     >
       {/* <!-- SIDEBAR HEADER --> */}
-      <div className="flex items-center md:justify-center    gap-2 px-6 py-5.5 lg:py-6.5">
+      <div className="flex items-center md:justify-center  gap-2 px-6 py-5.5 lg:py-6.5">
         <NavLink to="/">
           <img src={Logo} alt="Logo" />
         </NavLink>
@@ -100,9 +101,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
         <nav className="mt-5 py-4 px-4 lg:mt-9 lg:px-6">
           {/* <!-- Menu Group --> */}
           <div>
-            <h3 className="mb-4 ml-4 text-sm font-semibold text-bodydark2">
-              MENU
-            </h3>
+
 
             <ul className="mb-6 flex flex-col gap-1.5">
 
@@ -146,22 +145,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         </svg>
 
                         Maintenance
+
                         <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-180'
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
                             }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
+                          width="7"
+                          height="8"
+                          viewBox="0 0 7 8"
                           fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z" fill="white" />
                         </svg>
+
                       </NavLink>
                       {/* <!-- Dropdown Menu Start --> */}
                       <div
@@ -270,20 +265,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                       <img src={Inspect} alt="Logo" />
                                       Inspection
                                       <svg
-                                        className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-180'
+                                        className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
                                           }`}
-                                        width="20"
-                                        height="20"
-                                        viewBox="0 0 20 20"
+                                        width="7"
+                                        height="8"
+                                        viewBox="0 0 7 8"
                                         fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                      >
-                                        <path
-                                          fillRule="evenodd"
-                                          clipRule="evenodd"
-                                          d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                                          fill=""
-                                        />
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z" fill="white" />
                                       </svg>
                                     </NavLink>
                                     {/* <!-- Dropdown Menu Start --> */}
@@ -329,7 +318,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/quality_control' ||
+                        className={`group relative flex items-center mb-5 gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/quality_control' ||
                           pathname.includes('quality_control')) &&
                           ' dark:bg-meta-4'
                           }`}
@@ -341,23 +330,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         }}
                       >
                         <img src={QC} alt="Logo" />
-
                         Quality Control
                         <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-180'
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
                             }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
+                          width="7"
+                          height="8"
+                          viewBox="0 0 7 8"
                           fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z" fill="white" />
                         </svg>
                       </NavLink>
                       {/* <!-- Dropdown Menu Start --> */}
@@ -365,15 +347,16 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         className={`translate transform overflow-hidden ${!open && 'hidden'
                           }`}
                       >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-6">
+                        <ul className="mt-1 mb-5.5 flex flex-col gap-5 pl-6">
                           <li>
                             <NavLink
-                              to="/quality_control/maintenance"
+                              to="/quality_control/mtc"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                               }
                             >
+
                               Maintenance
                             </NavLink>
                           </li>
@@ -395,7 +378,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                     <React.Fragment>
                       <NavLink
                         to="#"
-                        className={`group relative flex items-center gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/quality_control' ||
+                        className={`group relative flex items-center mb-5 gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/history' ||
                           pathname.includes('history')) &&
                           ' dark:bg-meta-4'
                           }`}
@@ -409,20 +392,74 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         <img src={History} alt="Logo" />
                         History
                         <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-180'
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
                             }`}
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
+                          width="7"
+                          height="8"
+                          viewBox="0 0 7 8"
                           fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M4.41107 6.9107C4.73651 6.58527 5.26414 6.58527 5.58958 6.9107L10.0003 11.3214L14.4111 6.91071C14.7365 6.58527 15.2641 6.58527 15.5896 6.91071C15.915 7.23614 15.915 7.76378 15.5896 8.08922L10.5896 13.0892C10.2641 13.4147 9.73651 13.4147 9.41107 13.0892L4.41107 8.08922C4.08563 7.76378 4.08563 7.23614 4.41107 6.9107Z"
-                            fill=""
-                          />
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z" fill="white" />
+                        </svg>
+                      </NavLink>
+                      {/* <!-- Dropdown Menu Start --> */}
+                      <div
+                        className={`translate transform overflow-hidden ${!open && 'hidden'
+                          }`}
+                      >
+                        <ul className="mt-1 mb-5.5 flex flex-col gap-5 pl-6">
+                          <li>
+                            <NavLink
+                              to="/history"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                              }
+                            >
+
+                              Maintenance
+                            </NavLink>
+                          </li>
+
+                        </ul>
+                      </div>
+                      {/* <!-- Dropdown Menu End --> */}
+                    </React.Fragment>
+                  );
+                }}
+              </SidebarLinkGroup>
+              <SidebarLinkGroup
+                activeCondition={
+                  pathname === '/masterdata' || pathname.includes('masterdata')
+                }
+              >
+                {(handleClick, open) => {
+                  return (
+                    <React.Fragment>
+                      <NavLink
+                        to="#"
+                        className={`group relative flex items-center gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/masterdata' ||
+                          pathname.includes('masterdata')) &&
+                          ' dark:bg-meta-4'
+                          }`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          sidebarExpanded
+                            ? handleClick()
+                            : setSidebarExpanded(true);
+                        }}
+                      >
+                        <img src={Master} alt="Logo" />
+                        Master Data
+                        <svg
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
+                            }`}
+                          width="7"
+                          height="8"
+                          viewBox="0 0 7 8"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg">
+                          <path d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z" fill="white" />
                         </svg>
                       </NavLink>
                       {/* <!-- Dropdown Menu Start --> */}
@@ -433,14 +470,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-6">
                           <li>
                             <NavLink
-                              to="/history"
+                              to="/masterdata"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                               }
                             >
 
-                              History
+                              Machine
                             </NavLink>
                           </li>
 

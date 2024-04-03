@@ -9,6 +9,11 @@ import Modal from '../../../components/Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
 import Logo from '../../images/logo/logo-cbl 1.svg';
 import ModalMtc from '../../Modals/ModalMtcType';
+import ModalMtc6type from '../../Modals/Modal6type';
+import ModalMtcStockCheck from '../../Modals/ModalMtcStockCheck';
+import ModalMtcDate from '../../Modals/ModalMtcDate';
+import ModalReplaced from '../../Modals/ModalReplaced';
+import ModalPurchasing from '../../Modals/ModalPurchasing';
 
 const brandData: BRAND[] = [
   {
@@ -43,16 +48,50 @@ const brandData: BRAND[] = [
 const TableIncomingMaintenance = () => {
   const [showModal1, setShowModal1] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
+  const [showModal3, setShowModal3] = useState(false);
+  const [showModal4, setShowModal4] = useState(false);
+  const [showModal5, setShowModal5] = useState(false);
+  const [showModal6, setShowModal6] = useState(false);
+  const [showModal7, setShowModal7] = useState(false);
+
 
   const openModal1 = () => setShowModal1(true);
   const closeModal1 = () => setShowModal1(false);
 
-  const openModal2 = () => {
-    setShowModal2(true);
-    setShowModal1(false);
+  const openModal2 = () => setShowModal2(true);
+  const closeModal2 = () => setShowModal2(false);
+
+
+  const closeModal3 = () => setShowModal3(false);
+  const openModal3 = () => {
+    setShowModal3(true);
+    setShowModal2(false);
   };
 
-  const closeModal2 = () => setShowModal2(false);
+  const closeModal4 = () => setShowModal4(false);
+  const openModal4 = () => {
+    setShowModal4(true);
+    setShowModal2(false);
+  };
+
+  const closeModal5 = () => setShowModal5(false);
+  const openModal5 = () => {
+    setShowModal5(true);
+    setShowModal4(false);
+  };
+
+  const closeModal6 = () => setShowModal6(false);
+  const openModal6 = () => {
+    setShowModal6(true);
+    setShowModal4(false);
+  };
+
+  const closeModal7 = () => setShowModal7(false);
+  const openModal7 = () => {
+    setShowModal7(true);
+    setShowModal6(false);
+  };
+
   return (
     <div className="rounded-b-xl border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
@@ -127,15 +166,6 @@ const TableIncomingMaintenance = () => {
                   >
                     DO MAINTENANCE
                   </button>
-                  {showModal2 && (
-                    <ModalMtc
-                      title="Select Maintenance Type"
-                      isOpen={showModal2}
-                      onClose={closeModal2}
-                      machineName={'GMC Printer 2'}                    >
-                      <p></p>
-                    </ModalMtc>
-                  )}
                   <button type="button" onClick={openModal1}
                     className={`inline-flex rounded-[3px] my-auto px-2 text-sm font-bold text-[12px] bg-white border-[#0065DE] border text-primary justify-center items-center hover:bg-blue-400 `}
                   >
@@ -153,6 +183,80 @@ const TableIncomingMaintenance = () => {
                     </Modal>
                   )}
 
+                  {showModal2 && (
+                    <ModalMtc
+                      title="Select Maintenance Type"
+                      isOpen={showModal2}
+                      onClose={closeModal2}
+                      machineName={'GMC Printer 2'}                    >
+                      <div className="pt-5">
+
+                        <button onClick={openModal3} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                          RIGHT AWAY MAINTENANCE
+                        </button>
+                      </div>
+                      <div className="pt-2">
+                        <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                          SCHEDULE MAINTENANCE
+                        </button>
+                      </div>
+                    </ModalMtc>
+                  )}
+                  {showModal3 && (
+                    <ModalMtc6type
+                      isOpen={showModal3}
+                      onClose={closeModal3}
+                      ticketCode={'EXC0008'}
+                    >
+                      <p></p>
+                    </ModalMtc6type>
+                  )}
+                  {showModal4 && (
+                    <ModalMtcStockCheck
+                      machineName={'GMC Printer 2'}
+                      machineCode={'3.2'}
+                      isOpen={showModal4}
+                      onClose={closeModal4}
+                    >
+                      <button onClick={openModal6} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                        REQUIRED STOCK UNAVAILABLE
+                      </button>
+                      <button onClick={openModal5} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                        NEXT STEP
+                      </button>
+                    </ModalMtcStockCheck>
+                  )}
+
+                  {showModal5 && (
+                    <ModalMtcDate
+
+                      isOpen={showModal5}
+                      onClose={closeModal5}
+                      machineName={'R700'}>
+                      <p></p>
+                    </ModalMtcDate>
+                  )}
+                  {showModal6 && (
+                    <ModalReplaced
+                      isOpen={showModal6}
+                      onClose={closeModal6}
+                    >
+                      <div className="flex  w-full gap-3 pt-5">
+                        <button onClick={openModal7} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                          YES
+                        </button>
+                        <button className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                          NO
+                        </button>
+                      </div>
+                    </ModalReplaced>
+                  )}
+                  {showModal7 && (
+                    <ModalPurchasing
+                      isOpen={showModal7}
+                      onClose={closeModal7}>
+                    </ModalPurchasing>
+                  )}
                 </div>
 
               </td>

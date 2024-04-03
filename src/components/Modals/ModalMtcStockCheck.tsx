@@ -2,8 +2,8 @@
 
 import CheckStock from "../Tables/Modals/CheckStock";
 
-const ModalMtcStockCheck = ({ machineName, machineCode, isOpen, onClose, }:
-    { machineName: any, machineCode: any, isOpen: any, onClose: any, }) => {
+const ModalMtcStockCheck = ({ children, machineName, machineCode, isOpen, onClose, }:
+    { machineName: any, machineCode: any, isOpen: any, onClose: any, children: any }) => {
 
     if (!isOpen) return null;
     return (
@@ -120,12 +120,7 @@ const ModalMtcStockCheck = ({ machineName, machineCode, isOpen, onClose, }:
                             stock={0} />
                     </div>
                     <div className="flex gap-8 pt-5 ">
-                        <button className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                            REQUIRED STOCK UNAVAILABLE
-                        </button>
-                        <button className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                            NEXT STEP
-                        </button>
+                        {children}
                     </div>
                 </div>
             </div>
