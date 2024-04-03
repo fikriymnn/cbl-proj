@@ -15,6 +15,8 @@ import ModalMtcStockCheck from '../components/Modals/ModalMtcStockCheck';
 import ModalMtcStockCheck2 from '../components/Modals/ModalMtcStockCheck2';
 import ModalPurchasing from '../components/Modals/ModalPurchasing';
 import ModalReplaced from '../components/Modals/ModalReplaced';
+import Bars from '../components/Charts/TestChart';
+import ModalMtc6type from '../components/Modals/Modal6type';
 
 
 const App = () => {
@@ -36,6 +38,8 @@ const App = () => {
     const [showModal16, setShowModal16] = useState(false);
     const [showModal17, setShowModal17] = useState(false);
     const [showModal18, setShowModal18] = useState(false);
+    const [showModal19, setShowModal19] = useState(false);
+
 
     const openModal1 = () => setShowModal1(true);
     const closeModal1 = () => setShowModal1(false);
@@ -90,6 +94,9 @@ const App = () => {
 
     const openModal18 = () => setShowModal18(true);
     const closeModal18 = () => setShowModal18(false);
+
+    const openModal19 = () => setShowModal19(true);
+    const closeModal19 = () => setShowModal19(false);
     return (
         <div>
             <div className="container mx-auto">
@@ -394,6 +401,24 @@ const App = () => {
                         <p></p>
                     </ModalReplaced>
                 )}
+                <button type="button"
+                    onClick={openModal19}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open Modal 6 Type
+                </button>
+                {showModal19 && (
+                    <ModalMtc6type
+
+                        isOpen={showModal19}
+                        onClose={closeModal19}
+                        ticketCode={'EXC0008'}
+                    >
+                        <p></p>
+                    </ModalMtc6type>
+                )}
+            </div>
+            <div className='pt-20'>
+                <Bars />
             </div>
         </div >
     );

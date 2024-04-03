@@ -229,3 +229,23 @@ span.flatpickr-weekday,
     --tw-text-opacity: 1 !important;
     color: rgb(0 101 222 / var(--tw-text-opacity)) !important;
 }
+/* CSS */
+/* Hide the scrollbar track */
+::-webkit-scrollbar {
+  width: 5px;
+  /* Set the width of the scrollbar */
+}
+
+/* Style the scrollbar thumb */
+::-webkit-scrollbar-thumb {
+  background-color: #0065DE;
+  /* Set the color of the scrollbar thumb */
+  border-radius: 5px;
+  /* Set the border-radius for rounded corners */
+}
+
+/* Optionally, you can style the scrollbar track background (though it's invisible in this case) */
+::-webkit-scrollbar-track {
+  background-color: transparent;
+  /* Set the background color of the scrollbar track to make it invisible */
+}
