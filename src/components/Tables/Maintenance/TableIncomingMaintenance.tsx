@@ -107,26 +107,26 @@ const TableIncomingMaintenance = () => {
         >
           <div className="flex items-center  w-1/12 gap-3 p-2.5 ">
 
-            <p className="hidden text-[14px] text-slate-600 font-semibold dark:text-white sm:block">
+            <p className="hidden md:text-[12px] text-[10px] text-slate-600 font-semibold dark:text-white sm:block">
               No
             </p>
           </div>
 
           <div className="flex items-center w-3/12 justify-center p-2.5 ">
-            <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">Ticket Code</p>
+            <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center dark:text-white">Ticket Code</p>
           </div>
-          <div className="flex items-center text-[14px] w-3/12 justify-center p-2.5 ">
+          <div className="flex items-center md:text-[12px] text-[10px] w-3/12 justify-center p-2.5 ">
             <p className="text-slate-600 font-semibold text-center dark:text-white">Incoming Date</p>
           </div>
 
-          <div className="flex items-center text-[14px] w-3/12 justify-center p-2.5 ">
+          <div className="flex items-center md:text-[12px] text-[10px] w-3/12 justify-center p-2.5 ">
             <p className="text-slate-600 font-semibold text-center">Machine Name</p>
           </div>
 
 
 
           <div className="hidden items-center justify-center w-5/12 p-2.5 sm:flex ">
-            <p className="text-slate-600 text-[14px] font-semibold text-center">Detail</p>
+            <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center">Detail</p>
           </div>
         </div>
         {brandData.map((brand, key) => (
@@ -139,20 +139,20 @@ const TableIncomingMaintenance = () => {
           >
             <div className="flex items-center w-1/12   gap-3 p-2.5 ">
 
-              <p className="hidden text-[14px] text-black dark:text-white sm:block">
+              <p className="hidden md:text-[12px] text-[10px] text-black dark:text-white sm:block">
                 {key + 1}
               </p>
             </div>
 
             <div className="flex items-center w-3/12 justify-center p-2.5 ">
-              <p className="text-black text-center text-[14px] dark:text-white">{brand.name}</p>
+              <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.name}</p>
             </div>
             <div className="flex items-center w-3/12 justify-center p-2.5 ">
-              <p className="text-black text-center text-[14px] dark:text-white">{brand.date}</p>
+              <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.date}</p>
             </div>
 
             <div className="flex items-center w-3/12 justify-center p-2.5 ">
-              <p className="text-black text-center text-[14px]">{brand.machine}</p>
+              <p className="text-black text-center md:text-[12px] text-[10px]">{brand.machine}</p>
             </div>
 
 
@@ -162,12 +162,12 @@ const TableIncomingMaintenance = () => {
                 <div className="container mx-auto flex  gap-3">
 
                   <button type="button" onClick={openModal2}
-                    className={`inline-flex rounded-[3px] my-auto  px-2 text-sm font-bold text-[12px] bg-[#2EB300] text-white hover:bg-blue-400 `}
+                    className={`inline-flex rounded-[3px] my-auto  md:px-2 px-1 text-sm font-bold md:text-[12px] text-[10px] bg-[#2EB300] text-white hover:bg-blue-400 `}
                   >
                     DO MAINTENANCE
                   </button>
                   <button type="button" onClick={openModal1}
-                    className={`inline-flex rounded-[3px] my-auto px-2 text-sm font-bold text-[12px] bg-white border-[#0065DE] border text-primary justify-center items-center hover:bg-blue-400 `}
+                    className={`inline-flex rounded-[3px] my-auto md:px-2 px-1 text-sm font-bold md:text-[12px] text-[10px] bg-white border-[#0065DE] border text-primary justify-center items-center hover:bg-blue-400 `}
                   >
                     DETAIL
                   </button>
