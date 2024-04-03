@@ -16,6 +16,7 @@ import Material from './pages/Maintenance/Material';
 import MaintenanceQC from './pages/QualityControl/maintenanceQC';
 import HistoryMtc from './pages/History/Maintenance';
 import Pm1 from './pages/inspection/Pm1';
+import MasterData from './pages/MasterData/Master';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -110,7 +111,7 @@ function App() {
         />
 
         <Route
-          path="/quality_control/maintenance"
+          path="/quality_control/mtc"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -127,6 +128,18 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <HistoryMtc />
+              </ProtectedRoute>
+            </>
+          }
+
+        />
+        <Route
+          path="/masterdata"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterData />
               </ProtectedRoute>
             </>
           }

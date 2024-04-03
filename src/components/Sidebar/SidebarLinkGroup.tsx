@@ -9,7 +9,7 @@ const SidebarLinkGroup = ({
   children,
   activeCondition,
 }: SidebarLinkGroupProps) => {
-  const [open, setOpen] = useState<boolean>(true);
+  const [open, setOpen] = useState<boolean>(activeCondition);
 
   const handleClick = () => {
     setOpen(!open);

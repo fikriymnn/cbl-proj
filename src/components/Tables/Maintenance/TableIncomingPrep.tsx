@@ -7,8 +7,9 @@ import { BRAND } from '../../../types/brand';
 import { useState } from 'react';
 import Modal from '../../../components/Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
-import Logo from '../../images/logo/logo-cbl 1.svg';
-import ModalMtc from '../../Modals/ModalMtcType';
+import ModalMtc6type from '../../Modals/Modal6type';
+import ModalMtc2 from '../../Modals/ModalMtcType2';
+import ModalMtcStockCheck2 from '../../Modals/ModalMtcStockCheck2';
 
 const brandData: BRAND[] = [
     {
@@ -43,16 +44,29 @@ const brandData: BRAND[] = [
 const TableIncomingPrep = () => {
     const [showModal1, setShowModal1] = useState(false);
     const [showModal2, setShowModal2] = useState(false);
+    const [showModal3, setShowModal3] = useState(false);
+    const [showModal4, setShowModal4] = useState(false);
+
 
     const openModal1 = () => setShowModal1(true);
     const closeModal1 = () => setShowModal1(false);
 
-    const openModal2 = () => {
-        setShowModal2(true);
-        setShowModal1(false);
+    const openModal2 = () => setShowModal2(true);
+    const closeModal2 = () => setShowModal2(false);
+
+
+    const closeModal3 = () => setShowModal3(false);
+    const openModal3 = () => {
+        setShowModal3(true);
+        setShowModal2(false);
     };
 
-    const closeModal2 = () => setShowModal2(false);
+    const closeModal4 = () => setShowModal4(false);
+    const openModal4 = () => {
+        setShowModal4(true);
+        setShowModal2(false);
+    };
+
     return (
         <div className="rounded-b-xl border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
             <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
@@ -127,14 +141,25 @@ const TableIncomingPrep = () => {
                                     >
                                         DO MAINTENANCE
                                     </button>
+
                                     {showModal2 && (
-                                        <ModalMtc
+                                        <ModalMtc2
                                             title="Select Maintenance Type"
                                             isOpen={showModal2}
                                             onClose={closeModal2}
                                             machineName={'GMC Printer 2'}                    >
-                                            <p></p>
-                                        </ModalMtc>
+                                            <div className="pt-5">
+
+                                                <button onClick={openModal3} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                                    RIGHT AWAY MAINTENANCE
+                                                </button>
+                                            </div>
+                                            <div className="pt-2">
+                                                <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                                    SCHEDULE MAINTENANCE
+                                                </button>
+                                            </div>
+                                        </ModalMtc2>
                                     )}
                                     <button type="button" onClick={openModal1}
                                         className={`inline-flex rounded-[3px] my-auto px-2 text-sm font-bold text-[12px] bg-white border-[#0065DE] border text-primary justify-center items-center hover:bg-blue-400 `}
