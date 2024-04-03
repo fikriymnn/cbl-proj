@@ -26,14 +26,7 @@ const ModalReplaced = ({ children, isOpen, onClose }:
                         </label>
 
                     </div>
-                    <div className="flex  w-full gap-3 pt-5">
-                        <button className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                            YES
-                        </button>
-                        <button className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                            NO
-                        </button>
-                    </div>
+                    {children}
                 </div>
                 <button
                     type="button"
@@ -41,12 +34,8 @@ const ModalReplaced = ({ children, isOpen, onClose }:
                     className="absolute top-auto right-auto bottom-3 left-auto transform translate-x-1/2 translate-y-1/2 text-gray-400 focus:outline-none"
                 >
                 </button>
-                {children}
-
             </div>
-
         </div>
-
     );
 };
 

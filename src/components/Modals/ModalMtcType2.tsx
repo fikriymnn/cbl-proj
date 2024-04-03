@@ -40,16 +40,7 @@ const ModalMtc2 = ({ children, title, isOpen, onClose, machineName }:
                         </span>
                     </div>
 
-                    <div className="pt-5">
-                        <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                            RIGHT AWAY MAINTENANCE
-                        </button>
-                    </div>
-                    <div className="pt-2">
-                        <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                            SCHEDULE MAINTENANCE
-                        </button>
-                    </div>
+                    {children}
                 </div>
                 <button
                     type="button"
@@ -57,7 +48,7 @@ const ModalMtc2 = ({ children, title, isOpen, onClose, machineName }:
                     className="absolute top-auto right-auto bottom-3 left-auto transform translate-x-1/2 translate-y-1/2 text-gray-400 focus:outline-none"
                 >
                 </button>
-                {children}
+
 
             </div>
 
