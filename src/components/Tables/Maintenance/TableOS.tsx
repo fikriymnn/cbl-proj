@@ -121,11 +121,11 @@ const TableOs = () => {
     <div className="rounded-sm z-1 rounded-b-xl bg-white  pt-2  shadow-default dark:border-strokedark dark:bg-boxdark ">
 
 
-      <div className="flex w-full flex-col">
+      <div className="flex w-full flex-col overflow-x-scroll">
         <div className="relative flex w-full justify-end justify-items-end border-b border-stroke dark:border-strokedark pb-2">
           <input
             type="text"
-            className="flex py-2 text-black text-sm font-normal bg-white h-full px-2 w-[220px] border-b border-stroke"
+            className="flex py-2 text-black md:text-[12px] text-[10px] font-normal bg-white h-full px-2 w-[220px] border-b border-stroke"
             placeholder="Search"
             id="searchInput"
           />
@@ -149,34 +149,34 @@ const TableOs = () => {
 
 
         >
-          <div className="flex items-center  gap-3  ">
+          <div className="flex items-center w-[20px] gap-3  ">
 
-            <p className="  text-slate-600 text-left w-[20px] font-semibold dite text-[14px] sm:block">
+            <p className="  text-slate-600 text-left  font-semibold dite md:text-[14px] text-[12px] sm:block">
               No
             </p>
           </div>
-          <div className='grid grid-cols-6 gap-8 w-full'>
+          <div className='grid grid-cols-6  w-full py-2 '>
 
-            <div className="flex items-center    ">
-              <p className="text-slate-600 text-left w-[100px] font-semibold  dark:text-white text-[14px]">Ticket Code</p>
+            <div className="flex items-start  justify-start md:w-[100px] w-[80px]  ">
+              <p className="text-slate-600 text-left  font-semibold  dark:text-white md:text-[14px] text-[12px]">Ticket Code</p>
             </div>
-            <div className="flex items-center    ">
-              <p className="text-slate-600 text-left w-[100px] font-semibold  dark:text-white text-[14px]">Incoming Date</p>
-            </div>
-
-            <div className="flex items-center    ">
-              <p className="text-slate-600 text-left w-[100px] font-semibold ">Machine Name</p>
+            <div className="items-start  justify-start md:w-[100px] w-[80px]  ">
+              <p className="text-slate-600 text-left  font-semibold  dark:text-white md:text-[14px] text-[12px]">Incoming Date</p>
             </div>
 
-            <div className=" items-center    sm:flex ">
-              <p className="text-slate-600 text-left w-[100px] font-semibold  dark:text-white text-[14px]">Status</p>
-            </div>
-            <div className=" items-center    sm:flex ">
-              <p className="text-slate-600 text-left w-[100px] font-semibold  dark:text-white text-[14px]">Schedule</p>
+            <div className="flex items-center  justify-center md:w-[100px] w-[80px]  ">
+              <p className="text-slate-600 text-left  font-semibold md:text-[14px] text-[12px]">Machine Name</p>
             </div>
 
-            <div className=" items-center    sm:flex ">
-              <p className="text-slate-600 text-left w-[100px] font-semibold ">Detail</p>
+            <div className=" items-center  justify-center  md:w-[100px] w-[80px] ">
+              <p className="text-slate-600 text-left  font-semibold  dark:text-white md:text-[14px] text-[12px]">Status</p>
+            </div>
+            <div className=" items-center  justify-center md:w-[100px] w-[80px]  ">
+              <p className="text-slate-600 text-left  font-semibold  dark:text-white md:text-[14px] text-[12px]">Schedule</p>
+            </div>
+
+            <div className=" items-center  justify-center  md:w-[100px] w-[80px] ">
+              <p className="text-slate-600 text-left  font-semibold md:text-[14px] text-[12px]">Detail</p>
             </div>
           </div>
         </div>
@@ -189,32 +189,32 @@ const TableOs = () => {
               }`}
             key={key}
           >
-            <div className='flex w-full gap-5 pl-10'>
+            <div className='flex  gap-5 pl-10'>
 
-              <div className="flex items-center    gap-3  py-[17px]">
+              <div className="flex items-center   w-[20px]  gap-3  py-[17px]">
 
-                <p className=" w-[20px] text-black dark:text-white text-[14px] sm:block">
+                <p className="  text-black dark:text-white md:text-[12px] text-[10px] ">
                   {key + 1}
                 </p>
               </div>
-              <div className='grid grid-cols-6 gap-8  '>
+              <div className='grid grid-cols-6  gap-8  '>
 
 
-                <div className="flex items-center   justify-center  py-[17px] ">
-                  <p className="text-black  w-[100px]  text-left dark:text-white text-[14px]">{brand.name}</p>
+                <div className="flex  items-center md:w-[100px] w-[80px]  justify-start  py-[17px] ">
+                  <p className="text-black    text-left dark:text-white md:text-[12px] text-[10px]">{brand.name}</p>
                 </div>
-                <div className="flex items-center  justify-center  py-[17px] ">
-                  <p className="text-black  w-[100px]  text-left dark:text-white text-[14px]">{brand.date}</p>
-                </div>
-
-                <div className="flex items-center  justify-center  py-[17px] text-[14px]">
-                  <p className="text-black  w-[100px]  text-left line-clamp-2">{brand.machine}</p>
+                <div className="flex items-center  justify-start md:w-[100px] w-[80px]  py-[17px] ">
+                  <p className="text-black    text-left dark:text-white md:text-[12px] text-[10px]">{brand.date}</p>
                 </div>
 
-                <div className=" items-center justify-center   sm:flex text-[14px] ">
+                <div className="flex items-center md:w-[100px] w-[80px]  justify-start  py-[17px] md:text-[12px] text-[10px] ">
+                  <p className="text-black    text-left line-clamp-2">{brand.machine}</p>
+                </div>
+
+                <div className=" items-center justify-srart   flex md:text-[12px] text-[10px] md:w-[100px] w-[80px] ">
                   <td className=" border-[#eee]  dark:border-strokedark">
                     <p
-                      className={`inline-flex rounded-[10px] w-[100px]  uppercase bg-opacity-10 justify-center text-center  text-sm font-medium ${brand.status === 'monitoring'
+                      className={`inline-flex rounded-[10px] p-1  uppercase bg-opacity-10 justify-center text-center  md:text-[12px] text-[10px] font-medium ${brand.status === 'monitoring'
                         ? 'bg-blue-600 text-blue-600'
                         : brand.status === 'on progress'
                           ? 'bg-success text-success'
@@ -225,10 +225,10 @@ const TableOs = () => {
                     </p>
                   </td>
                 </div>
-                <div className=" items-center justify-center   sm:flex ">
+                <div className=" items-center justify-center   flex ">
                   <td className=" border-[#eee]  dark:border-strokedark">
                     <p
-                      className={`inline-flex rounded-[10px] w-[120px] justify-center uppercase bg-opacity-10 text-[14px] text-center  text-sm font-medium ${brand.schedule === 'unscheduled'
+                      className={`inline-flex rounded-[10px] w-[120px] justify-center uppercase bg-opacity-10 md:text-[12px] text-[10px] text-center   font-medium ${brand.schedule === 'unscheduled'
                         ? 'bg-warning text-warning'
                         : brand.schedule === "schedule requested" ? 'bg-orange-400 text-orange-400' : brand.schedule === 'schedule declined' ? 'bg-danger text-danger' : 'bg-white'
                         }`}
@@ -238,18 +238,19 @@ const TableOs = () => {
                   </td>
                 </div>
 
-                <div className=" items-center justify-center   sm:flex">
-                  <td className=" border-[#eee] text-[14px]  dark:border-strokedark">
+                <div className=" items-center justify-center   flex md:w-[125px] w-[50px]  ">
+                  <td className=" border-[#eee] md:text-[12px] text-[10px]  dark:border-strokedark">
                     <div className="container mx-auto ">
                     </div>
 
                   </td>
-                  <div>
+                  <div className='md:w-[125px] w-[50px]
+'>
                     {/* Conditionally render buttons based on status */}
                     {brand.action === 'begin mtc' && (
                       <>
                         <button
-                          className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'begin mtc' && ''
+                          className={`uppercase md:w-[125px] w-[50px] p-2  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold justify-center ${brand.action !== 'begin mtc' && ''
                             }`} // Dynamic class assignment
                           onClick={openModal4}
                         >
@@ -275,7 +276,7 @@ const TableOs = () => {
                       <>
 
                         <button
-                          className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-blue-600 text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'detail' && ''
+                          className={`uppercase md:w-[125px] w-[50px] p-2  inline-flex rounded-[3px] my-auto  text-blue-600 md:text-[12px] text-[10px]  py-1   hover:bg-blue-400 border border-blue-600 font-bold justify-center ${brand.action !== 'detail' && ''
                             }`}
                           onClick={openModal2}
                         >
@@ -301,13 +302,13 @@ const TableOs = () => {
                     {brand.action === 'reschedule' && (
                       <>
                         <button
-                          className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'reschedule' && ''
+                          className={`uppercase md:w-[125px] w-[50px] p-2  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold justify-center ${brand.action !== 'reschedule' && ''
                             }`}
                           onClick={openModal3}
                         >
                           {brand.action}
                         </button>
-                        <ModalMtcDate title="Request Maintenance Schedule"
+                        <ModalMtcDate
                           isOpen={showModal3}
                           onClose={closeModal3}
                           machineName={'GMC Printer 2'}>
@@ -319,7 +320,7 @@ const TableOs = () => {
                       <>
 
                         <button
-                          className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1  text-blue-600 hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'action' && ''
+                          className={`uppercase md:w-[125px] w-[50px] p-2  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1  text-blue-600 hover:bg-blue-400 border border-blue-600 font-bold justify-center ${brand.action !== 'action' && ''
                             }`}
                           onClick={openModal5}
                         >
@@ -343,14 +344,14 @@ const TableOs = () => {
                       <>
 
                         <button
-                          className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1  text-white bg-blue-600 hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'request mtc' && ''
+                          className={`uppercase md:w-[125px] w-[50px] p-2  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1  text-white bg-blue-600 hover:bg-blue-400 border border-blue-600 font-bold justify-center ${brand.action !== 'request mtc' && ''
                             }`}
 
 
                           onClick={openModal3} >
                           {brand.action}
                         </button>
-                        <ModalMtcDate title="Request Maintenance Schedule"
+                        <ModalMtcDate
                           isOpen={showModal3}
                           onClose={closeModal3}
                           machineName={'GMC Printer 2'}>
@@ -362,7 +363,7 @@ const TableOs = () => {
                       <>
 
                         <button
-                          className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1  text-blue-600  hover:bg-blue-400 border border-blue-600 font-bold text-[12px] justify-center ${brand.action !== 'detail' && ''
+                          className={`uppercase md:w-[125px] w-[50px] p-2  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1  text-blue-600  hover:bg-blue-400 border border-blue-600 font-bold justify-center ${brand.action !== 'detail' && ''
                             }`}
                           onClick={openModal6}
                         >
@@ -389,7 +390,7 @@ const TableOs = () => {
                       <>
 
                         <button
-                          className={`uppercase w-[125px] inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-[12px] text-blue-600 justify-center ${brand.action !== 'detail' && ''
+                          className={`uppercase md:w-[125px] w-[50px] p-2  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-blue-600 justify-center ${brand.action !== 'detail' && ''
                             }`}
                           onClick={openModal7}
                         >
@@ -419,7 +420,7 @@ const TableOs = () => {
                 </div>
               </div>
             </div>
-            <div className='pl-10 border-t border-[#D9D9D9] py-2'>
+            <div className='pl-10 border-t border-[#D9D9D9] py-2 md:text-[12px] text-[10px]'>
               <p>Executor : {brand.executor == null ? " - " : brand.executor}</p>
               <p>Response Time: {brand.response_time == null ? " - " : brand.response_time}</p>
             </div>
