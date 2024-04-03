@@ -242,7 +242,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           <li>
                             <SidebarLinkGroup
                               activeCondition={
-                                pathname === '/quality_control' || pathname.includes('quality_control')
+                                pathname === '/inspection' || pathname.includes('maintenance')
                               }
                             >
                               {(handleClick, open) => {
@@ -250,8 +250,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                   <React.Fragment>
                                     <NavLink
                                       to="#"
-                                      className={`group relative flex items-center gap-5 mb-4 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/quality_control' ||
-                                        pathname.includes('quality_control')) &&
+                                      className={`group relative flex items-center gap-5 mb-4 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/maintenance/inspection' ||
+                                        pathname.includes('/maintenance/inspection')) &&
                                         ' dark:bg-meta-4'
                                         }`}
                                       onClick={(e) => {
@@ -283,7 +283,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                       <ul className=" flex flex-col gap-5 pl-6">
                                         <li>
                                           <NavLink
-                                            to="/inspection/pm_1"
+                                            to="/maintenance/inspection/pm_1"
                                             className={({ isActive }) =>
                                               'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                               (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
