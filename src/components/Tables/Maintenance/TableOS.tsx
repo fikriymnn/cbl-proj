@@ -121,7 +121,7 @@ const TableOs = () => {
     <div className="rounded-sm z-1 rounded-b-xl bg-white  pt-2  shadow-default dark:border-strokedark dark:bg-boxdark ">
 
 
-      <div className="flex w-full flex-col overflow-x-scroll">
+      <div className="flex w-full flex-col overflow-x-scroll ">
         <div className="relative flex w-full justify-end justify-items-end border-b border-stroke dark:border-strokedark pb-2">
           <input
             type="text"
@@ -157,25 +157,25 @@ const TableOs = () => {
           </div>
           <div className='grid grid-cols-6  w-full py-2 '>
 
-            <div className="flex items-start  justify-start md:w-[100px] w-[80px]  ">
+            <div className="flex items-start  justify-start lg:w-[100px] md:w-[80px] sm:w-[30px] ">
               <p className="text-slate-600 text-left  font-semibold  dark:text-white md:text-[14px] text-[12px]">Ticket Code</p>
             </div>
-            <div className="items-start  justify-start md:w-[100px] w-[80px]  ">
+            <div className="items-start  justify-start lg:w-[100px] md:w-[80px] sm:w-[30px] ">
               <p className="text-slate-600 text-left  font-semibold  dark:text-white md:text-[14px] text-[12px]">Incoming Date</p>
             </div>
 
-            <div className="flex items-center  justify-center md:w-[100px] w-[80px]  ">
+            <div className="flex items-center  justify-center lg:w-[100px] md:w-[80px] sm:w-[30px] ">
               <p className="text-slate-600 text-left  font-semibold md:text-[14px] text-[12px]">Machine Name</p>
             </div>
 
-            <div className=" items-center  justify-center  md:w-[100px] w-[80px] ">
+            <div className=" items-center  justify-center  lg:w-[100px] md:w-[80px] sm:w-[30px]">
               <p className="text-slate-600 text-left  font-semibold  dark:text-white md:text-[14px] text-[12px]">Status</p>
             </div>
-            <div className=" items-center  justify-center md:w-[100px] w-[80px]  ">
+            <div className=" items-center  justify-center lg:w-[100px] md:w-[80px] sm:w-[30px] ">
               <p className="text-slate-600 text-left  font-semibold  dark:text-white md:text-[14px] text-[12px]">Schedule</p>
             </div>
 
-            <div className=" items-center  justify-center  md:w-[100px] w-[80px] ">
+            <div className=" items-center  justify-center  lg:w-[100px] md:w-[80px] sm:w-[30px]">
               <p className="text-slate-600 text-left  font-semibold md:text-[14px] text-[12px]">Detail</p>
             </div>
           </div>
@@ -200,18 +200,18 @@ const TableOs = () => {
               <div className='grid grid-cols-6  gap-8  '>
 
 
-                <div className="flex  items-center md:w-[100px] w-[80px]  justify-start  py-[17px] ">
+                <div className="flex  items-center lg:w-[100px] md:w-[80px] sm:w-[30px] justify-start  py-[17px] ">
                   <p className="text-black    text-left dark:text-white md:text-[12px] text-[10px]">{brand.name}</p>
                 </div>
-                <div className="flex items-center  justify-start md:w-[100px] w-[80px]  py-[17px] ">
+                <div className="flex items-center  justify-start lg:w-[100px] md:w-[80px] sm:w-[30px] py-[17px] ">
                   <p className="text-black    text-left dark:text-white md:text-[12px] text-[10px]">{brand.date}</p>
                 </div>
 
-                <div className="flex items-center md:w-[100px] w-[80px]  justify-start  py-[17px] md:text-[12px] text-[10px] ">
+                <div className="flex items-center lg:w-[100px] md:w-[80px] sm:w-[30px] justify-start  py-[17px] md:text-[12px] text-[10px] ">
                   <p className="text-black    text-left line-clamp-2">{brand.machine}</p>
                 </div>
 
-                <div className=" items-center justify-srart   flex md:text-[12px] text-[10px] md:w-[100px] w-[80px] ">
+                <div className=" items-center justify-srart   flex md:text-[12px] text-[10px] lg:w-[100px] md:w-[80px] sm:w-[30px]">
                   <td className=" border-[#eee]  dark:border-strokedark">
                     <p
                       className={`inline-flex rounded-[10px] p-1  uppercase bg-opacity-10 justify-center text-center  md:text-[12px] text-[10px] font-medium ${brand.status === 'monitoring'
@@ -244,7 +244,7 @@ const TableOs = () => {
                     </div>
 
                   </td>
-                  <div className='md:w-[125px] w-[50px]
+                  <div className='md:w-[125px] w-[50px] 
 '>
                     {/* Conditionally render buttons based on status */}
                     {brand.action === 'begin mtc' && (
