@@ -4,7 +4,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 const ModalMtcDate = ({ children, isOpen, onClose, machineName }:
-    { children: any, isOpen: any, onClose: any, machineName: any }) => {
+    { children: any, isOpen: any, onClose: any, machineName: any, }) => {
     if (!isOpen) return null;
 
     return (

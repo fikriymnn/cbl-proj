@@ -66,7 +66,7 @@ function App() {
           }
         />
         <Route
-          path="/inspection/pm_1"
+          path="/maintenance/inspection/pm_1"
           element={
             <>
               <PageTitle title="PT CBL" />

@@ -12,7 +12,12 @@ const brandData = [
         schedule: "unscheduled",
         action: 'request mtc',
         executor: 'Saya ',
-        response_time: '3 minutes'
+        response_time: '3 minutes',
+        partOf: "printing",
+        inspector: 'Acep Wahyu',
+        leader: 'cecep wahyu',
+        supervisor: 'Supervisor',
+        KABagMTC: 'KABagMTC',
     },
     {
 
@@ -22,6 +27,9 @@ const brandData = [
         status: "pending",
         schedule: "schedule requested",
         action: 'detail',
+        partOf: "printing",
+        supervisor: 'Supervisor',
+        KABagMTC: 'KABagMTC',
     },
     {
 
@@ -31,6 +39,7 @@ const brandData = [
         status: "pending",
         schedule: "schedule declined",
         action: 'reschedule',
+        partOf: "printing"
     },
     {
 
@@ -40,6 +49,9 @@ const brandData = [
         status: "scheduled",
         schedule: "10/04/24 to 12/04/24",
         action: 'begin mtc',
+        partOf: "water base",
+        supervisor: 'Supervisor',
+        KABagMTC: 'KABagMTC',
     },
     {
 
@@ -49,6 +61,7 @@ const brandData = [
         status: "on progress",
         schedule: "12/04/24 to 24/04/24",
         action: 'action',
+        partOf: "water base"
     },
     {
 
@@ -58,6 +71,7 @@ const brandData = [
         status: "pending verification",
         schedule: "12/04/24 to 24/04/24",
         action: 'detail',
+        partOf: "finishing"
     },
     {
 
@@ -68,7 +82,8 @@ const brandData = [
         schedule: "12/04/24 to 24/04/24",
         action: 'detail',
         executor: 'Acep Kurna',
-        response_time: '31 minutes'
+        response_time: '31 minutes',
+        partOf: "water base"
     },
 
 ];
@@ -119,7 +134,7 @@ function Pm1() {
                 {brandData.map((brand, key) => (
                     <>
                         <section key={key} className=' flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black'>
-                            <div className='w-2 h-full bg-red-600'>
+                            <div className={`w-2 h-full ${brand.partOf == 'printing' ? 'bg-green-600' : brand.partOf == 'water base' ? 'bg-yellow-600' : brand.partOf == 'pond' ? 'bg-violet-900' : brand.partOf == 'finishing' ? 'bg-red-900' : ''}`}>
 
                             </div>
                             <div className=' w-full h-full flex flex-col justify-center'>
@@ -127,23 +142,23 @@ function Pm1() {
 
                                     <div className='flex flex-col justify-center font-bold'>
 
-                                        <p className=''>ROLAND 700</p>
+                                        <p className=''>{brand.name}</p>
                                     </div>
                                     <div className='flex flex-col justify-center '>
 
-                                        <p className=''>Acep Kurna</p>
+                                        <p className=''>{brand.inspector != null ? brand.inspector : "-"}</p>
                                     </div>
                                     <div className='flex flex-col justify-center'>
 
-                                        <p className=''>Cecep Wahyu</p>
+                                        <p className=''>{brand.leader != null ? brand.leader : '-'}</p>
                                     </div>
                                     <div className='flex flex-col justify-center'>
 
-                                        <p className=''>Wahyu Kurna</p>
+                                        <p className=''>{brand.supervisor != null ? brand.supervisor : '-'}</p>
                                     </div>
                                     <div className='flex flex-col justify-center'>
 
-                                        <p className=''>Acep Wahyu Kurna</p>
+                                        <p className=''>{brand.KABagMTC != null ? brand.KABagMTC : '-'}</p>
                                     </div>
 
 
