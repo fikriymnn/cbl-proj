@@ -347,7 +347,7 @@ function TableOS2() {
                                         </>
                                     )}
                                 </div>
-                                <div className=' col-span-7 border-t pl-10 border-[#D9D9D9] py-2 md:text-[12px] text-[10px]'>
+                                <div className=' col-span-7 border-t pl-10 border-[#D9D9D9] pt-2 mt-3 md:text-[12px] text-[10px]'>
                                     <p>Executor : {brand.executor == null ? " - " : brand.executor}</p>
                                     <p>Response Time: {brand.response_time == null ? " - " : brand.response_time}</p>
                                 </div>
