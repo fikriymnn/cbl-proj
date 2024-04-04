@@ -10,11 +10,9 @@ const SelectGroupTwo: React.FC = () => {
 
   return (
     <div>
-      <label className="mb-3 block text-black dark:text-white">
-        Select Country
-      </label>
 
-      <div className="relative z-20 bg-white dark:bg-form-input">
+
+      <div className="relative z-20 bg-[#D9D9D9] w-45 dark:bg-form-input">
         <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
           <svg
             width="20"
@@ -52,12 +50,11 @@ const SelectGroupTwo: React.FC = () => {
             setSelectedOption(e.target.value);
             changeTextColor();
           }}
-          className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-            isOptionSelected ? 'text-black dark:text-white' : ''
-          }`}
+          className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
+            }`}
         >
           <option value="" disabled className="text-body dark:text-bodydark">
-            Select Country
+
           </option>
           <option value="USA" className="text-body dark:text-bodydark">
             USA
