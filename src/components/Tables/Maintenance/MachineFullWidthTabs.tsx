@@ -11,6 +11,7 @@ import TableTwo from './TableOS';
 import TableThree from '../TableThree';
 import TableIncomingMaintenance from './TableIncomingMaintenance';
 import TableOS from './TableOS';
+import TableOS2 from './TableOS2';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -157,7 +158,7 @@ export default function MachineFullWidthTabs() {
             <TabPanel value={value} index={2} dir={theme.direction}>
 
 
-                <TableOS />
+                <TableOS2 />
 
             </TabPanel>
             {/* </SwipeableViews> */}
