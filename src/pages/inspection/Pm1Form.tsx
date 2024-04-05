@@ -4,30 +4,13 @@ import Ceklis from '../../images/icon/ceklis.svg'
 import Polygon from '../../images/icon/Polygon.svg'
 import X from '../../images/icon/x.svg'
 import Strip from '../../images/icon/strip.svg'
-import Box from '@mui/material/Box';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
 import SelectGroupTwo from '../../components/Forms/SelectGroup/SelectGroupTwo'
 
-const dataPM = [
-    {
-        inspectPM: 'Main Motor / Suction Motor(15KW)',
-        taskList: [
-            "Periksa kebersihan sirip motor dan cover fan",
 
-
-        ]
-    }
-]
 
 function Pm1Form() {
-    const [age, setAge] = React.useState('');
 
-    const handleChange = (event: SelectChangeEvent) => {
-        setAge(event.target.value as string);
-    };
+
     return (
         <DefaultLayout>
             <div className='w-full bg-white'>
@@ -151,7 +134,7 @@ function Pm1Form() {
                     <div className='grid grid-cols-5'>
 
                         <div className='p-4 flex flex-col'>
-                            <p className='text-[14px] font-semibold'>Date:</p>
+                            <p className='text-[14px] font-semibold'>Date: 01 April 2024</p>
                             <p className='text-[14px] font-semibold'>Result:</p>
                             <div className=' flex mt-3'>
 
@@ -160,7 +143,7 @@ function Pm1Form() {
                             </div>
                         </div>
                         <div className='p-4 flex flex-col'>
-                            <p className='text-[14px] font-semibold'>Date:</p>
+                            <p className='text-[14px] font-semibold'>Date: 02 April 2024</p>
                             <p className='text-[14px] font-semibold'>Result:</p>
                             <div className=' flex mt-3'>
 
@@ -168,7 +151,7 @@ function Pm1Form() {
                             </div>
                         </div>
                         <div className='p-4 flex flex-col'>
-                            <p className='text-[14px] font-semibold'>Date:</p>
+                            <p className='text-[14px] font-semibold'>Date: 03 April 2024</p>
                             <p className='text-[14px] font-semibold'>Result:</p>
                             <div className=' flex mt-3'>
 
@@ -176,7 +159,7 @@ function Pm1Form() {
                             </div>
                         </div>
                         <div className='p-4 flex flex-col'>
-                            <p className='text-[14px] font-semibold'>Date:</p>
+                            <p className='text-[14px] font-semibold'>Date: 04 April 2024</p>
                             <p className='text-[14px] font-semibold'>Result:</p>
                             <div className=' flex mt-3'>
 
@@ -184,7 +167,91 @@ function Pm1Form() {
                             </div>
                         </div>
                         <div className='p-4 flex flex-col'>
-                            <p className='text-[14px] font-semibold'>Date:</p>
+                            <p className='text-[14px] font-semibold'>Date: 05 April 2024</p>
+                            <p className='text-[14px] font-semibold'>Result:</p>
+                            <div className=' flex mt-3'>
+
+                                <SelectGroupTwo />
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+                <section className=' border-b-8 border-[#D8EAFF]'>
+                    <div className='flex p-4 border-b-2 border-[#6D6C6C] '>
+
+                        <div className='w-1/12'>
+                            <p className='text-[14px] font-semibold'>2</p>
+                        </div>
+                        <div className='w-11/12 grid grid-cols-5 gap-10'>
+
+                            <p className='text-[14px] font-semibold'>Motor Cam Shaft(1,5 KW) </p>
+                            <div className='flex flex-col gap-y-5'>
+                                <p className='text-[14px] font-semibold h-10'>Periksa kebersihan sirip motor dan cover fan</p>
+                                <p className='text-[14px] font-semibold h-10'>Periksa suhu motor</p>
+                                <p className='text-[14px] font-semibold h-10'>Periksa tegangan motor</p>
+                                <p className='text-[14px] font-semibold h-10'>Periksa arus motor</p>
+                            </div>
+                            <div className='flex flex-col gap-y-5'>
+                                <p className='text-[14px] font-semibold h-10'>Periksa kebersihan sirip motor dan cover fan</p>
+                                <p className='text-[14px] font-semibold h-10'>Periksa suhu motor</p>
+                                <p className='text-[14px] font-semibold h-10'>Periksa tegangan motor</p>
+                                <p className='text-[14px] font-semibold h-10'>Periksa arus motor</p>
+                            </div>
+                            <div className='flex flex-col gap-y-5'>
+                                <p className='text-[14px] font-semibold h-10'>Visual</p>
+                                <p className='text-[14px] font-semibold h-10'>Dimensional</p>
+                                <p className='text-[14px] font-semibold h-10'>Dimensional</p>
+                                <p className='text-[14px] font-semibold h-10'>Dimensional</p>
+
+                            </div>
+                            <div className='flex flex-col gap-y-5'>
+                                <p className='text-[14px] font-semibold h-10'>Air compressor / Vacum Cleaner</p>
+                                <p className='text-[14px] font-semibold h-10'>Tremor Gun</p>
+                                <p className='text-[14px] font-semibold h-10'>Periksa tegangan motor</p>
+                                <p className='text-[14px] font-semibold h-10'>Periksa arus motor</p>
+                            </div>
+
+
+                        </div>
+                    </div>
+                    <div className='grid grid-cols-5'>
+
+                        <div className='p-4 flex flex-col'>
+                            <p className='text-[14px] font-semibold'>Date: 01 April 2024</p>
+                            <p className='text-[14px] font-semibold'>Result:</p>
+                            <div className=' flex mt-3'>
+
+
+                                <SelectGroupTwo />
+                            </div>
+                        </div>
+                        <div className='p-4 flex flex-col'>
+                            <p className='text-[14px] font-semibold'>Date: 02 April 2024</p>
+                            <p className='text-[14px] font-semibold'>Result:</p>
+                            <div className=' flex mt-3'>
+
+                                <SelectGroupTwo />
+                            </div>
+                        </div>
+                        <div className='p-4 flex flex-col'>
+                            <p className='text-[14px] font-semibold'>Date: 03 April 2024</p>
+                            <p className='text-[14px] font-semibold'>Result:</p>
+                            <div className=' flex mt-3'>
+
+                                <SelectGroupTwo />
+                            </div>
+                        </div>
+                        <div className='p-4 flex flex-col'>
+                            <p className='text-[14px] font-semibold'>Date: 04 April 2024</p>
+                            <p className='text-[14px] font-semibold'>Result:</p>
+                            <div className=' flex mt-3'>
+
+                                <SelectGroupTwo />
+                            </div>
+                        </div>
+                        <div className='p-4 flex flex-col'>
+                            <p className='text-[14px] font-semibold'>Date: 05 April 2024</p>
                             <p className='text-[14px] font-semibold'>Result:</p>
                             <div className=' flex mt-3'>
 
