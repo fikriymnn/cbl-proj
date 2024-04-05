@@ -11,9 +11,10 @@ import Master from '../../images/icon/master.svg'
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (arg: boolean) => void;
+  role: any;
 }
 
-const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
+const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
   const location = useLocation();
   const { pathname } = location;
 
@@ -24,7 +25,140 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const [sidebarExpanded, setSidebarExpanded] = useState(
     storedSidebarExpanded === null ? false : storedSidebarExpanded === 'true'
   );
+  const renderAdminElements = () => {
+    // Conditionally render elements specific to the admin role
+    return (
+      <div>
+        <SidebarLinkGroup
+          activeCondition={
+            pathname === '/masterdata' || pathname.includes('masterdata')
+          }
+        >
+          {(handleClick, open) => {
+            return (
+              <React.Fragment>
+                <NavLink
+                  to="#"
+                  className={`group relative flex items-center gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/masterdata' ||
+                    pathname.includes('masterdata')) &&
+                    ' dark:bg-meta-4'
+                    }`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    sidebarExpanded
+                      ? handleClick()
+                      : setSidebarExpanded(true);
+                  }}
+                >
+                  <img src={Master} alt="Logo" />
+                  Master Data
+                  <svg
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
+                      }`}
+                    width="7"
+                    height="8"
+                    viewBox="0 0 7 8"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z" fill="white" />
+                  </svg>
+                </NavLink>
+                {/* <!-- Dropdown Menu Start --> */}
+                <div
+                  className={`translate transform overflow-hidden ${!open && 'hidden'
+                    }`}
+                >
+                  <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-6">
+                    <li>
+                      <NavLink
+                        to="/masterdata"
+                        className={({ isActive }) =>
+                          'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                          (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                        }
+                      >
 
+                        Machine
+                      </NavLink>
+                    </li>
+
+                  </ul>
+                </div>
+                {/* <!-- Dropdown Menu End --> */}
+              </React.Fragment>
+            );
+          }}
+        </SidebarLinkGroup>
+      </div>
+    );
+  };
+  const renderMtcElements = () => {
+    // Conditionally render elements specific to the editor role
+    return (
+      <div>
+        <SidebarLinkGroup
+          activeCondition={
+            pathname === '/quality_control' || pathname.includes('quality_control')
+          }
+        >
+          {(handleClick, open) => {
+            return (
+              <React.Fragment>
+                <NavLink
+                  to="#"
+                  className={`group relative flex items-center mb-5 gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/quality_control' ||
+                    pathname.includes('quality_control')) &&
+                    ' dark:bg-meta-4'
+                    }`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    sidebarExpanded
+                      ? handleClick()
+                      : setSidebarExpanded(true);
+                  }}
+                >
+                  <img src={QC} alt="Logo" />
+                  Quality Control
+                  <svg
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
+                      }`}
+                    width="7"
+                    height="8"
+                    viewBox="0 0 7 8"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z" fill="white" />
+                  </svg>
+                </NavLink>
+                {/* <!-- Dropdown Menu Start --> */}
+                <div
+                  className={`translate transform overflow-hidden ${!open && 'hidden'
+                    }`}
+                >
+                  <ul className="mt-1 mb-5.5 flex flex-col gap-5 pl-6">
+                    <li>
+                      <NavLink
+                        to="/quality_control/mtc"
+                        className={({ isActive }) =>
+                          'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                          (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                        }
+                      >
+
+                        Maintenance
+                      </NavLink>
+                    </li>
+
+                  </ul>
+                </div>
+                {/* <!-- Dropdown Menu End --> */}
+              </React.Fragment>
+            );
+          }}
+        </SidebarLinkGroup>
+      </div>
+    );
+  };
   // close on click outside
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
@@ -488,6 +622,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                   );
                 }}
               </SidebarLinkGroup>
+
+              {role === 'admin' && renderAdminElements()}
+              {role === 'maintenance' && renderMtcElements()}
             </ul>
           </div>
         </nav>

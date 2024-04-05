@@ -19,6 +19,7 @@ import Bars from '../components/Charts/TestChart';
 import ModalMtc6type from '../components/Modals/Modal6type';
 import ModalMtcLightHeavy from '../components/Modals/ModalMtcLightHeavy';
 import ModalNewVendor from '../components/Modals/ModalNewVendor';
+import ModalPM2Schedule from '../components/Modals/ModalPM2Schedule';
 
 
 const App = () => {
@@ -44,6 +45,7 @@ const App = () => {
 
     const [showModal20, setShowModal20] = useState(false);
     const [showModal21, setShowModal21] = useState(false);
+    const [showModal22, setShowModal22] = useState(false);
 
 
     const openModal1 = () => setShowModal1(true);
@@ -108,6 +110,9 @@ const App = () => {
 
     const openModal21 = () => setShowModal21(true);
     const closeModal21 = () => setShowModal21(false);
+
+    const openModal22 = () => setShowModal22(true);
+    const closeModal22 = () => setShowModal22(false);
     return (
         <div>
             <div className="container mx-auto">
@@ -476,6 +481,20 @@ const App = () => {
                             </button>
                         </div>
                     </ModalNewVendor>
+                )}
+                <button type="button"
+                    onClick={openModal22}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open Modal PM 2 Inspection
+                </button>
+                {showModal22 && (
+                    <ModalPM2Schedule
+
+                        isOpen={showModal22}
+                        onClose={closeModal22}
+                        machineName={'R700'}                    >
+                        <p></p>
+                    </ModalPM2Schedule>
                 )}
             </div>
             <div className='pt-20'>

@@ -14,6 +14,8 @@ import ModalMtcStockCheck from '../../Modals/ModalMtcStockCheck';
 import ModalMtcDate from '../../Modals/ModalMtcDate';
 import ModalReplaced from '../../Modals/ModalReplaced';
 import ModalPurchasing from '../../Modals/ModalPurchasing';
+import ModalMtcLightHeavy from '../../Modals/ModalMtcLightHeavy';
+import ModalNewVendor from '../../Modals/ModalNewVendor';
 
 const brandData: BRAND[] = [
   {
@@ -53,6 +55,8 @@ const TableIncomingMaintenance = () => {
   const [showModal5, setShowModal5] = useState(false);
   const [showModal6, setShowModal6] = useState(false);
   const [showModal7, setShowModal7] = useState(false);
+  const [showModal8, setShowModal8] = useState(false);
+  const [showModal9, setShowModal9] = useState(false);
 
 
   const openModal1 = () => setShowModal1(true);
@@ -71,6 +75,12 @@ const TableIncomingMaintenance = () => {
   const closeModal4 = () => setShowModal4(false);
   const openModal4 = () => {
     setShowModal4(true);
+    setShowModal8(false);
+  };
+
+  const closeModal8 = () => setShowModal8(false);
+  const openModal8 = () => {
+    setShowModal8(true);
     setShowModal2(false);
   };
 
@@ -91,7 +101,11 @@ const TableIncomingMaintenance = () => {
     setShowModal7(true);
     setShowModal6(false);
   };
-
+  const closeModal9 = () => setShowModal9(false);
+  const openModal9 = () => {
+    setShowModal9(true);
+    setShowModal6(false);
+  };
   return (
     <div className="rounded-b-xl border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
       <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
@@ -196,11 +210,31 @@ const TableIncomingMaintenance = () => {
                         </button>
                       </div>
                       <div className="pt-2">
-                        <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                        <button onClick={openModal8} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
                           SCHEDULE MAINTENANCE
                         </button>
                       </div>
                     </ModalMtc>
+                  )}
+
+                  {showModal8 && (
+                    <ModalMtcLightHeavy
+                      title="Select Maintenance Type"
+                      isOpen={showModal8}
+                      onClose={closeModal8}
+                    >
+                      <div className="pt-5">
+
+                        <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                          LIGHT MAINTENANCE
+                        </button>
+                      </div>
+                      <div className="pt-2">
+                        <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                          HEAVY MAINTENANCE
+                        </button>
+                      </div>
+                    </ModalMtcLightHeavy>
                   )}
                   {showModal3 && (
                     <ModalMtc6type
@@ -245,7 +279,7 @@ const TableIncomingMaintenance = () => {
                         <button onClick={openModal7} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
                           YES
                         </button>
-                        <button className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                        <button onClick={openModal9} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
                           NO
                         </button>
                       </div>
@@ -257,6 +291,19 @@ const TableIncomingMaintenance = () => {
                       onClose={closeModal7}>
                     </ModalPurchasing>
                   )}
+                  {showModal9 && (
+                    <ModalNewVendor
+                      isOpen={showModal9}
+                      onClose={closeModal9}
+                    >
+                      <div className="flex  w-full gap-3 pt-5 justify-end pt-[300px]">
+                        <button className="w-4/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md ">
+                          SEND REQUEST
+                        </button>
+                      </div>
+                    </ModalNewVendor>
+                  )}
+
                 </div>
 
               </td>
