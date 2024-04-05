@@ -14,10 +14,10 @@ const SelectGroupTwo: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className=''>
 
 
-      <div className="relative z-20   w-52 dark:bg-form-input">
+      <div className="relative z-20   w-full dark:bg-form-input">
 
         <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
           <div className='w-6'>
