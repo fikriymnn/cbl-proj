@@ -33,19 +33,24 @@ const Select6type: React.FC = () => {
                     className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
                         }`}
                 >
-                    <option value="" disabled className="text-body dark:text-bodydark">
-                        Select Maintenance Type
+                    <option value="diakali" className="text-body dark:text-bodydark">
+                        Dialaki
                     </option>
-                    <option value="dikanibal" className="text-body dark:text-bodydark">
-                        Dikanibalkan
+                    <option value="bengkel" className="text-body dark:text-bodydark">
+                        Bengkel
                     </option>
-                    <option value="diakalin" className="text-body dark:text-bodydark">
-                        Dialakin
+                    <option value="canibal" className="text-body dark:text-bodydark">
+                        Canibal
                     </option>
-                    <option value="dibenerin" className="text-body dark:text-bodydark">
-                        Dibenerin
+                    <option value="gantilocalsparepart" className="text-body dark:text-bodydark">
+                        Ganti(Local Sparepart)
                     </option>
-
+                    <option value="gantisecondsparepart" className="text-body dark:text-bodydark">
+                        Ganti(Second Sparepart)
+                    </option>
+                    <option value="gantigenuinesparepart" className="text-body dark:text-bodydark">
+                        Ganti(Genuine Sparepart)
+                    </option>
                 </select>
 
                 <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
