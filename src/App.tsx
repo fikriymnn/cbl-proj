@@ -17,6 +17,7 @@ import MaintenanceQC from './pages/QualityControl/maintenanceQC';
 import HistoryMtc from './pages/History/Maintenance';
 import Pm1 from './pages/inspection/Pm1';
 import MasterData from './pages/MasterData/Master';
+import Pm1Form from './pages/inspection/Pm1Form';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -51,6 +52,15 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <ECommerce />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/inspection/pm_1_form"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Pm1Form />
             </>
           }
         />

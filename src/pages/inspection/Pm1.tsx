@@ -2,10 +2,11 @@ import React, { useState } from 'react'
 import DefaultLayout from '../../layout/DefaultLayout'
 import ModalPopupBgn from '../../components/Modals/ModalPopupBgn';
 import ModalPopupReq from '../../components/Modals/ModalDetailPopupReq';
+import { Link } from 'react-router-dom';
 const brandData = [
     {
 
-        name: 'EX000003',
+        name: 'R700',
         date: "12/22/24 07:00AM",
         machine: 'iCutter GT40 RTX4080 800cc pro max',
         status: "pending",
@@ -14,26 +15,22 @@ const brandData = [
         executor: 'Saya ',
         response_time: '3 minutes',
         partOf: "printing",
-        inspector: 'Acep Wahyu',
-        leader: 'cecep wahyu',
-        supervisor: 'Supervisor',
-        KABagMTC: 'KABagMTC',
+
     },
     {
 
-        name: 'EX000003',
+        name: 'SM 74',
         date: "12/22/24 07:00AM",
         machine: 'iCutter GT40',
         status: "pending",
         schedule: "schedule requested",
         action: 'detail',
         partOf: "printing",
-        supervisor: 'Supervisor',
-        KABagMTC: 'KABagMTC',
+
     },
     {
 
-        name: 'EX000003',
+        name: 'GTO',
         date: "12/22/24 07:00AM",
         machine: 'iCutter GT40',
         status: "pending",
@@ -43,19 +40,18 @@ const brandData = [
     },
     {
 
-        name: 'EX000003',
+        name: 'ITOH',
         date: "12/22/24 07:00AM",
         machine: 'iCutter GT40',
         status: "scheduled",
         schedule: "10/04/24 to 12/04/24",
         action: 'begin mtc',
         partOf: "water base",
-        supervisor: 'Supervisor',
-        KABagMTC: 'KABagMTC',
+
     },
     {
 
-        name: 'EX000003',
+        name: 'POLAR',
         date: "12/22/24 07:00AM",
         machine: 'iCutter GT40',
         status: "on progress",
@@ -65,17 +61,21 @@ const brandData = [
     },
     {
 
-        name: 'EX000003',
+        name: 'HOCK',
         date: "12/22/24 07:00AM",
         machine: 'iCutter GT40',
         status: "pending verification",
         schedule: "12/04/24 to 24/04/24",
         action: 'detail',
-        partOf: "finishing"
+        partOf: "finishing",
+        inspector: 'Acep Wahyu',
+        leader: 'cecep wahyu',
+        supervisor: 'Supervisor',
+        KABagMTC: 'KABagMTC',
     },
     {
 
-        name: 'EX000003',
+        name: 'WB MANUAL',
         date: "12/22/24 07:00AM",
         machine: 'iCutter GT40',
         status: "monitoring",
@@ -83,7 +83,11 @@ const brandData = [
         action: 'detail',
         executor: 'Acep Kurna',
         response_time: '31 minutes',
-        partOf: "water base"
+        partOf: "water base",
+        inspector: 'Acep Wahyu',
+        leader: 'cecep wahyu',
+        supervisor: 'Supervisor',
+        KABagMTC: 'KABagMTC',
     },
 
 ];
@@ -100,7 +104,9 @@ function Pm1() {
 
     return (
         <DefaultLayout>
+            <p className='font-semibold text-[28px] text-primary mb-[18px]'>Maintenance &gt; Inspection &gt; PM 1</p>
             <main className='w-full bg-white rounded-xl'>
+
                 <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9'>01 April 2024</p>
                 <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
 
@@ -163,58 +169,21 @@ function Pm1() {
 
 
                                     <div>
-                                        {brand.action === 'begin mtc' && (
-                                            <>
-                                                <button
-                                                    className={`uppercase w-[125px] h-[42px] inline-flex rounded-[3px] items-center text-sm  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'begin mtc' && ''
-                                                        }`} // Dynamic class assignment
-                                                    onClick={openModal4}
-                                                >
-                                                    INSPECT
 
-                                                </button>
-                                                <ModalPopupBgn
-                                                    title="Maintenance"
-                                                    isOpen={showModal4}
-                                                    onClose={closeModal4}
-                                                    ticketCode={'CTR03591'}
-                                                    machineName={'GMC Printer 2'}
-                                                    incDate={'05 May, 2024 06:37AM'}
-                                                    machineCode={'3.2'} children={''}
-                                                    mtcSchedule={'12 April, 2024 to 24 April, 2024'}
+                                        <>
+                                            <Link to='/maintenance/inspection/pm_1_form'
+                                                className={`uppercase w-[125px] h-[42px] inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'begin mtc' && ''
+                                                    }`} // Dynamic class assignment
+                                                onClick={openModal4}
+                                            >
+                                                INSPECT
 
-                                                >
-                                                </ModalPopupBgn>
-                                            </>
-                                        )
-                                        }
-                                        {brand.action === 'detail' && brand.status === 'pending' && (
-                                            <>
+                                            </Link>
 
-                                                <button
-                                                    className={`uppercase w-[125px] h-[42px] items-center inline-flex rounded-[3px] my-auto  text-sm  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'detail' && ''
-                                                        }`}
-                                                    onClick={openModal2}
-                                                >
-                                                    INSPECT
-                                                </button>
-                                                {showModal2 && (
-                                                    <ModalPopupReq
-                                                        title="Maintenance"
-                                                        isOpen={showModal2}
-                                                        onClose={closeModal2}
-                                                        ticketCode={'CTR03591'}
-                                                        machineName={'GMC Printer 2'}
-                                                        incDate={'05 May, 2024 06:37AM'}
-                                                        machineCode={'3.2'} children={''}
-                                                        mtcSchedule={'12 April, 2024 to 24 April, 2024'}
-                                                        status={"Maintenance Schedule Requested "}>
+                                        </>
 
-                                                    </ModalPopupReq>
 
-                                                )}
-                                            </>
-                                        )}
+
                                     </div>
                                 </div>
                             </div>
