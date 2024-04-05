@@ -296,7 +296,7 @@ const TableMANHistory = () => {
                                         >
                                             {brand.action}
                                         </button>
-                                        <ModalMtcDate title="Request Maintenance Schedule"
+                                        <ModalMtcDate
                                             isOpen={showModal3}
                                             onClose={closeModal3}
                                             machineName={'GMC Printer 2'}>
@@ -339,7 +339,7 @@ const TableMANHistory = () => {
                                             onClick={openModal3} >
                                             {brand.action}
                                         </button>
-                                        <ModalMtcDate title="Request Maintenance Schedule"
+                                        <ModalMtcDate
                                             isOpen={showModal3}
                                             onClose={closeModal3}
                                             machineName={'GMC Printer 2'}>

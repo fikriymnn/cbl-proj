@@ -17,6 +17,8 @@ import ModalPurchasing from '../components/Modals/ModalPurchasing';
 import ModalReplaced from '../components/Modals/ModalReplaced';
 import Bars from '../components/Charts/TestChart';
 import ModalMtc6type from '../components/Modals/Modal6type';
+import ModalMtcLightHeavy from '../components/Modals/ModalMtcLightHeavy';
+import ModalNewVendor from '../components/Modals/ModalNewVendor';
 
 
 const App = () => {
@@ -39,6 +41,9 @@ const App = () => {
     const [showModal17, setShowModal17] = useState(false);
     const [showModal18, setShowModal18] = useState(false);
     const [showModal19, setShowModal19] = useState(false);
+
+    const [showModal20, setShowModal20] = useState(false);
+    const [showModal21, setShowModal21] = useState(false);
 
 
     const openModal1 = () => setShowModal1(true);
@@ -97,6 +102,12 @@ const App = () => {
 
     const openModal19 = () => setShowModal19(true);
     const closeModal19 = () => setShowModal19(false);
+
+    const openModal20 = () => setShowModal20(true);
+    const closeModal20 = () => setShowModal20(false);
+
+    const openModal21 = () => setShowModal21(true);
+    const closeModal21 = () => setShowModal21(false);
     return (
         <div>
             <div className="container mx-auto">
@@ -421,6 +432,50 @@ const App = () => {
                     >
                         <p></p>
                     </ModalMtc6type>
+                )}
+            </div>
+            <div className='pt-4 gap-3' >
+                <button type="button"
+                    onClick={openModal20}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open Modal MTC Light Heavy
+                </button>
+                {showModal20 && (
+                    <ModalMtcLightHeavy
+
+                        isOpen={showModal20}
+                        onClose={closeModal20} title={undefined}                                           >
+                        <div className="pt-5">
+
+                            <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                LIGHT MAINTENANCE
+                            </button>
+                        </div>
+                        <div className="pt-2">
+                            <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                HEAVY MAINTENANCE
+                            </button>
+                        </div>
+                    </ModalMtcLightHeavy>
+                )}
+                <button type="button"
+                    onClick={openModal21}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open Modal New Vendro
+                </button>
+                {showModal21 && (
+                    <ModalNewVendor
+
+                        isOpen={showModal21}
+                        onClose={closeModal21}
+
+                    >
+                        <div className="flex pt-[300PX] w-full h-full justify-end justify-items-end ">
+                            <button className=" w-96 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                SEND REQUEST
+                            </button>
+                        </div>
+                    </ModalNewVendor>
                 )}
             </div>
             <div className='pt-20'>
