@@ -104,7 +104,7 @@ function Pm1() {
 
     return (
         <DefaultLayout>
-            <p className='font-semibold text-[28px] text-primary mb-[18px]'>Maintenance &gt; Inspection &gt; PM 1</p>
+            <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>Maintenance &gt; Inspection &gt; PM 1</p>
             <main className='w-full bg-white rounded-xl'>
 
                 <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9'>01 April 2024</p>

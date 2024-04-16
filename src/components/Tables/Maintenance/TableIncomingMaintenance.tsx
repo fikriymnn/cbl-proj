@@ -175,7 +175,7 @@ const TableIncomingMaintenance = () => {
               <td className=" border-[#eee]   dark:border-strokedark">
                 <div className="container mx-auto flex  gap-3">
 
-                  <button type="button" onClick={openModal2}
+                  <button type="button" onClick={openModal8}
                     className={`inline-flex rounded-[3px] my-auto  md:px-2 px-1 text-sm font-bold md:text-[12px] text-[10px] bg-[#2EB300] text-white hover:bg-blue-400 `}
                   >
                     DO MAINTENANCE
@@ -226,12 +226,12 @@ const TableIncomingMaintenance = () => {
                       <div className="pt-5">
 
                         <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                          LIGHT MAINTENANCE
+                          MAINTENANCE RINGAN
                         </button>
                       </div>
                       <div className="pt-2">
                         <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                          HEAVY MAINTENANCE
+                          MAINTENANCE BERAT
                         </button>
                       </div>
                     </ModalMtcLightHeavy>
@@ -262,13 +262,7 @@ const TableIncomingMaintenance = () => {
                   )}
 
                   {showModal5 && (
-                    <ModalMtcDate
-
-                      isOpen={showModal5}
-                      onClose={closeModal5}
-                      machineName={'R700'}>
-                      <p></p>
-                    </ModalMtcDate>
+                    <ModalMtc6type children={undefined} isOpen={showModal5} onClose={closeModal5} ticketCode={undefined} />
                   )}
                   {showModal6 && (
                     <ModalReplaced

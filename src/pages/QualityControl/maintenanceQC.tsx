@@ -8,7 +8,7 @@ const MaintenanceQC = () => {
   return (
     <DefaultLayout>
 
-      <p className='font-semibold text-[28px] text-primary mb-[18px]'>Quality Control &gt; Maintenance</p>
+      <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>Quality Control &gt; Maintenance</p>
 
       <QCFullWidthTabs />
 

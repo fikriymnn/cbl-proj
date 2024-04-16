@@ -225,7 +225,7 @@ const TableOs = () => {
                     </p>
                   </td>
                 </div>
-                <div className=" items-center justify-center   flex ">
+                <div className=" items-center justify-center flex ">
                   <td className=" border-[#eee]  dark:border-strokedark">
                     <p
                       className={`inline-flex rounded-[10px] w-[120px] justify-center uppercase bg-opacity-10 md:text-[12px] text-[10px] text-center   font-medium ${brand.schedule === 'unscheduled'

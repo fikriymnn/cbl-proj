@@ -10,8 +10,9 @@ import HorizontalBars from '../../components/Charts/HorizontalBars';
 const ECommerce: React.FC = () => {
   return (
     <DefaultLayout>
-      <p className='font-semibold text-[28px] text-primary mb-[18px]'>Overview Dashboard</p>
-      <div className="flex gap-3 ">
+
+      <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px] '>Overview Dashboard</p>
+      <div className="flex gap-3 flex-wrap">
         <CardDataStats title="Total views" total="$3.456K" rate="0.43%" levelUp>
           <div className='flex gap-3'>
 
@@ -30,7 +31,7 @@ const ECommerce: React.FC = () => {
         </CardDataStats>
 
       </div>
-      <div className='grid grid-cols-2 gap-7'>
+      <div className='grid md:grid-cols-2 grid-cols-1 gap-7'>
 
         <div className='w-full p-4 bg-white my-[26px] rounded-[10px] flex flex-col'>
           <div className='flex items-start gap-3'>
