@@ -358,7 +358,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                               Materials
                             </NavLink>
                           </li>
-                          <li>
+                          {/* <li>
                             <NavLink
                               to="/maintenance/MAN"
                               className={({ isActive }) =>
@@ -372,7 +372,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
 
                               MAN
                             </NavLink>
-                          </li>
+                          </li> */}
                           <li>
                             <SidebarLinkGroup
                               activeCondition={
