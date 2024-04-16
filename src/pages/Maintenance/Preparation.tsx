@@ -9,7 +9,7 @@ const Preparation = () => {
     return (
         <DefaultLayout>
 
-            <p className='font-semibold text-[28px] text-primary mb-[18px]'>Maintenance &gt; Preparation</p>
+            <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>Maintenance &gt; Preparation</p>
             <PrepFullWidthTabs />
 
 
