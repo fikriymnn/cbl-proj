@@ -113,7 +113,7 @@ function TableOS2() {
     return (
         <main className=' bg-white overflow-x-scroll '>
             <div className='min-w-[1000px] max-w-full'>
-                <div className="relative flex w-full justify-end justify-items-end border-b border-stroke dark:border-strokedark pb-2">
+                <div className="relative flex w-full justify-end justify-items-end border-b border-stroke dark:border-strokedark py-2">
                     <input
                         type="text"
                         className="flex py-2 text-black md:text-[12px] text-[10px] font-normal bg-white h-full px-2 w-[220px] border-b border-stroke"
@@ -135,9 +135,9 @@ function TableOS2() {
                         </svg>
                     </div>
                 </div>
-                <div className='grid grid-cols-7  gap-1 border-b-8  p-3 border-[#D8EAFF] '>
+                <div className='grid md:grid-cols-7 grid-cols-6  gap-1 border-b-8  p-3 border-[#D8EAFF] '>
                     <p className='text-slate-600 text-left  font-semibold dite md:text-[14px] text-[12px] pl-10'>No</p>
-                    <p className='text-slate-600 text-left  font-semibold dite md:text-[14px] text-[12px] '>Ticket code</p>
+                    <p className='text-slate-600 text-left  font-semibold dite md:text-[14px] text-[12px] md:block sm:block hidden'>Ticket code</p>
                     <p className='text-slate-600 text-left  font-semibold dite md:text-[14px] text-[12px] '>Incoming Date</p>
                     <p className='text-slate-600 text-left  font-semibold dite md:text-[14px] text-[12px] '>Machine Name</p>
                     <p className='text-slate-600 text-left  font-semibold dite md:text-[14px] text-[12px] '>Status</p>
@@ -147,15 +147,15 @@ function TableOS2() {
                 {brandData.map((brand, key) => (
                     <>
                         <div key={key} className='  border-b-8 border-[#D8EAFF]'>
-                            <div className='grid grid-cols-7 gap-1 p-5'>
+                            <div className='grid md:grid-cols-7 grid-cols-6 gap-1 p-5'>
                                 <p className='text-black    text-left dark:text-white md:text-[12px] text-[10px] pl-10 '> {key + 1}</p>
-                                <p className='text-black    text-left dark:text-white md:text-[12px] text-[10px]'>{brand.name}</p>
-                                <p className='text-black    text-left dark:text-white md:text-[12px] text-[10px]'>{brand.date}</p>
-                                <p className='text-black    text-left dark:text-white md:text-[12px] text-[10px]'>{brand.machine}</p>
-                                <div className=''>
+                                <p className='text-black    text-left dark:text-white md:text-[12px] text-[10px] md:block sm:block hidden'>{brand.name}</p>
+                                <p className='text-black    text-left dark:text-white md:text-[12px] text-[10px] md:w-full w-[20px]'>{brand.date}</p>
+                                <p className='text-black    text-left dark:text-white md:text-[12px] text-[10px] md:w-full w-[70px]'>{brand.machine}</p>
+                                <div className='w-full'>
 
                                     <p
-                                        className={`inline-flex rounded-[10px] p-1  uppercase bg-opacity-10 justify-center text-center  md:text-[12px] text-[10px] font-thin ${brand.status === 'monitoring'
+                                        className={`inline-flex rounded-[10px] p-1  uppercase bg-opacity-10 justify-center text-center  md:text-[12px] text-[10px] font-medium ${brand.status === 'monitoring'
                                             ? 'bg-blue-600 text-blue-600'
                                             : brand.status === 'on progress'
                                                 ? 'bg-success text-success'
@@ -180,7 +180,7 @@ function TableOS2() {
                                     {brand.action === 'begin mtc' && (
                                         <>
                                             <button
-                                                className={`uppercase md:w-[125px] w-[50px] p-2  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold justify-center ${brand.action !== 'begin mtc' && ''
+                                                className={`uppercase md:w-[125px] w-[50px] p-12  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold justify-center ${brand.action !== 'begin mtc' && ''
                                                     }`} // Dynamic class assignment
                                                 onClick={openModal4}
                                             >
@@ -206,7 +206,7 @@ function TableOS2() {
                                         <>
 
                                             <button
-                                                className={`uppercase md:w-[125px] w-[50px] p-2  inline-flex rounded-[3px] my-auto  text-blue-600 md:text-[12px] text-[10px]  py-1   hover:bg-blue-400 border border-blue-600 font-bold justify-center ${brand.action !== 'detail' && ''
+                                                className={`uppercase md:w-[125px] w-[50px] p-12  inline-flex rounded-[3px] my-auto  text-blue-600 md:text-[12px] text-[10px]  py-1   hover:bg-blue-400 border border-blue-600 font-bold justify-center ${brand.action !== 'detail' && ''
                                                     }`}
                                                 onClick={openModal2}
                                             >
@@ -232,7 +232,7 @@ function TableOS2() {
                                     {brand.action === 'reschedule' && (
                                         <>
                                             <button
-                                                className={`uppercase md:w-[125px] w-[50px] p-2  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold justify-center ${brand.action !== 'reschedule' && ''
+                                                className={`uppercase md:w-[125px] w-[50px] p-12  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold justify-center ${brand.action !== 'reschedule' && ''
                                                     }`}
                                                 onClick={openModal3}
                                             >
@@ -250,7 +250,7 @@ function TableOS2() {
                                         <>
 
                                             <button
-                                                className={`uppercase md:w-[125px] w-[50px] p-2  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1  text-blue-600 hover:bg-blue-400 border border-blue-600 font-bold justify-center ${brand.action !== 'action' && ''
+                                                className={`uppercase md:w-[125px] w-[50px] p-12  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1  text-blue-600 hover:bg-blue-400 border border-blue-600 font-bold justify-center ${brand.action !== 'action' && ''
                                                     }`}
                                                 onClick={openModal5}
                                             >
@@ -274,7 +274,7 @@ function TableOS2() {
                                         <>
 
                                             <button
-                                                className={`uppercase md:w-[125px] w-[50px] p-2  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1  text-white bg-blue-600 hover:bg-blue-400 border border-blue-600 font-bold justify-center ${brand.action !== 'request mtc' && ''
+                                                className={`uppercase md:w-[125px] w-[50px] p-12  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1  text-white bg-blue-600 hover:bg-blue-400 border border-blue-600 font-bold justify-center ${brand.action !== 'request mtc' && ''
                                                     }`}
 
 
@@ -293,7 +293,7 @@ function TableOS2() {
                                         <>
 
                                             <button
-                                                className={`uppercase md:w-[125px] w-[50px] p-2  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1  text-blue-600  hover:bg-blue-400 border border-blue-600 font-bold justify-center ${brand.action !== 'detail' && ''
+                                                className={`uppercase md:w-[125px] w-[50px] p-12  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1  text-blue-600  hover:bg-blue-400 border border-blue-600 font-bold justify-center ${brand.action !== 'detail' && ''
                                                     }`}
                                                 onClick={openModal6}
                                             >
@@ -320,7 +320,7 @@ function TableOS2() {
                                         <>
 
                                             <button
-                                                className={`uppercase md:w-[125px] w-[50px] p-2  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-blue-600 justify-center ${brand.action !== 'detail' && ''
+                                                className={`uppercase md:w-[125px] w-[50px] p-12  inline-flex rounded-[3px] my-auto  md:text-[12px] text-[10px]  py-1   hover:bg-blue-400 border border-blue-600 font-bold text-blue-600 justify-center ${brand.action !== 'detail' && ''
                                                     }`}
                                                 onClick={openModal7}
                                             >
