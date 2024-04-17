@@ -151,7 +151,7 @@ export default function MachineFullWidthTabs() {
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
 
-                <TableOS />
+                <TableOS2 />
 
 
             </TabPanel>

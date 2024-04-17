@@ -112,7 +112,7 @@ const TableIncomingMaintenance = () => {
         Incoming Maintenance Ticket
       </h4>
 
-      <div className="flex flex-col">
+      <div className="flex flex-col overflow-x-scroll">
 
         <div
           className='flex border-b border-stroke dark:border-strokedark'
@@ -121,12 +121,12 @@ const TableIncomingMaintenance = () => {
         >
           <div className="flex items-center  w-1/12 gap-3 p-2.5 ">
 
-            <p className="hidden md:text-[12px] text-[10px] text-slate-600 font-semibold dark:text-white sm:block">
+            <p className=" md:text-[12px] text-[10px] text-slate-600 font-semibold dark:text-white sm:block">
               No
             </p>
           </div>
 
-          <div className="flex items-center w-3/12 justify-center p-2.5 ">
+          <div className="hidden sm:flex items-center w-3/12 justify-center p-2.5 ">
             <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center dark:text-white">Ticket Code</p>
           </div>
           <div className="flex items-center md:text-[12px] text-[10px] w-3/12 justify-center p-2.5 ">
@@ -139,7 +139,7 @@ const TableIncomingMaintenance = () => {
 
 
 
-          <div className="hidden items-center justify-center w-5/12 p-2.5 sm:flex ">
+          <div className=" items-center justify-center w-5/12 p-2.5 sm:flex ">
             <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center">Detail</p>
           </div>
         </div>
@@ -153,12 +153,12 @@ const TableIncomingMaintenance = () => {
           >
             <div className="flex items-center w-1/12   gap-3 p-2.5 ">
 
-              <p className="hidden md:text-[12px] text-[10px] text-black dark:text-white sm:block">
+              <p className=" md:text-[12px] text-[10px] text-black dark:text-white sm:block">
                 {key + 1}
               </p>
             </div>
 
-            <div className="flex items-center w-3/12 justify-center p-2.5 ">
+            <div className="hidden sm:flex items-center w-3/12 justify-center p-2.5 ">
               <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.name}</p>
             </div>
             <div className="flex items-center w-3/12 justify-center p-2.5 ">
@@ -171,17 +171,22 @@ const TableIncomingMaintenance = () => {
 
 
 
-            <div className="hidden items-center justify-center w-5/12 p-2.5 sm:flex">
+            <div className=" items-center justify-center md:w-5/12 w-1/12 p-2.5 sm:flex ">
               <td className=" border-[#eee]   dark:border-strokedark">
-                <div className="container mx-auto flex  gap-3">
+                <div className=" mx-auto flex  gap-3">
 
                   <button type="button" onClick={openModal8}
-                    className={`inline-flex rounded-[3px] my-auto  md:px-2 px-1 text-sm font-bold md:text-[12px] text-[10px] bg-[#2EB300] text-white hover:bg-blue-400 `}
+                    className={`inline-flex rounded-[3px] my-auto  md:px-2 px-1 md:text-[12px] text-[10px] font-semibold bg-[#2EB300] text-white hover:bg-[#294d1d] `}
+                  >
+                    RESPON
+                  </button>
+                  {/* <button type="button" onClick={openModal8}
+                    className={`inline-flex rounded-[3px] my-auto  md:px-2 px-1 md:text-[12px] text-[10px] font-semibold bg-[#2EB300] text-white hover:bg-[#294d1d] `}
                   >
                     DO MAINTENANCE
-                  </button>
+                  </button> */}
                   <button type="button" onClick={openModal1}
-                    className={`inline-flex rounded-[3px] my-auto md:px-2 px-1 text-sm font-bold md:text-[12px] text-[10px] bg-white border-[#0065DE] border text-primary justify-center items-center hover:bg-blue-400 `}
+                    className={`inline-flex rounded-[3px] my-auto md:px-2 px-1 md:text-[12px] text-[10px] font-semibold bg-white border-[#0065DE] border text-primary justify-center items-center  `}
                   >
                     DETAIL
                   </button>
