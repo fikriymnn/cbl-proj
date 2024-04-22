@@ -33,11 +33,12 @@ export default function Bars() {
             ]}
             xAxis={[{ scaleType: 'band', data: ['11/15', '11/16', '11/17', '11/18'] }]}
             yAxis={[{ id: 'left_axis_id' }]}
+
         >
             <BarPlot slots={{ bar: SlotBarElement }} />
-            <ChartsXAxis />
-            <ChartsYAxis axisId="left_axis_id" position="left" />
-            <ChartsReferenceLine label={'8.5'} labelAlign="end" y={8.5} />
+            <ChartsYAxis />
+            <ChartsXAxis axisId="left_axis_id" position="bottom" />
+
             <ChartsTooltip />
         </ResponsiveChartContainer>
     )

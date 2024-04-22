@@ -24,6 +24,8 @@ import ModalResponse from '../components/Modals/ModalResponse';
 import ModalStockCheck1 from '../components/Modals/ModalStockCheck1';
 import ModalStockCheckRusak from '../components/Modals/ModalStockCheckPilihRusak';
 import ModalStockCheckPengganti from '../components/Modals/ModalStockCheckPilihPengganti';
+import ModalPM2Eksekutor from '../components/Modals/ModalPM2Eksekutor';
+import ModalPM26type from '../components/Modals/ModalPM26Type';
 
 
 const App = () => {
@@ -54,6 +56,9 @@ const App = () => {
     const [showModal24, setShowModal24] = useState(false);
     const [showModal25, setShowModal25] = useState(false);
     const [showModal26, setShowModal26] = useState(false);
+    const [showModal27, setShowModal27] = useState(false);
+
+    const [showModal28, setShowModal28] = useState(false);
 
 
     const openModal1 = () => setShowModal1(true);
@@ -133,6 +138,12 @@ const App = () => {
 
     const openModal26 = () => setShowModal26(true);
     const closeModal26 = () => setShowModal26(false);
+
+    const openModal27 = () => setShowModal27(true);
+    const closeModal27 = () => setShowModal27(false);
+
+    const openModal28 = () => setShowModal28(true);
+    const closeModal28 = () => setShowModal28(false);
 
     return (
         <div>
@@ -582,8 +593,40 @@ const App = () => {
                     </ModalStockCheckPengganti>
                 )}
             </div>
+            <div className='pt-4'>
+                <button type="button"
+                    onClick={openModal27}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open
+                </button>
+                {showModal27 && (
+                    <ModalPM2Eksekutor
+
+                        isOpen={showModal27}
+                        onClose={closeModal27}
+                        machineName={'R700'}
+                    >
+                        <p></p>
+                    </ModalPM2Eksekutor>
+                )}
+                <button type="button"
+                    onClick={openModal28}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open
+                </button>
+                {showModal28 && (
+                    <ModalPM26type
+
+                        isOpen={showModal28}
+                        onClose={closeModal28}
+                        machineName={'R700'}
+                    >
+                        <p></p>
+                    </ModalPM26type>
+                )}
+            </div>
             <div className='pt-20'>
-                <Bars />
+
             </div>
         </div >
     );
