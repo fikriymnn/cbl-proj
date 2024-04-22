@@ -17,7 +17,7 @@ import ModalPurchasing from '../../Modals/ModalPurchasing';
 import ModalMtcLightHeavy from '../../Modals/ModalMtcLightHeavy';
 import ModalNewVendor from '../../Modals/ModalNewVendor';
 
-const brandData: BRAND[] = [
+const brandData = [
   {
 
     name: 'EX000003',
@@ -26,6 +26,7 @@ const brandData: BRAND[] = [
     status: "pending",
     schedule: "unscheduled",
     action: 'request mtc',
+
   },
   {
 
@@ -44,6 +45,7 @@ const brandData: BRAND[] = [
     status: "pending",
     schedule: ["schedule declined", "12/04/24 to 24/04/24"],
     action: 3.7,
+    idResponser: "1313jn"
   },
 ];
 
@@ -174,17 +176,19 @@ const TableIncomingMaintenance = () => {
             <div className=" items-center justify-center md:w-5/12 w-1/12 p-2.5 sm:flex ">
               <td className=" border-[#eee]   dark:border-strokedark">
                 <div className=" mx-auto flex  gap-3">
-
-                  <button type="button" onClick={openModal8}
-                    className={`inline-flex rounded-[3px] my-auto  md:px-2 px-1 md:text-[12px] text-[10px] font-semibold bg-[#2EB300] text-white hover:bg-[#294d1d] `}
+                  {brand.idResponser != null ? (
+                    <button type="button" onClick={openModal8}
+                      className={`inline-flex rounded-[3px] my-auto sm:w-[130px] w-[80px]  md:px-2 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#294d1d]  justify-center`}
+                    >
+                      DO MAINTENANCE
+                    </button>
+                  ) : <button type="button" onClick={openModal8}
+                    className={`inline-flex rounded-[3px] my-auto sm:w-[130px] w-[80px] md:px-2 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#2EB300] text-white hover:bg-[#294d1d] justify-center`}
                   >
                     RESPON
-                  </button>
-                  {/* <button type="button" onClick={openModal8}
-                    className={`inline-flex rounded-[3px] my-auto  md:px-2 px-1 md:text-[12px] text-[10px] font-semibold bg-[#2EB300] text-white hover:bg-[#294d1d] `}
-                  >
-                    DO MAINTENANCE
-                  </button> */}
+                  </button>}
+
+
                   <button type="button" onClick={openModal1}
                     className={`inline-flex rounded-[3px] my-auto md:px-2 px-1 md:text-[12px] text-[10px] font-semibold bg-white border-[#0065DE] border text-primary justify-center items-center  `}
                   >
