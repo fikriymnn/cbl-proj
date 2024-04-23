@@ -34,22 +34,28 @@ const Select6type: React.FC = () => {
                         }`}
                 >
                     <option value="diakali" className="text-body dark:text-bodydark">
-                        Dialaki
+                        100% - Original
                     </option>
                     <option value="bengkel" className="text-body dark:text-bodydark">
-                        Bengkel
+                        80% - Second Ori
                     </option>
                     <option value="canibal" className="text-body dark:text-bodydark">
-                        Canibal
+                        70% - Canibal
                     </option>
                     <option value="gantilocalsparepart" className="text-body dark:text-bodydark">
-                        Ganti(Local Sparepart)
+                        50% - Fabrikasi
                     </option>
                     <option value="gantisecondsparepart" className="text-body dark:text-bodydark">
-                        Ganti(Second Sparepart)
+                        60% - Setting
                     </option>
                     <option value="gantigenuinesparepart" className="text-body dark:text-bodydark">
-                        Ganti(Genuine Sparepart)
+                        40% - Part Local
+                    </option>
+                    <option value="gantigenuinesparepart" className="text-body dark:text-bodydark">
+                        20% - Temporary
+                    </option>
+                    <option value="gantigenuinesparepart" className="text-body dark:text-bodydark">
+                        0% - Pending
                     </option>
                 </select>
 

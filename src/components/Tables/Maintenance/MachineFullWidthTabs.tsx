@@ -134,7 +134,7 @@ export default function MachineFullWidthTabs() {
                     >
                         <Tab label="Incoming" {...a11yProps(0)} className='' />
                         <Tab label="OS 2" {...a11yProps(1)} />
-                        <Tab label="OS 3" {...a11yProps(2)} />
+                        {/* <Tab label="OS 3" {...a11yProps(2)} /> */}
                         {/* <Tab label={<Typography variant='h1'>OS 4</Typography>} /> */}
                     </Tabs>
                 </ThemeProvider>
@@ -151,16 +151,16 @@ export default function MachineFullWidthTabs() {
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
 
-                <TableOS />
+                <TableOS2 />
 
 
             </TabPanel>
-            <TabPanel value={value} index={2} dir={theme.direction}>
+            {/* <TabPanel value={value} index={2} dir={theme.direction}>
 
 
                 <TableOS2 />
 
-            </TabPanel>
+            </TabPanel> */}
             {/* </SwipeableViews> */}
         </Box>
     );
