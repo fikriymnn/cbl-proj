@@ -555,8 +555,10 @@ const App = () => {
                         isOpen={showModal24}
                         onClose={closeModal24}
                         machineName={'R700'}
-                        masalah1={'Tinta Macet'}
-                    >
+                        kendala={'Settingan tidak pas'}
+                        tgl={'20 MEI 2024'}
+                        jam={'14:00'}
+                        namaPemeriksa={'Acep Piere'} no={2}                    >
                         <p></p>
                     </ModalStockCheck1>
                 )}
@@ -570,8 +572,10 @@ const App = () => {
 
                         isOpen={showModal25}
                         onClose={closeModal25}
-                        machineName={'R700'}
-                        masalah1={'Tinta Macet'}
+                        machineName={'R700'} kendala={'Settingan tidak pas'}
+                        tgl={'20 MEI 2024'}
+                        jam={'14:00'}
+                        namaPemeriksa={'Acep Piere'} no={2}
                     >
                         <p></p>
                     </ModalStockCheckRusak>
@@ -587,7 +591,11 @@ const App = () => {
                         isOpen={showModal26}
                         onClose={closeModal26}
                         machineName={'R700'}
-                        masalah1={'Tinta Macet'}
+
+                        kendala={'Settingan tidak pas'}
+                        tgl={'20 MEI 2024'}
+                        jam={'14:00'}
+                        namaPemeriksa={'Acep Piere'} no={2}
                     >
                         <p></p>
                     </ModalStockCheckPengganti>
