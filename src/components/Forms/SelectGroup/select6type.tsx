@@ -11,7 +11,7 @@ const Select6type: React.FC = () => {
     return (
         <div>
 
-            <div className="relative z-20 bg-white dark:bg-form-input">
+            <div className="relative z-20 bg-neutral-200 dark:bg-form-input">
                 <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
                     <svg
                         width="20"

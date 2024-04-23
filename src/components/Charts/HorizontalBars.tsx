@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { BarChart } from '@mui/x-charts/BarChart';
+import { BarChart } from '@mui/x-charts';
+import { red } from '@mui/material/colors';
 
 const chartSetting = {
   xAxis: [
@@ -109,32 +110,45 @@ const dataset = [
     name: 'mesin12dahfuo ed',
     month: 'Dec',
   },
+
 ];
 
 const valueFormatter = (value: number | null) => `${value}mm`;
 
 export default function HorizontalBars() {
-  const seoulData = dataset.map(data => data.seoul);
+  const sortedDataset = dataset.sort((a, b) => a.seoul - b.seoul); // Sort by seoul value
 
-  console.log(seoulData)
-  const commonStyles = {
-    fill: dataset.map(data => data.seoul > 100 ? "#A020F0" : "#0065DE")
+  // const commonStyles = {
+  //   fill: sortedDataset.map(data => (data.seoul > 100 ? "#A020F0" : "#0065DE")),
+  // };
 
+  const colorData = dataset.map(item => {
+    const color = item.seoul < 100 ? 'red' : 'blue';
+    return { ...item, color };
+  })
 
-  };
+  const colorFn = (dataset: any) => {
+    const value = dataset.get('seoul');
+    return value < 100 ? 'red' : 'blue';
+  }
+  console.log(colorData)
   return (
     <BarChart
       sx={{
-        ...commonStyles,
-        ".MuiBarElement-root": {
-
-          // fill: seoulData > 100 ? "0065DE" : '#0065DE',
+        "& .MuiBarElement-root": {
+          fill: 'red'
         },
-
-      }}
-      dataset={dataset}
+      }} // Apply common styles directly
+      dataset={colorData} // Use sorted dataset
       yAxis={[{ scaleType: 'band', dataKey: 'name' }]}
-      series={[{ dataKey: 'seoul', label: 'Sparepart ', valueFormatter }]}
+      series={[
+        {
+          dataKey: 'seoul',
+          label: 'Sparepart ',
+          valueFormatter,
+        },
+      ]}
+
       layout="horizontal"
       {...chartSetting}
     />

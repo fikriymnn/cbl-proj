@@ -232,7 +232,7 @@ span.flatpickr-weekday,
 /* CSS */
 /* Hide the scrollbar track */
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 10px;
   /* Set the width of the scrollbar */
 }
 

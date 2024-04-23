@@ -20,6 +20,12 @@ import ModalMtc6type from '../components/Modals/Modal6type';
 import ModalMtcLightHeavy from '../components/Modals/ModalMtcLightHeavy';
 import ModalNewVendor from '../components/Modals/ModalNewVendor';
 import ModalPM2Schedule from '../components/Modals/ModalPM2Schedule';
+import ModalResponse from '../components/Modals/ModalResponse';
+import ModalStockCheck1 from '../components/Modals/ModalStockCheck1';
+import ModalStockCheckRusak from '../components/Modals/ModalStockCheckPilihRusak';
+import ModalStockCheckPengganti from '../components/Modals/ModalStockCheckPilihPengganti';
+import ModalPM2Eksekutor from '../components/Modals/ModalPM2Eksekutor';
+import ModalPM26type from '../components/Modals/ModalPM26Type';
 
 
 const App = () => {
@@ -46,6 +52,13 @@ const App = () => {
     const [showModal20, setShowModal20] = useState(false);
     const [showModal21, setShowModal21] = useState(false);
     const [showModal22, setShowModal22] = useState(false);
+    const [showModal23, setShowModal23] = useState(false);
+    const [showModal24, setShowModal24] = useState(false);
+    const [showModal25, setShowModal25] = useState(false);
+    const [showModal26, setShowModal26] = useState(false);
+    const [showModal27, setShowModal27] = useState(false);
+
+    const [showModal28, setShowModal28] = useState(false);
 
 
     const openModal1 = () => setShowModal1(true);
@@ -113,6 +126,25 @@ const App = () => {
 
     const openModal22 = () => setShowModal22(true);
     const closeModal22 = () => setShowModal22(false);
+
+    const openModal23 = () => setShowModal23(true);
+    const closeModal23 = () => setShowModal23(false);
+
+    const openModal24 = () => setShowModal24(true);
+    const closeModal24 = () => setShowModal24(false);
+
+    const openModal25 = () => setShowModal25(true);
+    const closeModal25 = () => setShowModal25(false);
+
+    const openModal26 = () => setShowModal26(true);
+    const closeModal26 = () => setShowModal26(false);
+
+    const openModal27 = () => setShowModal27(true);
+    const closeModal27 = () => setShowModal27(false);
+
+    const openModal28 = () => setShowModal28(true);
+    const closeModal28 = () => setShowModal28(false);
+
     return (
         <div>
             <div className="container mx-auto">
@@ -496,9 +528,113 @@ const App = () => {
                         <p></p>
                     </ModalPM2Schedule>
                 )}
+                <button type="button"
+                    onClick={openModal23}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open Respon
+                </button>
+                {showModal23 && (
+                    <ModalResponse
+
+                        isOpen={showModal23}
+                        onClose={closeModal23}
+                        machineName={'R700'}
+                        ticketCode={'undefined'}
+                        incDate={'undefined'}                    >
+                        <p></p>
+                    </ModalResponse>
+                )}
+                <button type="button"
+                    onClick={openModal24}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open StockCHeck
+                </button>
+                {showModal24 && (
+                    <ModalStockCheck1
+
+                        isOpen={showModal24}
+                        onClose={closeModal24}
+                        machineName={'R700'}
+                        kendala={'Settingan tidak pas'}
+                        tgl={'20 MEI 2024'}
+                        jam={'14:00'}
+                        namaPemeriksa={'Acep Piere'} no={2}                    >
+                        <p></p>
+                    </ModalStockCheck1>
+                )}
+                <button type="button"
+                    onClick={openModal25}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open StockCHeck Rusak
+                </button>
+                {showModal25 && (
+                    <ModalStockCheckRusak
+
+                        isOpen={showModal25}
+                        onClose={closeModal25}
+                        machineName={'R700'} kendala={'Settingan tidak pas'}
+                        tgl={'20 MEI 2024'}
+                        jam={'14:00'}
+                        namaPemeriksa={'Acep Piere'} no={2}
+                    >
+                        <p></p>
+                    </ModalStockCheckRusak>
+                )}
+                <button type="button"
+                    onClick={openModal26}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open StockCHeck Pengganti
+                </button>
+                {showModal26 && (
+                    <ModalStockCheckPengganti
+
+                        isOpen={showModal26}
+                        onClose={closeModal26}
+                        machineName={'R700'}
+
+                        kendala={'Settingan tidak pas'}
+                        tgl={'20 MEI 2024'}
+                        jam={'14:00'}
+                        namaPemeriksa={'Acep Piere'} no={2}
+                    >
+                        <p></p>
+                    </ModalStockCheckPengganti>
+                )}
+            </div>
+            <div className='pt-4'>
+                <button type="button"
+                    onClick={openModal27}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open
+                </button>
+                {showModal27 && (
+                    <ModalPM2Eksekutor
+
+                        isOpen={showModal27}
+                        onClose={closeModal27}
+                        machineName={'R700'}
+                    >
+                        <p></p>
+                    </ModalPM2Eksekutor>
+                )}
+                <button type="button"
+                    onClick={openModal28}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open
+                </button>
+                {showModal28 && (
+                    <ModalPM26type
+
+                        isOpen={showModal28}
+                        onClose={closeModal28}
+                        machineName={'R700'}
+                    >
+                        <p></p>
+                    </ModalPM26type>
+                )}
             </div>
             <div className='pt-20'>
-                <Bars />
+
             </div>
         </div >
     );
