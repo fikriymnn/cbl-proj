@@ -320,7 +320,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                                 </defs>
                               </svg>
 
-                              Machine
+                              Corrective (CM)
                             </NavLink>
                           </li>
                           <li>
@@ -337,7 +337,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                                 <path d="M8.54883 2.56454H15.3865V4.27431H8.54883V2.56454ZM5.9843 1.70978H7.69406V5.12931H5.9843V1.70978ZM16.2424 1.70978H17.9522V5.12931H16.2424V1.70978ZM14.5327 13.6777V22.2263H21.3715V13.6777L17.952 9.40337L14.5327 13.6777ZM19.1742 13.6681H16.7297L17.952 12.1402L19.1742 13.6681ZM16.2422 20.5165V15.3778H19.6617V20.5165H16.2422ZM5.12109 10.2495H13.6697V11.9592H5.12109V10.2495ZM5.12883 13.677H11.0899V15.3867H5.12883V13.677ZM5.12883 17.1045H11.1136V18.8142H5.12883V17.1045Z" fill="" />
                               </svg>
 
-                              Preparation
+                              KPI
                             </NavLink>
                           </li>
                           <li>
@@ -355,10 +355,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                                 <path d="M7.77954 12.6793L10.9829 14.4906" stroke="" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                               </svg>
 
-                              Materials
+                              Sparepart
                             </NavLink>
                           </li>
-                          <li>
+                          {/* <li>
                             <NavLink
                               to="/maintenance/MAN"
                               className={({ isActive }) =>
@@ -372,7 +372,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
 
                               MAN
                             </NavLink>
-                          </li>
+                          </li> */}
                           <li>
                             <SidebarLinkGroup
                               activeCondition={
@@ -397,7 +397,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                                     >
 
                                       <img src={Inspect} alt="Logo" />
-                                      Inspection
+                                      Preventive (PM)
                                       <svg
                                         className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
                                           }`}

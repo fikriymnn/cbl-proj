@@ -142,38 +142,7 @@ function Pm1Form() {
                                 <SelectGroupTwo />
                             </div>
                         </div>
-                        <div className='p-4 flex flex-col'>
-                            <p className='text-[14px] font-semibold'>Date: 02 April 2024</p>
-                            <p className='text-[14px] font-semibold'>Result:</p>
-                            <div className=' flex mt-3'>
 
-                                <SelectGroupTwo />
-                            </div>
-                        </div>
-                        <div className='p-4 flex flex-col'>
-                            <p className='text-[14px] font-semibold'>Date: 03 April 2024</p>
-                            <p className='text-[14px] font-semibold'>Result:</p>
-                            <div className=' flex mt-3'>
-
-                                <SelectGroupTwo />
-                            </div>
-                        </div>
-                        <div className='p-4 flex flex-col'>
-                            <p className='text-[14px] font-semibold'>Date: 04 April 2024</p>
-                            <p className='text-[14px] font-semibold'>Result:</p>
-                            <div className=' flex mt-3'>
-
-                                <SelectGroupTwo />
-                            </div>
-                        </div>
-                        <div className='p-4 flex flex-col'>
-                            <p className='text-[14px] font-semibold'>Date: 05 April 2024</p>
-                            <p className='text-[14px] font-semibold'>Result:</p>
-                            <div className=' flex mt-3'>
-
-                                <SelectGroupTwo />
-                            </div>
-                        </div>
 
                     </div>
                 </section>

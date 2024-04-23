@@ -47,14 +47,7 @@ const Modal = ({ children, title, isOpen, onClose, ticketCode, prepName, incDate
                                 {prepName}
                             </span>
                         </div>
-                        <div className='pl-[180px]'>
-                            <label htmlFor="prepCode" className="form-label block  text-black text-xs font-extrabold">
-                                PREP CODE
-                            </label>
-                            <span id="prepCode" className="text-neutral-500 text-xl font-normal">
-                                {prepCode}
-                            </span>
-                        </div>
+
 
 
                     </div>
@@ -64,6 +57,22 @@ const Modal = ({ children, title, isOpen, onClose, ticketCode, prepName, incDate
                         </label>
                         <span id="incomingDate" className=" text-neutral-500 text-xl font-normal">
                             {incDate}
+                        </span>
+                    </div>
+                    <div className="pt-3">
+                        <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-extrabold">
+                            JENIS KENDALA
+                        </label>
+                        <span id="incomingDate" className=" text-neutral-500 text-xl font-normal">
+                            Mesin
+                        </span>
+                    </div>
+                    <div className="pt-3">
+                        <label htmlFor="incomingDate" className="form-label block  text-black text-xs font-extrabold">
+                            KENDALA
+                        </label>
+                        <span id="incomingDate" className=" text-neutral-500 text-xl font-normal">
+                            Macet
                         </span>
                     </div>
 

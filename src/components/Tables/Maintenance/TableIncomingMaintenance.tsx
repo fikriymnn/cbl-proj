@@ -17,21 +17,22 @@ import ModalPurchasing from '../../Modals/ModalPurchasing';
 import ModalMtcLightHeavy from '../../Modals/ModalMtcLightHeavy';
 import ModalNewVendor from '../../Modals/ModalNewVendor';
 
-const brandData: BRAND[] = [
+const brandData = [
   {
 
     name: 'EX000003',
     date: "12/22/24 07:00UTC",
-    machine: 'iCutter GT40',
+    machine: 'Problem settingan mesin',
     status: "pending",
     schedule: "unscheduled",
     action: 'request mtc',
+
   },
   {
 
     name: 'EX000003',
     date: "12/22/24 07:00UTC",
-    machine: 'iCutter GT40',
+    machine: 'Problem settingan mesin',
     status: "pending",
     schedule: "schedule requested",
     action: 'detail',
@@ -40,10 +41,41 @@ const brandData: BRAND[] = [
 
     name: 'EX000003',
     date: "12/22/24 07:00UTC",
-    machine: 'iCutter GT40',
+    machine: 'Problem settingan mesin',
     status: "pending",
     schedule: ["schedule declined", "12/04/24 to 24/04/24"],
     action: 3.7,
+    idResponser: "1313jn"
+  },
+  {
+
+    name: 'EX000003',
+    date: "12/22/24 07:00UTC",
+    machine: 'Problem settingan mesin',
+    status: "pending",
+    schedule: ["schedule declined", "12/04/24 to 24/04/24"],
+    action: 3.7,
+    idResponser: "1313jn"
+  },
+  {
+
+    name: 'EX000003',
+    date: "12/22/24 07:00UTC",
+    machine: 'Problem settingan mesin',
+    status: "pending",
+    schedule: ["schedule declined", "12/04/24 to 24/04/24"],
+    action: 3.7,
+    idResponser: "1313jn"
+  },
+  {
+
+    name: 'EX000003',
+    date: "12/22/24 07:00UTC",
+    machine: 'Problem settingan mesin',
+    status: "pending",
+    schedule: ["schedule declined", "12/04/24 to 24/04/24"],
+    action: 3.7,
+    idResponser: "1313jn"
   },
 ];
 
@@ -107,39 +139,40 @@ const TableIncomingMaintenance = () => {
     setShowModal6(false);
   };
   return (
-    <div className="rounded-b-xl border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-      <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
-        Incoming Maintenance Ticket
-      </h4>
+    <div className="rounded-b-xl border border-stroke bg-white  pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
 
-      <div className="flex flex-col">
+
+      <div className="flex flex-col overflow-x-scroll">
 
         <div
-          className='flex border-b border-stroke dark:border-strokedark'
+          className='flex border-b-8  border-[#D8EAFF] dark:border-strokedark '
 
 
         >
-          <div className="flex items-center  w-1/12 gap-3 p-2.5 ">
+          <div className="flex items-center  w-1/12 gap-3 p-2.5 md:px-7.5 px-5 ">
 
-            <p className="hidden md:text-[12px] text-[10px] text-slate-600 font-semibold dark:text-white sm:block">
+            <p className=" md:text-[12px] text-[10px] text-slate-600 font-semibold dark:text-white sm:block">
               No
             </p>
           </div>
 
-          <div className="flex items-center w-3/12 justify-center p-2.5 ">
-            <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center dark:text-white">Ticket Code</p>
+          <div className=" sm:flex items-center w-2/12 justify-center p-2.5 md:px-7.5 px-5 ">
+            <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center dark:text-white">Kode Tiket</p>
           </div>
-          <div className="flex items-center md:text-[12px] text-[10px] w-3/12 justify-center p-2.5 ">
-            <p className="text-slate-600 font-semibold text-center dark:text-white">Incoming Date</p>
-          </div>
-
-          <div className="flex items-center md:text-[12px] text-[10px] w-3/12 justify-center p-2.5 ">
-            <p className="text-slate-600 font-semibold text-center">Machine Name</p>
+          <div className="flex items-center md:text-[12px] text-[10px] w-3/12 justify-center p-2.5 md:px-7.5 px-5 ">
+            <p className="text-slate-600 font-semibold text-center dark:text-white">Waktu Masuk</p>
           </div>
 
+          <div className="flex items-center md:text-[12px] text-[10px] w-3/12 justify-center p-2.5 md:px-7.5 px-5 ">
+            <p className="text-slate-600 font-semibold text-center">Nama Mesin</p>
+          </div>
+          <div className="flex items-center md:text-[12px] text-[10px] w-4/12 justify-center p-2.5 md:px-7.5 px-5 ">
+            <p className="text-slate-600 font-semibold text-center">Kendala</p>
+          </div>
 
 
-          <div className="hidden items-center justify-center w-5/12 p-2.5 sm:flex ">
+
+          <div className=" items-center justify-center  md:w-5/12 w-1/12 p-2.5 md:px-7.5 px-5 sm:flex ">
             <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center">Detail</p>
           </div>
         </div>
@@ -147,44 +180,53 @@ const TableIncomingMaintenance = () => {
           <div
             className={`flex ${key === brandData.length - 1
               ? ''
-              : 'border-b border-stroke dark:border-strokedark'
+              : 'border-b-8  border-[#D8EAFF] dark:border-strokedark '
               }`}
             key={key}
           >
-            <div className="flex items-center w-1/12   gap-3 p-2.5 ">
+            <div className="flex items-center w-1/12   gap-3 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF]  ">
 
-              <p className="hidden md:text-[12px] text-[10px] text-black dark:text-white sm:block">
+              <p className=" md:text-[12px] text-[10px] text-black dark:text-white sm:block">
                 {key + 1}
               </p>
             </div>
 
-            <div className="flex items-center w-3/12 justify-center p-2.5 ">
+            <div className=" sm:flex items-center w-2/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
               <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.name}</p>
             </div>
-            <div className="flex items-center w-3/12 justify-center p-2.5 ">
+            <div className=" sm:flex items-center w-3/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
               <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.date}</p>
             </div>
+            <div className="flex items-center w-3/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+              <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.name}</p>
+            </div>
 
-            <div className="flex items-center w-3/12 justify-center p-2.5 ">
+            <div className="flex items-center w-4/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
               <p className="text-black text-center md:text-[12px] text-[10px]">{brand.machine}</p>
             </div>
 
 
 
-            <div className="hidden items-center justify-center w-5/12 p-2.5 sm:flex">
+            <div className=" items-center justify-center md:w-5/12 w-1/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] sm:flex ">
               <td className=" border-[#eee]   dark:border-strokedark">
-                <div className="container mx-auto flex  gap-3">
-
-                  <button type="button" onClick={openModal2}
-                    className={`inline-flex rounded-[3px] my-auto  md:px-2 px-1 text-sm font-bold md:text-[12px] text-[10px] bg-[#2EB300] text-white hover:bg-blue-400 `}
+                <div className=" mx-auto flex gap-3">
+                  <button type="button"
+                    className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
                   >
-                    DO MAINTENANCE
+                    RESPON
                   </button>
                   <button type="button" onClick={openModal1}
-                    className={`inline-flex rounded-[3px] my-auto md:px-2 px-1 text-sm font-bold md:text-[12px] text-[10px] bg-white border-[#0065DE] border text-primary justify-center items-center hover:bg-blue-400 `}
+                    className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-white border-[#0065DE] border text-primary justify-center`}
                   >
                     DETAIL
                   </button>
+
+
+                  {/* <button type="button" onClick={openModal1}
+                    className={`inline-flex rounded-[3px] my-auto py-2 md:px-2 px-1 md:text-[12px] text-[10px] font-semibold bg-white border-[#0065DE] border text-primary justify-center items-center  `}
+                  >
+                    DETAIL
+                  </button> */}
                   {showModal1 && (
                     <Modal title="Incoming Maintenance Ticket"
                       isOpen={showModal1}
@@ -226,12 +268,12 @@ const TableIncomingMaintenance = () => {
                       <div className="pt-5">
 
                         <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                          LIGHT MAINTENANCE
+                          MAINTENANCE RINGAN
                         </button>
                       </div>
                       <div className="pt-2">
                         <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                          HEAVY MAINTENANCE
+                          MAINTENANCE BERAT
                         </button>
                       </div>
                     </ModalMtcLightHeavy>
@@ -262,13 +304,7 @@ const TableIncomingMaintenance = () => {
                   )}
 
                   {showModal5 && (
-                    <ModalMtcDate
-
-                      isOpen={showModal5}
-                      onClose={closeModal5}
-                      machineName={'R700'}>
-                      <p></p>
-                    </ModalMtcDate>
+                    <ModalMtc6type children={undefined} isOpen={showModal5} onClose={closeModal5} ticketCode={undefined} />
                   )}
                   {showModal6 && (
                     <ModalReplaced
