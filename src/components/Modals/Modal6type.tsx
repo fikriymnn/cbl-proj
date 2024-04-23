@@ -44,12 +44,19 @@ const ModalMtc6type = ({ children, isOpen, onClose, ticketCode }:
                     </div>
                     <div className="pt-4">
                         <label htmlFor="ticketCode" className="form-label block  text-black text-xs font-extrabold">
-                            MAINTENANCE TYPE
+                            TIPE MAINTENANCE
                         </label>
                     </div>
                     <div className='pt-1 w-full'>
                         <Select6type />
                     </div>
+                    <div className="pt-4">
+                        <label htmlFor="ticketCode" className="form-label block  text-black text-xs font-extrabold">
+                            CATATAN
+                        </label>
+                    </div>
+                    <textarea name="" id="" cols={30} rows={6} className='w-full p-2 resize-none border border-neutral-200 '></textarea>
+
                     <div className="pt-5">
                         <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
                             SUBMIT
