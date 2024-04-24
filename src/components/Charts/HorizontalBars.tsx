@@ -131,7 +131,7 @@ export default function HorizontalBars() {
     const value = dataset.get('seoul');
     return value < 100 ? 'red' : 'blue';
   }
-  console.log(colorData)
+  // console.log(colorData)
   return (
     <BarChart
       sx={{
