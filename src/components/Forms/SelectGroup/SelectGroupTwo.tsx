@@ -17,10 +17,10 @@ const SelectGroupTwo: React.FC = () => {
     <div className=''>
 
 
-      <div className="relative z-20   w-full dark:bg-form-input">
+      <div className="relative z-20   md:w-[200px] w-[150px] dark:bg-form-input">
 
         <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-          <div className='w-6'>
+          <div className='md:w-6 w-4'>
             {selectedOption == 'Baik' ? <img src={Logo} alt="" /> : selectedOption == 'Catatan' ? <img src={Polygon} alt="" /> : selectedOption == 'Jelek' ? <img src={X} alt="" /> : selectedOption == 'Tidak terpasang' ? <img src={Strip} alt="" /> : ""}
           </div>
 
@@ -32,7 +32,7 @@ const SelectGroupTwo: React.FC = () => {
             setSelectedOption(e.target.value);
             changeTextColor();
           }}
-          className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
+          className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected ? 'text-black dark:text-white' : ''
             }`}
         >
           <option value="" disabled className="text-body dark:text-bodydark ">
