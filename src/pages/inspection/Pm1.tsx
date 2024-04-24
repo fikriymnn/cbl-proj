@@ -108,7 +108,7 @@ function Pm1() {
             <main className='overflow-x-scroll'>
                 <div className='min-w-[700px] bg-white rounded-xl'>
 
-                    <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9'>01 April 2024</p>
+                    <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>01 April 2024</p>
                     <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
 
                         <div className='w-2 h-full '>
@@ -117,7 +117,7 @@ function Pm1() {
                         <section className='grid grid-cols-6 w-full py-4  font-semibold text-[14px]'>
 
 
-                            <p>Machine Name</p>
+                            <p className='md:ps-0 ps-3'>Machine Name</p>
 
 
                             <p>Inspector</p>
@@ -141,16 +141,22 @@ function Pm1() {
                     {brandData.map((brand, key) => (
                         <>
                             <section key={key} className=' flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black'>
-                                <div className={`w-2 h-full ${brand.partOf == 'printing' ? 'bg-green-600' : brand.partOf == 'water base' ? 'bg-yellow-600' : brand.partOf == 'pond' ? 'bg-violet-900' : brand.partOf == 'finishing' ? 'bg-red-900' : ''}`}>
+                                <div className={`w-2 h-full sticky left-0 z-20 ${brand.partOf == 'printing' ? 'bg-green-600' : brand.partOf == 'water base' ? 'bg-yellow-600' : brand.partOf == 'pond' ? 'bg-violet-900' : brand.partOf == 'finishing' ? 'bg-red-900' : ''}`}>
 
                                 </div>
-                                <div className=' w-full h-full flex flex-col justify-center'>
+
+
+
+
+                                <div className=' w-full h-full flex flex-col justify-center relative'>
+
                                     <div className='ps-7 w-full grid grid-cols-6'>
 
-                                        <div className='flex flex-col justify-center font-bold'>
 
+                                        <div className='flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
                                             <p className=''>{brand.name}</p>
                                         </div>
+
                                         <div className='flex flex-col justify-center '>
 
                                             <p className=''>{brand.inspector != null ? brand.inspector : "-"}</p>
@@ -191,6 +197,12 @@ function Pm1() {
                             </section>
                         </>
                     ))}
+
+
+
+
+
+
                 </div>
 
 
