@@ -1,6 +1,6 @@
 // import React, { useState } from 'react';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl, jam, namaPemeriksa, no }:
     {
@@ -31,11 +31,27 @@ const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl
             }
         ])
     }
+    const [isMobile, setIsMobile] = useState(false);
+    const handleResize = () => {
+        setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
+    };
+    useEffect(() => {
 
+        handleResize();
+
+        // Event listener for window resize
+        window.addEventListener('resize', handleResize);
+
+        // Cleanup on component unmount
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
     return (
-        <div className="fixed z-50 inset-0 overflow-y-auto backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
-            <div className="w-full max-w-4xl bg-white rounded-xl shadow-md">
+        <div className="fixed z-50 inset-0 h-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center" >
+            <div className="w-full max-w-4xl bg-white rounded-xl shadow-md max-h-screen overflow-y-auto">
                 <div className="flex w-full items-center pt-4 px-3">
+
                     <svg
                         className='flex w-12'
                         width="20"
@@ -112,9 +128,9 @@ const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl
 
                     </div>
                     <div className="flex w-full pt-1">
-                        <div className="flex w-6/12">
+                        <div className="flex lg:w-6/12 w-full">
                             <div>
-                                <div className="relative z-20 bg-white dark:bg-form-input w-[400px]">
+                                <div className="relative z-20 bg-white dark:bg-form-input lg:w-[400px] w-[325px]">
                                     <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
                                         <svg
                                             width="20"
@@ -188,7 +204,7 @@ const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl
                     </div>
                     <div className="relative w-full min-w-[200px] pt-1">
                         <textarea
-                            className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-blue-gray-200 bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                            className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                         >
                         </textarea>
 
@@ -203,14 +219,14 @@ const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl
                     <div className="overflow-y-auto scroll-auto max-h-[200px]">
 
                         <div className="pb-2">
-                            <div className="flex  px-2 py-3 bg-[#D8EAFF] rounded-md">
-                                <label className=" text-blue-700 text-xs font-bold pt-2 pl-4">
+                            <div className="flex  px-2 lg:py-3 py-1 bg-[#D8EAFF] rounded-md">
+                                <label className="hidden sm:block text-blue-700 text-xs font-bold pt-2 pl-4">
                                     1
                                 </label>
-                                <button name="rusak" className="ml-4 w-[282px] h-9 bg-white rounded text-center text-[#0065DE] text-xs font-bold">
+                                <button name="rusak" className="lg:ml-4 ml-[2px] lg:w-[282px] w-8/12 h-9 bg-white rounded text-center text-[#0065DE] text-xs font-bold">
                                     INK INJECTOR CGT
                                 </button>
-                                <svg className="ml-4" width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <svg className="lg:ml-4 ml-[2px]" width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g clip-path="url(#clip0_708_3509)">
                                         <path d="M39 0H0V39H39V0Z" fill="white" fill-opacity="0.01" />
                                         <path d="M14.625 25.1875H30.875V4.0625" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
@@ -224,32 +240,56 @@ const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl
                                         </clipPath>
                                     </defs>
                                 </svg>
-                                <button name="pengganti" className="ml-4 w-[282px] h-9 bg-white rounded text-center text-[#0065DE] text-xs font-bold">
-                                    INK INJECTOR FGA
-                                </button>
-                                <div className="w-[130px]  ml-2 bg-[#EDF5FF] rounded text-center text-[#0065DE] text-xs font-bold pt-[9px]">
-                                    ORIGINAL
-                                </div>
-                                <button name="pengganti" className="ml-2 w-[39px] h-9 bg-[#DE0000] rounded justify-items-center ">
-                                    <svg className="ml-[13px]" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
-                                        <rect y="11.7183" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(-45 0 11.7183)" fill="white" />
-                                    </svg>
+                                {!isMobile && (
+                                    <>
+                                        <button name="pengganti" className="lg:ml-4 ml-[2px] w-[282px] h-9 bg-white rounded text-center text-[#0065DE] text-xs font-bold">
+                                            INK INJECTOR FGA
+                                        </button>
+                                        <div className="w-[130px] h-9 lg:ml-2 ml-[2px] bg-[#EDF5FF] rounded text-center text-[#0065DE] text-xs font-bold lg:pt-[9px] pt-[10px] px-1">
+                                            ORIGINAL
+                                        </div>
+                                        <button name="pengganti" className="lg:ml-2 ml-[2px] w-[39px] h-9 bg-[#DE0000] rounded justify-items-center ">
+                                            <svg className="lg:ml-[13px] mx-2" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
+                                                <rect y="11.7183" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(-45 0 11.7183)" fill="white" />
+                                            </svg>
 
-                                </button>
+                                        </button>
+                                    </>
+                                )}
+                                {isMobile && (
+                                    <>
+                                        <div className="flex flex-wrap">
+                                            <button name="pengganti" className="lg:ml-4 ml-[2px] w-[155px] h-5 bg-white rounded-t-[4px] text-center text-[#0065DE] text-xs font-bold">
+                                                INK INJECTOR FGA
+                                            </button>
+                                            <div className="w-[155px] h-4 lg:ml-2 ml-[2px] bg-[#EDF5FF] rounded-b-[4px] text-center text-[#0065DE] text-xs font-bold lg:pt-[9px] ">
+                                                ORIGINAL
+                                            </div>
+                                        </div>
+
+                                        <button name="pengganti" className="lg:ml-2 ml-[2px] w-[39px] h-9 bg-[#DE0000] rounded justify-items-center ">
+                                            <svg className="lg:ml-[13px] mx-2" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
+                                                <rect y="11.7183" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(-45 0 11.7183)" fill="white" />
+                                            </svg>
+
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
                         {sparepart.map((val, i) => {
                             return (
                                 <div className="pb-2 ">
-                                    <div className="flex  px-2 py-3 bg-[#D8EAFF] rounded-md">
-                                        <label className=" text-blue-700 text-xs font-bold pt-2 pl-4">
+                                    <div className="flex  px-2 lg:py-3 py-1 bg-[#D8EAFF] rounded-md">
+                                        <label className="hidden sm:block text-blue-700 text-xs font-bold pt-2 lg:pl-4">
                                             {no}
                                         </label>
-                                        <button name="rusak" className="ml-4 w-[282px] h-9 bg-blue-700 rounded text-center text-white text-xs font-bold">
+                                        <button name="rusak" className="lg:ml-4 lg:w-[282px] w-[220px] h-9 bg-blue-700 rounded text-center text-white text-xs font-bold">
                                             PILIH SPAREPART RUSAK
                                         </button>
-                                        <svg className="ml-4" width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <svg className="lg:ml-4 ml-[2px]" width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <g clip-path="url(#clip0_708_3509)">
                                                 <path d="M39 0H0V39H39V0Z" fill="white" fill-opacity="0.01" />
                                                 <path d="M14.625 25.1875H30.875V4.0625" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
@@ -263,11 +303,11 @@ const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl
                                                 </clipPath>
                                             </defs>
                                         </svg>
-                                        <button name="pengganti" className="ml-4 w-[415px] h-9 bg-blue-700 rounded text-center text-white text-xs font-bold">
+                                        <button name="pengganti" className="lg:ml-4 ml-[2px] lg:w-[415px] w-[320px] h-9 bg-blue-700 rounded text-center text-white text-xs font-bold">
                                             PILIH SPAREPART PENGGANTI
                                         </button>
-                                        <button name="pengganti" className="ml-2 w-[39px] h-9 bg-[#DE0000] rounded justify-items-center ">
-                                            <svg className="ml-[13px]" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <button name="pengganti" className="ml-[2px] lg:w-[39px] w-[30px] h-9 bg-[#DE0000] rounded justify-items-center ">
+                                            <svg className="lg:ml-[13px] mx-2 " width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
                                                 <rect y="11.7183" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(-45 0 11.7183)" fill="white" />
                                             </svg>
@@ -280,7 +320,7 @@ const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl
                         })}
                     </div>
                     <div className="flex gap-10 pt-1">
-                        <button onClick={handleClick} className="w-60 h-12 bg-blue-700 rounded text-center text-white text-xs font-bold">
+                        <button onClick={handleClick} className="lg:w-60 w-30 h-12 bg-blue-700 rounded text-center text-white text-xs font-bold">
                             +
                         </button>
                     </div>
