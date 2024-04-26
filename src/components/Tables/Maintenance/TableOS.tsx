@@ -33,7 +33,7 @@ function TableOS() {
         {/* <input className='w-96 py-1 mx-3 bg-[#E9F3FF]'>
           search
         </input> */}
-        <input type="search" placeholder='search' name="" id="" className='w-96 py-1 mx-3 px-3 bg-[#E9F3FF]' />
+        <input type="search" placeholder='search' name="" id="" className='md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]' />
       </div>
       <div className=' overflow-x-auto'>
         <div className='min-w-[1000px]'>

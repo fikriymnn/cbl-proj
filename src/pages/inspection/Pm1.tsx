@@ -117,7 +117,7 @@ function Pm1() {
                         <section className='grid grid-cols-6 w-full py-4  font-semibold text-[14px]'>
 
 
-                            <p className='md:ps-0 ps-3'>Machine Name</p>
+                            <p className=''>Machine Name</p>
 
 
                             <p>Inspector</p>
