@@ -26,6 +26,7 @@ import ModalStockCheckRusak from '../components/Modals/ModalStockCheckPilihRusak
 import ModalStockCheckPengganti from '../components/Modals/ModalStockCheckPilihPengganti';
 import ModalPM2Eksekutor from '../components/Modals/ModalPM2Eksekutor';
 import ModalPM26type from '../components/Modals/ModalPM26Type';
+import ModalFilter from '../components/Modals/ModalFilter';
 
 
 const App = () => {
@@ -59,7 +60,7 @@ const App = () => {
     const [showModal27, setShowModal27] = useState(false);
 
     const [showModal28, setShowModal28] = useState(false);
-
+    const [showModal29, setShowModal29] = useState(false);
 
     const openModal1 = () => setShowModal1(true);
     const closeModal1 = () => setShowModal1(false);
@@ -144,6 +145,9 @@ const App = () => {
 
     const openModal28 = () => setShowModal28(true);
     const closeModal28 = () => setShowModal28(false);
+
+    const openModal29 = () => setShowModal29(true);
+    const closeModal29 = () => setShowModal29(false);
 
     return (
         <div>
@@ -555,7 +559,7 @@ const App = () => {
                         isOpen={showModal24}
                         onClose={closeModal24}
                         machineName={'R700'}
-                        kendala={'Settingan tidak pas'}
+                        kendala={'3.X.Y - Settingan tidak pas'}
                         tgl={'20 MEI 2024'}
                         jam={'14:00'}
                         namaPemeriksa={'Acep Piere'} no={2}                    >
@@ -631,6 +635,21 @@ const App = () => {
                     >
                         <p></p>
                     </ModalPM26type>
+                )}
+                <button type="button"
+                    onClick={openModal29}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open Filter
+                </button>
+                {showModal29 && (
+                    <ModalFilter
+
+                        isOpen={showModal29}
+                        onClose={closeModal29}
+
+                    >
+                        <p></p>
+                    </ModalFilter>
                 )}
             </div>
             <div className='pt-20'>

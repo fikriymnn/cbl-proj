@@ -1,6 +1,7 @@
 // import React, { useState } from 'react';
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import CheckStockPengganti from "../Tables/Modals/SparepartPengganti";
 
 const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl, jam, namaPemeriksa, no }:
     {
@@ -21,14 +22,13 @@ const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl
     const changeTextColor = () => {
         setIsOptionSelected(true);
     };
-
+    const [isHidden, setIsHidden] = useState(true);
+    const [buttonHidden, setButtonHidden] = useState(true);
     const handleClick = () => {
+        setIsHidden(false);
+        setButtonHidden(false);
         setSparepart([
-            ...sparepart,
-            {
-                rusak: "",
-                pengganti: ""
-            }
+
         ])
     }
     const [isMobile, setIsMobile] = useState(false);
@@ -47,6 +47,10 @@ const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl
             window.removeEventListener('resize', handleResize);
         };
     }, []);
+
+    const [rusak, setRusak] = useState(false);
+
+
     return (
         <div className="fixed z-50 inset-0 h-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center" >
             <div className="w-full max-w-4xl bg-white rounded-xl shadow-md max-h-screen overflow-y-auto">
@@ -124,13 +128,20 @@ const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl
                             </label>
 
                         </div>
+                        {!isMobile && (
+                            <div className="flex pl-2 w-6/12">
+                                <label className="form-label block  text-black text-xs font-extrabold mt-3">
+                                    UPLOAD FOTO
+                                </label>
+                            </div>
+                        )}
 
 
                     </div>
                     <div className="flex w-full pt-1">
                         <div className="flex lg:w-6/12 w-full">
                             <div>
-                                <div className="relative z-20 bg-white dark:bg-form-input lg:w-[400px] w-[325px]">
+                                <div className="relative z-20 bg-white dark:bg-form-input lg:w-[400px] w-full">
                                     <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
                                         <svg
                                             width="20"
@@ -153,7 +164,7 @@ const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl
                                             }`}
                                     >
                                         <option value="" disabled className="text-body dark:text-bodydark">
-                                            XX - NAMA PENYEBAB
+                                            3.X.Y - NAMA PENYEBAB
                                         </option>
                                         <option value="N" className="text-body dark:text-bodydark">
                                             N - SIRKULASI OLI TIDAK NORMAL
@@ -184,39 +195,56 @@ const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl
                                             </g>
                                         </svg>
                                     </span>
+
                                 </div>
                             </div>
                         </div>
+                        {!isMobile && (
 
-                        <div className="flex w-6/12">
+                            <div className="flex ml-2 lg:w-[389px] rounded-md border border-stroke px-2 py-2">
+                                <label
+                                    htmlFor="formFile"
+                                    className="flex items-center px-12 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
+                                >
+                                    Pilih File
+                                    <input type="file" id="formFile" accept="image/*" className="hidden" />
+                                </label>
 
-
-                        </div>
-                    </div>
-                    <div className="flex w-full pt-1">
-                        <div className="flex w-full">
-                            <label className="form-label block  text-black text-xs font-extrabold mt-3">
-                                CATATAN
-                            </label>
-
-                        </div>
-
-                    </div>
-                    <div className="relative w-full min-w-[200px] pt-1">
-                        <textarea
-                            className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                        >
-                        </textarea>
-
+                                <span id="formFile" className="ml-2 text-sm"></span>
+                            </div>
+                        )}
 
                     </div>
+                    {isMobile && (
+                        <>
+
+                            <div className="flex pl-2 w-6/12">
+                                <label className="form-label block  text-black text-xs font-extrabold mt-3">
+                                    UPLOAD FOTO
+                                </label>
+                            </div>
+
+                            <div className="flex  w-full mt-2 rounded-md border border-stroke px-2 py-2">
+                                <label
+                                    htmlFor="formFile"
+                                    className="flex items-center px-12 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
+                                >
+                                    Pilih File
+                                    <input type="file" id="formFile" accept="image/*" className="hidden" />
+                                </label>
+
+                                <span id="formFile" className="ml-2 text-sm"></span>
+                            </div>
+                        </>
+                    )}
+
                     <div className="flex w-full pt-2">
                         <label className="form-label block  text-black text-xs font-extrabold mt-3">
                             KEBUTUHAN SPAREPART
                         </label>
 
                     </div>
-                    <div className="overflow-y-auto scroll-auto max-h-[200px]">
+                    {/* <div className="overflow-y-auto scroll-auto max-h-[200px]">
 
                         <div className="pb-2">
                             <div className="flex  px-2 lg:py-3 py-1 bg-[#D8EAFF] rounded-md">
@@ -318,12 +346,309 @@ const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl
 
                             )
                         })}
+                    </div> */}
+                    {isHidden == false ? (
+                        <>
+
+                            <div className="pt-3 mt-5 border bg-blue-100 rounded border-stroke pb-4 overflow-y-auto scroll-auto max-h-[450px]">
+                                {!isMobile && (
+                                    <div className='flex flex-wrap w-full px-1 py-1 '>
+                                        <div className="flex w-full gap-1 border-b px-3 py-1 border-neutral-300 pb-2">
+                                            <div className="flex w-3/12">
+                                                <label htmlFor="" className="text-neutral-500  text-xs font-semibold pt-1">
+                                                    Sparepart Untuk :
+                                                </label>
+                                            </div>
+
+
+                                            <div className="relative z-20 h-[23px] bg-white dark:bg-form-input rounded-md w-5/12">
+
+
+                                                <select
+                                                    value={selectedOption}
+                                                    onChange={(e) => {
+                                                        setSelectedOption(e.target.value);
+                                                        changeTextColor();
+                                                    }}
+                                                    className={`relative z-20 w-full appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-gray-800 dark:text-white' : ''
+                                                        }`}
+                                                >
+                                                    <option value="pon" className="text-gray-800 text-xs font-light dark:text-bodydark">
+                                                        R700
+                                                    </option>
+
+
+                                                </select>
+
+                                                <span className="absolute top-[13px] right-2 z-10 -translate-y-1/2">
+                                                    <svg
+                                                        width="24"
+                                                        height="24"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+                                                        <g opacity="0.8">
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                clipRule="evenodd"
+                                                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                                                fill="#637381"
+                                                            ></path>
+                                                        </g>
+                                                    </svg>
+                                                </span>
+                                            </div>
+                                            <input type="text" className="w-full h-[23px] rounded-md px-3 text-xs" placeholder="Cari Sparepart" />
+                                        </div>
+                                        <div className="flex w-full px-3 pt-2">
+                                            <div className="flex items-center w-1/12  justify-start">
+                                                <p className="hidden  text-neutral-500 text-sm font-semibold dark:text-white sm:block">
+                                                    No
+                                                </p>
+                                            </div>
+
+                                            <div className="flex items-center w-3/12 justify-center ">
+                                                <p className="text-neutral-500 text-sm font-semibold text-center dark:text-white line-clamp-1">Sperepart Name</p>
+                                            </div>
+                                            <div className="flex items-center w-3/12 justify-center ">
+                                                <p className="text-neutral-500 text-sm font-semibold text-center dark:text-white line-clamp-1">Sperepart Status</p>
+                                            </div>
+                                            <div className="flex items-center w-3/12 justify-center ">
+                                                <p className="text-neutral-500 text-sm font-semibold text-center dark:text-white line-clamp-1">Sperepart Stock</p>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                )}
+                                {isMobile && (
+                                    <div className='flex w-full px-1 py-1'>
+                                        <div className="flex w-full flex-wrap gap-1 border-b  border-neutral-300 pb-2">
+                                            <div className="flex w-full">
+                                                <div className="flex w-full">
+                                                    <label htmlFor="" className="text-neutral-500  text-xs font-semibold pt-1">
+                                                        Sparepart Untuk :
+                                                    </label>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex w-full">
+                                                <div className="relative z-20 h-[30px] bg-white dark:bg-form-input rounded-md w-9/12">
+
+
+                                                    <select
+                                                        value={selectedOption}
+                                                        onChange={(e) => {
+                                                            setSelectedOption(e.target.value);
+                                                            changeTextColor();
+                                                        }}
+                                                        className={`relative z-20 w-full pt-2 appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-gray-800 dark:text-white' : ''
+                                                            }`}
+                                                    >
+                                                        <option value="pon" className="text-gray-800 text-xs font-light dark:text-bodydark">
+                                                            R700
+                                                        </option>
+
+
+                                                    </select>
+
+                                                    <span className="absolute top-[16px] right-2 z-10 -translate-y-1/2">
+                                                        <svg
+                                                            width="24"
+                                                            height="24"
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                        >
+                                                            <g opacity="0.8">
+                                                                <path
+                                                                    fillRule="evenodd"
+                                                                    clipRule="evenodd"
+                                                                    d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                                                    fill="#637381"
+                                                                ></path>
+                                                            </g>
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                                <input type="text" className="w-full h-[30px] rounded-md px-3 text-xs ml-2" placeholder="Cari Sparepart" />
+                                            </div>
+                                            <div className="flex w-full pt-3">
+                                                <div className="flex items-center w-4/12 justify-start pl-1 ">
+                                                    <p className="text-neutral-500 text-sm font-semibold text-center dark:text-white line-clamp-1"> Name</p>
+                                                </div>
+                                                <div className="flex items-center w-3/12 justify-start ">
+                                                    <p className="text-neutral-500 text-sm font-semibold text-center dark:text-white line-clamp-1"> Status</p>
+                                                </div>
+                                                <div className="flex items-center w-3/12 justify-start">
+                                                    <p className="text-neutral-500 text-sm font-semibold text-center dark:text-white line-clamp-1"> Stock</p>
+                                                </div>
+                                                <div className="flex w-2/12">
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                )}
+
+                                <div className="pb-2 ">
+                                    <CheckStockPengganti
+                                        no={1}
+                                        spareName={'Cable'}
+                                        spareStatus={'Original'}
+                                        spareStock={'5'} />
+                                    <CheckStockPengganti
+                                        no={2}
+                                        spareName={'Adapter 3.5'}
+                                        spareStatus={'Original'}
+                                        spareStock={'0'} />
+                                    <CheckStockPengganti
+                                        no={3}
+                                        spareName={'INK Injector'}
+                                        spareStatus={'Original'}
+                                        spareStock={'1'} />
+                                    <CheckStockPengganti
+                                        no={4}
+                                        spareName={'Adapter 3.5'}
+                                        spareStatus={'Original'}
+                                        spareStock={'0'} />
+                                    <CheckStockPengganti
+                                        no={5}
+                                        spareName={'Adapter 3.5'}
+                                        spareStatus={'Original'}
+                                        spareStock={'0'} />
+                                    <CheckStockPengganti
+                                        no={6}
+                                        spareName={'Adapter 3.5'}
+                                        spareStatus={'Original'}
+                                        spareStock={'0'} />
+                                    <CheckStockPengganti
+                                        no={7}
+                                        spareName={'Adapter 3.5'}
+                                        spareStatus={'Original'}
+                                        spareStock={'0'} />
+                                    <CheckStockPengganti
+                                        no={8}
+                                        spareName={'Adapter 3.5'}
+                                        spareStatus={'Original'}
+                                        spareStock={'0'} />
+                                    <CheckStockPengganti
+                                        no={9}
+                                        spareName={'Adapter 3.5'}
+                                        spareStatus={'Original'}
+                                        spareStock={'0'} />
+                                </div>
+
+                            </div>
+                            {/* <div className="flex w-full h-12 rounded-md bg-blue-600 mt-4 justify-center items-center">
+                                <label className="text-center text-white text-xs font-bold">
+                                    REQUEST STOCK
+                                </label>
+                            </div> */}
+                        </>
+                    ) : (
+                        <>
+                        </>
+                    )
+                    }
+                    {buttonHidden == true ? (
+                        <>
+                            <div className="flex w-full pt-1">
+                                <button onClick={handleClick} className="lg:w-[400px] w-30 lg:h-12 h-10 bg-blue-700 rounded text-center text-white text-xs font-bold">
+                                    +
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <></>
+                    )}
+
+                    <div className="flex w-full pt-1">
+                        <div className="flex w-full">
+                            <label className="form-label block  text-black text-xs font-extrabold mt-3">
+                                TIPE MAINTENANCE
+                            </label>
+
+                        </div>
+
                     </div>
-                    <div className="flex gap-10 pt-1">
-                        <button onClick={handleClick} className="lg:w-60 w-30 h-12 bg-blue-700 rounded text-center text-white text-xs font-bold">
-                            +
-                        </button>
+                    <div className="flex w-full pt-1">
+                        <div className="flex lg:w-6/12 w-full">
+                            <div>
+                                <div className="relative z-20 bg-white dark:bg-form-input lg:w-[400px] w-[325px]">
+                                    <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                        <svg
+                                            width="20"
+                                            height="20"
+                                            viewBox="0 0 20 20"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+
+                                        </svg>
+                                    </span>
+
+                                    <select
+                                        value={selectedOption}
+                                        onChange={(e) => {
+                                            setSelectedOption(e.target.value);
+                                            changeTextColor();
+                                        }}
+                                        className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
+                                            }`}
+                                    >
+                                        <option value="diakalin" className="text-body dark:text-bodydark">
+                                            DIAKALIN
+                                        </option>
+                                        <option value="kanibal" className="text-body dark:text-bodydark">
+                                            KANIBAL
+                                        </option>
+                                        <option value="original" className="text-body dark:text-bodydark">
+                                            ORIGINAL
+                                        </option>
+                                    </select>
+
+                                    <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
+                                        <svg
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <g opacity="0.8">
+                                                <path
+                                                    fillRule="evenodd"
+                                                    clipRule="evenodd"
+                                                    d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                                    fill="#637381"
+                                                ></path>
+                                            </g>
+                                        </svg>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                    <div className="flex w-full pt-1">
+                        <div className="flex w-full">
+                            <label className="form-label block  text-black text-xs font-extrabold mt-3">
+                                CATATAN
+                            </label>
+
+                        </div>
+
+                    </div>
+                    <div className="relative w-full min-w-[200px] pt-1">
+                        <textarea
+                            className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                        >
+                        </textarea>
+
+
+                    </div>
+
                     <div className="pt-5">
                         <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
                             SIMPAN
