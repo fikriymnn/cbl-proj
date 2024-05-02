@@ -1,10 +1,45 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from "react";
 import Logo from '../../images/logo/logo-cbl 1.svg';
 import Layout2 from '../../layout/Layout2';
 import Gambar from '../../images/BACKGROUND.png';
 import Checkbox11 from '../../components/Checkboxes/Checkbox11';
+import axios from "axios";
+import { useRouter } from "next/navigation";
+
+import { useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {
+    const [Email, setEmail] = useState("");
+    const [Password, setPassword] = useState("");
+    const navigate = useNavigate();
+    // const router = useRouter();
+    // const { push } = useRouter();
+
+    async function submitLogin(e: any) {
+        e.preventDefault();
+        try {
+            const response = await axios.post(
+                `https://26vlcsn0-5000.asse.devtunnels.ms/login`,
+                { email: Email, password: Password },
+
+                {
+                    withCredentials: true,
+                    headers: {
+                        Accept: "application/json",
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            alert("login success");
+            // router.push("/");
+            // push("/");
+            navigate('/');
+        } catch (error: any) {
+            alert(error);
+        }
+    }
+
     return (
 
         <Layout2>
@@ -33,11 +68,14 @@ const Login: React.FC = () => {
                                 LOGIN
                             </h2>
 
-                            <form>
+                            <form
+                                onSubmit={submitLogin}
+                            >
                                 <div className="mb-4">
 
                                     <div className="relative">
                                         <input
+                                            onChange={(e) => setEmail(e.target.value)}
                                             type="email"
                                             placeholder="Email"
                                             className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
@@ -67,6 +105,7 @@ const Login: React.FC = () => {
 
                                     <div className="relative">
                                         <input
+                                            onChange={(e) => setPassword(e.target.value)}
                                             type="password"
                                             placeholder="Password"
                                             className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"

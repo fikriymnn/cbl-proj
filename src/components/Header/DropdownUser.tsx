@@ -2,12 +2,53 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import UserOne from '../../images/user/user-01.png';
+import axios from "axios";
+
+import { useNavigate } from 'react-router-dom';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const trigger = useRef<any>(null);
   const dropdown = useRef<any>(null);
+
+  const [user, setUser] = useState<any>(null);
+
+  const navigate = useNavigate();
+  useEffect(() => {
+    getUser();
+  }, []);
+
+  async function getUser() {
+    try {
+      const res = await axios.get(`https://26vlcsn0-5000.asse.devtunnels.ms/me`, {
+        withCredentials: true,
+      });
+      // if (res.data.success == false) {
+      //   navigate("/auth/login");
+      // }
+      setUser(res.data);
+      console.log(res.data)
+    } catch (error: any) {
+      console.log(error.response);
+    }
+  }
+  async function logout(e: any) {
+    e.preventDefault();
+    try {
+      const response = await axios.get(
+        `https://26vlcsn0-5000.asse.devtunnels.ms/logout`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      alert("logout success");
+      navigate("/auth/login");
+    } catch (error: any) {
+      alert(error.response.data.message);
+    }
+  }
 
   // close on click outside
   useEffect(() => {
@@ -45,9 +86,24 @@ const DropdownUser = () => {
       >
         <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
-            Thomas Anree
+            {user == null ? (
+              <></>
+            ) : (
+              <p className="w-full h-7 text-blue-700 text-xl font-semibold">
+                {user.nama}
+              </p>
+            )}
           </span>
-          <span className="block text-xs">UX Designer</span>
+
+          <span className="block text-xs">
+            {user == null ? (
+              <></>
+            ) : (
+              <p className="w-full h-7 text-blue-700 text- font-normal">
+                {user.role}
+              </p>
+            )}
+          </span>
         </span>
 
         <span className="h-12 w-12 rounded-full">
@@ -76,9 +132,8 @@ const DropdownUser = () => {
         ref={dropdown}
         onFocus={() => setDropdownOpen(true)}
         onBlur={() => setDropdownOpen(false)}
-        className={`absolute right-0 mt-4 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${
-          dropdownOpen === true ? 'block' : 'hidden'
-        }`}
+        className={`absolute right-0 mt-4 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${dropdownOpen === true ? 'block' : 'hidden'
+          }`}
       >
         <ul className="flex flex-col gap-5 border-b border-stroke px-6 py-7.5 dark:border-strokedark">
           <li>
@@ -153,7 +208,7 @@ const DropdownUser = () => {
             </Link>
           </li>
         </ul>
-        <button className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+        <button onClick={logout} className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
           <svg
             className="fill-current"
             width="22"
