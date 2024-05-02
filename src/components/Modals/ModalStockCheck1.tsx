@@ -598,14 +598,29 @@ const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl
                                         className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
                                             }`}
                                     >
-                                        <option value="diakalin" className="text-body dark:text-bodydark">
-                                            DIAKALIN
+                                        <option value="ori" className="text-body dark:text-bodydark">
+                                            100% - Original
                                         </option>
-                                        <option value="kanibal" className="text-body dark:text-bodydark">
-                                            KANIBAL
+                                        <option value="secOri" className="text-body dark:text-bodydark">
+                                            80% - Second Ori
                                         </option>
-                                        <option value="original" className="text-body dark:text-bodydark">
-                                            ORIGINAL
+                                        <option value="canibal" className="text-body dark:text-bodydark">
+                                            70% - Canibal
+                                        </option>
+                                        <option value="setting" className="text-body dark:text-bodydark">
+                                            60% - setting
+                                        </option>
+                                        <option value="fabrikasi" className="text-body dark:text-bodydark">
+                                            50% - Fabrikasi
+                                        </option>
+                                        <option value="local" className="text-body dark:text-bodydark">
+                                            40% - Part Lokal
+                                        </option>
+                                        <option value="temporary" className="text-body dark:text-bodydark">
+                                            20% - Temporary
+                                        </option>
+                                        <option value="pending" className="text-body dark:text-bodydark">
+                                            0% - Pending
                                         </option>
                                     </select>
 

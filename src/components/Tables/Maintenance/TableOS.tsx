@@ -5,6 +5,7 @@ import Arrow from '../../../images/icon/arrowDown.svg'
 import ModalStockCheckPengganti from '../../Modals/ModalStockCheckPilihPengganti'
 import ModalPopupReq from '../../Modals/ModalDetailPopupReq'
 import ModalMtcDate from '../../Modals/ModalMtcDate'
+import ModalStockCheck1 from '../../Modals/ModalStockCheck1'
 
 const tiket = [
   {
@@ -146,7 +147,7 @@ function TableOS() {
                                   JADWALKAN                              </button>
                               </div>
                               {showModal1 && (
-                                <ModalStockCheckPengganti children={undefined} isOpen={showModal1} onClose={closeModal1} kendala={"mesin rusak"} machineName={"R700"} tgl={"12/12/24"} jam={"19.09"} namaPemeriksa={'Troy'} no={'109299'} />
+                                <ModalStockCheck1 children={undefined} isOpen={showModal1} onClose={closeModal1} kendala={"mesin rusak"} machineName={"R700"} tgl={"12/12/24"} jam={"19.09"} namaPemeriksa={'Troy'} no={'109299'} />
                               )}
                               {showModal2 && (
                                 <ModalMtcDate
