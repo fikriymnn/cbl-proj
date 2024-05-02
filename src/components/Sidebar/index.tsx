@@ -262,7 +262,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                   return (
                     <React.Fragment>
                       <NavLink
-                        to="#"
+                        to="/maintenance/issss"
                         className={`group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/maintenance' ||
                           pathname.includes('maintenance')) &&
                           ' dark:bg-meta-4'
