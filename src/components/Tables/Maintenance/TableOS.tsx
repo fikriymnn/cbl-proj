@@ -176,7 +176,6 @@ function TableOS() {
                 </section>
                 {showDetail[i] && (
                   <div className='w-full flex flex-col bg-[#E9F3FF]  rounded-lg'>
-
                     <div className='md:w-9/12 w-11/12 px-5 py-2'>
                       <div className='grid grid-cols-5 gap-3'>
                         <p className='text-xs font-bold'>Pekerjaan 1</p>
