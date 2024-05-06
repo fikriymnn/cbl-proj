@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, Navigate, useLocation } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import Logo from '../../images/logo/logo-cbl 2.svg';
 import Dashboard from '../../images/icon/dashboard.svg'
@@ -262,17 +262,19 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                   return (
                     <React.Fragment>
                       <NavLink
-                        to="/maintenance/issss"
-                        className={`group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/maintenance' ||
-                          pathname.includes('maintenance')) &&
+                        to="/maintenance/DashboardMaintenance"
+                        className={({ isActive }) => `group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium !text-white duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/DashboardMaintenance' ||
+                          pathname.includes('DashboardMaintenance')) &&
                           ' dark:bg-meta-4'
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          sidebarExpanded
-                            ? handleClick()
-                            : setSidebarExpanded(true);
-                        }}
+                          }` + (isActive && ' py-3 px-1 text-[16px]')}
+                      // onClick={(e) => {
+                      //   e.preventDefault();
+
+                      //   sidebarExpanded
+                      //     ? handleClick()
+                      //     : setSidebarExpanded(true);
+
+                      // }}
                       >
                         <svg width="20" height="19" viewBox="0 0 20 19" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M4.6 4.55624L8.65 8.55702M4.6 4.55624H1.9L1 1.88906L1.9 1L4.6 1.88906V4.55624ZM16.5331 1.6588L14.1683 3.99492C13.8119 4.347 13.6336 4.52304 13.5669 4.72604C13.5081 4.9046 13.5081 5.09694 13.5669 5.27551C13.6336 5.47851 13.8119 5.65454 14.1683 6.00663L14.3817 6.21757C14.7381 6.56965 14.9164 6.74569 15.1219 6.81165C15.3026 6.86967 15.4974 6.86967 15.6781 6.81165C15.8836 6.74569 16.0619 6.56965 16.4183 6.21757L18.6304 4.03234C18.8686 4.60503 19 5.23228 19 5.88983C19 8.59045 16.7838 10.7797 14.05 10.7797C13.7204 10.7797 13.3983 10.7478 13.0868 10.6871C12.6492 10.6019 12.4305 10.5593 12.2979 10.5723C12.1569 10.5862 12.0874 10.6071 11.9625 10.6732C11.8449 10.7353 11.7271 10.8517 11.4913 11.0846L5.05 17.4476C4.30441 18.1841 3.09559 18.1841 2.35 17.4476C1.60441 16.7111 1.60441 15.5169 2.35 14.7804L8.7913 8.41744C9.0271 8.1845 9.14491 8.06808 9.20782 7.952C9.27469 7.82859 9.29584 7.75995 9.30988 7.62067C9.32311 7.48966 9.27991 7.27355 9.19369 6.84134C9.13222 6.53357 9.1 6.21542 9.1 5.88983C9.1 3.18925 11.3162 1 14.05 1C14.955 1 15.8032 1.23989 16.5331 1.6588ZM10.0001 12.5577L14.95 17.4475C15.6956 18.184 16.9044 18.184 17.65 17.4475C18.3956 16.711 18.3956 15.5169 17.65 14.7804L13.5778 10.7577C13.2895 10.7308 13.0084 10.6794 12.7367 10.6057C12.3865 10.5107 12.0024 10.5797 11.7457 10.8333L10.0001 12.5577Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
