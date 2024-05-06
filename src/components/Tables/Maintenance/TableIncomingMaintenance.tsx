@@ -17,6 +17,7 @@ import ModalPurchasing from '../../Modals/ModalPurchasing';
 import ModalMtcLightHeavy from '../../Modals/ModalMtcLightHeavy';
 import ModalNewVendor from '../../Modals/ModalNewVendor';
 import Arrow from '../../../images/icon/arrowDown.svg'
+import axios from 'axios';
 
 
 const tiket = [
@@ -187,7 +188,23 @@ const TableIncomingMaintenance = () => {
     };
   }, []);
 
+  const [mtc, setMtc] = useState<any>(null);
+  useEffect(() => {
+    getMTC();
+  }, []);
+  async function getMTC() {
+    const url = `${import.meta.env.VITE_API_LINK}/ticket?bagian_tiket=incoming`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
 
+      setMtc(res.data);
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error.response);
+    }
+  }
   return (
     <div className='overflow-x-scroll'>
 
@@ -229,255 +246,67 @@ const TableIncomingMaintenance = () => {
                 </div>
               </div>
               <>
-                {tiket.map((brand, key) => (
-                  <div
-                    className={`flex ${key === tiket.length - 1
-                      ? ''
-                      : 'border-b-8  border-[#D8EAFF] dark:border-strokedark '
-                      }`}
-                    key={key}
-                  >
-                    <div className=" flex items-center w-1/12   gap-3 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF]  ">
+                {mtc != null &&
+                  mtc.map((brand: any, key: any) => (
+                    <div
+                      className={`flex ${key === tiket.length - 1
+                        ? ''
+                        : 'border-b-8  border-[#D8EAFF] dark:border-strokedark '
+                        }`}
+                      key={key}
+                    >
+                      <div className=" flex items-center w-1/12   gap-3 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF]  ">
 
-                      <p className=" md:text-[12px] text-[10px] text-black dark:text-white block">
-                        {key + 1}
-                      </p>
-                    </div>
+                        <p className=" md:text-[12px] text-[10px] text-black dark:text-white block">
+                          {key + 1}
+                        </p>
+                      </div>
 
-                    <div className=" flex items-center w-2/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                      <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.name}</p>
-                    </div>
-                    <div className=" flex items-center w-3/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                      <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.date}</p>
-                    </div>
-
-
-                    <div className=" flex items-center w-4/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                      <p className="text-black text-center md:text-[12px] text-[10px]">{brand.machine}</p>
-                    </div>
-                    <div className=" flex items-center w-3/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                      <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.name}</p>
-                    </div>
+                      <div className=" flex items-center w-2/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                        <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.name}</p>
+                      </div>
+                      <div className=" flex items-center w-3/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                        <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.createdAt}</p>
+                      </div>
 
 
-                    <div className=" items-center justify-center md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] flex ">
-                      <td className=" border-[#eee]   dark:border-strokedark">
-                        <div className=" mx-auto flex gap-3">
-                          <button type="button"
-                            className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
-                          >
-                            RESPON
-                          </button>
-                          <button type="button" onClick={openModal1}
-                            className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-white border-[#0065DE] border text-primary justify-center`}
-                          >
-                            DETAIL
-                          </button>
+                      <div className=" flex items-center w-4/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                        <p className="text-black text-center md:text-[12px] text-[10px]">{brand.mesin}</p>
+                      </div>
+                      <div className=" flex items-center w-3/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                        <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.nama_kendala}</p>
+                      </div>
 
 
-                          {/* <button type="button" onClick={openModal1}
+                      <div className=" items-center justify-center md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] flex ">
+                        <td className=" border-[#eee]   dark:border-strokedark">
+                          <div className=" mx-auto flex gap-3">
+                            <button type="button"
+                              className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
+                            >
+                              RESPON
+                            </button>
+                            <button type="button" onClick={openModal1}
+                              className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-white border-[#0065DE] border text-primary justify-center`}
+                            >
+                              DETAIL
+                            </button>
+
+
+                            {/* <button type="button" onClick={openModal1}
                     className={`inline-flex rounded-[3px] my-auto py-2 md:px-2 px-1 md:text-[12px] text-[10px] font-semibold bg-white border-[#0065DE] border text-primary justify-center items-center  `}
                   >
                     DETAIL
                   </button> */}
-                          {showModal1 && (
-                            <Modal title="Incoming Maintenance Ticket"
-                              isOpen={showModal1}
-                              onClose={closeModal1}
-                              ticketCode={'CTR03591'}
-                              prepName={'GMC Ink 229'}
-                              incDate={'28 May, 2024 06:37AM'}
-                              prepCode={'3.2'} >
-                              <p></p>
-                            </Modal>
-                          )}
-
-                          {showModal2 && (
-                            <ModalMtc
-                              title="Select Maintenance Type"
-                              isOpen={showModal2}
-                              onClose={closeModal2}
-                              machineName={'GMC Printer 2'}                    >
-                              <div className="pt-5">
-
-                                <button onClick={openModal3} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                  RIGHT AWAY MAINTENANCE
-                                </button>
-                              </div>
-                              <div className="pt-2">
-                                <button onClick={openModal8} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                  SCHEDULE MAINTENANCE
-                                </button>
-                              </div>
-                            </ModalMtc>
-                          )}
-
-                          {showModal8 && (
-                            <ModalMtcLightHeavy
-                              title="Select Maintenance Type"
-                              isOpen={showModal8}
-                              onClose={closeModal8}
-                            >
-                              <div className="pt-5">
-
-                                <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                  MAINTENANCE RINGAN
-                                </button>
-                              </div>
-                              <div className="pt-2">
-                                <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                  MAINTENANCE BERAT
-                                </button>
-                              </div>
-                            </ModalMtcLightHeavy>
-                          )}
-                          {showModal3 && (
-                            <ModalMtc6type
-                              isOpen={showModal3}
-                              onClose={closeModal3}
-                              ticketCode={'EXC0008'}
-                            >
-                              <p></p>
-                            </ModalMtc6type>
-                          )}
-                          {showModal4 && (
-                            <ModalMtcStockCheck
-                              machineName={'GMC Printer 2'}
-                              machineCode={'3.2'}
-                              isOpen={showModal4}
-                              onClose={closeModal4}
-                            >
-                              <button onClick={openModal6} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                REQUIRED STOCK UNAVAILABLE
-                              </button>
-                              <button onClick={openModal5} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                NEXT STEP
-                              </button>
-                            </ModalMtcStockCheck>
-                          )}
-
-                          {showModal5 && (
-                            <ModalMtc6type children={undefined} isOpen={showModal5} onClose={closeModal5} ticketCode={undefined} />
-                          )}
-                          {showModal6 && (
-                            <ModalReplaced
-                              isOpen={showModal6}
-                              onClose={closeModal6}
-                            >
-                              <div className="flex  w-full gap-3 pt-5">
-                                <button onClick={openModal7} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                  YES
-                                </button>
-                                <button onClick={openModal9} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                  NO
-                                </button>
-                              </div>
-                            </ModalReplaced>
-                          )}
-                          {showModal7 && (
-                            <ModalPurchasing
-                              isOpen={showModal7}
-                              onClose={closeModal7}>
-                            </ModalPurchasing>
-                          )}
-                          {showModal9 && (
-                            <ModalNewVendor
-                              isOpen={showModal9}
-                              onClose={closeModal9}
-                            >
-                              <div className="flex  w-full gap-3 pt-5 justify-end pt-[300px]">
-                                <button className="w-4/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md ">
-                                  SEND REQUEST
-                                </button>
-                              </div>
-                            </ModalNewVendor>
-                          )}
-
-                        </div>
-
-                      </td>
-                    </div>
-                  </div>
-                ))}
-              </>
-            </div>
-          </div>
-        </>
-      )}
-
-      {isMobile && (
-        <>
-          <div className="rounded-b-xl lg:min-w-[700px]  border border-stroke bg-white  pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
-
-
-            <div className="flex flex-col">
-              <div
-                className='flex border-b-8  border-[#D8EAFF] dark:border-strokedark '
-              >
-                <div className='flex w-6/12'>
-
-                </div>
-                <div className=" flex items-center w-5/12 justify-center p-2.5 md:px-7.5 px-5 ">
-                  <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center dark:text-white">Kode Tiket</p>
-                </div>
-                <div className=" flex items-center md:text-[12px] text-[10px] w-7/12 justify-start p-2.5 md:px-7.5 px-5 ">
-                  <p className="text-slate-600 font-semibold text-center dark:text-white">Waktu Masuk</p>
-                </div>
-
-
-              </div>
-              <>
-                {tiket.map((brand, key) => (
-                  <div className=''>
-                    <div className='w-full'>
-
-
-                      <div
-                        className={`flex ${key === tiket.length - 1
-                          ? ''
-                          : 'border-b-8  border-[#D8EAFF] dark:border-strokedark '
-                          }`}
-                        key={key}
-                      >
-
-                        <div className='flex justify-center items-center pl-2 py-2'>
-
-                          <button onClick={() => handleClickDetail(key)} className='h-14 w-8 text-xs font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-[4px]'><img src={Arrow} alt="" className='mx-2 py-1' /></button>
-                        </div>
-
-                        <div className=" flex flex-wrap  w-4/12  border-b-[#D8EAFF] px-2 gap-1  py-2">
-
-                          <button type="button"
-                            className={`inline-flex py-[6px] rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
-                          >
-                            RESPON
-                          </button>
-                          <button type="button" onClick={openModal1}
-                            className={`inline-flex py-1 rounded-[3px] my-auto  md:px-5 px-2 md:text-[12px] text-[10px] sm:font-semibold bg-white border-[#0065DE] border text-primary justify-center`}
-                          >
-                            DETAIL
-                          </button>
-                        </div>
-
-                        <div className=" flex items-center w-6/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                          <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.name}</p>
-                        </div>
-                        <div className=" flex items-center w-5/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                          <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.date}</p>
-                        </div>
-
-                        <div className=" items-center justify-center md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] flex ">
-                          <td className=" border-[#eee]   dark:border-strokedark">
-
-
                             {showModal1 && (
-                              <Modal title="Incoming Maintenance Ticket"
+                              <Modal
                                 isOpen={showModal1}
                                 onClose={closeModal1}
-                                ticketCode={'CTR03591'}
-                                prepName={'GMC Ink 229'}
-                                incDate={'28 May, 2024 06:37AM'}
-                                prepCode={'3.2'} >
+                                ticketCode={''}
+                                incDate={brand.createdAt}
+                                namaMesin={brand.mesin}
+                                jenisKendala={brand.jenis_kendala}
+                                kendala={brand.nama_kendala}                               >
                                 <p></p>
                               </Modal>
                             )}
@@ -575,43 +404,235 @@ const TableIncomingMaintenance = () => {
                                 isOpen={showModal9}
                                 onClose={closeModal9}
                               >
-                                <div className="flex w-full gap-3 justify-end pt-[300px]">
+                                <div className="flex  w-full gap-3 pt-5 justify-end pt-[300px]">
                                   <button className="w-4/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md ">
                                     SEND REQUEST
                                   </button>
                                 </div>
                               </ModalNewVendor>
                             )}
-                          </td>
-                        </div>
+
+                          </div>
+
+                        </td>
                       </div>
-                      <div className='flex w-full'>
-                        {showDetail[key] && (
-                          <div className='w-full  bg-[#E9F3FF]  rounded-lg py-2'>
-                            <div className='flex w-full'>
+                    </div>
+                  ))}
+              </>
+            </div>
+          </div>
+        </>
+      )}
+
+      {isMobile && (
+        <>
+          <div className="rounded-b-xl lg:min-w-[700px]  border border-stroke bg-white  pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
+
+
+            <div className="flex flex-col">
+              <div
+                className='flex border-b-8  border-[#D8EAFF] dark:border-strokedark '
+              >
+                <div className='flex w-6/12'>
+
+                </div>
+                <div className=" flex items-center w-5/12 justify-center p-2.5 md:px-7.5 px-5 ">
+                  <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center dark:text-white">Kode Tiket</p>
+                </div>
+                <div className=" flex items-center md:text-[12px] text-[10px] w-7/12 justify-start p-2.5 md:px-7.5 px-5 ">
+                  <p className="text-slate-600 font-semibold text-center dark:text-white">Waktu Masuk</p>
+                </div>
+
+
+              </div>
+              <>
+                {mtc != null &&
+                  mtc.map((brand: any, key: any) => (
+                    <div className=''>
+                      <div className='w-full'>
+
+
+                        <div
+                          className={`flex ${key === tiket.length - 1
+                            ? ''
+                            : 'border-b-8  border-[#D8EAFF] dark:border-strokedark '
+                            }`}
+                          key={key}
+                        >
+
+                          <div className='flex justify-center items-center pl-2 py-2'>
+
+                            <button onClick={() => handleClickDetail(key)} className='h-14 w-8 text-xs font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-[4px]'><img src={Arrow} alt="" className='mx-2 py-1' /></button>
+                          </div>
+
+                          <div className=" flex flex-wrap  w-4/12  border-b-[#D8EAFF] px-2 gap-1  py-2">
+
+                            <button type="button"
+                              className={`inline-flex py-[6px] rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
+                            >
+                              RESPON
+                            </button>
+                            <button type="button" onClick={openModal1}
+                              className={`inline-flex py-1 rounded-[3px] my-auto  md:px-5 px-2 md:text-[12px] text-[10px] sm:font-semibold bg-white border-[#0065DE] border text-primary justify-center`}
+                            >
+                              DETAIL
+                            </button>
+                          </div>
+
+                          <div className=" flex items-center w-6/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                            <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white"></p>
+                          </div>
+                          <div className=" flex items-center w-5/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                            <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.createdAt}</p>
+                          </div>
+
+                          <div className=" items-center justify-center md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] flex ">
+                            <td className=" border-[#eee]   dark:border-strokedark">
+
+
+                              {showModal1 && (
+                                <Modal
+                                  isOpen={showModal1}
+                                  onClose={closeModal1}
+                                  ticketCode={''}
+                                  incDate={brand.createdAt}
+                                  namaMesin={brand.mesin}
+                                  jenisKendala={brand.jenis_kendala}
+                                  kendala={brand.nama_kendala}                               >
+                                  <p></p>
+                                </Modal>
+                              )}
+
+                              {showModal2 && (
+                                <ModalMtc
+                                  title="Select Maintenance Type"
+                                  isOpen={showModal2}
+                                  onClose={closeModal2}
+                                  machineName={'GMC Printer 2'}                    >
+                                  <div className="pt-5">
+
+                                    <button onClick={openModal3} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                      RIGHT AWAY MAINTENANCE
+                                    </button>
+                                  </div>
+                                  <div className="pt-2">
+                                    <button onClick={openModal8} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                      SCHEDULE MAINTENANCE
+                                    </button>
+                                  </div>
+                                </ModalMtc>
+                              )}
+
+                              {showModal8 && (
+                                <ModalMtcLightHeavy
+                                  title="Select Maintenance Type"
+                                  isOpen={showModal8}
+                                  onClose={closeModal8}
+                                >
+                                  <div className="pt-5">
+
+                                    <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                      MAINTENANCE RINGAN
+                                    </button>
+                                  </div>
+                                  <div className="pt-2">
+                                    <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                      MAINTENANCE BERAT
+                                    </button>
+                                  </div>
+                                </ModalMtcLightHeavy>
+                              )}
+                              {showModal3 && (
+                                <ModalMtc6type
+                                  isOpen={showModal3}
+                                  onClose={closeModal3}
+                                  ticketCode={'EXC0008'}
+                                >
+                                  <p></p>
+                                </ModalMtc6type>
+                              )}
+                              {showModal4 && (
+                                <ModalMtcStockCheck
+                                  machineName={'GMC Printer 2'}
+                                  machineCode={'3.2'}
+                                  isOpen={showModal4}
+                                  onClose={closeModal4}
+                                >
+                                  <button onClick={openModal6} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                    REQUIRED STOCK UNAVAILABLE
+                                  </button>
+                                  <button onClick={openModal5} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                    NEXT STEP
+                                  </button>
+                                </ModalMtcStockCheck>
+                              )}
+
+                              {showModal5 && (
+                                <ModalMtc6type children={undefined} isOpen={showModal5} onClose={closeModal5} ticketCode={undefined} />
+                              )}
+                              {showModal6 && (
+                                <ModalReplaced
+                                  isOpen={showModal6}
+                                  onClose={closeModal6}
+                                >
+                                  <div className="flex  w-full gap-3 pt-5">
+                                    <button onClick={openModal7} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                      YES
+                                    </button>
+                                    <button onClick={openModal9} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                      NO
+                                    </button>
+                                  </div>
+                                </ModalReplaced>
+                              )}
+                              {showModal7 && (
+                                <ModalPurchasing
+                                  isOpen={showModal7}
+                                  onClose={closeModal7}>
+                                </ModalPurchasing>
+                              )}
+                              {showModal9 && (
+                                <ModalNewVendor
+                                  isOpen={showModal9}
+                                  onClose={closeModal9}
+                                >
+                                  <div className="flex w-full gap-3 justify-end pt-[300px]">
+                                    <button className="w-4/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md ">
+                                      SEND REQUEST
+                                    </button>
+                                  </div>
+                                </ModalNewVendor>
+                              )}
+                            </td>
+                          </div>
+                        </div>
+                        <div className='flex w-full'>
+                          {showDetail[key] && (
+                            <div className='w-full  bg-[#E9F3FF]  rounded-lg py-2'>
                               <div className='flex w-full'>
+                                <div className='flex w-full'>
 
-                                <div className='flex w-6/12 flex-col'>
-                                  <p className='text-xs font-bold'>Nama Mesin</p>
-                                  <p className='text-sm font-light'>R700</p>
-                                </div>
-                                <div className='flex w-6/12 flex-col'>
-                                  <p className='text-xs font-bold'>Kendala</p>
-                                  <p className='text-sm font-light'>Mesin Macet</p>
-                                </div>
+                                  <div className='flex w-6/12 flex-col'>
+                                    <p className='text-xs font-bold'>Nama Mesin</p>
+                                    <p className='text-sm font-light'>R700</p>
+                                  </div>
+                                  <div className='flex w-6/12 flex-col'>
+                                    <p className='text-xs font-bold'>Kendala</p>
+                                    <p className='text-sm font-light'>Mesin Macet</p>
+                                  </div>
 
+
+                                </div>
 
                               </div>
 
                             </div>
+                          )}
+                        </div>
 
-                          </div>
-                        )}
                       </div>
-
                     </div>
-                  </div>
-                ))
+                  ))
                 }
 
               </>

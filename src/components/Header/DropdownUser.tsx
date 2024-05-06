@@ -36,8 +36,8 @@ const DropdownUser = () => {
   async function logout(e: any) {
     e.preventDefault();
     try {
-      const response = await axios.get(
-        `https://26vlcsn0-5000.asse.devtunnels.ms/logout`,
+      const response = await axios.delete(
+        `${import.meta.env.VITE_API_LINK}/logout`,
         {
           withCredentials: true,
         }
@@ -46,7 +46,8 @@ const DropdownUser = () => {
       alert("logout success");
       navigate("/auth/login");
     } catch (error: any) {
-      alert(error.response.data.message);
+      alert(error.msg);
+      console.log(error)
     }
   }
 
