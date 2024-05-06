@@ -54,7 +54,9 @@ function TableOS() {
 
 
   const [showTwoButtons, setShowTwoButtons] = useState<boolean[]>(new Array(tiket.length).fill(false));
+  const [showTwoButtonsMobile, setShowTwoButtonsMobile] = useState<boolean[]>(new Array(tiket.length).fill(false));
   const [showDetail, setShowDetail] = useState<boolean[]>(new Array(tiket.length).fill(false));
+  const [showDetailMobile, setShowDetailMobile] = useState<boolean[]>(new Array(tiket.length).fill(false));
   const [showModal1, setShowModal1] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
 
@@ -81,6 +83,13 @@ function TableOS() {
       const updatedShowDetail = [...prevState]; // Create a copy
       updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
       return updatedShowDetail;
+    });
+  };
+  const handleClickDetailMobile = (index: number) => {
+    setShowDetailMobile((prevState) => {
+      const updatedShowDetailMobile = [...prevState]; // Create a copy
+      updatedShowDetailMobile[index] = !updatedShowDetailMobile[index]; // Toggle value
+      return updatedShowDetailMobile;
     });
   };
   return (
@@ -317,59 +326,130 @@ function TableOS() {
           </div>
         </>
       )}
+
+
+      {/* =============================================================INI KOMPONEN UNTUK MOBILE========================================== */}
       {isMobile && (
         <>
-          <main>
+          <main className="overflow-x-scroll">
 
-            <div className="bg-white mt-2 flex gap-4">
-              <div className='flex gap-1'>
+            <div className="bg-white mt-2 px-1 grid grid-cols-4 gap-3 py-2">
+              <div className='flex gap-[1px] justify-center items-center'>
                 <p className='text-xs font-bold '>Action</p>
                 <img src={Polygon6} alt="" />
               </div>
-              <div className='flex gap-1'>
+              <div className='flex gap-[1px] justify-center items-center'>
                 <p className='text-xs font-bold '>Nama Mesin</p>
                 <img src={Polygon6} alt="" />
               </div>
-              <div className='flex gap-1'>
+              <div className='flex gap-[1px] justify-center items-center'>
                 <p className='text-xs font-bold '>Jenis Kendala</p>
                 <img src={Polygon6} alt="" />
               </div>
-              <div className='flex gap-1'>
+              <div className='flex gap-[1px] justify-center items-center'>
                 <p className='text-xs font-bold '>Persentase</p>
                 <img src={Polygon6} alt="" />
               </div>
 
             </div>
-            <div className="bg-white mt-2 flex gap-8">
+            {tiket.map((data, i) => (
+              <>
 
-              <div className='flex gap-1'>
+                <div className="bg-white mt-2 grid grid-cols-4 gap-3 p-2">
 
-                <button
-                  className="text-xs font-bold bg-blue-700  text-white rounded-md"
+                  <div className='flex gap-1'>
 
-                >
-                  <img src={Burger} alt="" className="mx-1" />
+                    <button
+                      className="text-xs h-5 font-bold bg-blue-700  text-white rounded-sm"
 
-                </button>
-                <button className='text-xs font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-md'><img src={Arrow} alt="" className='mx-1' /></button>
+                    >
+                      <img src={Burger} alt="" className="mx-1" />
 
-              </div>
+                    </button>
+                    <button onClick={() => handleClickDetailMobile(i)} className='text-xs h-5 font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-sm'><img src={Arrow} alt="" className='mx-1' /></button>
+
+                  </div>
 
 
-              <div className='flex gap-2'>
-                <p className='text-xs font-medium '>R700</p>
+                  <div className='flex gap-2'>
+                    <p className='text-xs font-medium '>R700</p>
 
-              </div>
-              <div className='flex gap-2'>
-                <p className='text-xs font-medium '>3.1.7 Feeder tidak bisa on  </p>
+                  </div>
+                  <div className='flex gap-2'>
+                    <p className={`text-xs font-medium line-clamp-2 `}>3.1.7 Feeder tidak bisa on tidak bisa on tidak bisa ontidak bisa on  </p>
 
-              </div>
-              <div className=' gap-2'>
-                <p className='text-xs font-medium bg-red-400 rounded-sm'>0%</p>
+                  </div>
+                  <div className='flex gap-2 justify-center '>
+                    <p className='text-xs font-medium bg-red-200 text-red-600 rounded-sm h-6   p-1'>0%</p>
 
-              </div>
+                  </div>
 
-            </div>
+                </div>
+                {showDetailMobile[i] && (
+                  <>
+                    <div className='w-full grid grid-cols-3 bg-[#E9F3FF]  rounded-lg px-2 gap-x-3 gap-y-3 p-1'>
+                      <div>
+                        <h5 className="text-xs font-bold">Waktu tiket masuk</h5>
+                        <p className="text-xs font-medium">12/12/12 7:00</p>
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold">Kode Tiket</h5>
+                        <p className="text-xs font-medium">EX102880</p>
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold">Status</h5>
+                        <p className="text-xs font-medium">Monitoring</p>
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold">Jenis Kendala</h5>
+                        <p className="text-xs font-medium">3.1.7 Feeder tidak bisa on tidak bisa on </p>
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold">Jadwal</h5>
+                        <p className="text-xs font-medium">12/12/12 7:00</p>
+                      </div>
+
+
+
+                    </div>
+                    <div className='w-full grid grid-cols-3 bg-[#E9F3FF]  rounded-lg px-2 gap-y-3 mt-3 p-1'>
+                      <div>
+                        <h5 className="text-xs font-bold">Pengerjaan Ke</h5>
+                        <p className="text-xs font-medium">1</p>
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold">Waktu</h5>
+                        <p className="text-xs font-medium">12/12/12 7:00</p>
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold">Eksekutor</h5>
+                        <p className="text-xs font-medium">Saya</p>
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold">Waktu Respon</h5>
+                        <p className="text-xs font-medium">20m</p>
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold">Progress Perbaikan</h5>
+                        <p className="text-xs font-medium">Temporary</p>
+                      </div>
+                      <div>
+                        <h5 className="text-xs font-bold">Jenis Perbaikan</h5>
+                        <p className="text-xs font-medium">Part Lokal</p>
+                      </div>
+
+                      <div className=''>
+                        <button onClick={openModal1} className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md">
+                          Detail
+                        </button>
+
+                      </div>
+
+                    </div>
+                  </>
+                )}
+              </>
+            ))}
           </main>
         </>
       )}

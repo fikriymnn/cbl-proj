@@ -18,6 +18,7 @@ import HistoryMtc from './pages/History/Maintenance';
 import Pm1 from './pages/inspection/Pm1';
 import MasterData from './pages/MasterData/Master';
 import Pm1Form from './pages/inspection/Pm1Form';
+import Dashboard from './pages/Maintenance/dashboard';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -178,6 +179,15 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <Cobain />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/DashboardMaintenance"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Dashboard />
             </>
           }
         />
