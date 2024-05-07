@@ -19,7 +19,7 @@ const Login: React.FC = () => {
         e.preventDefault();
         try {
             const response = await axios.post(
-                `https://26vlcsn0-5000.asse.devtunnels.ms/login`,
+                `${import.meta.env.VITE_API_LINK}/login`,
                 { email: Email, password: Password },
 
                 {
