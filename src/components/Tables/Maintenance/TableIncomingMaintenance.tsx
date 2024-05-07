@@ -160,6 +160,17 @@ const TableIncomingMaintenance = () => {
       console.log(error.response);
     }
   }
+  async function responMTC(id: number) {
+    const url = `${import.meta.env.VITE_API_LINK}/ticket/respon/${id}`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      alert('berhasil')
+    } catch (error: any) {
+      console.log(error.response);
+    }
+  }
   return (
     <div className='overflow-x-scroll'>
 
@@ -277,8 +288,8 @@ const TableIncomingMaintenance = () => {
                                     </label>
                                   </div>
                                   <div className='flex w-full gap-3 pt-3'>
-                                    <button className='w-6/12 h-9 text-center text-white text-xs font-bold bg-blue-700 rounded-md'>RESPON</button>
-                                    <button className='w-6/12 h-9 text-center text-white text-xs font-bold bg-blue-700 rounded-md'>KEMBALI</button>
+                                    <button onClick={() => responMTC(brand.id)} className='w-full h-9 text-center text-white text-xs font-bold bg-blue-700 rounded-md'>RESPON</button>
+
                                   </div>
                                 </>
 
