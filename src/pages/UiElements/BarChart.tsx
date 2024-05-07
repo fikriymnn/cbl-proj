@@ -35,7 +35,10 @@ const BarChart = () => {
               height: '30px',
             }}
           ></div>
-          <div className="w-5 flex flex-col justify-center ms-1">
+          <div className="w-5 flex flex-col justify-center ms-1 font-medium" style={{
+            color: item.value <= redIndicator ? 'red' : 'blue',
+
+          }}>
             {item.value}
           </div>
         </div>
