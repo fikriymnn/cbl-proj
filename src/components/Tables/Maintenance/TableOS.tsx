@@ -7,32 +7,33 @@ import ModalPopupReq from '../../Modals/ModalDetailPopupReq'
 import ModalMtcDate from '../../Modals/ModalMtcDate'
 import ModalStockCheck1 from '../../Modals/ModalStockCheck1'
 import Polygon6 from '../../../images/icon/Polygon6.svg'
+import axios from "axios";
 
 
 
-const tiket = [
-  {
-    KodeTiket: '1376',
-    waktuMesin: "12/22/24 7:00UTC",
-    namaMesin: "R700",
-    kendala: "problem settingan mesin",
+// const tiket = [
+//   {
+//     KodeTiket: '1376',
+//     waktuMesin: "12/22/24 7:00UTC",
+//     namaMesin: "R700",
+//     kendala: "problem settingan mesin",
 
-  },
-  {
-    KodeTiket: '1376',
-    waktuMesin: "12/22/24 7:00UTC",
-    namaMesin: "R700",
-    kendala: "problem settingan mesin",
+//   },
+//   {
+//     KodeTiket: '1376',
+//     waktuMesin: "12/22/24 7:00UTC",
+//     namaMesin: "R700",
+//     kendala: "problem settingan mesin",
 
-  },
-  {
-    KodeTiket: '1376',
-    waktuMesin: "12/22/24 7:00UTC",
-    namaMesin: "R700",
-    kendala: "problem settingan mesin",
+//   },
+//   {
+//     KodeTiket: '1376',
+//     waktuMesin: "12/22/24 7:00UTC",
+//     namaMesin: "R700",
+//     kendala: "problem settingan mesin",
 
-  }
-]
+//   }
+// ]
 
 function TableOS() {
   const [isMobile, setIsMobile] = useState(false);
@@ -53,12 +54,6 @@ function TableOS() {
   }, []);
 
 
-  const [showTwoButtons, setShowTwoButtons] = useState<boolean[]>(new Array(tiket.length).fill(false));
-  const [showTwoButtonsMobile, setShowTwoButtonsMobile] = useState<boolean[]>(new Array(tiket.length).fill(false));
-  const [showDetail, setShowDetail] = useState<boolean[]>(new Array(tiket.length).fill(false));
-  const [showDetailMobile, setShowDetailMobile] = useState<boolean[]>(new Array(tiket.length).fill(false));
-  const [showModal1, setShowModal1] = useState(false);
-  const [showModal2, setShowModal2] = useState(false);
 
 
   const openModal1 = () => setShowModal1(true);
@@ -92,6 +87,31 @@ function TableOS() {
       return updatedShowDetailMobile;
     });
   };
+  const [tiket, setTiket] = useState<any>(null);
+  useEffect(() => {
+    getTiket();
+  }, []);
+  async function getTiket() {
+    const url = `${import.meta.env.VITE_API_LINK}/ticket?bagian_tiket=os2`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+
+      setTiket(res.data);
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error.response);
+    }
+  }
+  const [showTwoButtons, setShowTwoButtons] = useState<boolean[]>(new Array(tiket != null && tiket.length).fill(false));
+  const [showTwoButtonsMobile, setShowTwoButtonsMobile] = useState<boolean[]>(new Array(tiket != null && tiket.length).fill(false));
+  const [showDetail, setShowDetail] = useState<boolean[]>(new Array(tiket != null && tiket.length).fill(false));
+  const [showDetailMobile, setShowDetailMobile] = useState<boolean[]>(new Array(tiket != null && tiket.length).fill(false));
+  const [showModal1, setShowModal1] = useState(false);
+  const [showModal2, setShowModal2] = useState(false);
+
+
   return (
     <main>
       <div className='flex justify-between bg-white p-2'>
@@ -143,185 +163,202 @@ function TableOS() {
           <div className=' overflow-x-auto'>
             <div className='min-w-[700px]'>
 
-              {tiket.map((data, i) => (
-                <>
-                  <div className='my-2'>
+              {tiket != null &&
+                tiket.map((data: any, i: any) => (
+                  <>
+                    <div className='my-2'>
 
-                    <section className='flex  bg-white  rounded-lg'>
+                      <section className='flex  bg-white  rounded-lg'>
 
 
-                      <div key={i} className=' py-3 px-6 flex justify-center items-center'>
-                        {i + 1}
-                      </div>
-                      <div className='grid md:grid-cols-8 grid-cols-7 w-full  '>
-                        <div className='flex flex-col md:gap-5 gap-1 '>
-                          <div className='my-auto '>
-                            <p className='text-sm font-light'>{data.KodeTiket}</p>
-                          </div>
+                        <div key={i} className=' py-3 px-6 flex justify-center items-center'>
+                          {i + 1}
                         </div>
-                        <div className='flex flex-col md:gap-5 gap-1 '>
-                          <div className='my-auto'>
-                            <p className='text-sm font-light'>R700</p>
+                        <div className='grid md:grid-cols-8 grid-cols-7 w-full  '>
+                          <div className='flex flex-col md:gap-5 gap-1 '>
+                            <div className='my-auto '>
+                              <p className='text-sm font-light'></p>
+                            </div>
                           </div>
-                        </div>
-                        <div className='flex flex-col col-span-2 md:gap-5 gap-1 '>
-                          <div className='my-auto '>
-                            <p className='text-sm font-light'>3.1.7 - Feeder tidak bisa on</p>
+                          <div className='flex flex-col md:gap-5 gap-1 '>
+                            <div className='my-auto'>
+                              <p className='text-sm font-light'>{data.mesin}</p>
+                            </div>
                           </div>
-                        </div>
-                        <div className='flex items-center md:gap-5 gap-1 '>
-                          <div className='flex '>
-                            <p className='text-xs font-light bg-[#B1ECFF] rounded-xl px-2 text-[#004CDE]'>FINISHED </p>
+                          <div className='flex flex-col col-span-2 md:gap-5 gap-1 '>
+                            <div className='my-auto '>
+                              <p className='text-sm font-light'>{data.kode_lkh} - {data.nama_kendala}</p>
+                            </div>
                           </div>
-                        </div>
-                        <div className='flex items-center md:gap-5 gap-1  p-2'>
-                          <div className='flex '>
-                            <p className='text-sm px-2  font-light  rounded-xl  bg-[#00de3f4b] text-[#2EB300] '>100%</p>
+                          <div className='flex items-center md:gap-5 gap-1 '>
+                            <div className='flex '>
+                              <p className='text-xs font-light bg-[#B1ECFF] rounded-xl px-2 text-[#004CDE] uppercase'>{data.status_tiket} </p>
+                            </div>
                           </div>
-                        </div>
-                        <div className='flex flex-col md:gap-5 gap-1 '>
-                          <div>
-                            <p className='text-sm font-light'>-</p>
+                          <div className='flex items-center md:gap-5 gap-1  p-2'>
+                            <div className='flex '>
+                              <p className='text-sm px-2  font-light  rounded-xl  bg-[#00de3f4b] text-[#2EB300] '>{data.skor_mtc}%</p>
+                            </div>
                           </div>
-                        </div>
-                        <div className='flex gap-2 items-center md:mb-0 mb-2'>
-                          <div>
+                          <div className='flex flex-col md:gap-5 gap-1 '>
                             <div>
-                              <button
-                                className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                onClick={() => handleClick(i)}
-                              >
-                                <img src={Burger} alt="" className="mx-3" />
+                              <p className='text-sm font-light'>{data.proses_mtcs[1].tgl_mtc}</p>
+                            </div>
+                          </div>
+                          <div className='flex gap-2 items-center md:mb-0 mb-2'>
+                            <div>
+                              <div>
+                                <button
+                                  className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
+                                  onClick={() => handleClick(i)}
+                                >
+                                  <img src={Burger} alt="" className="mx-3" />
 
-                              </button>
-                              {showTwoButtons[i] ? (
-                                <div className="absolute bg-white p-3 shadow-5 rounded-md"> {/* Wrap buttons for styling */}
-                                  <div className='flex flex-col gap-1'>
+                                </button>
+                                {showTwoButtons[i] ? (
+                                  <div className="absolute bg-white p-3 shadow-5 rounded-md"> {/* Wrap buttons for styling */}
+                                    <div className='flex flex-col gap-1'>
 
-                                    <button onClick={openModal1} className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
-                                      PROSES
-                                    </button>
-                                    <button onClick={openModal2} className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
-                                      JADWALKAN                              </button>
+                                      <button onClick={openModal1} className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
+                                        PROSES
+                                      </button>
+                                      <button onClick={openModal2} className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
+                                        JADWALKAN                              </button>
+                                    </div>
+                                    {showModal1 && (
+                                      <ModalStockCheck1 children={undefined} isOpen={showModal1} onClose={closeModal1} kendala={"mesin rusak"} machineName={"R700"} tgl={"12/12/24"} jam={"19.09"} namaPemeriksa={'Troy'} no={'109299'} />
+                                    )}
+                                    {showModal2 && (
+                                      <ModalMtcDate
+                                        isOpen={showModal2}
+                                        onClose={closeModal2}
+                                        machineName={'GMC Printer 2'}>
+                                        <p></p>
+                                      </ModalMtcDate>
+                                    )}
                                   </div>
-                                  {showModal1 && (
-                                    <ModalStockCheck1 children={undefined} isOpen={showModal1} onClose={closeModal1} kendala={"mesin rusak"} machineName={"R700"} tgl={"12/12/24"} jam={"19.09"} namaPemeriksa={'Troy'} no={'109299'} />
-                                  )}
-                                  {showModal2 && (
-                                    <ModalMtcDate
-                                      isOpen={showModal2}
-                                      onClose={closeModal2}
-                                      machineName={'GMC Printer 2'}>
-                                      <p></p>
-                                    </ModalMtcDate>
-                                  )}
-                                </div>
 
-                              ) : (
-                                ""
-                              )}
-                            </div>
-                          </div>
-                          <div>
-
-                            <button onClick={() => handleClickDetail(i)} className='text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md'><img src={Arrow} alt="" className='mx-3' /></button>
-                          </div>
-                        </div>
-
-                      </div>
-
-                    </section>
-                    {showDetail[i] && (
-                      <div className='w-full flex flex-col bg-[#E9F3FF]  rounded-lg'>
-
-                        <div className='-11/12 px-5 py-2'>
-                          <div className='grid grid-cols-8 gap-3'>
-
-                            <div className='flex flex-col gap-2'>
-                              <p className='text-xs font-bold'>Waktu Tiket Masuk</p>
-
-                            </div>
-                            <div className='flex flex-col gap-2'>
-                              <h5 className='text-xs font-bold'>Pengerjaan Ke</h5>
-
-                            </div>
-                            <div className='flex flex-col gap-2'>
-                              <p className='text-xs font-bold'>Waktu</p>
-
-                            </div>
-                            <div className='flex flex-col gap-2'>
-                              <p className='text-xs font-bold'>Eksekutor</p>
-
-                            </div>
-                            <div className='flex flex-col gap-2'>
-                              <p className='text-xs font-bold'>Waktu Respon</p>
-
-                            </div>
-                            <div className='flex flex-col gap-2'>
-                              <p className='text-xs font-bold'>Progress Perbaikan</p>
-
-                            </div>
-                            <div className='flex flex-col gap-2'>
-                              <p className='text-xs font-bold'>Jenis Perbaikan</p>
-
-                            </div>
-                            <div className=''>
-
-
-                            </div>
-
-                          </div>
-                        </div>
-                        <div className='-11/12 px-5 py-2'>
-                          <div className='grid grid-cols-8 gap-3'>
-
-                            <div className='flex flex-col gap-2'>
-                              <p className='text-xs font-medium'>12/22/24 06:00</p>
-
-                            </div>
-                            <div className='flex flex-col gap-2'>
-                              <h5 className='text-xs font-medium'>1</h5>
-
-                            </div>
-                            <div className='flex flex-col gap-2'>
-                              <p className='text-xs font-medium'>12/22/24 06:00</p>
-
-                            </div>
-                            <div className='flex flex-col gap-2'>
-                              <p className='text-xs font-medium'>Charles Pedri</p>
-
-                            </div>
-                            <div className='flex flex-col gap-2'>
-                              <p className='text-xs font-medium'>30m</p>
-
-                            </div>
-                            <div className='flex flex-col gap-2'>
-
-                              <div className='flex'>
-
-                                <p className='text-sm px-2  font-light  rounded-xl flex justify-center text-red-600 bg-red-200'>40%</p>
+                                ) : (
+                                  ""
+                                )}
                               </div>
                             </div>
-                            <div className='flex flex-col gap-2'>
-                              <p className='text-xs font-medium'>Original</p>
+                            <div>
 
+                              <button onClick={() => handleClickDetail(i)} className='text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md'><img src={Arrow} alt="" className='mx-3' /></button>
                             </div>
-                            <div className=''>
-                              <button onClick={openModal1} className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md">
-                                Detail
-                              </button>
-
-                            </div>
-
                           </div>
+
                         </div>
 
+                      </section>
 
-                      </div>
-                    )}
-                  </div>
-                </>
-              ))}
+                      {showDetail[i] && (
+
+
+                        <>
+
+
+                          <div className='w-full flex flex-col bg-[#E9F3FF]  rounded-lg'>
+
+                            <div className='-11/12 px-5 py-2'>
+                              <div className='grid grid-cols-8 gap-3'>
+
+                                <div className='flex flex-col gap-2'>
+                                  <p className='text-xs font-bold'>Waktu Tiket Masuk</p>
+
+                                </div>
+                                <div className='flex flex-col gap-2'>
+                                  <h5 className='text-xs font-bold'>Pengerjaan Ke</h5>
+
+                                </div>
+                                <div className='flex flex-col gap-2'>
+                                  <p className='text-xs font-bold'>Waktu</p>
+
+                                </div>
+                                <div className='flex flex-col gap-2'>
+                                  <p className='text-xs font-bold'>Eksekutor</p>
+
+                                </div>
+                                <div className='flex flex-col gap-2'>
+                                  <p className='text-xs font-bold'>Waktu Respon</p>
+
+                                </div>
+                                <div className='flex flex-col gap-2'>
+                                  <p className='text-xs font-bold'>Progress Perbaikan</p>
+
+                                </div>
+                                <div className='flex flex-col gap-2'>
+                                  <p className='text-xs font-bold'>Jenis Perbaikan</p>
+
+                                </div>
+                                <div className=''>
+
+
+                                </div>
+
+                              </div>
+                            </div>
+                            <div className='-11/12 px-5 py-2'>
+                              <div className='grid grid-cols-8 gap-3'>
+
+                                <div className='flex flex-col gap-2'>
+                                  <p className='text-xs font-medium'>{data.createdAt}</p>
+
+                                </div>
+                                {data.proses_mtcs.map((proses: any, ii: any) => (
+                                  <>
+
+                                    <div className='flex flex-col gap-2'>
+                                      <h5 className='text-xs font-medium'>{ii + 1}</h5>
+
+                                    </div>
+                                    <div className='flex flex-col gap-2'>
+                                      <p className='text-xs font-medium'>{proses.waktu_mulai_mtc}</p>
+
+                                    </div>
+                                    <div className='flex flex-col gap-2'>
+                                      <p className='text-xs font-medium'>{proses.user_eksekutor.nama}</p>
+
+                                    </div>
+                                    <div className='flex flex-col gap-2'>
+                                      <p className='text-xs font-medium'>30m</p>
+
+                                    </div>
+                                    <div className='flex flex-col gap-2'>
+
+                                      <div className='flex'>
+
+                                        <p className='text-sm px-2  font-light  rounded-xl flex justify-center text-red-600 bg-red-200'>{proses.skor_mtc}%</p>
+                                      </div>
+                                    </div>
+                                    <div className='flex flex-col gap-2'>
+                                      <p className='text-xs font-medium'>{proses.cara_perbaikan}</p>
+
+                                    </div>
+                                    <div className=''>
+                                      <button onClick={openModal1} className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md">
+                                        Detail
+                                      </button>
+
+                                    </div>
+
+                                  </>
+                                ))}
+
+                              </div>
+                            </div>
+
+
+                          </div>
+                        </>
+                      )
+
+
+                      }
+                    </div>
+                  </>
+                ))}
             </div>
           </div>
         </>
@@ -352,7 +389,7 @@ function TableOS() {
               </div>
 
             </div>
-            {tiket.map((data, i) => (
+            {tiket.map((data: any, i: any) => (
               <>
 
                 <div className="bg-white mt-2 grid grid-cols-4 gap-3 p-2">
