@@ -132,27 +132,27 @@ function TableOS() {
             <div className='grid md:grid-cols-8 grid-cols-7 w-full'>
               <div className='flex gap-2'>
                 <p className='text-xs font-bold '>Kode Tiket</p>
-                <img src={Polygon6} alt="" />
+                <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className='flex gap-2'>
                 <p className='text-xs font-bold '>Nama Mesin</p>
-                <img src={Polygon6} alt="" />
+                <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className='flex gap-2 col-span-2'>
                 <p className='text-xs font-bold '>Jenis Kendala</p>
-                <img src={Polygon6} alt="" />
+                <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className='flex gap-2'>
                 <p className='text-xs font-bold '>Status</p>
-                <img src={Polygon6} alt="" />
+                <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className='flex gap-2'>
                 <p className='text-xs font-bold '>Persentase</p>
-                <img src={Polygon6} alt="" />
+                <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className='flex gap-2'>
                 <p className='text-xs font-bold '>Jadwal</p>
-                <img src={Polygon6} alt="" />
+                <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className='flex gap-2'>
                 <p className='text-xs font-bold '>Action</p>
@@ -189,7 +189,7 @@ function TableOS() {
                               </div>
                             </div>
                             <div className='flex flex-col col-span-2 md:gap-5 gap-1 '>
-                              <div className='my-auto '>
+                              <div className='my-auto w-11/12'>
                                 <p className='text-sm font-light'>{data.kode_lkh} - {data.nama_kendala}</p>
                               </div>
                             </div>
@@ -200,19 +200,19 @@ function TableOS() {
                             </div>
                             <div className='flex items-center md:gap-5 gap-1  p-2'>
                               <div className='flex '>
-                                <p className='text-sm px-2  font-light  rounded-xl  bg-[#00de3f4b] text-[#2EB300] '>{data.skor_mtc}%</p>
+                                <p className={data.skor_mtc === 100 ?
+                                  `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
+                                  : data.skor_mtc >= 60 || data.skor_mtc < 100 ?
+                                    `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                    : data.skor_mtc >= 40 || data.skor_mtc < 60 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] ` :
+                                      data.skor_mtc < 40 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ""
+
+                                }>{data.skor_mtc}%</p>
                               </div>
                             </div>
                             <div className='flex flex-col md:gap-5 gap-1 '>
                               <div>
-
-                                <div>
-
-                                  {/* <p className='text-sm font-light'>{data.proses_mtcs[1].tgl_mtc}</p> */}
-                                  <p className='text-sm font-light'>{data.proses_mtcs[lengthProses - 1].tgl_mtc}</p>
-
-                                </div>
-
+                                <p className='text-sm font-light'>{data.proses_mtcs[1].tgl_mtc}</p>
                               </div>
                             </div>
                             <div className='flex gap-2 items-center md:mb-0 mb-2'>
@@ -281,240 +281,252 @@ function TableOS() {
 
                             <div className='w-full flex flex-col bg-[#E9F3FF]  rounded-lg'>
 
-                              <div className='-11/12 px-5 py-2'>
-                                <div className='grid grid-cols-8 gap-3'>
-
-                                  <div className='flex flex-col gap-2'>
-                                    <p className='text-xs font-bold'>Waktu Tiket Masuk</p>
-
-                                  </div>
-                                  <div className='flex flex-col gap-2'>
-                                    <h5 className='text-xs font-bold'>Pengerjaan Ke</h5>
-
-                                  </div>
-                                  <div className='flex flex-col gap-2'>
-                                    <p className='text-xs font-bold'>Waktu</p>
-
-                                  </div>
-                                  <div className='flex flex-col gap-2'>
-                                    <p className='text-xs font-bold'>Eksekutor</p>
-
-                                  </div>
-                                  <div className='flex flex-col gap-2'>
-                                    <p className='text-xs font-bold'>Waktu Respon</p>
-
-                                  </div>
-                                  <div className='flex flex-col gap-2'>
-                                    <p className='text-xs font-bold'>Progress Perbaikan</p>
-
-                                  </div>
-                                  <div className='flex flex-col gap-2'>
-                                    <p className='text-xs font-bold'>Jenis Perbaikan</p>
-
-                                  </div>
-                                  <div className=''>
-
-
-                                  </div>
+                              <div className='flex px-5 py-2'>
+                                <div className='flex flex-col gap-2 w-2/12'>
+                                  <p className='text-xs font-bold'>Waktu Tiket Masuk</p>
 
                                 </div>
-                              </div>
-                              <div className='-11/12 px-5 py-2'>
-                                <div className='grid grid-cols-8 gap-3'>
-
-                                  <div className='flex flex-col gap-2'>
-                                    <p className='text-xs font-medium'>{data.createdAt}</p>
-
-                                  </div>
-                                  {data.proses_mtcs.map((proses: any, ii: any) => (
-                                    <>
-
-                                      <div className='flex flex-col gap-2'>
-                                        <h5 className='text-xs font-medium'>{ii + 1}</h5>
-
-                                      </div>
-                                      <div className='flex flex-col gap-2'>
-                                        <p className='text-xs font-medium'>{proses.waktu_mulai_mtc}</p>
-
-                                      </div>
-                                      <div className='flex flex-col gap-2'>
-                                        <p className='text-xs font-medium'>{proses.user_eksekutor.nama}</p>
-
-                                      </div>
-                                      <div className='flex flex-col gap-2'>
-                                        <p className='text-xs font-medium'>30m</p>
-
-                                      </div>
-                                      <div className='flex flex-col gap-2'>
-
-                                        <div className='flex'>
-
-                                          <p className='text-sm px-2  font-light  rounded-xl flex justify-center text-red-600 bg-red-200'>{proses.skor_mtc}%</p>
-                                        </div>
-                                      </div>
-                                      <div className='flex flex-col gap-2'>
-                                        <p className='text-xs font-medium'>{proses.cara_perbaikan}</p>
-
-                                      </div>
-                                      <div className=''>
-                                        <button onClick={openModal1} className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md">
-                                          Detail
-                                        </button>
-
-                                      </div>
-
-                                    </>
-                                  ))}
+                                <div className='flex flex-col gap-2'>
+                                  <h5 className='text-xs font-bold'>Pengerjaan Ke</h5>
 
                                 </div>
+                                <div className='flex flex-col gap-2'>
+                                  <p className='text-xs font-bold'>Waktu</p>
+
+                                </div>
+                                <div className='flex flex-col gap-2'>
+                                  <p className='text-xs font-bold'>Eksekutor</p>
+
+                                </div>
+
+                                <div className='flex flex-col gap-2'>
+                                  <p className='text-xs font-bold'>Progress Perbaikan</p>
+
+                                </div>
+                                <div className='flex flex-col gap-2'>
+                                  <p className='text-xs font-bold'>Jenis Perbaikan</p>
+
+                                </div>
+                                <div className=''>
+
+
+                                </div>
+
                               </div>
-
-
                             </div>
-                          </>
-                        )
+                            <div className='flex px-5 '>
+
+                              <div className='flex flex-col gap-2 w-2/12'>
+                                <div>
+                                  <p className='text-xs font-medium'>{data.createdAt}</p>
+
+                                </div>
+                                <div>
+                                  <p className='text-xs font-bold'>Waktu Respon</p>
+                                  <p className='text-xs font-medium'>30m</p>
+                                </div>
+
+                              </div>
+                              <div className='grid grid-cols-6 gap-3 w-10/12'>
+
+                                {data.proses_mtcs.map((proses: any, ii: any) => (
+
+                                  <>
+
+                                    <div className='flex flex-col gap-2'>
+                                      <h5 className='text-xs font-medium'>{ii + 1}</h5>
+
+                                    </div>
+                                    <div className='flex flex-col gap-2'>
+                                      <p className='text-xs font-medium'>{proses.waktu_mulai_mtc}</p>
+
+                                    </div>
+                                    <div className='flex flex-col gap-2'>
+                                      <p className='text-xs font-medium'>{proses.user_eksekutor.nama}</p>
+
+                                    </div>
+
+                                    <div className='flex flex-col gap-2'>
+
+                                      <div className='flex'>
+
+
+                                        <p className={proses.skor_mtc === 100 ?
+                                          `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
+                                          : proses.skor_mtc >= 60 || proses.skor_mtc < 100 ?
+                                            `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                            : proses.skor_mtc >= 40 || proses.skor_mtc < 60 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] ` :
+                                              proses.skor_mtc < 40 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ""
+
+                                        }>{proses.skor_mtc}%</p>
+                                      </div>
+                                    </div>
+                                    <div className='flex flex-col gap-2'>
+                                      <p className='text-xs font-medium'>{proses.cara_perbaikan}</p>
+
+                                    </div>
+                                    <div className=''>
+                                      <button onClick={openModal1} className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md">
+                                        Detail
+                                      </button>
+
+                                    </div>
+
+                                  </>
+                                ))}
+
+                              </div>
+                            </div>
+
+
+                          </div>
+                      </>
+                      )
 
 
                         }
-                      </div>
+                    </div >
                     </>
-                  )
+            )
                 }
 
 
                 )}
-            </div>
           </div>
-        </>
-      )}
+        </div>
+    </>
+  )
+}
 
 
-      {/* =============================================================INI KOMPONEN UNTUK MOBILE========================================== */}
-      {isMobile && (
-        <>
-          <main className="overflow-x-scroll">
+{/* =============================================================INI KOMPONEN UNTUK MOBILE========================================== */ }
+{
+  isMobile && (
+    <>
+      <main className="overflow-x-scroll">
 
-            <div className="bg-white mt-2 px-1 grid grid-cols-4 gap-3 py-2">
-              <div className='flex gap-[1px] justify-center items-center'>
-                <p className='text-xs font-bold '>Action</p>
-                <img src={Polygon6} alt="" />
+        <div className="bg-white mt-2 px-1 grid grid-cols-4 gap-3 py-2">
+          <div className='flex gap-[1px] justify-center items-center'>
+            <p className='text-xs font-bold '>Action</p>
+            <img src={Polygon6} alt="" />
+          </div>
+          <div className='flex gap-[1px] justify-center items-center'>
+            <p className='text-xs font-bold '>Nama Mesin</p>
+            <img src={Polygon6} alt="" />
+          </div>
+          <div className='flex gap-[1px] justify-center items-center'>
+            <p className='text-xs font-bold '>Jenis Kendala</p>
+            <img src={Polygon6} alt="" />
+          </div>
+          <div className='flex gap-[1px] justify-center items-center'>
+            <p className='text-xs font-bold '>Persentase</p>
+            <img src={Polygon6} alt="" />
+          </div>
+
+        </div>
+        {tiket.map((data: any, i: any) => (
+          <>
+
+            <div className="bg-white mt-2 grid grid-cols-4 gap-3 p-2">
+
+              <div className='flex gap-1'>
+
+                <button
+                  className="text-xs h-5 font-bold bg-blue-700  text-white rounded-sm"
+
+                >
+                  <img src={Burger} alt="" className="mx-1" />
+
+                </button>
+                <button onClick={() => handleClickDetailMobile(i)} className='text-xs h-5 font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-sm'><img src={Arrow} alt="" className='mx-1' /></button>
+
               </div>
-              <div className='flex gap-[1px] justify-center items-center'>
-                <p className='text-xs font-bold '>Nama Mesin</p>
-                <img src={Polygon6} alt="" />
+
+
+              <div className='flex gap-2'>
+                <p className='text-xs font-medium '>R700</p>
+
               </div>
-              <div className='flex gap-[1px] justify-center items-center'>
-                <p className='text-xs font-bold '>Jenis Kendala</p>
-                <img src={Polygon6} alt="" />
+              <div className='flex gap-2'>
+                <p className={`text-xs font-medium line-clamp-2 `}>3.1.7 Feeder tidak bisa on tidak bisa on tidak bisa ontidak bisa on  </p>
+
               </div>
-              <div className='flex gap-[1px] justify-center items-center'>
-                <p className='text-xs font-bold '>Persentase</p>
-                <img src={Polygon6} alt="" />
+              <div className='flex gap-2 justify-center '>
+                <p className='text-xs font-medium bg-red-200 text-red-600 rounded-sm h-6   p-1'>0%</p>
+
               </div>
 
             </div>
-            {tiket.map((data: any, i: any) => (
+            {showDetailMobile[i] && (
               <>
+                <div className='w-full grid grid-cols-3 bg-[#E9F3FF]  rounded-lg px-2 gap-x-3 gap-y-3 p-1'>
+                  <div>
+                    <h5 className="text-xs font-bold">Waktu tiket masuk</h5>
+                    <p className="text-xs font-medium">12/12/12 7:00</p>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold">Kode Tiket</h5>
+                    <p className="text-xs font-medium">EX102880</p>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold">Status</h5>
+                    <p className="text-xs font-medium">Monitoring</p>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold">Jenis Kendala</h5>
+                    <p className="text-xs font-medium">3.1.7 Feeder tidak bisa on tidak bisa on </p>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold">Jadwal</h5>
+                    <p className="text-xs font-medium">12/12/12 7:00</p>
+                  </div>
 
-                <div className="bg-white mt-2 grid grid-cols-4 gap-3 p-2">
 
-                  <div className='flex gap-1'>
 
-                    <button
-                      className="text-xs h-5 font-bold bg-blue-700  text-white rounded-sm"
+                </div>
+                <div className='w-full grid grid-cols-3 bg-[#E9F3FF]  rounded-lg px-2 gap-y-3 mt-3 p-1'>
+                  <div>
+                    <h5 className="text-xs font-bold">Pengerjaan Ke</h5>
+                    <p className="text-xs font-medium">1</p>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold">Waktu</h5>
+                    <p className="text-xs font-medium">12/12/12 7:00</p>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold">Eksekutor</h5>
+                    <p className="text-xs font-medium">Saya</p>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold">Waktu Respon</h5>
+                    <p className="text-xs font-medium">20m</p>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold">Progress Perbaikan</h5>
+                    <p className="text-xs font-medium">Temporary</p>
+                  </div>
+                  <div>
+                    <h5 className="text-xs font-bold">Jenis Perbaikan</h5>
+                    <p className="text-xs font-medium">Part Lokal</p>
+                  </div>
 
-                    >
-                      <img src={Burger} alt="" className="mx-1" />
-
+                  <div className=''>
+                    <button onClick={openModal1} className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md">
+                      Detail
                     </button>
-                    <button onClick={() => handleClickDetailMobile(i)} className='text-xs h-5 font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-sm'><img src={Arrow} alt="" className='mx-1' /></button>
-
-                  </div>
-
-
-                  <div className='flex gap-2'>
-                    <p className='text-xs font-medium '>R700</p>
-
-                  </div>
-                  <div className='flex gap-2'>
-                    <p className={`text-xs font-medium line-clamp-2 `}>3.1.7 Feeder tidak bisa on tidak bisa on tidak bisa ontidak bisa on  </p>
-
-                  </div>
-                  <div className='flex gap-2 justify-center '>
-                    <p className='text-xs font-medium bg-red-200 text-red-600 rounded-sm h-6   p-1'>0%</p>
 
                   </div>
 
                 </div>
-                {showDetailMobile[i] && (
-                  <>
-                    <div className='w-full grid grid-cols-3 bg-[#E9F3FF]  rounded-lg px-2 gap-x-3 gap-y-3 p-1'>
-                      <div>
-                        <h5 className="text-xs font-bold">Waktu tiket masuk</h5>
-                        <p className="text-xs font-medium">12/12/12 7:00</p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Kode Tiket</h5>
-                        <p className="text-xs font-medium">EX102880</p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Status</h5>
-                        <p className="text-xs font-medium">Monitoring</p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Jenis Kendala</h5>
-                        <p className="text-xs font-medium">3.1.7 Feeder tidak bisa on tidak bisa on </p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Jadwal</h5>
-                        <p className="text-xs font-medium">12/12/12 7:00</p>
-                      </div>
-
-
-
-                    </div>
-                    <div className='w-full grid grid-cols-3 bg-[#E9F3FF]  rounded-lg px-2 gap-y-3 mt-3 p-1'>
-                      <div>
-                        <h5 className="text-xs font-bold">Pengerjaan Ke</h5>
-                        <p className="text-xs font-medium">1</p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Waktu</h5>
-                        <p className="text-xs font-medium">12/12/12 7:00</p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Eksekutor</h5>
-                        <p className="text-xs font-medium">Saya</p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Waktu Respon</h5>
-                        <p className="text-xs font-medium">20m</p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Progress Perbaikan</h5>
-                        <p className="text-xs font-medium">Temporary</p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Jenis Perbaikan</h5>
-                        <p className="text-xs font-medium">Part Lokal</p>
-                      </div>
-
-                      <div className=''>
-                        <button onClick={openModal1} className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md">
-                          Detail
-                        </button>
-
-                      </div>
-
-                    </div>
-                  </>
-                )}
               </>
-            ))}
-          </main>
-        </>
-      )}
-    </main>
+            )}
+          </>
+        ))}
+      </main>
+    </>
+  )
+}
+    </main >
   )
 }
 
