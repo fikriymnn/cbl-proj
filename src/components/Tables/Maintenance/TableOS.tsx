@@ -164,201 +164,225 @@ function TableOS() {
             <div className='min-w-[700px]'>
 
               {tiket != null &&
-                tiket.map((data: any, i: any) => (
-                  <>
-                    <div className='my-2'>
+                tiket.map((data: any, i: any) => {
+                  const lengthProses = data.proses_mtcs.length
 
-                      <section className='flex  bg-white  rounded-lg'>
+                  return (
+                    <>
+                      <div className='my-2'>
+
+                        <section className='flex  bg-white  rounded-lg'>
 
 
-                        <div key={i} className=' py-3 px-6 flex justify-center items-center'>
-                          {i + 1}
-                        </div>
-                        <div className='grid md:grid-cols-8 grid-cols-7 w-full  '>
-                          <div className='flex flex-col md:gap-5 gap-1 '>
-                            <div className='my-auto '>
-                              <p className='text-sm font-light'></p>
-                            </div>
+                          <div key={i} className=' py-3 px-6 flex justify-center items-center'>
+                            {i + 1}
                           </div>
-                          <div className='flex flex-col md:gap-5 gap-1 '>
-                            <div className='my-auto'>
-                              <p className='text-sm font-light'>{data.mesin}</p>
+                          <div className='grid md:grid-cols-8 grid-cols-7 w-full  '>
+                            <div className='flex flex-col md:gap-5 gap-1 '>
+                              <div className='my-auto '>
+                                <p className='text-sm font-light'></p>
+                              </div>
                             </div>
-                          </div>
-                          <div className='flex flex-col col-span-2 md:gap-5 gap-1 '>
-                            <div className='my-auto '>
-                              <p className='text-sm font-light'>{data.kode_lkh} - {data.nama_kendala}</p>
+                            <div className='flex flex-col md:gap-5 gap-1 '>
+                              <div className='my-auto'>
+                                <p className='text-sm font-light'>{data.mesin}</p>
+                              </div>
                             </div>
-                          </div>
-                          <div className='flex items-center md:gap-5 gap-1 '>
-                            <div className='flex '>
-                              <p className='text-xs font-light bg-[#B1ECFF] rounded-xl px-2 text-[#004CDE] uppercase'>{data.status_tiket} </p>
+                            <div className='flex flex-col col-span-2 md:gap-5 gap-1 '>
+                              <div className='my-auto '>
+                                <p className='text-sm font-light'>{data.kode_lkh} - {data.nama_kendala}</p>
+                              </div>
                             </div>
-                          </div>
-                          <div className='flex items-center md:gap-5 gap-1  p-2'>
-                            <div className='flex '>
-                              <p className='text-sm px-2  font-light  rounded-xl  bg-[#00de3f4b] text-[#2EB300] '>{data.skor_mtc}%</p>
+                            <div className='flex items-center md:gap-5 gap-1 '>
+                              <div className='flex '>
+                                <p className='text-xs font-light bg-[#B1ECFF] rounded-xl px-2 text-[#004CDE] uppercase'>{data.status_tiket} </p>
+                              </div>
                             </div>
-                          </div>
-                          <div className='flex flex-col md:gap-5 gap-1 '>
-                            <div>
-                              <p className='text-sm font-light'>{data.proses_mtcs[1].tgl_mtc}</p>
+                            <div className='flex items-center md:gap-5 gap-1  p-2'>
+                              <div className='flex '>
+                                <p className='text-sm px-2  font-light  rounded-xl  bg-[#00de3f4b] text-[#2EB300] '>{data.skor_mtc}%</p>
+                              </div>
                             </div>
-                          </div>
-                          <div className='flex gap-2 items-center md:mb-0 mb-2'>
-                            <div>
+                            <div className='flex flex-col md:gap-5 gap-1 '>
                               <div>
-                                <button
-                                  className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                  onClick={() => handleClick(i)}
-                                >
-                                  <img src={Burger} alt="" className="mx-3" />
 
-                                </button>
-                                {showTwoButtons[i] ? (
-                                  <div className="absolute bg-white p-3 shadow-5 rounded-md"> {/* Wrap buttons for styling */}
-                                    <div className='flex flex-col gap-1'>
+                                <div>
 
-                                      <button onClick={openModal1} className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
-                                        PROSES
-                                      </button>
-                                      <button onClick={openModal2} className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
-                                        JADWALKAN                              </button>
+                                  {/* <p className='text-sm font-light'>{data.proses_mtcs[1].tgl_mtc}</p> */}
+                                  <p className='text-sm font-light'>{data.proses_mtcs[lengthProses - 1].tgl_mtc}</p>
+
+                                </div>
+
+                              </div>
+                            </div>
+                            <div className='flex gap-2 items-center md:mb-0 mb-2'>
+                              <div>
+                                <div>
+                                  <button
+                                    className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
+                                    onClick={() => handleClick(i)}
+                                  >
+                                    <img src={Burger} alt="" className="mx-3" />
+
+                                  </button>
+                                  {showTwoButtons[i] ? (
+                                    <div className="absolute bg-white p-3 shadow-5 rounded-md"> {/* Wrap buttons for styling */}
+                                      <div className='flex flex-col gap-1'>
+
+                                        <button onClick={openModal1} className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
+                                          PROSES
+                                        </button>
+                                        <button onClick={openModal2} className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
+                                          JADWALKAN                              </button>
+                                      </div>
+                                      {showModal1 && (
+                                        <ModalStockCheck1
+                                          children={undefined}
+                                          isOpen={showModal1}
+                                          onClose={closeModal1}
+                                          kendala={data.nama_kendala}
+                                          kodeLkh={data.kode_lkh}
+                                          machineName={data.mesin}
+
+                                          tgl={"12/12/24"}
+                                          jam={"19.09"}
+                                          namaPemeriksa={'Troy'}
+                                          no={'109299'}
+                                          idTiket={undefined} />
+                                      )}
+                                      {showModal2 && (
+                                        <ModalMtcDate
+                                          isOpen={showModal2}
+                                          onClose={closeModal2}
+                                          machineName={'GMC Printer 2'}>
+                                          <p></p>
+                                        </ModalMtcDate>
+                                      )}
                                     </div>
-                                    {showModal1 && (
-                                      <ModalStockCheck1 children={undefined} isOpen={showModal1} onClose={closeModal1} kendala={"mesin rusak"} machineName={"R700"} tgl={"12/12/24"} jam={"19.09"} namaPemeriksa={'Troy'} no={'109299'} />
-                                    )}
-                                    {showModal2 && (
-                                      <ModalMtcDate
-                                        isOpen={showModal2}
-                                        onClose={closeModal2}
-                                        machineName={'GMC Printer 2'}>
-                                        <p></p>
-                                      </ModalMtcDate>
-                                    )}
+
+                                  ) : (
+                                    ""
+                                  )}
+                                </div>
+                              </div>
+                              <div>
+
+                                <button onClick={() => handleClickDetail(i)} className='text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md'><img src={Arrow} alt="" className='mx-3' /></button>
+                              </div>
+                            </div>
+
+                          </div>
+
+                        </section>
+
+                        {showDetail[i] && (
+
+                          <>
+
+                            <div className='w-full flex flex-col bg-[#E9F3FF]  rounded-lg'>
+
+                              <div className='-11/12 px-5 py-2'>
+                                <div className='grid grid-cols-8 gap-3'>
+
+                                  <div className='flex flex-col gap-2'>
+                                    <p className='text-xs font-bold'>Waktu Tiket Masuk</p>
+
+                                  </div>
+                                  <div className='flex flex-col gap-2'>
+                                    <h5 className='text-xs font-bold'>Pengerjaan Ke</h5>
+
+                                  </div>
+                                  <div className='flex flex-col gap-2'>
+                                    <p className='text-xs font-bold'>Waktu</p>
+
+                                  </div>
+                                  <div className='flex flex-col gap-2'>
+                                    <p className='text-xs font-bold'>Eksekutor</p>
+
+                                  </div>
+                                  <div className='flex flex-col gap-2'>
+                                    <p className='text-xs font-bold'>Waktu Respon</p>
+
+                                  </div>
+                                  <div className='flex flex-col gap-2'>
+                                    <p className='text-xs font-bold'>Progress Perbaikan</p>
+
+                                  </div>
+                                  <div className='flex flex-col gap-2'>
+                                    <p className='text-xs font-bold'>Jenis Perbaikan</p>
+
+                                  </div>
+                                  <div className=''>
+
+
                                   </div>
 
-                                ) : (
-                                  ""
-                                )}
+                                </div>
                               </div>
-                            </div>
-                            <div>
+                              <div className='-11/12 px-5 py-2'>
+                                <div className='grid grid-cols-8 gap-3'>
 
-                              <button onClick={() => handleClickDetail(i)} className='text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md'><img src={Arrow} alt="" className='mx-3' /></button>
-                            </div>
-                          </div>
+                                  <div className='flex flex-col gap-2'>
+                                    <p className='text-xs font-medium'>{data.createdAt}</p>
 
-                        </div>
+                                  </div>
+                                  {data.proses_mtcs.map((proses: any, ii: any) => (
+                                    <>
 
-                      </section>
+                                      <div className='flex flex-col gap-2'>
+                                        <h5 className='text-xs font-medium'>{ii + 1}</h5>
 
-                      {showDetail[i] && (
-
-
-                        <>
-
-
-                          <div className='w-full flex flex-col bg-[#E9F3FF]  rounded-lg'>
-
-                            <div className='-11/12 px-5 py-2'>
-                              <div className='grid grid-cols-8 gap-3'>
-
-                                <div className='flex flex-col gap-2'>
-                                  <p className='text-xs font-bold'>Waktu Tiket Masuk</p>
-
-                                </div>
-                                <div className='flex flex-col gap-2'>
-                                  <h5 className='text-xs font-bold'>Pengerjaan Ke</h5>
-
-                                </div>
-                                <div className='flex flex-col gap-2'>
-                                  <p className='text-xs font-bold'>Waktu</p>
-
-                                </div>
-                                <div className='flex flex-col gap-2'>
-                                  <p className='text-xs font-bold'>Eksekutor</p>
-
-                                </div>
-                                <div className='flex flex-col gap-2'>
-                                  <p className='text-xs font-bold'>Waktu Respon</p>
-
-                                </div>
-                                <div className='flex flex-col gap-2'>
-                                  <p className='text-xs font-bold'>Progress Perbaikan</p>
-
-                                </div>
-                                <div className='flex flex-col gap-2'>
-                                  <p className='text-xs font-bold'>Jenis Perbaikan</p>
-
-                                </div>
-                                <div className=''>
-
-
-                                </div>
-
-                              </div>
-                            </div>
-                            <div className='-11/12 px-5 py-2'>
-                              <div className='grid grid-cols-8 gap-3'>
-
-                                <div className='flex flex-col gap-2'>
-                                  <p className='text-xs font-medium'>{data.createdAt}</p>
-
-                                </div>
-                                {data.proses_mtcs.map((proses: any, ii: any) => (
-                                  <>
-
-                                    <div className='flex flex-col gap-2'>
-                                      <h5 className='text-xs font-medium'>{ii + 1}</h5>
-
-                                    </div>
-                                    <div className='flex flex-col gap-2'>
-                                      <p className='text-xs font-medium'>{proses.waktu_mulai_mtc}</p>
-
-                                    </div>
-                                    <div className='flex flex-col gap-2'>
-                                      <p className='text-xs font-medium'>{proses.user_eksekutor.nama}</p>
-
-                                    </div>
-                                    <div className='flex flex-col gap-2'>
-                                      <p className='text-xs font-medium'>30m</p>
-
-                                    </div>
-                                    <div className='flex flex-col gap-2'>
-
-                                      <div className='flex'>
-
-                                        <p className='text-sm px-2  font-light  rounded-xl flex justify-center text-red-600 bg-red-200'>{proses.skor_mtc}%</p>
                                       </div>
-                                    </div>
-                                    <div className='flex flex-col gap-2'>
-                                      <p className='text-xs font-medium'>{proses.cara_perbaikan}</p>
+                                      <div className='flex flex-col gap-2'>
+                                        <p className='text-xs font-medium'>{proses.waktu_mulai_mtc}</p>
 
-                                    </div>
-                                    <div className=''>
-                                      <button onClick={openModal1} className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md">
-                                        Detail
-                                      </button>
+                                      </div>
+                                      <div className='flex flex-col gap-2'>
+                                        <p className='text-xs font-medium'>{proses.user_eksekutor.nama}</p>
 
-                                    </div>
+                                      </div>
+                                      <div className='flex flex-col gap-2'>
+                                        <p className='text-xs font-medium'>30m</p>
 
-                                  </>
-                                ))}
+                                      </div>
+                                      <div className='flex flex-col gap-2'>
 
+                                        <div className='flex'>
+
+                                          <p className='text-sm px-2  font-light  rounded-xl flex justify-center text-red-600 bg-red-200'>{proses.skor_mtc}%</p>
+                                        </div>
+                                      </div>
+                                      <div className='flex flex-col gap-2'>
+                                        <p className='text-xs font-medium'>{proses.cara_perbaikan}</p>
+
+                                      </div>
+                                      <div className=''>
+                                        <button onClick={openModal1} className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md">
+                                          Detail
+                                        </button>
+
+                                      </div>
+
+                                    </>
+                                  ))}
+
+                                </div>
                               </div>
+
+
                             </div>
+                          </>
+                        )
 
 
-                          </div>
-                        </>
-                      )
+                        }
+                      </div>
+                    </>
+                  )
+                }
 
 
-                      }
-                    </div>
-                  </>
-                ))}
+                )}
             </div>
           </div>
         </>

@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import CheckStockPengganti from "../Tables/Modals/SparepartPengganti";
 
-const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl, jam, namaPemeriksa, no }:
+const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl, jam, namaPemeriksa, no, idTiket, kodeLkh }:
     {
         children: any, isOpen: any, onClose: any,
-        kendala: any, machineName: any, tgl: any, jam: any, namaPemeriksa: any, no: any
+        kendala: any, machineName: any, tgl: any, jam: any, namaPemeriksa: any, no: any, idTiket: any, kodeLkh: any
     }) => {
     if (!isOpen) return null;
 
@@ -95,7 +95,7 @@ const ModalStockCheck1 = ({ children, isOpen, onClose, kendala, machineName, tgl
                             </div>
                             <div>
                                 <span id="kendala" className="text-neutral-500 text-xl font-normal">
-                                    {kendala}
+                                    {kodeLkh} - {kendala}
                                 </span>
                             </div>
                         </div>
