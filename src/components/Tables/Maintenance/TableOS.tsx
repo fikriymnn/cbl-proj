@@ -132,27 +132,27 @@ function TableOS() {
             <div className='grid md:grid-cols-8 grid-cols-7 w-full'>
               <div className='flex gap-2'>
                 <p className='text-xs font-bold '>Kode Tiket</p>
-                <img src={Polygon6} alt="" />
+                <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className='flex gap-2'>
                 <p className='text-xs font-bold '>Nama Mesin</p>
-                <img src={Polygon6} alt="" />
+                <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className='flex gap-2 col-span-2'>
                 <p className='text-xs font-bold '>Jenis Kendala</p>
-                <img src={Polygon6} alt="" />
+                <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className='flex gap-2'>
                 <p className='text-xs font-bold '>Status</p>
-                <img src={Polygon6} alt="" />
+                <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className='flex gap-2'>
                 <p className='text-xs font-bold '>Persentase</p>
-                <img src={Polygon6} alt="" />
+                <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className='flex gap-2'>
                 <p className='text-xs font-bold '>Jadwal</p>
-                <img src={Polygon6} alt="" />
+                <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className='flex gap-2'>
                 <p className='text-xs font-bold '>Action</p>
@@ -186,7 +186,7 @@ function TableOS() {
                             </div>
                           </div>
                           <div className='flex flex-col col-span-2 md:gap-5 gap-1 '>
-                            <div className='my-auto '>
+                            <div className='my-auto w-11/12'>
                               <p className='text-sm font-light'>{data.kode_lkh} - {data.nama_kendala}</p>
                             </div>
                           </div>
@@ -197,7 +197,14 @@ function TableOS() {
                           </div>
                           <div className='flex items-center md:gap-5 gap-1  p-2'>
                             <div className='flex '>
-                              <p className='text-sm px-2  font-light  rounded-xl  bg-[#00de3f4b] text-[#2EB300] '>{data.skor_mtc}%</p>
+                              <p className={data.skor_mtc === 100 ?
+                                `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
+                                : data.skor_mtc >= 60 || data.skor_mtc < 100 ?
+                                  `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                  : data.skor_mtc >= 40 || data.skor_mtc < 60 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] ` :
+                                    data.skor_mtc < 40 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ""
+
+                              }>{data.skor_mtc}%</p>
                             </div>
                           </div>
                           <div className='flex flex-col md:gap-5 gap-1 '>
@@ -261,13 +268,13 @@ function TableOS() {
 
                           <div className='w-full flex flex-col bg-[#E9F3FF]  rounded-lg'>
 
-                            <div className='-11/12 px-5 py-2'>
-                              <div className='grid grid-cols-8 gap-3'>
+                            <div className='flex px-5 py-2'>
+                              <div className='flex flex-col gap-2 w-2/12'>
+                                <p className='text-xs font-bold'>Waktu Tiket Masuk</p>
 
-                                <div className='flex flex-col gap-2'>
-                                  <p className='text-xs font-bold'>Waktu Tiket Masuk</p>
+                              </div>
+                              <div className='grid grid-cols-6 gap-3 w-10/12'>
 
-                                </div>
                                 <div className='flex flex-col gap-2'>
                                   <h5 className='text-xs font-bold'>Pengerjaan Ke</h5>
 
@@ -280,10 +287,7 @@ function TableOS() {
                                   <p className='text-xs font-bold'>Eksekutor</p>
 
                                 </div>
-                                <div className='flex flex-col gap-2'>
-                                  <p className='text-xs font-bold'>Waktu Respon</p>
 
-                                </div>
                                 <div className='flex flex-col gap-2'>
                                   <p className='text-xs font-bold'>Progress Perbaikan</p>
 
@@ -299,14 +303,23 @@ function TableOS() {
 
                               </div>
                             </div>
-                            <div className='-11/12 px-5 py-2'>
-                              <div className='grid grid-cols-8 gap-3'>
+                            <div className='flex px-5 '>
 
-                                <div className='flex flex-col gap-2'>
+                              <div className='flex flex-col gap-2 w-2/12'>
+                                <div>
                                   <p className='text-xs font-medium'>{data.createdAt}</p>
 
                                 </div>
+                                <div>
+                                  <p className='text-xs font-bold'>Waktu Respon</p>
+                                  <p className='text-xs font-medium'>30m</p>
+                                </div>
+
+                              </div>
+                              <div className='grid grid-cols-6 gap-3 w-10/12'>
+
                                 {data.proses_mtcs.map((proses: any, ii: any) => (
+
                                   <>
 
                                     <div className='flex flex-col gap-2'>
@@ -321,15 +334,20 @@ function TableOS() {
                                       <p className='text-xs font-medium'>{proses.user_eksekutor.nama}</p>
 
                                     </div>
-                                    <div className='flex flex-col gap-2'>
-                                      <p className='text-xs font-medium'>30m</p>
 
-                                    </div>
                                     <div className='flex flex-col gap-2'>
 
                                       <div className='flex'>
 
-                                        <p className='text-sm px-2  font-light  rounded-xl flex justify-center text-red-600 bg-red-200'>{proses.skor_mtc}%</p>
+
+                                        <p className={proses.skor_mtc === 100 ?
+                                          `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
+                                          : proses.skor_mtc >= 60 || proses.skor_mtc < 100 ?
+                                            `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                            : proses.skor_mtc >= 40 || proses.skor_mtc < 60 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] ` :
+                                              proses.skor_mtc < 40 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ""
+
+                                        }>{proses.skor_mtc}%</p>
                                       </div>
                                     </div>
                                     <div className='flex flex-col gap-2'>
