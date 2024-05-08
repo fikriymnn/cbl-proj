@@ -8,35 +8,11 @@ import ModalMtcDate from '../../Modals/ModalMtcDate'
 import ModalStockCheck1 from '../../Modals/ModalStockCheck1'
 import Polygon6 from '../../../images/icon/Polygon6.svg'
 import axios from "axios";
-
-
-
-// const tiket = [
-//   {
-//     KodeTiket: '1376',
-//     waktuMesin: "12/22/24 7:00UTC",
-//     namaMesin: "R700",
-//     kendala: "problem settingan mesin",
-
-//   },
-//   {
-//     KodeTiket: '1376',
-//     waktuMesin: "12/22/24 7:00UTC",
-//     namaMesin: "R700",
-//     kendala: "problem settingan mesin",
-
-//   },
-//   {
-//     KodeTiket: '1376',
-//     waktuMesin: "12/22/24 7:00UTC",
-//     namaMesin: "R700",
-//     kendala: "problem settingan mesin",
-
-//   }
-// ]
+import ModalDetail from "../../Modals/ModalDetail";
 
 function TableOS() {
   const [isMobile, setIsMobile] = useState(false);
+  const [status, setStatus] = useState();
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
   };
@@ -57,8 +33,11 @@ function TableOS() {
 
 
   const openModal1 = () => setShowModal1(true);
+  const openModalDetail = () => setShowModalDetail(true);
+
   const openModal2 = () => setShowModal2(true);
   const closeModal1 = () => setShowModal1(false);
+  const closeModalDetail = () => setShowModalDetail(false);
   const closeModal2 = () => setShowModal2(false);
   const handleClick = (index: number) => {
     setShowTwoButtons((prevState) => {
@@ -110,6 +89,7 @@ function TableOS() {
   const [showDetailMobile, setShowDetailMobile] = useState<boolean[]>(new Array(tiket != null && tiket.length).fill(false));
   const [showModal1, setShowModal1] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
+  const [showModalDetail, setShowModalDetail] = useState(false);
 
 
   return (
@@ -166,7 +146,10 @@ function TableOS() {
               {tiket != null &&
                 tiket.map((data: any, i: any) => {
                   const lengthProses = data.proses_mtcs.length - 1
-
+                  // switch (data.skor_mtc){
+                  //   case data.skor_mtc == 100 :
+                  //     return 
+                  // }
                   return (
                     <>
                       <div className='my-2'>
@@ -195,7 +178,14 @@ function TableOS() {
                             </div>
                             <div className='flex items-center md:gap-5 gap-1 '>
                               <div className='flex '>
-                                <p className='text-xs font-light bg-[#B1ECFF] rounded-xl px-2 text-[#004CDE] uppercase'>{data.status_tiket} </p>
+                                <p className={data.skor_mtc === 100 ?
+                                  `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
+                                  : data.skor_mtc >= 60 && data.skor_mtc < 100 ?
+                                    `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                    : data.skor_mtc >= 40 && data.skor_mtc < 60 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] ` :
+                                      data.skor_mtc < 40 && data.skor_mtc >= 0 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ""
+
+                                }>{data.skor_mtc == 100 ? "Monitoring" : data.skor_mtc == 0 ? "Pending " : data.skor_mtc == 20 ? "temporaty" : data.skor_mtc == 40 ? "done" : data.skor_mtc == 50 ? "done" : data.skor_mtc == 60 ? "done" : data.skor_mtc == 70 ? "done" : data.skor_mtc == 80 ? "done" : data.skor_mtc == 90 ? "done" : ""} </p>
                               </div>
                             </div>
                             <div className='flex items-center md:gap-5 gap-1  p-2'>
@@ -368,12 +358,14 @@ function TableOS() {
 
                                       </div>
                                       <div className=''>
-                                        <button onClick={openModal1} className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md">
+                                        <button onClick={openModalDetail} className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md">
                                           Detail
                                         </button>
 
                                       </div>
-
+                                      {showModalDetail && (
+                                        <ModalDetail children={undefined} isOpen={showModalDetail} onClose={closeModalDetail} kendala={data.nama_kendala} machineName={data.mesin} tgl={data.tgl} jam={undefined} namaPemeriksa={data.operator} no={undefined} idTiket={data.id} kodeLkh={data.kode_lkh} analisisPenyebab={undefined} kebutuhanSparepart={undefined} tipeMaintenance={undefined} catatan={data.proses_mtcs.note_analisis}></ModalDetail>
+                                      )}
                                     </>
                                   ))}
 
