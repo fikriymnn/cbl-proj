@@ -416,16 +416,73 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                                       className={`translate transform overflow-hidden ${!open && 'hidden'
                                         }`}
                                     >
-                                      <ul className=" flex flex-col gap-5 pl-6">
+                                      <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                         <li>
                                           <NavLink
                                             to="/maintenance/inspection/pm_1"
+                                            className={({ isActive }) =>
+                                              'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                              (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                            }
+                                          >
+                                            PM 1
+                                          </NavLink>
+                                        </li>
+
+                                      </ul>
+                                    </div>
+                                    <div
+                                      className={`translate transform overflow-hidden ${!open && 'hidden'
+                                        }`}
+                                    >
+                                      <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
+                                        <li>
+                                          <NavLink
+                                            to="/maintenance/inspection/pm_2"
                                             className={({ isActive }) =>
                                               'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                               (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                                             }
                                           >
-                                            PM 1
+                                            PM 2
+                                          </NavLink>
+                                        </li>
+
+                                      </ul>
+                                    </div>
+                                    <div
+                                      className={`translate transform overflow-hidden ${!open && 'hidden'
+                                        }`}
+                                    >
+                                      <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
+                                        <li>
+                                          <NavLink
+                                            to="/maintenance/inspection/pm_3"
+                                            className={({ isActive }) =>
+                                              'group relative flex items-center gap-5 pb-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                              (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                            }
+                                          >
+                                            PM 3
+                                          </NavLink>
+                                        </li>
+
+                                      </ul>
+                                    </div>
+                                    <div
+                                      className={`translate transform overflow-hidden ${!open && 'hidden'
+                                        }`}
+                                    >
+                                      <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
+                                        <li>
+                                          <NavLink
+                                            to="/maintenance/inspection/OS_3"
+                                            className={({ isActive }) =>
+                                              'group relative flex items-center gap-5 pb-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                              (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                            }
+                                          >
+                                            OS 3
                                           </NavLink>
                                         </li>
 

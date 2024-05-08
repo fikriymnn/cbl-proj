@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
-import DefaultLayout from '../../layout/DefaultLayout'
-import Ceklis from '../../images/icon/ceklis.svg'
-import Polygon from '../../images/icon/Polygon.svg'
-import X from '../../images/icon/x.svg'
-import Strip from '../../images/icon/strip.svg'
-import SelectGroupTwo from '../../components/Forms/SelectGroup/SelectGroupTwo'
+import DefaultLayout from '../../../layout/DefaultLayout'
+import Ceklis from '../../../images/icon/ceklis.svg'
+import Polygon from '../../../images/icon/Polygon.svg'
+import X from '../../../images/icon/x.svg'
+import Strip from '../../../images/icon/strip.svg'
+import SelectGroupTwo from '../../../components/Forms/SelectGroup/SelectGroupTwo'
 
 
 

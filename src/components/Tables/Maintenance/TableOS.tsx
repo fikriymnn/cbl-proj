@@ -202,10 +202,10 @@ function TableOS() {
                               <div className='flex '>
                                 <p className={data.skor_mtc === 100 ?
                                   `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                  : data.skor_mtc >= 60 || data.skor_mtc < 100 ?
+                                  : data.skor_mtc >= 60 && data.skor_mtc < 100 ?
                                     `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                    : data.skor_mtc >= 40 || data.skor_mtc < 60 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] ` :
-                                      data.skor_mtc < 40 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ""
+                                    : data.skor_mtc >= 40 && data.skor_mtc < 60 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] ` :
+                                      data.skor_mtc < 40 && data.skor_mtc >= 0 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ""
 
                                 }>{data.skor_mtc}%</p>
                               </div>
@@ -355,10 +355,10 @@ function TableOS() {
 
                                           <p className={proses.skor_mtc === 100 ?
                                             `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                            : proses.skor_mtc >= 60 || proses.skor_mtc < 100 ?
+                                            : proses.skor_mtc >= 60 && proses.skor_mtc < 100 ?
                                               `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                              : proses.skor_mtc >= 40 || proses.skor_mtc < 60 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] ` :
-                                                proses.skor_mtc < 40 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ""
+                                              : proses.skor_mtc >= 40 && proses.skor_mtc < 60 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] ` :
+                                                proses.skor_mtc < 40 && proses.skor_mtc >= 0 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ""
 
                                           }>{proses.skor_mtc}%</p>
                                         </div>
