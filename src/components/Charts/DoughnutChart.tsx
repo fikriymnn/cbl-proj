@@ -9,19 +9,19 @@ export default function DoughnutChart() {
 
     let data = [
         {
-            label: "Label 1",
+            label: "OPEN",
             value: 55,
             color: "#FF0000",
             cutout: "50%",
         },
         {
-            label: "Label 2",
+            label: "DONE",
             value: 15,
             color: "#009F19",
             cutout: "50%",
         },
         {
-            label: "Label 3",
+            label: "MONITORING",
             value: 80,
             color: "#FCBF11",
             cutout: "50%",
