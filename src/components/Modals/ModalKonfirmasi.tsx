@@ -2,7 +2,8 @@
 
 const ModalKonfirmasi = ({ children, isOpen, onClose }:
     { children: any, isOpen: any, onClose: any }) => {
-    if (!isOpen) return null;
+    if (isOpen == false) return null;
+
 
     return (
         <div className="fixed z-50 inset-0 overflow-y-auto backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
