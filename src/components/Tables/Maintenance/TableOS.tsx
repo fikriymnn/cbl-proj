@@ -185,7 +185,7 @@ function TableOS() {
                                     : data.skor_mtc >= 40 && data.skor_mtc < 60 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] ` :
                                       data.skor_mtc < 40 && data.skor_mtc >= 0 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ""
 
-                                }>{data.skor_mtc == 100 ? "Monitoring" : data.skor_mtc == 0 ? "Pending " : data.skor_mtc == 20 ? "temporaty" : data.skor_mtc == 40 ? "done" : data.skor_mtc == 50 ? "done" : data.skor_mtc == 60 ? "done" : data.skor_mtc == 70 ? "done" : data.skor_mtc == 80 ? "done" : data.skor_mtc == 90 ? "done" : ""} </p>
+                                }>{data.status_tiket} </p>
                               </div>
                             </div>
                             <div className='flex items-center md:gap-5 gap-1  p-2'>
