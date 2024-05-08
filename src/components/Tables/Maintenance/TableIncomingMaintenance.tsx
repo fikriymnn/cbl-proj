@@ -91,15 +91,20 @@ const tiket = [
 
 
 const TableIncomingMaintenance = () => {
+
+
+
   const [showModal1, setShowModal1] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
+
+
 
 
   const openModal1 = () => setShowModal1(true);
   const closeModal1 = () => setShowModal1(false);
 
-  const openModal2 = () => setShowModal2(true);
-  const closeModal2 = () => setShowModal2(false);
+  //const openModal2 = () => setShowModal2(true);
+  //const closeModal2 = () => setShowModal2(false);
 
 
 
@@ -144,8 +149,28 @@ const TableIncomingMaintenance = () => {
   }, []);
 
   const [mtc, setMtc] = useState<any>(null);
+
+
+  const [showModal3, setShowModal3] = useState<any>([]);
+
+
+  const openModal2 = (i: any) => {
+    const onchangeVal: any = [...showModal3];
+    onchangeVal[i] = true;
+    console.log(onchangeVal);
+    setShowModal3(onchangeVal)
+  };
+  const closeModal2 = (i: any) => {
+    const onchangeVal: any = [...showModal3];
+    onchangeVal[i] = false;
+
+    setShowModal3(onchangeVal)
+  };
+
+
   useEffect(() => {
     getMTC();
+
   }, []);
   async function getMTC() {
     const url = `${import.meta.env.VITE_API_LINK}/ticket?bagian_tiket=incoming`;
@@ -156,6 +181,12 @@ const TableIncomingMaintenance = () => {
 
       setMtc(res.data);
       console.log(res.data);
+      let data: any[] = []
+      for (let i = 0; i < res.data.length; i++) {
+        data.push(false)
+
+      }
+      setShowModal3(data)
     } catch (error: any) {
       console.log(error.response);
     }
@@ -213,96 +244,105 @@ const TableIncomingMaintenance = () => {
               </div>
               <>
                 {mtc != null &&
-                  mtc.map((brand: any, key: any) => (
-                    <div
-                      className={`flex ${key === tiket.length - 1
-                        ? ''
-                        : 'border-b-8  border-[#D8EAFF] dark:border-strokedark '
-                        }`}
-                      key={key}
-                    >
-                      <div className=" flex items-center w-1/12   gap-3 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF]  ">
+                  mtc.map((brand: any, key: any) => {
 
-                        <p className=" md:text-[12px] text-[10px] text-black dark:text-white block">
-                          {key + 1}
-                        </p>
-                      </div>
+                    return (
+                      (
+                        <div
+                          className={`flex ${key === tiket.length - 1
+                            ? ''
+                            : 'border-b-8  border-[#D8EAFF] dark:border-strokedark '
+                            }`}
+                          key={key}
+                        >
+                          <div className=" flex items-center w-1/12   gap-3 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF]  ">
 
-                      <div className=" flex items-center w-2/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                        <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.name}</p>
-                      </div>
-                      <div className=" flex items-center w-3/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                        <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.createdAt}</p>
-                      </div>
-
-
-                      <div className=" flex items-center w-4/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                        <p className="text-black text-center md:text-[12px] text-[10px]">{brand.mesin}</p>
-                      </div>
-                      <div className=" flex items-center w-3/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                        <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.nama_kendala}</p>
-                      </div>
-
-
-                      <div className=" items-center justify-center md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] flex ">
-                        <td className=" border-[#eee]   dark:border-strokedark">
-                          <div className=" mx-auto flex gap-3">
-                            <button type="button" onClick={openModal2}
-                              className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
-                            >
-                              RESPON
-                            </button>
-                            <button type="button" onClick={openModal1}
-                              className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-white border-[#0065DE] border text-primary justify-center`}
-                            >
-                              DETAIL
-                            </button>
-
-
-                            {/* <button type="button" onClick={openModal1}
-                    className={`inline-flex rounded-[3px] my-auto py-2 md:px-2 px-1 md:text-[12px] text-[10px] font-semibold bg-white border-[#0065DE] border text-primary justify-center items-center  `}
-                  >
-                    DETAIL
-                  </button> */}
-                            {showModal1 && (
-                              <Modal
-                                isOpen={showModal1}
-                                onClose={closeModal1}
-                                ticketCode={''}
-                                incDate={brand.createdAt}
-                                namaMesin={brand.mesin}
-                                jenisKendala={brand.jenis_kendala}
-                                kendala={brand.nama_kendala}                               >
-                                <p></p>
-                              </Modal>
-                            )}
-
-                            {showModal2 && (
-                              <ModalKonfirmasi
-                                isOpen={showModal2}
-                                onClose={closeModal2}>
-                                <>
-                                  <div className='flex w-full justify-center items-center pt-3'>
-                                    <label className='text-neutral-500 text-xl font-normal '>
-                                      Apa anda yakin untuk merespon tiket ini?
-                                    </label>
-                                  </div>
-                                  <div className='flex w-full gap-3 pt-3'>
-                                    <button onClick={() => responMTC(brand.id)} className='w-full h-9 text-center text-white text-xs font-bold bg-blue-700 rounded-md'>RESPON</button>
-
-                                  </div>
-                                </>
-
-                              </ModalKonfirmasi>
-                            )}
-
-
+                            <p className=" md:text-[12px] text-[10px] text-black dark:text-white block">
+                              {key + 1}
+                            </p>
                           </div>
 
-                        </td>
-                      </div>
-                    </div>
-                  ))}
+                          <div className=" flex items-center w-2/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                            <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.name}</p>
+                          </div>
+                          <div className=" flex items-center w-3/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                            <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.createdAt}</p>
+                          </div>
+
+
+                          <div className=" flex items-center w-4/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                            <p className="text-black text-center md:text-[12px] text-[10px]">{brand.mesin}</p>
+                          </div>
+                          <div className=" flex items-center w-3/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                            <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.nama_kendala}</p>
+                          </div>
+
+
+
+                          <div className=" items-center justify-center md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] flex ">
+                            <td className=" border-[#eee]   dark:border-strokedark">
+                              <div className=" mx-auto flex gap-3">
+                                <button type="button" onClick={() => openModal2(key)}
+                                  className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
+                                >
+                                  RESPON
+                                </button>
+                                <button type="button" onClick={openModal1}
+                                  className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-white border-[#0065DE] border text-primary justify-center`}
+                                >
+                                  DETAIL
+                                </button>
+
+
+                                {/* <button type="button" onClick={openModal1}
+                        className={`inline-flex rounded-[3px] my-auto py-2 md:px-2 px-1 md:text-[12px] text-[10px] font-semibold bg-white border-[#0065DE] border text-primary justify-center items-center  `}
+                      >
+                        DETAIL
+                      </button> */}
+                                {showModal1 && (
+                                  <Modal
+                                    isOpen={showModal1}
+                                    onClose={closeModal1}
+                                    ticketCode={''}
+                                    incDate={brand.createdAt}
+                                    namaMesin={brand.mesin}
+                                    jenisKendala={brand.jenis_kendala}
+                                    kendala={brand.nama_kendala}                               >
+                                    <p></p>
+                                  </Modal>
+                                )}
+
+                                {showModal3[key] == true && (
+
+                                  <ModalKonfirmasi
+                                    isOpen={showModal3[key]}
+                                    onClose={() => closeModal2(key)}>
+                                    <>
+                                      <div className='flex w-full justify-center items-center pt-3'>
+                                        <label className='text-neutral-500 text-xl font-normal '>
+                                          Apa anda yakin untuk merespon tiket ini?
+                                        </label>
+                                      </div>
+                                      <div className='flex w-full gap-3 pt-3'>
+                                        <button onClick={() => responMTC(brand.id)} className='w-full h-9 text-center text-white text-xs font-bold bg-blue-700 rounded-md'>RESPON</button>
+
+                                      </div>
+                                    </>
+
+                                  </ModalKonfirmasi>
+                                )
+                                }
+
+
+                              </div>
+
+                            </td>
+                          </div>
+                        </div>
+                      )
+                    )
+                  }
+                  )}
               </>
             </div>
           </div>
