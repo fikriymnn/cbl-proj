@@ -164,351 +164,371 @@ function TableOS() {
             <div className='min-w-[700px]'>
 
               {tiket != null &&
-                tiket.map((data: any, i: any) => (
-                  <>
-                    <div className='my-2'>
+                tiket.map((data: any, i: any) => {
+                  const lengthProses = data.proses_mtcs.length - 1
 
-                      <section className='flex  bg-white  rounded-lg'>
+                  return (
+                    <>
+                      <div className='my-2'>
+
+                        <section className='flex  bg-white  rounded-lg'>
 
 
-                        <div key={i} className=' py-3 px-6 flex justify-center items-center'>
-                          {i + 1}
-                        </div>
-                        <div className='grid md:grid-cols-8 grid-cols-7 w-full  '>
-                          <div className='flex flex-col md:gap-5 gap-1 '>
-                            <div className='my-auto '>
-                              <p className='text-sm font-light'></p>
-                            </div>
+                          <div key={i} className=' py-3 px-6 flex justify-center items-center'>
+                            {i + 1}
                           </div>
-                          <div className='flex flex-col md:gap-5 gap-1 '>
-                            <div className='my-auto'>
-                              <p className='text-sm font-light'>{data.mesin}</p>
+                          <div className='grid md:grid-cols-8 grid-cols-7 w-full  '>
+                            <div className='flex flex-col md:gap-5 gap-1 '>
+                              <div className='my-auto '>
+                                <p className='text-sm font-light'></p>
+                              </div>
                             </div>
-                          </div>
-                          <div className='flex flex-col col-span-2 md:gap-5 gap-1 '>
-                            <div className='my-auto w-11/12'>
-                              <p className='text-sm font-light'>{data.kode_lkh} - {data.nama_kendala}</p>
+                            <div className='flex flex-col md:gap-5 gap-1 '>
+                              <div className='my-auto'>
+                                <p className='text-sm font-light'>{data.mesin}</p>
+                              </div>
                             </div>
-                          </div>
-                          <div className='flex items-center md:gap-5 gap-1 '>
-                            <div className='flex '>
-                              <p className='text-xs font-light bg-[#B1ECFF] rounded-xl px-2 text-[#004CDE] uppercase'>{data.status_tiket} </p>
+                            <div className='flex flex-col col-span-2 md:gap-5 gap-1 '>
+                              <div className='my-auto w-11/12'>
+                                <p className='text-sm font-light'>{data.kode_lkh} - {data.nama_kendala}</p>
+                              </div>
                             </div>
-                          </div>
-                          <div className='flex items-center md:gap-5 gap-1  p-2'>
-                            <div className='flex '>
-                              <p className={data.skor_mtc === 100 ?
-                                `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                : data.skor_mtc >= 60 || data.skor_mtc < 100 ?
-                                  `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                  : data.skor_mtc >= 40 || data.skor_mtc < 60 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] ` :
-                                    data.skor_mtc < 40 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ""
+                            <div className='flex items-center md:gap-5 gap-1 '>
+                              <div className='flex '>
+                                <p className='text-xs font-light bg-[#B1ECFF] rounded-xl px-2 text-[#004CDE] uppercase'>{data.status_tiket} </p>
+                              </div>
+                            </div>
+                            <div className='flex items-center md:gap-5 gap-1  p-2'>
+                              <div className='flex '>
+                                <p className={data.skor_mtc === 100 ?
+                                  `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
+                                  : data.skor_mtc >= 60 || data.skor_mtc < 100 ?
+                                    `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                    : data.skor_mtc >= 40 || data.skor_mtc < 60 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] ` :
+                                      data.skor_mtc < 40 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ""
 
-                              }>{data.skor_mtc}%</p>
+                                }>{data.skor_mtc}%</p>
+                              </div>
                             </div>
-                          </div>
-                          <div className='flex flex-col md:gap-5 gap-1 '>
-                            <div>
-                              <p className='text-sm font-light'>{data.proses_mtcs[1].tgl_mtc}</p>
-                            </div>
-                          </div>
-                          <div className='flex gap-2 items-center md:mb-0 mb-2'>
-                            <div>
+                            <div className='flex flex-col md:gap-5 gap-1 '>
                               <div>
-                                <button
-                                  className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                  onClick={() => handleClick(i)}
-                                >
-                                  <img src={Burger} alt="" className="mx-3" />
+                                <p className='text-sm font-light'>{data.proses_mtcs[lengthProses].tgl_mtc}</p>
+                              </div>
+                            </div>
+                            <div className='flex gap-2 items-center md:mb-0 mb-2'>
+                              <div>
+                                <div>
+                                  <button
+                                    className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
+                                    onClick={() => handleClick(i)}
+                                  >
+                                    <img src={Burger} alt="" className="mx-3" />
 
-                                </button>
-                                {showTwoButtons[i] ? (
-                                  <div className="absolute bg-white p-3 shadow-5 rounded-md"> {/* Wrap buttons for styling */}
-                                    <div className='flex flex-col gap-1'>
+                                  </button>
+                                  {showTwoButtons[i] ? (
+                                    <div className="absolute bg-white p-3 shadow-5 rounded-md"> {/* Wrap buttons for styling */}
+                                      <div className='flex flex-col gap-1'>
 
-                                      <button onClick={openModal1} className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
-                                        PROSES
-                                      </button>
-                                      <button onClick={openModal2} className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
-                                        JADWALKAN                              </button>
+                                        <button onClick={openModal1} className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
+                                          PROSES
+                                        </button>
+                                        <button onClick={openModal2} className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
+                                          JADWALKAN                              </button>
+                                      </div>
+                                      {showModal1 && (
+                                        <ModalStockCheck1
+                                          children={undefined}
+                                          isOpen={showModal1}
+                                          onClose={closeModal1}
+                                          kendala={data.nama_kendala}
+                                          kodeLkh={data.kode_lkh}
+                                          machineName={data.mesin}
+
+                                          tgl={"12/12/24"}
+                                          jam={"19.09"}
+                                          namaPemeriksa={'Troy'}
+                                          no={'109299'}
+                                          idTiket={undefined} />
+                                      )}
+                                      {showModal2 && (
+                                        <ModalMtcDate
+                                          isOpen={showModal2}
+                                          onClose={closeModal2}
+                                          machineName={'GMC Printer 2'}>
+                                          <p></p>
+                                        </ModalMtcDate>
+                                      )}
                                     </div>
-                                    {showModal1 && (
-                                      <ModalStockCheck1 children={undefined} isOpen={showModal1} onClose={closeModal1} kendala={"mesin rusak"} machineName={"R700"} tgl={"12/12/24"} jam={"19.09"} namaPemeriksa={'Troy'} no={'109299'} />
-                                    )}
-                                    {showModal2 && (
-                                      <ModalMtcDate
-                                        isOpen={showModal2}
-                                        onClose={closeModal2}
-                                        machineName={'GMC Printer 2'}>
-                                        <p></p>
-                                      </ModalMtcDate>
-                                    )}
+
+                                  ) : (
+                                    ""
+                                  )}
+                                </div>
+                              </div>
+                              <div>
+
+                                <button onClick={() => handleClickDetail(i)} className='text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md'><img src={Arrow} alt="" className='mx-3' /></button>
+                              </div>
+                            </div>
+
+                          </div>
+
+                        </section>
+
+                        {showDetail[i] && (
+
+                          <>
+
+                            <div className='w-full flex flex-col bg-[#E9F3FF]  rounded-lg'>
+
+                              <div className='flex px-5 py-2'>
+                                <div className='flex flex-col gap-2 w-2/12'>
+                                  <p className='text-xs font-bold'>Waktu Tiket Masuk</p>
+
+                                </div>
+                                <div className='grid grid-cols-6 gap-3 w-10/12'>
+
+                                  <div className='flex flex-col gap-2'>
+                                    <h5 className='text-xs font-bold'>Pengerjaan Ke</h5>
+
+                                  </div>
+                                  <div className='flex flex-col gap-2'>
+                                    <p className='text-xs font-bold'>Waktu</p>
+
+                                  </div>
+                                  <div className='flex flex-col gap-2'>
+                                    <p className='text-xs font-bold'>Eksekutor</p>
+
                                   </div>
 
-                                ) : (
-                                  ""
-                                )}
+                                  <div className='flex flex-col gap-2'>
+                                    <p className='text-xs font-bold'>Progress Perbaikan</p>
+
+                                  </div>
+                                  <div className='flex flex-col gap-2'>
+                                    <p className='text-xs font-bold'>Jenis Perbaikan</p>
+
+                                  </div>
+                                  <div className=''>
+
+
+                                  </div>
+
+                                </div>
                               </div>
-                            </div>
-                            <div>
+                              <div className='flex px-5 '>
 
-                              <button onClick={() => handleClickDetail(i)} className='text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md'><img src={Arrow} alt="" className='mx-3' /></button>
-                            </div>
-                          </div>
+                                <div className='flex flex-col gap-2 w-2/12'>
+                                  <div>
+                                    <p className='text-xs font-medium'>{data.createdAt}</p>
 
-                        </div>
-
-                      </section>
-
-                      {showDetail[i] && (
-
-
-                        <>
-
-
-                          <div className='w-full flex flex-col bg-[#E9F3FF]  rounded-lg'>
-
-                            <div className='flex px-5 py-2'>
-                              <div className='flex flex-col gap-2 w-2/12'>
-                                <p className='text-xs font-bold'>Waktu Tiket Masuk</p>
-
-                              </div>
-                              <div className='grid grid-cols-6 gap-3 w-10/12'>
-
-                                <div className='flex flex-col gap-2'>
-                                  <h5 className='text-xs font-bold'>Pengerjaan Ke</h5>
+                                  </div>
+                                  <div>
+                                    <p className='text-xs font-bold'>Waktu Respon</p>
+                                    <p className='text-xs font-medium'>30m</p>
+                                  </div>
 
                                 </div>
-                                <div className='flex flex-col gap-2'>
-                                  <p className='text-xs font-bold'>Waktu</p>
+                                <div className='grid grid-cols-6 gap-3 w-10/12'>
 
-                                </div>
-                                <div className='flex flex-col gap-2'>
-                                  <p className='text-xs font-bold'>Eksekutor</p>
+                                  {data.proses_mtcs.map((proses: any, ii: any) => (
 
-                                </div>
+                                    <>
 
-                                <div className='flex flex-col gap-2'>
-                                  <p className='text-xs font-bold'>Progress Perbaikan</p>
+                                      <div className='flex flex-col gap-2'>
+                                        <h5 className='text-xs font-medium'>{ii + 1}</h5>
 
-                                </div>
-                                <div className='flex flex-col gap-2'>
-                                  <p className='text-xs font-bold'>Jenis Perbaikan</p>
-
-                                </div>
-                                <div className=''>
-
-
-                                </div>
-
-                              </div>
-                            </div>
-                            <div className='flex px-5 '>
-
-                              <div className='flex flex-col gap-2 w-2/12'>
-                                <div>
-                                  <p className='text-xs font-medium'>{data.createdAt}</p>
-
-                                </div>
-                                <div>
-                                  <p className='text-xs font-bold'>Waktu Respon</p>
-                                  <p className='text-xs font-medium'>30m</p>
-                                </div>
-
-                              </div>
-                              <div className='grid grid-cols-6 gap-3 w-10/12'>
-
-                                {data.proses_mtcs.map((proses: any, ii: any) => (
-
-                                  <>
-
-                                    <div className='flex flex-col gap-2'>
-                                      <h5 className='text-xs font-medium'>{ii + 1}</h5>
-
-                                    </div>
-                                    <div className='flex flex-col gap-2'>
-                                      <p className='text-xs font-medium'>{proses.waktu_mulai_mtc}</p>
-
-                                    </div>
-                                    <div className='flex flex-col gap-2'>
-                                      <p className='text-xs font-medium'>{proses.user_eksekutor.nama}</p>
-
-                                    </div>
-
-                                    <div className='flex flex-col gap-2'>
-
-                                      <div className='flex'>
-
-
-                                        <p className={proses.skor_mtc === 100 ?
-                                          `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                          : proses.skor_mtc >= 60 || proses.skor_mtc < 100 ?
-                                            `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                            : proses.skor_mtc >= 40 || proses.skor_mtc < 60 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] ` :
-                                              proses.skor_mtc < 40 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ""
-
-                                        }>{proses.skor_mtc}%</p>
                                       </div>
-                                    </div>
-                                    <div className='flex flex-col gap-2'>
-                                      <p className='text-xs font-medium'>{proses.cara_perbaikan}</p>
+                                      <div className='flex flex-col gap-2'>
+                                        <p className='text-xs font-medium'>{proses.waktu_mulai_mtc}</p>
 
-                                    </div>
-                                    <div className=''>
-                                      <button onClick={openModal1} className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md">
-                                        Detail
-                                      </button>
+                                      </div>
+                                      <div className='flex flex-col gap-2'>
+                                        <p className='text-xs font-medium'>{proses.user_eksekutor.nama}</p>
 
-                                    </div>
+                                      </div>
 
-                                  </>
-                                ))}
+                                      <div className='flex flex-col gap-2'>
 
+                                        <div className='flex'>
+
+
+                                          <p className={proses.skor_mtc === 100 ?
+                                            `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
+                                            : proses.skor_mtc >= 60 || proses.skor_mtc < 100 ?
+                                              `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                              : proses.skor_mtc >= 40 || proses.skor_mtc < 60 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] ` :
+                                                proses.skor_mtc < 40 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ""
+
+                                          }>{proses.skor_mtc}%</p>
+                                        </div>
+                                      </div>
+                                      <div className='flex flex-col gap-2'>
+                                        <p className='text-xs font-medium'>{proses.cara_perbaikan}</p>
+
+                                      </div>
+                                      <div className=''>
+                                        <button onClick={openModal1} className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md">
+                                          Detail
+                                        </button>
+
+                                      </div>
+
+                                    </>
+                                  ))}
+
+                                </div>
                               </div>
+
                             </div>
+                          </>
+
+                        )
 
 
-                          </div>
-                        </>
-                      )
+                        }
+                      </div >
+                    </>
+                  )
+                }
 
 
-                      }
-                    </div>
-                  </>
-                ))}
-            </div>
+                )}
+            </div >
           </div>
         </>
-      )}
+      )
+      }
 
 
       {/* =============================================================INI KOMPONEN UNTUK MOBILE========================================== */}
-      {isMobile && (
-        <>
-          <main className="overflow-x-scroll">
+      {
+        isMobile && (
+          <>
+            <main className="overflow-x-scroll">
 
-            <div className="bg-white mt-2 px-1 grid grid-cols-4 gap-3 py-2">
-              <div className='flex gap-[1px] justify-center items-center'>
-                <p className='text-xs font-bold '>Action</p>
-                <img src={Polygon6} alt="" />
-              </div>
-              <div className='flex gap-[1px] justify-center items-center'>
-                <p className='text-xs font-bold '>Nama Mesin</p>
-                <img src={Polygon6} alt="" />
-              </div>
-              <div className='flex gap-[1px] justify-center items-center'>
-                <p className='text-xs font-bold '>Jenis Kendala</p>
-                <img src={Polygon6} alt="" />
-              </div>
-              <div className='flex gap-[1px] justify-center items-center'>
-                <p className='text-xs font-bold '>Persentase</p>
-                <img src={Polygon6} alt="" />
-              </div>
-
-            </div>
-            {tiket.map((data: any, i: any) => (
-              <>
-
-                <div className="bg-white mt-2 grid grid-cols-4 gap-3 p-2">
-
-                  <div className='flex gap-1'>
-
-                    <button
-                      className="text-xs h-5 font-bold bg-blue-700  text-white rounded-sm"
-
-                    >
-                      <img src={Burger} alt="" className="mx-1" />
-
-                    </button>
-                    <button onClick={() => handleClickDetailMobile(i)} className='text-xs h-5 font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-sm'><img src={Arrow} alt="" className='mx-1' /></button>
-
-                  </div>
-
-
-                  <div className='flex gap-2'>
-                    <p className='text-xs font-medium '>R700</p>
-
-                  </div>
-                  <div className='flex gap-2'>
-                    <p className={`text-xs font-medium line-clamp-2 `}>3.1.7 Feeder tidak bisa on tidak bisa on tidak bisa ontidak bisa on  </p>
-
-                  </div>
-                  <div className='flex gap-2 justify-center '>
-                    <p className='text-xs font-medium bg-red-200 text-red-600 rounded-sm h-6   p-1'>0%</p>
-
-                  </div>
-
+              <div className="bg-white mt-2 px-1 grid grid-cols-4 gap-3 py-2">
+                <div className='flex gap-[1px] justify-center items-center'>
+                  <p className='text-xs font-bold '>Action</p>
+                  <img src={Polygon6} alt="" />
                 </div>
-                {showDetailMobile[i] && (
-                  <>
-                    <div className='w-full grid grid-cols-3 bg-[#E9F3FF]  rounded-lg px-2 gap-x-3 gap-y-3 p-1'>
-                      <div>
-                        <h5 className="text-xs font-bold">Waktu tiket masuk</h5>
-                        <p className="text-xs font-medium">12/12/12 7:00</p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Kode Tiket</h5>
-                        <p className="text-xs font-medium">EX102880</p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Status</h5>
-                        <p className="text-xs font-medium">Monitoring</p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Jenis Kendala</h5>
-                        <p className="text-xs font-medium">3.1.7 Feeder tidak bisa on tidak bisa on </p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Jadwal</h5>
-                        <p className="text-xs font-medium">12/12/12 7:00</p>
-                      </div>
+                <div className='flex gap-[1px] justify-center items-center'>
+                  <p className='text-xs font-bold '>Nama Mesin</p>
+                  <img src={Polygon6} alt="" />
+                </div>
+                <div className='flex gap-[1px] justify-center items-center'>
+                  <p className='text-xs font-bold '>Jenis Kendala</p>
+                  <img src={Polygon6} alt="" />
+                </div>
+                <div className='flex gap-[1px] justify-center items-center'>
+                  <p className='text-xs font-bold '>Persentase</p>
+                  <img src={Polygon6} alt="" />
+                </div>
 
+              </div>
+              {tiket.map((data: any, i: any) => (
+                <>
 
+                  <div className="bg-white mt-2 grid grid-cols-4 gap-3 p-2">
 
-                    </div>
-                    <div className='w-full grid grid-cols-3 bg-[#E9F3FF]  rounded-lg px-2 gap-y-3 mt-3 p-1'>
-                      <div>
-                        <h5 className="text-xs font-bold">Pengerjaan Ke</h5>
-                        <p className="text-xs font-medium">1</p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Waktu</h5>
-                        <p className="text-xs font-medium">12/12/12 7:00</p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Eksekutor</h5>
-                        <p className="text-xs font-medium">Saya</p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Waktu Respon</h5>
-                        <p className="text-xs font-medium">20m</p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Progress Perbaikan</h5>
-                        <p className="text-xs font-medium">Temporary</p>
-                      </div>
-                      <div>
-                        <h5 className="text-xs font-bold">Jenis Perbaikan</h5>
-                        <p className="text-xs font-medium">Part Lokal</p>
-                      </div>
+                    <div className='flex gap-1'>
 
-                      <div className=''>
-                        <button onClick={openModal1} className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md">
-                          Detail
-                        </button>
+                      <button
+                        className="text-xs h-5 font-bold bg-blue-700  text-white rounded-sm"
 
-                      </div>
+                      >
+                        <img src={Burger} alt="" className="mx-1" />
+
+                      </button>
+                      <button onClick={() => handleClickDetailMobile(i)} className='text-xs h-5 font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-sm'><img src={Arrow} alt="" className='mx-1' /></button>
 
                     </div>
-                  </>
-                )}
-              </>
-            ))}
-          </main>
-        </>
-      )}
-    </main>
+
+
+                    <div className='flex gap-2'>
+                      <p className='text-xs font-medium '>R700</p>
+
+                    </div>
+                    <div className='flex gap-2'>
+                      <p className={`text-xs font-medium line-clamp-2 `}>3.1.7 Feeder tidak bisa on tidak bisa on tidak bisa ontidak bisa on  </p>
+
+                    </div>
+                    <div className='flex gap-2 justify-center '>
+                      <p className='text-xs font-medium bg-red-200 text-red-600 rounded-sm h-6   p-1'>0%</p>
+
+                    </div>
+
+                  </div>
+                  {showDetailMobile[i] && (
+                    <>
+                      <div className='w-full grid grid-cols-3 bg-[#E9F3FF]  rounded-lg px-2 gap-x-3 gap-y-3 p-1'>
+                        <div>
+                          <h5 className="text-xs font-bold">Waktu tiket masuk</h5>
+                          <p className="text-xs font-medium">12/12/12 7:00</p>
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold">Kode Tiket</h5>
+                          <p className="text-xs font-medium">EX102880</p>
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold">Status</h5>
+                          <p className="text-xs font-medium">Monitoring</p>
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold">Jenis Kendala</h5>
+                          <p className="text-xs font-medium">3.1.7 Feeder tidak bisa on tidak bisa on </p>
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold">Jadwal</h5>
+                          <p className="text-xs font-medium">12/12/12 7:00</p>
+                        </div>
+
+
+
+                      </div>
+                      <div className='w-full grid grid-cols-3 bg-[#E9F3FF]  rounded-lg px-2 gap-y-3 mt-3 p-1'>
+                        <div>
+                          <h5 className="text-xs font-bold">Pengerjaan Ke</h5>
+                          <p className="text-xs font-medium">1</p>
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold">Waktu</h5>
+                          <p className="text-xs font-medium">12/12/12 7:00</p>
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold">Eksekutor</h5>
+                          <p className="text-xs font-medium">Saya</p>
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold">Waktu Respon</h5>
+                          <p className="text-xs font-medium">20m</p>
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold">Progress Perbaikan</h5>
+                          <p className="text-xs font-medium">Temporary</p>
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold">Jenis Perbaikan</h5>
+                          <p className="text-xs font-medium">Part Lokal</p>
+                        </div>
+
+                        <div className=''>
+                          <button onClick={openModal1} className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md">
+                            Detail
+                          </button>
+
+                        </div>
+
+                      </div>
+                    </>
+                  )}
+                </>
+              ))}
+            </main>
+          </>
+        )
+      }
+    </main >
   )
 }
 

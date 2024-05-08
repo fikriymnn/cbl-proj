@@ -18,6 +18,7 @@ import ModalMtcLightHeavy from '../../Modals/ModalMtcLightHeavy';
 import ModalNewVendor from '../../Modals/ModalNewVendor';
 import Arrow from '../../../images/icon/arrowDown.svg'
 import axios from 'axios';
+import ModalKonfirmasi from '../../Modals/ModalKonfirmasi';
 
 
 const tiket = [
@@ -92,13 +93,6 @@ const tiket = [
 const TableIncomingMaintenance = () => {
   const [showModal1, setShowModal1] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
-  const [showModal3, setShowModal3] = useState(false);
-  const [showModal4, setShowModal4] = useState(false);
-  const [showModal5, setShowModal5] = useState(false);
-  const [showModal6, setShowModal6] = useState(false);
-  const [showModal7, setShowModal7] = useState(false);
-  const [showModal8, setShowModal8] = useState(false);
-  const [showModal9, setShowModal9] = useState(false);
 
 
   const openModal1 = () => setShowModal1(true);
@@ -108,46 +102,7 @@ const TableIncomingMaintenance = () => {
   const closeModal2 = () => setShowModal2(false);
 
 
-  const closeModal3 = () => setShowModal3(false);
-  const openModal3 = () => {
-    setShowModal3(true);
-    setShowModal2(false);
-  };
 
-  const closeModal4 = () => setShowModal4(false);
-  const openModal4 = () => {
-    setShowModal4(true);
-    setShowModal8(false);
-  };
-
-  const closeModal8 = () => setShowModal8(false);
-  const openModal8 = () => {
-    setShowModal8(true);
-    setShowModal2(false);
-  };
-
-  const closeModal5 = () => setShowModal5(false);
-  const openModal5 = () => {
-    setShowModal5(true);
-    setShowModal4(false);
-  };
-
-  const closeModal6 = () => setShowModal6(false);
-  const openModal6 = () => {
-    setShowModal6(true);
-    setShowModal4(false);
-  };
-
-  const closeModal7 = () => setShowModal7(false);
-  const openModal7 = () => {
-    setShowModal7(true);
-    setShowModal6(false);
-  };
-  const closeModal9 = () => setShowModal9(false);
-  const openModal9 = () => {
-    setShowModal9(true);
-    setShowModal6(false);
-  };
   const [showTwoButtons, setShowTwoButtons] = useState<boolean[]>(new Array(tiket.length).fill(false));
   const [showDetail, setShowDetail] = useState<boolean[]>(new Array(tiket.length).fill(false));
   const handleClick = (index: number) => {
@@ -201,6 +156,17 @@ const TableIncomingMaintenance = () => {
 
       setMtc(res.data);
       console.log(res.data);
+    } catch (error: any) {
+      console.log(error.response);
+    }
+  }
+  async function responMTC(id: number) {
+    const url = `${import.meta.env.VITE_API_LINK}/ticket/respon/${id}`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      alert('berhasil')
     } catch (error: any) {
       console.log(error.response);
     }
@@ -281,7 +247,7 @@ const TableIncomingMaintenance = () => {
                       <div className=" items-center justify-center md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] flex ">
                         <td className=" border-[#eee]   dark:border-strokedark">
                           <div className=" mx-auto flex gap-3">
-                            <button type="button"
+                            <button type="button" onClick={openModal2}
                               className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
                             >
                               RESPON
@@ -312,105 +278,24 @@ const TableIncomingMaintenance = () => {
                             )}
 
                             {showModal2 && (
-                              <ModalMtc
-                                title="Select Maintenance Type"
+                              <ModalKonfirmasi
                                 isOpen={showModal2}
-                                onClose={closeModal2}
-                                machineName={'GMC Printer 2'}                    >
-                                <div className="pt-5">
+                                onClose={closeModal2}>
+                                <>
+                                  <div className='flex w-full justify-center items-center pt-3'>
+                                    <label className='text-neutral-500 text-xl font-normal '>
+                                      Apa anda yakin untuk merespon tiket ini?
+                                    </label>
+                                  </div>
+                                  <div className='flex w-full gap-3 pt-3'>
+                                    <button onClick={() => responMTC(brand.id)} className='w-full h-9 text-center text-white text-xs font-bold bg-blue-700 rounded-md'>RESPON</button>
 
-                                  <button onClick={openModal3} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                    RIGHT AWAY MAINTENANCE
-                                  </button>
-                                </div>
-                                <div className="pt-2">
-                                  <button onClick={openModal8} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                    SCHEDULE MAINTENANCE
-                                  </button>
-                                </div>
-                              </ModalMtc>
-                            )}
+                                  </div>
+                                </>
 
-                            {showModal8 && (
-                              <ModalMtcLightHeavy
-                                title="Select Maintenance Type"
-                                isOpen={showModal8}
-                                onClose={closeModal8}
-                              >
-                                <div className="pt-5">
-
-                                  <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                    MAINTENANCE RINGAN
-                                  </button>
-                                </div>
-                                <div className="pt-2">
-                                  <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                    MAINTENANCE BERAT
-                                  </button>
-                                </div>
-                              </ModalMtcLightHeavy>
-                            )}
-                            {showModal3 && (
-                              <ModalMtc6type
-                                isOpen={showModal3}
-                                onClose={closeModal3}
-                                ticketCode={'EXC0008'}
-                              >
-                                <p></p>
-                              </ModalMtc6type>
-                            )}
-                            {showModal4 && (
-                              <ModalMtcStockCheck
-                                machineName={'GMC Printer 2'}
-                                machineCode={'3.2'}
-                                isOpen={showModal4}
-                                onClose={closeModal4}
-                              >
-                                <button onClick={openModal6} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                  REQUIRED STOCK UNAVAILABLE
-                                </button>
-                                <button onClick={openModal5} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                  NEXT STEP
-                                </button>
-                              </ModalMtcStockCheck>
+                              </ModalKonfirmasi>
                             )}
 
-                            {showModal5 && (
-                              <ModalMtc6type children={undefined} isOpen={showModal5} onClose={closeModal5} ticketCode={undefined} />
-                            )}
-                            {showModal6 && (
-                              <ModalReplaced
-                                isOpen={showModal6}
-                                onClose={closeModal6}
-                              >
-                                <div className="flex  w-full gap-3 pt-5">
-                                  <button onClick={openModal7} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                    YES
-                                  </button>
-                                  <button onClick={openModal9} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                    NO
-                                  </button>
-                                </div>
-                              </ModalReplaced>
-                            )}
-                            {showModal7 && (
-                              <ModalPurchasing
-                                isOpen={showModal7}
-                                onClose={closeModal7}>
-                              </ModalPurchasing>
-                            )}
-                            {showModal9 && (
-                              <ModalNewVendor
-                                isOpen={showModal9}
-                                onClose={closeModal9}
-                              >
-                                <div className="flex  w-full gap-3 pt-5 justify-end pt-[300px]">
-                                  <button className="w-4/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md ">
-                                    SEND REQUEST
-                                  </button>
-                                </div>
-                              </ModalNewVendor>
-                            )}
 
                           </div>
 
@@ -504,105 +389,11 @@ const TableIncomingMaintenance = () => {
                               )}
 
                               {showModal2 && (
-                                <ModalMtc
-                                  title="Select Maintenance Type"
-                                  isOpen={showModal2}
-                                  onClose={closeModal2}
-                                  machineName={'GMC Printer 2'}                    >
-                                  <div className="pt-5">
-
-                                    <button onClick={openModal3} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                      RIGHT AWAY MAINTENANCE
-                                    </button>
-                                  </div>
-                                  <div className="pt-2">
-                                    <button onClick={openModal8} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                      SCHEDULE MAINTENANCE
-                                    </button>
-                                  </div>
-                                </ModalMtc>
+                                <>
+                                </>
                               )}
 
-                              {showModal8 && (
-                                <ModalMtcLightHeavy
-                                  title="Select Maintenance Type"
-                                  isOpen={showModal8}
-                                  onClose={closeModal8}
-                                >
-                                  <div className="pt-5">
 
-                                    <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                      MAINTENANCE RINGAN
-                                    </button>
-                                  </div>
-                                  <div className="pt-2">
-                                    <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                      MAINTENANCE BERAT
-                                    </button>
-                                  </div>
-                                </ModalMtcLightHeavy>
-                              )}
-                              {showModal3 && (
-                                <ModalMtc6type
-                                  isOpen={showModal3}
-                                  onClose={closeModal3}
-                                  ticketCode={'EXC0008'}
-                                >
-                                  <p></p>
-                                </ModalMtc6type>
-                              )}
-                              {showModal4 && (
-                                <ModalMtcStockCheck
-                                  machineName={'GMC Printer 2'}
-                                  machineCode={'3.2'}
-                                  isOpen={showModal4}
-                                  onClose={closeModal4}
-                                >
-                                  <button onClick={openModal6} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                    REQUIRED STOCK UNAVAILABLE
-                                  </button>
-                                  <button onClick={openModal5} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                    NEXT STEP
-                                  </button>
-                                </ModalMtcStockCheck>
-                              )}
-
-                              {showModal5 && (
-                                <ModalMtc6type children={undefined} isOpen={showModal5} onClose={closeModal5} ticketCode={undefined} />
-                              )}
-                              {showModal6 && (
-                                <ModalReplaced
-                                  isOpen={showModal6}
-                                  onClose={closeModal6}
-                                >
-                                  <div className="flex  w-full gap-3 pt-5">
-                                    <button onClick={openModal7} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                      YES
-                                    </button>
-                                    <button onClick={openModal9} className="w-6/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                      NO
-                                    </button>
-                                  </div>
-                                </ModalReplaced>
-                              )}
-                              {showModal7 && (
-                                <ModalPurchasing
-                                  isOpen={showModal7}
-                                  onClose={closeModal7}>
-                                </ModalPurchasing>
-                              )}
-                              {showModal9 && (
-                                <ModalNewVendor
-                                  isOpen={showModal9}
-                                  onClose={closeModal9}
-                                >
-                                  <div className="flex w-full gap-3 justify-end pt-[300px]">
-                                    <button className="w-4/12 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md ">
-                                      SEND REQUEST
-                                    </button>
-                                  </div>
-                                </ModalNewVendor>
-                              )}
                             </td>
                           </div>
                         </div>
