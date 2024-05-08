@@ -364,7 +364,7 @@ function TableOS() {
 
                                       </div>
                                       {showModalDetail && (
-                                        <ModalDetail children={undefined} isOpen={showModalDetail} onClose={closeModalDetail} kendala={data.nama_kendala} machineName={data.mesin} tgl={data.tgl} jam={undefined} namaPemeriksa={data.operator} no={undefined} idTiket={data.id} kodeLkh={data.kode_lkh} analisisPenyebab={undefined} kebutuhanSparepart={undefined} tipeMaintenance={undefined} catatan={data.proses_mtcs.note_analisis}></ModalDetail>
+                                        <ModalDetail children={undefined} isOpen={showModalDetail} onClose={closeModalDetail} kendala={data.nama_kendala} machineName={data.mesin} tgl={"12/12/24"} jam={"17.00"} namaPemeriksa={proses.user_eksekutor.nama} no={'1'} idTiket={data.id} kodeLkh={data.kode_lkh} analisisPenyebab={"undefined"} kebutuhanSparepart={"undefined"} tipeMaintenance={"original"} catatan={data.proses_mtcs.note_analisis}></ModalDetail>
                                       )}
                                     </>
                                   ))}
