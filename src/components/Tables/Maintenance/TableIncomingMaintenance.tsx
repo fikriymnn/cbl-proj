@@ -16,89 +16,74 @@ import ModalReplaced from '../../Modals/ModalReplaced';
 import ModalPurchasing from '../../Modals/ModalPurchasing';
 import ModalMtcLightHeavy from '../../Modals/ModalMtcLightHeavy';
 import ModalNewVendor from '../../Modals/ModalNewVendor';
-import Arrow from '../../../images/icon/arrowDown.svg'
+import Arrow from '../../../images/icon/arrowDown.svg';
 import axios from 'axios';
 import ModalKonfirmasi from '../../Modals/ModalKonfirmasi';
 
-
 const tiket = [
   {
-
     name: 'EX000003',
-    date: "12/22/24 07:00UTC",
-    machine: "R700",
+    date: '12/22/24 07:00UTC',
+    machine: 'R700',
     problem: 'Problem settingan mesin',
-    status: "pending",
-    schedule: "unscheduled",
+    status: 'pending',
+    schedule: 'unscheduled',
     action: 'request mtc',
-
   },
   {
-
     name: 'EX000003',
-    date: "12/22/24 07:00UTC",
-    machine: "R700",
+    date: '12/22/24 07:00UTC',
+    machine: 'R700',
     problem: 'Problem settingan mesin',
-    status: "pending",
-    schedule: "schedule requested",
+    status: 'pending',
+    schedule: 'schedule requested',
     action: 'detail',
   },
   {
-
     name: 'EX000003',
-    date: "12/22/24 07:00UTC",
-    machine: "R700",
+    date: '12/22/24 07:00UTC',
+    machine: 'R700',
     problem: 'Problem settingan mesin',
-    status: "pending",
-    schedule: ["schedule declined", "12/04/24 to 24/04/24"],
+    status: 'pending',
+    schedule: ['schedule declined', '12/04/24 to 24/04/24'],
     action: 3.7,
-    idResponser: "1313jn"
+    idResponser: '1313jn',
   },
   {
-
     name: 'EX000003',
-    date: "12/22/24 07:00UTC",
-    machine: "R700",
+    date: '12/22/24 07:00UTC',
+    machine: 'R700',
     problem: 'Problem settingan mesin',
-    status: "pending",
-    schedule: ["schedule declined", "12/04/24 to 24/04/24"],
+    status: 'pending',
+    schedule: ['schedule declined', '12/04/24 to 24/04/24'],
     action: 3.7,
-    idResponser: "1313jn"
+    idResponser: '1313jn',
   },
   {
-
     name: 'EX000003',
-    date: "12/22/24 07:00UTC",
-    machine: "R700",
+    date: '12/22/24 07:00UTC',
+    machine: 'R700',
     problem: 'Problem settingan mesin',
-    status: "pending",
-    schedule: ["schedule declined", "12/04/24 to 24/04/24"],
+    status: 'pending',
+    schedule: ['schedule declined', '12/04/24 to 24/04/24'],
     action: 3.7,
-    idResponser: "1313jn"
+    idResponser: '1313jn',
   },
   {
-
     name: 'EX000003',
-    date: "12/22/24 07:00UTC",
-    machine: "R700",
+    date: '12/22/24 07:00UTC',
+    machine: 'R700',
     problem: 'Problem settingan mesin',
-    status: "pending",
-    schedule: ["schedule declined", "12/04/24 to 24/04/24"],
+    status: 'pending',
+    schedule: ['schedule declined', '12/04/24 to 24/04/24'],
     action: 3.7,
-    idResponser: "1313jn"
+    idResponser: '1313jn',
   },
 ];
 
-
 const TableIncomingMaintenance = () => {
-
-
-
   const [showModal1, setShowModal1] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
-
-
-
 
   const openModal1 = () => setShowModal1(true);
   const closeModal1 = () => setShowModal1(false);
@@ -106,10 +91,12 @@ const TableIncomingMaintenance = () => {
   //const openModal2 = () => setShowModal2(true);
   //const closeModal2 = () => setShowModal2(false);
 
-
-
-  const [showTwoButtons, setShowTwoButtons] = useState<boolean[]>(new Array(tiket.length).fill(false));
-  const [showDetail, setShowDetail] = useState<boolean[]>(new Array(tiket.length).fill(false));
+  const [showTwoButtons, setShowTwoButtons] = useState<boolean[]>(
+    new Array(tiket.length).fill(false),
+  );
+  const [showDetail, setShowDetail] = useState<boolean[]>(
+    new Array(tiket.length).fill(false),
+  );
   const handleClick = (index: number) => {
     setShowTwoButtons((prevState) => {
       const updatedShowTwoButtons = [...prevState]; // Create a copy
@@ -136,7 +123,6 @@ const TableIncomingMaintenance = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
   };
   useEffect(() => {
-
     handleResize();
 
     // Event listener for window resize
@@ -150,27 +136,23 @@ const TableIncomingMaintenance = () => {
 
   const [mtc, setMtc] = useState<any>(null);
 
-
   const [showModal3, setShowModal3] = useState<any>([]);
-
 
   const openModal2 = (i: any) => {
     const onchangeVal: any = [...showModal3];
     onchangeVal[i] = true;
     console.log(onchangeVal);
-    setShowModal3(onchangeVal)
+    setShowModal3(onchangeVal);
   };
   const closeModal2 = (i: any) => {
     const onchangeVal: any = [...showModal3];
     onchangeVal[i] = false;
 
-    setShowModal3(onchangeVal)
+    setShowModal3(onchangeVal);
   };
-
 
   useEffect(() => {
     getMTC();
-
   }, []);
   async function getMTC() {
     const url = `${import.meta.env.VITE_API_LINK}/ticket?bagian_tiket=incoming`;
@@ -181,168 +163,199 @@ const TableIncomingMaintenance = () => {
 
       setMtc(res.data);
       console.log(res.data);
-      let data: any[] = []
+      let data: any[] = [];
       for (let i = 0; i < res.data.length; i++) {
-        data.push(false)
-
+        data.push(false);
       }
-      setShowModal3(data)
+      setShowModal3(data);
     } catch (error: any) {
       console.log(error.response);
     }
   }
-  async function responMTC(id: number) {
+
+  async function responMTC(id: number, indexModal: any) {
     const url = `${import.meta.env.VITE_API_LINK}/ticket/respon/${id}`;
     try {
       const res = await axios.get(url, {
         withCredentials: true,
       });
-      alert('berhasil')
+      alert('berhasil');
+      closeModal2(indexModal);
+      getMTC();
     } catch (error: any) {
       console.log(error.response);
     }
   }
   return (
-    <div className='overflow-x-scroll'>
-
-
+    <div className="overflow-x-scroll">
       {!isMobile && (
         <>
           <div className="rounded-b-xl lg:min-w-[700px]  border border-stroke bg-white  pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
-
-
             <div className="flex flex-col">
-              <div
-                className='flex border-b-8  border-[#D8EAFF] dark:border-strokedark '
-              >
+              <div className="flex border-b-8  border-[#D8EAFF] dark:border-strokedark ">
                 <div className=" flex items-center  w-1/12 gap-3 p-2.5 md:px-7.5 px-5 ">
-
                   <p className=" md:text-[12px] text-[10px] text-slate-600 font-semibold dark:text-white sm:block">
                     No
                   </p>
                 </div>
 
                 <div className=" flex items-center w-2/12 justify-center p-2.5 ml-2 md:px-7.5 px-5 ">
-                  <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center dark:text-white">Kode Tiket</p>
+                  <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center dark:text-white">
+                    Kode Tiket
+                  </p>
                 </div>
                 <div className=" flex items-center md:text-[12px] text-[10px] w-3/12 ml-4 justify-center p-2.5 md:px-7.5 px-5 ">
-                  <p className="text-slate-600 font-semibold text-center dark:text-white">Waktu Masuk</p>
+                  <p className="text-slate-600 font-semibold text-center dark:text-white">
+                    Waktu Masuk
+                  </p>
                 </div>
 
                 <div className=" flex items-center md:text-[12px] text-[10px] w-4/12 ml-4 justify-center p-2.5 md:px-7.5 px-5 ">
-                  <p className="text-slate-600 font-semibold text-center">Nama Mesin</p>
+                  <p className="text-slate-600 font-semibold text-center">
+                    Nama Mesin
+                  </p>
                 </div>
                 <div className=" flex items-center md:text-[12px] text-[10px] w-4/12 mr-2 justify-center p-2.5 md:px-7.5 px-5 ">
-                  <p className="text-slate-600 font-semibold text-center">Kendala</p>
+                  <p className="text-slate-600 font-semibold text-center">
+                    Kendala
+                  </p>
                 </div>
 
-
-
                 <div className=" items-center justify-center  md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 flex ">
-                  <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center">Detail</p>
+                  <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center">
+                    Detail
+                  </p>
                 </div>
               </div>
               <>
                 {mtc != null &&
                   mtc.map((brand: any, key: any) => {
+                    function convertDatetimeToDate(datetime: any) {
+                      const dateObject = new Date(datetime);
+                      const day = dateObject
+                        .getDate()
+                        .toString()
+                        .padStart(2, '0'); // Ensure two-digit day
+                      const month = (dateObject.getMonth() + 1)
+                        .toString()
+                        .padStart(2, '0'); // Adjust for zero-based month
+                      const year = dateObject.getFullYear();
+                      const hours = dateObject
+                        .getHours()
+                        .toString()
+                        .padStart(2, '0');
+                      const minutes = dateObject
+                        .getMinutes()
+                        .toString()
+                        .padStart(2, '0');
+
+                      return `${year}/${month}/${day}  ${hours}:${minutes}`; // Example format (YYYY-MM-DD)
+                    }
+
+                    const tiketMasuk = convertDatetimeToDate(brand.createdAt);
 
                     return (
-                      (
-                        <div
-                          className={`flex ${key === tiket.length - 1
+                      <div
+                        className={`flex ${
+                          key === tiket.length - 1
                             ? ''
                             : 'border-b-8  border-[#D8EAFF] dark:border-strokedark '
-                            }`}
-                          key={key}
-                        >
-                          <div className=" flex items-center w-1/12   gap-3 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF]  ">
+                        }`}
+                        key={key}
+                      >
+                        <div className=" flex items-center w-1/12   gap-3 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF]  ">
+                          <p className=" md:text-[12px] text-[10px] text-black dark:text-white block">
+                            {key + 1}
+                          </p>
+                        </div>
 
-                            <p className=" md:text-[12px] text-[10px] text-black dark:text-white block">
-                              {key + 1}
-                            </p>
-                          </div>
+                        <div className=" flex items-center w-2/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                          <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">
+                            {brand.name}
+                          </p>
+                        </div>
+                        <div className=" flex items-center w-3/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                          <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">
+                            {tiketMasuk}
+                          </p>
+                        </div>
 
-                          <div className=" flex items-center w-2/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                            <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.name}</p>
-                          </div>
-                          <div className=" flex items-center w-3/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                            <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.createdAt}</p>
-                          </div>
+                        <div className=" flex items-center w-4/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                          <p className="text-black text-center md:text-[12px] text-[10px]">
+                            {brand.mesin}
+                          </p>
+                        </div>
+                        <div className=" flex items-center w-3/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                          <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">
+                            {brand.nama_kendala}
+                          </p>
+                        </div>
 
+                        <div className=" items-center justify-center md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] flex ">
+                          <td className=" border-[#eee]   dark:border-strokedark">
+                            <div className=" mx-auto flex gap-3">
+                              <button
+                                type="button"
+                                onClick={() => openModal2(key)}
+                                className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
+                              >
+                                RESPON
+                              </button>
+                              <button
+                                type="button"
+                                onClick={openModal1}
+                                className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-white border-[#0065DE] border text-primary justify-center`}
+                              >
+                                DETAIL
+                              </button>
 
-                          <div className=" flex items-center w-4/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                            <p className="text-black text-center md:text-[12px] text-[10px]">{brand.mesin}</p>
-                          </div>
-                          <div className=" flex items-center w-3/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                            <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.nama_kendala}</p>
-                          </div>
-
-
-
-                          <div className=" items-center justify-center md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] flex ">
-                            <td className=" border-[#eee]   dark:border-strokedark">
-                              <div className=" mx-auto flex gap-3">
-                                <button type="button" onClick={() => openModal2(key)}
-                                  className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
-                                >
-                                  RESPON
-                                </button>
-                                <button type="button" onClick={openModal1}
-                                  className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-white border-[#0065DE] border text-primary justify-center`}
-                                >
-                                  DETAIL
-                                </button>
-
-
-                                {/* <button type="button" onClick={openModal1}
+                              {/* <button type="button" onClick={openModal1}
                         className={`inline-flex rounded-[3px] my-auto py-2 md:px-2 px-1 md:text-[12px] text-[10px] font-semibold bg-white border-[#0065DE] border text-primary justify-center items-center  `}
                       >
                         DETAIL
                       </button> */}
-                                {showModal1 && (
-                                  <Modal
-                                    isOpen={showModal1}
-                                    onClose={closeModal1}
-                                    ticketCode={''}
-                                    incDate={brand.createdAt}
-                                    namaMesin={brand.mesin}
-                                    jenisKendala={brand.jenis_kendala}
-                                    kendala={brand.nama_kendala}                               >
-                                    <p></p>
-                                  </Modal>
-                                )}
+                              {showModal1 && (
+                                <Modal
+                                  isOpen={showModal1}
+                                  onClose={closeModal1}
+                                  ticketCode={''}
+                                  incDate={brand.createdAt}
+                                  namaMesin={brand.mesin}
+                                  jenisKendala={brand.jenis_kendala}
+                                  kendala={brand.nama_kendala}
+                                >
+                                  <p></p>
+                                </Modal>
+                              )}
 
-                                {showModal3[key] == true && (
-
-                                  <ModalKonfirmasi
-                                    isOpen={showModal3[key]}
-                                    onClose={() => closeModal2(key)}>
-                                    <>
-                                      <div className='flex w-full justify-center items-center pt-3'>
-                                        <label className='text-neutral-500 text-xl font-normal '>
-                                          Apa anda yakin untuk merespon tiket ini?
-                                        </label>
-                                      </div>
-                                      <div className='flex w-full gap-3 pt-3'>
-                                        <button onClick={() => responMTC(brand.id)} className='w-full h-9 text-center text-white text-xs font-bold bg-blue-700 rounded-md'>RESPON</button>
-
-                                      </div>
-                                    </>
-
-                                  </ModalKonfirmasi>
-                                )
-                                }
-
-
-                              </div>
-
-                            </td>
-                          </div>
+                              {showModal3[key] == true && (
+                                <ModalKonfirmasi
+                                  isOpen={showModal3[key]}
+                                  onClose={() => closeModal2(key)}
+                                >
+                                  <>
+                                    <div className="flex w-full justify-center items-center pt-3">
+                                      <label className="text-neutral-500 text-xl font-normal ">
+                                        Apa anda yakin untuk merespon tiket ini?
+                                      </label>
+                                    </div>
+                                    <div className="flex w-full gap-3 pt-3">
+                                      <button
+                                        onClick={() => responMTC(brand.id, key)}
+                                        className="w-full h-9 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
+                                      >
+                                        RESPON
+                                      </button>
+                                    </div>
+                                  </>
+                                </ModalKonfirmasi>
+                              )}
+                            </div>
+                          </td>
                         </div>
-                      )
-                    )
-                  }
-                  )}
+                      </div>
+                    );
+                  })}
               </>
             </div>
           </div>
@@ -352,52 +365,52 @@ const TableIncomingMaintenance = () => {
       {isMobile && (
         <>
           <div className="rounded-b-xl lg:min-w-[700px]  border border-stroke bg-white  pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
-
-
             <div className="flex flex-col">
-              <div
-                className='flex border-b-8  border-[#D8EAFF] dark:border-strokedark '
-              >
-                <div className='flex w-6/12'>
-
-                </div>
+              <div className="flex border-b-8  border-[#D8EAFF] dark:border-strokedark ">
+                <div className="flex w-6/12"></div>
                 <div className=" flex items-center w-5/12 justify-center p-2.5 md:px-7.5 px-5 ">
-                  <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center dark:text-white">Kode Tiket</p>
+                  <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center dark:text-white">
+                    Kode Tiket
+                  </p>
                 </div>
                 <div className=" flex items-center md:text-[12px] text-[10px] w-7/12 justify-start p-2.5 md:px-7.5 px-5 ">
-                  <p className="text-slate-600 font-semibold text-center dark:text-white">Waktu Masuk</p>
+                  <p className="text-slate-600 font-semibold text-center dark:text-white">
+                    Waktu Masuk
+                  </p>
                 </div>
-
-
               </div>
               <>
                 {mtc != null &&
                   mtc.map((brand: any, key: any) => (
-                    <div className=''>
-                      <div className='w-full'>
-
-
+                    <div className="">
+                      <div className="w-full">
                         <div
-                          className={`flex ${key === tiket.length - 1
-                            ? ''
-                            : 'border-b-8  border-[#D8EAFF] dark:border-strokedark '
-                            }`}
+                          className={`flex ${
+                            key === tiket.length - 1
+                              ? ''
+                              : 'border-b-8  border-[#D8EAFF] dark:border-strokedark '
+                          }`}
                           key={key}
                         >
-
-                          <div className='flex justify-center items-center pl-2 py-2'>
-
-                            <button onClick={() => handleClickDetail(key)} className='h-14 w-8 text-xs font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-[4px]'><img src={Arrow} alt="" className='mx-2 py-1' /></button>
+                          <div className="flex justify-center items-center pl-2 py-2">
+                            <button
+                              onClick={() => handleClickDetail(key)}
+                              className="h-14 w-8 text-xs font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-[4px]"
+                            >
+                              <img src={Arrow} alt="" className="mx-2 py-1" />
+                            </button>
                           </div>
 
                           <div className=" flex flex-wrap  w-4/12  border-b-[#D8EAFF] px-2 gap-1  py-2">
-
-                            <button type="button"
+                            <button
+                              type="button"
                               className={`inline-flex py-[6px] rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
                             >
                               RESPON
                             </button>
-                            <button type="button" onClick={openModal1}
+                            <button
+                              type="button"
+                              onClick={openModal1}
                               className={`inline-flex py-1 rounded-[3px] my-auto  md:px-5 px-2 md:text-[12px] text-[10px] sm:font-semibold bg-white border-[#0065DE] border text-primary justify-center`}
                             >
                               DETAIL
@@ -408,13 +421,13 @@ const TableIncomingMaintenance = () => {
                             <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white"></p>
                           </div>
                           <div className=" flex items-center w-5/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                            <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.createdAt}</p>
+                            <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">
+                              {brand.createdAt}
+                            </p>
                           </div>
 
                           <div className=" items-center justify-center md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] flex ">
                             <td className=" border-[#eee]   dark:border-strokedark">
-
-
                               {showModal1 && (
                                 <Modal
                                   isOpen={showModal1}
@@ -423,57 +436,47 @@ const TableIncomingMaintenance = () => {
                                   incDate={brand.createdAt}
                                   namaMesin={brand.mesin}
                                   jenisKendala={brand.jenis_kendala}
-                                  kendala={brand.nama_kendala}                               >
+                                  kendala={brand.nama_kendala}
+                                >
                                   <p></p>
                                 </Modal>
                               )}
 
-                              {showModal2 && (
-                                <>
-                                </>
-                              )}
-
-
+                              {showModal2 && <></>}
                             </td>
                           </div>
                         </div>
-                        <div className='flex w-full'>
+                        <div className="flex w-full">
                           {showDetail[key] && (
-                            <div className='w-full  bg-[#E9F3FF]  rounded-lg py-2'>
-                              <div className='flex w-full'>
-                                <div className='flex w-full'>
-
-                                  <div className='flex w-6/12 flex-col'>
-                                    <p className='text-xs font-bold'>Nama Mesin</p>
-                                    <p className='text-sm font-light'>R700</p>
+                            <div className="w-full  bg-[#E9F3FF]  rounded-lg py-2">
+                              <div className="flex w-full">
+                                <div className="flex w-full">
+                                  <div className="flex w-6/12 flex-col">
+                                    <p className="text-xs font-bold">
+                                      Nama Mesin
+                                    </p>
+                                    <p className="text-sm font-light">R700</p>
                                   </div>
-                                  <div className='flex w-6/12 flex-col'>
-                                    <p className='text-xs font-bold'>Kendala</p>
-                                    <p className='text-sm font-light'>Mesin Macet</p>
+                                  <div className="flex w-6/12 flex-col">
+                                    <p className="text-xs font-bold">Kendala</p>
+                                    <p className="text-sm font-light">
+                                      Mesin Macet
+                                    </p>
                                   </div>
-
-
                                 </div>
-
                               </div>
-
                             </div>
                           )}
                         </div>
-
                       </div>
                     </div>
-                  ))
-                }
-
+                  ))}
               </>
             </div>
-
           </div>
         </>
       )}
     </div>
-
   );
 };
 

@@ -21,7 +21,7 @@ const DropdownUser = () => {
 
   async function getUser() {
     try {
-      const res = await axios.get(`https://26vlcsn0-5000.asse.devtunnels.ms/me`, {
+      const res = await axios.get(`${import.meta.env.VITE_API_LINK}/me`, {
         withCredentials: true,
       });
       // if (res.data.success == false) {
