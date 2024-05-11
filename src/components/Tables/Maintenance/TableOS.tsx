@@ -359,7 +359,7 @@ function TableOS() {
                                       <div className="flex flex-col gap-1">
                                         <button
                                           onClick={() => {
-                                            if (data.status_tiket == 'open') {
+                                            if (data.status_tiket == 'open' ||data.status_tiket == 'pending') {
                                               openModal1(i);
                                             } else {
                                               reworkTiket(data.id);

@@ -273,6 +273,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                       //   sidebarExpanded
                       //     ? handleClick()
                       //     : setSidebarExpanded(true);
+                          
 
                       // }}
                       >

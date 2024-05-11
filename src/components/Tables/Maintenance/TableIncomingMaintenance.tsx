@@ -179,11 +179,12 @@ const TableIncomingMaintenance = () => {
       const res = await axios.get(url, {
         withCredentials: true,
       });
-      alert('berhasil');
-      closeModal2(indexModal);
+      
+      alert("respon berhasil")
       getMTC();
     } catch (error: any) {
       console.log(error.response);
+      alert("error")
     }
   }
   return (
@@ -296,7 +297,7 @@ const TableIncomingMaintenance = () => {
                             <div className=" mx-auto flex gap-3">
                               <button
                                 type="button"
-                                onClick={() => openModal2(key)}
+                                onClick={()  => responMTC(brand.id, key)}
                                 className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
                               >
                                 RESPON

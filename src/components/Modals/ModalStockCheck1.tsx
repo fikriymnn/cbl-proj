@@ -185,7 +185,8 @@ const ModalStockCheck1 = ({
       onClose();
       onFinish();
     } catch (error: any) {
-      console.log(error.response);
+      console.log(error);
+      //alert(error.data.msg);
     }
   }
 
@@ -833,8 +834,10 @@ const ModalStockCheck1 = ({
                         );
                         setSelectedSkorPerbaikan(selectedOptionSkor);
                         setTypePost('normal');
+                        console.log('normal')
                       } else {
                         setTypePost('pending');
+                        console.log('pending')
                       }
 
                       changeTextColor();
@@ -843,6 +846,15 @@ const ModalStockCheck1 = ({
                       isOptionSelected ? 'text-black dark:text-white' : ''
                     }`}
                   >
+
+<option
+                      value=""
+                      selected
+                      className="text-body dark:text-bodydark"
+                    >
+                      pilih
+                    </option>
+                  
                     {skorPerbaikan != null &&
                       skorPerbaikan.map((data: any, i: number) => {
                         return (
