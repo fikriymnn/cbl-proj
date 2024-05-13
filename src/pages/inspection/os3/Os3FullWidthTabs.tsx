@@ -131,8 +131,8 @@ export default function Os3FullWidthTabs() {
                         className='bg-white text-[#00499F] font-semibold mb-2 '
 
                     >
-                        <Tab label="Incoming" {...a11yProps(0)} className='' />
-                        <Tab label="OS 2" {...a11yProps(1)} />
+                        <Tab label="Temuan" {...a11yProps(0)} className='' />
+                        <Tab label="Histori" {...a11yProps(1)} />
                         {/* <Tab label="OS 3" {...a11yProps(2)} /> */}
                         {/* <Tab label={<Typography variant='h1'>OS 4</Typography>} /> */}
                     </Tabs>
