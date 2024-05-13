@@ -140,12 +140,10 @@ const ModalStockCheck1 = ({
   }
 
   async function postAnalisis() {
-    const urlNormal = `${
-      import.meta.env.VITE_API_LINK
-    }/ticket/analisis/${idTiket}`;
-    const urlPending = `${
-      import.meta.env.VITE_API_LINK
-    }/ticket/pending/${idTiket}`;
+    const urlNormal = `${import.meta.env.VITE_API_LINK
+      }/ticket/analisis/${idTiket}`;
+    const urlPending = `${import.meta.env.VITE_API_LINK
+      }/ticket/pending/${idTiket}`;
     try {
       if (typePost === 'normal') {
         const res = await axios.put(
@@ -154,7 +152,7 @@ const ModalStockCheck1 = ({
             id_proses: idProses,
             kode_analisis_mtc: selectedKodeAnalisis.kode_analisis,
             nama_analisis_mtc: selectedKodeAnalisis.nama_analisis,
-            note_analisis: '',
+            note_analisis: "",
             masalah_sparepart: [],
             skor_mtc: selectedSkorPerbaikan.skor,
             cara_perbaikan: selectedSkorPerbaikan.nama_skor,
@@ -353,9 +351,8 @@ const ModalStockCheck1 = ({
 
                       changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                      isOptionSelected ? 'text-black dark:text-white' : ''
-                    }`}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
+                      }`}
                   >
                     <option
                       value=""
@@ -448,109 +445,6 @@ const ModalStockCheck1 = ({
               KEBUTUHAN SPAREPART
             </label>
           </div>
-          {/* <div className="overflow-y-auto scroll-auto max-h-[200px]">
-
-                        <div className="pb-2">
-                            <div className="flex  px-2 lg:py-3 py-1 bg-[#D8EAFF] rounded-md">
-                                <label className="hidden sm:block text-blue-700 text-xs font-bold pt-2 pl-4">
-                                    1
-                                </label>
-                                <button name="rusak" className="lg:ml-4 ml-[2px] lg:w-[282px] w-8/12 h-9 bg-white rounded text-center text-[#0065DE] text-xs font-bold">
-                                    INK INJECTOR CGT
-                                </button>
-                                <svg className="lg:ml-4 ml-[2px]" width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <g clip-path="url(#clip0_708_3509)">
-                                        <path d="M39 0H0V39H39V0Z" fill="white" fill-opacity="0.01" />
-                                        <path d="M14.625 25.1875H30.875V4.0625" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                        <path d="M24.375 17.0625H8.125V34.9375" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                        <path d="M35.75 8.9375L30.875 4.0625L26 8.9375" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                        <path d="M13 30.0625L8.125 34.9375L3.25 30.0625" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                    </g>
-                                    <defs>
-                                        <clipPath id="clip0_708_3509">
-                                            <rect width="39" height="39" fill="white" />
-                                        </clipPath>
-                                    </defs>
-                                </svg>
-                                {!isMobile && (
-                                    <>
-                                        <button name="pengganti" className="lg:ml-4 ml-[2px] w-[282px] h-9 bg-white rounded text-center text-[#0065DE] text-xs font-bold">
-                                            INK INJECTOR FGA
-                                        </button>
-                                        <div className="w-[130px] h-9 lg:ml-2 ml-[2px] bg-[#EDF5FF] rounded text-center text-[#0065DE] text-xs font-bold lg:pt-[9px] pt-[10px] px-1">
-                                            ORIGINAL
-                                        </div>
-                                        <button name="pengganti" className="lg:ml-2 ml-[2px] w-[39px] h-9 bg-[#DE0000] rounded justify-items-center ">
-                                            <svg className="lg:ml-[13px] mx-2" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
-                                                <rect y="11.7183" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(-45 0 11.7183)" fill="white" />
-                                            </svg>
-
-                                        </button>
-                                    </>
-                                )}
-                                {isMobile && (
-                                    <>
-                                        <div className="flex flex-wrap">
-                                            <button name="pengganti" className="lg:ml-4 ml-[2px] w-[155px] h-5 bg-white rounded-t-[4px] text-center text-[#0065DE] text-xs font-bold">
-                                                INK INJECTOR FGA
-                                            </button>
-                                            <div className="w-[155px] h-4 lg:ml-2 ml-[2px] bg-[#EDF5FF] rounded-b-[4px] text-center text-[#0065DE] text-xs font-bold lg:pt-[9px] ">
-                                                ORIGINAL
-                                            </div>
-                                        </div>
-
-                                        <button name="pengganti" className="lg:ml-2 ml-[2px] w-[39px] h-9 bg-[#DE0000] rounded justify-items-center ">
-                                            <svg className="lg:ml-[13px] mx-2" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
-                                                <rect y="11.7183" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(-45 0 11.7183)" fill="white" />
-                                            </svg>
-
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                        {sparepart.map((val, i) => {
-                            return (
-                                <div className="pb-2 ">
-                                    <div className="flex  px-2 lg:py-3 py-1 bg-[#D8EAFF] rounded-md">
-                                        <label className="hidden sm:block text-blue-700 text-xs font-bold pt-2 lg:pl-4">
-                                            {no}
-                                        </label>
-                                        <button name="rusak" className="lg:ml-4 lg:w-[282px] w-[220px] h-9 bg-blue-700 rounded text-center text-white text-xs font-bold">
-                                            PILIH SPAREPART RUSAK
-                                        </button>
-                                        <svg className="lg:ml-4 ml-[2px]" width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <g clip-path="url(#clip0_708_3509)">
-                                                <path d="M39 0H0V39H39V0Z" fill="white" fill-opacity="0.01" />
-                                                <path d="M14.625 25.1875H30.875V4.0625" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                                <path d="M24.375 17.0625H8.125V34.9375" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                                <path d="M35.75 8.9375L30.875 4.0625L26 8.9375" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                                <path d="M13 30.0625L8.125 34.9375L3.25 30.0625" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                            </g>
-                                            <defs>
-                                                <clipPath id="clip0_708_3509">
-                                                    <rect width="39" height="39" fill="white" />
-                                                </clipPath>
-                                            </defs>
-                                        </svg>
-                                        <button name="pengganti" className="lg:ml-4 ml-[2px] lg:w-[415px] w-[320px] h-9 bg-blue-700 rounded text-center text-white text-xs font-bold">
-                                            PILIH SPAREPART PENGGANTI
-                                        </button>
-                                        <button name="pengganti" className="ml-[2px] lg:w-[39px] w-[30px] h-9 bg-[#DE0000] rounded justify-items-center ">
-                                            <svg className="lg:ml-[13px] mx-2 " width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
-                                                <rect y="11.7183" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(-45 0 11.7183)" fill="white" />
-                                            </svg>
-
-                                        </button>
-                                    </div>
-                                </div>
-
-                            )
-                        })}
-                    </div> */}
           {isHidden == false ? (
             <>
               <div className="pt-3 mt-5 border bg-blue-100 rounded border-stroke pb-4 overflow-y-auto scroll-auto max-h-[450px]">
@@ -573,11 +467,10 @@ const ModalStockCheck1 = ({
                             setSelectedOption(e.target.value);
                             changeTextColor();
                           }}
-                          className={`relative z-20 w-full appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                            isOptionSelected
-                              ? 'text-gray-800 dark:text-white'
-                              : ''
-                          }`}
+                          className={`relative z-20 w-full appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected
+                            ? 'text-gray-800 dark:text-white'
+                            : ''
+                            }`}
                         >
                           <option
                             value="pon"
@@ -659,11 +552,10 @@ const ModalStockCheck1 = ({
                               setSelectedOption(e.target.value);
                               changeTextColor();
                             }}
-                            className={`relative z-20 w-full pt-2 appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                              isOptionSelected
-                                ? 'text-gray-800 dark:text-white'
-                                : ''
-                            }`}
+                            className={`relative z-20 w-full pt-2 appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected
+                              ? 'text-gray-800 dark:text-white'
+                              : ''
+                              }`}
                           >
                             <option
                               value="pon"
@@ -811,6 +703,8 @@ const ModalStockCheck1 = ({
               </label>
             </div>
           </div>
+
+
           <div className="flex w-full pt-1">
             <div className="flex lg:w-6/12 w-full">
               <div>
@@ -842,19 +736,18 @@ const ModalStockCheck1 = ({
 
                       changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                      isOptionSelected ? 'text-black dark:text-white' : ''
-                    }`}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
+                      }`}
                   >
 
-<option
+                    <option
                       value=""
                       selected
                       className="text-body dark:text-bodydark"
                     >
                       pilih
                     </option>
-                  
+
                     {skorPerbaikan != null &&
                       skorPerbaikan.map((data: any, i: number) => {
                         return (
@@ -896,6 +789,30 @@ const ModalStockCheck1 = ({
                   </span>
                 </div>
               </div>
+            </div>
+          </div>
+          <div className="flex w-full pt-1">
+            <div className="flex w-full">
+              <label className="form-label block  text-black text-xs font-extrabold mt-3">
+                {typePost == 'pending' ?
+                  <>
+                    <h2>TIPE PENDING</h2>
+                    <div className='flex gap-5 mt-5'>
+                      <div className='flex gap-2'>
+                        <input type="radio" id="man" name="option" value="man" />
+                        <label htmlFor="man">Man</label><br />
+                      </div>
+                      <div className='flex gap-2'>
+                        <input type="radio" id="sparepart" name="option" value="sparepart" />
+                        <label htmlFor="sparepart">Sparepart</label><br />
+                      </div>
+                      <div className='flex gap-2'>
+                        <input type="radio" id="time" name="option" value="time" />
+                        <label htmlFor="time">Time</label><br />
+                      </div>
+                    </div>
+                  </> : ""}
+              </label>
             </div>
           </div>
           <div className="flex w-full pt-1">

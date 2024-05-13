@@ -9,7 +9,7 @@ import ModalStockCheck1 from '../../Modals/ModalStockCheck1';
 import Polygon6 from '../../../images/icon/Polygon6.svg';
 import axios from 'axios';
 import ModalDetail from '../../Modals/ModalDetail';
-import moment from 'moment';
+// import moment from 'moment';
 
 function TableOS() {
   const [isMobile, setIsMobile] = useState(false);
@@ -71,6 +71,7 @@ function TableOS() {
 
   const handleClick = (i: any) => {
     const onchangeVal: any = [...showTwoButtons];
+    setShowTwoButtons(showTwoButtons.map((item: any) => item = false))
     onchangeVal[i] = !onchangeVal[i];
 
     setShowTwoButtons(onchangeVal);
@@ -78,6 +79,7 @@ function TableOS() {
 
   const openModal1 = (i: any) => {
     const onchangeVal: any = [...showModal1];
+
     onchangeVal[i] = true;
 
     setShowModal1(onchangeVal);
@@ -161,9 +163,8 @@ function TableOS() {
     const minutesDiff = Math.floor(secondsDiff / 60);
     const hoursDiff = Math.floor(minutesDiff / 60);
 
-    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${
-      hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
-    } `;
+    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
+      } `;
 
     return formattedDifference; // Example format (YYYY-MM-DD)
   }
@@ -302,13 +303,13 @@ function TableOS() {
                                       ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                       : data.skor_mtc >= 60 &&
                                         data.skor_mtc < 100
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                      : data.skor_mtc >= 40 &&
-                                        data.skor_mtc < 60
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
-                                      : data.skor_mtc < 40 && data.skor_mtc >= 0
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : ''
+                                        ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                        : data.skor_mtc >= 40 &&
+                                          data.skor_mtc < 60
+                                          ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
+                                          : data.skor_mtc < 40 && data.skor_mtc >= 0
+                                            ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                            : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -323,13 +324,13 @@ function TableOS() {
                                       ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                       : data.skor_mtc >= 60 &&
                                         data.skor_mtc < 100
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                      : data.skor_mtc >= 40 &&
-                                        data.skor_mtc < 60
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
-                                      : data.skor_mtc < 40 && data.skor_mtc >= 0
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : ''
+                                        ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                        : data.skor_mtc >= 40 &&
+                                          data.skor_mtc < 60
+                                          ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
+                                          : data.skor_mtc < 40 && data.skor_mtc >= 0
+                                            ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                            : ''
                                   }
                                 >
                                   {data.skor_mtc}%
@@ -359,7 +360,7 @@ function TableOS() {
                                       <div className="flex flex-col gap-1">
                                         <button
                                           onClick={() => {
-                                            if (data.status_tiket == 'open' ||data.status_tiket == 'pending') {
+                                            if (data.status_tiket == 'open' || data.status_tiket == 'pending') {
                                               openModal1(i);
                                             } else {
                                               reworkTiket(data.id);
@@ -512,14 +513,14 @@ function TableOS() {
                                                     ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                                     : proses.skor_mtc >= 60 &&
                                                       proses.skor_mtc < 100
-                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                                    : proses.skor_mtc >= 40 &&
-                                                      proses.skor_mtc < 60
-                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
-                                                    : proses.skor_mtc < 40 &&
-                                                      proses.skor_mtc >= 0
-                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                                    : ''
+                                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                                      : proses.skor_mtc >= 40 &&
+                                                        proses.skor_mtc < 60
+                                                        ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
+                                                        : proses.skor_mtc < 40 &&
+                                                          proses.skor_mtc >= 0
+                                                          ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                                          : ''
                                                 }
                                               >
                                                 {proses.skor_mtc}%
