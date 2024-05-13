@@ -100,16 +100,25 @@ const ModalStockCheck1 = ({
 
   const [typePost, setTypePost] = useState<any>('normal');
 
+  const [mesin, setMesin] = useState<any>(namaMesin);
+  const [masterMesin, setmasterMesin] = useState<any>();
+
   const [selectedKodeAnalisis, setSelectedKodeAnalisis] = useState<any>();
   const [selectedSkorPerbaikan, setSelectedSkorPerbaikan] = useState<any>();
   const [noteMaintenance, setNoteMaintenance] = useState<any>();
+  const [alasanPending, setAlasanPending] = useState<any>();
 
   const [kodeAnalisis, setKodeAnalisis] = useState<any>(null);
   const [skorPerbaikan, setSkorPerbaikan] = useState<any>(null);
 
+  const [stokSparepart, setStokSparepart] = useState<any>(null);
+  const [kebutuhanSparepart, setKebutuhanSparepart] = useState<any>([]);
+
   useEffect(() => {
     getKodeAnalisis();
     getSkorPerbaikan();
+    getStokSparepart(mesin);
+    getMasterMesin();
   }, []);
   async function getKodeAnalisis() {
     const url = `${import.meta.env.VITE_API_LINK}/master/kodeAnalisis`;
@@ -121,7 +130,7 @@ const ModalStockCheck1 = ({
       setKodeAnalisis(res.data);
       console.log(res.data);
     } catch (error: any) {
-      console.log(error.response);
+      console.log(error.data.msg);
     }
   }
 
@@ -135,15 +144,48 @@ const ModalStockCheck1 = ({
       setSkorPerbaikan(res.data);
       console.log(res.data);
     } catch (error: any) {
-      console.log(error.response);
+      console.log(error.data.msg);
+    }
+  }
+
+  async function getMasterMesin() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+
+      setmasterMesin(res.data);
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
+
+  async function getStokSparepart(mesinName: any) {
+    const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
+    try {
+      const res = await axios.get(url, {
+        params: {
+          nama_mesin: mesinName,
+        },
+        withCredentials: true,
+      });
+
+      setStokSparepart(res.data);
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error.data.msg);
     }
   }
 
   async function postAnalisis() {
-    const urlNormal = `${import.meta.env.VITE_API_LINK
-      }/ticket/analisis/${idTiket}`;
-    const urlPending = `${import.meta.env.VITE_API_LINK
-      }/ticket/pending/${idTiket}`;
+    const urlNormal = `${
+      import.meta.env.VITE_API_LINK
+    }/ticket/analisis/${idTiket}`;
+    const urlPending = `${
+      import.meta.env.VITE_API_LINK
+    }/ticket/pending/${idTiket}`;
     try {
       if (typePost === 'normal') {
         const res = await axios.put(
@@ -152,11 +194,12 @@ const ModalStockCheck1 = ({
             id_proses: idProses,
             kode_analisis_mtc: selectedKodeAnalisis.kode_analisis,
             nama_analisis_mtc: selectedKodeAnalisis.nama_analisis,
-            note_analisis: "",
-            masalah_sparepart: [],
+            note_analisis: '',
+            masalah_sparepart: kebutuhanSparepart,
             skor_mtc: selectedSkorPerbaikan.skor,
             cara_perbaikan: selectedSkorPerbaikan.nama_skor,
             note_mtc: noteMaintenance,
+
             nama_mesin: namaMesin,
           },
           {
@@ -171,6 +214,7 @@ const ModalStockCheck1 = ({
           {
             id_proses: idProses,
             note_mtc: noteMaintenance,
+            alasan_pending: alasanPending,
           },
           {
             withCredentials: true,
@@ -351,12 +395,14 @@ const ModalStockCheck1 = ({
                       console.log(selectedOption);
                       changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
-                      }`}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                      isOptionSelected ? 'text-black dark:text-white' : ''
+                    }`}
                   >
                     <option
                       value=""
                       disabled
+                      selected
                       className="text-body dark:text-bodydark"
                     >
                       KODE - NAMA PENYEBAB
@@ -445,6 +491,47 @@ const ModalStockCheck1 = ({
               KEBUTUHAN SPAREPART
             </label>
           </div>
+
+          {kebutuhanSparepart.map((data: any, i: number) => {
+            return (
+              <>
+                <button
+                  onClick={() => {
+                    const onchangeVal: any = [...kebutuhanSparepart];
+                    onchangeVal[i].use_qty = data.use_qty - 1;
+
+                    setKebutuhanSparepart(onchangeVal);
+                  }}
+                >
+                  -
+                </button>
+                <p>{data.nama_sparepart}</p>
+                <p>{data.use_qty}</p>
+                <button
+                  onClick={() => {
+                    const onchangeVal: any = [...kebutuhanSparepart];
+                    onchangeVal[i].use_qty = data.use_qty + 1;
+
+                    setKebutuhanSparepart(onchangeVal);
+                  }}
+                >
+                  +
+                </button>
+
+                <button
+                  onClick={() => {
+                    const onchangeVal: any = [...kebutuhanSparepart];
+                    onchangeVal.splice(i, 1);
+
+                    setKebutuhanSparepart(onchangeVal);
+                  }}
+                >
+                  hapus
+                </button>
+              </>
+            );
+          })}
+
           {isHidden == false ? (
             <>
               <div className="pt-3 mt-5 border bg-blue-100 rounded border-stroke pb-4 overflow-y-auto scroll-auto max-h-[450px]">
@@ -462,22 +549,38 @@ const ModalStockCheck1 = ({
 
                       <div className="relative z-20 h-[23px] bg-white dark:bg-form-input rounded-md w-5/12">
                         <select
-                          value={selectedOption}
+                          value={mesin}
                           onChange={(e) => {
-                            setSelectedOption(e.target.value);
+                            setMesin(e.target.value);
+                            getStokSparepart(e.target.value);
                             changeTextColor();
                           }}
-                          className={`relative z-20 w-full appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected
-                            ? 'text-gray-800 dark:text-white'
-                            : ''
-                            }`}
+                          className={`relative z-20 w-full appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                            isOptionSelected
+                              ? 'text-gray-800 dark:text-white'
+                              : ''
+                          }`}
                         >
                           <option
-                            value="pon"
+                            value={mesin}
+                            selected
+                            disabled
                             className="text-gray-800 text-xs font-light dark:text-bodydark"
                           >
-                            R700
+                            {mesin}
                           </option>
+
+                          {masterMesin != null &&
+                            masterMesin.map((data: any, i: number) => {
+                              return (
+                                <option
+                                  value={data.nama_mesin}
+                                  className="text-gray-800 text-xs font-light dark:text-bodydark"
+                                >
+                                  {data.nama_mesin}
+                                </option>
+                              );
+                            })}
                         </select>
 
                         <span className="absolute top-[13px] right-2 z-10 -translate-y-1/2">
@@ -547,15 +650,16 @@ const ModalStockCheck1 = ({
                       <div className="flex w-full">
                         <div className="relative z-20 h-[30px] bg-white dark:bg-form-input rounded-md w-9/12">
                           <select
-                            value={selectedOption}
+                            value={mesin}
                             onChange={(e) => {
-                              setSelectedOption(e.target.value);
+                              setMesin(e.target.value);
                               changeTextColor();
                             }}
-                            className={`relative z-20 w-full pt-2 appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected
-                              ? 'text-gray-800 dark:text-white'
-                              : ''
-                              }`}
+                            className={`relative z-20 w-full pt-2 appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                              isOptionSelected
+                                ? 'text-gray-800 dark:text-white'
+                                : ''
+                            }`}
                           >
                             <option
                               value="pon"
@@ -616,62 +720,39 @@ const ModalStockCheck1 = ({
                 )}
 
                 <div className="pb-2 ">
-                  <CheckStockPengganti
-                    no={1}
-                    spareName={'Cable'}
-                    spareStatus={'Original'}
-                    spareStock={'5'}
-                  />
-                  <CheckStockPengganti
-                    no={2}
-                    spareName={'Adapter 3.5'}
-                    spareStatus={'Original'}
-                    spareStock={'0'}
-                  />
-                  <CheckStockPengganti
-                    no={3}
-                    spareName={'INK Injector'}
-                    spareStatus={'Original'}
-                    spareStock={'1'}
-                  />
-                  <CheckStockPengganti
-                    no={4}
-                    spareName={'Adapter 3.5'}
-                    spareStatus={'Original'}
-                    spareStock={'0'}
-                  />
-                  <CheckStockPengganti
-                    no={5}
-                    spareName={'Adapter 3.5'}
-                    spareStatus={'Original'}
-                    spareStock={'0'}
-                  />
-                  <CheckStockPengganti
-                    no={6}
-                    spareName={'Adapter 3.5'}
-                    spareStatus={'Original'}
-                    spareStock={'0'}
-                  />
-                  <CheckStockPengganti
-                    no={7}
-                    spareName={'Adapter 3.5'}
-                    spareStatus={'Original'}
-                    spareStock={'0'}
-                  />
-                  <CheckStockPengganti
-                    no={8}
-                    spareName={'Adapter 3.5'}
-                    spareStatus={'Original'}
-                    spareStock={'0'}
-                  />
-                  <CheckStockPengganti
-                    no={9}
-                    spareName={'Adapter 3.5'}
-                    spareStatus={'Original'}
-                    spareStock={'0'}
-                  />
+                  {stokSparepart.map((data: any, i: number) => {
+                    return (
+                      <CheckStockPengganti
+                        no={i + 1}
+                        spareName={data.nama_sparepart}
+                        spareStatus={data.jenis_part}
+                        spareStock={data.stok}
+                        onClick={() => {
+                          setKebutuhanSparepart((prevState: any) => [
+                            ...prevState,
+                            {
+                              id: data.id,
+                              kode: data.kode,
+                              nama_sparepart: data.nama_sparepart,
+                              nama_mesin: data.nama_mesin,
+                              jenis_part: data.jenis_part,
+                              persen: data.persen,
+                              umur_sparepart: data.umur_sparepart,
+                              use_qty: 1,
+                            },
+                          ]);
+                          // let dataS = [kebutuhanSparepart];
+
+                          // dataS.push(data);
+                          // console.log(dataS);
+                          // setKebutuhanSparepart(dataS);
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               </div>
+
               {/* <div className="flex w-full h-12 rounded-md bg-blue-600 mt-4 justify-center items-center">
                                 <label className="text-center text-white text-xs font-bold">
                                     REQUEST STOCK
@@ -704,7 +785,6 @@ const ModalStockCheck1 = ({
             </div>
           </div>
 
-
           <div className="flex w-full pt-1">
             <div className="flex lg:w-6/12 w-full">
               <div>
@@ -728,18 +808,18 @@ const ModalStockCheck1 = ({
                         );
                         setSelectedSkorPerbaikan(selectedOptionSkor);
                         setTypePost('normal');
-                        console.log('normal')
+                        console.log('normal');
                       } else {
                         setTypePost('pending');
-                        console.log('pending')
+                        console.log('pending');
                       }
 
                       changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
-                      }`}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                      isOptionSelected ? 'text-black dark:text-white' : ''
+                    }`}
                   >
-
                     <option
                       value=""
                       selected
@@ -794,24 +874,48 @@ const ModalStockCheck1 = ({
           <div className="flex w-full pt-1">
             <div className="flex w-full">
               <label className="form-label block  text-black text-xs font-extrabold mt-3">
-                {typePost == 'pending' ?
+                {typePost == 'pending' ? (
                   <>
                     <h2>TIPE PENDING</h2>
-                    <div className='flex gap-5 mt-5'>
-                      <div className='flex gap-2'>
-                        <input type="radio" id="man" name="option" value="man" />
-                        <label htmlFor="man">Man</label><br />
+                    <div className="flex gap-5 mt-5">
+                      <div className="flex gap-2">
+                        <input
+                          onChange={(e) => setAlasanPending(e.target.value)}
+                          type="radio"
+                          id="man"
+                          name="option"
+                          value="man"
+                        />
+                        <label htmlFor="man">Man</label>
+                        <br />
                       </div>
-                      <div className='flex gap-2'>
-                        <input type="radio" id="sparepart" name="option" value="sparepart" />
-                        <label htmlFor="sparepart">Sparepart</label><br />
+                      <div className="flex gap-2">
+                        <input
+                          onChange={(e) => setAlasanPending(e.target.value)}
+                          type="radio"
+                          id="sparepart"
+                          name="option"
+                          value="sparepart"
+                        />
+                        <label htmlFor="sparepart">Sparepart</label>
+                        <br />
                       </div>
-                      <div className='flex gap-2'>
-                        <input type="radio" id="time" name="option" value="time" />
-                        <label htmlFor="time">Time</label><br />
+                      <div className="flex gap-2">
+                        <input
+                          onChange={(e) => setAlasanPending(e.target.value)}
+                          type="radio"
+                          id="time"
+                          name="option"
+                          value="time"
+                        />
+                        <label htmlFor="time">Time</label>
+                        <br />
                       </div>
                     </div>
-                  </> : ""}
+                  </>
+                ) : (
+                  ''
+                )}
               </label>
             </div>
           </div>
@@ -823,7 +927,6 @@ const ModalStockCheck1 = ({
             </div>
           </div>
           <div className="relative w-full min-w-[200px] pt-1">
-
             <textarea
               value={noteMaintenance}
               onChange={(e) => setNoteMaintenance(e.target.value)}
