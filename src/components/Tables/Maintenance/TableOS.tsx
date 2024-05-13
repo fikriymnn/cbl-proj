@@ -14,6 +14,13 @@ import ModalDetail from '../../Modals/ModalDetail';
 function TableOS() {
   const [isMobile, setIsMobile] = useState(false);
   const [status, setStatus] = useState();
+  const [openButton, setOpenButton] = useState(null);
+  const handleClick = (i: any) => {
+    setOpenButton((prevState: any) => {
+      return prevState === i ? null : i;
+    });
+  };
+
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
   };
@@ -28,8 +35,6 @@ function TableOS() {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
-
-  //const openModal1 = () => setShowModal1(true);
 
 
   const openModal2 = () => setShowModal2(true);
@@ -69,17 +74,15 @@ function TableOS() {
   const [showModal1, setShowModal1] = useState<any>([]);
   const [user, setUser] = useState<any>(null);
 
-  const handleClick = (i: any) => {
-    const onchangeVal: any = [...showTwoButtons];
-    setShowTwoButtons(showTwoButtons.map((item: any) => item = false))
-    onchangeVal[i] = !onchangeVal[i];
 
-    setShowTwoButtons(onchangeVal);
-  };
+  // const onchangeVal: any = [...showTwoButtons];
+  // setShowTwoButtons(showTwoButtons.map((item: any) => item = false))
+  //onchangeVal[i] = !onchangeVal[i];
+
+  // setShowTwoButtons(onchangeVal);
 
   const openModal1 = (i: any) => {
     const onchangeVal: any = [...showModal1];
-
     onchangeVal[i] = true;
 
     setShowModal1(onchangeVal);
@@ -368,7 +371,7 @@ function TableOS() {
                                   >
                                     <img src={Burger} alt="" className="mx-3" />
                                   </button>
-                                  {showTwoButtons[i] ? (
+                                  {openButton == i ? (
                                     <div className="absolute bg-white p-3 shadow-5 rounded-md">
                                       {' '}
                                       {/* Wrap buttons for styling */}
@@ -658,7 +661,7 @@ function TableOS() {
                           <button onClick={() => handleClick(i)} className="text-xs px-1 py-2 font-bold bg-blue-700  text-white rounded-sm">
                             <img src={Burger} alt="" className="mx-1" />
                           </button>
-                          {showTwoButtons[i] ? (
+                          {showTwoButtons == i ? (
                             <div className="absolute bg-white p-3 shadow-5 rounded-md">
                               {' '}
                               {/* Wrap buttons for styling */}

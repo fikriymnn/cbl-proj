@@ -216,34 +216,34 @@ function HistoryOS2() {
             {!isMobile && (
                 <>
                     <div className="flex bg-white mt-2 py-2">
-                        <p className="px-5 text-[10px] font-bold ">No</p>
+                        <p className="px-5 text-xs font-bold ">No</p>
                         <div className="grid md:grid-cols-7  w-full">
                             <div className="flex gap-2">
-                                <p className="text-[10px] font-bold ">Kode Tiket</p>
+                                <p className="text-xs font-bold ">Kode Tiket</p>
                                 <img className="w-2" src={Polygon6} alt="" />
                             </div>
                             <div className="flex gap-2">
-                                <p className="text-[10px] font-bold ">Nama Mesin</p>
+                                <p className="text-xs font-bold ">Nama Mesin</p>
                                 <img className="w-2" src={Polygon6} alt="" />
                             </div>
                             <div className="flex gap-2 ">
-                                <p className="text-[10px] font-bold ">Tanggal Tiket Masuk</p>
+                                <p className="text-xs font-bold ">Tanggal Tiket Masuk</p>
                                 <img className="w-2" src={Polygon6} alt="" />
                             </div>
                             <div className="flex gap-2">
-                                <p className="text-[10px] font-bold ">Tanggal Selesai</p>
+                                <p className="text-xs font-bold ">Tanggal Selesai</p>
                                 <img className="w-2" src={Polygon6} alt="" />
                             </div>
                             <div className="flex gap-2">
-                                <p className="text-[10px] font-bold ">Jumlah Pengerjaan</p>
+                                <p className="text-xs font-bold ">Jumlah Pengerjaan</p>
                                 <img className="w-2" src={Polygon6} alt="" />
                             </div>
                             <div className="flex gap-2">
-                                <p className="text-[10px] font-bold ">Sparepart Digunakan</p>
+                                <p className="text-xs font-bold ">Sparepart Digunakan</p>
                                 <img className="w-2" src={Polygon6} alt="" />
                             </div>
                             <div className="flex gap-2">
-                                <p className="text-[10px] font-bold ">Status</p>
+                                <p className="text-xs font-bold ">Status</p>
                             </div>
                         </div>
                     </div>
@@ -293,7 +293,7 @@ function HistoryOS2() {
                                                     <div className="grid  grid-cols-7 w-full  ">
                                                         <div className="flex flex-col md:gap-5 gap-1 ">
                                                             <div className="my-auto ">
-                                                                <p className="text-sm font-light"></p>
+                                                                <p className="text-sm font-light">R729390</p>
                                                             </div>
                                                         </div>
                                                         <div className="flex flex-col md:gap-5 gap-1 ">
@@ -306,56 +306,28 @@ function HistoryOS2() {
                                                         <div className="flex flex-col  md:gap-5 gap-1 ">
                                                             <div className="my-auto w-11/12">
                                                                 <p className="text-sm font-light">
-                                                                    {data.kode_lkh} - {data.nama_kendala}
+                                                                    {dateMtc}
                                                                 </p>
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center md:gap-5 gap-1 ">
                                                             <div className="flex ">
-                                                                <p
-                                                                    className={
-                                                                        data.skor_mtc === 100
-                                                                            ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                                                            : data.skor_mtc >= 60 &&
-                                                                                data.skor_mtc < 100
-                                                                                ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                                                                : data.skor_mtc >= 40 &&
-                                                                                    data.skor_mtc < 60
-                                                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
-                                                                                    : data.skor_mtc < 40 && data.skor_mtc >= 0
-                                                                                        ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                                                                        : ''
-                                                                    }
-                                                                >
-                                                                    {data.status_tiket}{' '}
-                                                                </p>
+                                                                {dateMtc}
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center md:gap-5 gap-1  p-2">
                                                             <div className="flex ">
                                                                 <p
-                                                                    className={
-                                                                        data.skor_mtc === 100
-                                                                            ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                                                            : data.skor_mtc >= 60 &&
-                                                                                data.skor_mtc < 100
-                                                                                ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                                                                : data.skor_mtc >= 40 &&
-                                                                                    data.skor_mtc < 60
-                                                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
-                                                                                    : data.skor_mtc < 40 && data.skor_mtc >= 0
-                                                                                        ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                                                                        : ''
-                                                                    }
+                                                                    className='text-sm px-2  font-light  rounded-xl flex justify-center'
                                                                 >
-                                                                    {data.skor_mtc}%
+                                                                    {data.proses_mtcs.length}
                                                                 </p>
                                                             </div>
                                                         </div>
-                                                        <div className="flex flex-col md:gap-5 gap-1 ">
+                                                        <div className="flex flex-col justify-center md:gap-5 gap-1 ">
                                                             <div>
                                                                 <p className="text-sm font-light">
-                                                                    {data.proses_mtcs[lengthProses].tgl_mtc}
+                                                                    {data.proses_mtcs.length}
                                                                 </p>
                                                             </div>
                                                         </div>
