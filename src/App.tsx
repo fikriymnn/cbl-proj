@@ -25,6 +25,8 @@ import Pm2 from './pages/inspection/pm2/Pm2';
 import Pm2Form from './pages/inspection/pm2/Pm2Form';
 import Pm3Form from './pages/inspection/pm3/Pm3Form';
 import Pm3 from './pages/inspection/pm3/Pm3';
+import OS3 from './pages/inspection/os3/Os3';
+import Preventive from './pages/inspection/os3/Preventive';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -129,6 +131,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <Pm3 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/inspection/OS_3"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <Preventive />
               </ProtectedRoute>
             </>
           }

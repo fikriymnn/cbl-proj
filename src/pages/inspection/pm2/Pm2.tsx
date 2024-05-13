@@ -3,11 +3,12 @@ import DefaultLayout from '../../../layout/DefaultLayout'
 import ModalPopupBgn from '../../../components/Modals/ModalPopupBgn';
 import ModalPopupReq from '../../../components/Modals/ModalDetailPopupReq';
 import { Link } from 'react-router-dom';
+import ModalMtcDate from '../../../components/Modals/ModalMtcDate';
 const brandData = [
     {
 
         name: 'R700',
-        date: "12/22/24 07:00AM",
+        date: "",
         machine: 'iCutter GT40 RTX4080 800cc pro max',
         status: "pending",
         schedule: "unscheduled",
@@ -16,11 +17,12 @@ const brandData = [
         response_time: '3 minutes',
         partOf: "printing",
 
+
     },
     {
 
         name: 'SM 74',
-        date: "12/22/24 07:00AM",
+        date: "schedule requested",
         machine: 'iCutter GT40',
         status: "pending",
         schedule: "schedule requested",
@@ -177,18 +179,46 @@ function Pm2
 
 
                                         <div>
+                                            {brand.date == "" ?
+                                                <>
+                                                    <button
+                                                        onClick={openModal2}
+                                                        className="w-25 text-xs font-bold bg-blue-700 py-2 text-white "
+                                                    >
+                                                        REQUEST DATE{' '}
+                                                    </button>
+                                                    {showModal2 && (
+                                                        <ModalMtcDate
+                                                            isOpen={showModal2}
+                                                            onClose={closeModal2}
+                                                            machineName={'GMC Printer 2'}
+                                                        >
+                                                            <p></p>
+                                                        </ModalMtcDate>
+                                                    )}
 
-                                            <>
-                                                <Link to='/maintenance/inspection/pm_1_form'
-                                                    className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'begin mtc' && ''
-                                                        }`} // Dynamic class assignment
-                                                    onClick={openModal4}
-                                                >
-                                                    INSPECT
+                                                </> :
+                                                brand.date == 'schedule requested' ?
+                                                    <div className='flex justify-center items-center w-25 text-xs font-bold bg-red-200 text-red-600 py-2'>
+                                                        <div className='flex justify-center items-center mx-auto'>
 
-                                                </Link>
+                                                            SCHEDULE REQUESTED
+                                                        </div>
+                                                    </div>
+                                                    :
+                                                    <>
+                                                        <Link to='/maintenance/inspection/pm_1_form'
+                                                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'begin mtc' && ''
+                                                                }`} // Dynamic class assignment
+                                                            onClick={openModal4}
+                                                        >
+                                                            INSPECT
 
-                                            </>
+                                                        </Link>
+
+                                                    </>
+                                            }
+
 
 
 

@@ -6,12 +6,10 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import TableOne from './TableIncomingMaintenance';
-import TableTwo from './TableOS';
-import TableThree from '../TableThree';
-import TableIncomingMaintenance from './TableIncomingMaintenance';
-import TableOS from './TableOS';
-import HistoriOS2 from './History';
+import Os3 from './Os3';
+
+
+
 
 
 interface TabPanelProps {
@@ -49,7 +47,7 @@ function a11yProps(index: number) {
     };
 }
 
-export default function MachineFullWidthTabs() {
+export default function Os3FullWidthTabs() {
     const theme = createTheme({
         palette: {
             primary: {
@@ -133,9 +131,8 @@ export default function MachineFullWidthTabs() {
                         className='bg-white text-[#00499F] font-semibold mb-2 '
 
                     >
-                        <Tab label="Incoming" {...a11yProps(0)} className='' />
-                        <Tab label="OS 2" {...a11yProps(1)} />
-                        <Tab label="Histori" {...a11yProps(2)} />
+                        <Tab label="Temuan" {...a11yProps(0)} className='' />
+                        <Tab label="Histori" {...a11yProps(1)} />
                         {/* <Tab label="OS 3" {...a11yProps(2)} /> */}
                         {/* <Tab label={<Typography variant='h1'>OS 4</Typography>} /> */}
                     </Tabs>
@@ -148,23 +145,17 @@ export default function MachineFullWidthTabs() {
       > */}
             <TabPanel value={value} index={0} dir={theme.direction}>
 
-                <TableIncomingMaintenance />
+                <Os3 />
 
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
 
-                {/* <TableOS2 /> */}
-                <TableOS />
+
+
 
 
             </TabPanel>
-            <TabPanel value={value} index={2} dir={theme.direction}>
 
-
-                <HistoriOS2 />
-
-            </TabPanel>
-            {/* </SwipeableViews> */}
         </Box>
     );
 }

@@ -100,16 +100,25 @@ const ModalStockCheck1 = ({
 
   const [typePost, setTypePost] = useState<any>('normal');
 
+  const [mesin, setMesin] = useState<any>(namaMesin);
+  const [masterMesin, setmasterMesin] = useState<any>();
+
   const [selectedKodeAnalisis, setSelectedKodeAnalisis] = useState<any>();
   const [selectedSkorPerbaikan, setSelectedSkorPerbaikan] = useState<any>();
   const [noteMaintenance, setNoteMaintenance] = useState<any>();
+  const [alasanPending, setAlasanPending] = useState<any>();
 
   const [kodeAnalisis, setKodeAnalisis] = useState<any>(null);
   const [skorPerbaikan, setSkorPerbaikan] = useState<any>(null);
 
+  const [stokSparepart, setStokSparepart] = useState<any>(null);
+  const [kebutuhanSparepart, setKebutuhanSparepart] = useState<any>([]);
+
   useEffect(() => {
     getKodeAnalisis();
     getSkorPerbaikan();
+    getStokSparepart(mesin);
+    getMasterMesin();
   }, []);
   async function getKodeAnalisis() {
     const url = `${import.meta.env.VITE_API_LINK}/master/kodeAnalisis`;
@@ -121,7 +130,7 @@ const ModalStockCheck1 = ({
       setKodeAnalisis(res.data);
       console.log(res.data);
     } catch (error: any) {
-      console.log(error.response);
+      console.log(error.data.msg);
     }
   }
 
@@ -135,15 +144,48 @@ const ModalStockCheck1 = ({
       setSkorPerbaikan(res.data);
       console.log(res.data);
     } catch (error: any) {
-      console.log(error.response);
+      console.log(error.data.msg);
+    }
+  }
+
+  async function getMasterMesin() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+
+      setmasterMesin(res.data);
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
+
+  async function getStokSparepart(mesinName: any) {
+    const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
+    try {
+      const res = await axios.get(url, {
+        params: {
+          nama_mesin: mesinName,
+        },
+        withCredentials: true,
+      });
+
+      setStokSparepart(res.data);
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error.data.msg);
     }
   }
 
   async function postAnalisis() {
-    const urlNormal = `${import.meta.env.VITE_API_LINK
-      }/ticket/analisis/${idTiket}`;
-    const urlPending = `${import.meta.env.VITE_API_LINK
-      }/ticket/pending/${idTiket}`;
+    const urlNormal = `${
+      import.meta.env.VITE_API_LINK
+    }/ticket/analisis/${idTiket}`;
+    const urlPending = `${
+      import.meta.env.VITE_API_LINK
+    }/ticket/pending/${idTiket}`;
     try {
       if (typePost === 'normal') {
         const res = await axios.put(
@@ -153,10 +195,11 @@ const ModalStockCheck1 = ({
             kode_analisis_mtc: selectedKodeAnalisis.kode_analisis,
             nama_analisis_mtc: selectedKodeAnalisis.nama_analisis,
             note_analisis: '',
-            masalah_sparepart: [],
+            masalah_sparepart: kebutuhanSparepart,
             skor_mtc: selectedSkorPerbaikan.skor,
             cara_perbaikan: selectedSkorPerbaikan.nama_skor,
             note_mtc: noteMaintenance,
+
             nama_mesin: namaMesin,
           },
           {
@@ -171,6 +214,7 @@ const ModalStockCheck1 = ({
           {
             id_proses: idProses,
             note_mtc: noteMaintenance,
+            alasan_pending: alasanPending,
           },
           {
             withCredentials: true,
@@ -351,12 +395,14 @@ const ModalStockCheck1 = ({
                       console.log(selectedOption);
                       changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
-                      }`}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                      isOptionSelected ? 'text-black dark:text-white' : ''
+                    }`}
                   >
                     <option
                       value=""
                       disabled
+                      selected
                       className="text-body dark:text-bodydark"
                     >
                       KODE - NAMA PENYEBAB
@@ -445,109 +491,47 @@ const ModalStockCheck1 = ({
               KEBUTUHAN SPAREPART
             </label>
           </div>
-          {/* <div className="overflow-y-auto scroll-auto max-h-[200px]">
 
-                        <div className="pb-2">
-                            <div className="flex  px-2 lg:py-3 py-1 bg-[#D8EAFF] rounded-md">
-                                <label className="hidden sm:block text-blue-700 text-xs font-bold pt-2 pl-4">
-                                    1
-                                </label>
-                                <button name="rusak" className="lg:ml-4 ml-[2px] lg:w-[282px] w-8/12 h-9 bg-white rounded text-center text-[#0065DE] text-xs font-bold">
-                                    INK INJECTOR CGT
-                                </button>
-                                <svg className="lg:ml-4 ml-[2px]" width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <g clip-path="url(#clip0_708_3509)">
-                                        <path d="M39 0H0V39H39V0Z" fill="white" fill-opacity="0.01" />
-                                        <path d="M14.625 25.1875H30.875V4.0625" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                        <path d="M24.375 17.0625H8.125V34.9375" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                        <path d="M35.75 8.9375L30.875 4.0625L26 8.9375" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                        <path d="M13 30.0625L8.125 34.9375L3.25 30.0625" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                    </g>
-                                    <defs>
-                                        <clipPath id="clip0_708_3509">
-                                            <rect width="39" height="39" fill="white" />
-                                        </clipPath>
-                                    </defs>
-                                </svg>
-                                {!isMobile && (
-                                    <>
-                                        <button name="pengganti" className="lg:ml-4 ml-[2px] w-[282px] h-9 bg-white rounded text-center text-[#0065DE] text-xs font-bold">
-                                            INK INJECTOR FGA
-                                        </button>
-                                        <div className="w-[130px] h-9 lg:ml-2 ml-[2px] bg-[#EDF5FF] rounded text-center text-[#0065DE] text-xs font-bold lg:pt-[9px] pt-[10px] px-1">
-                                            ORIGINAL
-                                        </div>
-                                        <button name="pengganti" className="lg:ml-2 ml-[2px] w-[39px] h-9 bg-[#DE0000] rounded justify-items-center ">
-                                            <svg className="lg:ml-[13px] mx-2" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
-                                                <rect y="11.7183" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(-45 0 11.7183)" fill="white" />
-                                            </svg>
+          {kebutuhanSparepart.map((data: any, i: number) => {
+            return (
+              <>
+                <button
+                  onClick={() => {
+                    const onchangeVal: any = [...kebutuhanSparepart];
+                    onchangeVal[i].use_qty = data.use_qty - 1;
 
-                                        </button>
-                                    </>
-                                )}
-                                {isMobile && (
-                                    <>
-                                        <div className="flex flex-wrap">
-                                            <button name="pengganti" className="lg:ml-4 ml-[2px] w-[155px] h-5 bg-white rounded-t-[4px] text-center text-[#0065DE] text-xs font-bold">
-                                                INK INJECTOR FGA
-                                            </button>
-                                            <div className="w-[155px] h-4 lg:ml-2 ml-[2px] bg-[#EDF5FF] rounded-b-[4px] text-center text-[#0065DE] text-xs font-bold lg:pt-[9px] ">
-                                                ORIGINAL
-                                            </div>
-                                        </div>
+                    setKebutuhanSparepart(onchangeVal);
+                  }}
+                >
+                  -
+                </button>
+                <p>{data.nama_sparepart}</p>
+                <p>{data.use_qty}</p>
+                <button
+                  onClick={() => {
+                    const onchangeVal: any = [...kebutuhanSparepart];
+                    onchangeVal[i].use_qty = data.use_qty + 1;
 
-                                        <button name="pengganti" className="lg:ml-2 ml-[2px] w-[39px] h-9 bg-[#DE0000] rounded justify-items-center ">
-                                            <svg className="lg:ml-[13px] mx-2" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
-                                                <rect y="11.7183" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(-45 0 11.7183)" fill="white" />
-                                            </svg>
+                    setKebutuhanSparepart(onchangeVal);
+                  }}
+                >
+                  +
+                </button>
 
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-                        </div>
-                        {sparepart.map((val, i) => {
-                            return (
-                                <div className="pb-2 ">
-                                    <div className="flex  px-2 lg:py-3 py-1 bg-[#D8EAFF] rounded-md">
-                                        <label className="hidden sm:block text-blue-700 text-xs font-bold pt-2 lg:pl-4">
-                                            {no}
-                                        </label>
-                                        <button name="rusak" className="lg:ml-4 lg:w-[282px] w-[220px] h-9 bg-blue-700 rounded text-center text-white text-xs font-bold">
-                                            PILIH SPAREPART RUSAK
-                                        </button>
-                                        <svg className="lg:ml-4 ml-[2px]" width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <g clip-path="url(#clip0_708_3509)">
-                                                <path d="M39 0H0V39H39V0Z" fill="white" fill-opacity="0.01" />
-                                                <path d="M14.625 25.1875H30.875V4.0625" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                                <path d="M24.375 17.0625H8.125V34.9375" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                                <path d="M35.75 8.9375L30.875 4.0625L26 8.9375" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                                <path d="M13 30.0625L8.125 34.9375L3.25 30.0625" stroke="#777777" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-                                            </g>
-                                            <defs>
-                                                <clipPath id="clip0_708_3509">
-                                                    <rect width="39" height="39" fill="white" />
-                                                </clipPath>
-                                            </defs>
-                                        </svg>
-                                        <button name="pengganti" className="lg:ml-4 ml-[2px] lg:w-[415px] w-[320px] h-9 bg-blue-700 rounded text-center text-white text-xs font-bold">
-                                            PILIH SPAREPART PENGGANTI
-                                        </button>
-                                        <button name="pengganti" className="ml-[2px] lg:w-[39px] w-[30px] h-9 bg-[#DE0000] rounded justify-items-center ">
-                                            <svg className="lg:ml-[13px] mx-2 " width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
-                                                <rect y="11.7183" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(-45 0 11.7183)" fill="white" />
-                                            </svg>
+                <button
+                  onClick={() => {
+                    const onchangeVal: any = [...kebutuhanSparepart];
+                    onchangeVal.splice(i, 1);
 
-                                        </button>
-                                    </div>
-                                </div>
+                    setKebutuhanSparepart(onchangeVal);
+                  }}
+                >
+                  hapus
+                </button>
+              </>
+            );
+          })}
 
-                            )
-                        })}
-                    </div> */}
           {isHidden == false ? (
             <>
               <div className="pt-3 mt-5 border bg-blue-100 rounded border-stroke pb-4 overflow-y-auto scroll-auto max-h-[450px]">
@@ -565,22 +549,38 @@ const ModalStockCheck1 = ({
 
                       <div className="relative z-20 h-[23px] bg-white dark:bg-form-input rounded-md w-5/12">
                         <select
-                          value={selectedOption}
+                          value={mesin}
                           onChange={(e) => {
-                            setSelectedOption(e.target.value);
+                            setMesin(e.target.value);
+                            getStokSparepart(e.target.value);
                             changeTextColor();
                           }}
-                          className={`relative z-20 w-full appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected
-                            ? 'text-gray-800 dark:text-white'
-                            : ''
-                            }`}
+                          className={`relative z-20 w-full appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                            isOptionSelected
+                              ? 'text-gray-800 dark:text-white'
+                              : ''
+                          }`}
                         >
                           <option
-                            value="pon"
+                            value={mesin}
+                            selected
+                            disabled
                             className="text-gray-800 text-xs font-light dark:text-bodydark"
                           >
-                            R700
+                            {mesin}
                           </option>
+
+                          {masterMesin != null &&
+                            masterMesin.map((data: any, i: number) => {
+                              return (
+                                <option
+                                  value={data.nama_mesin}
+                                  className="text-gray-800 text-xs font-light dark:text-bodydark"
+                                >
+                                  {data.nama_mesin}
+                                </option>
+                              );
+                            })}
                         </select>
 
                         <span className="absolute top-[13px] right-2 z-10 -translate-y-1/2">
@@ -650,15 +650,16 @@ const ModalStockCheck1 = ({
                       <div className="flex w-full">
                         <div className="relative z-20 h-[30px] bg-white dark:bg-form-input rounded-md w-9/12">
                           <select
-                            value={selectedOption}
+                            value={mesin}
                             onChange={(e) => {
-                              setSelectedOption(e.target.value);
+                              setMesin(e.target.value);
                               changeTextColor();
                             }}
-                            className={`relative z-20 w-full pt-2 appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected
-                              ? 'text-gray-800 dark:text-white'
-                              : ''
-                              }`}
+                            className={`relative z-20 w-full pt-2 appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                              isOptionSelected
+                                ? 'text-gray-800 dark:text-white'
+                                : ''
+                            }`}
                           >
                             <option
                               value="pon"
@@ -719,62 +720,39 @@ const ModalStockCheck1 = ({
                 )}
 
                 <div className="pb-2 ">
-                  <CheckStockPengganti
-                    no={1}
-                    spareName={'Cable'}
-                    spareStatus={'Original'}
-                    spareStock={'5'}
-                  />
-                  <CheckStockPengganti
-                    no={2}
-                    spareName={'Adapter 3.5'}
-                    spareStatus={'Original'}
-                    spareStock={'0'}
-                  />
-                  <CheckStockPengganti
-                    no={3}
-                    spareName={'INK Injector'}
-                    spareStatus={'Original'}
-                    spareStock={'1'}
-                  />
-                  <CheckStockPengganti
-                    no={4}
-                    spareName={'Adapter 3.5'}
-                    spareStatus={'Original'}
-                    spareStock={'0'}
-                  />
-                  <CheckStockPengganti
-                    no={5}
-                    spareName={'Adapter 3.5'}
-                    spareStatus={'Original'}
-                    spareStock={'0'}
-                  />
-                  <CheckStockPengganti
-                    no={6}
-                    spareName={'Adapter 3.5'}
-                    spareStatus={'Original'}
-                    spareStock={'0'}
-                  />
-                  <CheckStockPengganti
-                    no={7}
-                    spareName={'Adapter 3.5'}
-                    spareStatus={'Original'}
-                    spareStock={'0'}
-                  />
-                  <CheckStockPengganti
-                    no={8}
-                    spareName={'Adapter 3.5'}
-                    spareStatus={'Original'}
-                    spareStock={'0'}
-                  />
-                  <CheckStockPengganti
-                    no={9}
-                    spareName={'Adapter 3.5'}
-                    spareStatus={'Original'}
-                    spareStock={'0'}
-                  />
+                  {stokSparepart.map((data: any, i: number) => {
+                    return (
+                      <CheckStockPengganti
+                        no={i + 1}
+                        spareName={data.nama_sparepart}
+                        spareStatus={data.jenis_part}
+                        spareStock={data.stok}
+                        onClick={() => {
+                          setKebutuhanSparepart((prevState: any) => [
+                            ...prevState,
+                            {
+                              id: data.id,
+                              kode: data.kode,
+                              nama_sparepart: data.nama_sparepart,
+                              nama_mesin: data.nama_mesin,
+                              jenis_part: data.jenis_part,
+                              persen: data.persen,
+                              umur_sparepart: data.umur_sparepart,
+                              use_qty: 1,
+                            },
+                          ]);
+                          // let dataS = [kebutuhanSparepart];
+
+                          // dataS.push(data);
+                          // console.log(dataS);
+                          // setKebutuhanSparepart(dataS);
+                        }}
+                      />
+                    );
+                  })}
                 </div>
               </div>
+
               {/* <div className="flex w-full h-12 rounded-md bg-blue-600 mt-4 justify-center items-center">
                                 <label className="text-center text-white text-xs font-bold">
                                     REQUEST STOCK
@@ -806,6 +784,7 @@ const ModalStockCheck1 = ({
               </label>
             </div>
           </div>
+
           <div className="flex w-full pt-1">
             <div className="flex lg:w-6/12 w-full">
               <div>
@@ -829,18 +808,18 @@ const ModalStockCheck1 = ({
                         );
                         setSelectedSkorPerbaikan(selectedOptionSkor);
                         setTypePost('normal');
-                        console.log('normal')
+                        console.log('normal');
                       } else {
                         setTypePost('pending');
-                        console.log('pending')
+                        console.log('pending');
                       }
 
                       changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
-                      }`}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                      isOptionSelected ? 'text-black dark:text-white' : ''
+                    }`}
                   >
-
                     <option
                       value=""
                       selected
@@ -895,12 +874,59 @@ const ModalStockCheck1 = ({
           <div className="flex w-full pt-1">
             <div className="flex w-full">
               <label className="form-label block  text-black text-xs font-extrabold mt-3">
+                {typePost == 'pending' ? (
+                  <>
+                    <h2>TIPE PENDING</h2>
+                    <div className="flex gap-5 mt-5">
+                      <div className="flex gap-2">
+                        <input
+                          onChange={(e) => setAlasanPending(e.target.value)}
+                          type="radio"
+                          id="man"
+                          name="option"
+                          value="man"
+                        />
+                        <label htmlFor="man">Man</label>
+                        <br />
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          onChange={(e) => setAlasanPending(e.target.value)}
+                          type="radio"
+                          id="sparepart"
+                          name="option"
+                          value="sparepart"
+                        />
+                        <label htmlFor="sparepart">Sparepart</label>
+                        <br />
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          onChange={(e) => setAlasanPending(e.target.value)}
+                          type="radio"
+                          id="time"
+                          name="option"
+                          value="time"
+                        />
+                        <label htmlFor="time">Time</label>
+                        <br />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  ''
+                )}
+              </label>
+            </div>
+          </div>
+          <div className="flex w-full pt-1">
+            <div className="flex w-full">
+              <label className="form-label block  text-black text-xs font-extrabold mt-3">
                 CATATAN
               </label>
             </div>
           </div>
           <div className="relative w-full min-w-[200px] pt-1">
-
             <textarea
               value={noteMaintenance}
               onChange={(e) => setNoteMaintenance(e.target.value)}
