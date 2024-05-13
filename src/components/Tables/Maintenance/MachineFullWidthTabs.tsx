@@ -11,7 +11,8 @@ import TableTwo from './TableOS';
 import TableThree from '../TableThree';
 import TableIncomingMaintenance from './TableIncomingMaintenance';
 import TableOS from './TableOS';
-import TableOS2 from './TableOS2';
+import HistoriOS2 from './History';
+
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -134,6 +135,7 @@ export default function MachineFullWidthTabs() {
                     >
                         <Tab label="Incoming" {...a11yProps(0)} className='' />
                         <Tab label="OS 2" {...a11yProps(1)} />
+                        <Tab label="Histori" {...a11yProps(2)} />
                         {/* <Tab label="OS 3" {...a11yProps(2)} /> */}
                         {/* <Tab label={<Typography variant='h1'>OS 4</Typography>} /> */}
                     </Tabs>
@@ -156,12 +158,12 @@ export default function MachineFullWidthTabs() {
 
 
             </TabPanel>
-            {/* <TabPanel value={value} index={2} dir={theme.direction}>
+            <TabPanel value={value} index={2} dir={theme.direction}>
 
 
-                <TableOS2 />
+                <HistoriOS2 />
 
-            </TabPanel> */}
+            </TabPanel>
             {/* </SwipeableViews> */}
         </Box>
     );
