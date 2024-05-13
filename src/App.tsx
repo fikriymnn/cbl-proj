@@ -15,10 +15,16 @@ import MAN from './pages/Maintenance/MAN';
 import Material from './pages/Maintenance/Material';
 import MaintenanceQC from './pages/QualityControl/maintenanceQC';
 import HistoryMtc from './pages/History/Maintenance';
-import Pm1 from './pages/inspection/Pm1';
+
 import MasterData from './pages/MasterData/Master';
-import Pm1Form from './pages/inspection/Pm1Form';
+
 import Dashboard from './pages/Maintenance/dashboard';
+import Pm1Form from './pages/inspection/pm1/Pm1Form';
+import Pm1 from './pages/inspection/pm1/Pm1';
+import Pm2 from './pages/inspection/pm2/Pm2';
+import Pm2Form from './pages/inspection/pm2/Pm2Form';
+import Pm3Form from './pages/inspection/pm3/Pm3Form';
+import Pm3 from './pages/inspection/pm3/Pm3';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -66,6 +72,24 @@ function App() {
           }
         />
         <Route
+          path="/maintenance/inspection/pm_2_form"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Pm2Form />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/inspection/pm_3_form"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Pm3Form />
+            </>
+          }
+        />
+        <Route
           path="/maintenance/machine"
           element={
             <>
@@ -83,6 +107,28 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <Pm1 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/inspection/pm_2"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <Pm2 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/inspection/pm_3"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <Pm3 />
               </ProtectedRoute>
             </>
           }

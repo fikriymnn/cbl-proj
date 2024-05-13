@@ -37,7 +37,7 @@ const ECommerce: React.FC = () => {
             <p className="text-primary text-sm">Production Overview</p>
           </div>
           <div className="flex justify-center items-center p-5">
-            <HorizontalBars />
+            <BarChart />
           </div>
         </div>
         <div className="w-full p-4 bg-white my-[26px] rounded-[10px] flex flex-col">
