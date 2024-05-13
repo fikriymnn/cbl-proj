@@ -82,11 +82,9 @@ const tiket = [
 ];
 
 const TableIncomingMaintenance = () => {
-  const [showModal1, setShowModal1] = useState(false);
   const [showModal2, setShowModal2] = useState(false);
 
-  const openModal1 = () => setShowModal1(true);
-  const closeModal1 = () => setShowModal1(false);
+
 
   //const openModal2 = () => setShowModal2(true);
   //const closeModal2 = () => setShowModal2(false);
@@ -151,6 +149,21 @@ const TableIncomingMaintenance = () => {
     setShowModal3(onchangeVal);
   };
 
+  const [showModal1, setShowModal1] = useState<any>([]);
+
+  const openModal1 = (i: any) => {
+    const onchangeVal: any = [...showModal1];
+    onchangeVal[i] = true;
+    console.log(onchangeVal);
+    setShowModal1(onchangeVal);
+  };
+  const closeModal1 = (i: any) => {
+    const onchangeVal: any = [...showModal1];
+    onchangeVal[i] = false;
+
+    setShowModal1(onchangeVal);
+  };
+
   useEffect(() => {
     getMTC();
   }, []);
@@ -162,12 +175,14 @@ const TableIncomingMaintenance = () => {
       });
 
       setMtc(res.data);
+
       console.log(res.data);
       let data: any[] = [];
       for (let i = 0; i < res.data.length; i++) {
         data.push(false);
       }
       setShowModal3(data);
+      setShowModal1(data)
     } catch (error: any) {
       console.log(error.response);
     }
@@ -179,7 +194,7 @@ const TableIncomingMaintenance = () => {
       const res = await axios.get(url, {
         withCredentials: true,
       });
-      
+
       alert("respon berhasil")
       getMTC();
     } catch (error: any) {
@@ -257,11 +272,10 @@ const TableIncomingMaintenance = () => {
 
                     return (
                       <div
-                        className={`flex ${
-                          key === tiket.length - 1
-                            ? ''
-                            : 'border-b-8  border-[#D8EAFF] dark:border-strokedark '
-                        }`}
+                        className={`flex ${key === tiket.length - 1
+                          ? ''
+                          : 'border-b-8  border-[#D8EAFF] dark:border-strokedark '
+                          }`}
                         key={key}
                       >
                         <div className=" flex items-center w-1/12   gap-3 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF]  ">
@@ -297,14 +311,14 @@ const TableIncomingMaintenance = () => {
                             <div className=" mx-auto flex gap-3">
                               <button
                                 type="button"
-                                onClick={()  => responMTC(brand.id, key)}
+                                onClick={() => responMTC(brand.id, key)}
                                 className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
                               >
                                 RESPON
                               </button>
                               <button
                                 type="button"
-                                onClick={openModal1}
+                                onClick={() => openModal1(key)}
                                 className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-white border-[#0065DE] border text-primary justify-center`}
                               >
                                 DETAIL
@@ -315,10 +329,10 @@ const TableIncomingMaintenance = () => {
                       >
                         DETAIL
                       </button> */}
-                              {showModal1 && (
+                              {showModal1[key] == true && (
                                 <Modal
-                                  isOpen={showModal1}
-                                  onClose={closeModal1}
+                                  isOpen={showModal1[key]}
+                                  onClose={() => closeModal1(key)}
                                   ticketCode={''}
                                   incDate={brand.createdAt}
                                   namaMesin={brand.mesin}
@@ -365,10 +379,11 @@ const TableIncomingMaintenance = () => {
 
       {isMobile && (
         <>
-          <div className="rounded-b-xl lg:min-w-[700px]  border border-stroke bg-white  pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
+          <div className="rounded-b-xl   border border-stroke bg-white  pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
             <div className="flex flex-col">
               <div className="flex border-b-8  border-[#D8EAFF] dark:border-strokedark ">
-                <div className="flex w-6/12"></div>
+                <div className="flex w-5/12"></div>
+
                 <div className=" flex items-center w-5/12 justify-center p-2.5 md:px-7.5 px-5 ">
                   <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center dark:text-white">
                     Kode Tiket
@@ -385,12 +400,12 @@ const TableIncomingMaintenance = () => {
                   mtc.map((brand: any, key: any) => (
                     <div className="">
                       <div className="w-full">
+
                         <div
-                          className={`flex ${
-                            key === tiket.length - 1
-                              ? ''
-                              : 'border-b-8  border-[#D8EAFF] dark:border-strokedark '
-                          }`}
+                          className={`flex ${key === tiket.length - 1
+                            ? ''
+                            : ' '
+                            }`}
                           key={key}
                         >
                           <div className="flex justify-center items-center pl-2 py-2">
@@ -405,13 +420,14 @@ const TableIncomingMaintenance = () => {
                           <div className=" flex flex-wrap  w-4/12  border-b-[#D8EAFF] px-2 gap-1  py-2">
                             <button
                               type="button"
+                              onClick={() => responMTC(brand.id, key)}
                               className={`inline-flex py-[6px] rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
                             >
                               RESPON
                             </button>
                             <button
                               type="button"
-                              onClick={openModal1}
+                              onClick={() => openModal1(key)}
                               className={`inline-flex py-1 rounded-[3px] my-auto  md:px-5 px-2 md:text-[12px] text-[10px] sm:font-semibold bg-white border-[#0065DE] border text-primary justify-center`}
                             >
                               DETAIL
@@ -428,11 +444,12 @@ const TableIncomingMaintenance = () => {
                           </div>
 
                           <div className=" items-center justify-center md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] flex ">
+
                             <td className=" border-[#eee]   dark:border-strokedark">
-                              {showModal1 && (
+                              {showModal1[key] == true && (
                                 <Modal
-                                  isOpen={showModal1}
-                                  onClose={closeModal1}
+                                  isOpen={showModal1[key]}
+                                  onClose={() => closeModal1(key)}
                                   ticketCode={''}
                                   incDate={brand.createdAt}
                                   namaMesin={brand.mesin}
@@ -443,32 +460,35 @@ const TableIncomingMaintenance = () => {
                                 </Modal>
                               )}
 
+
                               {showModal2 && <></>}
                             </td>
                           </div>
+
                         </div>
-                        <div className="flex w-full">
-                          {showDetail[key] && (
-                            <div className="w-full  bg-[#E9F3FF]  rounded-lg py-2">
+
+                      </div>
+                      <div className="flex w-full border-b-6  border-[#D8EAFF] dark:border-strokedark">
+                        {showDetail[key] && (
+                          <div className="w-full  bg-[#E9F3FF]  rounded-b-md py-2 px-4">
+                            <div className="flex w-full">
                               <div className="flex w-full">
-                                <div className="flex w-full">
-                                  <div className="flex w-6/12 flex-col">
-                                    <p className="text-xs font-bold">
-                                      Nama Mesin
-                                    </p>
-                                    <p className="text-sm font-light">R700</p>
-                                  </div>
-                                  <div className="flex w-6/12 flex-col">
-                                    <p className="text-xs font-bold">Kendala</p>
-                                    <p className="text-sm font-light">
-                                      Mesin Macet
-                                    </p>
-                                  </div>
+                                <div className="flex w-6/12 flex-col">
+                                  <p className="text-xs font-bold">
+                                    Nama Mesin
+                                  </p>
+                                  <p className="text-sm font-light">{brand.mesin}</p>
+                                </div>
+                                <div className="flex w-6/12 flex-col">
+                                  <p className="text-xs font-bold">Kendala</p>
+                                  <p className="text-sm font-light">
+                                    {brand.nama_kendala}
+                                  </p>
                                 </div>
                               </div>
                             </div>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

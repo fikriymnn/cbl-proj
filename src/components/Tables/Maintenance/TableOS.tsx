@@ -30,11 +30,11 @@ function TableOS() {
   }, []);
 
   //const openModal1 = () => setShowModal1(true);
-  const openModalDetail = () => setShowModalDetail(true);
+
 
   const openModal2 = () => setShowModal2(true);
   //const closeModal1 = () => setShowModal1(false);
-  const closeModalDetail = () => setShowModalDetail(false);
+
   const closeModal2 = () => setShowModal2(false);
   // const handleClick = (index: number) => {
   //   setShowTwoButtons((prevState) => {
@@ -110,6 +110,20 @@ function TableOS() {
       console.log(error.response);
     }
   }
+  const [showModalDetail, setShowModalDetail] = useState<any>([]);
+
+  const openModalDetail = (i: any) => {
+    const onchangeVal: any = [...showModalDetail];
+    onchangeVal[i] = true;
+    console.log(onchangeVal);
+    setShowModalDetail(onchangeVal);
+  };
+  const closeModalDetail = (i: any) => {
+    const onchangeVal: any = [...showModalDetail];
+    onchangeVal[i] = false;
+
+    setShowModalDetail(onchangeVal);
+  };
 
   async function getTiket() {
     const url = `${import.meta.env.VITE_API_LINK}/ticket?bagian_tiket=os2`;
@@ -126,6 +140,7 @@ function TableOS() {
         data.push(false);
       }
       setShowModal1(data);
+      setShowModalDetail(data)
       setShowTwoButtons(data);
     } catch (error: any) {
       console.log(error.response);
@@ -180,7 +195,7 @@ function TableOS() {
   );
 
   const [showModal2, setShowModal2] = useState(false);
-  const [showModalDetail, setShowModalDetail] = useState(false);
+
 
   return (
     <main>
@@ -534,17 +549,17 @@ function TableOS() {
                                           </div>
                                           <div className="">
                                             <button
-                                              onClick={openModalDetail}
+                                              onClick={() => openModalDetail(ii)}
                                               className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md"
                                             >
                                               Detail
                                             </button>
                                           </div>
-                                          {showModalDetail && (
+                                          {showModalDetail[ii] && (
                                             <ModalDetail
                                               children={undefined}
-                                              isOpen={showModalDetail}
-                                              onClose={closeModalDetail}
+                                              isOpen={showModalDetail[ii]}
+                                              onClose={() => closeModalDetail(ii)}
                                               kendala={data.nama_kendala}
                                               machineName={data.mesin}
                                               tgl={'12/12/24'}
@@ -555,11 +570,11 @@ function TableOS() {
                                               no={'1'}
                                               idTiket={data.id}
                                               kodeLkh={data.kode_lkh}
-                                              analisisPenyebab={'undefined'}
+                                              analisisPenyebab={`${proses.kode_analisis_mtc}` + ' - ' + `${proses.nama_analisis_mtc}`}
                                               kebutuhanSparepart={'undefined'}
-                                              tipeMaintenance={'original'}
+                                              tipeMaintenance={proses.cara_perbaikan}
                                               catatan={
-                                                data.proses_mtcs.note_analisis
+                                                proses.note_mtc
                                               }
                                             ></ModalDetail>
                                           )}

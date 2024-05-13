@@ -348,7 +348,7 @@ const ModalStockCheck1 = ({
                       );
 
                       setSelectedKodeAnalisis(selectedOption);
-
+                      console.log(selectedOption);
                       changeTextColor();
                     }}
                     className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
@@ -823,6 +823,7 @@ const ModalStockCheck1 = ({
             </div>
           </div>
           <div className="relative w-full min-w-[200px] pt-1">
+
             <textarea
               value={noteMaintenance}
               onChange={(e) => setNoteMaintenance(e.target.value)}
