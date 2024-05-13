@@ -9,7 +9,7 @@ import ModalStockCheck1 from '../../Modals/ModalStockCheck1';
 import Polygon6 from '../../../images/icon/Polygon6.svg';
 import axios from 'axios';
 import ModalDetail from '../../Modals/ModalDetail';
-import moment from 'moment';
+// import moment from 'moment';
 
 function TableOS() {
   const [isMobile, setIsMobile] = useState(false);
@@ -30,11 +30,11 @@ function TableOS() {
   }, []);
 
   //const openModal1 = () => setShowModal1(true);
-  const openModalDetail = () => setShowModalDetail(true);
+
 
   const openModal2 = () => setShowModal2(true);
   //const closeModal1 = () => setShowModal1(false);
-  const closeModalDetail = () => setShowModalDetail(false);
+
   const closeModal2 = () => setShowModal2(false);
   // const handleClick = (index: number) => {
   //   setShowTwoButtons((prevState) => {
@@ -108,6 +108,20 @@ function TableOS() {
       console.log(error.response);
     }
   }
+  const [showModalDetail, setShowModalDetail] = useState<any>([]);
+
+  const openModalDetail = (i: any) => {
+    const onchangeVal: any = [...showModalDetail];
+    onchangeVal[i] = true;
+    console.log(onchangeVal);
+    setShowModalDetail(onchangeVal);
+  };
+  const closeModalDetail = (i: any) => {
+    const onchangeVal: any = [...showModalDetail];
+    onchangeVal[i] = false;
+
+    setShowModalDetail(onchangeVal);
+  };
 
   async function getTiket() {
     const url = `${import.meta.env.VITE_API_LINK}/ticket?bagian_tiket=os2`;
@@ -124,6 +138,7 @@ function TableOS() {
         data.push(false);
       }
       setShowModal1(data);
+      setShowModalDetail(data)
       setShowTwoButtons(data);
     } catch (error: any) {
       console.log(error.response);
@@ -161,9 +176,8 @@ function TableOS() {
     const minutesDiff = Math.floor(secondsDiff / 60);
     const hoursDiff = Math.floor(minutesDiff / 60);
 
-    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${
-      hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
-    } `;
+    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
+      } `;
 
     return formattedDifference; // Example format (YYYY-MM-DD)
   }
@@ -179,7 +193,7 @@ function TableOS() {
   );
 
   const [showModal2, setShowModal2] = useState(false);
-  const [showModalDetail, setShowModalDetail] = useState(false);
+
 
   return (
     <main>
@@ -302,13 +316,13 @@ function TableOS() {
                                       ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                       : data.skor_mtc >= 60 &&
                                         data.skor_mtc < 100
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                      : data.skor_mtc >= 40 &&
-                                        data.skor_mtc < 60
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
-                                      : data.skor_mtc < 40 && data.skor_mtc >= 0
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : ''
+                                        ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                        : data.skor_mtc >= 40 &&
+                                          data.skor_mtc < 60
+                                          ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
+                                          : data.skor_mtc < 40 && data.skor_mtc >= 0
+                                            ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                            : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -323,13 +337,13 @@ function TableOS() {
                                       ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                       : data.skor_mtc >= 60 &&
                                         data.skor_mtc < 100
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                      : data.skor_mtc >= 40 &&
-                                        data.skor_mtc < 60
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
-                                      : data.skor_mtc < 40 && data.skor_mtc >= 0
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : ''
+                                        ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                        : data.skor_mtc >= 40 &&
+                                          data.skor_mtc < 60
+                                          ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
+                                          : data.skor_mtc < 40 && data.skor_mtc >= 0
+                                            ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                            : ''
                                   }
                                 >
                                   {data.skor_mtc}%
@@ -359,7 +373,7 @@ function TableOS() {
                                       <div className="flex flex-col gap-1">
                                         <button
                                           onClick={() => {
-                                            if (data.status_tiket == 'open' ||data.status_tiket == 'pending') {
+                                            if (data.status_tiket == 'open' || data.status_tiket == 'pending') {
                                               openModal1(i);
                                             } else {
                                               reworkTiket(data.id);
@@ -512,14 +526,14 @@ function TableOS() {
                                                     ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                                     : proses.skor_mtc >= 60 &&
                                                       proses.skor_mtc < 100
-                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                                    : proses.skor_mtc >= 40 &&
-                                                      proses.skor_mtc < 60
-                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
-                                                    : proses.skor_mtc < 40 &&
-                                                      proses.skor_mtc >= 0
-                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                                    : ''
+                                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                                      : proses.skor_mtc >= 40 &&
+                                                        proses.skor_mtc < 60
+                                                        ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
+                                                        : proses.skor_mtc < 40 &&
+                                                          proses.skor_mtc >= 0
+                                                          ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                                          : ''
                                                 }
                                               >
                                                 {proses.skor_mtc}%
@@ -533,17 +547,17 @@ function TableOS() {
                                           </div>
                                           <div className="">
                                             <button
-                                              onClick={openModalDetail}
+                                              onClick={() => openModalDetail(ii)}
                                               className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md"
                                             >
                                               Detail
                                             </button>
                                           </div>
-                                          {showModalDetail && (
+                                          {showModalDetail[ii] && (
                                             <ModalDetail
                                               children={undefined}
-                                              isOpen={showModalDetail}
-                                              onClose={closeModalDetail}
+                                              isOpen={showModalDetail[ii]}
+                                              onClose={() => closeModalDetail(ii)}
                                               kendala={data.nama_kendala}
                                               machineName={data.mesin}
                                               tgl={'12/12/24'}
@@ -554,11 +568,11 @@ function TableOS() {
                                               no={'1'}
                                               idTiket={data.id}
                                               kodeLkh={data.kode_lkh}
-                                              analisisPenyebab={'undefined'}
+                                              analisisPenyebab={`${proses.kode_analisis_mtc}` + ' - ' + `${proses.nama_analisis_mtc}`}
                                               kebutuhanSparepart={'undefined'}
-                                              tipeMaintenance={'original'}
+                                              tipeMaintenance={proses.cara_perbaikan}
                                               catatan={
-                                                data.proses_mtcs.note_analisis
+                                                proses.note_mtc
                                               }
                                             ></ModalDetail>
                                           )}

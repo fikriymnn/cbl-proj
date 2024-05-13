@@ -140,12 +140,10 @@ const ModalStockCheck1 = ({
   }
 
   async function postAnalisis() {
-    const urlNormal = `${
-      import.meta.env.VITE_API_LINK
-    }/ticket/analisis/${idTiket}`;
-    const urlPending = `${
-      import.meta.env.VITE_API_LINK
-    }/ticket/pending/${idTiket}`;
+    const urlNormal = `${import.meta.env.VITE_API_LINK
+      }/ticket/analisis/${idTiket}`;
+    const urlPending = `${import.meta.env.VITE_API_LINK
+      }/ticket/pending/${idTiket}`;
     try {
       if (typePost === 'normal') {
         const res = await axios.put(
@@ -350,12 +348,11 @@ const ModalStockCheck1 = ({
                       );
 
                       setSelectedKodeAnalisis(selectedOption);
-
+                      console.log(selectedOption);
                       changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                      isOptionSelected ? 'text-black dark:text-white' : ''
-                    }`}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
+                      }`}
                   >
                     <option
                       value=""
@@ -573,11 +570,10 @@ const ModalStockCheck1 = ({
                             setSelectedOption(e.target.value);
                             changeTextColor();
                           }}
-                          className={`relative z-20 w-full appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                            isOptionSelected
-                              ? 'text-gray-800 dark:text-white'
-                              : ''
-                          }`}
+                          className={`relative z-20 w-full appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected
+                            ? 'text-gray-800 dark:text-white'
+                            : ''
+                            }`}
                         >
                           <option
                             value="pon"
@@ -659,11 +655,10 @@ const ModalStockCheck1 = ({
                               setSelectedOption(e.target.value);
                               changeTextColor();
                             }}
-                            className={`relative z-20 w-full pt-2 appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                              isOptionSelected
-                                ? 'text-gray-800 dark:text-white'
-                                : ''
-                            }`}
+                            className={`relative z-20 w-full pt-2 appearance-none rounded-md  text-xs bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected
+                              ? 'text-gray-800 dark:text-white'
+                              : ''
+                              }`}
                           >
                             <option
                               value="pon"
@@ -842,19 +837,18 @@ const ModalStockCheck1 = ({
 
                       changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                      isOptionSelected ? 'text-black dark:text-white' : ''
-                    }`}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
+                      }`}
                   >
 
-<option
+                    <option
                       value=""
                       selected
                       className="text-body dark:text-bodydark"
                     >
                       pilih
                     </option>
-                  
+
                     {skorPerbaikan != null &&
                       skorPerbaikan.map((data: any, i: number) => {
                         return (
@@ -906,6 +900,7 @@ const ModalStockCheck1 = ({
             </div>
           </div>
           <div className="relative w-full min-w-[200px] pt-1">
+
             <textarea
               value={noteMaintenance}
               onChange={(e) => setNoteMaintenance(e.target.value)}
