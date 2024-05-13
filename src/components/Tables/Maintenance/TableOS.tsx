@@ -840,12 +840,37 @@ function TableOS() {
                                       </div>
                                       <div className='flex w-full gap-5'>
                                         <div className="">
-                                          <button
-                                            onClick={openModal1}
-                                            className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md"
-                                          >
-                                            Detail
-                                          </button>
+                                          <div className="">
+                                            <button
+                                              onClick={() => openModalDetail(ii)}
+                                              className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md"
+                                            >
+                                              Detail
+                                            </button>
+                                          </div>
+                                          {showModalDetail[ii] && (
+                                            <ModalDetail
+                                              children={undefined}
+                                              isOpen={showModalDetail[ii]}
+                                              onClose={() => closeModalDetail(ii)}
+                                              kendala={data.nama_kendala}
+                                              machineName={data.mesin}
+                                              tgl={'12/12/24'}
+                                              jam={'17.00'}
+                                              namaPemeriksa={
+                                                proses.user_eksekutor.nama
+                                              }
+                                              no={'1'}
+                                              idTiket={data.id}
+                                              kodeLkh={data.kode_lkh}
+                                              analisisPenyebab={`${proses.kode_analisis_mtc}` + ' - ' + `${proses.nama_analisis_mtc}`}
+                                              kebutuhanSparepart={'undefined'}
+                                              tipeMaintenance={proses.cara_perbaikan}
+                                              catatan={
+                                                proses.note_mtc
+                                              }
+                                            ></ModalDetail>
+                                          )}
                                         </div>
                                         <div className='flex flex-col'>
                                           <h5 className="text-xs font-bold">
