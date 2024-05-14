@@ -15,6 +15,8 @@ function TableOS() {
   const [isMobile, setIsMobile] = useState(false);
   const [status, setStatus] = useState();
   const [openButton, setOpenButton] = useState(null);
+
+
   const handleClick = (i: any) => {
     setOpenButton((prevState: any) => {
       return prevState === i ? null : i;
@@ -145,6 +147,7 @@ function TableOS() {
       setShowModal1(data);
       setShowModalDetail(data)
       setShowTwoButtons(data);
+      setShowTwoButtonsMobile(data);
     } catch (error: any) {
       console.log(error.response);
     }
@@ -661,7 +664,7 @@ function TableOS() {
                           <button onClick={() => handleClick(i)} className="text-xs px-1 py-2 font-bold bg-blue-700  text-white rounded-sm">
                             <img src={Burger} alt="" className="mx-1" />
                           </button>
-                          {showTwoButtons == i ? (
+                          {openButton == i ? (
                             <div className="absolute bg-white p-3 shadow-5 rounded-md">
                               {' '}
                               {/* Wrap buttons for styling */}

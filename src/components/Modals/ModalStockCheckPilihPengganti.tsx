@@ -359,17 +359,7 @@ const ModalStockCheckPengganti = ({ children, isOpen, onClose, kendala, machineN
                             </div>
                         )}
 
-                        <div>
-                            <CheckStockPengganti no={1} spareName={'Cable'} spareStatus={'Original'} spareStock={5} />
-                            <CheckStockPengganti no={2} spareName={'Cable'} spareStatus={'Original'} spareStock={5} />
-                            <CheckStockPengganti no={3} spareName={'Cable'} spareStatus={'Original'} spareStock={5} />
-                            <CheckStockPengganti no={4} spareName={'Cable'} spareStatus={'Original'} spareStock={5} />
-                            <CheckStockPengganti no={5} spareName={'Cable'} spareStatus={'Original'} spareStock={5} />
-                            <CheckStockPengganti no={6} spareName={'Cable'} spareStatus={'Original'} spareStock={5} />
-                            <CheckStockPengganti no={7} spareName={'Cable'} spareStatus={'Original'} spareStock={5} />
-                            <CheckStockPengganti no={8} spareName={'Cable'} spareStatus={'Original'} spareStock={5} />
-                            <CheckStockPengganti no={9} spareName={'Cable'} spareStatus={'Original'} spareStock={5} />
-                        </div>
+
                     </div>
                     <div className="flex gap-10 pt-1">
                         <button onClick={handleClick} className="lg:w-60 w-30 h-12 bg-blue-700 rounded text-center text-white text-xs font-bold">
