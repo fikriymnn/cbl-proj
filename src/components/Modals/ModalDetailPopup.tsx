@@ -1,9 +1,29 @@
 // import React, { useState } from 'react';
 
-const Modal = ({ children, isOpen, onClose, ticketCode, namaMesin, incDate, jenisKendala, kendala, }:
+const Modal = ({ children, isOpen, onClose, ticketCode, namaMesin, incDate, jenisKendala, kendala }:
     { children: any, isOpen: any, onClose: any, ticketCode: any, incDate: any, namaMesin: any, jenisKendala: any, kendala: any }) => {
     if (!isOpen) return null;
+    function convertDatetimeToDate(datetime: any) {
+        const dateObject = new Date(datetime);
+        const day = dateObject.getDate().toString().padStart(2, '0'); // Ensure two-digit day
+        const month = (dateObject.getMonth() + 1).toString().padStart(2, '0'); // Adjust for zero-based month
+        const year = dateObject.getFullYear();
 
+        return `${year}/${month}/${day}`; // Example format (YYYY-MM-DD)
+    }
+
+    function convertDatetimeToTime(datetime: any) {
+        const dateObject = new Date(datetime);
+        const hours = dateObject.getHours().toString().padStart(2, '0');
+        const minutes = dateObject.getMinutes().toString().padStart(2, '0');
+        const seconds = dateObject.getSeconds().toString().padStart(2, '0');
+        // Optional milliseconds
+
+        return `${hours}:${minutes}:${seconds}`; // Example format (HH:mm:ss.SSS)
+    }
+
+    const tanggalDatang = convertDatetimeToDate(incDate);
+    const jamDatang = convertDatetimeToTime(incDate);
     return (
         <div className="fixed z-50 inset-0 overflow-y-auto backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
             <div className="w-full max-w-md bg-white rounded-xl shadow-md">
@@ -57,7 +77,7 @@ const Modal = ({ children, isOpen, onClose, ticketCode, namaMesin, incDate, jeni
                             TANGGAL MASUK
                         </label>
                         <span id="incomingDate" className=" text-neutral-500 text-xl font-normal">
-                            {incDate}
+                            {tanggalDatang + '  ' + jamDatang}
                         </span>
                     </div>
                     <div className="pt-3">
