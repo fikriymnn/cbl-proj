@@ -208,7 +208,7 @@ const TableIncomingMaintenance = () => {
         <>
           <div className="rounded-b-xl lg:min-w-[700px]  border border-stroke bg-white  pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
             <div className="flex flex-col">
-              <div className="flex border-b-8  border-[#D8EAFF] dark:border-strokedark ">
+              <div className="flex   border-[#D8EAFF] dark:border-strokedark ">
                 <div className=" flex items-center  w-1/12 gap-3 p-2.5 md:px-7.5 px-5 ">
                   <p className=" md:text-[12px] text-[10px] text-slate-600 font-semibold dark:text-white sm:block">
                     No
@@ -274,7 +274,7 @@ const TableIncomingMaintenance = () => {
                       <div
                         className={`flex ${key === tiket.length - 1
                           ? ''
-                          : 'border-b-8  border-[#D8EAFF] dark:border-strokedark '
+                          : 'border-t-8  border-[#D8EAFF] dark:border-strokedark '
                           }`}
                         key={key}
                       >
