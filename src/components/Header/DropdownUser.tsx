@@ -88,7 +88,9 @@ const DropdownUser = () => {
         <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
             {user == null ? (
-              <></>
+              <><div className="w-full h-7 text-blue-700 text-xl font-semibold">
+
+              </div></>
             ) : (
               <p className="w-full h-7 text-blue-700 text-xl font-semibold">
                 {user.nama}
@@ -98,7 +100,9 @@ const DropdownUser = () => {
 
           <span className="block text-xs">
             {user == null ? (
-              <></>
+              <><div className="w-full h-7 text-blue-700 text-xl font-semibold">
+
+              </div></>
             ) : (
               <p className="w-full h-7 text-blue-700 text- font-normal">
                 {user.role}
