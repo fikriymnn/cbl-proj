@@ -509,7 +509,7 @@ const ModalStockCheck1 = ({
                           <div className='bg-[#EDF5FF] rounded  text-[#0065DE] justify-center items-center px-4 pt-[6px]'>
                             <p className='text-center text-normal font-bold'>{data.use_qty}</p>
                           </div>
-                          <button className='justify-center items-center px-[14px] bg-[#0065DE] text-white rounded-md'
+                          {/* <button className='justify-center items-center px-[14px] bg-[#0065DE] text-white rounded-md'
                             onClick={() => {
                               const onchangeVal: any = [...kebutuhanSparepart];
                               onchangeVal[i].use_qty = data.use_qty + 1;
@@ -529,15 +529,15 @@ const ModalStockCheck1 = ({
                             }}
                           >
                             -
-                          </button>
+                          </button> */}
                           <button onClick={() => {
                             const onchangeVal: any = [...kebutuhanSparepart];
                             onchangeVal.splice(i, 1);
 
                             setKebutuhanSparepart(onchangeVal);
                           }}
-                            name="pengganti" className="lg:ml-2 ml-[2px] w-[39px] h-9 bg-[#DE0000] rounded justify-items-center ">
-                            <svg className="lg:ml-[13px] mx-2" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            name="pengganti" className=" w-[39px] h-9 bg-[#DE0000] rounded justify-items-center ">
+                            <svg className="lg:ml-[8px] mx-2" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                               <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
                               <rect y="11.7183" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(-45 0 11.7183)" fill="white" />
                             </svg>
