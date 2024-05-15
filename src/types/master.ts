@@ -6,3 +6,9 @@ export type MasterMachine = {
     location: string;
 
 };
+export type MasterAnalisis = {
+
+    kategori: string;
+    kodemtc: string;
+    analisismtc: string;
+};

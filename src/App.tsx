@@ -28,6 +28,8 @@ import Pm3 from './pages/inspection/pm3/Pm3';
 import OS3 from './pages/inspection/os3/Os3';
 import Preventive from './pages/inspection/os3/Preventive';
 import KPI from './pages/Maintenance/KPI';
+import MasterSparepart from './pages/MasterData/MasterSparepart';
+import MasterAnalisis from './pages/MasterData/MasterAnalisis';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -216,12 +218,34 @@ function App() {
 
         />
         <Route
-          path="/masterdata"
+          path="/masterdata/machine"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterData />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/mastersparepart"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterSparepart />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masteranalisis"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterAnalisis />
               </ProtectedRoute>
             </>
           }
