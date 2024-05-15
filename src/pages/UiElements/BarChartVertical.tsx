@@ -2,18 +2,18 @@ import React from 'react';
 
 const BarChartVertical = () => {
     const data = [
-        { name: 'Jan', value: 100.5 },
-        { name: 'Feb', value: 24.5 },
-        { name: 'Mar', value: 10 },
-        { name: 'Apr', value: 4 },
-        { name: 'Mei', value: 50 },
-        { name: 'Jun', value: 3 },
-        { name: 'Jul', value: 2 },
-        { name: 'Agu', value: 2 },
-        { name: 'Sep', value: 2 },
-        { name: 'Okt', value: 3 },
-        { name: 'Nov', value: 30 },
-        { name: 'Des', value: 100 },
+        { name: 'Jan', value: 0 },
+        { name: 'Feb', value: 0 },
+        { name: 'Mar', value: 0 },
+        { name: 'Apr', value: 0 },
+        { name: 'Mei', value: 10 },
+        { name: 'Jun', value: 30 },
+        { name: 'Jul', value: 90 },
+        { name: 'Agu', value: 29 },
+        { name: 'Sep', value: 27 },
+        { name: 'Okt', value: 0 },
+        { name: 'Nov', value: 0 },
+        { name: 'Des', value: 0 },
     ];
     const maxNumber = Math.max(...data.map((item) => item.value));
     const redIndicator = 4;
@@ -21,21 +21,21 @@ const BarChartVertical = () => {
 
     return (
 
-        <div className="h-full flex">
+        <div className="h-50 flex w-full">
             <div className='h-full w-[1.5px] bg-black'>
 
             </div>
-            {sortedData.map((item, index) => (
-                <div key={index} className="flex flex-col h-full">
+            {data.map((item, index) => (
+                <div key={index} className="flex flex-col h-full w-full">
 
                     <div className='flex w-full h-full flex-col-reverse'>
 
                         <div
-                            className="flex items-center justify-center mx-2"
+                            className="flex items-center justify-center md:mx-2 mx-1 max-w-30"
                             style={{
                                 height: `${(item.value / maxNumber) * 80}%`,
                                 background: 'blue',
-                                width: '30px',
+
                             }}
                         ></div>
                         <div className='w-full text-center text-xs font-medium text-primary'>

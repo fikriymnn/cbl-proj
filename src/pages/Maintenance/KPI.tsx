@@ -36,7 +36,7 @@ function KPI() {
                         </div>
 
                     </div>
-                    <div className='bg-white h-50 p-5 mt-5 flex gap-15 rounded-[10px]'>
+                    <div className='bg-white p-5 mt-5 w-full md:flex gap-15 rounded-[10px]'>
                         <div>
                             <h2 className='text-[14px] text-primary font-semibold'>Month Averange</h2>
                             <div className='flex'>
@@ -158,12 +158,15 @@ function KPI() {
                                 </div>
                             </div>
                         </div>
-                        <BarChartVertical />
+                        <div className='w-full'>
+
+                            <BarChartVertical />
+                        </div>
                     </div>
                     <div className=' bg-white mt-5 p-4 rounded-[10px]'>
-                        <div className='flex gap-3'>
+                        <div className='flex flex-col md:flex-row gap-3 '>
 
-                            <div className='flex flex-col gap-3 w-[30%]'>
+                            <div className='flex flex-col gap-3 md:w-[30%]'>
                                 <div className='bg-[#D8EAFF] rounded-[4px]'>
                                     <p className='text-sm font-bold text-primary border-b-primary border-b-2 px-2 py-1'> Point Terbaik</p>
                                     <div className='grid grid-cols-4 px-2 py-1'>
@@ -200,7 +203,7 @@ function KPI() {
                                 </div>
 
                             </div>
-                            <div className='flex flex-col gap-3 w-[30%]'>
+                            <div className='flex flex-col gap-3 md:w-[30%]'>
                                 <div className='bg-[#D8EAFF] rounded-md'>
                                     <p className='text-sm font-bold text-primary border-b-primary border-b-2 px-2 py-1'> Absensi Terbaik</p>
                                     <div className='grid grid-cols-4 px-2 py-1'>
@@ -237,32 +240,32 @@ function KPI() {
                                 </div>
 
                             </div>
-                            <div className='bg-[#D8EAFF] rounded-md grid grid-cols-3 gap-2 p-4 w-[40%]'>
+                            <div className='bg-[#D8EAFF] rounded-md grid grid-cols-3 gap-2 p-4 md:w-[40%]'>
                                 <div>
                                     <div className='flex flex-col mb-10 '>
-                                        <p className='text-sm font-semibold text-[#DE6B00]'>Absensi Terendah</p>
+                                        <p className='text-sm font-semibold w-20 text-[#DE6B00]'>Absensi Terendah</p>
                                         <p className='text-[28px] text-[#DE6B00]'>50</p>
                                     </div>
                                     <div className='flex flex-col '>
-                                        <p className='text-sm font-semibold text-[#2EB300]'>Point Tertinggi</p>
+                                        <p className='text-sm font-semibold w-20 text-[#2EB300]'>Point Tertinggi</p>
                                         <p className='text-[28px] text-[#2EB300]'>50</p>
                                     </div>
 
                                 </div>
                                 <div>
                                     <div className='flex flex-col mb-10'>
-                                        <p className='text-sm font-semibold text-[#0065DE]'> AVG Absensi</p>
+                                        <p className='text-sm font-semibold w-20 text-[#0065DE]'> AVG Absensi</p>
                                         <p className='text-[28px] text-[#0065DE]'>50</p>
                                     </div>
                                     <div className='flex flex-col '>
-                                        <p className='text-sm font-semibold text-[#DE0000]'>Point Terendah</p>
+                                        <p className='text-sm font-semibold w-20 text-[#DE0000]'>Point Terendah</p>
                                         <p className='text-[28px] text-[#DE0000]'>50</p>
                                     </div>
 
                                 </div>
                                 <div>
                                     <div className='flex flex-col gap-2'>
-                                        <p className='text-sm font-semibold text-[#DE6B00]'>AVG Point</p>
+                                        <p className='text-sm font-semibold w-20 text-[#DE6B00]'>AVG Point</p>
                                         <p className='text-[28px] text-[#DE6B00]'>50</p>
                                     </div>
 
@@ -272,7 +275,7 @@ function KPI() {
 
 
                         </div>
-                        <div className='bg-[#D8EAFF] mt-5'>
+                        <div className='bg-[#D8EAFF] mt-5 overflow-x-scroll'>
                             <table className="w-full table-auto">
                                 <thead>
                                     <tr className="bg-gray-200 text-sm font-semibold border-b border-primary">
@@ -378,7 +381,7 @@ function KPI() {
                                             status: '-'
                                         }
                                     ].map((data, index) => (
-                                        <tr key={index} className="bg-[#D8EAFF] border-b text-sm ">
+                                        <tr key={index} className="bg-[#D8EAFF] border-b text-sm text-center">
                                             <td className="px-3  ">{index + 1}</td>
                                             <td className="px-3  ">{data.tanggal}</td>
                                             <td className="px-3  ">{data.point}</td>

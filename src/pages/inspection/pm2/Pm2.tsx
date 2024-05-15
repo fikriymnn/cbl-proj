@@ -108,8 +108,8 @@ function Pm2
     return (
         <DefaultLayout>
             <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>Maintenance &gt; Inspection &gt; PM 2</p>
-            <main className='overflow-x-scroll'>
-                <div className='min-w-[700px] bg-white rounded-xl'>
+            <main className='overflow-x-scroll '>
+                <div className='min-w-[700px] w-full bg-white rounded-xl'>
 
                     <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>01 April 2024</p>
                     <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
@@ -183,7 +183,7 @@ function Pm2
                                                 <>
                                                     <button
                                                         onClick={openModal2}
-                                                        className="w-25 text-xs font-bold bg-blue-700 py-2 text-white "
+                                                        className="md:w-40 w-25 text-xs font-bold bg-blue-700 py-2 text-white "
                                                     >
                                                         REQUEST DATE{' '}
                                                     </button>
@@ -199,16 +199,18 @@ function Pm2
 
                                                 </> :
                                                 brand.date == 'schedule requested' ?
-                                                    <div className='flex justify-center items-center w-25 text-xs font-bold bg-red-200 text-red-600 py-2'>
-                                                        <div className='flex justify-center items-center mx-auto'>
+                                                    <div className='md:w-40 w-25'>
+                                                        <div className='flex justify-center items-center w-full md:text-xs text-[10px] font-bold bg-red-200 text-red-600 md:py-2'>
+                                                            <div className='flex justify-center items-center mx-auto'>
 
-                                                            SCHEDULE REQUESTED
+                                                                SCHEDULE REQUESTED
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     :
                                                     <>
                                                         <Link to='/maintenance/inspection/pm_1_form'
-                                                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'begin mtc' && ''
+                                                            className={`uppercase md:w-40 w-25 p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'begin mtc' && ''
                                                                 }`} // Dynamic class assignment
                                                             onClick={openModal4}
                                                         >
