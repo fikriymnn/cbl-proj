@@ -11,57 +11,7 @@ import Logo from '../../images/logo/logo-cbl 1.svg';
 import ModalPopupReq2 from '../../Modals/ModalPopupReq';
 import axios from 'axios';
 
-const brandData: MasterMachine[] = [
-    {
 
-        code: '1.1',
-        name: 'R700',
-        type: 'PRINTING',
-        location: 'LOCATION'
-
-    },
-    {
-
-        code: '1.2',
-        name: 'SM 74',
-        type: 'PRINTING',
-        location: 'LOCATION'
-
-    },
-    {
-
-        code: '1.3',
-        name: 'GTO',
-        type: 'PRINTING',
-        location: 'LOCATION'
-
-    },
-
-    {
-
-        code: '2.1',
-        name: 'HOCK',
-        type: 'WATER BASE',
-        location: 'LOCATION'
-
-    },
-    {
-
-        code: '3.1',
-        name: 'BOADER',
-        type: 'POND',
-        location: 'LOCATION'
-
-    },
-    {
-
-        code: '4.1',
-        name: 'JK 1000',
-        type: 'FINISHING',
-        location: 'LOCATION'
-
-    },
-];
 const TableMachine = () => {
     const [isMobile, setIsMobile] = useState(false);
     const handleResize = () => {
@@ -101,7 +51,14 @@ const TableMachine = () => {
         <div className="rounded-xl border border-stroke bg-white pt-4 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
             {!isMobile && (
                 <>
-                    <div className='flex w-full justify-end pr-8 border-b border-stroke pb-2'>
+                    <div className='flex w-full justify-between pr-8 border-b border-stroke pb-2'>
+                        <input
+                            type="search"
+                            placeholder="search"
+                            name=""
+                            id=""
+                            className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
+                        />
                         <button className=' bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1'>
                             TAMBAH MACHINE
                         </button>
@@ -141,9 +98,9 @@ const TableMachine = () => {
                                 return (
                                     <>
                                         <div
-                                            className={`flex ${i === brandData.length - 1
+                                            className={`flex ${i === masterMesin.length - 1
                                                 ? ''
-                                                : 'border-b border-stroke dark:border-strokedark'
+                                                : 'border-b border-stroke dark:border-strokedark '
                                                 }`}
                                             key={i}
                                         >
@@ -191,9 +148,16 @@ const TableMachine = () => {
             )}
             {isMobile && (
                 <>
-                    <div className='flex w-full justify-end pr-8 border-b border-stroke pb-2'>
+                    <div className='flex w-full justify-between pr-8 border-b border-stroke pb-2'>
+                        <input
+                            type="search"
+                            placeholder="search"
+                            name=""
+                            id=""
+                            className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
+                        />
                         <button className=' bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1'>
-                            ADD MACHINE
+                            TAMBAH MESIN
                         </button>
                     </div>
 
@@ -205,7 +169,7 @@ const TableMachine = () => {
 
                         >
 
-                            <div className="flex items-center w-3/12 justify-end p-2.5 ">
+                            <div className="flex items-center w-4/12 justify-end p-2.5 ">
                                 <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">Kode</p>
                             </div>
                             <div className="flex items-center text-[14px] w-4/12 justify-start p-2.5 pl-4">
@@ -225,20 +189,20 @@ const TableMachine = () => {
                                 return (
                                     <>
                                         <div
-                                            className={`flex ${i === brandData.length - 1
+                                            className={`flex ${i === masterMesin.length - 1
                                                 ? 'w-full'
-                                                : ' px-3 w-full'
+                                                : ' px-2 w-full'
                                                 }`}
                                             key={i}
                                         >
-                                            <div className="flex items-center w-2/12 justify-center p-2.5">
+                                            <div className="flex items-center w-2/12 justify-start p-2.5">
                                                 <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">{data.kode_mesin}</p>
                                             </div>
-                                            <div className="flex items-center text-[14px] w-4/12 justify-center p-2.5 ">
+                                            <div className="flex items-end text-[14px] w-4/12 justify-end p-2.5 ">
                                                 <p className="text-slate-600 font-semibold text-center dark:text-white">{data.nama_mesin}</p>
                                             </div>
 
-                                            <div className="flex items-center text-[14px] w-5/12 justify-center p-2.5 ">
+                                            <div className="flex items-center text-[14px] w-4/12 justify-center p-2.5 ">
                                                 <p
                                                     className={`text-[14px] font-semibold text-center uppercase ${data.bagian_mesin === 'printing'
                                                         ? 'text-green-500' : data.bagian_mesin === 'water base / coating' ? 'text-yellow-500'

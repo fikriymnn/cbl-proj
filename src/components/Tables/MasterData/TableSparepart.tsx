@@ -84,7 +84,14 @@ const TableSparepart = () => {
         <div className="rounded-xl border border-stroke bg-white pt-4 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
             {!isMobile && (
                 <>
-                    <div className='flex w-full justify-end pr-8 border-b border-stroke pb-2'>
+                    <div className='flex w-full justify-between pr-8 border-b border-stroke pb-2'>
+                        <input
+                            type="search"
+                            placeholder="search"
+                            name=""
+                            id=""
+                            className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
+                        />
                         <button className=' bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1'>
                             TAMBAH SPAREPART
                         </button>
@@ -175,9 +182,16 @@ const TableSparepart = () => {
             )}
             {isMobile && (
                 <>
-                    <div className='flex w-full justify-end pr-8 border-b border-stroke pb-2'>
+                    <div className='flex w-full justify-between pr-8 border-b border-stroke pb-2'>
+                        <input
+                            type="search"
+                            placeholder="search"
+                            name=""
+                            id=""
+                            className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
+                        />
                         <button className=' bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1'>
-                            ADD MACHINE
+                            TAMBAH SPAREPART
                         </button>
                     </div>
 
