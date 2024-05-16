@@ -361,7 +361,7 @@ function TableOS() {
                                       <div className="flex flex-col gap-1">
                                         <button
                                           onClick={() => {
-                                            if (data.status_tiket == 'open' || data.status_tiket == 'pending') {
+                                            if (data.status_tiket == 'open') {
                                               openModal1(i);
                                             } else {
                                               reworkTiket(data.id);
@@ -479,6 +479,14 @@ function TableOS() {
                                     </p>
                                     <p className="text-xs font-medium">
                                       {waktuRespon}
+                                    </p>
+                                  </div>
+                                  <div>
+                                    <p className="text-xs font-bold">
+                                      Pelapor
+                                    </p>
+                                    <p className="text-xs font-medium">
+                                      {data.operator}
                                     </p>
                                   </div>
                                 </div>
@@ -769,6 +777,14 @@ function TableOS() {
                             <div>
                               <h5 className="text-xs font-bold">Jadwal</h5>
                               <p className="text-xs font-medium"></p>
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold">
+                                Pelapor
+                              </p>
+                              <p className="text-xs font-medium">
+                                {data.operator}
+                              </p>
                             </div>
                           </div>
                           <div className="w-full  bg-[#E9F3FF]  rounded-lg px-4 gap-y-3 mt-3 p-1">

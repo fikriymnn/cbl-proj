@@ -509,7 +509,7 @@ const ModalStockCheck1 = ({
                           <div className='bg-[#EDF5FF] rounded  text-[#0065DE] justify-center items-center px-4 pt-[6px]'>
                             <p className='text-center text-normal font-bold'>{data.use_qty}</p>
                           </div>
-                          {/* <button className='justify-center items-center px-[14px] bg-[#0065DE] text-white rounded-md'
+                          <button className='justify-center items-center px-[14px] bg-[#0065DE] text-white rounded-md'
                             onClick={() => {
                               const onchangeVal: any = [...kebutuhanSparepart];
                               onchangeVal[i].use_qty = data.use_qty + 1;
@@ -529,7 +529,7 @@ const ModalStockCheck1 = ({
                             }}
                           >
                             -
-                          </button> */}
+                          </button>
                           <button onClick={() => {
                             const onchangeVal: any = [...kebutuhanSparepart];
                             onchangeVal.splice(i, 1);

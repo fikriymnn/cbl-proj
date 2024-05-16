@@ -239,7 +239,7 @@ const TableIncomingMaintenance = () => {
 
                 <div className=" items-center justify-center  md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 flex ">
                   <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center">
-                    Detail
+
                   </p>
                 </div>
               </div>
@@ -316,20 +316,20 @@ const TableIncomingMaintenance = () => {
                               >
                                 RESPON
                               </button>
-                              <button
+                              {/* <button
                                 type="button"
-                                onClick={() => openModal1(key)}
+                                // onClick={() => openModal1(key)}
                                 className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-white border-[#0065DE] border text-primary justify-center`}
                               >
                                 DETAIL
-                              </button>
+                              </button> */}
 
                               {/* <button type="button" onClick={openModal1}
                         className={`inline-flex rounded-[3px] my-auto py-2 md:px-2 px-1 md:text-[12px] text-[10px] font-semibold bg-white border-[#0065DE] border text-primary justify-center items-center  `}
                       >
                         DETAIL
                       </button> */}
-                              {showModal1[key] == true && (
+                              {/* {showModal1[key] == true && (
                                 <Modal
                                   isOpen={showModal1[key]}
                                   onClose={() => closeModal1(key)}
@@ -341,9 +341,9 @@ const TableIncomingMaintenance = () => {
                                 >
                                   <p></p>
                                 </Modal>
-                              )}
+                              )} */}
 
-                              {showModal3[key] == true && (
+                              {/* {showModal3[key] == true && (
                                 <ModalKonfirmasi
                                   isOpen={showModal3[key]}
                                   onClose={() => closeModal2(key)}
@@ -364,7 +364,7 @@ const TableIncomingMaintenance = () => {
                                     </div>
                                   </>
                                 </ModalKonfirmasi>
-                              )}
+                              )} */}
                             </div>
                           </td>
                         </div>
@@ -425,13 +425,13 @@ const TableIncomingMaintenance = () => {
                             >
                               RESPON
                             </button>
-                            <button
+                            {/* <button
                               type="button"
-                              onClick={() => openModal1(key)}
+                              // onClick={() => openModal1(key)}
                               className={`inline-flex py-1 rounded-[3px] my-auto  md:px-5 px-2 md:text-[12px] text-[10px] sm:font-semibold bg-white border-[#0065DE] border text-primary justify-center`}
                             >
                               DETAIL
-                            </button>
+                            </button> */}
                           </div>
 
                           <div className=" flex items-center w-6/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
@@ -446,7 +446,7 @@ const TableIncomingMaintenance = () => {
                           <div className=" items-center justify-center md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] flex ">
 
                             <td className=" border-[#eee]   dark:border-strokedark">
-                              {showModal1[key] == true && (
+                              {/* {showModal1[key] == true && (
                                 <Modal
                                   isOpen={showModal1[key]}
                                   onClose={() => closeModal1(key)}
@@ -458,7 +458,7 @@ const TableIncomingMaintenance = () => {
                                 >
                                   <p></p>
                                 </Modal>
-                              )}
+                              )} */}
 
 
                               {showModal2 && <></>}

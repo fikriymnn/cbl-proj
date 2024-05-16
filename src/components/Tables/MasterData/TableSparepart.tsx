@@ -1,18 +1,51 @@
-import { MasterMachine } from '../../../types/master';
-// import BrandOne from '../../images/brand/brand-01.svg';
-// import BrandTwo from '../../images/brand/brand-02.svg';
-// import BrandThree from '../../images/brand/brand-03.svg';
-// import BrandFour from '../../images/brand/brand-04.svg';
-// import BrandFive from '../../images/brand/brand-05.svg';
-import { useEffect, useState } from 'react';
-import Modal from '../../../components/Modals/ModalDetailPopup';
-// import Gambar from '../../images/BACKGROUND.png';
-import Logo from '../../images/logo/logo-cbl 1.svg';
-import ModalPopupReq2 from '../../Modals/ModalPopupReq';
 import axios from 'axios';
+import { MasterMachine } from '../../../types/master';
+import { useEffect, useState } from 'react';
 
 
-const TableMachine = () => {
+const brandData: MasterMachine[] = [
+    {
+
+        code: 'SPRT-0909',
+        name: 'Lever PPL Tail Edge BAR',
+        type: 'R700',
+        location: '6'
+
+    },
+    {
+
+        code: 'SPRT-0909',
+        name: 'Lever PPL Tail Edge BAR',
+        type: 'R700',
+        location: '8'
+
+    },
+    {
+
+        code: 'SPRT-0909',
+        name: 'Lever PPL Tail Edge BAR',
+        type: 'R700',
+        location: '0'
+
+    },
+    {
+
+        code: 'SPRT-0909',
+        name: 'Lever PPL Tail Edge BAR',
+        type: 'R700',
+        location: '1'
+
+    },
+    {
+
+        code: 'SPRT-0909',
+        name: 'Lever PPL Tail Edge BAR',
+        type: 'R700',
+        location: '9'
+
+    },
+];
+const TableSparepart = () => {
     const [isMobile, setIsMobile] = useState(false);
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
@@ -29,19 +62,19 @@ const TableMachine = () => {
         };
     }, []);
 
-    const [masterMesin, setmasterMesin] = useState<any>();
+    const [masterSparepart, setmasterSparepart] = useState<any>();
     useEffect(() => {
 
-        getMasterMesin();
+        getmasterSparepart();
     }, []);
-    async function getMasterMesin() {
-        const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
+    async function getmasterSparepart() {
+        const url = `${import.meta.env.VITE_API_LINK}/master/sparepart`;
         try {
             const res = await axios.get(url, {
                 withCredentials: true,
             });
 
-            setmasterMesin(res.data);
+            setmasterSparepart(res.data);
             console.log(res.data);
         } catch (error: any) {
             console.log(error.data.msg);
@@ -60,7 +93,7 @@ const TableMachine = () => {
                             className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
                         />
                         <button className=' bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1'>
-                            TAMBAH MACHINE
+                            TAMBAH SPAREPART
                         </button>
                     </div>
 
@@ -79,28 +112,31 @@ const TableMachine = () => {
                             </div>
 
                             <div className="flex items-center w-2/12 justify-center p-2.5 ">
-                                <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">Kode Mesin</p>
+                                <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">Kode Sparepart</p>
                             </div>
-                            <div className="flex items-center text-[14px] w-2/12 justify-center p-2.5 ">
-                                <p className="text-slate-600 font-semibold text-center dark:text-white">Nama Mesin</p>
+                            <div className="flex items-center text-[14px] w-3/12 justify-start p-2.5 ">
+                                <p className="text-slate-600 font-semibold text-center dark:text-white">Nama Sparepart</p>
                             </div>
 
-                            <div className="flex items-center text-[14px] w-2/12 justify-start  p-2.5 pl-9">
-                                <p className="text-slate-600 font-semibold text-center">Tipe Mesin</p>
+                            <div className="flex items-center text-[14px] w-2/12 justify-start  p-2.5 ">
+                                <p className="text-slate-600 font-semibold text-center">Nama Mesin</p>
                             </div>
-                            <div className="flex items-center text-[14px] w-3/12 justify-start p-2.5 pl-8 ">
-                                <p className="text-slate-600 font-semibold text-center">Lokasi Mesin</p>
+                            <div className="flex items-center text-[14px] w-3/12 justify-center p-2.5 pr-35 ">
+                                <p className="text-slate-600 font-semibold text-center">Umur Sparepart</p>
+                            </div>
+                            <div className="flex w-1/12 ">
+
                             </div>
 
                         </div>
-                        {masterMesin != null &&
-                            masterMesin.map((data: any, i: number) => {
+                        {masterSparepart != null &&
+                            masterSparepart.map((data: any, i: number) => {
                                 return (
                                     <>
                                         <div
-                                            className={`flex ${i === masterMesin.length - 1
+                                            className={`flex ${i === brandData.length - 1
                                                 ? ''
-                                                : 'border-b border-stroke dark:border-strokedark '
+                                                : 'border-b border-stroke dark:border-strokedark'
                                                 }`}
                                             key={i}
                                         >
@@ -111,23 +147,21 @@ const TableMachine = () => {
                                                 </p>
                                             </div>
 
-                                            <div className="flex items-center w-2/12 justify-center p-2.5 pr-9">
-                                                <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">{data.kode_mesin}</p>
+                                            <div className="flex items-center w-3/12 justify-center p-2.5 pr-9">
+                                                <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white"></p>
                                             </div>
-                                            <div className="flex items-center text-[14px] w-2/12 justify-center p-2.5 pr-9">
-                                                <p className="text-slate-600 font-semibold text-center dark:text-white">{data.nama_mesin}</p>
+                                            <div className="flex items-center text-[14px] w-3/12 justify-start p-2.5 pr-9">
+                                                <p className="text-slate-600 font-semibold text-center dark:text-white">{data.nama_sparepart}</p>
                                             </div>
 
-                                            <div className="flex items-center text-[14px] w-2/12 justify-center p-2.5 pr-9">
-                                                <p
-                                                    className={`text-[14px] font-semibold text-center uppercase ${data.bagian_mesin === 'printing'
-                                                        ? 'text-green-500' : data.bagian_mesin === 'water base / coating' ? 'text-yellow-500'
-                                                            : data.bagian_mesin === 'pond' ? 'text-purple-500' : data.bagian_mesin === 'finishing' ? 'text-red-500' : 'bg-white text-white'}`}>
-                                                    {data.bagian_mesin}
+                                            <div className="flex items-center text-[14px] w-3/12 justify-center p-2.5 pr-9">
+                                                <p className="text-slate-600 font-semibold text-center dark:text-white"
+                                                >
+                                                    {data.nama_mesin}
                                                 </p>
                                             </div>
-                                            <div className="flex items-center text-[14px] w-2/12 justify-center p-2.5 pr-9">
-                                                <p className="text-slate-600 font-semibold text-center">{data.lokasi_mesin}</p>
+                                            <div className="flex items-center text-[14px] w-3/12 justify-center p-2.5 ">
+                                                <p className="text-slate-600 font-semibold text-center">{data.umur_sparepart}</p>
                                             </div>
 
                                             <div className="flex items-center w-3/12 justify-center p-2.5 gap-2">
@@ -157,7 +191,7 @@ const TableMachine = () => {
                             className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
                         />
                         <button className=' bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1'>
-                            TAMBAH MESIN
+                            TAMBAH SPAREPART
                         </button>
                     </div>
 
@@ -169,7 +203,7 @@ const TableMachine = () => {
 
                         >
 
-                            <div className="flex items-center w-4/12 justify-end p-2.5 ">
+                            <div className="flex items-center w-3/12 justify-end p-2.5 ">
                                 <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">Kode</p>
                             </div>
                             <div className="flex items-center text-[14px] w-4/12 justify-start p-2.5 pl-4">
@@ -184,34 +218,32 @@ const TableMachine = () => {
                             </div>
 
                         </div>
-                        {masterMesin != null &&
-                            masterMesin.map((data: any, i: number) => {
+                        {masterSparepart != null &&
+                            masterSparepart.map((data: any, i: number) => {
                                 return (
                                     <>
                                         <div
-                                            className={`flex ${i === masterMesin.length - 1
+                                            className={`flex ${i === brandData.length - 1
                                                 ? 'w-full'
-                                                : ' px-2 w-full'
+                                                : ' px-3 w-full'
                                                 }`}
                                             key={i}
                                         >
-                                            <div className="flex items-center w-2/12 justify-start p-2.5">
-                                                <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">{data.kode_mesin}</p>
+                                            <div className="flex items-center w-2/12 justify-center p-2.5">
+                                                <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white"></p>
                                             </div>
-                                            <div className="flex items-end text-[14px] w-4/12 justify-end p-2.5 ">
-                                                <p className="text-slate-600 font-semibold text-center dark:text-white">{data.nama_mesin}</p>
+                                            <div className="flex items-center text-[14px] w-4/12 justify-center p-2.5 ">
+                                                <p className="text-slate-600 font-semibold text-center dark:text-white">{data.nama_sparepart}</p>
                                             </div>
 
-                                            <div className="flex items-center text-[14px] w-4/12 justify-center p-2.5 ">
-                                                <p
-                                                    className={`text-[14px] font-semibold text-center uppercase ${data.bagian_mesin === 'printing'
-                                                        ? 'text-green-500' : data.bagian_mesin === 'water base / coating' ? 'text-yellow-500'
-                                                            : data.bagian_mesin === 'pond' ? 'text-purple-500' : data.bagian_mesin === 'finishing' ? 'text-red-500' : 'bg-white text-white'}`}>
-                                                    {data.bagian_mesin}
+                                            <div className="flex items-center text-[14px] w-5/12 justify-center p-2.5 ">
+                                                <p className="text-slate-600 font-semibold text-center dark:text-white"
+                                                >
+                                                    {data.nama_mesin}
                                                 </p>
                                             </div>
                                             <div className="flex items-center text-[14px] w-4/12 justify-center p-2.5 ">
-                                                <p className="text-slate-600 font-semibold text-center">{data.lokasi_mesin}</p>
+                                                <p className="text-slate-600 font-semibold text-center">{data.umur_sparepart}</p>
                                             </div>
 
 
@@ -224,7 +256,6 @@ const TableMachine = () => {
                                                 DELETE
                                             </button>
                                         </div>
-
                                     </>
                                 );
                             })}
@@ -235,4 +266,4 @@ const TableMachine = () => {
     );
 };
 
-export default TableMachine;
+export default TableSparepart;
