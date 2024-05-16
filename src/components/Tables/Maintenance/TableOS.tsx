@@ -320,17 +320,7 @@ function TableOS() {
                               <div className="flex ">
                                 <p
                                   className={
-                                    data.skor_mtc === 100
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                      : data.skor_mtc >= 60 &&
-                                        data.skor_mtc < 100
-                                        ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                        : data.skor_mtc >= 40 &&
-                                          data.skor_mtc < 60
-                                          ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
-                                          : data.skor_mtc < 40 && data.skor_mtc >= 0
-                                            ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                            : ''
+                                    data.status_tiket == 'pending' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : data.status_tiket == 'open' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] ` : data.status_tiket == 'monitoring' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] ` : data.status_tiket == 'temporary' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  ` : ""
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -341,17 +331,7 @@ function TableOS() {
                               <div className="flex ">
                                 <p
                                   className={
-                                    data.skor_mtc === 100
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                      : data.skor_mtc >= 60 &&
-                                        data.skor_mtc < 100
-                                        ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                        : data.skor_mtc >= 40 &&
-                                          data.skor_mtc < 60
-                                          ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
-                                          : data.skor_mtc < 40 && data.skor_mtc >= 0
-                                            ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                            : ''
+                                    data.status_tiket == 'pending' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : data.status_tiket == 'open' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] ` : data.status_tiket == 'monitoring' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] ` : data.status_tiket == 'temporary' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  ` : ""
                                   }
                                 >
                                   {data.skor_mtc}%
@@ -538,18 +518,10 @@ function TableOS() {
                                             <div className="flex">
                                               <p
                                                 className={
-                                                  proses.skor_mtc === 100
-                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                                    : proses.skor_mtc >= 60 &&
-                                                      proses.skor_mtc < 100
-                                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                                      : proses.skor_mtc >= 40 &&
-                                                        proses.skor_mtc < 60
-                                                        ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
-                                                        : proses.skor_mtc < 40 &&
-                                                          proses.skor_mtc >= 0
-                                                          ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                                          : ''
+                                                  proses.skor_mtc <= 100 && proses.skor_mtc > 20
+                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] ` : proses.skor_mtc == 20 ?
+                                                      `text-sm px-2  font-light  rounded-xl flex justify-center  text-[#FC4911] bg-[#de85002a] ` : proses.skor_mtc == 0 ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                                        : ''
                                                 }
                                               >
                                                 {proses.skor_mtc}%
@@ -755,17 +727,7 @@ function TableOS() {
 
                         <p
                           className={
-                            data.skor_mtc === 100
-                              ? `text-sm px-2 py-2 font-light  rounded-xl flex justify-center items-center text-[#0057FF] bg-[#B1ECFF] `
-                              : data.skor_mtc >= 60 &&
-                                data.skor_mtc < 100
-                                ? `text-sm px-2 py-2  font-light  rounded-xl flex justify-center  items-center  text-green-600 bg-[#00de3f2f] `
-                                : data.skor_mtc >= 40 &&
-                                  data.skor_mtc < 60
-                                  ? `text-sm px-2 py-2 font-light  rounded-xl flex justify-center  items-center  text-[#DE0000] bg-[#FFDBB1] `
-                                  : data.skor_mtc < 40 && data.skor_mtc >= 0
-                                    ? `text-sm px-2 py-2 font-light  rounded-xl flex justify-center  items-center text-[#DE0000] bg-[#FFB1B1] `
-                                    : ''
+                            data.status_tiket == 'pending' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : data.status_tiket == 'open' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] ` : data.status_tiket == 'monitoring' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] ` : data.status_tiket == 'temporary' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  ` : ""
                           }
                         >
                           {data.skor_mtc}%
@@ -792,17 +754,7 @@ function TableOS() {
 
                                   <p
                                     className={
-                                      data.skor_mtc === 100
-                                        ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                        : data.skor_mtc >= 60 &&
-                                          data.skor_mtc < 100
-                                          ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                          : data.skor_mtc >= 40 &&
-                                            data.skor_mtc < 60
-                                            ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
-                                            : data.skor_mtc < 40 && data.skor_mtc >= 0
-                                              ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                              : ''
+                                      data.status_tiket == 'pending' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : data.status_tiket == 'open' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] ` : data.status_tiket == 'monitoring' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] ` : data.status_tiket == 'temporary' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  ` : ""
                                     }
                                   >
                                     {data.status_tiket}{' '}
@@ -903,16 +855,16 @@ function TableOS() {
                                           <div className='flex w-full pt-1  items-center justify-start'>
                                             <p
                                               className={
-                                                proses.skor_mtc === 100
-                                                  ? `text-sm px-4  font-light  rounded-xl flex justify-center items-center text-[#0057FF] bg-[#B1ECFF] `
-                                                  : proses.skor_mtc >= 60 &&
-                                                    proses.skor_mtc < 100
-                                                    ? `text-sm  px-4 font-light  rounded-xl flex justify-center  items-center  text-green-600 bg-[#00de3f2f] `
-                                                    : proses.skor_mtc >= 40 &&
-                                                      proses.skor_mtc < 60
-                                                      ? `text-sm px-4 font-light  rounded-xl flex justify-center  items-center  text-[#DE0000] bg-[#FFDBB1] `
-                                                      : proses.skor_mtc < 40 && proses.skor_mtc >= 0
-                                                        ? `text-sm px-4 font-light  rounded-xl flex justify-center  items-center text-[#DE0000] bg-[#FFB1B1] `
+                                                data.skor_mtc === 100
+                                                  ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
+                                                  : data.skor_mtc >= 60 &&
+                                                    data.skor_mtc < 100
+                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                                    : data.skor_mtc >= 40 &&
+                                                      data.skor_mtc < 60
+                                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
+                                                      : data.skor_mtc < 40 && data.skor_mtc >= 0
+                                                        ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                                         : ''
                                               }
                                             >
