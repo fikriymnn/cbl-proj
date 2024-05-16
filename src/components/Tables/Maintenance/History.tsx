@@ -126,7 +126,7 @@ function HistoryOS2() {
     };
 
     async function getTiket() {
-        const url = `${import.meta.env.VITE_API_LINK}/ticket?bagian_tiket=os2`;
+        const url = `${import.meta.env.VITE_API_LINK}/ticket?bagian_tiket=histori os2`;
         try {
             const res = await axios.get(url, {
                 withCredentials: true,
@@ -217,7 +217,7 @@ function HistoryOS2() {
                 <>
                     <div className="flex bg-white mt-2 py-2">
                         <p className="px-5 text-xs font-bold ">No</p>
-                        <div className="grid md:grid-cols-7  w-full">
+                        <div className="grid md:grid-cols-6  w-full">
                             <div className="flex gap-2">
                                 <p className="text-xs font-bold ">Kode Tiket</p>
                                 <img className="w-2" src={Polygon6} alt="" />
@@ -238,11 +238,11 @@ function HistoryOS2() {
                                 <p className="text-xs font-bold ">Jumlah Pengerjaan</p>
                                 <img className="w-2" src={Polygon6} alt="" />
                             </div>
-                            <div className="flex gap-2">
+                            {/* <div className="flex gap-2">
                                 <p className="text-xs font-bold ">Sparepart Digunakan</p>
                                 <img className="w-2" src={Polygon6} alt="" />
-                            </div>
-                            <div className="flex gap-2">
+                            </div> */}
+                            <div className="flex gap-2 justify-end px-10">
                                 <p className="text-xs font-bold ">Status</p>
                             </div>
                         </div>
@@ -290,7 +290,7 @@ function HistoryOS2() {
                                                     >
                                                         {i + 1}
                                                     </div>
-                                                    <div className="grid  grid-cols-7 w-full  ">
+                                                    <div className="grid  grid-cols-6 w-full  ">
                                                         <div className="flex flex-col md:gap-5 gap-1 ">
                                                             <div className="my-auto ">
                                                                 <p className="text-sm font-light">R729390</p>
@@ -324,83 +324,25 @@ function HistoryOS2() {
                                                                 </p>
                                                             </div>
                                                         </div>
-                                                        <div className="flex flex-col justify-center md:gap-5 gap-1 ">
+                                                        {/* <div className="flex flex-col justify-center md:gap-5 gap-1 ">
                                                             <div>
                                                                 <p className="text-sm font-light">
                                                                     {data.proses_mtcs.length}
                                                                 </p>
                                                             </div>
-                                                        </div>
-                                                        <div className="flex gap-2 items-center md:mb-0 mb-2">
+                                                        </div> */}
+                                                        <div className="flex gap-2 items-center md:mb-0 mb-2 justify-end px-5">
                                                             <div>
                                                                 <div>
-                                                                    <button
-                                                                        className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                                                        onClick={() => handleClick(i)}
-                                                                    >
-                                                                        <img src={Burger} alt="" className="mx-3" />
-                                                                    </button>
-                                                                    {showTwoButtons[i] ? (
-                                                                        <div className="absolute bg-white p-3 shadow-5 rounded-md">
-                                                                            {' '}
-                                                                            {/* Wrap buttons for styling */}
-                                                                            <div className="flex flex-col gap-1">
-                                                                                <button
-                                                                                    onClick={() => {
-                                                                                        if (data.status_tiket == 'open' || data.status_tiket == 'pending') {
-                                                                                            openModal1(i);
-                                                                                        } else {
-                                                                                            reworkTiket(data.id);
-                                                                                            // ini untuk fungsi rework
-                                                                                        }
-                                                                                    }}
-                                                                                    className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                                                                >
-                                                                                    PROSES
-                                                                                </button>
-                                                                                <button
-                                                                                    onClick={openModal2}
-                                                                                    className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                                                                >
-                                                                                    JADWALKAN{' '}
-                                                                                </button>
-                                                                            </div>
-                                                                            {showModal1[i] == true && (
-                                                                                <ModalStockCheck1
-                                                                                    children={undefined}
-                                                                                    isOpen={showModal1[i]}
-                                                                                    onClose={() => closeModal1(i)}
-                                                                                    onFinish={() => getTiket()}
-                                                                                    kendala={data.nama_kendala}
-                                                                                    kodeLkh={data.kode_lkh}
-                                                                                    machineName={data.mesin}
-                                                                                    tgl={data.waktu_respon}
-                                                                                    jam={'19.09'}
-                                                                                    namaPemeriksa={
-                                                                                        data.proses_mtcs[lengthProses]
-                                                                                            .user_eksekutor.nama
-                                                                                    }
-                                                                                    no={'109299'}
-                                                                                    idTiket={data.id}
-                                                                                    idProses={
-                                                                                        data.proses_mtcs[lengthProses].id
-                                                                                    }
-                                                                                    namaMesin={data.mesin}
-                                                                                />
-                                                                            )}
-                                                                            {showModal2 && (
-                                                                                <ModalMtcDate
-                                                                                    isOpen={showModal2}
-                                                                                    onClose={closeModal2}
-                                                                                    machineName={'GMC Printer 2'}
-                                                                                >
-                                                                                    <p></p>
-                                                                                </ModalMtcDate>
-                                                                            )}
-                                                                        </div>
-                                                                    ) : (
-                                                                        ''
-                                                                    )}
+                                                                    <div className="flex ">
+                                                                        <p
+                                                                            className={
+                                                                                data.status_tiket == 'pending' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : data.status_tiket == 'open' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] ` : data.status_tiket == 'monitoring' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] ` : data.status_tiket == 'temporary' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  ` : `text-sm px-2  font-light  rounded-xl flex justify-center text-[#2EB300] bg-[#00de3f2b]  `
+                                                                            }
+                                                                        >
+                                                                            {data.status_tiket}
+                                                                        </p>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <div>
