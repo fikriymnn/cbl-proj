@@ -30,6 +30,7 @@ import Preventive from './pages/inspection/os3/Preventive';
 import KPI from './pages/Maintenance/KPI';
 import MasterSparepart from './pages/MasterData/MasterSparepart';
 import MasterAnalisis from './pages/MasterData/MasterAnalisis';
+import MasterPM1 from './pages/MasterData/MasterPM1';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -246,6 +247,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterAnalisis />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterpm1"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM1 />
               </ProtectedRoute>
             </>
           }
