@@ -261,7 +261,7 @@ function Histori() {
                                                         }`} // Dynamic class assignment
                                                     onClick={openModal4}
                                                 >
-                                                    INSPECT
+                                                    DETAIL
 
                                                 </Link>
 

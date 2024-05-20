@@ -1,9 +1,9 @@
 import React from 'react'
-import DefaultLayout from '../../layout/DefaultLayout'
+import DefaultLayout from '../../../layout/DefaultLayout'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import BarChartVertical from '../UiElements/BarChartVertical'
+import BarChartVertical from '../../UiElements/BarChartVertical'
 
 function KPI() {
     return (

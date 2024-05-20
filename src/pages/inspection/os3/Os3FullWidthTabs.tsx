@@ -7,6 +7,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Os3 from './Os3';
+import HistoriOS3 from './HistoriOs3';
 
 
 
@@ -150,7 +151,7 @@ export default function Os3FullWidthTabs() {
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
 
-
+                <HistoriOS3 />
 
 
 

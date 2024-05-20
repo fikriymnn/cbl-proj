@@ -13,7 +13,7 @@ import X from '../../../images/icon/x.svg'
 
 // import moment from 'moment';
 
-function TableOS3() {
+function HistoriOS3() {
     const [isMobile, setIsMobile] = useState(false);
     const [status, setStatus] = useState();
     const handleResize = () => {
@@ -222,37 +222,40 @@ function TableOS3() {
             {!isMobile && (
                 <>
                     <div className="flex bg-white mt-2 py-2">
-                        <p className="px-5 text-xs font-bold ">No</p>
-                        <div className="grid grid-cols-8 w-full">
-                            <div className="flex gap-2">
+                        <div className='flex items-center'>
+
+                            <p className="px-5 text-xs font-bold ">No</p>
+                        </div>
+                        <div className="grid grid-cols-8  w-full gap-2">
+                            <div className="flex gap-1 items-center">
                                 <p className="text-xs font-bold ">Kode Tiket</p>
                                 <img className="w-2" src={Polygon6} alt="" />
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-1 items-center">
                                 <p className="text-xs font-bold ">Sumber</p>
                                 <img className="w-2" src={Polygon6} alt="" />
                             </div>
-                            <div className="flex gap-2 ">
-                                <p className="text-xs font-bold ">  Mesin</p>
+                            <div className="flex gap-1 items-center ">
+                                <p className="text-xs font-bold ">Mesin</p>
                                 <img className="w-2" src={Polygon6} alt="" />
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-1 items-center">
                                 <p className="text-xs font-bold ">Kendala</p>
                                 <img className="w-2" src={Polygon6} alt="" />
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-1 items-center">
                                 <p className="text-xs font-bold ">Indikator</p>
                                 <img className="w-2" src={Polygon6} alt="" />
                             </div>
 
-                            <div className="flex gap-2">
+                            <div className="flex gap-1 items-center">
                                 <p className="text-xs font-bold ">Status</p>
                             </div>
-                            <div className="flex gap-2">
-                                <p className="text-xs font-bold ">Persentase</p>
+                            <div className="flex gap-1 items-center">
+                                <p className="text-xs font-bold ">Jumlah Pekerjaan</p>
                             </div>
-                            <div className="flex gap-2">
-                                <p className="text-xs font-bold ">Action</p>
+                            <div className="flex gap-1 items-center">
+                                <p className="text-xs font-bold "></p>
                             </div>
                         </div>
                     </div>
@@ -331,10 +334,10 @@ function TableOS3() {
                                                                     <img className='' src={X} alt="" />
                                                                 </div>
                                                                 <p
-                                                                    className="text-xs  px-1 font-light  rounded-xl flex justify-center items-center"
+                                                                    className="text-xs px-2  font-light  rounded-xl flex justify-center"
                                                                 >
 
-                                                                    Jelek/ rusak
+                                                                    Jelek/rusak
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -352,11 +355,9 @@ function TableOS3() {
                                                         <div className="flex items-center md:gap-5 gap-1 ">
                                                             <div className="flex ">
                                                                 <p
-                                                                    className={
-                                                                        data.status_tiket == 'pending' ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : data.status_tiket == 'open' ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] ` : data.status_tiket == 'monitoring' ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] ` : data.status_tiket == 'temporary' ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  ` : ""
-                                                                    }
+                                                                    className='text-xs px-2  font-light  rounded-xl flex justify-center'
                                                                 >
-                                                                    {data.skor_mtc}%
+                                                                    1
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -856,4 +857,4 @@ function TableOS3() {
     );
 }
 
-export default TableOS3;
+export default HistoriOS3;
