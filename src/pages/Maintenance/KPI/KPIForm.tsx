@@ -2,12 +2,13 @@ import React from 'react'
 import DefaultLayout from '../../../layout/DefaultLayout'
 import Filter from '../../../images/icon/filter.svg';
 import Polygon6 from '../../../images/icon/Polygon6.svg';
+import { Link } from 'react-router-dom';
 
 function KPIForm() {
     return (
         <DefaultLayout>
 
-            <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>Key Performance Indicator &gt; Input &gt; PM 2</p>
+            <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>Key Performance Indicator &gt; Input </p>
             <section>
 
                 <div className="flex  bg-white p-2">
@@ -27,7 +28,7 @@ function KPIForm() {
                         </div>
 
                         <div className='flex justify-center items-center'>
-                            <div className="relative z-20 bg-[#D8EAFF] rounded-md dark:bg-form-input  w-40 mx-3">
+                            <div className="relative z-20 bg-[#D8EAFF] rounded-md dark:bg-form-input  md:w-40 w-20 mx-3">
                                 <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
                                     <svg
                                         width="20"
@@ -82,42 +83,82 @@ function KPIForm() {
             </section>
             <section>
                 <div className="flex bg-white mt-2 py-2">
-                    <div className='flex items-center'>
+                    <div className='flex items-center justify-center w-15 '>
 
-                        <p className="px-5 text-xs font-bold ">No</p>
+                        <p className=" text-xs font-bold ">No</p>
                     </div>
                     <div className="grid grid-cols-8  w-full gap-2">
-                        <div className="flex gap-1 items-center col-span-3">
+                        <div className="flex gap-1 items-center col-span-3  ">
                             <p className="text-xs font-bold ">Nama</p>
 
                         </div>
-                        <div className="flex gap-1 items-center col-span-3">
+                        <div className="flex gap-1 items-center col-span-3 ">
                             <p className="text-xs font-bold ">Role</p>
 
                         </div>
-                        <div className="flex gap-1 items-center col-span-2">
+                        <div className="flex gap-1 items-center col-span-2  ">
                             <p className="text-xs font-bold "></p>
 
                         </div>
 
                     </div>
                 </div>
-                <div className="flex bg-white mt-2 py-2">
-                    <div className='flex items-center'>
+                <div className="flex bg-white mt-2 py-2 rounded-md">
+                    <div className='flex items-center justify-center w-15 '>
 
-                        <p className="px-5 text-xs font-bold ">1</p>
+                        <p className=" text-xs font-medium   ">1</p>
                     </div>
                     <div className="grid grid-cols-8  w-full gap-2">
-                        <div className="flex gap-1 items-center col-span-3">
-                            <p className="text-xs font-bold ">Sergio Busquets</p>
+                        <div className="flex gap-1 items-center col-span-3 ">
+                            <p className="text-xs font-medium  ">Sergio Busquets</p>
 
                         </div>
-                        <div className="flex gap-1 items-center col-span-3">
-                            <p className="text-xs font-bold ">Supervisor</p>
+                        <div className="flex gap-1 items-center col-span-3  ">
+                            <p className="text-xs font-medium  ">Supervisor</p>
 
                         </div>
-                        <div className="flex gap-1 items-center col-span-2">
-                            <button className='bg-primary px-10 font-semibold text-white text-sm'>INPUT</button>
+                        <div className="flex gap-1 items-center justify-end px-5  col-span-2  ">
+                            <Link to='/maintenance/KPI/Form/Input' className='bg-primary md:px-10 px-5 font-semibold text-white text-xs py-1 rounded-sm'>INPUT</Link>
+                        </div>
+
+                    </div>
+                </div>
+                <div className="flex bg-white mt-2 py-2 rounded-md">
+                    <div className='flex items-center justify-center w-15 '>
+
+                        <p className=" text-xs font-medium   ">1</p>
+                    </div>
+                    <div className="grid grid-cols-8  w-full gap-2">
+                        <div className="flex gap-1 items-center col-span-3 ">
+                            <p className="text-xs font-medium  ">Sergio Busquets</p>
+
+                        </div>
+                        <div className="flex gap-1 items-center col-span-3  ">
+                            <p className="text-xs font-medium  ">Supervisor</p>
+
+                        </div>
+                        <div className="flex gap-1 items-center justify-end px-5  col-span-2  ">
+                            <Link to='/maintenance/KPI/Form/Input' className='bg-primary md:px-10 px-5 font-semibold text-white text-xs py-1 rounded-sm'>INPUT</Link>
+                        </div>
+
+                    </div>
+                </div>
+                <div className="flex bg-white mt-2 py-2 rounded-md">
+                    <div className='flex items-center justify-center w-15 '>
+
+                        <p className=" text-xs font-medium   ">1</p>
+                    </div>
+                    <div className="grid grid-cols-8  w-full gap-2">
+                        <div className="flex gap-1 items-center col-span-3 ">
+                            <p className="text-xs font-medium  ">Sergio Busquets</p>
+
+                        </div>
+                        <div className="flex gap-1 items-center col-span-3  ">
+                            <p className="text-xs font-medium  ">Supervisor</p>
+
+                        </div>
+                        <div className="flex gap-1 items-center justify-end px-5  col-span-2  ">
+                            <Link to='/maintenance/KPI/Form/Input' className='bg-primary md:px-10 px-5 font-semibold text-white text-xs py-1 rounded-sm'>INPUT</Link>
                         </div>
 
                     </div>
