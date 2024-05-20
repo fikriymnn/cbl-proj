@@ -57,6 +57,7 @@ function App() {
       <Routes>
         <Route
           index
+
           element={
             <>
               <PageTitle title="PT CBL" />
