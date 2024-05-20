@@ -36,7 +36,7 @@ function KPIInput() {
                     </div>
 
                 </section>
-                <section className='overflow-x-scroll overflow-x-visible'>
+                <section className='overflow-x-scroll '>
                     <div className="flex bg-white mt-2 py-2  min-w-[500px]">
                         <div className='flex items-center justify-center w-15 '>
 
@@ -65,6 +65,82 @@ function KPIInput() {
                             </div>
 
                         </div>
+                    </div>
+                    <div className=" min-w-[500px]">
+                        <div className='flex bg-white mt-1 py-2'>
+
+                            <div className='flex items-center justify-center w-15 '>
+
+                                <p className=" text-xs font-medium ">1</p>
+                            </div>
+                            <div className="grid grid-cols-6  w-full gap-2">
+                                <div className="flex gap-1 items-center  ">
+                                    <p className="text-xs font-medium ">Pelaksanaan PM</p>
+
+                                </div>
+                                <div className="flex gap-1 items-center col-span-2 ">
+                                    <p className="text-xs font-medium ">Submit Pelaksanaan PM 1 Sesuai Checklist</p>
+
+                                </div>
+                                <div className="flex gap-1 items-center  ">
+                                    <p className="text-xs font-medium ">{`>=75%`}</p>
+
+                                </div>
+                                <div className="flex gap-1 items-center  ">
+                                    <p className="text-xs font-medium ">6</p>
+
+                                </div>
+                                <div className="flex gap-1 items-center  ">
+                                    <input
+                                        type=""
+                                        placeholder=""
+                                        name=""
+                                        id=""
+                                        className="w-10/12 px-2 rounded-sm py-1 bg-white border-[#D9D9D9] border"
+                                    />
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                    <div className=" min-w-[500px]">
+                        <div className='flex bg-white mt-1 py-2'>
+
+                            <div className='flex items-center justify-center w-15 '>
+
+                                <p className=" text-xs font-medium ">1</p>
+                            </div>
+                            <div className="grid grid-cols-6  w-full gap-2">
+                                <div className="flex gap-1 items-center  ">
+                                    <p className="text-xs font-medium ">Pelaksanaan PM</p>
+
+                                </div>
+                                <div className="flex gap-1 items-center col-span-2 ">
+                                    <p className="text-xs font-medium ">Submit Pelaksanaan PM 1 Sesuai Checklist</p>
+
+                                </div>
+                                <div className="flex gap-1 items-center  ">
+                                    <p className="text-xs font-medium ">{`>=75%`}</p>
+
+                                </div>
+                                <div className="flex gap-1 items-center  ">
+                                    <p className="text-xs font-medium ">6</p>
+
+                                </div>
+                                <div className="flex gap-1 items-center  ">
+                                    <input
+                                        type=""
+                                        placeholder=""
+                                        name=""
+                                        id=""
+                                        className="w-10/12 px-2 rounded-sm py-1 bg-white border-[#D9D9D9] border"
+                                    />
+                                </div>
+
+                            </div>
+                        </div>
+
                     </div>
                     <div className=" min-w-[500px]">
                         <div className='flex bg-white mt-1 py-2'>

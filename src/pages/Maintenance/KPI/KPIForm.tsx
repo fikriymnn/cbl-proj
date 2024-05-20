@@ -123,6 +123,46 @@ function KPIForm() {
 
                     </div>
                 </div>
+                <div className="flex bg-white mt-2 py-2 rounded-md">
+                    <div className='flex items-center justify-center w-15 '>
+
+                        <p className=" text-xs font-medium   ">1</p>
+                    </div>
+                    <div className="grid grid-cols-8  w-full gap-2">
+                        <div className="flex gap-1 items-center col-span-3 ">
+                            <p className="text-xs font-medium  ">Sergio Busquets</p>
+
+                        </div>
+                        <div className="flex gap-1 items-center col-span-3  ">
+                            <p className="text-xs font-medium  ">Supervisor</p>
+
+                        </div>
+                        <div className="flex gap-1 items-center justify-end px-5  col-span-2  ">
+                            <Link to='/maintenance/KPI/Form/Input' className='bg-primary md:px-10 px-5 font-semibold text-white text-xs py-1 rounded-sm'>INPUT</Link>
+                        </div>
+
+                    </div>
+                </div>
+                <div className="flex bg-white mt-2 py-2 rounded-md">
+                    <div className='flex items-center justify-center w-15 '>
+
+                        <p className=" text-xs font-medium   ">1</p>
+                    </div>
+                    <div className="grid grid-cols-8  w-full gap-2">
+                        <div className="flex gap-1 items-center col-span-3 ">
+                            <p className="text-xs font-medium  ">Sergio Busquets</p>
+
+                        </div>
+                        <div className="flex gap-1 items-center col-span-3  ">
+                            <p className="text-xs font-medium  ">Supervisor</p>
+
+                        </div>
+                        <div className="flex gap-1 items-center justify-end px-5  col-span-2  ">
+                            <Link to='/maintenance/KPI/Form/Input' className='bg-primary md:px-10 px-5 font-semibold text-white text-xs py-1 rounded-sm'>INPUT</Link>
+                        </div>
+
+                    </div>
+                </div>
             </section>
         </DefaultLayout>
     )
