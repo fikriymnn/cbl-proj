@@ -36,6 +36,7 @@ import MasterPM1TambahInspection from './pages/MasterData/MasterPM1TambahInspect
 import Preventive from './pages/inspection/os3/Preventive';
 import HistoriPage from './pages/inspection/histori/HistoriPage';
 import KPIForm from './pages/Maintenance/KPI/KPIForm';
+import KPIInput from './pages/Maintenance/KPI/KPIInput';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -97,6 +98,15 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <Pm3Form />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/KPI/Form/Input"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <KPIInput />
             </>
           }
         />
