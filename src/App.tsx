@@ -232,7 +232,6 @@ function App() {
               </ProtectedRoute>
             </>
           }
-
         />
         <Route
           path="/masterdata/machine"
@@ -279,7 +278,7 @@ function App() {
           }
         />
         <Route
-          path="/masterdata/masterpm1/pm1checklist"
+          path="/masterdata/masterpm1/pm1checklist/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -290,7 +289,7 @@ function App() {
           }
         />
         <Route
-          path="/masterdata/masterpm1/pm1checklist/addinspection"
+          path="/masterdata/masterpm1/pm1checklist/addinspection/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
