@@ -102,6 +102,26 @@ function KPIForm() {
 
                     </div>
                 </div>
+                <div className="flex bg-white mt-2 py-2">
+                    <div className='flex items-center'>
+
+                        <p className="px-5 text-xs font-bold ">1</p>
+                    </div>
+                    <div className="grid grid-cols-8  w-full gap-2">
+                        <div className="flex gap-1 items-center col-span-3">
+                            <p className="text-xs font-bold ">Sergio Busquets</p>
+
+                        </div>
+                        <div className="flex gap-1 items-center col-span-3">
+                            <p className="text-xs font-bold ">Supervisor</p>
+
+                        </div>
+                        <div className="flex gap-1 items-center col-span-2">
+                            <button className='bg-primary px-10 font-semibold text-white text-sm'>INPUT</button>
+                        </div>
+
+                    </div>
+                </div>
             </section>
         </DefaultLayout>
     )
