@@ -6,8 +6,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import Os3 from './Os3';
-import HistoriOS3 from './HistoriOs3';
+import Histori from './Histori';
+
 
 
 
@@ -48,7 +48,7 @@ function a11yProps(index: number) {
     };
 }
 
-export default function Os3FullWidthTabs() {
+export default function HistoriFullWidthTabs() {
     const theme = createTheme({
         palette: {
             primary: {
@@ -132,8 +132,9 @@ export default function Os3FullWidthTabs() {
                         className='bg-white text-[#00499F] font-semibold mb-2 '
 
                     >
-                        <Tab label="Temuan" {...a11yProps(0)} className='' />
-                        <Tab label="Histori" {...a11yProps(1)} />
+                        <Tab label="PM 1" {...a11yProps(0)} className='' />
+                        <Tab label="PM 2" {...a11yProps(1)} />
+                        <Tab label="PM 3" {...a11yProps(1)} />
                         {/* <Tab label="OS 3" {...a11yProps(2)} /> */}
                         {/* <Tab label={<Typography variant='h1'>OS 4</Typography>} /> */}
                     </Tabs>
@@ -146,12 +147,11 @@ export default function Os3FullWidthTabs() {
       > */}
             <TabPanel value={value} index={0} dir={theme.direction}>
 
-                <Os3 />
-
+                <Histori />
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
 
-                <HistoriOS3 />
+
 
 
 

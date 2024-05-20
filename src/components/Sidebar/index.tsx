@@ -329,22 +329,71 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                               Corrective (CM)
                             </NavLink>
                           </li>
+
                           <li>
-                            <NavLink
-                              to="/maintenance/KPI"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                            <SidebarLinkGroup
+                              activeCondition={
+                                pathname === '/inspection' || pathname.includes('maintenance')
                               }
                             >
-                              <svg className='fill-current' width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12.9817 20.5134C12.9852 20.5129 12.9885 20.5122 12.992 20.5118L12.9875 20.5073L12.9817 20.5134Z" fill="" />
-                                <path d="M18.7769 2.56451V4.27428H19.6619V6.83881H4.27446V4.27428H5.12103V2.56451H2.5647V22.2262H13.6778V20.5165H4.27446V8.54858H21.3717V2.56451H18.7769Z" fill="" />
-                                <path d="M8.54883 2.56454H15.3865V4.27431H8.54883V2.56454ZM5.9843 1.70978H7.69406V5.12931H5.9843V1.70978ZM16.2424 1.70978H17.9522V5.12931H16.2424V1.70978ZM14.5327 13.6777V22.2263H21.3715V13.6777L17.952 9.40337L14.5327 13.6777ZM19.1742 13.6681H16.7297L17.952 12.1402L19.1742 13.6681ZM16.2422 20.5165V15.3778H19.6617V20.5165H16.2422ZM5.12109 10.2495H13.6697V11.9592H5.12109V10.2495ZM5.12883 13.677H11.0899V15.3867H5.12883V13.677ZM5.12883 17.1045H11.1136V18.8142H5.12883V17.1045Z" fill="" />
-                              </svg>
+                              {(handleClick, open) => {
+                                return (
+                                  <React.Fragment>
+                                    <NavLink
+                                      to="#"
+                                      className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/maintenance/inspection' ||
+                                        pathname.includes('/maintenance/inspection')) &&
+                                        ' dark:bg-meta-4'
+                                        }`}
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        sidebarExpanded
+                                          ? handleClick()
+                                          : setSidebarExpanded(true);
+                                        navigate('/maintenance/KPI')
+                                      }}
+                                    >
 
-                              KPI
-                            </NavLink>
+                                      <img src={Inspect} alt="Logo" />
+                                      KPI
+                                      <svg
+                                        className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
+                                          }`}
+                                        width="7"
+                                        height="8"
+                                        viewBox="0 0 7 8"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z" fill="white" />
+                                      </svg>
+                                    </NavLink>
+                                    {/* <!-- Dropdown Menu Start --> */}
+
+
+                                    <div
+                                      className={`translate transform overflow-hidden ${!open && 'hidden'
+                                        }`}
+                                    >
+                                      <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
+                                        <li>
+                                          <NavLink
+                                            to="/maintenance/KPI/Form"
+                                            className={({ isActive }) =>
+                                              'group relative flex items-center gap-5  rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                              (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                            }
+                                          >
+                                            KPI Form
+                                          </NavLink>
+                                        </li>
+
+                                      </ul>
+                                    </div>
+                                    {/* <!-- Dropdown Menu End --> */}
+                                  </React.Fragment>
+                                );
+                              }}
+                            </SidebarLinkGroup>
                           </li>
                           <li>
                             <NavLink
@@ -364,21 +413,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                               Sparepart
                             </NavLink>
                           </li>
-                          {/* <li>
-                            <NavLink
-                              to="/maintenance/MAN"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                              }
-                            >
-                              <svg className='fill-current' width="17" height="21" viewBox="0 0 17 21" fill="" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M16.6667 6.25L10.4167 0H2.08333C1.5308 0 1.00089 0.219493 0.610194 0.610194C0.219493 1.00089 0 1.5308 0 2.08333V18.75C0 19.3025 0.219493 19.8324 0.610194 20.2231C1.00089 20.6138 1.5308 20.8333 2.08333 20.8333H14.5833C15.1359 20.8333 15.6658 20.6138 16.0565 20.2231C16.4472 19.8324 16.6667 19.3025 16.6667 18.75V6.25ZM5.20833 17.7083H3.125V8.33333H5.20833V17.7083ZM9.375 17.7083H7.29167V11.4583H9.375V17.7083ZM13.5417 17.7083H11.4583V14.5833H13.5417V17.7083ZM10.4167 7.29167H9.375V2.08333L14.5833 7.29167H10.4167Z" fill="" />
-                              </svg>
-
-                              MAN
-                            </NavLink>
-                          </li> */}
                           <li>
                             <SidebarLinkGroup
                               activeCondition={
@@ -487,6 +521,25 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                                             }
                                           >
                                             OS 3
+                                          </NavLink>
+                                        </li>
+
+                                      </ul>
+                                    </div>
+                                    <div
+                                      className={`translate transform overflow-hidden ${!open && 'hidden'
+                                        }`}
+                                    >
+                                      <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
+                                        <li>
+                                          <NavLink
+                                            to="/maintenance/inspection/histori"
+                                            className={({ isActive }) =>
+                                              'group relative flex items-center gap-5 pb-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                              (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                            }
+                                          >
+                                            Histori PM
                                           </NavLink>
                                         </li>
 
@@ -704,6 +757,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                             >
 
                               Analisis
+                            </NavLink>
+                          </li>
+
+                        </ul>
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-6">
+                          <li>
+                            <NavLink
+                              to="/masterdata/masterpm1"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                              }
+                            >
+
+                              PM1
                             </NavLink>
                           </li>
 

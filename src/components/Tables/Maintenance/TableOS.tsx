@@ -515,7 +515,7 @@ function TableOS() {
                                           </div>
 
                                           <div className="flex flex-col gap-2">
-                                            <div className="flex">
+                                            <div className="flex ">
                                               <p
                                                 className={
                                                   proses.skor_mtc <= 100 && proses.skor_mtc > 20
@@ -723,7 +723,7 @@ function TableOS() {
                           {data.kode_lkh} - {data.nama_kendala}{' '}
                         </p>
                       </div>
-                      <div className="flex gap-2 justify-center ">
+                      <div className="flex gap-2 justify-center items-center">
 
                         <p
                           className={

@@ -1,18 +1,9 @@
-import { MasterMachine } from '../../../types/master';
-// import BrandOne from '../../images/brand/brand-01.svg';
-// import BrandTwo from '../../images/brand/brand-02.svg';
-// import BrandThree from '../../images/brand/brand-03.svg';
-// import BrandFour from '../../images/brand/brand-04.svg';
-// import BrandFive from '../../images/brand/brand-05.svg';
+
 import { useEffect, useState } from 'react';
-import Modal from '../../../components/Modals/ModalDetailPopup';
-// import Gambar from '../../images/BACKGROUND.png';
-import Logo from '../../images/logo/logo-cbl 1.svg';
-import ModalPopupReq2 from '../../Modals/ModalPopupReq';
 import axios from 'axios';
 
 
-const TableMachine = () => {
+const TablePM1 = () => {
     const [isMobile, setIsMobile] = useState(false);
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
@@ -60,7 +51,7 @@ const TableMachine = () => {
                             className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
                         />
                         <button className=' bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1'>
-                            TAMBAH MACHINE
+                            TAMBAH
                         </button>
                     </div>
 
@@ -71,25 +62,23 @@ const TableMachine = () => {
 
 
                         >
-                            <div className="flex w-[80px] justify-center items-center gap-4 p-2.5 ">
+                            <div className="flex w-1/12 justify-center items-center gap-4 p-2.5 ">
 
                                 <p className="  hidden text-[14px] text-slate-600 font-semibold dark:text-white sm:block">
                                     No
                                 </p>
                             </div>
 
-                            <div className="flex items-center w-2/12 justify-center p-2.5 ">
-                                <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">Kode Mesin</p>
-                            </div>
-                            <div className="flex items-center text-[14px] w-2/12 justify-center p-2.5 pl-7">
+
+                            <div className="flex items-center text-[14px] w-2/12 justify-center p-2.5 ">
                                 <p className="text-slate-600 font-semibold text-center dark:text-white">Nama Mesin</p>
                             </div>
 
-                            <div className="flex items-center text-[14px] w-2/12 justify-center  p-2.5">
+                            <div className="flex items-center text-[14px] w-2/12 justify-start  p-2.5 pl-9">
                                 <p className="text-slate-600 font-semibold text-center">Tipe Mesin</p>
                             </div>
-                            <div className="flex items-center text-[14px] w-3/12 justify-start p-2.5 pl-14 ">
-                                <p className="text-slate-600 font-semibold text-center">Lokasi Mesin</p>
+                            <div className="flex items-center text-[14px] w-3/12 justify-start p-2.5 pl-8 ">
+
                             </div>
 
                         </div>
@@ -111,9 +100,7 @@ const TableMachine = () => {
                                                 </p>
                                             </div>
 
-                                            <div className="flex items-center w-2/12 justify-center p-2.5 pr-9">
-                                                <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">{data.kode_mesin}</p>
-                                            </div>
+
                                             <div className="flex items-center text-[14px] w-2/12 justify-center p-2.5 pr-9">
                                                 <p className="text-slate-600 font-semibold text-center dark:text-white">{data.nama_mesin}</p>
                                             </div>
@@ -127,13 +114,17 @@ const TableMachine = () => {
                                                 </p>
                                             </div>
                                             <div className="flex items-center text-[14px] w-2/12 justify-center p-2.5 pr-9">
-                                                <p className="text-slate-600 font-semibold text-center">{data.lokasi_mesin}</p>
-                                            </div>
 
+                                            </div>
+                                            <div className="flex items-center w-2/12 justify-center p-2.5 gap-2">
+                                            </div>
                                             <div className="flex items-center w-3/12 justify-center p-2.5 gap-2">
-                                                <button className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
-                                                    EDIT
-                                                </button>
+                                                <a href='/masterdata/masterpm1/pm1checklist'>
+                                                    <button className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                        DETAIL
+                                                    </button>
+                                                </a>
+
                                                 <button className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                     DELETE
                                                 </button>
@@ -169,7 +160,7 @@ const TableMachine = () => {
 
                         >
 
-                            <div className="flex items-center w-4/12 justify-end p-2.5 ">
+                            <div className="flex items-center w-4/12 justify-center p-2.5 ">
                                 <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">Kode</p>
                             </div>
                             <div className="flex items-center text-[14px] w-4/12 justify-start p-2.5 pl-4">
@@ -179,9 +170,7 @@ const TableMachine = () => {
                             <div className="flex items-center text-[14px] w-4/12 justify-start  p-2.5 ">
                                 <p className="text-slate-600 font-semibold text-center"> Tipe</p>
                             </div>
-                            <div className="flex items-center text-[14px] w-4/12 justify-start p-2.5  ">
-                                <p className="text-slate-600 font-semibold text-center"> Location</p>
-                            </div>
+
 
                         </div>
                         {masterMesin != null &&
@@ -201,7 +190,9 @@ const TableMachine = () => {
                                             <div className="flex items-end text-[14px] w-4/12 justify-end p-2.5 ">
                                                 <p className="text-slate-600 font-semibold text-center dark:text-white">{data.nama_mesin}</p>
                                             </div>
+                                            <div className="flex items-end text-[14px] w-1/12 justify-end p-2.5 ">
 
+                                            </div>
                                             <div className="flex items-center text-[14px] w-4/12 justify-center p-2.5 ">
                                                 <p
                                                     className={`text-[14px] font-semibold text-center uppercase ${data.bagian_mesin === 'printing'
@@ -209,9 +200,6 @@ const TableMachine = () => {
                                                             : data.bagian_mesin === 'pond' ? 'text-purple-500' : data.bagian_mesin === 'finishing' ? 'text-red-500' : 'bg-white text-white'}`}>
                                                     {data.bagian_mesin}
                                                 </p>
-                                            </div>
-                                            <div className="flex items-center text-[14px] w-4/12 justify-center p-2.5 ">
-                                                <p className="text-slate-600 font-semibold text-center">{data.lokasi_mesin}</p>
                                             </div>
 
 
@@ -235,4 +223,4 @@ const TableMachine = () => {
     );
 };
 
-export default TableMachine;
+export default TablePM1;

@@ -26,10 +26,16 @@ import Pm2Form from './pages/inspection/pm2/Pm2Form';
 import Pm3Form from './pages/inspection/pm3/Pm3Form';
 import Pm3 from './pages/inspection/pm3/Pm3';
 import OS3 from './pages/inspection/os3/Os3';
-import Preventive from './pages/inspection/os3/Preventive';
-import KPI from './pages/Maintenance/KPI';
+
+import KPI from './pages/Maintenance/KPI/KPI';
 import MasterSparepart from './pages/MasterData/MasterSparepart';
 import MasterAnalisis from './pages/MasterData/MasterAnalisis';
+import MasterPM1 from './pages/MasterData/MasterPM1';
+import MasterPM1Check from './pages/MasterData/MasterPM1Check';
+import MasterPM1TambahInspection from './pages/MasterData/MasterPM1TambahInspection';
+import Preventive from './pages/inspection/os3/Preventive';
+import HistoriPage from './pages/inspection/histori/HistoriPage';
+import KPIForm from './pages/Maintenance/KPI/KPIForm';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -150,6 +156,17 @@ function App() {
           }
         />
         <Route
+          path="/maintenance/inspection/histori"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoriPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/maintenance/KPI"
           element={
             <>
@@ -251,11 +268,53 @@ function App() {
           }
         />
         <Route
+          path="/masterdata/masterpm1"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM1 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterpm1/pm1checklist"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM1Check />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterpm1/pm1checklist/addinspection"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM1TambahInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/auth/login"
           element={
             <>
               <PageTitle title="PT CBL" />
               <Login />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/KPI/Form"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <KPIForm />
             </>
           }
         />
