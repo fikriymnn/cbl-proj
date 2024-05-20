@@ -1,14 +1,5 @@
-import { MasterMachine } from '../../../types/master';
-// import BrandOne from '../../images/brand/brand-01.svg';
-// import BrandTwo from '../../images/brand/brand-02.svg';
-// import BrandThree from '../../images/brand/brand-03.svg';
-// import BrandFour from '../../images/brand/brand-04.svg';
-// import BrandFive from '../../images/brand/brand-05.svg';
+
 import { useEffect, useState } from 'react';
-import Modal from '../../../components/Modals/ModalDetailPopup';
-// import Gambar from '../../images/BACKGROUND.png';
-import Logo from '../../images/logo/logo-cbl 1.svg';
-import ModalPopupReq2 from '../../Modals/ModalPopupReq';
 import axios from 'axios';
 
 
@@ -128,9 +119,12 @@ const TablePM1 = () => {
                                             <div className="flex items-center w-2/12 justify-center p-2.5 gap-2">
                                             </div>
                                             <div className="flex items-center w-3/12 justify-center p-2.5 gap-2">
-                                                <button className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
-                                                    EDIT
-                                                </button>
+                                                <a href='/masterdata/masterpm1/pm1checklist'>
+                                                    <button className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                        DETAIL
+                                                    </button>
+                                                </a>
+
                                                 <button className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                     DELETE
                                                 </button>

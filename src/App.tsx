@@ -31,6 +31,8 @@ import KPI from './pages/Maintenance/KPI';
 import MasterSparepart from './pages/MasterData/MasterSparepart';
 import MasterAnalisis from './pages/MasterData/MasterAnalisis';
 import MasterPM1 from './pages/MasterData/MasterPM1';
+import MasterPM1Check from './pages/MasterData/MasterPM1Check';
+import MasterPM1TambahInspection from './pages/MasterData/MasterPM1TambahInspection';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -258,6 +260,28 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterPM1 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterpm1/pm1checklist"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM1Check />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterpm1/pm1checklist/addinspection"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM1TambahInspection />
               </ProtectedRoute>
             </>
           }
