@@ -222,28 +222,34 @@ function TableOS() {
                 <>
                     <div className="flex bg-white mt-2 py-2">
                         <p className="px-5 text-xs font-bold ">No</p>
-                        <div className="grid md:grid-cols-7 grid-cols-6 w-full">
+                        <div className="grid lg:grid-cols-8  grid-cols-6 w-full">
+                            <div className="flex gap-2">
+                                <p className="text-xs font-bold ">Kode Tiket</p>
+                                <img className="w-2" src={Polygon6} alt="" />
+                            </div>
                             <div className="flex gap-2">
                                 <p className="text-xs font-bold ">Sumber</p>
                                 <img className="w-2" src={Polygon6} alt="" />
                             </div>
-                            <div className="flex gap-2">
-                                <p className="text-xs font-bold ">Mesin</p>
+                            <div className="flex gap-2 ">
+                                <p className="text-xs font-bold ">Nama Mesin</p>
                                 <img className="w-2" src={Polygon6} alt="" />
                             </div>
-                            <div className="flex gap-2 col-span-2">
-                                <p className="text-xs font-bold ">User/PIC</p>
+                            <div className="flex gap-2">
+                                <p className="text-xs font-bold ">Point Kendala</p>
                                 <img className="w-2" src={Polygon6} alt="" />
                             </div>
                             <div className="flex gap-2">
                                 <p className="text-xs font-bold ">Indikator</p>
                                 <img className="w-2" src={Polygon6} alt="" />
                             </div>
-                            <div className="flex gap-2">
-                                <p className="text-xs font-bold ">Inspection Point</p>
-                                <img className="w-2" src={Polygon6} alt="" />
-                            </div>
 
+                            <div className="flex gap-2">
+                                <p className="text-xs font-bold ">Status</p>
+                            </div>
+                            <div className="flex gap-2">
+                                <p className="text-xs font-bold ">Persentase</p>
+                            </div>
                             <div className="flex gap-2">
                                 <p className="text-xs font-bold ">Action</p>
                             </div>
@@ -292,7 +298,12 @@ function TableOS() {
                                                     >
                                                         {i + 1}
                                                     </div>
-                                                    <div className="grid md:grid-cols-7 grid-cols-6 w-full  ">
+                                                    <div className="grid md:grid-cols-8 grid-cols-6 w-full  ">
+                                                        <div className="flex flex-col md:gap-5 gap-1 ">
+                                                            <div className="my-auto ">
+                                                                <p className="text-sm font-light">JUN24-0001</p>
+                                                            </div>
+                                                        </div>
                                                         <div className="flex flex-col md:gap-5 gap-1 ">
                                                             <div className="my-auto ">
                                                                 <p className="text-sm font-light">PM2</p>
@@ -305,10 +316,10 @@ function TableOS() {
                                                                 </p>
                                                             </div>
                                                         </div>
-                                                        <div className="flex flex-col col-span-2 md:gap-5 gap-1 ">
+                                                        <div className="flex flex-col  md:gap-5 gap-1 ">
                                                             <div className="my-auto w-11/12">
                                                                 <p className="text-sm font-light">
-                                                                    {/* {data.kode_lkh} - {data.nama_kendala} */} Acep
+                                                                    {data.nama_kendala}
                                                                 </p>
                                                             </div>
                                                         </div>
@@ -326,12 +337,25 @@ function TableOS() {
                                                                 </p>
                                                             </div>
                                                         </div>
-                                                        <div className="flex items-center md:gap-5 gap-1  p-2">
+                                                        <div className="flex items-center md:gap-5 gap-1">
                                                             <div className="flex ">
                                                                 <p
-                                                                    className="text-sm px-2  font-light  rounded-xl flex justify-center"
+                                                                    className={
+                                                                        data.status_tiket == 'pending' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : data.status_tiket == 'open' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] ` : data.status_tiket == 'monitoring' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] ` : data.status_tiket == 'temporary' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  ` : ""
+                                                                    }
                                                                 >
-                                                                    Panel Listrik
+                                                                    {data.status_tiket}{' '}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center md:gap-5 gap-1 ">
+                                                            <div className="flex ">
+                                                                <p
+                                                                    className={
+                                                                        data.status_tiket == 'pending' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : data.status_tiket == 'open' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] ` : data.status_tiket == 'monitoring' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] ` : data.status_tiket == 'temporary' ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  ` : ""
+                                                                    }
+                                                                >
+                                                                    {data.skor_mtc}%
                                                                 </p>
                                                             </div>
                                                         </div>

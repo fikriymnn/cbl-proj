@@ -26,10 +26,12 @@ import Pm2Form from './pages/inspection/pm2/Pm2Form';
 import Pm3Form from './pages/inspection/pm3/Pm3Form';
 import Pm3 from './pages/inspection/pm3/Pm3';
 import OS3 from './pages/inspection/os3/Os3';
-import Preventive from './pages/inspection/os3/Preventive';
+
 import KPI from './pages/Maintenance/KPI';
 import MasterSparepart from './pages/MasterData/MasterSparepart';
 import MasterAnalisis from './pages/MasterData/MasterAnalisis';
+import HistoriPage from './pages/inspection/histori/HistoriPage';
+import Preventive from './pages/inspection/os3/Preventive';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -145,6 +147,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <Preventive />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/inspection/histori"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoriPage />
               </ProtectedRoute>
             </>
           }

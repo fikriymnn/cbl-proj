@@ -272,9 +272,7 @@ const TableIncomingMaintenance = () => {
 
                     return (
                       <div
-                        className={`flex ${key === tiket.length - 1
-                          ? ''
-                          : 'border-t-8  border-[#D8EAFF] dark:border-strokedark '
+                        className={`flex ${'border-t-8  border-[#D8EAFF] dark:border-strokedark '
                           }`}
                         key={key}
                       >
