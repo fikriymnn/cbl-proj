@@ -76,7 +76,7 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/inspection/pm_1_form"
+          path="/maintenance/inspection/pm_1_form/:id"
           element={
             <>
               <PageTitle title="PT CBL" />

@@ -1,16 +1,41 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import DefaultLayout from '../../../layout/DefaultLayout'
 import Ceklis from '../../../images/icon/ceklis.svg'
 import Polygon from '../../../images/icon/Polygon.svg'
 import X from '../../../images/icon/x.svg'
 import Strip from '../../../images/icon/strip.svg'
 import SelectGroupTwo from '../../../components/Forms/SelectGroup/SelectGroupTwo'
+import axios from 'axios'
+import { useParams } from 'react-router-dom'
+import ModalPM1TambahInspection from '../../../components/Modals/ModalPMTambahInspection'
 
 
 
 function Pm1Form() {
+    const { id } = useParams();
 
+    const [pm1, setPm1] = useState<any>();
+    useEffect(() => {
+        getPM1();
+    }, []);
+    async function getPM1() {
+        const url = `${import.meta.env.VITE_API_LINK}/pm1/${id}`;
+        try {
+            const res = await axios.get(url, {
+                withCredentials: true,
+            });
 
+            setPm1(res.data);
+            console.log(res.data);
+        } catch (error: any) {
+            console.log(error.data.msg);
+        }
+    }
+
+    const [showModalADD, setShowModalADD] = useState(false);
+
+    const openModalADD = () => setShowModalADD(true);
+    const closeModalADD = () => setShowModalADD(false);
     return (
         <DefaultLayout>
             <div className='w-full bg-white'>
@@ -21,18 +46,18 @@ function Pm1Form() {
                         <div className='flex flex-col md:w-52 w-35'>
                             <div className='grid grid-cols-2 justify-between md:gap-3 gap-1 '>
                                 <p className='md:text-[14px] text-[9px] font-semibold '> Nama Mesin </p>
-                                <p className='md:text-[14px] text-[9px] font-semibold '>: sodolk</p>
+                                <p className='md:text-[14px] text-[9px] font-semibold '>: {pm1 != null && pm1.nama_mesin}</p>
 
                             </div>
                             <div className='grid grid-cols-2 justify-between md:gap-3 gap-1'>
                                 <p className='md:text-[14px] text-[9px] font-semibold'> Nomor Mesin </p>
-                                <p className='md:text-[14px] text-[9px] font-semibold'>: 12344</p>
+                                <p className='md:text-[14px] text-[9px] font-semibold'>: {pm1 != null && pm1.mesin.kode_mesin}</p>
 
                             </div>
 
                             <div className='grid grid-cols-2 justify-between md:gap-3 gap-1'>
                                 <p className='md:text-[14px] text-[9px] font-semibold'> tanggal </p>
-                                <p className='md:text-[14px] text-[9px] font-semibold'>: 01 April 2024</p>
+                                <p className='md:text-[14px] text-[9px] font-semibold'>: {pm1 != null && pm1.tgl}</p>
 
                             </div>
 
@@ -92,227 +117,102 @@ function Pm1Form() {
                                 <p className='md:text-[14px] text-[9px] font-semibold'>Tools</p>
                             </div>
                         </section>
-                        <section className=' border-b-8 border-[#D8EAFF]'>
-                            <div className='flex p-4 border-b-2 border-[#6D6C6C] '>
+                        {pm1 != null &&
+                            pm1.inspection_point_pm1s.map((data: any, i: any) => {
+                                return (
+                                    <>
+                                        <section className=' border-b-8 border-[#D8EAFF]'>
+                                            <div className='flex p-4 border-b-2 border-[#6D6C6C] '>
 
-                                <div className='w-1/12'>
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>1</p>
-                                </div>
-                                <div className='w-11/12 grid grid-cols-5 gap-10'>
+                                                <div className='w-1/12'>
+                                                    <p className='md:text-[14px] text-[9px] font-semibold'>{i + 1}</p>
+                                                </div>
+                                                <div className='flex w-full gap-10'>
 
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>Main Motor / Suction Motor(15KW) </p>
-                                    <div className='flex flex-col gap-y-10'>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa kebersihan sirip motor dan cover fan</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa suhu motor</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa tegangan motor</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa arus motor</p>
-                                    </div>
-                                    <div className='flex flex-col gap-y-10'>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa kebersihan sirip motor dan cover fan</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa suhu motor</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa tegangan motor</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa arus motor</p>
-                                    </div>
-                                    <div className='flex flex-col gap-y-10'>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Visual</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Dimensional</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Dimensional</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Dimensional</p>
+                                                    <div className='flex w-2/12'>
+                                                        <p className='md:text-[14px] text-[9px] font-semibold'>{data.inspection_point} </p>
+                                                    </div>
+                                                    <div className='grid grid-cols-4 w-10/12 gap-3 pl-3'>
+                                                        {data.inspection_task_pm1s.map((task: any, ii: any) => {
+                                                            return (
+                                                                <>
+                                                                    <div className='flex flex-col gap-y-10'>
+                                                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>{task.task}</p>
 
-                                    </div>
-                                    <div className='flex flex-col gap-y-10'>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Air compressor / Vacum Cleaner</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Tremor Gun</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa tegangan motor</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa arus motor</p>
-                                    </div>
+                                                                    </div>
+                                                                    <div className='flex flex-col gap-y-10 pl-2'>
+                                                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>{task.acceptance_criteria}</p>
 
+                                                                    </div>
+                                                                    <div className='flex flex-col gap-y-10 pl-4'>
+                                                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>{task.method}</p>
 
-                                </div>
-                            </div>
-                            <div className='flex'>
+                                                                    </div>
+                                                                    <div className='flex flex-col gap-y-10 pl-5'>
+                                                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>{task.tools}</p>
+                                                                    </div>
+                                                                </>
+                                                            )
+                                                        }
 
-                                <div className='p-4 flex flex-col'>
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>Date: 01 April 2024</p>
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>Result:</p>
-                                    <div className=' flex mt-3'>
+                                                        )}
+                                                    </div>
 
 
-                                        <SelectGroupTwo />
-                                    </div>
-                                </div>
-                                <div className='p-4 flex flex-col '>
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>Upload Foto:</p>
-                                    <br />
-                                    <div className=' flex mt-3 '>
+                                                </div>
+                                            </div>
+                                            <div className='flex'>
+
+                                                <div className='p-4 flex flex-col'>
+                                                    <p className='md:text-[14px] text-[9px] font-semibold'>Date: {pm1 != null && pm1.tgl}</p>
+                                                    <p className='md:text-[14px] text-[9px] font-semibold'>Result:</p>
+                                                    <div className=' flex mt-3'>
+
+                                                        <SelectGroupTwo />
+                                                    </div>
+                                                </div>
+                                                <div className='p-4 flex flex-col '>
+                                                    <p className='md:text-[14px] text-[9px] font-semibold'>Upload Foto:</p>
+                                                    <br />
+                                                    <div className=' flex mt-3 '>
 
 
-                                        <input type="file" name="" id="" className='w-60' />
-                                    </div>
-                                </div>
-                                <div className='p-4 flex flex-col'>
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>Catatan:</p>
-                                    <br />
+                                                        <input type="file" name="" id="" className='w-60' />
+                                                    </div>
+                                                </div>
+                                                <div className='p-4 flex flex-col'>
+                                                    <p className='md:text-[14px] text-[9px] font-semibold'>Catatan:</p>
+                                                    <br />
 
-                                    <div className=' flex mt-3'>
-
-
-                                        <textarea name="" id="" rows={3} cols={90} className=' border-2 border-[#D9D9D9] rounded-sm resize-none p-2 w-full'></textarea>
-                                    </div>
-                                </div>
+                                                    <div className=' flex mt-3'>
 
 
-                            </div>
-                        </section>
-                        <section className=' border-b-8 border-[#D8EAFF]'>
-                            <div className='flex p-4 border-b-2 border-[#6D6C6C] '>
-
-                                <div className='w-1/12'>
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>2</p>
-                                </div>
-                                <div className='w-11/12 grid grid-cols-5 gap-10'>
-
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>Main Motor / Suction Motor(15KW) </p>
-                                    <div className='flex flex-col gap-y-10'>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa kebersihan sirip motor dan cover fan</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa suhu motor</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa tegangan motor</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa arus motor</p>
-                                    </div>
-                                    <div className='flex flex-col gap-y-10'>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa kebersihan sirip motor dan cover fan</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa suhu motor</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa tegangan motor</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa arus motor</p>
-                                    </div>
-                                    <div className='flex flex-col gap-y-10'>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Visual</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Dimensional</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Dimensional</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Dimensional</p>
-
-                                    </div>
-                                    <div className='flex flex-col gap-y-10'>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Air compressor / Vacum Cleaner</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Tremor Gun</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa tegangan motor</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa arus motor</p>
-                                    </div>
+                                                        <textarea name="" id="" rows={3} cols={90} className=' border-2 border-[#D9D9D9] rounded-sm resize-none p-2 w-full'></textarea>
+                                                    </div>
+                                                </div>
 
 
-                                </div>
-                            </div>
-                            <div className='flex'>
+                                            </div>
+                                        </section>
 
-                                <div className='p-4 flex flex-col'>
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>Date: 01 April 2024</p>
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>Result:</p>
-                                    <div className=' flex mt-3'>
+                                    </>
+                                )
+                            })}
 
-
-                                        <SelectGroupTwo />
-                                    </div>
-                                </div>
-                                <div className='p-4 flex flex-col '>
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>Upload Foto:</p>
-                                    <br />
-                                    <div className=' flex mt-3 '>
-
-
-                                        <input type="file" name="" id="" className='w-60' />
-                                    </div>
-                                </div>
-                                <div className='p-4 flex flex-col'>
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>Catatan:</p>
-                                    <br />
-
-                                    <div className=' flex mt-3'>
-
-
-                                        <textarea name="" id="" rows={3} cols={90} className=' border-2 border-[#D9D9D9] rounded-sm resize-none p-2 w-full'></textarea>
-                                    </div>
-                                </div>
-
-
-                            </div>
-                        </section>
-                        <section className=' border-b-8 border-[#D8EAFF]'>
-                            <div className='flex p-4 border-b-2 border-[#6D6C6C] '>
-
-                                <div className='w-1/12'>
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>3</p>
-                                </div>
-                                <div className='w-11/12 grid grid-cols-5 gap-10'>
-
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>Main Motor / Suction Motor(15KW) </p>
-                                    <div className='flex flex-col gap-y-10'>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa kebersihan sirip motor dan cover fan</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa suhu motor</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa tegangan motor</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa arus motor</p>
-                                    </div>
-                                    <div className='flex flex-col gap-y-10'>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa kebersihan sirip motor dan cover fan</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa suhu motor</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa tegangan motor</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa arus motor</p>
-                                    </div>
-                                    <div className='flex flex-col gap-y-10'>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Visual</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Dimensional</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Dimensional</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Dimensional</p>
-
-                                    </div>
-                                    <div className='flex flex-col gap-y-10'>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Air compressor / Vacum Cleaner</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Tremor Gun</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa tegangan motor</p>
-                                        <p className='md:text-[14px] text-[9px] font-semibold h-10'>Periksa arus motor</p>
-                                    </div>
-
-
-                                </div>
-                            </div>
-                            <div className='flex'>
-
-                                <div className='p-4 flex flex-col'>
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>Date: 01 April 2024</p>
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>Result:</p>
-                                    <div className=' flex mt-3'>
-
-
-                                        <SelectGroupTwo />
-                                    </div>
-                                </div>
-                                <div className='p-4 flex flex-col '>
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>Upload Foto:</p>
-                                    <br />
-                                    <div className=' flex mt-3 '>
-
-
-                                        <input type="file" name="" id="" className='w-60' />
-                                    </div>
-                                </div>
-                                <div className='p-4 flex flex-col'>
-                                    <p className='md:text-[14px] text-[9px] font-semibold'>Catatan:</p>
-                                    <br />
-
-                                    <div className=' flex mt-3'>
-
-
-                                        <textarea name="" id="" rows={3} cols={90} className=' border-2 border-[#D9D9D9] rounded-sm resize-none p-2 w-full'></textarea>
-                                    </div>
-                                </div>
-
-
-                            </div>
-                        </section>
                         <section className=' border-b-8 border-[#D8EAFF] flex flex-col'>
                             <div>
-
-                                <button className='py-2 px-20 mx-5 mt-5 bg-primary text-white rounded-md'>+</button>
+                                <button onClick={openModalADD} className='py-2 px-20 mx-5 mt-5 bg-primary text-white rounded-md'>+</button>
                             </div>
+                            {showModalADD && (
+                                <ModalPM1TambahInspection
+                                    children={undefined}
+                                    onFinish={() => getPM1()}
+                                    isOpen={showModalADD}
+                                    onClose={closeModalADD}
+                                    idTicket={pm1.id}
+                                />
+                            )}
+
                             <p className='text-sm font-semibold p-5'>Catatan Keseluruhan:</p>
                             <textarea
 
