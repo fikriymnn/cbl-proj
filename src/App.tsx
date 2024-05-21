@@ -37,6 +37,8 @@ import Preventive from './pages/inspection/os3/Preventive';
 import HistoriPage from './pages/inspection/histori/HistoriPage';
 import KPIForm from './pages/Maintenance/KPI/KPIForm';
 import KPIInput from './pages/Maintenance/KPI/KPIInput';
+import MasterKPI from './pages/MasterData/MasterKPI';
+import MasterKPIForm from './pages/MasterData/MasterKPIForm';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -299,6 +301,7 @@ function App() {
             </>
           }
         />
+
         <Route
           path="/masterdata/masterpm1/pm1checklist/addinspection"
           element={
@@ -320,7 +323,29 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/KPI/Form"
+          path="/masterdata/masterkpi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterKPI />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterkpi/form"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterKPIForm />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/KPIForm"
           element={
             <>
               <PageTitle title="PT CBL" />
