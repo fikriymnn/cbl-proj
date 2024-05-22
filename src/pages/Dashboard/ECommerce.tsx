@@ -7,13 +7,52 @@ import Maintenance from '../../images/icon/maintenance.svg';
 import TableOne from '../../components/Tables/Maintenance/TableIncomingMaintenance';
 import HorizontalBars from '../../components/Charts/HorizontalBars';
 import BarChart from '../UiElements/BarChart';
+import axios from 'axios';
 
 const ECommerce: React.FC = () => {
+  async function submitPointPm1() {
+    const url = `${import.meta.env.VITE_API_LINK}/ticket`;
+
+    try {
+      const res = await axios.post(
+        url,
+        {
+          kode_lkh: '3.1.1',
+          id_jo: 75,
+          id_kendala: 261,
+          no_jo: 'JO-24-00015',
+          nama_produk: 'IB JAGO BAR 12X8G P0006178',
+          no_io: '4302-2A',
+          no_so: 'SO-00019/CBL/0224',
+          nama_customer: 'PT.CERES',
+          qty: 108000,
+          qty_druk: 82620,
+          spek: '3.00/0.00 + WB',
+          proses: 'Cetak 1',
+          bagian: 'Cetak',
+          mesin: 'R700',
+          operator: 'Daffa',
+          tgl: '2024-04-17T00:08:16.000Z',
+          jenis_kendala: 'mesin',
+          nama_kendala: 'perbaikan hisapan angin lemah',
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      alert(res.data.msg);
+    } catch (error: any) {
+      console.log(error);
+      //alert(error.data.msg);
+    }
+  }
   return (
     <DefaultLayout>
       <p className="font-semibold md:text-[28px] text-[20px] text-primary mb-[18px] ">
         Overview Dashboard
       </p>
+      <button onClick={submitPointPm1}>Tesssss</button>
       <div className="flex gap-3 flex-wrap">
         <CardDataStats title="Total views" total="$3.456K" rate="0.43%" levelUp>
           <div className="flex gap-3">
