@@ -28,7 +28,7 @@ const ECommerce: React.FC = () => {
         spek: '3.00/0.00 + WB',
         proses: 'Cetak 1',
         bagian: 'Cetak',
-        mesin: 'R700',
+        mesin: 'ITOH',
         operator: 'Daffa',
         tgl: '2024-04-17T00:08:16.000Z',
         jenis_kendala: 'mesin',
