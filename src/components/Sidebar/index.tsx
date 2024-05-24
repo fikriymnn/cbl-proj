@@ -392,7 +392,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                           </li>
                           <li>
                             <NavLink
-                              to="/maintenance/material"
+                              to="/maintenance/sparepart"
                               className={({ isActive }) =>
                                 'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                 (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')

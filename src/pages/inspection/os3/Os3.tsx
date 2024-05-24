@@ -10,6 +10,7 @@ import ModalStockCheck1 from '../../../components/Modals/ModalStockCheck1';
 import ModalDetail from '../../../components/Modals/ModalDetail';
 import DefaultLayout from '../../../layout/DefaultLayout';
 import X from '../../../images/icon/x.svg'
+import ModalDetailOS3 from '../../../components/Modals/ModalDetailOS3';
 
 // import moment from 'moment';
 
@@ -558,8 +559,7 @@ function TableOS3() {
                                                                                         </button>
                                                                                     </div>
                                                                                     {showModalDetail[ii] && (
-                                                                                        <ModalDetail
-                                                                                            children={undefined}
+                                                                                        <ModalDetailOS3 children={undefined}
                                                                                             isOpen={showModalDetail[ii]}
                                                                                             onClose={() => closeModalDetail(ii)}
                                                                                             kendala={data.nama_kendala}
@@ -577,8 +577,28 @@ function TableOS3() {
                                                                                             tipeMaintenance={proses.cara_perbaikan}
                                                                                             catatan={
                                                                                                 proses.note_mtc
-                                                                                            }
-                                                                                        ></ModalDetail>
+                                                                                            }></ModalDetailOS3>
+                                                                                        // <ModalDetail
+                                                                                        //     children={undefined}
+                                                                                        //     isOpen={showModalDetail[ii]}
+                                                                                        //     onClose={() => closeModalDetail(ii)}
+                                                                                        //     kendala={data.nama_kendala}
+                                                                                        //     machineName={data.mesin}
+                                                                                        //     tgl={'12/12/24'}
+                                                                                        //     jam={'17.00'}
+                                                                                        //     namaPemeriksa={
+                                                                                        //         proses.user_eksekutor.nama
+                                                                                        //     }
+                                                                                        //     no={'1'}
+                                                                                        //     idTiket={data.id}
+                                                                                        //     kodeLkh={data.kode_lkh}
+                                                                                        //     analisisPenyebab={`${proses.kode_analisis_mtc}` + ' - ' + `${proses.nama_analisis_mtc}`}
+                                                                                        //     kebutuhanSparepart={'undefined'}
+                                                                                        //     tipeMaintenance={proses.cara_perbaikan}
+                                                                                        //     catatan={
+                                                                                        //         proses.note_mtc
+                                                                                        //     }
+                                                                                        // ></ModalDetail>
                                                                                     )}
                                                                                 </>
                                                                             );

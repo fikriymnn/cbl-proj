@@ -43,6 +43,7 @@ import MasterPM2Check from './pages/MasterData/MasterPM2Check';
 import MasterPM2TambahInspection from './pages/MasterData/MasterPM2TambahInspection';
 import MasterKPI from './pages/MasterData/MasterKPI';
 import MasterKPIForm from './pages/MasterData/MasterKPIForm';
+import Sparepart from './pages/sparepart/sparepart';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -206,12 +207,12 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/material"
+          path="/maintenance/sparepart"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <Material />
+                <Sparepart />
               </ProtectedRoute>
             </>
           }
