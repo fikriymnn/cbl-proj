@@ -776,7 +776,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                           </li>
 
                         </ul>
-                        {/* <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-6">
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-6">
                           <li>
                             <NavLink
                               to="/masterdata/masterpm2"
@@ -790,7 +790,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                             </NavLink>
                           </li>
 
-                        </ul> */}
+                        </ul>
                       </div>
                       {/* <!-- Dropdown Menu End --> */}
                     </React.Fragment>

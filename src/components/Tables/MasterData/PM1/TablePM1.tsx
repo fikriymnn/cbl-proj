@@ -78,11 +78,10 @@ const TablePM1 = () => {
                 return (
                   <>
                     <div
-                      className={`flex ${
-                        i === masterMesin.length - 1
+                      className={`flex ${i === masterMesin.length - 1
                           ? ''
                           : 'border-b border-stroke dark:border-strokedark '
-                      }`}
+                        }`}
                       key={i}
                     >
                       <div className="flex justify-center items-center w-1/12   gap-3 p-2.5">
@@ -99,17 +98,16 @@ const TablePM1 = () => {
 
                       <div className="flex items-center text-[14px] w-2/12 justify-center p-2.5 pr-9">
                         <p
-                          className={`text-[14px] font-semibold text-center uppercase ${
-                            data.bagian_mesin === 'printing'
+                          className={`text-[14px] font-semibold text-center uppercase ${data.bagian_mesin === 'printing'
                               ? 'text-green-500'
                               : data.bagian_mesin === 'water base / coating'
-                              ? 'text-yellow-500'
-                              : data.bagian_mesin === 'pond'
-                              ? 'text-purple-500'
-                              : data.bagian_mesin === 'finishing'
-                              ? 'text-red-500'
-                              : 'bg-white text-white'
-                          }`}
+                                ? 'text-yellow-500'
+                                : data.bagian_mesin === 'pond'
+                                  ? 'text-purple-500'
+                                  : data.bagian_mesin === 'finishing'
+                                    ? 'text-red-500'
+                                    : 'bg-white text-white'
+                            }`}
                         >
                           {data.bagian_mesin}
                         </p>
@@ -176,9 +174,8 @@ const TablePM1 = () => {
                 return (
                   <>
                     <div
-                      className={`flex ${
-                        i === masterMesin.length - 1 ? 'w-full' : ' px-2 w-full'
-                      }`}
+                      className={`flex ${i === masterMesin.length - 1 ? 'w-full' : ' px-2 w-full'
+                        }`}
                       key={i}
                     >
                       <div className="flex items-center w-2/12 justify-start p-2.5">
@@ -194,29 +191,29 @@ const TablePM1 = () => {
                       <div className="flex items-end text-[14px] w-1/12 justify-end p-2.5 "></div>
                       <div className="flex items-center text-[14px] w-4/12 justify-center p-2.5 ">
                         <p
-                          className={`text-[14px] font-semibold text-center uppercase ${
-                            data.bagian_mesin === 'printing'
+                          className={`text-[14px] font-semibold text-center uppercase ${data.bagian_mesin === 'printing'
                               ? 'text-green-500'
                               : data.bagian_mesin === 'water base / coating'
-                              ? 'text-yellow-500'
-                              : data.bagian_mesin === 'pond'
-                              ? 'text-purple-500'
-                              : data.bagian_mesin === 'finishing'
-                              ? 'text-red-500'
-                              : 'bg-white text-white'
-                          }`}
+                                ? 'text-yellow-500'
+                                : data.bagian_mesin === 'pond'
+                                  ? 'text-purple-500'
+                                  : data.bagian_mesin === 'finishing'
+                                    ? 'text-red-500'
+                                    : 'bg-white text-white'
+                            }`}
                         >
                           {data.bagian_mesin}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-start w-full justify-start p-2.5 gap-2 border-b border-stroke dark:border-strokedark">
-                      <button className="bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1">
-                        EDIT
-                      </button>
-                      <button className="bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1">
-                        DELETE
-                      </button>
+                      <a
+                        href={`/masterdata/masterpm1/pm1checklist/${data.id}`}
+                      >
+                        <button className="bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1">
+                          DETAIL
+                        </button>
+                      </a>
                     </div>
                   </>
                 );
