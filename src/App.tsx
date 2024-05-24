@@ -37,6 +37,10 @@ import Preventive from './pages/inspection/os3/Preventive';
 import HistoriPage from './pages/inspection/histori/HistoriPage';
 import KPIForm from './pages/Maintenance/KPI/KPIForm';
 import KPIInput from './pages/Maintenance/KPI/KPIInput';
+import MasterPM2 from './pages/MasterData/MasterPM2';
+import PM2Checklist from './components/Tables/MasterData/PM2/PM2Checklist';
+import MasterPM2Check from './pages/MasterData/MasterPM2Check';
+import MasterPM2TambahInspection from './pages/MasterData/MasterPM2TambahInspection';
 import MasterKPI from './pages/MasterData/MasterKPI';
 import MasterKPIForm from './pages/MasterData/MasterKPIForm';
 
@@ -59,6 +63,7 @@ function App() {
       <Routes>
         <Route
           index
+
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -77,7 +82,7 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/inspection/pm_1_form"
+          path="/maintenance/inspection/pm_1_form/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -244,7 +249,6 @@ function App() {
               </ProtectedRoute>
             </>
           }
-
         />
         <Route
           path="/masterdata/machine"
@@ -291,7 +295,19 @@ function App() {
           }
         />
         <Route
-          path="/masterdata/masterpm1/pm1checklist"
+          path="/masterdata/masterpm2"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM2 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/masterdata/masterpm1/pm1checklist/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -303,12 +319,34 @@ function App() {
         />
 
         <Route
-          path="/masterdata/masterpm1/pm1checklist/addinspection"
+          path="/masterdata/masterpm2/pm2checklist/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM2Check />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterpm1/pm1checklist/addinspection/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterPM1TambahInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterpm2/pm2checklist/addinspection/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM2TambahInspection />
               </ProtectedRoute>
             </>
           }

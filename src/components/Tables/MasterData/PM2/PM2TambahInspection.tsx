@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 
-const PM1TambahInspection = () => {
+const PM2TambahInspection = () => {
     const { id } = useParams();
     const [isMobile, setIsMobile] = useState(false);
     const handleResize = () => {
@@ -114,7 +114,7 @@ const PM1TambahInspection = () => {
     };
 
     async function submitPointPm1() {
-        const url = `${import.meta.env.VITE_API_LINK}/master/pointPm1`;
+        const url = `${import.meta.env.VITE_API_LINK}/master/pointPm2`;
 
         try {
             const res = await axios.post(
@@ -337,4 +337,4 @@ const PM1TambahInspection = () => {
     );
 };
 
-export default PM1TambahInspection;
+export default PM2TambahInspection;
