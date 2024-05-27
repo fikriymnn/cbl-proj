@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react'
 import DefaultLayout from '../../../layout/DefaultLayout'
 import ModalPopupBgn from '../../../components/Modals/ModalPopupBgn';
 import ModalPopupReq from '../../../components/Modals/ModalDetailPopupReq';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
+import ModalPM1Confirm from '../../../components/Modals/ModalPM1Confirm';
 
 function Pm1() {
     const [isMobile, setIsMobile] = useState(false);
@@ -14,7 +15,7 @@ function Pm1() {
     const year = today.getFullYear();
     const date = today.getDate();
     const currentDate = month + "/" + date + "/" + year;
-
+    const navigate = useNavigate();
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
     };
@@ -30,13 +31,12 @@ function Pm1() {
         };
     }, []);
 
-
-
     const [showModal4, setShowModal4] = useState(false);
 
     const openModal4 = () => setShowModal4(true);
 
     const [pm1, setPm1] = useState<any>();
+
     useEffect(() => {
         getPM1();
     }, []);
@@ -56,6 +56,25 @@ function Pm1() {
             console.log(error.data.msg);
         }
     }
+
+    async function inspectPM1(id: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/pm1/response/${id}`;
+        try {
+            const res = await axios.get(url, {
+
+                withCredentials: true,
+            });
+
+            alert("succes")
+            console.log(res.data);
+            navigate(`/maintenance/inspection/pm_1_form/${id}`)
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+
+
+
     async function createPM1() {
         const url = `${import.meta.env.VITE_API_LINK}/pm1/create`;
         try {
@@ -70,6 +89,43 @@ function Pm1() {
         }
     }
 
+    const [showConfirm, setShowConfirm] = useState<any>([]);
+
+    const openConfirm = (i: any) => {
+        const onchangeVal: any = [...showConfirm];
+        onchangeVal[i] = true
+        setShowConfirm(onchangeVal);
+    };
+
+    const closeConfirm = (i: any) => {
+        const onchangeVal: any = [...showConfirm];
+        onchangeVal[i] = false;
+        setShowConfirm(onchangeVal);
+    };
+
+    function convertDatetimeToDate(datetime: any) {
+        const dateObject = new Date(datetime);
+        const day = dateObject
+            .getDate()
+            .toString()
+            .padStart(2, '0'); // Ensure two-digit day
+        const month = (dateObject.getMonth() + 1)
+            .toString()
+            .padStart(2, '0'); // Adjust for zero-based month
+        const year = dateObject.getFullYear();
+        const hours = dateObject
+            .getHours()
+            .toString()
+            .padStart(2, '0');
+        const minutes = dateObject
+            .getMinutes()
+            .toString()
+            .padStart(2, '0');
+
+        return `${year}/${month}/${day} `; // Example format (YYYY-MM-DD)
+    }
+
+    const tanggal = convertDatetimeToDate(new Date());
     return (
         <DefaultLayout>
             <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>Maintenance &gt; Inspection &gt; PM 1</p>
@@ -77,16 +133,16 @@ function Pm1() {
                 <main className='overflow-x-scroll'>
                     <div className='min-w-[700px] bg-white rounded-xl'>
 
-                        <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>01 April 2024</p>
-                        {
+                        <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>{tanggal}</p>
+                        {pm1 == null ?
 
-                            pm1 == null ? <button onClick={createPM1}
+                            <button onClick={createPM1}
                                 className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center }`} // Dynamic class assignment
                             >
-                                CREATE PM1
+                                TAMBAH PM1
 
-                            </button>
-                                : null
+                            </button> : null
+
                         }
 
                         <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
@@ -96,25 +152,17 @@ function Pm1() {
                             </div>
                             <section className='grid grid-cols-6 w-full py-4  font-semibold text-[14px]'>
 
-
                                 <p className=''>Nama Mesin</p>
-
 
                                 <p>Inspector</p>
 
-
                                 <p>Leader</p>
-
 
                                 <p>Supervisor</p>
 
-
                                 <p>KA BAG MTC</p>
 
-
                                 <div className='w-[125px]'>{""}</div>
-
-
 
                             </section>
                         </div>
@@ -153,16 +201,41 @@ function Pm1() {
                                                 </div>
 
                                                 <div>
+                                                    {data.status == 'incoming' ? (
+                                                        <>
+                                                            <button onClick={() => openConfirm(i)} className='uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center'>
+                                                                INSPECT
+                                                            </button>
+                                                            {showConfirm[i] == true && (
+                                                                <ModalPM1Confirm
 
-                                                    <>
-                                                        <Link to={`/maintenance/inspection/pm_1_form/${data.id}`}
-                                                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
-                                                        >
-                                                            INSPECT
+                                                                    isOpen={showConfirm[i]}
+                                                                    onClose={() => closeConfirm(i)}
+                                                                    id={undefined}
+                                                                >
+                                                                    <button onClick={() => inspectPM1(data.id)}
+                                                                        className={`uppercase w-full py-2 rounded-md inline-flex  items-center text-sm  bg-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                                    >
+                                                                        INSPECT
 
-                                                        </Link>
+                                                                    </button>
+                                                                </ModalPM1Confirm>
+                                                            )
 
-                                                    </>
+                                                            }
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <Link to={`/maintenance/inspection/pm_1_form/${data.id}`}
+                                                                className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                            >
+                                                                INSPECT
+
+                                                            </Link>
+                                                        </>
+                                                    )
+                                                    }
+
 
 
 

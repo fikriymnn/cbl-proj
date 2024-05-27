@@ -515,7 +515,7 @@ const TableIncomingMaintenance = () => {
                           )}
                         </div>
                       </div>
-                    );
+                    )
                   })}
               </>
             </div>
