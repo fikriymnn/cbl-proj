@@ -44,6 +44,8 @@ import MasterPM2TambahInspection from './pages/MasterData/MasterPM2TambahInspect
 import MasterKPI from './pages/MasterData/MasterKPI';
 import MasterKPIForm from './pages/MasterData/MasterKPIForm';
 import Sparepart from './pages/sparepart/sparepart';
+import MasterUsers from './pages/MasterData/MasterUsers';
+import MasterRole from './pages/MasterData/MasterRole';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -258,6 +260,28 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterData />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterUsers"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterUsers />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterRole"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterRole />
               </ProtectedRoute>
             </>
           }

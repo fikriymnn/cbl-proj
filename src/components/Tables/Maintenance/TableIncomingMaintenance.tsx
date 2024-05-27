@@ -394,57 +394,83 @@ const TableIncomingMaintenance = () => {
                 </div>
               </div>
               <>
+
                 {mtc != null &&
-                  mtc.map((brand: any, key: any) => (
-                    <div className="">
-                      <div className="w-full">
+                  mtc.map((brand: any, key: any) => {
+                    function convertDatetimeToDate(datetime: any) {
+                      const dateObject = new Date(datetime);
+                      const day = dateObject
+                        .getDate()
+                        .toString()
+                        .padStart(2, '0'); // Ensure two-digit day
+                      const month = (dateObject.getMonth() + 1)
+                        .toString()
+                        .padStart(2, '0'); // Adjust for zero-based month
+                      const year = dateObject.getFullYear();
+                      const hours = dateObject
+                        .getHours()
+                        .toString()
+                        .padStart(2, '0');
+                      const minutes = dateObject
+                        .getMinutes()
+                        .toString()
+                        .padStart(2, '0');
 
-                        <div
-                          className={`flex ${key === tiket.length - 1
-                            ? ''
-                            : ' '
-                            }`}
-                          key={key}
-                        >
-                          <div className="flex justify-center items-center pl-2 py-2">
-                            <button
-                              onClick={() => handleClickDetail(key)}
-                              className="h-14 w-8 text-xs font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-[4px]"
-                            >
-                              <img src={Arrow} alt="" className="mx-2 py-1" />
-                            </button>
-                          </div>
+                      return `${year}/${month}/${day}  ${hours}:${minutes}`; // Example format (YYYY-MM-DD)
+                    }
 
-                          <div className=" flex flex-wrap  w-4/12  border-b-[#D8EAFF] px-2 gap-1  py-2">
-                            <button
-                              type="button"
-                              onClick={() => responMTC(brand.id, key)}
-                              className={`inline-flex py-[6px] rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
-                            >
-                              RESPON
-                            </button>
-                            {/* <button
+                    const tiketMasuk = convertDatetimeToDate(brand.createdAt);
+
+                    return (
+                      <div className="">
+                        <div className="w-full">
+
+                          <div
+                            className={`flex ${key === tiket.length - 1
+                              ? ''
+                              : ' '
+                              }`}
+                            key={key}
+                          >
+                            <div className="flex justify-center items-center pl-2 py-2">
+                              <button
+                                onClick={() => handleClickDetail(key)}
+                                className="h-14 w-8 text-xs font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-[4px]"
+                              >
+                                <img src={Arrow} alt="" className="mx-2 py-1" />
+                              </button>
+                            </div>
+
+                            <div className=" flex flex-wrap  w-4/12  border-b-[#D8EAFF] px-2 gap-1  py-2">
+                              <button
+                                type="button"
+                                onClick={() => responMTC(brand.id, key)}
+                                className={`inline-flex py-[6px] rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
+                              >
+                                RESPON
+                              </button>
+                              {/* <button
                               type="button"
                               // onClick={() => openModal1(key)}
                               className={`inline-flex py-1 rounded-[3px] my-auto  md:px-5 px-2 md:text-[12px] text-[10px] sm:font-semibold bg-white border-[#0065DE] border text-primary justify-center`}
                             >
                               DETAIL
                             </button> */}
-                          </div>
+                            </div>
 
-                          <div className=" flex items-center w-6/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                            <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white"></p>
-                          </div>
-                          <div className=" flex items-center w-5/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                            <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">
-                              {brand.createdAt}
-                            </p>
-                          </div>
+                            <div className=" flex items-center w-6/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                              <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white"></p>
+                            </div>
+                            <div className=" flex items-center w-5/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                              <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">
+                                {tiketMasuk}
+                              </p>
+                            </div>
 
-                          <div className=" items-center justify-center md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] flex ">
+                            <div className=" items-center justify-center md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] flex ">
 
-                            <td className=" border-[#eee]   dark:border-strokedark">
-                              {/* {showModal1[key] == true && (
+                              <td className=" border-[#eee]   dark:border-strokedark">
+                                {/* {showModal1[key] == true && (
                                 <Modal
                                   isOpen={showModal1[key]}
                                   onClose={() => closeModal1(key)}
@@ -459,37 +485,38 @@ const TableIncomingMaintenance = () => {
                               )} */}
 
 
-                              {showModal2 && <></>}
-                            </td>
+                                {showModal2 && <></>}
+                              </td>
+                            </div>
+
                           </div>
 
                         </div>
-
-                      </div>
-                      <div className="flex w-full border-b-6  border-[#D8EAFF] dark:border-strokedark">
-                        {showDetail[key] && (
-                          <div className="w-full  bg-[#E9F3FF]  rounded-b-md py-2 px-4">
-                            <div className="flex w-full">
+                        <div className="flex w-full border-b-6  border-[#D8EAFF] dark:border-strokedark">
+                          {showDetail[key] && (
+                            <div className="w-full  bg-[#E9F3FF]  rounded-b-md py-2 px-4">
                               <div className="flex w-full">
-                                <div className="flex w-6/12 flex-col">
-                                  <p className="text-xs font-bold">
-                                    Nama Mesin
-                                  </p>
-                                  <p className="text-sm font-light">{brand.mesin}</p>
-                                </div>
-                                <div className="flex w-6/12 flex-col">
-                                  <p className="text-xs font-bold">Kendala</p>
-                                  <p className="text-sm font-light">
-                                    {brand.nama_kendala}
-                                  </p>
+                                <div className="flex w-full">
+                                  <div className="flex w-6/12 flex-col">
+                                    <p className="text-xs font-bold">
+                                      Nama Mesin
+                                    </p>
+                                    <p className="text-sm font-light">{brand.mesin}</p>
+                                  </div>
+                                  <div className="flex w-6/12 flex-col">
+                                    <p className="text-xs font-bold">Kendala</p>
+                                    <p className="text-sm font-light">
+                                      {brand.nama_kendala}
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
               </>
             </div>
           </div>
