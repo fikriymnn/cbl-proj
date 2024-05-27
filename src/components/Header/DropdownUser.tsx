@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 import UserOne from '../../images/user/user-01.png';
 import axios from "axios";
+import Bel from '../../images/icon/bel.svg'
 
 import { useNavigate } from 'react-router-dom';
 
@@ -79,12 +80,9 @@ const DropdownUser = () => {
 
   return (
     <div className="relative">
-      <Link
-        ref={trigger}
-        onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="flex items-center gap-4"
-        to="#"
-      >
+
+      <div className="flex items-center gap-4">
+
         <span className="hidden text-right lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
             {user == null ? (
@@ -92,9 +90,22 @@ const DropdownUser = () => {
 
               </div></>
             ) : (
-              <p className="w-full h-7 text-blue-700 text-xl font-semibold">
-                {user.nama}
-              </p>
+              <>
+                <div className='flex gap-2'>
+
+                  <img src={Bel} alt="" />
+                  <Link
+                    ref={trigger}
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+
+                    to="#"
+                  >
+                    <p className="w-full h-7 text-blue-700 text-xl font-semibold">
+                      {user.nama}
+                    </p>
+                  </Link>
+                </div>
+              </>
             )}
           </span>
 
@@ -130,7 +141,8 @@ const DropdownUser = () => {
             fill=""
           />
         </svg>
-      </Link>
+      </div>
+
 
       {/* <!-- Dropdown Start --> */}
       <div

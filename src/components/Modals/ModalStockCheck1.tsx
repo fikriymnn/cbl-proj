@@ -484,9 +484,9 @@ const ModalStockCheck1 = ({
           )}
 
           <div className="flex w-full pt-2">
-            <label className="form-label block  text-black text-xs font-extrabold mt-3">
+            {/* <label className="form-label block  text-black text-xs font-extrabold mt-3">
               KEBUTUHAN SPAREPART
-            </label>
+            </label> */}
           </div>
 
           {kebutuhanSparepart.map((data: any, i: number) => {
@@ -599,7 +599,7 @@ const ModalStockCheck1 = ({
             );
           })}
 
-          {isHidden == false ? (
+          {/* {isHidden == false ? (
             <>
               <div className="pt-3 mt-5 border bg-blue-100 rounded border-stroke pb-4 overflow-y-auto scroll-auto max-h-[450px]">
                 {!isMobile && (
@@ -823,11 +823,11 @@ const ModalStockCheck1 = ({
                                     REQUEST STOCK
                                 </label>
                             </div> */}
-            </>
+          {/* </>
           ) : (
             <></>
-          )}
-          {buttonHidden == true ? (
+          )} */}
+          {/* {buttonHidden == true ? (
             <>
               <div className="flex w-full pt-1">
                 <button
@@ -840,7 +840,7 @@ const ModalStockCheck1 = ({
             </>
           ) : (
             <></>
-          )}
+          )} */}
 
           <div className="flex w-full pt-1">
             <div className="flex w-full">
