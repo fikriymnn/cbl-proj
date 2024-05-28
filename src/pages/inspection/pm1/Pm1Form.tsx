@@ -42,27 +42,38 @@ function Pm1Form() {
 
                 withCredentials: true,
             });
-            setStart(res.data.waktu_mulai)
+            setStart(new Date());
             console.log('succes')
         } catch (error: any) {
             console.log(error);
         }
     }
 
-    const [hasil, setHasil] = useState<any>('')
-    const [catatan, setCatatan] = useState<any>()
-    const [file, setfile] = useState<any>()
+    const [hasil, setHasil] = useState<any>('');
+    const [catatan, setCatatan] = useState<any>();
+    const [file, setfile] = useState<any>();
 
 
+
+    const [elapsedTimeText, setElapsedTimeText] = useState<any>();
 
     async function stopTask(id: any) {
+        if (!start) { // Check if start time is available
+            console.error('Task tidak bisa diberhentikan: Belum Start.');
+            return; // Exit function if no start time
+        }
+
+        const stopTime = new Date();
+        const timestamp = convertDatetimeToDate(new Date());
         const url = `${import.meta.env.VITE_API_LINK}/pm1/taskStop/${id}`;
         try {
+            const elapsedTime = await calculateElapsedTime(start, stopTime);
+            const formattedTime = formatElapsedTime(elapsedTime);
             const res = await axios.put(url,
                 {
                     hasil: hasil,
-                    lama_pengerjaan: 'menit',
-                    waktu_selesai: "selesai",
+                    lama_pengerjaan: formatElapsedTime(elapsedTime),
+                    waktu_selesai: timestamp,
                     catatan: catatan,
                     file: 'ada',
                 },
@@ -70,11 +81,30 @@ function Pm1Form() {
                     withCredentials: true,
                 });
 
-            console.log('Succes')
+            setElapsedTimeText(formattedTime);
+            console.log('Task stopped successfully:', elapsedTime);
+            console.log('Succes', timestamp)
         } catch (error: any) {
             console.log(error);
         }
     }
+    function updateElapsedTimeText(formattedTime: string) {
+        setElapsedTimeText(formattedTime);
+    }
+    function calculateElapsedTime(startTime: Date, stopTime: Date) {
+        const diffInMs = stopTime.getTime() - startTime.getTime();
+        // Convert milliseconds to your desired unit (minutes, hours)
+        const elapsedTime = Math.round(diffInMs / (1000 * 60)); // Example: minutes
+        return elapsedTime;
+    }
+
+    // Helper function to format elapsed time for 'menit' (replace with your format)
+    function formatElapsedTime(minutes: number, seconds: number = 0) {
+        const formattedMinutes = minutes.toString().padStart(2, '0'); // Pad minutes with leading 0
+        // Customize the format as needed
+        return `${formattedMinutes} menit`; // Example: 00:30 menit
+    }
+
 
     // const start1 = moment(start)
     // const stop = moment(selesai)
@@ -226,20 +256,17 @@ function Pm1Form() {
 
                                 const tiketMasuk = convertDatetimeToDate(data.tgl);
 
-                                const waktuMulai = convertDatetimeToDate(data.waktu_mulai)
-                                const waktuselesai = convertDatetimeToDate(data.waktu_selesai)
 
                                 return (
 
                                     <>
                                         <section className=' border-b-8 border-[#D8EAFF]'>
                                             <div className='flex p-4 border-b-2 border-[#6D6C6C] '>
-                                                {waktuselesai}
 
                                                 <div className='w-1/12'>
                                                     <p className='md:text-[14px] text-[9px] font-semibold'>{i + 1}</p>
                                                 </div>
-                                                {waktuMulai}
+
                                                 <div className='flex w-full gap-10'>
 
                                                     <div className='flex w-2/12'>
@@ -363,7 +390,7 @@ function Pm1Form() {
                                                     </div>
                                                 </div>
                                                 <div className='p-4 flex flex-col justify-start items-start w-2/12 gap-3'>
-                                                    <p className='md:text-[14px] text-[9px] font-semibold'>Time : </p>
+                                                    <p className='md:text-[14px] text-[9px] font-semibold'>Time :{elapsedTimeText} </p>
 
 
                                                     <button onClick={() => startTask(data.id)} className='flex w-full rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer'>

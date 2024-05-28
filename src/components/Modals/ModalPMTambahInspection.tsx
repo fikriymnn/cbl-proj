@@ -298,8 +298,6 @@ const ModalPM1TambahInspection = ({ children, isOpen, onClose, onFinish, idTicke
                     {children}
                 </div>
 
-                {JSON.stringify(pointPm1)}
-
             </div >
         </div>
     );
