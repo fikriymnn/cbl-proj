@@ -180,10 +180,12 @@ const ModalStockCheck1 = ({
   }
 
   async function postAnalisis() {
-    const urlNormal = `${import.meta.env.VITE_API_LINK
-      }/ticket/analisis/${idTiket}`;
-    const urlPending = `${import.meta.env.VITE_API_LINK
-      }/ticket/pending/${idTiket}`;
+    const urlNormal = `${
+      import.meta.env.VITE_API_LINK
+    }/ticketOs3/analisis/${idTiket}`;
+    const urlPending = `${
+      import.meta.env.VITE_API_LINK
+    }/ticketOs3/pending/${idTiket}`;
     try {
       if (typePost === 'normal') {
         const res = await axios.put(
@@ -393,8 +395,9 @@ const ModalStockCheck1 = ({
                       console.log(selectedOption);
                       changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
-                      }`}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                      isOptionSelected ? 'text-black dark:text-white' : ''
+                    }`}
                   >
                     <option
                       value=""
@@ -495,21 +498,25 @@ const ModalStockCheck1 = ({
                 <div>
                   <div className="pb-2">
                     <div className="flex  px-2 lg:py-3 py-1 bg-[#D8EAFF] rounded-md gap-2">
-
-                      <button name="rusak" className="lg:ml-4 ml-[2px] lg:w-full w-8/12 h-9 bg-white rounded text-center text-[#0065DE] text-base font-bold">
+                      <button
+                        name="rusak"
+                        className="lg:ml-4 ml-[2px] lg:w-full w-8/12 h-9 bg-white rounded text-center text-[#0065DE] text-base font-bold"
+                      >
                         {data.nama_sparepart}
                       </button>
 
                       {!isMobile && (
                         <>
-
                           <div className="w-[250px] h-9 lg:ml-2 ml-[2px] bg-[#EDF5FF] rounded uppercase text-center text-[#0065DE] text-normal font-bold pt-[5px] px-1">
                             {data.jenis_part}
                           </div>
-                          <div className='bg-[#EDF5FF] rounded  text-[#0065DE] justify-center items-center px-4 pt-[6px]'>
-                            <p className='text-center text-normal font-bold'>{data.use_qty}</p>
+                          <div className="bg-[#EDF5FF] rounded  text-[#0065DE] justify-center items-center px-4 pt-[6px]">
+                            <p className="text-center text-normal font-bold">
+                              {data.use_qty}
+                            </p>
                           </div>
-                          <button className='justify-center items-center px-[14px] bg-[#0065DE] text-white rounded-md'
+                          <button
+                            className="justify-center items-center px-[14px] bg-[#0065DE] text-white rounded-md"
                             onClick={() => {
                               const onchangeVal: any = [...kebutuhanSparepart];
                               onchangeVal[i].use_qty = data.use_qty + 1;
@@ -519,45 +526,73 @@ const ModalStockCheck1 = ({
                           >
                             +
                           </button>
-                          <button className='justify-center items-center px-[14px] bg-[#0065DE] text-white rounded-md'
+                          <button
+                            className="justify-center items-center px-[14px] bg-[#0065DE] text-white rounded-md"
                             onClick={() => {
                               if (data.use_qty !== 1) {
                                 const onchangeVal = [...kebutuhanSparepart];
-                                onchangeVal[i].use_qty = Math.max(data.use_qty - 1, 1);
+                                onchangeVal[i].use_qty = Math.max(
+                                  data.use_qty - 1,
+                                  1,
+                                );
                                 setKebutuhanSparepart(onchangeVal);
                               }
                             }}
                           >
                             -
                           </button>
-                          <button onClick={() => {
-                            const onchangeVal: any = [...kebutuhanSparepart];
-                            onchangeVal.splice(i, 1);
+                          <button
+                            onClick={() => {
+                              const onchangeVal: any = [...kebutuhanSparepart];
+                              onchangeVal.splice(i, 1);
 
-                            setKebutuhanSparepart(onchangeVal);
-                          }}
-                            name="pengganti" className=" w-[39px] h-9 bg-[#DE0000] rounded justify-items-center ">
-                            <svg className="lg:ml-[8px] mx-2" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
-                              <rect y="11.7183" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(-45 0 11.7183)" fill="white" />
+                              setKebutuhanSparepart(onchangeVal);
+                            }}
+                            name="pengganti"
+                            className=" w-[39px] h-9 bg-[#DE0000] rounded justify-items-center "
+                          >
+                            <svg
+                              className="lg:ml-[8px] mx-2"
+                              width="14"
+                              height="14"
+                              viewBox="0 0 14 14"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <rect
+                                x="1.61621"
+                                width="16.5722"
+                                height="2.28582"
+                                rx="1.14291"
+                                transform="rotate(45 1.61621 0)"
+                                fill="white"
+                              />
+                              <rect
+                                y="11.7183"
+                                width="16.5722"
+                                height="2.28582"
+                                rx="1.14291"
+                                transform="rotate(-45 0 11.7183)"
+                                fill="white"
+                              />
                             </svg>
-
                           </button>
                         </>
                       )}
                       {isMobile && (
                         <>
                           <div className="flex flex-wrap">
-
                             <div className="w-[155px] h-4 lg:ml-2 ml-[2px] bg-[#EDF5FF] rounded-b-[4px] uppercase text-center text-[#0065DE] text-normal font-bold lg:pt-[9px] ">
                               {data.jenis_part}
                             </div>
-                            <div className='bg-[#EDF5FF] rounded  text-[#0065DE] '>
-                              <p className='text-center text-normal font-bold'>{data.use_qty}</p>
+                            <div className="bg-[#EDF5FF] rounded  text-[#0065DE] ">
+                              <p className="text-center text-normal font-bold">
+                                {data.use_qty}
+                              </p>
                             </div>
-
                           </div>
-                          <button className='justify-center items-center px-[14px] bg-[#0065DE] text-white rounded-md'
+                          <button
+                            className="justify-center items-center px-[14px] bg-[#0065DE] text-white rounded-md"
                             onClick={() => {
                               const onchangeVal: any = [...kebutuhanSparepart];
                               onchangeVal[i].use_qty = data.use_qty + 1;
@@ -567,7 +602,8 @@ const ModalStockCheck1 = ({
                           >
                             +
                           </button>
-                          <button className='justify-center items-center px-[14px] bg-[#0065DE] text-white rounded-md'
+                          <button
+                            className="justify-center items-center px-[14px] bg-[#0065DE] text-white rounded-md"
                             onClick={() => {
                               const onchangeVal: any = [...kebutuhanSparepart];
                               onchangeVal[i].use_qty = data.use_qty - 1;
@@ -577,18 +613,41 @@ const ModalStockCheck1 = ({
                           >
                             -
                           </button>
-                          <button onClick={() => {
-                            const onchangeVal: any = [...kebutuhanSparepart];
-                            onchangeVal.splice(i, 1);
+                          <button
+                            onClick={() => {
+                              const onchangeVal: any = [...kebutuhanSparepart];
+                              onchangeVal.splice(i, 1);
 
-                            setKebutuhanSparepart(onchangeVal);
-                          }}
-                            name="pengganti" className="lg:ml-2 ml-[2px] w-[39px] h-9 bg-[#DE0000] rounded justify-items-center ">
-                            <svg className="lg:ml-[13px] mx-2" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
-                              <rect y="11.7183" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(-45 0 11.7183)" fill="white" />
+                              setKebutuhanSparepart(onchangeVal);
+                            }}
+                            name="pengganti"
+                            className="lg:ml-2 ml-[2px] w-[39px] h-9 bg-[#DE0000] rounded justify-items-center "
+                          >
+                            <svg
+                              className="lg:ml-[13px] mx-2"
+                              width="14"
+                              height="14"
+                              viewBox="0 0 14 14"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <rect
+                                x="1.61621"
+                                width="16.5722"
+                                height="2.28582"
+                                rx="1.14291"
+                                transform="rotate(45 1.61621 0)"
+                                fill="white"
+                              />
+                              <rect
+                                y="11.7183"
+                                width="16.5722"
+                                height="2.28582"
+                                rx="1.14291"
+                                transform="rotate(-45 0 11.7183)"
+                                fill="white"
+                              />
                             </svg>
-
                           </button>
                         </>
                       )}
@@ -881,8 +940,9 @@ const ModalStockCheck1 = ({
 
                       changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
-                      }`}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                      isOptionSelected ? 'text-black dark:text-white' : ''
+                    }`}
                   >
                     <option
                       value=""

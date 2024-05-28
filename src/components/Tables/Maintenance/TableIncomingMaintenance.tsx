@@ -84,8 +84,6 @@ const tiket = [
 const TableIncomingMaintenance = () => {
   const [showModal2, setShowModal2] = useState(false);
 
-
-
   //const openModal2 = () => setShowModal2(true);
   //const closeModal2 = () => setShowModal2(false);
 
@@ -182,7 +180,7 @@ const TableIncomingMaintenance = () => {
         data.push(false);
       }
       setShowModal3(data);
-      setShowModal1(data)
+      setShowModal1(data);
     } catch (error: any) {
       console.log(error.response);
     }
@@ -195,11 +193,11 @@ const TableIncomingMaintenance = () => {
         withCredentials: true,
       });
 
-      alert("respon berhasil")
+      alert('respon berhasil');
       getMTC();
     } catch (error: any) {
       console.log(error.response);
-      alert("error")
+      alert('error');
     }
   }
   return (
@@ -238,9 +236,7 @@ const TableIncomingMaintenance = () => {
                 </div>
 
                 <div className=" items-center justify-center  md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 flex ">
-                  <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center">
-
-                  </p>
+                  <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center"></p>
                 </div>
               </div>
               <>
@@ -272,8 +268,7 @@ const TableIncomingMaintenance = () => {
 
                     return (
                       <div
-                        className={`flex ${'border-t-8  border-[#D8EAFF] dark:border-strokedark '
-                          }`}
+                        className={`flex ${'border-t-8  border-[#D8EAFF] dark:border-strokedark '}`}
                         key={key}
                       >
                         <div className=" flex items-center w-1/12   gap-3 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF]  ">
@@ -284,7 +279,7 @@ const TableIncomingMaintenance = () => {
 
                         <div className=" flex items-center w-2/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
                           <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">
-                            {brand.name}
+                            {brand.kode_ticket}
                           </p>
                         </div>
                         <div className=" flex items-center w-3/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
@@ -394,7 +389,6 @@ const TableIncomingMaintenance = () => {
                 </div>
               </div>
               <>
-
                 {mtc != null &&
                   mtc.map((brand: any, key: any) => {
                     function convertDatetimeToDate(datetime: any) {
@@ -424,12 +418,10 @@ const TableIncomingMaintenance = () => {
                     return (
                       <div className="">
                         <div className="w-full">
-
                           <div
-                            className={`flex ${key === tiket.length - 1
-                              ? ''
-                              : ' '
-                              }`}
+                            className={`flex ${
+                              key === tiket.length - 1 ? '' : ' '
+                            }`}
                             key={key}
                           >
                             <div className="flex justify-center items-center pl-2 py-2">
@@ -468,7 +460,6 @@ const TableIncomingMaintenance = () => {
                             </div>
 
                             <div className=" items-center justify-center md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] flex ">
-
                               <td className=" border-[#eee]   dark:border-strokedark">
                                 {/* {showModal1[key] == true && (
                                 <Modal
@@ -484,13 +475,10 @@ const TableIncomingMaintenance = () => {
                                 </Modal>
                               )} */}
 
-
                                 {showModal2 && <></>}
                               </td>
                             </div>
-
                           </div>
-
                         </div>
                         <div className="flex w-full border-b-6  border-[#D8EAFF] dark:border-strokedark">
                           {showDetail[key] && (
@@ -501,7 +489,9 @@ const TableIncomingMaintenance = () => {
                                     <p className="text-xs font-bold">
                                       Nama Mesin
                                     </p>
-                                    <p className="text-sm font-light">{brand.mesin}</p>
+                                    <p className="text-sm font-light">
+                                      {brand.mesin}
+                                    </p>
                                   </div>
                                   <div className="flex w-6/12 flex-col">
                                     <p className="text-xs font-bold">Kendala</p>
@@ -515,7 +505,7 @@ const TableIncomingMaintenance = () => {
                           )}
                         </div>
                       </div>
-                    )
+                    );
                   })}
               </>
             </div>
