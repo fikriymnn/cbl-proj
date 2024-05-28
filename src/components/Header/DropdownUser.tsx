@@ -13,6 +13,8 @@ const DropdownUser = () => {
   const trigger = useRef<any>(null);
   const dropdown = useRef<any>(null);
 
+  const [notif, setNotif] = useState(false)
+
   const [user, setUser] = useState<any>(null);
 
   const navigate = useNavigate();
@@ -83,7 +85,7 @@ const DropdownUser = () => {
 
       <div className="flex items-center gap-4">
 
-        <span className="hidden text-right lg:block">
+        <span className="hidden lg:block">
           <span className="block text-sm font-medium text-black dark:text-white">
             {user == null ? (
               <><div className="w-full h-7 text-blue-700 text-xl font-semibold">
@@ -91,9 +93,38 @@ const DropdownUser = () => {
               </div></>
             ) : (
               <>
+                {notif == true && (
+                  <>
+                    <div onFocus={() => setNotif(true)}
+                      onBlur={() => setNotif(false)} className={`absolute right-0 mt-10 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${notif === true ? 'block' : 'hidden'}`}>
+                      <div className='flex flex-col '>
+
+                        <p className='text-xs font-bold text-primary p-2'>Notifikasi</p>
+                        <div className=' bg-blue-200 p-2'>
+                          <p className='text-[9px] text-[#ACACAC] font-semibold'>09 jul 2024</p>
+                          <p className='text-xs font-bold text-primary'>New corrective Maintenance incomming</p>
+                          <div className='flex justify-between text-[9px] text-primary'>
+                            <p>Kode: JK1-AA05</p>
+                            <p>Mesin: JK100</p>
+                          </div>
+                        </div>
+                        <div className=' border-t text-[#ACACAC] p-2'>
+                          <p className='text-[9px] font-semibold'>09 jul 2024</p>
+                          <p className='text-xs font-bold '>New corrective Maintenance incomming</p>
+                          <div className='flex justify-between text-[9px] '>
+                            <p>Kode: JK1-AA05</p>
+                            <p>Mesin: JK100</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
                 <div className='flex gap-2'>
 
-                  <img src={Bel} alt="" />
+
+                  <img onClick={() => setNotif(!notif)} src={Bel} alt="" />
+
                   <Link
                     ref={trigger}
                     onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -108,6 +139,7 @@ const DropdownUser = () => {
               </>
             )}
           </span>
+
 
           <span className="block text-xs">
             {user == null ? (
@@ -125,22 +157,27 @@ const DropdownUser = () => {
         {/* <span className="h-12 w-12 rounded-full">
           <img src={UserOne} alt="User" />
         </span> */}
+        <Link ref={trigger}
+          onClick={() => setDropdownOpen(!dropdownOpen)}
 
-        <svg
-          className="hidden fill-current sm:block"
-          width="12"
-          height="8"
-          viewBox="0 0 12 8"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M0.410765 0.910734C0.736202 0.585297 1.26384 0.585297 1.58928 0.910734L6.00002 5.32148L10.4108 0.910734C10.7362 0.585297 11.2638 0.585297 11.5893 0.910734C11.9147 1.23617 11.9147 1.76381 11.5893 2.08924L6.58928 7.08924C6.26384 7.41468 5.7362 7.41468 5.41077 7.08924L0.410765 2.08924C0.0853277 1.76381 0.0853277 1.23617 0.410765 0.910734Z"
-            fill=""
-          />
-        </svg>
+          to="#">
+
+          <svg
+            className="hidden fill-current sm:block"
+            width="12"
+            height="8"
+            viewBox="0 0 12 8"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M0.410765 0.910734C0.736202 0.585297 1.26384 0.585297 1.58928 0.910734L6.00002 5.32148L10.4108 0.910734C10.7362 0.585297 11.2638 0.585297 11.5893 0.910734C11.9147 1.23617 11.9147 1.76381 11.5893 2.08924L6.58928 7.08924C6.26384 7.41468 5.7362 7.41468 5.41077 7.08924L0.410765 2.08924C0.0853277 1.76381 0.0853277 1.23617 0.410765 0.910734Z"
+              fill=""
+            />
+          </svg>
+        </Link>
       </div>
 
 
