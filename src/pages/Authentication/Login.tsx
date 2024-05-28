@@ -4,7 +4,7 @@ import Layout2 from '../../layout/Layout2';
 import Gambar from '../../images/BACKGROUND.png';
 import Checkbox11 from '../../components/Checkboxes/Checkbox11';
 import axios from "axios";
-import { useRouter } from "next/navigation";
+
 
 import { useNavigate } from 'react-router-dom';
 
@@ -31,7 +31,7 @@ const Login: React.FC = () => {
             alert("login success");
             // router.push("/");
             // push("/");
-            navigate('/');
+            navigate('/dashboard');
         } catch (error: any) {
             alert(error);
         }

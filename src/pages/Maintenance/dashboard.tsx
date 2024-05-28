@@ -7,6 +7,7 @@ import DoughnutCart from '../../../src/components/Charts/DoughnutChart'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import BarChartVertical from '../UiElements/BarChartVertical';
 
 function Dashboard() {
     return (
@@ -101,8 +102,8 @@ function Dashboard() {
                         </div>
 
                     </div>
-                    <div className='flex md:flex-row flex-col gap-3 my-3 w-full'>
-                        <div className='bg-white rounded-md shadow-md md:w-4/12'>
+                    <div className='bg-white flex md:flex-row flex-col gap-10    my-3 w-full'>
+                        <div className='p-5'>
                             <div className="flex gap-3 p-3">
 
                                 <img src={Production} alt="Logo" />
@@ -114,7 +115,7 @@ function Dashboard() {
                                 <DoughnutCart />
                             </div>
                         </div>
-                        <div className='bg-white rounded-md shadow-md md:w-4/12'>
+                        <div className='p-5'>
                             <div className="flex gap-3 p-3">
 
                                 <img src={Production} alt="Logo" />
@@ -128,57 +129,70 @@ function Dashboard() {
                         </div>
 
                     </div>
-                    <div className='bg-white rounded-md shadow-md md:w-9/12 mb-5'>
-                        <div className="flex gap-3 p-3">
-                            <img src={Production} alt="Logo" />
+                    <div className='bg-white rounded-md shadow-md md:w-12/12 mb-5'>
 
-                            <p className="text-[14px] text-[#0065DE]">Production</p>
-                        </div>
-                        <div className='flex flex-col w-full p-3   '>
+                        <div className='bg-white rounded-md md:w-9/12 flex flex-col md:flex-row p-3 md:gap-10 gap-2'>
+                            <div className='flex items-center justify-center '>
 
-                            <div className='grid grid-cols-5 justify-center items-center border-b-2 border-blue-700 pb-1'>
-                                <div className='flex justify-center text-sm font-bold'>
-                                    <p>Kode Tiket</p>
-                                </div>
-                                <div className='flex justify-center text-sm font-bold'>
-                                    <p>Work Type</p>
-                                </div>
-                                <div className='flex justify-center text-sm font-bold'>
-                                    <p>Nama Mesin</p>
-                                </div>
-                                <div className='flex justify-center text-sm font-bold'>
-                                    <p>Status</p>
-                                </div>
-                                <div className='flex justify-center text-sm font-bold'>
-                                    <p>Jenis Kendala</p>
+                                <p className='text-primary text-sm font-bold'>Filter Tanggal</p>
+                            </div>
+                            <div className='flex md:justify-center items-center gap-2'>
+                                <p className='text-sm text-primary font-medium md:w-3/12 w-2/12'>Dari:</p>
+                                <div className='w-44 bg-[#D8EAFF]'>
+
+                                    <LocalizationProvider dateAdapter={AdapterDayjs} >
+                                        <DatePicker slotProps={{ textField: { fullWidth: true, size: 'small' } }} />
+                                    </LocalizationProvider>
                                 </div>
                             </div>
-                            <div className='grid grid-cols-5 justify-center text-sm items-center border-b-2 py-1 border-black '>
-                                <div className='mx-auto'>
-                                    <p>3252535</p>
-                                    <p>3252535</p>
-                                    <p>3252535</p>
+                            <div className='flex md:justify-center items-center gap-2'>
+                                <p className='text-sm text-primary font-medium md:w-3/12 w-2/12'>Sampai:</p>
+                                <div className='w-44 bg-[#D8EAFF]'>
+
+                                    <LocalizationProvider dateAdapter={AdapterDayjs} >
+                                        <DatePicker slotProps={{ textField: { fullWidth: true, size: 'small' } }} />
+                                    </LocalizationProvider>
                                 </div>
-                                <div className='mx-auto'>
-                                    <p>Quality</p>
-                                    <p>Quality</p>
-                                    <p>Quality</p>
+                            </div>
+
+                        </div>
+                        <div className='md:grid grid-cols-2 gap-5 px-10 pb-10 pt-5'>
+
+                            <div className=''>
+                                <div className="flex gap-3 p-3">
+
+                                    <img src={Production} alt="Logo" />
+
+                                    <p className="text-[14px] text-[#0065DE]">Defect</p>
                                 </div>
-                                <div className='mx-auto'>
-                                    <p>R700</p>
-                                    <p>R700</p>
-                                    <p>R700</p>
+                                <BarChartVertical />
+                            </div>
+                            <div className=''>
+                                <div className="flex gap-3 p-3">
+
+                                    <img src={Production} alt="Logo" />
+
+                                    <p className="text-[14px] text-[#0065DE]">Breakdown Time</p>
                                 </div>
-                                <div className='mx-auto'>
-                                    <p>OPEN</p>
-                                    <p>OPEN</p>
-                                    <p>OPEN</p>
+                                <BarChartVertical />
+                            </div>
+                            <div className=''>
+                                <div className="flex gap-3 p-3">
+
+                                    <img src={Production} alt="Logo" />
+
+                                    <p className="text-[14px] text-[#0065DE]">Quality Defect</p>
                                 </div>
-                                <div className='mx-auto'>
-                                    <p>Macet</p>
-                                    <p>Macet</p>
-                                    <p>Macet</p>
+                                <BarChartVertical />
+                            </div>
+                            <div className=''>
+                                <div className="flex gap-3 p-3">
+
+                                    <img src={Production} alt="Logo" />
+
+                                    <p className="text-[14px] text-[#0065DE]">Production Defect</p>
                                 </div>
+                                <BarChartVertical />
                             </div>
                         </div>
                     </div>
