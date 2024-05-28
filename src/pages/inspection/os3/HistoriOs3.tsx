@@ -10,6 +10,7 @@ import ModalStockCheck1 from '../../../components/Modals/ModalStockCheck1';
 import ModalDetail from '../../../components/Modals/ModalDetail';
 import DefaultLayout from '../../../layout/DefaultLayout';
 import X from '../../../images/icon/x.svg'
+import ModalDetailOS3 from '../../../components/Modals/ModalDetailOS3';
 
 // import moment from 'moment';
 
@@ -559,7 +560,7 @@ function HistoriOS3() {
                                                                                         </button>
                                                                                     </div>
                                                                                     {showModalDetail[ii] && (
-                                                                                        <ModalDetail
+                                                                                        <ModalDetailOS3
                                                                                             children={undefined}
                                                                                             isOpen={showModalDetail[ii]}
                                                                                             onClose={() => closeModalDetail(ii)}
@@ -579,7 +580,7 @@ function HistoriOS3() {
                                                                                             catatan={
                                                                                                 proses.note_mtc
                                                                                             }
-                                                                                        ></ModalDetail>
+                                                                                        ></ModalDetailOS3>
                                                                                     )}
                                                                                 </>
                                                                             );

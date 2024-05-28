@@ -37,6 +37,15 @@ import Preventive from './pages/inspection/os3/Preventive';
 import HistoriPage from './pages/inspection/histori/HistoriPage';
 import KPIForm from './pages/Maintenance/KPI/KPIForm';
 import KPIInput from './pages/Maintenance/KPI/KPIInput';
+import MasterPM2 from './pages/MasterData/MasterPM2';
+import PM2Checklist from './components/Tables/MasterData/PM2/PM2Checklist';
+import MasterPM2Check from './pages/MasterData/MasterPM2Check';
+import MasterPM2TambahInspection from './pages/MasterData/MasterPM2TambahInspection';
+import MasterKPI from './pages/MasterData/MasterKPI';
+import MasterKPIForm from './pages/MasterData/MasterKPIForm';
+import Sparepart from './pages/sparepart/sparepart';
+import MasterUsers from './pages/MasterData/MasterUsers';
+import MasterRole from './pages/MasterData/MasterRole';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -76,7 +85,7 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/inspection/pm_1_form"
+          path="/maintenance/inspection/pm_1_form/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -200,12 +209,12 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/material"
+          path="/maintenance/sparepart"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <Material />
+                <Sparepart />
               </ProtectedRoute>
             </>
           }
@@ -256,6 +265,28 @@ function App() {
           }
         />
         <Route
+          path="/masterdata/masterUsers"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterUsers />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterRole"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterRole />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/masterdata/mastersparepart"
           element={
             <>
@@ -289,12 +320,36 @@ function App() {
           }
         />
         <Route
+          path="/masterdata/masterpm2"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM2 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
           path="/masterdata/masterpm1/pm1checklist/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterPM1Check />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/masterdata/masterpm2/pm2checklist/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM2Check />
               </ProtectedRoute>
             </>
           }
@@ -311,6 +366,17 @@ function App() {
           }
         />
         <Route
+          path="/masterdata/masterpm2/pm2checklist/addinspection/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM2TambahInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/auth/login"
           element={
             <>
@@ -320,7 +386,29 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/KPI/Form"
+          path="/masterdata/masterkpi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterKPI />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterkpi/form"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterKPIForm />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/KPIForm"
           element={
             <>
               <PageTitle title="PT CBL" />

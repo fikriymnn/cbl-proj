@@ -167,7 +167,7 @@ function Histori() {
                                 </div>
                             </div>
                         </div>
-                        <div className='flex md:gap-4 gap-1 md:flex-row flex-col md:px-0 px-5'>
+                        <div className='flex md:gap-4 gap-1 md:flex-row flex-col md:px-0 px-5 md:mt-0 mt-5'>
 
                             <p className='my-auto text-sm text-primary font-semibold'>Pilih Tanggal</p>
                             <div className='flex md:justify-center items-center gap-2'>
@@ -242,11 +242,11 @@ function Histori() {
                                             <p className=''>{brand.name}</p>
                                         </div>
 
-                                        <div className='sm:block flex-col justify-center hidden'>
+                                        <div className='sm:block flex-col justify-center hidden items-center my-auto'>
 
                                             <p className=''>{brand.inspector != null ? brand.inspector : "-"}</p>
                                         </div>
-                                        <div className='sm:block flex-col justify-center hidden'>
+                                        <div className='sm:block flex-col justify-center hidden items-center my-auto'>
 
                                             <p className=''>{brand.leader != null ? brand.leader : '-'}</p>
                                         </div>
