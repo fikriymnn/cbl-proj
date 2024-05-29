@@ -60,10 +60,12 @@ function Pm1() {
     async function inspectPM1(id: any) {
         const url = `${import.meta.env.VITE_API_LINK}/pm1/response/${id}`;
         try {
-            const res = await axios.get(url, {
+            const res = await axios.put(url,
+                //     {
 
-                withCredentials: true,
-            });
+                //     withCredentials: true,
+                // }
+            );
 
             alert("succes")
             console.log(res.data);
