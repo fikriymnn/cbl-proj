@@ -213,7 +213,7 @@ const TableIncomingMaintenance = () => {
                   </p>
                 </div>
 
-                <div className=" flex items-center w-2/12 justify-center p-2.5 ml-2 md:px-7.5 px-5 ">
+                <div className=" flex items-center w-2/12 justify-center">
                   <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center dark:text-white">
                     Kode Tiket
                   </p>
@@ -277,7 +277,7 @@ const TableIncomingMaintenance = () => {
                           </p>
                         </div>
 
-                        <div className=" flex items-center w-2/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                        <div className=" flex items-center w-2/12 justify-center border-b-[#D8EAFF] ">
                           <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">
                             {brand.kode_ticket}
                           </p>
@@ -419,9 +419,8 @@ const TableIncomingMaintenance = () => {
                       <div className="">
                         <div className="w-full">
                           <div
-                            className={`flex ${
-                              key === tiket.length - 1 ? '' : ' '
-                            }`}
+                            className={`flex ${key === tiket.length - 1 ? '' : ' '
+                              }`}
                             key={key}
                           >
                             <div className="flex justify-center items-center pl-2 py-2">
@@ -450,8 +449,8 @@ const TableIncomingMaintenance = () => {
                             </button> */}
                             </div>
 
-                            <div className=" flex items-center w-6/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                              <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white"></p>
+                            <div className=" flex items-center w-6/12 justify-center  border-b-[#D8EAFF] ">
+                              <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.kode_ticket}</p>
                             </div>
                             <div className=" flex items-center w-5/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
                               <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">

@@ -166,6 +166,7 @@ function TableOS() {
 
       alert(res.data.msg);
       getTiket();
+      openModal1(true);
     } catch (error: any) {
       alert(error.data.msg);
     }
@@ -181,9 +182,8 @@ function TableOS() {
     const minutesDiff = Math.floor(secondsDiff / 60);
     const hoursDiff = Math.floor(minutesDiff / 60);
 
-    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${
-      hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
-    } `;
+    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
+      } `;
 
     return formattedDifference; // Example format (YYYY-MM-DD)
   }
@@ -219,7 +219,7 @@ function TableOS() {
       {!isMobile && (
         <>
           <div className="flex bg-white mt-2 py-2">
-            <p className="px-5 text-xs font-bold ">No</p>
+            <p className="w-10 px-3 text-xs font-bold ">No</p>
             <div className="grid md:grid-cols-8 grid-cols-7 w-full">
               <div className="flex gap-2">
                 <p className="text-xs font-bold ">Kode Tiket</p>
@@ -289,28 +289,28 @@ function TableOS() {
                         <section className="flex  bg-white  rounded-lg">
                           <div
                             key={i}
-                            className=" py-3 px-6 flex justify-center items-center"
+                            className=" py-3 w-10 px-3 flex justify-center items-center"
                           >
                             {i + 1}
                           </div>
-                          <div className="grid md:grid-cols-8 grid-cols-7 w-full  ">
+                          <div className="grid md:grid-cols-8 grid-cols-7 w-full gap-5">
                             <div className="flex flex-col md:gap-5 gap-1 ">
                               <div className="my-auto ">
-                                <p className="text-sm font-light">
+                                <p className="text-xs font-light">
                                   {data.kode_ticket}
                                 </p>
                               </div>
                             </div>
                             <div className="flex flex-col md:gap-5 gap-1 ">
                               <div className="my-auto">
-                                <p className="text-sm font-light">
+                                <p className="text-xs font-light">
                                   {data.mesin}
                                 </p>
                               </div>
                             </div>
                             <div className="flex flex-col col-span-2 md:gap-5 gap-1 ">
                               <div className="my-auto w-11/12">
-                                <p className="text-sm font-light">
+                                <p className="text-xs font-light">
                                   {data.kode_lkh} - {data.nama_kendala}
                                 </p>
                               </div>
@@ -320,14 +320,14 @@ function TableOS() {
                                 <p
                                   className={
                                     data.status_tiket == 'pending'
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
-                                      : data.status_tiket == 'monitoring'
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                      : data.status_tiket == 'temporary'
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  `
-                                      : ''
+                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
+                                        : data.status_tiket == 'monitoring'
+                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                          : data.status_tiket == 'temporary'
+                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  `
+                                            : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -339,14 +339,14 @@ function TableOS() {
                                 <p
                                   className={
                                     data.status_tiket == 'pending'
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
-                                      : data.status_tiket == 'monitoring'
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                      : data.status_tiket == 'temporary'
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  `
-                                      : ''
+                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
+                                        : data.status_tiket == 'monitoring'
+                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                          : data.status_tiket == 'temporary'
+                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  `
+                                            : ''
                                   }
                                 >
                                   {data.skor_mtc}%
@@ -355,7 +355,7 @@ function TableOS() {
                             </div>
                             <div className="flex flex-col md:gap-5 gap-1 ">
                               <div>
-                                <p className="text-sm font-light">
+                                <p className="text-xs font-light">
                                   {data.proses_mtcs[lengthProses].tgl_mtc}
                                 </p>
                               </div>
@@ -532,13 +532,13 @@ function TableOS() {
                                               <p
                                                 className={
                                                   proses.skor_mtc <= 100 &&
-                                                  proses.skor_mtc > 20
-                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
+                                                    proses.skor_mtc > 20
+                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                                     : proses.skor_mtc == 20
-                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center  text-[#FC4911] bg-[#de85002a] `
-                                                    : proses.skor_mtc == 0
-                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                                    : ''
+                                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FC4911] bg-[#de85002a] `
+                                                      : proses.skor_mtc == 0
+                                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                                        : ''
                                                 }
                                               >
                                                 {proses.skor_mtc}%
@@ -752,14 +752,14 @@ function TableOS() {
                         <p
                           className={
                             data.status_tiket == 'pending'
-                              ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                               : data.status_tiket == 'open'
-                              ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
-                              : data.status_tiket == 'monitoring'
-                              ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                              : data.status_tiket == 'temporary'
-                              ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  `
-                              : ''
+                                ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
+                                : data.status_tiket == 'monitoring'
+                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                  : data.status_tiket == 'temporary'
+                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  `
+                                    : ''
                           }
                         >
                           {data.skor_mtc}%
@@ -786,14 +786,14 @@ function TableOS() {
                                 <p
                                   className={
                                     data.status_tiket == 'pending'
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
-                                      : data.status_tiket == 'monitoring'
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                      : data.status_tiket == 'temporary'
-                                      ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  `
-                                      : ''
+                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
+                                        : data.status_tiket == 'monitoring'
+                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                          : data.status_tiket == 'temporary'
+                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  `
+                                            : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -902,17 +902,17 @@ function TableOS() {
                                         <p
                                           className={
                                             data.skor_mtc === 100
-                                              ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
+                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                               : data.skor_mtc >= 60 &&
                                                 data.skor_mtc < 100
-                                              ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                              : data.skor_mtc >= 40 &&
-                                                data.skor_mtc < 60
-                                              ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
-                                              : data.skor_mtc < 40 &&
-                                                data.skor_mtc >= 0
-                                              ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                              : ''
+                                                ? `text-xs px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                                : data.skor_mtc >= 40 &&
+                                                  data.skor_mtc < 60
+                                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
+                                                  : data.skor_mtc < 40 &&
+                                                    data.skor_mtc >= 0
+                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                                    : ''
                                           }
                                         >
                                           {proses.skor_mtc}%
