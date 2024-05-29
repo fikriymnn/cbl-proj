@@ -10,6 +10,7 @@ import Modal from '../../../components/Modals/ModalDetailPopup';
 import Logo from '../../images/logo/logo-cbl 1.svg';
 import ModalPopupReq2 from '../../Modals/ModalPopupReq';
 import axios from 'axios';
+import ModalEditMesinMaster from '../../Modals/ModalEditMesinMaster';
 
 
 const TableMachine = () => {
@@ -47,6 +48,20 @@ const TableMachine = () => {
             console.log(error.data.msg);
         }
     }
+
+    const [showEdit, setShowEdit] = useState<any>([]);
+    const openEdit = (i: any) => {
+        const onchangeVal: any = [...showEdit];
+        onchangeVal[i] = true;
+
+        setShowEdit(onchangeVal);
+    };
+    const closeEdit = (i: any) => {
+        const onchangeVal: any = [...showEdit];
+        onchangeVal[i] = false;
+
+        setShowEdit(onchangeVal);
+    };
     return (
         <div className="rounded-xl border border-stroke bg-white pt-4 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
             {!isMobile && (
@@ -131,9 +146,18 @@ const TableMachine = () => {
                                             </div>
 
                                             <div className="flex items-center w-3/12 justify-center p-2.5 gap-2">
-                                                <button className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                <button onClick={() => openEdit(i)} className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                     EDIT
                                                 </button>
+                                                {showEdit[i] == true && (
+                                                    <ModalEditMesinMaster
+                                                        children={undefined}
+                                                        isOpen={showEdit[i]}
+                                                        onClose={() => closeEdit(i)}
+                                                        idMesin={data.id}
+                                                        data={data}
+                                                    />
+                                                )}
                                                 <button className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                     DELETE
                                                 </button>

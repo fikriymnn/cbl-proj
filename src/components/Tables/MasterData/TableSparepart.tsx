@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { MasterMachine } from '../../../types/master';
 import { useEffect, useState } from 'react';
+import ModalEditSparepartMaster from '../../Modals/ModalEditSparepartMaster';
 
 
 const brandData: MasterMachine[] = [
@@ -80,6 +81,21 @@ const TableSparepart = () => {
             console.log(error.data.msg);
         }
     }
+
+
+    const [showEdit, setShowEdit] = useState<any>([]);
+    const openEdit = (i: any) => {
+        const onchangeVal: any = [...showEdit];
+        onchangeVal[i] = true;
+
+        setShowEdit(onchangeVal);
+    };
+    const closeEdit = (i: any) => {
+        const onchangeVal: any = [...showEdit];
+        onchangeVal[i] = false;
+
+        setShowEdit(onchangeVal);
+    };
     return (
         <div className="rounded-xl border border-stroke bg-white pt-4 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
             {!isMobile && (
@@ -165,9 +181,18 @@ const TableSparepart = () => {
                                             </div>
 
                                             <div className="flex items-center w-3/12 justify-center p-2.5 gap-2">
-                                                <button className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                <button onClick={() => openEdit(i)} className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                     EDIT
                                                 </button>
+                                                {showEdit[i] == true && (
+                                                    <ModalEditSparepartMaster
+                                                        children={undefined}
+                                                        isOpen={showEdit[i]}
+                                                        onClose={() => closeEdit(i)}
+                                                        idSparepart={data.id}
+                                                        data={data}
+                                                    />
+                                                )}
                                                 <button className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                     DELETE
                                                 </button>

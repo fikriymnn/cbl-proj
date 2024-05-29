@@ -180,12 +180,10 @@ const ModalStockCheck1 = ({
   }
 
   async function postAnalisis() {
-    const urlNormal = `${
-      import.meta.env.VITE_API_LINK
-    }/ticketOs3/analisis/${idTiket}`;
-    const urlPending = `${
-      import.meta.env.VITE_API_LINK
-    }/ticketOs3/pending/${idTiket}`;
+    const urlNormal = `${import.meta.env.VITE_API_LINK
+      }/ticket/analisis/${idTiket}`;
+    const urlPending = `${import.meta.env.VITE_API_LINK
+      }/ticket/pending/${idTiket}`;
     try {
       if (typePost === 'normal') {
         const res = await axios.put(
@@ -395,9 +393,8 @@ const ModalStockCheck1 = ({
                       console.log(selectedOption);
                       changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                      isOptionSelected ? 'text-black dark:text-white' : ''
-                    }`}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
+                      }`}
                   >
                     <option
                       value=""
@@ -940,9 +937,8 @@ const ModalStockCheck1 = ({
 
                       changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                      isOptionSelected ? 'text-black dark:text-white' : ''
-                    }`}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
+                      }`}
                   >
                     <option
                       value=""

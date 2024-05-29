@@ -46,7 +46,7 @@ const ECommerce: React.FC = () => {
       <p className="font-semibold md:text-[28px] text-[20px] text-primary mb-[18px] ">
         Overview Dashboard
       </p>
-      <button onClick={submitPointPm1}>Tesssss</button>
+      {/* <button onClick={submitPointPm1}>Tesssss</button> */}
       <div className="flex gap-3 flex-wrap">
         <CardDataStats title="Total views" total="$3.456K" rate="0.43%" levelUp>
           <div className="flex gap-3">
