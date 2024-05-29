@@ -212,7 +212,7 @@ const ModalEditPM1Master = ({ children, isOpen, onClose, idPoint, data }:
                     {children}
                 </div>
 
-                {JSON.stringify(point)}
+                {/* {JSON.stringify(point)} */}
 
             </div >
         </div>
