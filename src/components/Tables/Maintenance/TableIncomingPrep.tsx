@@ -168,13 +168,12 @@ const TableIncomingPrep = () => {
                                     </button>
 
                                     {showModal1 && (
-                                        <Modal title="Incoming Maintenance Ticket"
+                                        <Modal
                                             isOpen={showModal1}
                                             onClose={closeModal1}
                                             ticketCode={'CTR03591'}
-                                            prepName={'GMC Ink 229'}
-                                            incDate={'28 May, 2024 06:37AM'}
-                                            prepCode={'3.2'} >
+
+                                            incDate={'28 May, 2024 06:37AM'} namaMesin={undefined} jenisKendala={undefined} kendala={undefined}                                            >
                                             <p></p>
                                         </Modal>
                                     )}
