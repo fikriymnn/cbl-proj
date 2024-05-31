@@ -505,7 +505,7 @@ function Pm1Form() {
                                 {data.inspection_point}{' '}
                               </p>
                             </div>
-                            <div className="grid grid-cols-4 w-10/12 gap-3 pl-3">
+                            <div className="grid grid-cols-4 max-h-[400px] min-h-[200px] w-10/12 gap-3 pl-3 ">
                               {data.inspection_task_pm1s.map(
                                 (task: any, ii: any) => {
                                   return (
