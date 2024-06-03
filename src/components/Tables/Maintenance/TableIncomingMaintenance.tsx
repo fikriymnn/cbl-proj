@@ -169,6 +169,10 @@ const TableIncomingMaintenance = () => {
     const url = `${import.meta.env.VITE_API_LINK}/ticket?bagian_tiket=incoming`;
     try {
       const res = await axios.get(url, {
+        params: {
+          page: 1,
+          limit: 10,
+        },
         withCredentials: true,
       });
 
@@ -176,7 +180,7 @@ const TableIncomingMaintenance = () => {
 
       console.log(res.data);
       let data: any[] = [];
-      for (let i = 0; i < res.data.length; i++) {
+      for (let i = 0; i < res.data.data.length; i++) {
         data.push(false);
       }
       setShowModal3(data);
@@ -241,7 +245,7 @@ const TableIncomingMaintenance = () => {
               </div>
               <>
                 {mtc != null &&
-                  mtc.map((brand: any, key: any) => {
+                  mtc.data.map((brand: any, key: any) => {
                     function convertDatetimeToDate(datetime: any) {
                       const dateObject = new Date(datetime);
                       const day = dateObject
@@ -390,7 +394,7 @@ const TableIncomingMaintenance = () => {
               </div>
               <>
                 {mtc != null &&
-                  mtc.map((brand: any, key: any) => {
+                  mtc.data.map((brand: any, key: any) => {
                     function convertDatetimeToDate(datetime: any) {
                       const dateObject = new Date(datetime);
                       const day = dateObject

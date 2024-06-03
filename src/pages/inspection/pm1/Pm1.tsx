@@ -66,8 +66,6 @@ function Pm1() {
                     withCredentials: true,
                 }
             );
-
-            alert("succes")
             console.log(res.data);
             navigate(`/maintenance/inspection/pm_1_form/${id}`)
         } catch (error: any) {
@@ -136,16 +134,17 @@ function Pm1() {
                     <div className='min-w-[700px] bg-white rounded-xl'>
 
                         <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>{tanggal}</p>
-                        {
+                        {pm1 == null && (
                             <button onClick={createPM1}
                                 className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center }`} // Dynamic class assignment
                             >
                                 TAMBAH PM1
 
                             </button>
+                        )
+
 
                         }
-
                         <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
 
                             <div className='w-2 h-full '>
@@ -202,42 +201,15 @@ function Pm1() {
                                                 </div>
 
                                                 <div>
-                                                    {data.status == 'incoming' ? (
-                                                        <>
-                                                            <button onClick={() => openConfirm(i)} className='uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center'>
-                                                                INSPECT
-                                                            </button>
-                                                            {showConfirm[i] == true && (
-                                                                <ModalPM1Confirm
 
-                                                                    isOpen={showConfirm[i]}
-                                                                    onClose={() => closeConfirm(i)}
-                                                                    id={undefined}
-                                                                >
-                                                                    <button onClick={() => inspectPM1(data.id)}
-                                                                        className={`uppercase w-full py-2 rounded-md inline-flex  items-center text-sm  bg-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
-                                                                    >
-                                                                        INSPECT
+                                                    <>
+                                                        <button onClick={() => inspectPM1(data.id)}
+                                                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                        >
+                                                            INSPECT
 
-                                                                    </button>
-                                                                </ModalPM1Confirm>
-                                                            )
-
-                                                            }
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Link to={`/maintenance/inspection/pm_1_form/${data.id}`}
-                                                                className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
-                                                            >
-                                                                INSPECT
-
-                                                            </Link>
-                                                        </>
-                                                    )
-                                                    }
-
-
+                                                        </button>
+                                                    </>
 
 
                                                 </div>
@@ -254,12 +226,13 @@ function Pm1() {
                     <div className='w-full bg-white rounded-xl'>
 
                         <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>{tanggal}</p>
-                        {
+                        {pm1 == null && (
                             <button onClick={createPM1}
                                 className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center }`} // Dynamic class assignment
                             >
                                 TAMBAH PM1
                             </button>
+                        )
                         }
                         <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
 
@@ -271,10 +244,7 @@ function Pm1() {
 
                                 <p className=''>Nama Mesin</p>
 
-
                                 <div className='w-[125px]'>{""}</div>
-
-
 
                             </section>
                         </div>
