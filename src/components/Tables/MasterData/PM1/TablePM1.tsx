@@ -47,9 +47,9 @@ const TablePM1 = () => {
               id=""
               className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
             />
-            <button className=" bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1">
-              TAMBAH
-            </button>
+            {/* <button className=" bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1">
+              TAMBAH PM1
+            </button> */}
           </div>
 
           <div className="flex flex-col">
@@ -79,8 +79,8 @@ const TablePM1 = () => {
                   <>
                     <div
                       className={`flex ${i === masterMesin.length - 1
-                          ? ''
-                          : 'border-b border-stroke dark:border-strokedark '
+                        ? ''
+                        : 'border-b border-stroke dark:border-strokedark '
                         }`}
                       key={i}
                     >
@@ -99,14 +99,14 @@ const TablePM1 = () => {
                       <div className="flex items-center text-[14px] w-2/12 justify-center p-2.5 pr-9">
                         <p
                           className={`text-[14px] font-semibold text-center uppercase ${data.bagian_mesin === 'printing'
-                              ? 'text-green-500'
-                              : data.bagian_mesin === 'water base / coating'
-                                ? 'text-yellow-500'
-                                : data.bagian_mesin === 'pond'
-                                  ? 'text-purple-500'
-                                  : data.bagian_mesin === 'finishing'
-                                    ? 'text-red-500'
-                                    : 'bg-white text-white'
+                            ? 'text-green-500'
+                            : data.bagian_mesin === 'water base / coating'
+                              ? 'text-yellow-500'
+                              : data.bagian_mesin === 'pond'
+                                ? 'text-purple-500'
+                                : data.bagian_mesin === 'finishing'
+                                  ? 'text-red-500'
+                                  : 'bg-white text-white'
                             }`}
                         >
                           {data.bagian_mesin}
@@ -144,9 +144,9 @@ const TablePM1 = () => {
               id=""
               className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
             />
-            <button className=" bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1">
-              TAMBAH MESIN
-            </button>
+            {/* <button className=" bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1">
+              TAMBAH PM1
+            </button> */}
           </div>
 
           <div className="flex flex-col w-full ">
@@ -192,14 +192,14 @@ const TablePM1 = () => {
                       <div className="flex items-center text-[14px] w-4/12 justify-center p-2.5 ">
                         <p
                           className={`text-[14px] font-semibold text-center uppercase ${data.bagian_mesin === 'printing'
-                              ? 'text-green-500'
-                              : data.bagian_mesin === 'water base / coating'
-                                ? 'text-yellow-500'
-                                : data.bagian_mesin === 'pond'
-                                  ? 'text-purple-500'
-                                  : data.bagian_mesin === 'finishing'
-                                    ? 'text-red-500'
-                                    : 'bg-white text-white'
+                            ? 'text-green-500'
+                            : data.bagian_mesin === 'water base / coating'
+                              ? 'text-yellow-500'
+                              : data.bagian_mesin === 'pond'
+                                ? 'text-purple-500'
+                                : data.bagian_mesin === 'finishing'
+                                  ? 'text-red-500'
+                                  : 'bg-white text-white'
                             }`}
                         >
                           {data.bagian_mesin}

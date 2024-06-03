@@ -1100,14 +1100,14 @@ function Pm1Form() {
                                   {data.inspection_point}{' '}
                                 </p>
 
-                                <div className="flex flex-col justify-start items-start w-full gap-2 ">
+                                <div className="flex flex-col justify-start items-start w-full gap-1 pr-3">
                                   <p className="text-[11px] font-semibold">
                                     Time :
                                     {data.lama_pengerjaan != null
                                       ? data.lama_pengerjaan
                                       : ''}
                                   </p>
-                                  {data.waktu_mulai == null && (
+                                  {data.waktu_selesai == null && (
                                     <>
                                       <button
                                         onClick={() => {
@@ -1117,7 +1117,7 @@ function Pm1Form() {
                                             startTask(data.id);
                                           }
                                         }}
-                                        className="flex w-[50px] py-2 rounded-md bg-[#00B81D] justify-center items-center  hover:cursor-pointer"
+                                        className="flex w-full rounded-md bg-[#00B81D] justify-center items-center py-2 hover:cursor-pointer"
                                       >
                                         <svg
                                           width="14"
@@ -1148,7 +1148,7 @@ function Pm1Form() {
                                             );
                                           }
                                         }}
-                                        className="flex  w-[50px] py-2 rounded-md bg-[#DE0000] justify-center items-center  hover:cursor-pointer"
+                                        className="flex w-full rounded-md bg-[#DE0000] justify-center items-center  py-2 hover:cursor-pointer"
                                       >
                                         <svg
                                           width="14"
@@ -1167,8 +1167,9 @@ function Pm1Form() {
                                       </button>
                                     </>
                                   )}
-                                  {data.waktu_selesai != null && (
+                                  {data.waktu_selesai == null && (
                                     <>
+
                                     </>
                                   )}
                                 </div>
