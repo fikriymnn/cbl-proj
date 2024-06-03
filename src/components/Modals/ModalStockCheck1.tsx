@@ -655,7 +655,7 @@ const ModalStockCheck1 = ({
             );
           })}
 
-          {/* {isHidden == false ? (
+          {isHidden == false ? (
             <>
               <div className="pt-3 mt-5 border bg-blue-100 rounded border-stroke pb-4 overflow-y-auto scroll-auto max-h-[450px]">
                 {!isMobile && (
@@ -874,16 +874,16 @@ const ModalStockCheck1 = ({
                 </div>
               </div>
 
-              {/* <div className="flex w-full h-12 rounded-md bg-blue-600 mt-4 justify-center items-center">
-                                <label className="text-center text-white text-xs font-bold">
-                                    REQUEST STOCK
-                                </label>
-                            </div> */}
-          {/* </>
+              <div className="flex w-full h-12 rounded-md bg-blue-600 mt-4 justify-center items-center">
+                <label className="text-center text-white text-xs font-bold">
+                  REQUEST STOCK
+                </label>
+              </div>
+            </>
           ) : (
             <></>
-          )} */}
-          {/* {buttonHidden == true ? (
+          )}
+          {buttonHidden == true ? (
             <>
               <div className="flex w-full pt-1">
                 <button
@@ -896,7 +896,7 @@ const ModalStockCheck1 = ({
             </>
           ) : (
             <></>
-          )} */}
+          )}
 
           <div className="flex w-full pt-1">
             <div className="flex w-full">
