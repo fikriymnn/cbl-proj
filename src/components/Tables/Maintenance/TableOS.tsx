@@ -129,9 +129,14 @@ function TableOS() {
   };
 
   async function getTiket(isRework?: boolean, idModal?: number) {
-    const url = `${import.meta.env.VITE_API_LINK}/ticket?bagian_tiket=os2`;
+    const url = `${import.meta.env.VITE_API_LINK}/ticket`;
     try {
       const res = await axios.get(url, {
+        params: {
+          bagian_tiket: 'os2',
+          page: 1,
+          limit: 10,
+        },
         withCredentials: true,
       });
 
@@ -139,7 +144,7 @@ function TableOS() {
       console.log(res.data);
 
       let data: any[] = [];
-      for (let i = 0; i < res.data.length; i++) {
+      for (let i = 0; i < res.data.data.length; i++) {
         data.push(false);
       }
       setShowModal1(data);
@@ -188,9 +193,8 @@ function TableOS() {
     const minutesDiff = Math.floor(secondsDiff / 60);
     const hoursDiff = Math.floor(minutesDiff / 60);
 
-    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${
-      hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
-    } `;
+    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
+      } `;
 
     return formattedDifference; // Example format (YYYY-MM-DD)
   }
@@ -763,7 +767,7 @@ function TableOS() {
           <div className=" overflow-x-auto">
             <div className="min-w-[700px]">
               {tiket != null &&
-                tiket.map((data: any, i: any) => {
+                tiket.data.map((data: any, i: any) => {
                   const lengthProses = data.proses_mtcs.length - 1;
 
                   function convertDatetimeToDate(datetime: any) {
@@ -832,12 +836,12 @@ function TableOS() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'monitoring'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                      : data.status_tiket == 'temporary'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                      : ''
+                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                        : data.status_tiket == 'monitoring'
+                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                          : data.status_tiket == 'temporary'
+                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                            : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -851,12 +855,12 @@ function TableOS() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'monitoring'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                      : data.status_tiket == 'temporary'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
-                                      : ''
+                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                        : data.status_tiket == 'monitoring'
+                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                          : data.status_tiket == 'temporary'
+                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
+                                            : ''
                                   }
                                 >
                                   {data.skor_mtc}%
@@ -1060,14 +1064,14 @@ function TableOS() {
                                               <p
                                                 className={
                                                   proses.skor_mtc <= 100 &&
-                                                  proses.skor_mtc >= 60
+                                                    proses.skor_mtc >= 60
                                                     ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                                     : proses.skor_mtc >= 20 &&
                                                       proses.skor_mtc <= 59
-                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                    : proses.skor_mtc < 20
-                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                                    : ''
+                                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
+                                                      : proses.skor_mtc < 20
+                                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                                        : ''
                                                 }
                                               >
                                                 {proses.skor_mtc}%
@@ -1159,7 +1163,7 @@ function TableOS() {
               </div>
             </div>
             {tiket != null &&
-              tiket.map((data: any, i: any) => {
+              tiket.data.map((data: any, i: any) => {
                 const lengthProses = data.proses_mtcs.length - 1;
 
                 function convertDatetimeToDate(datetime: any) {
@@ -1284,12 +1288,12 @@ function TableOS() {
                             data.status_tiket == 'pending'
                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                               : data.status_tiket == 'open'
-                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                              : data.status_tiket == 'monitoring'
-                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                              : data.status_tiket == 'temporary'
-                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                              : ''
+                                ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                : data.status_tiket == 'monitoring'
+                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                  : data.status_tiket == 'temporary'
+                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                    : ''
                           }
                         >
                           {data.skor_mtc}%
@@ -1318,12 +1322,12 @@ function TableOS() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'monitoring'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                      : data.status_tiket == 'temporary'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                      : ''
+                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                        : data.status_tiket == 'monitoring'
+                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                          : data.status_tiket == 'temporary'
+                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                            : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -1432,14 +1436,14 @@ function TableOS() {
                                         <p
                                           className={
                                             proses.skor_mtc <= 100 &&
-                                            proses.skor_mtc >= 60
+                                              proses.skor_mtc >= 60
                                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                               : proses.skor_mtc >= 20 &&
                                                 proses.skor_mtc <= 59
-                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                              : proses.skor_mtc < 20
-                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                              : ''
+                                                ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
+                                                : proses.skor_mtc < 20
+                                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                                  : ''
                                           }
                                         >
                                           {proses.skor_mtc}%
