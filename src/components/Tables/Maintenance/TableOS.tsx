@@ -10,12 +10,15 @@ import Polygon6 from '../../../images/icon/Polygon6.svg';
 import X from '../../../images/icon/x.svg';
 import axios from 'axios';
 import ModalDetail from '../../Modals/ModalDetail';
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
 // import moment from 'moment';
 
 function TableOS() {
   const [isMobile, setIsMobile] = useState(false);
   const [status, setStatus] = useState();
   const [openButton, setOpenButton] = useState(null);
+  const [page, setPage] = useState(1);
 
   const handleClick = (i: any) => {
     setOpenButton((prevState: any) => {
@@ -97,7 +100,7 @@ function TableOS() {
   useEffect(() => {
     getTiket();
     getUser();
-  }, []);
+  }, [page]);
 
   async function getUser() {
     try {
@@ -134,8 +137,9 @@ function TableOS() {
       const res = await axios.get(url, {
         params: {
           bagian_tiket: 'os2',
-          page: 1,
+          page: page,
           limit: 10,
+
         },
         withCredentials: true,
       });
@@ -805,7 +809,7 @@ function TableOS() {
                             key={i}
                             className=" py-3 w-10 px-3 flex justify-center items-center"
                           >
-                            {i + 1}
+                            {(i + 1) + ((page - 1) * 10)}
                           </div>
                           <div className="grid md:grid-cols-8 grid-cols-7 w-full gap-5">
                             <div className="flex flex-col md:gap-5 gap-1 ">
@@ -1137,6 +1141,17 @@ function TableOS() {
                 })}
             </div>
           </div>
+          <div className='w-full flex justify-end'>
+
+            <Stack spacing={2}>
+
+              <Pagination count={tiket?.total_page - 1} color="primary" onChange={(e, i) => {
+                setPage(i);
+                console.log(i)
+              }} />
+
+            </Stack>
+          </div>
         </>
       )}
 
@@ -1300,6 +1315,7 @@ function TableOS() {
                         </p>
                       </div>
                     </div>
+
                     {showDetailMobile[i] && (
                       <>
                         <div className="w-full grid grid-cols-3 bg-[#E9F3FF]  rounded-lg px-2 gap-x-3 gap-y-3 p-1">
@@ -1460,6 +1476,7 @@ function TableOS() {
                                     </div>
                                   </div>
                                 </div>
+
                               </>
                             );
                           })}
@@ -1469,6 +1486,17 @@ function TableOS() {
                   </>
                 );
               })}
+            <div className='w-full flex justify-center mt-5 '>
+
+              <Stack spacing={2}>
+
+                <Pagination count={tiket?.total_page - 1} color="primary" onChange={(e, i) => {
+                  setPage(i);
+                  console.log(i)
+                }} />
+
+              </Stack>
+            </div>
           </main>
         </>
       )}
