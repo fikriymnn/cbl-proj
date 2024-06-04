@@ -43,9 +43,13 @@ import MasterPM2Check from './pages/MasterData/MasterPM2Check';
 import MasterPM2TambahInspection from './pages/MasterData/MasterPM2TambahInspection';
 import MasterKPI from './pages/MasterData/MasterKPI';
 import MasterKPIForm from './pages/MasterData/MasterKPIForm';
-import Sparepart from './pages/sparepart/sparepart';
+import Sparepart from './pages/sparepart/submitOpname';
 import MasterUsers from './pages/MasterData/MasterUsers';
 import MasterRole from './pages/MasterData/MasterRole';
+import Adjustment from './pages/sparepart/adjustment';
+import HistoriOpname from './pages/sparepart/crumb/historiOpname';
+import CrumbSparepart from './pages/sparepart/crumb/header';
+import MainOpname from './pages/sparepart/crumb/main';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -99,6 +103,33 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <Pm2Form />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/Stock_opname"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Sparepart />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/adjustment"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Adjustment />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/opname"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MainOpname />
             </>
           }
         />

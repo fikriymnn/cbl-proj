@@ -6,12 +6,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import TableOne from './TableIncomingMaintenance';
-import TableTwo from './TableOS';
-import TableThree from '../TableThree';
-import TableIncomingMaintenance from './TableIncomingMaintenance';
-import TableOS from './TableOS';
-import HistoriOS2 from './History';
+import HistoriOpname from './historiOpname';
+
 
 
 interface TabPanelProps {
@@ -49,7 +45,7 @@ function a11yProps(index: number) {
     };
 }
 
-export default function MachineFullWidthTabs() {
+export default function CrumbSparepart() {
     const theme = createTheme({
         palette: {
             primary: {
@@ -130,21 +126,15 @@ export default function MachineFullWidthTabs() {
                         aria-label="full width tabs example"
                         className='bg-white text-[#00499F] font-semibold mb-2 '
                     >
-                        <Tab label="Incoming" {...a11yProps(0)} className='' />
-                        <Tab label="OS 2" {...a11yProps(1)} />
-                        <Tab label="Service" {...a11yProps(2)} />
-                        <Tab label="Histori" {...a11yProps(3)} />
+                        <Tab label="Stock Opname" {...a11yProps(0)} className='' />
+                        <Tab label="Adjustment" {...a11yProps(1)} />
+
                     </Tabs>
                 </ThemeProvider>
             </AppBar>
+
             <TabPanel value={value} index={0} dir={theme.direction}>
-                <TableIncomingMaintenance />
-            </TabPanel>
-            <TabPanel value={value} index={1} dir={theme.direction}>
-                <TableOS />
-            </TabPanel>
-            <TabPanel value={value} index={2} dir={theme.direction}>
-                <HistoriOS2 />
+                <HistoriOpname />
             </TabPanel>
         </Box>
     );
