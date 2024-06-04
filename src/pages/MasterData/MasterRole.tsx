@@ -5,7 +5,7 @@ function MasterRole() {
     return (
         <DefaultLayout>
             <>
-                <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>Master Data &gt; Role</p>
+                <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px] d'>Master Data &gt; Role</p>
                 <div className="flex w-full bg-white p-2">
                     <div className='flex justify-between w-full'>
 
@@ -15,7 +15,7 @@ function MasterRole() {
                         </div>
                     </div>
                 </div>
-                <div className=' flex bg-white py-2 w-full mt-2 mb-2 px-5 text-sm font-semibold'>
+                <div className=' flex bg-white py-2 w-full mt-2 mb-2 px-5 text-sm font-semibold rounded-m'>
                     <p className='w-20'>No</p>
                     <div className='grid grid-cols-12 w-full'>
                         <div className='col-span-9'>Role</div>

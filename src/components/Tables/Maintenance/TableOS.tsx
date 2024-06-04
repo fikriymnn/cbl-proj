@@ -795,6 +795,34 @@ function TableOS() {
 
                     return `${year}/${month}/${day}  ${hours}:${minutes}`; // Example format (YYYY-MM-DD)
                   }
+                  function convertDateonly(datetime: any) {
+                    const dateObject = new Date(datetime);
+                    const hours = dateObject
+                      .getHours()
+                      .toString()
+                      .padStart(2, '0');
+                    const minutes = dateObject
+                      .getMinutes()
+                      .toString()
+                      .padStart(2, '0');
+                    return `${hours}:${minutes}`; // Example format (YYYY-MM-DD)
+                  }
+                  function convertTimeOnly(datetime: any) {
+                    const dateObject = new Date(datetime);
+                    const day = dateObject
+                      .getDate()
+                      .toString()
+                      .padStart(2, '0'); // Ensure two-digit day
+                    const month = (dateObject.getMonth() + 1)
+                      .toString()
+                      .padStart(2, '0'); // Adjust for zero-based month
+                    const year = dateObject.getFullYear();
+
+                    return `${year}/${month}/${day}`; // Example format (YYYY-MM-DD)
+                  }
+
+                  const waktumulaiJam = convertDateonly(data.waktu_mulai_mtc);
+                  const waktumulaimtcDate = convertTimeOnly(data.waktu_mulai_mtc);
 
                   const dateMtc = convertDatetimeToDate(data.createdAt);
                   const waktuRespon = calculateResponTime(
@@ -951,6 +979,7 @@ function TableOS() {
                                             data.proses_mtcs[lengthProses].id
                                           }
                                           namaMesin={data.mesin}
+                                          skor_mtc={data.proses_mtcs[lengthProses].skor_mtc}
                                         />
                                       )}
                                       {showModal2 && (
@@ -1106,8 +1135,8 @@ function TableOS() {
                                               }
                                               kendala={data.nama_kendala}
                                               machineName={data.mesin}
-                                              tgl={'12/12/24'}
-                                              jam={'17.00'}
+                                              tgl={waktumulaimtcDate}
+                                              jam={waktumulaiJam}
                                               namaPemeriksa={
                                                 proses.user_eksekutor.nama
                                               }
@@ -1119,7 +1148,7 @@ function TableOS() {
                                                 ' - ' +
                                                 `${proses.nama_analisis_mtc}`
                                               }
-                                              kebutuhanSparepart={'undefined'}
+                                              kebutuhanSparepart={'-'}
                                               tipeMaintenance={
                                                 proses.cara_perbaikan
                                               }
@@ -1264,6 +1293,7 @@ function TableOS() {
                                   idTiket={data.id}
                                   idProses={data.proses_mtcs[lengthProses].id}
                                   namaMesin={data.mesin}
+                                  skor_mtc={data.proses_mtcs[lengthProses].skor_mtc}
                                 />
                               )}
                               {showModal2 && (

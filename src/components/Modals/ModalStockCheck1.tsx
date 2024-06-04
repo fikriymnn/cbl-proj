@@ -19,6 +19,7 @@ const ModalStockCheck1 = ({
   idProses,
   kodeLkh,
   namaMesin,
+  skor_mtc
 }: {
   children: any;
   isOpen: any;
@@ -34,6 +35,7 @@ const ModalStockCheck1 = ({
   idProses: any;
   kodeLkh: any;
   namaMesin: any;
+  skor_mtc: any,
 }) => {
   if (!isOpen) return null;
 
@@ -58,6 +60,7 @@ const ModalStockCheck1 = ({
     setButtonHidden(false);
     setSparepart([]);
   };
+
   const [isMobile, setIsMobile] = useState(false);
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
@@ -229,7 +232,23 @@ const ModalStockCheck1 = ({
       //alert(error.data.msg);
     }
   }
+  async function deleteExit(id_ticket: any, id_proses: any) {
+    const url = `${import.meta.env.VITE_API_LINK}/ticket/delete/${id_ticket}`;
+    try {
+      const res = await axios.put(url,
+        {
+          id_proses: id_proses
+        },
+        {
 
+          withCredentials: true,
+        });
+      onFinish();
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
   return (
     <div className="fixed z-50 inset-0 h-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
       <div className="w-full max-w-4xl bg-white rounded-xl shadow-md max-h-screen overflow-y-auto">
@@ -256,7 +275,13 @@ const ModalStockCheck1 = ({
           </label>
           <button
             type="button"
-            onClick={onClose}
+            onClick={() => {
+              if (skor_mtc != 0) {
+                deleteExit(idTiket, idProses);
+
+              }
+              onClose()
+            }}
             className="text-gray-400 focus:outline-none"
           >
             <svg
@@ -1070,7 +1095,13 @@ const ModalStockCheck1 = ({
 
         <button
           type="button"
-          onClick={onClose}
+          onClick={() => {
+            if (skor_mtc != 0) {
+              deleteExit(idTiket, idProses);
+
+            }
+            onClose()
+          }}
           className="absolute top-auto right-auto bottom-3 left-auto transform translate-x-1/2 translate-y-1/2 text-gray-400 focus:outline-none"
         ></button>
         {children}

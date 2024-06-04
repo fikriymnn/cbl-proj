@@ -10,11 +10,18 @@ import Polygon6 from '../../../images/icon/Polygon6.svg';
 import axios from 'axios';
 import X from '../../../images/icon/x.svg';
 import ModalDetail from '../../Modals/ModalDetail';
+import { Stack } from '@mui/material';
 // import moment from 'moment';
+import Pagination from '@mui/material/Pagination';
 
 function HistoryOS2() {
     const [isMobile, setIsMobile] = useState(false);
     const [status, setStatus] = useState();
+
+    const [page, setPage] = useState(1);
+
+
+
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
     };
@@ -95,7 +102,7 @@ function HistoryOS2() {
     useEffect(() => {
         getTiket();
         getUser();
-    }, []);
+    }, [page]);
 
     async function getUser() {
         try {
@@ -960,6 +967,17 @@ function HistoryOS2() {
                                         </>
                                     );
                                 })}
+                        </div>
+                        <div className='w-full flex justify-end'>
+
+                            <Stack spacing={2}>
+
+                                <Pagination count={tiket?.total_page - 1} color="primary" onChange={(e, i) => {
+                                    setPage(i);
+                                    console.log(i)
+                                }} />
+
+                            </Stack>
                         </div>
                     </div>
                 </>
