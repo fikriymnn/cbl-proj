@@ -562,7 +562,7 @@ const App = () => {
                         kendala={'3.X.Y - Settingan tidak pas'}
                         tgl={'20 MEI 2024'}
                         jam={'14:00'}
-                        namaPemeriksa={'Acep Piere'} no={2}                    >
+                        namaPemeriksa={'Acep Piere'} no={2} onFinish={undefined} idTiket={undefined} idProses={undefined} kodeLkh={undefined} namaMesin={undefined} skor_mtc={undefined}                    >
                         <p></p>
                     </ModalStockCheck1>
                 )}
@@ -584,6 +584,7 @@ const App = () => {
                         <p></p>
                     </ModalStockCheckRusak>
                 )}
+
                 <button type="button"
                     onClick={openModal26}
                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
@@ -599,8 +600,7 @@ const App = () => {
                         kendala={'Settingan tidak pas'}
                         tgl={'20 MEI 2024'}
                         jam={'14:00'}
-                        namaPemeriksa={'Acep Piere'} no={2}
-                    >
+                        namaPemeriksa={'Acep Piere'} no={2} onFinish={undefined}                    >
                         <p></p>
                     </ModalStockCheckPengganti>
                 )}

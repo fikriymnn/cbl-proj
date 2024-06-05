@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import CheckStockPengganti from "../Tables/Modals/SparepartPengganti";
 import CheckStockRusak from "../Tables/Modals/SparepartRusak";
-
+import Info from '../../images/icon/Info.svg'
 
 const ModalStockCheckRusak = ({ children, isOpen, onClose, kendala, machineName, tgl, jam, namaPemeriksa, no }:
     {
@@ -220,13 +220,15 @@ const ModalStockCheckRusak = ({ children, isOpen, onClose, kendala, machineName,
                     <div className="overflow-y-auto scroll-auto max-h-[200px]">
 
                         <div className="pb-2">
-                            <div className="flex  px-2 lg:py-3 py-1 bg-[#D8EAFF] rounded-md">
+                            <div className="md:flex   px-2 lg:py-3 py-1 bg-[#D8EAFF] rounded-md justify-center">
                                 <label className="hidden sm:block text-blue-700 text-xs font-bold pt-2 pl-4">
                                     1
                                 </label>
                                 <button name="rusak" className="lg:ml-4 ml-[2px] lg:w-[282px] w-8/12 h-9 bg-white rounded text-center text-[#0065DE] text-xs font-bold">
                                     INK INJECTOR CGT
                                 </button>
+
+                                <button className="bg-primary px-2 my-auto rounded-md mx-2 h-9 "><img src={Info} alt="" /></button>
                                 <svg className="lg:ml-4 ml-[2px]" width="39" height="39" viewBox="0 0 39 39" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <g clip-path="url(#clip0_708_3509)">
                                         <path d="M39 0H0V39H39V0Z" fill="white" fill-opacity="0.01" />
@@ -246,10 +248,11 @@ const ModalStockCheckRusak = ({ children, isOpen, onClose, kendala, machineName,
                                         <button name="pengganti" className="lg:ml-4 ml-[2px] w-[282px] h-9 bg-white rounded text-center text-[#0065DE] text-xs font-bold">
                                             INK INJECTOR FGA
                                         </button>
+                                        <button className="bg-primary px-2 py-0 rounded-md mx-2 h-9"><img src={Info} alt="" /></button>
                                         <div className="w-[130px] h-9 lg:ml-2 ml-[2px] bg-[#EDF5FF] rounded text-center text-[#0065DE] text-xs font-bold lg:pt-[9px] pt-[10px] px-1">
                                             ORIGINAL
                                         </div>
-                                        <button name="pengganti" className="lg:ml-2 ml-[2px] w-[39px] h-9 bg-[#DE0000] rounded justify-items-center ">
+                                        <button name="pengganti" className="lg:ml-2 ml-[2px] mx-auto w-[39px] h-9 bg-[#DE0000] rounded justify-items-center ">
                                             <svg className="lg:ml-[13px] mx-2" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
                                                 <rect y="11.7183" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(-45 0 11.7183)" fill="white" />
@@ -260,22 +263,25 @@ const ModalStockCheckRusak = ({ children, isOpen, onClose, kendala, machineName,
                                 )}
                                 {isMobile && (
                                     <>
-                                        <div className="flex flex-wrap">
-                                            <button name="pengganti" className="lg:ml-4 ml-[2px] w-[155px] h-5 bg-white rounded-t-[4px] text-center text-[#0065DE] text-xs font-bold">
-                                                INK INJECTOR FGA
-                                            </button>
-                                            <div className="w-[155px] h-4 lg:ml-2 ml-[2px] bg-[#EDF5FF] rounded-b-[4px] text-center text-[#0065DE] text-xs font-bold lg:pt-[9px] ">
-                                                ORIGINAL
+                                        <div className="flex">
+
+                                            <div className="flex flex-wrap">
+                                                <button name="pengganti" className="lg:ml-4 ml-[2px] w-[155px] h-5 bg-white rounded-t-[4px] text-center text-[#0065DE] text-xs font-bold">
+                                                    INK INJECTOR FGA
+                                                </button>
+                                                <div className="w-[155px] h-4 lg:ml-2 ml-[2px] bg-[#EDF5FF] rounded-b-[4px] text-center text-[#0065DE] text-xs font-bold lg:pt-[9px] ">
+                                                    ORIGINAL
+                                                </div>
                                             </div>
+
+                                            <button name="pengganti" className="lg:ml-2 ml-[2px] w-[39px] h-9 bg-[#DE0000] rounded justify-items-center ">
+                                                <svg className="lg:ml-[13px] mx-2" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
+                                                    <rect y="11.7183" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(-45 0 11.7183)" fill="white" />
+                                                </svg>
+
+                                            </button>
                                         </div>
-
-                                        <button name="pengganti" className="lg:ml-2 ml-[2px] w-[39px] h-9 bg-[#DE0000] rounded justify-items-center ">
-                                            <svg className="lg:ml-[13px] mx-2" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
-                                                <rect y="11.7183" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(-45 0 11.7183)" fill="white" />
-                                            </svg>
-
-                                        </button>
                                     </>
                                 )}
                             </div>
@@ -304,9 +310,12 @@ const ModalStockCheckRusak = ({ children, isOpen, onClose, kendala, machineName,
                                                 </clipPath>
                                             </defs>
                                         </svg>
-                                        <button name="pengganti" className="lg:ml-4 ml-[2px] lg:w-[415px] w-[320px] h-9 bg-blue-700 rounded text-center text-white text-xs font-bold">
+                                        <button name="pengganti" className="lg:ml-4 ml-[2px] lg:w-[282px] w-[320px] h-9 bg-blue-700 rounded text-center text-white text-xs font-bold">
                                             PILIH SPAREPART PENGGANTI
                                         </button>
+                                        <div className="w-[130px] h-9 lg:mx-2 mx-[2px] bg-[#EDF5FF] rounded text-center text-[#0065DE] text-xs font-bold lg:pt-[9px] pt-[10px] px-1">
+                                            ORIGINAL
+                                        </div>
                                         <button name="pengganti" className="ml-[2px] lg:w-[39px] w-[30px] h-9 bg-[#DE0000] rounded justify-items-center ">
                                             <svg className="lg:ml-[13px] mx-2 " width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <rect x="1.61621" width="16.5722" height="2.28582" rx="1.14291" transform="rotate(45 1.61621 0)" fill="white" />
