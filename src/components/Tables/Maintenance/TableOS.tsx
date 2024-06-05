@@ -12,6 +12,7 @@ import axios from 'axios';
 import ModalDetail from '../../Modals/ModalDetail';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
+import ModalMtcLightHeavy from '../../Modals/ModalMtcLightHeavy';
 // import moment from 'moment';
 
 function TableOS() {
@@ -42,9 +43,10 @@ function TableOS() {
   }, []);
 
   const openModal2 = () => setShowModal2(true);
-  //const closeModal1 = () => setShowModal1(false);
-
   const closeModal2 = () => setShowModal2(false);
+
+  const openModal4 = () => setShowModal4(true);
+  const closeModal4 = () => setShowModal4(false);
   // const handleClick = (index: number) => {
   //   setShowTwoButtons((prevState) => {
   //     const updatedShowTwoButtons = [...prevState]; // Create a copy
@@ -214,6 +216,7 @@ function TableOS() {
   );
 
   const [showModal2, setShowModal2] = useState(false);
+  const [showModal4, setShowModal4] = useState(false);
 
   return (
     <main>
@@ -983,13 +986,34 @@ function TableOS() {
                                         />
                                       )}
                                       {showModal2 && (
-                                        <ModalMtcDate
+
+                                        <ModalMtcLightHeavy
+
                                           isOpen={showModal2}
-                                          onClose={closeModal2}
-                                          machineName={'GMC Printer 2'}
-                                        >
-                                          <p></p>
+                                          onClose={closeModal2} title={undefined}                                           >
+                                          <div className="pt-5">
+
+                                            <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                              PERBAIKAN INTERNAL
+                                            </button>
+                                          </div>
+                                          <div className="pt-2">
+                                            <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                              SERVICE
+                                            </button>
+                                          </div>
+                                        </ModalMtcLightHeavy>
+
+                                      )}
+                                      {showModal4 && (
+
+                                        <ModalMtcDate
+
+                                          isOpen={showModal4}
+                                          onClose={closeModal4} children={undefined} machineName={undefined}                                            >
+
                                         </ModalMtcDate>
+
                                       )}
                                     </div>
                                   ) : (
@@ -1174,7 +1198,7 @@ function TableOS() {
 
             <Stack spacing={2}>
 
-              <Pagination count={tiket?.total_page - 1} color="primary" onChange={(e, i) => {
+              <Pagination count={tiket?.total_page} color="primary" onChange={(e, i) => {
                 setPage(i);
                 console.log(i)
               }} />
@@ -1297,14 +1321,26 @@ function TableOS() {
                                 />
                               )}
                               {showModal2 && (
-                                <ModalMtcDate
+
+                                <ModalMtcLightHeavy
+
                                   isOpen={showModal2}
-                                  onClose={closeModal2}
-                                  machineName={'GMC Printer 2'}
-                                >
-                                  <p></p>
-                                </ModalMtcDate>
+                                  onClose={closeModal2} title={undefined}                                           >
+                                  <div className="pt-5">
+
+                                    <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                      LIGHT MAINTENANCE
+                                    </button>
+                                  </div>
+                                  <div className="pt-2">
+                                    <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                      HEAVY MAINTENANCE
+                                    </button>
+                                  </div>
+                                </ModalMtcLightHeavy>
+
                               )}
+
                             </div>
                           ) : (
                             ''
@@ -1520,7 +1556,7 @@ function TableOS() {
 
               <Stack spacing={2}>
 
-                <Pagination count={tiket?.total_page - 1} color="primary" onChange={(e, i) => {
+                <Pagination count={tiket?.total_page} color="primary" onChange={(e, i) => {
                   setPage(i);
                   console.log(i)
                 }} />

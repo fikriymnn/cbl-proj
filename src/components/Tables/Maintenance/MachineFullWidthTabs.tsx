@@ -147,7 +147,7 @@ export default function MachineFullWidthTabs() {
 
             </TabPanel>
             <TabPanel value={value} index={3} dir={theme.direction}>
-                {/* <HistoriOS2 /> */}
+                <HistoriOS2 />
             </TabPanel>
         </Box>
     );

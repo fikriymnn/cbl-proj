@@ -137,6 +137,12 @@ function HistoryOS2() {
         const url = `${import.meta.env.VITE_API_LINK}/ticket?bagian_tiket=histori os2`;
         try {
             const res = await axios.get(url, {
+                params: {
+                    bagian_tiket: 'histori os2',
+                    page: page,
+                    limit: 10,
+
+                },
                 withCredentials: true,
             });
 
@@ -144,7 +150,7 @@ function HistoryOS2() {
             console.log(res.data);
 
             let data: any[] = [];
-            for (let i = 0; i < res.data.length; i++) {
+            for (let i = 0; i < res.data.data.length; i++) {
                 data.push(false);
             }
             setShowModal1(data);
@@ -712,7 +718,7 @@ function HistoryOS2() {
                     <div className=" overflow-x-auto">
                         <div className="min-w-[700px]">
                             {tiket != null &&
-                                tiket.map((data: any, i: any) => {
+                                tiket.data.map((data: any, i: any) => {
                                     const lengthProses = data.proses_mtcs.length - 1;
 
                                     function convertDatetimeToDate(datetime: any) {
@@ -812,7 +818,7 @@ function HistoryOS2() {
                                                                     onClick={() => handleClickDetail(i)}
                                                                     className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
                                                                 >
-                                                                    <img src={Arrow} alt="" className="mx-3" />
+                                                                    <img src={Arrow} alt="" className="mx-2" />
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -972,7 +978,7 @@ function HistoryOS2() {
 
                             <Stack spacing={2}>
 
-                                <Pagination count={tiket?.total_page - 1} color="primary" onChange={(e, i) => {
+                                <Pagination count={tiket?.total_page} color="primary" onChange={(e, i) => {
                                     setPage(i);
                                     console.log(i)
                                 }} />
@@ -1006,7 +1012,7 @@ function HistoryOS2() {
                             </div>
                         </div>
                         {tiket != null &&
-                            tiket.map((data: any, i: any) => {
+                            tiket.data.map((data: any, i: any) => {
                                 const lengthProses = data.proses_mtcs.length - 1;
 
                                 function convertDatetimeToDate(datetime: any) {
@@ -1081,17 +1087,12 @@ function HistoryOS2() {
                                                                     machineName={data.mesin}
                                                                     tgl={data.waktu_respon}
                                                                     jam={'19.09'}
-                                                                    namaPemeriksa={
-                                                                        data.proses_mtcs[lengthProses]
-                                                                            .user_eksekutor.nama
-                                                                    }
+                                                                    namaPemeriksa={data.proses_mtcs[lengthProses]
+                                                                        .user_eksekutor.nama}
                                                                     no={'109299'}
                                                                     idTiket={data.id}
-                                                                    idProses={
-                                                                        data.proses_mtcs[lengthProses].id
-                                                                    }
-                                                                    namaMesin={data.mesin}
-                                                                />
+                                                                    idProses={data.proses_mtcs[lengthProses].id}
+                                                                    namaMesin={data.mesin} skor_mtc={undefined} />
                                                             )}
                                                             {showModal2 && (
                                                                 <ModalMtcDate
