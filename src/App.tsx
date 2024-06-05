@@ -50,6 +50,7 @@ import Adjustment from './pages/sparepart/adjustment';
 import HistoriOpname from './pages/sparepart/crumb/historiOpname';
 import CrumbSparepart from './pages/sparepart/crumb/header';
 import MainOpname from './pages/sparepart/crumb/main';
+import MasterMonitoring from './pages/MasterData/MasterMonitoring';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -335,6 +336,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterAnalisis />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/mastermonitoring"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterMonitoring />
               </ProtectedRoute>
             </>
           }
