@@ -48,11 +48,11 @@ const ModalStockCheckRusak = ({ children, isOpen, onClose, kendala, machineName,
             window.removeEventListener('resize', handleResize);
         };
     }, []);
+
     return (
         <div className="fixed z-50 inset-0 h-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
             <div className="w-full max-w-4xl bg-white rounded-xl shadow-md max-h-screen overflow-y-auto">
                 <div className="flex w-full items-center pt-4 px-3">
-
                     <svg
                         className='flex w-12'
                         width="20"

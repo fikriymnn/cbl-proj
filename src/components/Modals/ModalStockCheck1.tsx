@@ -59,6 +59,7 @@ const ModalStockCheck1 = ({
   };
   const [isHidden, setIsHidden] = useState(true);
   const [buttonHidden, setButtonHidden] = useState(true);
+
   const handleClick = () => {
     setIsHidden(false);
     setButtonHidden(false);

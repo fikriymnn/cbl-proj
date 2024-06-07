@@ -51,8 +51,6 @@ import HistoriOpname from './pages/sparepart/crumb/historiOpname';
 import CrumbSparepart from './pages/sparepart/crumb/header';
 import MainOpname from './pages/sparepart/crumb/main';
 import MasterMonitoring from './pages/MasterData/MasterMonitoring';
-import Stockmaster from './pages/sparepart/stockmaster/stockmaster';
-import AddStock from './pages/sparepart/stockmaster/addStock';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -282,7 +280,17 @@ function App() {
             </>
           }
         />
-
+        <Route
+          path="/maintenance/serviceSpb"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <SpbService />
+              </ProtectedRoute>
+            </>
+          }
+        />
         <Route
           path="/quality_control/mtc"
           element={
