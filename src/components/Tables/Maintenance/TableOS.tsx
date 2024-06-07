@@ -141,7 +141,6 @@ function TableOS() {
           bagian_tiket: 'os2',
           page: page,
           limit: 10,
-
         },
         withCredentials: true,
       });
@@ -199,8 +198,9 @@ function TableOS() {
     const minutesDiff = Math.floor(secondsDiff / 60);
     const hoursDiff = Math.floor(minutesDiff / 60);
 
-    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
-      } `;
+    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${
+      hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
+    } `;
 
     return formattedDifference; // Example format (YYYY-MM-DD)
   }
@@ -825,7 +825,9 @@ function TableOS() {
                   }
 
                   const waktumulaiJam = convertDateonly(data.waktu_mulai_mtc);
-                  const waktumulaimtcDate = convertTimeOnly(data.waktu_mulai_mtc);
+                  const waktumulaimtcDate = convertTimeOnly(
+                    data.waktu_mulai_mtc,
+                  );
 
                   const dateMtc = convertDatetimeToDate(data.createdAt);
                   const waktuRespon = calculateResponTime(
@@ -840,7 +842,7 @@ function TableOS() {
                             key={i}
                             className=" py-3 w-10 px-3 flex justify-center items-center"
                           >
-                            {(i + 1) + ((page - 1) * 10)}
+                            {i + 1 + (page - 1) * 10}
                           </div>
                           <div className="grid md:grid-cols-8 grid-cols-7 w-full gap-5">
                             <div className="flex flex-col md:gap-5 gap-1 ">
@@ -871,12 +873,12 @@ function TableOS() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                        : data.status_tiket == 'monitoring'
-                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                          : data.status_tiket == 'temporary'
-                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                            : ''
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                      : data.status_tiket == 'monitoring'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                      : data.status_tiket == 'temporary'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                      : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -890,12 +892,12 @@ function TableOS() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                        : data.status_tiket == 'monitoring'
-                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                          : data.status_tiket == 'temporary'
-                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
-                                            : ''
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                      : data.status_tiket == 'monitoring'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                      : data.status_tiket == 'temporary'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
+                                      : ''
                                   }
                                 >
                                   {data.skor_mtc}%
@@ -962,41 +964,46 @@ function TableOS() {
                                         </button>
                                       </div>
                                       {showModal1[i] == true && (
-                                        // <ModalStockCheck1
-                                        //   children={undefined}
-                                        //   isOpen={showModal1[i]}
-                                        //   onClose={() => closeModal1(i)}
-                                        //   onFinish={() => getTiket()}
-                                        //   kendala={data.nama_kendala}
-                                        //   kodeLkh={data.kode_lkh}
-                                        //   machineName={data.mesin}
-                                        //   tgl={data.waktu_respon}
-                                        //   jam={'19.09'}
-                                        //   namaPemeriksa={
-                                        //     data.proses_mtcs[lengthProses]
-                                        //       .user_eksekutor.nama
-                                        //   }
-                                        //   no={'109299'}
-                                        //   idTiket={data.id}
-                                        //   idProses={
-                                        //     data.proses_mtcs[lengthProses].id
-                                        //   }
-                                        //   namaMesin={data.mesin}
-                                        //   skor_mtc={data.proses_mtcs[lengthProses].skor_mtc}
-                                        // />
-                                        <ModalStockCheckPengganti children={undefined} isOpen={showModal1[i]} onClose={() => closeModal1(i)} kendala={"nu"} onFinish={"nu"} machineName={"nu"} tgl={"nu"} jam={"nu"} namaPemeriksa={"nu"} no={"nu"}>
+                                        <ModalStockCheck1
+                                          children={undefined}
+                                          isOpen={showModal1[i]}
+                                          onClose={() => closeModal1(i)}
+                                          onFinish={() => getTiket()}
+                                          kendala={data.nama_kendala}
+                                          kodeLkh={data.kode_lkh}
+                                          machineName={data.mesin}
+                                          tgl={data.waktu_respon}
+                                          jam={'19.09'}
+                                          namaPemeriksa={
+                                            data.proses_mtcs[lengthProses]
+                                              .user_eksekutor.nama
+                                          }
+                                          no={'109299'}
+                                          idTiket={data.id}
+                                          idProses={
+                                            data.proses_mtcs[lengthProses].id
+                                          }
+                                          namaMesin={data.mesin}
+                                          skor_mtc={
+                                            data.proses_mtcs[lengthProses]
+                                              .skor_mtc
+                                          }
+                                        />
+                                        // <ModalStockCheckPengganti children={undefined} isOpen={showModal1[i]} onClose={() => closeModal1(i)} kendala={"nu"} onFinish={"nu"} machineName={"nu"} tgl={"nu"} jam={"nu"} namaPemeriksa={"nu"} no={"nu"}>
 
-                                        </ModalStockCheckPengganti>
+                                        // </ModalStockCheckPengganti>
                                       )}
                                       {showModal2 && (
-
                                         <ModalMtcLightHeavy
-
                                           isOpen={showModal2}
-                                          onClose={closeModal2} title={undefined}                                           >
+                                          onClose={closeModal2}
+                                          title={undefined}
+                                        >
                                           <div className="pt-5">
-
-                                            <button onClick={openModal4} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                            <button
+                                              onClick={openModal4}
+                                              className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
+                                            >
                                               PERBAIKAN INTERNAL
                                             </button>
                                           </div>
@@ -1006,17 +1013,14 @@ function TableOS() {
                                             </button>
                                           </div>
                                         </ModalMtcLightHeavy>
-
                                       )}
                                       {showModal4 && (
-
                                         <ModalMtcDate
-
                                           isOpen={showModal4}
-                                          onClose={closeModal4} children={undefined} machineName={undefined}                                            >
-
-                                        </ModalMtcDate>
-
+                                          onClose={closeModal4}
+                                          children={undefined}
+                                          machineName={undefined}
+                                        ></ModalMtcDate>
                                       )}
                                     </div>
                                   ) : (
@@ -1124,14 +1128,14 @@ function TableOS() {
                                               <p
                                                 className={
                                                   proses.skor_mtc <= 100 &&
-                                                    proses.skor_mtc >= 60
+                                                  proses.skor_mtc >= 60
                                                     ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                                     : proses.skor_mtc >= 20 &&
                                                       proses.skor_mtc <= 59
-                                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                      : proses.skor_mtc < 20
-                                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                                        : ''
+                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
+                                                    : proses.skor_mtc < 20
+                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                                    : ''
                                                 }
                                               >
                                                 {proses.skor_mtc}%
@@ -1197,15 +1201,16 @@ function TableOS() {
                 })}
             </div>
           </div>
-          <div className='w-full flex justify-end'>
-
+          <div className="w-full flex justify-end">
             <Stack spacing={2}>
-
-              <Pagination count={tiket?.total_page} color="primary" onChange={(e, i) => {
-                setPage(i);
-                console.log(i)
-              }} />
-
+              <Pagination
+                count={tiket?.total_page}
+                color="primary"
+                onChange={(e, i) => {
+                  setPage(i);
+                  console.log(i);
+                }}
+              />
             </Stack>
           </div>
         </>
@@ -1320,17 +1325,18 @@ function TableOS() {
                                   idTiket={data.id}
                                   idProses={data.proses_mtcs[lengthProses].id}
                                   namaMesin={data.mesin}
-                                  skor_mtc={data.proses_mtcs[lengthProses].skor_mtc}
+                                  skor_mtc={
+                                    data.proses_mtcs[lengthProses].skor_mtc
+                                  }
                                 />
                               )}
                               {showModal2 && (
-
                                 <ModalMtcLightHeavy
-
                                   isOpen={showModal2}
-                                  onClose={closeModal2} title={undefined}                                           >
+                                  onClose={closeModal2}
+                                  title={undefined}
+                                >
                                   <div className="pt-5">
-
                                     <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
                                       LIGHT MAINTENANCE
                                     </button>
@@ -1341,9 +1347,7 @@ function TableOS() {
                                     </button>
                                   </div>
                                 </ModalMtcLightHeavy>
-
                               )}
-
                             </div>
                           ) : (
                             ''
@@ -1372,12 +1376,12 @@ function TableOS() {
                             data.status_tiket == 'pending'
                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                               : data.status_tiket == 'open'
-                                ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                : data.status_tiket == 'monitoring'
-                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                  : data.status_tiket == 'temporary'
-                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                    : ''
+                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                              : data.status_tiket == 'monitoring'
+                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                              : data.status_tiket == 'temporary'
+                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                              : ''
                           }
                         >
                           {data.skor_mtc}%
@@ -1407,12 +1411,12 @@ function TableOS() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                        : data.status_tiket == 'monitoring'
-                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                          : data.status_tiket == 'temporary'
-                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                            : ''
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                      : data.status_tiket == 'monitoring'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                      : data.status_tiket == 'temporary'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                      : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -1521,14 +1525,14 @@ function TableOS() {
                                         <p
                                           className={
                                             proses.skor_mtc <= 100 &&
-                                              proses.skor_mtc >= 60
+                                            proses.skor_mtc >= 60
                                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                               : proses.skor_mtc >= 20 &&
                                                 proses.skor_mtc <= 59
-                                                ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                : proses.skor_mtc < 20
-                                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                                  : ''
+                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
+                                              : proses.skor_mtc < 20
+                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                              : ''
                                           }
                                         >
                                           {proses.skor_mtc}%
@@ -1545,7 +1549,6 @@ function TableOS() {
                                     </div>
                                   </div>
                                 </div>
-
                               </>
                             );
                           })}
@@ -1555,15 +1558,16 @@ function TableOS() {
                   </>
                 );
               })}
-            <div className='w-full flex justify-center mt-5 '>
-
+            <div className="w-full flex justify-center mt-5 ">
               <Stack spacing={2}>
-
-                <Pagination count={tiket?.total_page} color="primary" onChange={(e, i) => {
-                  setPage(i);
-                  console.log(i)
-                }} />
-
+                <Pagination
+                  count={tiket?.total_page}
+                  color="primary"
+                  onChange={(e, i) => {
+                    setPage(i);
+                    console.log(i);
+                  }}
+                />
               </Stack>
             </div>
           </main>
