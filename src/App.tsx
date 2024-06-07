@@ -51,6 +51,8 @@ import HistoriOpname from './pages/sparepart/crumb/historiOpname';
 import CrumbSparepart from './pages/sparepart/crumb/header';
 import MainOpname from './pages/sparepart/crumb/main';
 import MasterMonitoring from './pages/MasterData/MasterMonitoring';
+import Stockmaster from './pages/sparepart/stockmaster/stockmaster';
+import AddStock from './pages/sparepart/stockmaster/addStock';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -86,6 +88,24 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <ECommerce />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/stockmaster_sparepart"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Stockmaster />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/stockmaster_sparepart/addStock"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <AddStock />
             </>
           }
         />
