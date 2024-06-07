@@ -142,6 +142,7 @@ function Pm1Form() {
     try {
       const elapsedTime = await calculateElapsedTime(start, stopTime);
       const formattedTime = formatElapsedTime(elapsedTime);
+      console.log(formattedTime);
       const res = await axios.put(
         url,
         {
@@ -205,7 +206,7 @@ function Pm1Form() {
   function formatElapsedTime(minutes: number, seconds: number = 0) {
     const formattedMinutes = minutes.toString().padStart(2, '0'); // Pad minutes with leading 0
     // Customize the format as needed
-    return `${formattedMinutes} menit`; // Example: 00:30 menit
+    return `${formattedMinutes}`; // Example: 00:30 menit
   }
 
   // const start1 = moment(start)

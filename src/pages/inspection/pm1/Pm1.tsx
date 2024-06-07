@@ -135,16 +135,19 @@ function Pm1() {
 
                         <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>{tanggal}</p>
                         {
-                            <button onClick={createPM1}
-                                className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center }`} // Dynamic class assignment
-                            >
-                                TAMBAH PM1
+                            pm1?.length <= 0 ?
+                                <button onClick={createPM1}
+                                    className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center }`} // Dynamic class assignment
+                                >
+                                    TAMBAH PM1
 
-                            </button>
-
-
-
+                                </button> : null
                         }
+
+
+
+
+
                         <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
 
                             <div className='w-2 h-full '>
