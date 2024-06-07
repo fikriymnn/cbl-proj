@@ -12,6 +12,7 @@ const Login: React.FC = () => {
     const [Email, setEmail] = useState("");
     const [Password, setPassword] = useState("");
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false)
     // const router = useRouter();
     // const { push } = useRouter();
 
@@ -28,12 +29,16 @@ const Login: React.FC = () => {
                 }
             );
 
-            alert("login success");
+
+            setLoading(true);
+            alert('Login successful');
             // router.push("/");
             // push("/");
             navigate('/dashboard');
+
         } catch (error: any) {
             alert(error);
+            setLoading(false)
         }
     }
 
@@ -135,7 +140,7 @@ const Login: React.FC = () => {
                                 <div className="mb-5">
                                     <input
                                         type="submit"
-                                        value="Login"
+                                        value={`${loading ? 'loading...' : 'Login'}`}
                                         className="w-full cursor-pointer rounded-lg border border-[#00499F] bg-[#00499F] p-4 text-white transition hover:bg-opacity-90 font-semibold"
                                     />
                                 </div>

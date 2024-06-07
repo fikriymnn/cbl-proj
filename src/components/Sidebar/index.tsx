@@ -26,6 +26,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
   const [sidebarExpanded, setSidebarExpanded] = useState(
     storedSidebarExpanded === null ? false : storedSidebarExpanded === 'true'
   );
+  const storedSidebarExpanded1 = localStorage.getItem('sidebar-expanded');
+  const [sidebarExpanded1, setSidebarExpanded1] = useState(
+    storedSidebarExpanded1 === null ? false : storedSidebarExpanded1 === 'true'
+  );
   const renderAdminElements = () => {
     // Conditionally render elements specific to the admin role
     return (
@@ -198,7 +202,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
   return (
     <aside
       ref={sidebar}
-      className={`absolute left-0 top-0 z-99999 xl:z-40 flex h-screen  flex-col overflow-y-hidden w-[270px] bg-gradient-to-b from-[#016AE6] to-[#014BA2] duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      className={`absolute left-0 top-0 z-40 xl:z-40 flex h-screen  flex-col overflow-y-hidden w-[270px] bg-gradient-to-b from-[#016AE6] to-[#014BA2] duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
     >
       {/* <!-- SIDEBAR HEADER --> */}
@@ -300,7 +304,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                         className={`translate transform overflow-hidden ${!open && 'hidden'
                           }`}
                       >
-                        <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-6">
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-3">
                           <li>
                             <NavLink
                               to="/maintenance/machine"
@@ -345,7 +349,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                                         e.preventDefault();
                                         sidebarExpanded
                                           ? handleClick()
-                                          : setSidebarExpanded(true);
+                                          : setSidebarExpanded1(true);
                                       }}
                                     >
 
@@ -474,6 +478,69 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                                 return (
                                   <React.Fragment>
                                     <NavLink
+                                      to="/maintenance/spb"
+                                      className={({ isActive }) => `group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out ` +
+                                        (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')}
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        sidebarExpanded
+                                          ? handleClick()
+                                          : setSidebarExpanded(true);
+                                        navigate('')
+                                      }}
+                                    >
+
+                                      <img src={Inspect} alt="Logo" />
+                                      SPB
+                                      <svg
+                                        className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
+                                          }`}
+                                        width="7"
+                                        height="8"
+                                        viewBox="0 0 7 8"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z" fill="" />
+                                      </svg>
+                                    </NavLink>
+                                    {/* <!-- Dropdown Menu Start --> */}
+
+
+                                    <div
+                                      className={`translate transform overflow-hidden ${!open && 'hidden'
+                                        }`}
+                                    >
+                                      <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
+                                        <li>
+                                          <NavLink
+                                            to="/maintenance/serviceSpb"
+                                            className={({ isActive }) =>
+                                              'group relative flex items-center gap-5  rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                              (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                            }
+                                          >
+                                            SPB Service
+                                          </NavLink>
+                                        </li>
+
+                                      </ul>
+                                    </div>
+                                    {/* <!-- Dropdown Menu End --> */}
+                                  </React.Fragment>
+                                );
+                              }}
+                            </SidebarLinkGroup>
+                          </li>
+                          <li>
+                            <SidebarLinkGroup
+                              activeCondition={
+                                pathname === '/inspection' || pathname.includes('maintenance')
+                              }
+                            >
+                              {(handleClick, open) => {
+                                return (
+                                  <React.Fragment>
+                                    <NavLink
                                       to="/maintenance/KPI"
                                       className={({ isActive }) => `group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out ` +
                                         (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')}
@@ -528,23 +595,239 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                             </SidebarLinkGroup>
                           </li>
                           <li>
-                            <NavLink
-                              to="/maintenance/sparepart"
-                              className={({ isActive }) =>
-                                'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                            <SidebarLinkGroup
+                              activeCondition={
+                                pathname === '/maintenance/sparepart' || pathname.includes('maintenance')
                               }
                             >
-                              <svg className='stroke-current' width="27" height="24" viewBox="0 0 27 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12.7905 3.41037C13.374 3.08961 14.0836 3.08961 14.6672 3.41036L21.9268 7.40058C22.2335 7.56916 22.4238 7.889 22.4238 8.23611V16.1071C22.4238 16.8013 22.0433 17.441 21.4299 17.7782L14.6672 21.4953C14.0836 21.816 13.374 21.816 12.7905 21.4953L6.02777 17.7782C5.41437 17.441 5.03394 16.8013 5.03394 16.1071V8.23611C5.03394 7.889 5.22415 7.56916 5.53086 7.40058L12.7905 3.41037Z" stroke="" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                <path d="M5.03394 7.69812L13.7289 12.5283M13.7289 12.5283L22.4238 7.69812M13.7289 12.5283V22.1887" stroke="" stroke-width="2" stroke-linejoin="round" />
-                                <path d="M9.61011 9.96226L18.305 5.43396" stroke="" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                                <path d="M7.77954 12.6793L10.9829 14.4906" stroke="" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                              </svg>
+                              {(handleClick, open) => {
+                                return (
+                                  <React.Fragment>
+                                    <NavLink
+                                      to="/maintenance/sparepart"
+                                      className={({ isActive }) => `group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out ` +
+                                        (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')}
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        sidebarExpanded
+                                          ? handleClick()
+                                          : setSidebarExpanded(true);
+                                        navigate('/maintenance/KPI')
+                                      }}
+                                    >
 
-                              Sparepart
-                            </NavLink>
+                                      <img src={Inspect} alt="Logo" />
+                                      Sparepart
+                                      <svg
+                                        className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
+                                          }`}
+                                        width="7"
+                                        height="8"
+                                        viewBox="0 0 7 8"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z" fill="" />
+                                      </svg>
+                                    </NavLink>
+                                    {/* <!-- Dropdown Menu Start --> */}
+
+
+                                    <div
+                                      className={`translate transform overflow-hidden ${!open && 'hidden'
+                                        }`}
+                                    >
+                                      <ul className=" flex flex-col gap-5  md:pl-5 pl-6 py-3">
+                                        <li>
+                                          <SidebarLinkGroup
+                                            activeCondition={
+                                              pathname === '/maintenance/sparepart' || pathname.includes('maintenance')
+                                            }
+                                          >
+                                            {(handleClick, open) => {
+                                              return (
+                                                <React.Fragment>
+                                                  <NavLink
+                                                    to="/maintenance/sparepart"
+                                                    className={({ isActive }) => `group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-1 font-medium text-bodydark1 duration-300 ease-in-out ` +
+                                                      (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')}
+                                                    onClick={(e) => {
+                                                      e.preventDefault();
+                                                      sidebarExpanded
+                                                        ? handleClick()
+                                                        : setSidebarExpanded(true);
+                                                      navigate('/maintenance/KPI')
+                                                    }}
+                                                  >
+
+                                                    <img src={Inspect} alt="Logo" />
+                                                    Stock Opname
+                                                    <svg
+                                                      className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
+                                                        }`}
+                                                      width="7"
+                                                      height="8"
+                                                      viewBox="0 0 7 8"
+                                                      fill="none"
+                                                      xmlns="http://www.w3.org/2000/svg">
+                                                      <path d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z" fill="" />
+                                                    </svg>
+                                                  </NavLink>
+                                                  {/* <!-- Dropdown Menu Start --> */}
+
+
+                                                  <div
+                                                    className={`translate transform overflow-hidden ${!open && 'hidden'
+                                                      }`}
+                                                  >
+                                                    <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
+                                                      <li>
+                                                        <NavLink
+                                                          to="/maintenance/stock_opname"
+                                                          className={({ isActive }) =>
+                                                            'group relative flex items-center gap-5  rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                                            (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                                          }
+                                                        >
+                                                          Submit
+                                                        </NavLink>
+                                                      </li>
+
+                                                    </ul>
+                                                  </div>
+                                                  <div
+                                                    className={`translate transform overflow-hidden ${!open && 'hidden'
+                                                      }`}
+                                                  >
+                                                    <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
+                                                      <li>
+                                                        <NavLink
+                                                          to="/maintenance/adjustment"
+                                                          className={({ isActive }) =>
+                                                            'group relative flex items-center gap-5  rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                                            (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                                          }
+                                                        >
+                                                          Adjustment
+                                                        </NavLink>
+                                                      </li>
+
+                                                    </ul>
+                                                  </div>
+                                                  <div
+                                                    className={`translate transform overflow-hidden ${!open && 'hidden'
+                                                      }`}
+                                                  >
+                                                    <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
+                                                      <li>
+                                                        <NavLink
+                                                          to="/maintenance/opname"
+                                                          className={({ isActive }) =>
+                                                            'group relative flex items-center gap-5  rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                                            (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                                          }
+                                                        >
+                                                          Histori
+                                                        </NavLink>
+                                                      </li>
+
+                                                    </ul>
+                                                  </div>
+                                                  {/* <!-- Dropdown Menu End --> */}
+                                                </React.Fragment>
+
+                                              );
+                                            }}
+
+                                          </SidebarLinkGroup>
+                                        </li>
+
+                                      </ul>
+                                      <div
+                                        className={`translate transform overflow-hidden ${!open && 'hidden'
+                                          }`}
+                                      >
+                                        <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
+                                          <li>
+                                            <NavLink
+                                              to="/maintenance/stockmaster_sparepart"
+                                              className={({ isActive }) =>
+                                                'group relative flex items-center gap-5  rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                                (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                              }
+                                            >
+                                              Stock Master
+                                            </NavLink>
+                                          </li>
+
+                                        </ul>
+                                      </div>
+                                    </div>
+                                    {/* <!-- Dropdown Menu End --> */}
+                                  </React.Fragment>
+                                );
+                              }}
+                            </SidebarLinkGroup>
                           </li>
+                          <SidebarLinkGroup
+                            activeCondition={
+                              pathname === '/quality_control' || pathname.includes('quality_control')
+                            }
+                          >
+                            {(handleClick, open) => {
+                              return (
+                                <React.Fragment>
+                                  <NavLink
+                                    to="#"
+                                    className={`group relative flex items-center mb-5 gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/quality_control' ||
+                                      pathname.includes('quality_control')) &&
+                                      ' dark:bg-meta-4'
+                                      }`}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      sidebarExpanded
+                                        ? handleClick()
+                                        : setSidebarExpanded(true);
+                                    }}
+                                  >
+                                    <img src={QC} alt="Logo" />
+                                    Quality Control
+                                    <svg
+                                      className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
+                                        }`}
+                                      width="7"
+                                      height="8"
+                                      viewBox="0 0 7 8"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg">
+                                      <path d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z" fill="white" />
+                                    </svg>
+                                  </NavLink>
+                                  {/* <!-- Dropdown Menu Start --> */}
+                                  <div
+                                    className={`translate transform overflow-hidden ${!open && 'hidden'
+                                      }`}
+                                  >
+                                    <ul className="mt-1 mb-5.5 flex flex-col gap-5 pl-6">
+                                      <li>
+                                        <NavLink
+                                          to="/quality_control/mtc"
+                                          className={({ isActive }) =>
+                                            'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                            (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                          }
+                                        >
+
+                                          Maintenance
+                                        </NavLink>
+                                      </li>
+
+                                    </ul>
+                                  </div>
+                                  {/* <!-- Dropdown Menu End --> */}
+                                </React.Fragment>
+                              );
+                            }}
+                          </SidebarLinkGroup>
 
                         </ul>
                       </div>
@@ -812,6 +1095,21 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                             >
 
                               Role
+                            </NavLink>
+                          </li>
+
+                        </ul>
+                        <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-6">
+                          <li>
+                            <NavLink
+                              to="/masterdata/mastermonitoring"
+                              className={({ isActive }) =>
+                                'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                              }
+                            >
+
+                              Monitoring
                             </NavLink>
                           </li>
 

@@ -43,9 +43,19 @@ import MasterPM2Check from './pages/MasterData/MasterPM2Check';
 import MasterPM2TambahInspection from './pages/MasterData/MasterPM2TambahInspection';
 import MasterKPI from './pages/MasterData/MasterKPI';
 import MasterKPIForm from './pages/MasterData/MasterKPIForm';
-import Sparepart from './pages/sparepart/sparepart';
+import Sparepart from './pages/sparepart/submitOpname';
 import MasterUsers from './pages/MasterData/MasterUsers';
 import MasterRole from './pages/MasterData/MasterRole';
+import Adjustment from './pages/sparepart/adjustment';
+import HistoriOpname from './pages/sparepart/crumb/historiOpname';
+import CrumbSparepart from './pages/sparepart/crumb/header';
+import MainOpname from './pages/sparepart/crumb/main';
+import MasterMonitoring from './pages/MasterData/MasterMonitoring';
+import SpbService from './pages/Maintenance/SPB/spbService';
+
+import Stockmaster from './pages/sparepart/stockmaster/stockmaster';
+import AddStock from './pages/sparepart/stockmaster/addStock';
+
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -85,6 +95,24 @@ function App() {
           }
         />
         <Route
+          path="/maintenance/stockmaster_sparepart"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Stockmaster />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/stockmaster_sparepart/addStock"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <AddStock />
+            </>
+          }
+        />
+        <Route
           path="/maintenance/inspection/pm_1_form/:id"
           element={
             <>
@@ -99,6 +127,33 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <Pm2Form />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/Stock_opname"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Sparepart />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/adjustment"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Adjustment />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/opname"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MainOpname />
             </>
           }
         />
@@ -230,7 +285,17 @@ function App() {
             </>
           }
         />
-
+        <Route
+          path="/maintenance/serviceSpb"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <SpbService />
+              </ProtectedRoute>
+            </>
+          }
+        />
         <Route
           path="/quality_control/mtc"
           element={
@@ -304,6 +369,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterAnalisis />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/mastermonitoring"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterMonitoring />
               </ProtectedRoute>
             </>
           }

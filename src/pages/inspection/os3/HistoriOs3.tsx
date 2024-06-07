@@ -71,6 +71,7 @@ function HistoriOS3() {
     const [showTwoButtons, setShowTwoButtons] = useState<any>([]);
     const [showModal1, setShowModal1] = useState<any>([]);
     const [user, setUser] = useState<any>(null);
+    const [filter, setFilter] = useState(false);
 
     const handleClick = (i: any) => {
         const onchangeVal: any = [...showTwoButtons];
@@ -206,11 +207,465 @@ function HistoriOS3() {
 
 
         <main>
-            <div className="flex justify-between bg-white p-2">
-                <img src={Filter} alt="" className="mx-3" />
-                {/* <input className='w-96 py-1 mx-3 bg-[#E9F3FF]'>
-          search
-        </input> */}
+            <div className="flex justify-between items-center bg-white p-2">
+                <div>
+                    <img onClick={() => setFilter(!filter)} src={Filter} alt="" className="mx-3 my-auto" />
+                    {filter == true ? (
+                        <div className='absolute rounded-md bg-white shadow-2xl md:w-96 w-11/12 p-2 -translate-x-2 md:-translate-y-6 -translate-y-32 border border-gray'>
+                            <div className='flex justify-between'>
+                                <img src={Filter} alt="" className="mx-3 my-auto" />
+                                <img onClick={() => setFilter(!filter)} src={X} alt="" className="mx-3 w-5 my-auto" />
+
+                            </div>
+                            <div className='mt-5 flex flex-col justify-center px-2'>
+                                <p className='text-xs font-semibold'>Nama Mesin</p>
+                                <div className='flex justify-center items-center'>
+                                    <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                                        <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                            <svg
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 20 20"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+
+                                            </svg>
+                                        </span>
+
+                                        <select
+                                            className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                            }`}
+                                        >
+                                            <option value="d" className="text-body dark:text-bodydark">
+                                                All
+                                            </option>
+                                            <option value="N" className="text-body dark:text-bodydark">
+                                                PON MANUAL 2
+                                            </option>
+                                            <option value="O" className="text-body dark:text-bodydark">
+                                                R700
+                                            </option>
+
+                                        </select>
+
+                                        <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
+                                            <svg
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <g opacity="0.8">
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        clipRule="evenodd"
+                                                        d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                                        fill="#637381"
+                                                    ></path>
+                                                </g>
+                                            </svg>
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div className='mt-5 flex flex-col justify-center px-2'>
+                                <p className='text-xs font-semibold'>Eksekutor</p>
+                                <div className='flex justify-center items-center'>
+                                    <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                                        <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                            <svg
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 20 20"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+
+                                            </svg>
+                                        </span>
+
+                                        <select
+                                            className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                            }`}
+                                        >
+                                            <option value="d" className="text-body dark:text-bodydark">
+                                                All
+                                            </option>
+                                            <option value="N" className="text-body dark:text-bodydark">
+                                                PON MANUAL 2
+                                            </option>
+                                            <option value="O" className="text-body dark:text-bodydark">
+                                                R700
+                                            </option>
+
+                                        </select>
+
+                                        <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
+                                            <svg
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <g opacity="0.8">
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        clipRule="evenodd"
+                                                        d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                                        fill="#637381"
+                                                    ></path>
+                                                </g>
+                                            </svg>
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div className='mt-5 flex flex-col justify-center px-2'>
+                                <p className='text-xs font-semibold'>Status</p>
+                                <div className='flex justify-center items-center'>
+                                    <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                                        <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                            <svg
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 20 20"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+
+                                            </svg>
+                                        </span>
+
+                                        <select
+                                            className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                            }`}
+                                        >
+                                            <option value="d" className="text-body dark:text-bodydark">
+                                                All
+                                            </option>
+                                            <option value="N" className="text-body dark:text-bodydark">
+                                                PON MANUAL 2
+                                            </option>
+                                            <option value="O" className="text-body dark:text-bodydark">
+                                                R700
+                                            </option>
+
+                                        </select>
+
+                                        <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
+                                            <svg
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <g opacity="0.8">
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        clipRule="evenodd"
+                                                        d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                                        fill="#637381"
+                                                    ></path>
+                                                </g>
+                                            </svg>
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div className='mt-5 flex flex-col justify-center px-2'>
+                                <p className='text-xs font-semibold'>Persentase</p>
+                                <div className='flex justify-center items-center'>
+                                    <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                                        <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                            <svg
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 20 20"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+
+                                            </svg>
+                                        </span>
+
+                                        <select
+                                            className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                            }`}
+                                        >
+                                            <option value="d" className="text-body dark:text-bodydark">
+                                                All
+                                            </option>
+                                            <option value="N" className="text-body dark:text-bodydark">
+                                                PON MANUAL 2
+                                            </option>
+                                            <option value="O" className="text-body dark:text-bodydark">
+                                                R700
+                                            </option>
+
+                                        </select>
+
+                                        <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
+                                            <svg
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <g opacity="0.8">
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        clipRule="evenodd"
+                                                        d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                                        fill="#637381"
+                                                    ></path>
+                                                </g>
+                                            </svg>
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div className='mt-5 flex flex-col justify-center px-2'>
+                                <p className='text-xs font-semibold'>Waktu Masuk</p>
+                                <div className='grid grid-cols-2 gap-5'>
+                                    <div className='flex flex-col'>
+                                        <p className='text-xs font-medium text-[#444444]'>Dari:</p>
+                                        <div className='flex justify-center items-center'>
+                                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full ">
+                                                <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                                    <svg
+                                                        width="20"
+                                                        height="20"
+                                                        viewBox="0 0 20 20"
+                                                        fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+
+                                                    </svg>
+                                                </span>
+
+                                                <select
+                                                    className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                            }`}
+                                                >
+                                                    <option value="d" className="text-body dark:text-bodydark">
+                                                        All
+                                                    </option>
+                                                    <option value="N" className="text-body dark:text-bodydark">
+                                                        PON MANUAL 2
+                                                    </option>
+                                                    <option value="O" className="text-body dark:text-bodydark">
+                                                        R700
+                                                    </option>
+
+                                                </select>
+
+                                                <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
+                                                    <svg
+                                                        width="24"
+                                                        height="24"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+                                                        <g opacity="0.8">
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                clipRule="evenodd"
+                                                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                                                fill="#637381"
+                                                            ></path>
+                                                        </g>
+                                                    </svg>
+                                                </span>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className='flex flex-col'>
+                                        <p className='text-xs font-medium text-[#444444]'>Sampai:</p>
+                                        <div className='flex justify-center items-center'>
+                                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full ">
+                                                <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                                    <svg
+                                                        width="20"
+                                                        height="20"
+                                                        viewBox="0 0 20 20"
+                                                        fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+
+                                                    </svg>
+                                                </span>
+
+                                                <select
+                                                    className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                            }`}
+                                                >
+                                                    <option value="d" className="text-body dark:text-bodydark">
+                                                        All
+                                                    </option>
+                                                    <option value="N" className="text-body dark:text-bodydark">
+                                                        PON MANUAL 2
+                                                    </option>
+                                                    <option value="O" className="text-body dark:text-bodydark">
+                                                        R700
+                                                    </option>
+
+                                                </select>
+
+                                                <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
+                                                    <svg
+                                                        width="24"
+                                                        height="24"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                    >
+                                                        <g opacity="0.8">
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                clipRule="evenodd"
+                                                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                                                fill="#637381"
+                                                            ></path>
+                                                        </g>
+                                                    </svg>
+                                                </span>
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div className='mt-5 flex flex-col justify-center px-2'>
+                                <p className='text-xs font-semibold'>Jenis Kendala</p>
+                                <div className='flex justify-center items-center'>
+                                    <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                                        <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                            <svg
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 20 20"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+
+                                            </svg>
+                                        </span>
+
+                                        <select
+                                            className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                            }`}
+                                        >
+                                            <option value="d" className="text-body dark:text-bodydark">
+                                                All
+                                            </option>
+                                            <option value="N" className="text-body dark:text-bodydark">
+                                                PON MANUAL 2
+                                            </option>
+                                            <option value="O" className="text-body dark:text-bodydark">
+                                                R700
+                                            </option>
+
+                                        </select>
+
+                                        <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
+                                            <svg
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <g opacity="0.8">
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        clipRule="evenodd"
+                                                        d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                                        fill="#637381"
+                                                    ></path>
+                                                </g>
+                                            </svg>
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div className='mt-5 flex flex-col justify-center px-2'>
+                                <p className='text-xs font-semibold'>Analisis Kendala</p>
+                                <div className='flex justify-center items-center'>
+                                    <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                                        <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                            <svg
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 20 20"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+
+                                            </svg>
+                                        </span>
+
+                                        <select
+                                            className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                            }`}
+                                        >
+                                            <option value="d" className="text-body dark:text-bodydark">
+                                                All
+                                            </option>
+                                            <option value="N" className="text-body dark:text-bodydark">
+                                                PON MANUAL 2
+                                            </option>
+                                            <option value="O" className="text-body dark:text-bodydark">
+                                                R700
+                                            </option>
+
+                                        </select>
+
+                                        <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
+                                            <svg
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <g opacity="0.8">
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        clipRule="evenodd"
+                                                        d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                                        fill="#637381"
+                                                    ></path>
+                                                </g>
+                                            </svg>
+                                        </span>
+
+                                    </div>
+                                </div>
+                            </div>
+                            <div className='w-full flex justify-center mx-auto text-center'>
+
+                                <button className='mt-5 text-white text-xs font-semibold rounded-md w-full bg-primary flex flex-col justify-center items-center px-2 py-2'>
+                                    TERAPKAN
+                                </button>
+                            </div>
+                        </div>
+                    ) : ""}
+
+
+                </div>
                 <input
                     type="search"
                     placeholder="search"

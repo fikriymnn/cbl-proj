@@ -126,69 +126,143 @@ const ModalEditPM1Master = ({ children, isOpen, onClose, idPoint, data }:
                             </div>
 
                         </div>
-                        <div className="flex  pt-6 border-b border-stroke ml-[80px]">
-                            <label className="text-black text-xs font-bold">
-                                TASK LIST
-                            </label>
-                        </div>
-                        {
-                            data.ms_inspection_task_pm1s.map((task: any, i: number) => {
-                                return (
-                                    <div className="flex  pt-4 border-b border-stroke ml-[70px] pb-4">
-                                        <div className="flex w-[60px] justify-center">
-                                            <label className="text-black text-xs font-bold">
-                                                {i + 1}
-                                            </label>
-                                        </div>
-                                        <div className="flex w-5/12 justify-start pl-6 flex-col gap-2">
-                                            <label className="text-black text-xs font-bold">
-                                                TASK
-                                            </label>
-                                            <input
-                                                name="task"
-                                                defaultValue={task.task}
-                                                onChange={(e) => handleChangePointTask(e, i)}
-                                                type="text"
-                                                className=" w-full h-12 border-2 border-stroke rounded-md"
-                                            />
-                                            <label className="text-black text-xs font-bold pt-2">
-                                                INSPECTION METHOD
-                                            </label>
-                                            <input
-                                                name="method"
-                                                defaultValue={task.method}
-                                                onChange={(e) => handleChangePointTask(e, i)}
-                                                type="text"
-                                                className=" w-full h-12 border-2 border-stroke rounded-md"
-                                            />
-                                        </div>
-                                        <div className="flex w-5/12 justify-start pl-6 flex-col gap-2">
-                                            <label className="text-black text-xs font-bold text-start">
-                                                ACCEPTANCE CRITERIA
-                                            </label>
-                                            <input
-                                                name="acceptance_criteria"
-                                                defaultValue={task.acceptance_criteria}
-                                                onChange={(e) => handleChangePointTask(e, i)}
-                                                type="text"
-                                                className=" w-full h-12 border-2 border-stroke rounded-md"
-                                            />
-                                            <label className="text-black text-xs font-bold pt-2">
-                                                TOOLS
-                                            </label>
-                                            <input
-                                                name="tools"
-                                                defaultValue={task.tools}
-                                                onChange={(e) => handleChangePointTask(e, i)}
-                                                type="text"
-                                                className=" w-full h-12 border-2 border-stroke rounded-md"
-                                            />
-                                        </div>
 
-                                    </div>
-                                )
-                            })
-                        }
+                        {!isMobile && (
+                            <>
+                                <div className="flex  pt-6 border-b border-stroke ml-[80px]">
+                                    <label className="text-black text-xs font-bold">
+                                        TASK LIST
+                                    </label>
+                                </div>
+                                {
+                                    data.ms_inspection_task_pm1s.map((task: any, i: number) => {
+                                        return (
+                                            <div className="flex  pt-4 border-b border-stroke ml-[70px] pb-4">
+                                                <div className="flex w-[60px] justify-center">
+                                                    <label className="text-black text-xs font-bold">
+                                                        {i + 1}
+                                                    </label>
+                                                </div>
+                                                <div className="flex w-5/12 justify-start pl-6 flex-col gap-2">
+                                                    <label className="text-black text-xs font-bold">
+                                                        TASK
+                                                    </label>
+                                                    <input
+                                                        name="task"
+                                                        defaultValue={task.task}
+                                                        onChange={(e) => handleChangePointTask(e, i)}
+                                                        type="text"
+                                                        className=" w-full h-12 border-2 border-stroke rounded-md"
+                                                    />
+                                                    <label className="text-black text-xs font-bold pt-2">
+                                                        INSPECTION METHOD
+                                                    </label>
+                                                    <input
+                                                        name="method"
+                                                        defaultValue={task.method}
+                                                        onChange={(e) => handleChangePointTask(e, i)}
+                                                        type="text"
+                                                        className=" w-full h-12 border-2 border-stroke rounded-md"
+                                                    />
+                                                </div>
+                                                <div className="flex w-5/12 justify-start pl-6 flex-col gap-2">
+                                                    <label className="text-black text-xs font-bold text-start">
+                                                        ACCEPTANCE CRITERIA
+                                                    </label>
+                                                    <input
+                                                        name="acceptance_criteria"
+                                                        defaultValue={task.acceptance_criteria}
+                                                        onChange={(e) => handleChangePointTask(e, i)}
+                                                        type="text"
+                                                        className=" w-full h-12 border-2 border-stroke rounded-md"
+                                                    />
+                                                    <label className="text-black text-xs font-bold pt-2">
+                                                        TOOLS
+                                                    </label>
+                                                    <input
+                                                        name="tools"
+                                                        defaultValue={task.tools}
+                                                        onChange={(e) => handleChangePointTask(e, i)}
+                                                        type="text"
+                                                        className=" w-full h-12 border-2 border-stroke rounded-md"
+                                                    />
+                                                </div>
+
+                                            </div>
+                                        )
+                                    })
+                                }
+
+                            </>
+                        )}
+                        {isMobile && (
+                            <>
+                                <div className="flex  pt-6 border-b border-stroke px-2 ">
+                                    <label className="text-black text-xs font-bold">
+                                        TASK LIST
+                                    </label>
+                                </div>
+                                {
+                                    data.ms_inspection_task_pm1s.map((task: any, i: number) => {
+                                        return (
+                                            <div className="flex  pt-4 border-b border-stroke  pb-4">
+                                                <div className="flex w-[30px] justify-center">
+                                                    <label className="text-black text-xs font-bold">
+                                                        {i + 1}
+                                                    </label>
+                                                </div>
+                                                <div className="flex w-5/12 justify-start flex-col gap-2">
+                                                    <label className="text-black text-xs font-bold">
+                                                        TASK
+                                                    </label>
+                                                    <input
+                                                        name="task"
+                                                        defaultValue={task.task}
+                                                        onChange={(e) => handleChangePointTask(e, i)}
+                                                        type="text"
+                                                        className=" w-full h-12 border-2 border-stroke rounded-md"
+                                                    />
+                                                    <label className="text-black text-xs font-bold pt-2">
+                                                        INSPECTION METHOD
+                                                    </label>
+                                                    <input
+                                                        name="method"
+                                                        defaultValue={task.method}
+                                                        onChange={(e) => handleChangePointTask(e, i)}
+                                                        type="text"
+                                                        className=" w-full h-12 border-2 border-stroke rounded-md"
+                                                    />
+                                                </div>
+                                                <div className="flex w-5/12 justify-start  flex-col gap-2 pl-2">
+                                                    <label className="text-black text-xs font-bold text-start">
+                                                        ACCEPTANCE CRITERIA
+                                                    </label>
+                                                    <input
+                                                        name="acceptance_criteria"
+                                                        defaultValue={task.acceptance_criteria}
+                                                        onChange={(e) => handleChangePointTask(e, i)}
+                                                        type="text"
+                                                        className=" w-full h-12 border-2 border-stroke rounded-md"
+                                                    />
+                                                    <label className="text-black text-xs font-bold pt-2">
+                                                        TOOLS
+                                                    </label>
+                                                    <input
+                                                        name="tools"
+                                                        defaultValue={task.tools}
+                                                        onChange={(e) => handleChangePointTask(e, i)}
+                                                        type="text"
+                                                        className=" w-full h-12 border-2 border-stroke rounded-md"
+                                                    />
+                                                </div>
+
+                                            </div>
+                                        )
+                                    })
+                                }
+
+                            </>
+                        )}
 
                         <div className="flex w-full px-6 py-3 justify-end">
                             <button
@@ -212,7 +286,7 @@ const ModalEditPM1Master = ({ children, isOpen, onClose, idPoint, data }:
                     {children}
                 </div>
 
-                {JSON.stringify(point)}
+                {/* {JSON.stringify(point)} */}
 
             </div >
         </div>

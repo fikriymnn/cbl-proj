@@ -60,12 +60,12 @@ function Pm1() {
     async function inspectPM1(id: any) {
         const url = `${import.meta.env.VITE_API_LINK}/pm1/response/${id}`;
         try {
-            const res = await axios.get(url, {
+            const res = await axios.get(url,
+                {
 
-                withCredentials: true,
-            });
-
-            alert("succes")
+                    withCredentials: true,
+                }
+            );
             console.log(res.data);
             navigate(`/maintenance/inspection/pm_1_form/${id}`)
         } catch (error: any) {
@@ -135,14 +135,18 @@ function Pm1() {
 
                         <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>{tanggal}</p>
                         {
-                            <button onClick={createPM1}
-                                className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center }`} // Dynamic class assignment
-                            >
-                                TAMBAH PM1
+                            pm1?.length <= 0 ?
+                                <button onClick={createPM1}
+                                    className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center }`} // Dynamic class assignment
+                                >
+                                    TAMBAH PM1
 
-                            </button>
-
+                                </button> : null
                         }
+
+
+
+
 
                         <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
 
@@ -200,41 +204,109 @@ function Pm1() {
                                                 </div>
 
                                                 <div>
-                                                    {data.status == 'incoming' ? (
-                                                        <>
-                                                            <button onClick={() => openConfirm(i)} className='uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center'>
-                                                                INSPECT
-                                                            </button>
-                                                            {showConfirm[i] == true && (
-                                                                <ModalPM1Confirm
 
-                                                                    isOpen={showConfirm[i]}
-                                                                    onClose={() => closeConfirm(i)}
-                                                                    id={undefined}
-                                                                >
-                                                                    <button onClick={() => inspectPM1(data.id)}
-                                                                        className={`uppercase w-full py-2 rounded-md inline-flex  items-center text-sm  bg-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                    <>
+                                                        <button onClick={() => inspectPM1(data.id)}
+                                                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                        >
+                                                            INSPECT
+
+                                                        </button>
+                                                    </>
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+                                </>
+                            ))}
+                    </div>
+                </main>
+            )}
+            {isMobile && (
+                <main className='overflow-x-scroll'>
+                    <div className='w-full bg-white rounded-xl'>
+
+                        <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>{tanggal}</p>
+                        {
+                            <button onClick={createPM1}
+                                className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center }`} // Dynamic class assignment
+                            >
+                                TAMBAH PM1
+                            </button>
+
+                        }
+                        <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
+
+                            <div className='w-2 h-full '>
+
+                            </div>
+                            <section className='grid grid-cols-1 w-full py-4  font-semibold text-[14px]'>
+
+
+                                <p className=''>Nama Mesin</p>
+
+                                <div className='w-[125px]'>{""}</div>
+
+                            </section>
+                        </div>
+                        {pm1 != null &&
+                            pm1.map((data: any, i: any) => (
+                                <>
+                                    <section key={i} className=' flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black'>
+                                        <div className={`w-2 h-full sticky left-0 z-20 ${data.mesin.bagian_mesin == 'printing' ? 'bg-green-600' : data.mesin.bagian_mesin == 'water base' ? 'bg-yellow-600' : data.mesin.bagian_mesin == 'pond' ? 'bg-violet-900' : data.mesin.bagian_mesin == 'finishing' ? 'bg-red-900' : ''}`}>
+                                        </div>
+                                        <div className=' w-full h-full flex flex-col justify-center relative'>
+                                            <div className='ps-7 w-full grid grid-cols-2'>
+
+                                                <div className='flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
+                                                    <p className=''>{data.nama_mesin}</p>
+                                                </div>
+
+                                                <div className='flex justify-center'>
+                                                    <>
+                                                        <div>
+                                                            {data.status == 'incoming' ? (
+                                                                <>
+                                                                    <button onClick={() => openConfirm(i)} className='uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center'>
+                                                                        INSPECT
+                                                                    </button>
+                                                                    {showConfirm[i] == true && (
+                                                                        <ModalPM1Confirm
+
+                                                                            isOpen={showConfirm[i]}
+                                                                            onClose={() => closeConfirm(i)}
+                                                                            id={undefined}
+                                                                        >
+                                                                            <button onClick={() => inspectPM1(data.id)}
+                                                                                className={`uppercase w-full py-2 rounded-md inline-flex  items-center text-sm  bg-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                                            >
+                                                                                INSPECT
+
+                                                                            </button>
+                                                                        </ModalPM1Confirm>
+                                                                    )
+
+                                                                    }
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Link to={`/maintenance/inspection/pm_1_form/${data.id}`}
+                                                                        className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
                                                                     >
                                                                         INSPECT
 
-                                                                    </button>
-                                                                </ModalPM1Confirm>
+                                                                    </Link>
+                                                                </>
                                                             )
-
                                                             }
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Link to={`/maintenance/inspection/pm_1_form/${data.id}`}
-                                                                className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
-                                                            >
-                                                                INSPECT
 
-                                                            </Link>
-                                                        </>
-                                                    )
-                                                    }
 
+
+
+                                                        </div>
+                                                    </>
 
 
 
@@ -247,72 +319,6 @@ function Pm1() {
                     </div>
                 </main>
             )}
-            {/* {isMobile && (
-                <main className='overflow-x-scroll'>
-                    <div className='w-full bg-white rounded-xl'>
-
-                        <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>01 April 2024</p>
-                        <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
-
-                            <div className='w-2 h-full '>
-
-                            </div>
-                            <section className='grid grid-cols-1 w-full py-4  font-semibold text-[14px]'>
-
-
-                                <p className=''>Nama Mesin</p>
-
-
-                                <div className='w-[125px]'>{""}</div>
-
-
-
-                            </section>
-                        </div>
-                        {brandData.map((brand, key) => (
-                            <>
-                                <section key={key} className=' flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black'>
-                                    <div className={`w-2 h-full sticky left-0 z-20 ${brand.data.mesin.bagian_mesin == 'printing' ? 'bg-green-600' : brand.data.mesin.bagian_mesin == 'water base' ? 'bg-yellow-600' : brand.data.mesin.bagian_mesin == 'pond' ? 'bg-violet-900' : brand.data.mesin.bagian_mesin == 'finishing' ? 'bg-red-900' : ''}`}>
-
-                                    </div>
-
-
-
-
-                                    <div className=' w-full h-full flex flex-col justify-center relative'>
-
-                                        <div className='ps-7 w-full grid grid-cols-2'>
-
-
-                                            <div className='flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
-                                                <p className=''>{brand.name}</p>
-                                            </div>
-
-                                            <div className='flex justify-center'>
-
-                                                <>
-                                                    <Link to='/maintenance/inspection/pm_1_form'
-                                                        className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'begin mtc' && ''
-                                                            }`} // Dynamic class assignment
-                                                        onClick={openModal4}
-                                                    >
-                                                        INSPECT
-
-                                                    </Link>
-
-                                                </>
-https://api.dtc.my.id
-
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section>
-                            </>
-                        ))}
-                    </div>
-                </main>
-            )} */}
         </DefaultLayout>
     )
 }

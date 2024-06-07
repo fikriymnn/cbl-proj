@@ -84,8 +84,6 @@ const tiket = [
 const TableIncomingMaintenance = () => {
   const [showModal2, setShowModal2] = useState(false);
 
-
-
   //const openModal2 = () => setShowModal2(true);
   //const closeModal2 = () => setShowModal2(false);
 
@@ -171,6 +169,10 @@ const TableIncomingMaintenance = () => {
     const url = `${import.meta.env.VITE_API_LINK}/ticket?bagian_tiket=incoming`;
     try {
       const res = await axios.get(url, {
+        params: {
+          page: 1,
+          limit: 10,
+        },
         withCredentials: true,
       });
 
@@ -178,11 +180,11 @@ const TableIncomingMaintenance = () => {
 
       console.log(res.data);
       let data: any[] = [];
-      for (let i = 0; i < res.data.length; i++) {
+      for (let i = 0; i < res.data.data.length; i++) {
         data.push(false);
       }
       setShowModal3(data);
-      setShowModal1(data)
+      setShowModal1(data);
     } catch (error: any) {
       console.log(error.response);
     }
@@ -195,11 +197,11 @@ const TableIncomingMaintenance = () => {
         withCredentials: true,
       });
 
-      alert("respon berhasil")
+      alert('respon berhasil');
       getMTC();
     } catch (error: any) {
       console.log(error.response);
-      alert("error")
+      alert('error');
     }
   }
   return (
@@ -215,7 +217,7 @@ const TableIncomingMaintenance = () => {
                   </p>
                 </div>
 
-                <div className=" flex items-center w-2/12 justify-center p-2.5 ml-2 md:px-7.5 px-5 ">
+                <div className=" flex items-center w-2/12 justify-center">
                   <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center dark:text-white">
                     Kode Tiket
                   </p>
@@ -238,14 +240,12 @@ const TableIncomingMaintenance = () => {
                 </div>
 
                 <div className=" items-center justify-center  md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 flex ">
-                  <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center">
-
-                  </p>
+                  <p className="text-slate-600 md:text-[12px] text-[10px] font-semibold text-center"></p>
                 </div>
               </div>
               <>
                 {mtc != null &&
-                  mtc.map((brand: any, key: any) => {
+                  mtc.data.map((brand: any, key: any) => {
                     function convertDatetimeToDate(datetime: any) {
                       const dateObject = new Date(datetime);
                       const day = dateObject
@@ -272,8 +272,7 @@ const TableIncomingMaintenance = () => {
 
                     return (
                       <div
-                        className={`flex ${'border-t-8  border-[#D8EAFF] dark:border-strokedark '
-                          }`}
+                        className={`flex ${'border-t-8  border-[#D8EAFF] dark:border-strokedark '}`}
                         key={key}
                       >
                         <div className=" flex items-center w-1/12   gap-3 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF]  ">
@@ -282,9 +281,9 @@ const TableIncomingMaintenance = () => {
                           </p>
                         </div>
 
-                        <div className=" flex items-center w-2/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
+                        <div className=" flex items-center w-2/12 justify-center border-b-[#D8EAFF] ">
                           <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">
-                            {brand.name}
+                            {brand.kode_ticket}
                           </p>
                         </div>
                         <div className=" flex items-center w-3/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
@@ -394,9 +393,8 @@ const TableIncomingMaintenance = () => {
                 </div>
               </div>
               <>
-
                 {mtc != null &&
-                  mtc.map((brand: any, key: any) => {
+                  mtc.data.map((brand: any, key: any) => {
                     function convertDatetimeToDate(datetime: any) {
                       const dateObject = new Date(datetime);
                       const day = dateObject
@@ -424,11 +422,8 @@ const TableIncomingMaintenance = () => {
                     return (
                       <div className="">
                         <div className="w-full">
-
                           <div
-                            className={`flex ${key === tiket.length - 1
-                              ? ''
-                              : ' '
+                            className={`flex ${key === tiket.length - 1 ? '' : ' '
                               }`}
                             key={key}
                           >
@@ -458,8 +453,8 @@ const TableIncomingMaintenance = () => {
                             </button> */}
                             </div>
 
-                            <div className=" flex items-center w-6/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
-                              <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white"></p>
+                            <div className=" flex items-center w-6/12 justify-center  border-b-[#D8EAFF] ">
+                              <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.kode_ticket}</p>
                             </div>
                             <div className=" flex items-center w-5/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
                               <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">
@@ -468,7 +463,6 @@ const TableIncomingMaintenance = () => {
                             </div>
 
                             <div className=" items-center justify-center md:w-5/12 w-2/12 p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] flex ">
-
                               <td className=" border-[#eee]   dark:border-strokedark">
                                 {/* {showModal1[key] == true && (
                                 <Modal
@@ -484,13 +478,10 @@ const TableIncomingMaintenance = () => {
                                 </Modal>
                               )} */}
 
-
                                 {showModal2 && <></>}
                               </td>
                             </div>
-
                           </div>
-
                         </div>
                         <div className="flex w-full border-b-6  border-[#D8EAFF] dark:border-strokedark">
                           {showDetail[key] && (
@@ -501,7 +492,9 @@ const TableIncomingMaintenance = () => {
                                     <p className="text-xs font-bold">
                                       Nama Mesin
                                     </p>
-                                    <p className="text-sm font-light">{brand.mesin}</p>
+                                    <p className="text-sm font-light">
+                                      {brand.mesin}
+                                    </p>
                                   </div>
                                   <div className="flex w-6/12 flex-col">
                                     <p className="text-xs font-bold">Kendala</p>
@@ -515,7 +508,7 @@ const TableIncomingMaintenance = () => {
                           )}
                         </div>
                       </div>
-                    )
+                    );
                   })}
               </>
             </div>

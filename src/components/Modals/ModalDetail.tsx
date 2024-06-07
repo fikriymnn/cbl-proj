@@ -176,8 +176,6 @@ const ModalDetail = ({ children, isOpen, onClose, kendala, machineName, tgl, jam
                     {isMobile && (
                         <>
 
-
-
                             <div className="flex  w-full mt-2 rounded-md border border-stroke px-2 py-2">
 
 

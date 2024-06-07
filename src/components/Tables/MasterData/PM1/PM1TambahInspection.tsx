@@ -331,6 +331,199 @@ const PM1TambahInspection = () => {
 
                 </>
             )}
+            {isMobile && (
+                <>
+                    <div className="rounded-xl border border-stroke bg-white pt-4 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
+                        <div className="flex w-full  gap-2 pr-8 border-b-6 border-[#D8EAFF] px-4 pb-5">
+                            <div className="flex flex-col w-11/12">
+                                <label className="text-neutral-500 text-sm font-semibold">
+                                    Machine Details
+                                </label>
+                                <label className="text-neutral-500 text-sm font-semibold">
+                                    Nama Mesin : {mesin != null && mesin.nama_mesin}
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="flex py-4 flex-col">
+                            {pointPm1.map((data: any, i: number) => {
+                                return (
+                                    <>
+                                        <div className="flex flex-row gap-4 px-4">
+                                            <label className="text-black text-xs font-bold">
+                                                POINT
+                                            </label>
+                                            <label className="text-black text-xs font-bold">
+                                                INSPECTION POINT
+                                            </label>
+                                        </div>
+                                        <div className="flex w-full flex-row gap-4 pt-3 px-4">
+                                            <div className="flex w-[43px] justify-center">
+                                                <label className="text-neutral-500 text-sm font-semibold">
+                                                    {i + 1}
+                                                </label>
+                                            </div>
+                                            <div className="flex w-8/12">
+                                                <input
+                                                    name="inspection_point"
+                                                    value={data.inspection_point}
+                                                    onChange={(e) => handleChangePoint(e, i)}
+                                                    type="text"
+                                                    className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                />
+                                            </div>
+                                            <div className="flex w-3/12">
+                                                <button
+                                                    onClick={() => handleDeletePoint(i)}
+                                                    className="bg-[#DE0000] text-center text-white text-xs font-bold px-2 rounded-md"
+                                                >
+                                                    HAPUS
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="flex w-full  pt-6 border-b border-stroke px-2">
+                                            <label className="text-black text-xs font-bold">
+                                                TASK LIST
+                                            </label>
+                                        </div>
+
+                                        {data.sub_inspection.map((task: any, ii: number) => {
+                                            return (
+                                                <>
+                                                    <div className="flex w-full  pt-4 border-b border-stroke pb-4">
+                                                        <div className="flex w-[30px] justify-center">
+                                                            <label className="text-black text-xs font-bold">
+                                                                {ii + 1}
+                                                            </label>
+                                                        </div>
+                                                        <div className="flex w-5/12 justify-start flex-col gap-2">
+                                                            <label className="text-black text-xs font-bold">
+                                                                TASK
+                                                            </label>
+                                                            <input
+                                                                name="task"
+                                                                value={task.task}
+                                                                onChange={(e) =>
+                                                                    handleChangePointTask(e, i, ii)
+                                                                }
+                                                                type="text"
+                                                                className=" w-full h-12 border-2 border-stroke rounded-md"
+                                                            />
+                                                            <label className="text-black text-xs font-bold pt-2">
+                                                                INSPECTION METHOD
+                                                            </label>
+                                                            <input
+                                                                name="method"
+                                                                value={task.method}
+                                                                onChange={(e) =>
+                                                                    handleChangePointTask(e, i, ii)
+                                                                }
+                                                                type="text"
+                                                                className=" w-full h-12 border-2 border-stroke rounded-md"
+                                                            />
+                                                        </div>
+                                                        <div className="flex w-5/12 justify-start flex-col gap-2 pl-1">
+                                                            <label className="text-black text-xs font-bold text-start">
+                                                                ACCEPTANCE CRITERIA
+                                                            </label>
+                                                            <input
+                                                                name="acceptance_criteria"
+                                                                value={task.acceptance_criteria}
+                                                                onChange={(e) =>
+                                                                    handleChangePointTask(e, i, ii)
+                                                                }
+                                                                type="text"
+                                                                className=" w-full h-12 border-2 border-stroke rounded-md"
+                                                            />
+                                                            <label className="text-black text-xs font-bold pt-2">
+                                                                TOOLS
+                                                            </label>
+                                                            <input
+                                                                name="tools"
+                                                                value={task.tools}
+                                                                onChange={(e) =>
+                                                                    handleChangePointTask(e, i, ii)
+                                                                }
+                                                                type="text"
+                                                                className=" w-full h-12 border-2 border-stroke rounded-md"
+                                                            />
+                                                        </div>
+                                                        <div className="flex w-1/12 pl-1 h-10 pt-5 pr-1">
+                                                            <button
+                                                                onClick={() => handleDeletePointTask(i, ii)}
+                                                                className="bg-[#DE0000] w-8 h-[143px] rounded-md justify-center items-center"
+                                                            >
+                                                                <svg
+                                                                    className="w-full"
+                                                                    width="24"
+                                                                    height="21"
+                                                                    viewBox="0 0 24 21"
+                                                                    fill="none"
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                >
+                                                                    <path
+                                                                        d="M10 13.8213L10 10.8213"
+                                                                        stroke="white"
+                                                                        stroke-width="2"
+                                                                        stroke-linecap="round"
+                                                                    />
+                                                                    <path
+                                                                        d="M14 13.8213L14 10.8213"
+                                                                        stroke="white"
+                                                                        stroke-width="2"
+                                                                        stroke-linecap="round"
+                                                                    />
+                                                                    <path
+                                                                        d="M3 5.82129H21V5.82129C20.0681 5.82129 19.6022 5.82129 19.2346 5.97353C18.7446 6.17652 18.3552 6.56587 18.1522 7.05592C18 7.42346 18 7.88941 18 8.82129V14.8213C18 16.7069 18 17.6497 17.4142 18.2355C16.8284 18.8213 15.8856 18.8213 14 18.8213H10C8.11438 18.8213 7.17157 18.8213 6.58579 18.2355C6 17.6497 6 16.7069 6 14.8213V8.82129C6 7.88941 6 7.42346 5.84776 7.05592C5.64477 6.56587 5.25542 6.17652 4.76537 5.97353C4.39782 5.82129 3.93188 5.82129 3 5.82129V5.82129Z"
+                                                                        stroke="white"
+                                                                        stroke-width="2"
+                                                                        stroke-linecap="round"
+                                                                    />
+                                                                    <path
+                                                                        d="M10.0681 2.19188C10.1821 2.08556 10.4332 1.99162 10.7825 1.92461C11.1318 1.85761 11.5597 1.82129 12 1.82129C12.4403 1.82129 12.8682 1.85761 13.2175 1.92461C13.5668 1.99162 13.8179 2.08556 13.9319 2.19188"
+                                                                        stroke="white"
+                                                                        stroke-width="2"
+                                                                        stroke-linecap="round"
+                                                                    />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </>
+                                            );
+                                        })}
+
+                                        <div className="flex w-full px-6 py-3 justify-end">
+                                            <button
+                                                onClick={() => handleAddPointTask(i)}
+                                                className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
+                                            >
+                                                + TASK LIST
+                                            </button>
+                                        </div>
+                                    </>
+                                );
+                            })}
+                        </div>
+                    </div>
+                    <div className="flex w-full justify-between px-6 py-6">
+                        <button
+                            onClick={handleAddPoint}
+                            className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
+                        >
+                            + INSPECTION POINT
+                        </button>
+                        <button
+                            onClick={submitPointPm1}
+                            className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
+                        >
+                            SUBMIT
+                        </button>
+                    </div>
+
+
+                </>
+            )}
 
             {/* {JSON.stringify(pointPm1)} */}
         </div>
