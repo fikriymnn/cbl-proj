@@ -962,28 +962,31 @@ function TableOS() {
                                         </button>
                                       </div>
                                       {showModal1[i] == true && (
-                                        <ModalStockCheck1
-                                          children={undefined}
-                                          isOpen={showModal1[i]}
-                                          onClose={() => closeModal1(i)}
-                                          onFinish={() => getTiket()}
-                                          kendala={data.nama_kendala}
-                                          kodeLkh={data.kode_lkh}
-                                          machineName={data.mesin}
-                                          tgl={data.waktu_respon}
-                                          jam={'19.09'}
-                                          namaPemeriksa={
-                                            data.proses_mtcs[lengthProses]
-                                              .user_eksekutor.nama
-                                          }
-                                          no={'109299'}
-                                          idTiket={data.id}
-                                          idProses={
-                                            data.proses_mtcs[lengthProses].id
-                                          }
-                                          namaMesin={data.mesin}
-                                          skor_mtc={data.proses_mtcs[lengthProses].skor_mtc}
-                                        />
+                                        // <ModalStockCheck1
+                                        //   children={undefined}
+                                        //   isOpen={showModal1[i]}
+                                        //   onClose={() => closeModal1(i)}
+                                        //   onFinish={() => getTiket()}
+                                        //   kendala={data.nama_kendala}
+                                        //   kodeLkh={data.kode_lkh}
+                                        //   machineName={data.mesin}
+                                        //   tgl={data.waktu_respon}
+                                        //   jam={'19.09'}
+                                        //   namaPemeriksa={
+                                        //     data.proses_mtcs[lengthProses]
+                                        //       .user_eksekutor.nama
+                                        //   }
+                                        //   no={'109299'}
+                                        //   idTiket={data.id}
+                                        //   idProses={
+                                        //     data.proses_mtcs[lengthProses].id
+                                        //   }
+                                        //   namaMesin={data.mesin}
+                                        //   skor_mtc={data.proses_mtcs[lengthProses].skor_mtc}
+                                        // />
+                                        <ModalStockCheckPengganti children={undefined} isOpen={showModal1[i]} onClose={() => closeModal1(i)} kendala={"nu"} onFinish={"nu"} machineName={"nu"} tgl={"nu"} jam={"nu"} namaPemeriksa={"nu"} no={"nu"}>
+
+                                        </ModalStockCheckPengganti>
                                       )}
                                       {showModal2 && (
 

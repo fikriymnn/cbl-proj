@@ -202,7 +202,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
   return (
     <aside
       ref={sidebar}
-      className={`absolute left-0 top-0 z-99999 xl:z-40 flex h-screen  flex-col overflow-y-hidden w-[270px] bg-gradient-to-b from-[#016AE6] to-[#014BA2] duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      className={`absolute left-0 top-0 z-40 xl:z-40 flex h-screen  flex-col overflow-y-hidden w-[270px] bg-gradient-to-b from-[#016AE6] to-[#014BA2] duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
     >
       {/* <!-- SIDEBAR HEADER --> */}
