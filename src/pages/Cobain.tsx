@@ -27,6 +27,7 @@ import ModalStockCheckPengganti from '../components/Modals/ModalStockCheckPilihP
 import ModalPM2Eksekutor from '../components/Modals/ModalPM2Eksekutor';
 import ModalPM26type from '../components/Modals/ModalPM26Type';
 import ModalFilter from '../components/Modals/ModalFilter';
+import ModalSPBService from '../components/Modals/ModalNewSPBService';
 
 
 const App = () => {
@@ -61,6 +62,9 @@ const App = () => {
 
     const [showModal28, setShowModal28] = useState(false);
     const [showModal29, setShowModal29] = useState(false);
+
+    const [showModal30, setShowModal30] = useState(false);
+
 
     const openModal1 = () => setShowModal1(true);
     const closeModal1 = () => setShowModal1(false);
@@ -148,6 +152,9 @@ const App = () => {
 
     const openModal29 = () => setShowModal29(true);
     const closeModal29 = () => setShowModal29(false);
+
+    const openModal30 = () => setShowModal30(true);
+    const closeModal30 = () => setShowModal30(false);
 
     return (
         <div>
@@ -650,6 +657,21 @@ const App = () => {
                     >
                         <p></p>
                     </ModalFilter>
+                )}
+                <button type="button"
+                    onClick={openModal30}
+                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Open New SPB Service
+                </button>
+                {showModal30 && (
+                    <ModalSPBService
+
+                        isOpen={showModal30}
+                        onClose={closeModal30}
+                        noSPB={'MT-0001'} tglSpb={'20 MEI 2024'} data={undefined}
+                    >
+                        <p></p>
+                    </ModalSPBService>
                 )}
             </div>
             <div className='pt-20'>
