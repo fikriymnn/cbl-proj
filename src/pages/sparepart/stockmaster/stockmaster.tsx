@@ -15,7 +15,7 @@ function Stockmaster() {
                         <input type="text" placeholder='Cari Barang' className='w-4/12 bg-[#D8EAFF] rounded-sm px-2' />
                         <div className='flex gap-5'>
 
-                            <Link to={'addStock'} className='px-3 py-2 bg-green-600 text-white  font-semibold text-xs rounded-md'>ADD STOCK</Link>
+                            <Link to={'addStock'} className='px-3 py-2 bg-green-600 text-white  font-semibold text-xs rounded-md'>ADD ITEM</Link>
                             <button className='px-3 py-2 bg-red-600 text-white font-semibold text-xs rounded-md'>EXPORT DATA</button>
                         </div>
                     </div>

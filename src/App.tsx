@@ -55,6 +55,8 @@ import SpbService from './pages/Maintenance/SPB/spbService';
 
 import Stockmaster from './pages/sparepart/stockmaster/stockmaster';
 import AddStock from './pages/sparepart/stockmaster/addStock';
+import MonitoringSparepart from './pages/sparepart/monitoring/monitoringSparepart';
+import AddStockLifetimes from './pages/sparepart/monitoring/addStock';
 
 
 function App() {
@@ -109,6 +111,24 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <AddStock />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/monitoringSparepart"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MonitoringSparepart />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/monitoringSparepart/addStockLifetime"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <AddStockLifetimes />
             </>
           }
         />
