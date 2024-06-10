@@ -2,8 +2,8 @@
 
 import axios from "axios";
 
-const ModalKonfirmasi = ({ children, isOpen, onClose, idPoint }:
-    { children: any, isOpen: any, onClose: any, idPoint: any, }) => {
+const ModalKonfirmasi = ({ children, isOpen, onClose, idPoint, onFinish }:
+    { children: any, isOpen: any, onClose: any, idPoint: any, onFinish: any }) => {
     if (isOpen == false) return null;
 
     async function deletePointPm1(id: number) {
@@ -17,7 +17,7 @@ const ModalKonfirmasi = ({ children, isOpen, onClose, idPoint }:
                     withCredentials: true,
                 },
             );
-
+            onFinish();
             alert(res.data.msg);
         } catch (error: any) {
             console.log(error);
