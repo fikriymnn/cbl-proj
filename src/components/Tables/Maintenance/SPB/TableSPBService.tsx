@@ -7,6 +7,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import TableSPBRequested from './TableSPBRequested';
+import TableSPBHistory from './TableSPBHistory';
 
 
 interface TabPanelProps {
@@ -135,7 +136,7 @@ export default function TableSPBService() {
                 <TableSPBRequested />
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
-
+                <TableSPBHistory />
             </TabPanel>
 
         </Box>
