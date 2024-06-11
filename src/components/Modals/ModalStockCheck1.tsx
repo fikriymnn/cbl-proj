@@ -120,14 +120,13 @@ const ModalStockCheck1 = ({
   const [kodeAnalisis, setKodeAnalisis] = useState<any>(null);
   const [skorPerbaikan, setSkorPerbaikan] = useState<any>(null);
 
-  const [stokSparepart, setStokSparepart] = useState<any>(null);
+  const [stokSparepart, setStokSparepart] = useState<any>([]);
   const [masterSparepart, setMasterSparepart] = useState<any>(null);
   const [kebutuhanSparepart, setKebutuhanSparepart] = useState<any>([]);
 
   useEffect(() => {
     getKodeAnalisis();
     getSkorPerbaikan();
-    getStokSparepart(mesin);
     getMasterMesin();
     getMasterSparepart(mesinMsSparepart);
   }, []);
@@ -173,12 +172,12 @@ const ModalStockCheck1 = ({
     }
   }
 
-  async function getStokSparepart(mesinName: any) {
+  async function getStokSparepart(idMesin: any) {
     const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
     try {
       const res = await axios.get(url, {
         params: {
-          nama_mesin: mesinName,
+          id_mesin: idMesin,
         },
         withCredentials: true,
       });
@@ -208,10 +207,12 @@ const ModalStockCheck1 = ({
   }
 
   async function postAnalisis() {
-    const urlNormal = `${import.meta.env.VITE_API_LINK
-      }/ticket/analisis/${idTiket}`;
-    const urlPending = `${import.meta.env.VITE_API_LINK
-      }/ticket/pending/${idTiket}`;
+    const urlNormal = `${
+      import.meta.env.VITE_API_LINK
+    }/ticket/analisis/${idTiket}`;
+    const urlPending = `${
+      import.meta.env.VITE_API_LINK
+    }/ticket/pending/${idTiket}`;
     try {
       if (typePost === 'normal') {
         const res = await axios.put(
@@ -299,7 +300,7 @@ const ModalStockCheck1 = ({
           nama_mesin: '',
           posisi_part: '',
           sisa_umur: null,
-          grade: ""
+          grade: '',
         },
       },
     ]);
@@ -319,7 +320,9 @@ const ModalStockCheck1 = ({
       [index]: !prevState[index],
     }));
   };
-  const [infoPengganti, setInfoPengganti] = useState<{ [key: number]: boolean }>({});
+  const [infoPengganti, setInfoPengganti] = useState<{
+    [key: number]: boolean;
+  }>({});
   const toggleInfoPengganti = (index: number) => {
     setInfoPengganti((prevState) => ({
       ...prevState,
@@ -501,8 +504,9 @@ const ModalStockCheck1 = ({
                       console.log(selectedOption);
                       changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
-                      }`}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                      isOptionSelected ? 'text-black dark:text-white' : ''
+                    }`}
                   >
                     <option
                       value=""
@@ -591,8 +595,7 @@ const ModalStockCheck1 = ({
             </>
           )}
 
-          <div className="flex w-full pt-2">
-          </div>
+          <div className="flex w-full pt-2"></div>
           <div className="flex w-full pt-2">
             <label className="form-label block  text-black text-xs font-extrabold mt-3">
               KEBUTUHAN SPAREPART
@@ -605,13 +608,11 @@ const ModalStockCheck1 = ({
                   return (
                     <>
                       <div className="md:flex  mb-2 px-2 lg:py-3 py-1 bg-[#D8EAFF] rounded-md">
-
                         <>
                           <label className="hidden sm:block text-blue-700 text-xs font-bold pt-2 pl-4">
                             {i + 1}
                           </label>
-                          <div className='flex md:w-[35%] w-full'>
-
+                          <div className="flex md:w-[35%] w-full">
                             {data.id_ms_sparepart == null ? (
                               <button
                                 onClick={openModalMsStok}
@@ -686,10 +687,11 @@ const ModalStockCheck1 = ({
                                             getMasterSparepart(e.target.value);
                                             changeTextColor();
                                           }}
-                                          className={`relative z-20 w-8/12  appearance-none rounded-md  text-xs bg-blue-100 py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected
-                                            ? 'text-gray-800 dark:text-white'
-                                            : ''
-                                            }`}
+                                          className={`relative z-20 w-8/12  appearance-none rounded-md  text-xs bg-blue-100 py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                                            isOptionSelected
+                                              ? 'text-gray-800 dark:text-white'
+                                              : ''
+                                          }`}
                                         >
                                           <option
                                             value={mesinMsSparepart}
@@ -762,11 +764,8 @@ const ModalStockCheck1 = ({
                                             </p>
                                           </div>
                                           <div className="flex items-center text-xs lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
-                                            <p className="text-slate-600 font-semibold text-center dark:text-white">
-
-                                            </p>
+                                            <p className="text-slate-600 font-semibold text-center dark:text-white"></p>
                                           </div>
-
                                         </div>
 
                                         {masterSparepart.map(
@@ -802,8 +801,8 @@ const ModalStockCheck1 = ({
                                                   </p>
                                                 </div>
                                                 <div className="flex items-center text-xs lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
-
-                                                  <button className='bg-primary w-20 text-white'
+                                                  <button
+                                                    className="bg-primary w-20 text-white"
                                                     onClick={() => {
                                                       const onchangeVal: any = [
                                                         ...kebutuhanSparepart,
@@ -823,7 +822,8 @@ const ModalStockCheck1 = ({
                                                           SparepartMaster.posisi_part,
                                                         sisa_umur:
                                                           SparepartMaster.sisa_umur,
-                                                        grade: SparepartMaster.grade_2
+                                                        grade:
+                                                          SparepartMaster.grade_2,
                                                       };
                                                       setKebutuhanSparepart(
                                                         onchangeVal,
@@ -905,8 +905,7 @@ const ModalStockCheck1 = ({
                               </clipPath>
                             </defs>
                           </svg>
-                          <div className='flex md:w-[35%] w-full'>
-
+                          <div className="flex md:w-[35%] w-full">
                             {data.id_stok == null ? (
                               <button
                                 name="pengganti"
@@ -923,8 +922,6 @@ const ModalStockCheck1 = ({
                               >
                                 {data.detail_stok.nama_sparepart}
                               </button>
-
-
                             )}
 
                             {showModalStok && (
@@ -976,16 +973,15 @@ const ModalStockCheck1 = ({
                                   <div className="px-5 pb-4">
                                     <div className="relative flex w-full gap-10 justify-start pb-2 pt-3">
                                       <select
-                                        value={mesin}
                                         onChange={(e) => {
-                                          setMesin(e.target.value);
                                           getStokSparepart(e.target.value);
                                           changeTextColor();
                                         }}
-                                        className={`relative z-20 w-10/12 appearance-none rounded-md  text-xs bg-blue-100 py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected
-                                          ? 'text-gray-800 dark:text-white '
-                                          : ''
-                                          }`}
+                                        className={`relative z-20 w-10/12 appearance-none rounded-md  text-xs bg-blue-100 py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                                          isOptionSelected
+                                            ? 'text-gray-800 dark:text-white '
+                                            : ''
+                                        }`}
                                       >
                                         <option
                                           value={mesin}
@@ -1000,7 +996,7 @@ const ModalStockCheck1 = ({
                                             (data: any, i: number) => {
                                               return (
                                                 <option
-                                                  value={data.nama_mesin}
+                                                  value={data.id}
                                                   className="text-gray-800 text-xs font-light dark:text-bodydark"
                                                 >
                                                   {data.nama_mesin}
@@ -1033,7 +1029,6 @@ const ModalStockCheck1 = ({
                                         placeholder="Search Sparepart..."
                                         id="searchInput"
                                       />
-
                                     </div>
                                     <div className=" border border-black rounded-md overflow-y-scroll h-80">
                                       <div className="flex border-b border-stroke dark:border-strokedark">
@@ -1069,14 +1064,11 @@ const ModalStockCheck1 = ({
                                           </p>
                                         </div>
                                         <div className="flex items-center text-[14px] lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
-                                          <p className="text-slate-600 font-semibold text-center dark:text-white">
-
-                                          </p>
+                                          <p className="text-slate-600 font-semibold text-center dark:text-white"></p>
                                         </div>
-
                                       </div>
 
-                                      {stokSparepart.map(
+                                      {stokSparepart?.map(
                                         (SparepartStok: any, ii: number) => {
                                           return (
                                             <div className="flex border-b border-stroke dark:border-strokedark">
@@ -1111,9 +1103,9 @@ const ModalStockCheck1 = ({
                                                   {SparepartStok.grade}
                                                 </p>
                                               </div>
-                                              <div className='my-auto lg:w-4/12 w-3/12 justify-center p-2.5 ml-2'>
-
-                                                <button className='bg-primary w-20 text-white'
+                                              <div className="my-auto lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
+                                                <button
+                                                  className="bg-primary w-20 text-white"
                                                   onClick={() => {
                                                     const onchangeVal: any = [
                                                       ...kebutuhanSparepart,
@@ -1133,7 +1125,8 @@ const ModalStockCheck1 = ({
                                                       lokasi:
                                                         SparepartStok.lokasi,
                                                       umur: SparepartStok.umur_sparepart,
-                                                      grade: SparepartStok.grade,
+                                                      grade:
+                                                        SparepartStok.grade,
                                                     };
                                                     setKebutuhanSparepart(
                                                       onchangeVal,
@@ -1162,8 +1155,7 @@ const ModalStockCheck1 = ({
                               <img src={Info} alt="" />
                             </button>
                           </div>
-                          <div className='flex md:w-2/12 w-full md:mt-0 mt-2'>
-
+                          <div className="flex md:w-2/12 w-full md:mt-0 mt-2">
                             <div className="w-[130px] h-9 lg:ml-2 ml-[2px] bg-[#EDF5FF] rounded text-center text-[#0065DE] text-xs font-bold lg:pt-[9px] pt-[10px] px-1">
                               {data.detail_stok.grade == ''
                                 ? ''
@@ -1202,8 +1194,6 @@ const ModalStockCheck1 = ({
                             </button>
                           </div>
                         </>
-
-
                       </div>
                       <div className="grid grid-cols-2 gap-10">
                         <div className="w-80">
@@ -1212,21 +1202,29 @@ const ModalStockCheck1 = ({
                               <div
                                 onFocus={() => setInfo({ ...info, [i]: true })}
                                 onBlur={() => setInfo({ ...info, [i]: false })}
-                                className={` mt-1 mb-5 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${info[i] ? 'block' : 'hidden'
-                                  }`}
+                                className={` mt-1 mb-5 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${
+                                  info[i] ? 'block' : 'hidden'
+                                }`}
                               >
                                 <div className="flex flex-col bg-blue-100 shadow-md">
                                   <p className="text-xs font-bold text-primary p-2">
                                     Info Starepart Rusak
                                   </p>
                                   <div className=" p-2">
-                                    <p className="text-xs font-semibold">Umur</p>
-                                    <p className="text-xs">{data.detail_ms_sparepart.sisa_umur}</p>
+                                    <p className="text-xs font-semibold">
+                                      Umur
+                                    </p>
+                                    <p className="text-xs">
+                                      {data.detail_ms_sparepart.sisa_umur}
+                                    </p>
                                     <div className=" text-[9px] mt-2">
-                                      <p className="font-semibold text-xs">Grade</p>
-                                      <p className="text-xs">{data.detail_ms_sparepart.grade}</p>
+                                      <p className="font-semibold text-xs">
+                                        Grade
+                                      </p>
+                                      <p className="text-xs">
+                                        {data.detail_ms_sparepart.grade}
+                                      </p>
                                     </div>
-
                                   </div>
                                 </div>
                               </div>
@@ -1236,10 +1234,21 @@ const ModalStockCheck1 = ({
                         {infoPengganti[i] && (
                           <>
                             <div
-                              onFocus={() => setInfoPengganti({ ...infoPengganti, [i]: true })}
-                              onBlur={() => setInfoPengganti({ ...infoPengganti, [i]: false })}
-                              className={`  mt-1 mb-5 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${infoPengganti[i] ? 'block' : 'hidden'
-                                }`}
+                              onFocus={() =>
+                                setInfoPengganti({
+                                  ...infoPengganti,
+                                  [i]: true,
+                                })
+                              }
+                              onBlur={() =>
+                                setInfoPengganti({
+                                  ...infoPengganti,
+                                  [i]: false,
+                                })
+                              }
+                              className={`  mt-1 mb-5 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${
+                                infoPengganti[i] ? 'block' : 'hidden'
+                              }`}
                             >
                               <div className="flex flex-col bg-blue-100 shadow-md">
                                 <p className="text-xs font-bold text-primary p-2">
@@ -1247,10 +1256,16 @@ const ModalStockCheck1 = ({
                                 </p>
                                 <div className=" p-2">
                                   <p className="text-xs font-semibold">Umur</p>
-                                  <p className="text-xs">{data.detail_stok.umur}</p>
+                                  <p className="text-xs">
+                                    {data.detail_stok.umur}
+                                  </p>
                                   <div className=" text-[9px] mt-2">
-                                    <p className="font-semibold text-xs">Grade</p>
-                                    <p className="text-xs">{data.detail_stok.grade}</p>
+                                    <p className="font-semibold text-xs">
+                                      Grade
+                                    </p>
+                                    <p className="text-xs">
+                                      {data.detail_stok.grade}
+                                    </p>
                                   </div>
                                 </div>
                               </div>
@@ -1262,8 +1277,6 @@ const ModalStockCheck1 = ({
                   );
                 })}
               </>
-
-
             </div>
           </div>
 
@@ -1275,8 +1288,6 @@ const ModalStockCheck1 = ({
               +
             </button>
           </div>
-
-
 
           <div className="flex w-full pt-1">
             <div className="flex w-full">
@@ -1317,8 +1328,9 @@ const ModalStockCheck1 = ({
 
                       changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
-                      }`}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                      isOptionSelected ? 'text-black dark:text-white' : ''
+                    }`}
                   >
                     <option
                       value=""
