@@ -525,6 +525,25 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
 
                                       </ul>
                                     </div>
+                                    <div
+                                      className={`translate transform overflow-hidden ${!open && 'hidden'
+                                        }`}
+                                    >
+                                      <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
+                                        <li>
+                                          <NavLink
+                                            to="/maintenance/sparepartSpb"
+                                            className={({ isActive }) =>
+                                              'group relative flex items-center gap-5  rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                              (isActive && '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                            }
+                                          >
+                                            SPB Sparepart
+                                          </NavLink>
+                                        </li>
+
+                                      </ul>
+                                    </div>
                                     {/* <!-- Dropdown Menu End --> */}
                                   </React.Fragment>
                                 );

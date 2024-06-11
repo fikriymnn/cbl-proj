@@ -55,6 +55,7 @@ import SpbService from './pages/Maintenance/SPB/spbService';
 
 import Stockmaster from './pages/sparepart/stockmaster/stockmaster';
 import AddStock from './pages/sparepart/stockmaster/addStock';
+import SpbSparePart from './pages/Maintenance/SPB/spbSparepart';
 
 
 function App() {
@@ -292,6 +293,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <SpbService />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepartSpb"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <SpbSparePart />
               </ProtectedRoute>
             </>
           }
