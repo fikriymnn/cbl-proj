@@ -59,6 +59,7 @@ import MonitoringSparepart from './pages/sparepart/monitoring/monitoringSparepar
 import AddStockLifetimes from './pages/sparepart/monitoring/addStock';
 import SubmitOpname from './pages/sparepart/submitOpname';
 import ProjectMtc from './components/Tables/Maintenance/projectMtc';
+import SpbSparePart from './pages/Maintenance/SPB/spbSparepart';
 
 
 function App() {
