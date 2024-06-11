@@ -7,18 +7,21 @@ import axios from "axios";
 
 
 import { useNavigate } from 'react-router-dom';
+import Loading from "../../components/Loading";
 
 const Login: React.FC = () => {
     const [Email, setEmail] = useState("");
     const [Password, setPassword] = useState("");
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(false)
+
+    const [isLoading, setIsLoading] = useState(false)
     // const router = useRouter();
     // const { push } = useRouter();
 
     async function submitLogin(e: any) {
         e.preventDefault();
         try {
+            setIsLoading(true);
             const response = await axios.post(
                 `${import.meta.env.VITE_API_LINK}/login`,
                 { email: Email, password: Password },
@@ -30,15 +33,14 @@ const Login: React.FC = () => {
             );
 
 
-            setLoading(true);
-            alert('Login successful');
+            setIsLoading(false);
             // router.push("/");
             // push("/");
             navigate('/dashboard');
 
         } catch (error: any) {
             alert(error);
-            setLoading(false)
+            setIsLoading(false);
         }
     }
 
@@ -138,12 +140,16 @@ const Login: React.FC = () => {
                                 </div>
 
                                 <div className="mb-5">
-                                    <input
+                                    <button
+                                        disabled={isLoading}
                                         type="submit"
-                                        value={`${loading ? 'loading...' : 'Login'}`}
+
                                         className="w-full cursor-pointer rounded-lg border border-[#00499F] bg-[#00499F] p-4 text-white transition hover:bg-opacity-90 font-semibold"
-                                    />
+                                    >{isLoading ? 'Loading...' : 'LOGIN'}
+                                    </button>
+                                    {isLoading && <Loading />}
                                 </div>
+
                                 <div className='mb-2'>
                                     <Checkbox11 />
                                 </div>
