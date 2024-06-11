@@ -1482,7 +1482,6 @@ function Pm1Form() {
                     </>
                   )}
 
-
                   <div className='flex flex-col px-4 py-4 md:text-[14px] text-[9px] font-semibold '>
                     <p>
                       {'Total Waktu Pengerjaan : ' +
