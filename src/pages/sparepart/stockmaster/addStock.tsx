@@ -65,7 +65,7 @@ function AddStock() {
     }
   }
 
-  //change value point pm1
+  //change value Data
   const handleChangeData = (e: any) => {
     const { name, value } = e.target;
     const onchangeVal: any = addItem;
