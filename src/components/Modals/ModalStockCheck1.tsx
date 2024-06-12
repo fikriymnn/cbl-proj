@@ -7,6 +7,7 @@ import Info from '../../images/icon/Info.svg';
 import ModalMtcStockCheck from './ModalMtcStockCheck';
 import ModalMtcStockCheck2 from './ModalMtcStockCheck2';
 import CheckStock2 from '../Tables/Modals/CheckStock2';
+import Loading from '../Loading';
 
 const ModalStockCheck1 = ({
   children,
@@ -205,6 +206,7 @@ const ModalStockCheck1 = ({
       console.log(error);
     }
   }
+  const [isLoading, setIsLoading] = useState(false)
 
   async function postAnalisis() {
     const urlNormal = `${
@@ -215,6 +217,7 @@ const ModalStockCheck1 = ({
     }/ticket/pending/${idTiket}`;
     try {
       if (typePost === 'normal') {
+        setIsLoading(true);
         const res = await axios.put(
           urlNormal,
           {
@@ -234,7 +237,7 @@ const ModalStockCheck1 = ({
           },
         );
 
-        alert(res.data.msg);
+        // alert(res.data.msg);
       } else {
         const res = await axios.put(
           urlPending,
@@ -248,14 +251,15 @@ const ModalStockCheck1 = ({
           },
         );
 
-        alert(res.data.msg);
+        // alert(res.data.msg);
       }
-
+      setIsLoading(false);
       onClose();
       onFinish();
     } catch (error: any) {
       console.log(error);
       //alert(error.data.msg);
+      setIsLoading(false);
     }
   }
   async function deleteExit(id_ticket: any, id_proses: any) {
@@ -336,6 +340,8 @@ const ModalStockCheck1 = ({
   const [showModalMsStok, setShowModalMsStok] = useState(false);
   const openModalMsStok = () => setShowModalMsStok(true);
   const closeModalMsStok = () => setShowModalMsStok(false);
+
+
   return (
     <div className="fixed z-50 inset-0 h-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
       <div className="w-full max-w-4xl bg-white rounded-xl shadow-md max-h-screen overflow-y-auto">
@@ -1448,6 +1454,8 @@ const ModalStockCheck1 = ({
 
           <div className="pt-5">
             <button
+
+              disabled={isLoading}
               onClick={() => {
                 postAnalisis();
                 //onClose;
@@ -1455,8 +1463,9 @@ const ModalStockCheck1 = ({
               }}
               className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
             >
-              SIMPAN
+              {isLoading ? 'Loading...' : 'SIMPAN'}
             </button>
+            {isLoading && <Loading />}
           </div>
         </div>
 

@@ -6,8 +6,9 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import TableSPBRequested from './TableSPBRequested';
-import TableSPBHistory from './TableSPBHistory';
+
+import TableSPBRequestedSparepart from './TableSPBRequestedSparepart';
+import TableSPBHistorySparepart from './TableSPBHistorySparepart';
 
 
 interface TabPanelProps {
@@ -45,7 +46,7 @@ function a11yProps(index: number) {
     };
 }
 
-export default function TableSPBService() {
+export default function TableSPBSparePart() {
     const theme = createTheme({
         palette: {
             primary: {
@@ -133,10 +134,10 @@ export default function TableSPBService() {
                 </ThemeProvider>
             </AppBar>
             <TabPanel value={value} index={0} dir={theme.direction}>
-                <TableSPBRequested />
+                <TableSPBRequestedSparepart />
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
-                <TableSPBHistory />
+                <TableSPBHistorySparepart />
             </TabPanel>
 
         </Box>

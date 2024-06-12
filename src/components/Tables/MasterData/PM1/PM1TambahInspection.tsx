@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import ReactLoading from 'react-loading';
+import Loading from '../../../Loading';
 
 const PM1TambahInspection = () => {
     const { id } = useParams();
@@ -71,6 +73,7 @@ const PM1TambahInspection = () => {
         ]);
     };
 
+
     //add Point Task
     const handleAddPointTask = (i: any) => {
         const onchangeVal = [...pointPm1];
@@ -113,10 +116,12 @@ const PM1TambahInspection = () => {
         setPointPm1(deleteVal);
     };
 
+    const [isLoading, setIsLoading] = useState(false)
+
     async function submitPointPm1() {
         const url = `${import.meta.env.VITE_API_LINK}/master/pointPm1`;
-
         try {
+            setIsLoading(true);
             const res = await axios.post(
                 url,
                 {
@@ -129,9 +134,11 @@ const PM1TambahInspection = () => {
                 },
             );
 
-            alert(res.data.msg);
+            setIsLoading(false);
+            // alert(res.data.msg);
         } catch (error: any) {
             console.log(error);
+            setIsLoading(false);
             //alert(error.data.msg);
         }
     }
@@ -141,6 +148,7 @@ const PM1TambahInspection = () => {
             {!isMobile && (
                 <>
                     <div className="rounded-xl border border-stroke bg-white pt-4 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
+
                         <div className="flex w-full  gap-2 pr-8 border-b-6 border-[#D8EAFF] px-4 pb-5">
                             <div className="flex flex-col w-11/12">
                                 <label className="text-neutral-500 text-sm font-semibold">
@@ -321,11 +329,14 @@ const PM1TambahInspection = () => {
                             + INSPECTION POINT
                         </button>
                         <button
+                            disabled={isLoading}
                             onClick={submitPointPm1}
                             className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
                         >
-                            SUBMIT
+                            {isLoading ? 'Loading...' : 'Submit'}
+
                         </button>
+                        {isLoading && <Loading />}
                     </div>
 
 
@@ -513,12 +524,13 @@ const PM1TambahInspection = () => {
                         >
                             + INSPECTION POINT
                         </button>
-                        <button
+                        <button disabled={isLoading}
                             onClick={submitPointPm1}
                             className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
                         >
-                            SUBMIT
+                            {isLoading ? 'Loading...' : 'Submit'}
                         </button>
+
                     </div>
 
 
