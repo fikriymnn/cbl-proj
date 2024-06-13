@@ -198,9 +198,8 @@ function TableService() {
     const minutesDiff = Math.floor(secondsDiff / 60);
     const hoursDiff = Math.floor(minutesDiff / 60);
 
-    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${
-      hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
-    } `;
+    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
+      } `;
 
     return formattedDifference; // Example format (YYYY-MM-DD)
   }
@@ -768,7 +767,7 @@ function TableService() {
               </div>
             </div>
           </div>
-          <div className=" overflow-x-auto">
+          <div className=" overflow-x-auto z-10">
             <div className="min-w-[700px]">
               {tiket != null &&
                 tiket.data.map((data: any, i: any) => {
@@ -869,13 +868,13 @@ function TableService() {
                                   className={
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'open'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'monitoring'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                      : data.status_tiket == 'temporary'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                      : ''
+                                      : data.status_tiket == 'requested'
+                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                        : data.status_tiket == 'active'
+                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                          : data.status_tiket == 'temporary'
+                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                            : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -1107,14 +1106,14 @@ function TableService() {
                                               <p
                                                 className={
                                                   proses.skor_mtc <= 100 &&
-                                                  proses.skor_mtc >= 60
+                                                    proses.skor_mtc >= 60
                                                     ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                                     : proses.skor_mtc >= 20 &&
                                                       proses.skor_mtc <= 59
-                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                    : proses.skor_mtc < 20
-                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                                    : ''
+                                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
+                                                      : proses.skor_mtc < 20
+                                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                                        : ''
                                                 }
                                               >
                                                 {proses.skor_mtc}%
@@ -1180,7 +1179,7 @@ function TableService() {
                 })}
             </div>
           </div>
-          <div className="w-full flex justify-end">
+          <div className="w-full flex justify-end z-0">
             <Stack spacing={2}>
               <Pagination
                 count={tiket?.total_page}
@@ -1354,13 +1353,13 @@ function TableService() {
                           className={
                             data.status_tiket == 'pending'
                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                              : data.status_tiket == 'open'
-                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                              : data.status_tiket == 'monitoring'
-                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                              : data.status_tiket == 'temporary'
-                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                              : ''
+                              : data.status_tiket == 'requested'
+                                ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                : data.status_tiket == 'active'
+                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                  : data.status_tiket == 'temporary'
+                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                    : ''
                           }
                         >
                           {data.status_tiket}
@@ -1390,12 +1389,12 @@ function TableService() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'monitoring'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                      : data.status_tiket == 'temporary'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                      : ''
+                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                        : data.status_tiket == 'monitoring'
+                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                          : data.status_tiket == 'temporary'
+                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                            : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -1504,14 +1503,14 @@ function TableService() {
                                         <p
                                           className={
                                             proses.skor_mtc <= 100 &&
-                                            proses.skor_mtc >= 60
+                                              proses.skor_mtc >= 60
                                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                               : proses.skor_mtc >= 20 &&
                                                 proses.skor_mtc <= 59
-                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                              : proses.skor_mtc < 20
-                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                              : ''
+                                                ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
+                                                : proses.skor_mtc < 20
+                                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                                  : ''
                                           }
                                         >
                                           {proses.skor_mtc}%
