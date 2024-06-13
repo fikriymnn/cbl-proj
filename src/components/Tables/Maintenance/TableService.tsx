@@ -15,7 +15,7 @@ import Stack from '@mui/material/Stack';
 import ModalMtcLightHeavy from '../../Modals/ModalMtcLightHeavy';
 // import moment from 'moment';
 
-function TableOS() {
+function TableService() {
   const [isMobile, setIsMobile] = useState(false);
   const [status, setStatus] = useState();
   const [openButton, setOpenButton] = useState(null);
@@ -138,7 +138,7 @@ function TableOS() {
     try {
       const res = await axios.get(url, {
         params: {
-          bagian_tiket: 'os2',
+          bagian_tiket: 'service',
           page: page,
           limit: 10,
         },
@@ -198,8 +198,9 @@ function TableOS() {
     const minutesDiff = Math.floor(secondsDiff / 60);
     const hoursDiff = Math.floor(minutesDiff / 60);
 
-    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
-      } `;
+    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${
+      hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
+    } `;
 
     return formattedDifference; // Example format (YYYY-MM-DD)
   }
@@ -740,7 +741,7 @@ function TableOS() {
         <>
           <div className="flex bg-white mt-2 py-2">
             <p className="w-10 px-3 text-xs font-bold ">No</p>
-            <div className="grid md:grid-cols-8 grid-cols-7 w-full">
+            <div className="grid md:grid-cols-7 grid-cols-7 w-full">
               <div className="flex gap-2">
                 <p className="text-xs font-bold ">Kode Tiket</p>
                 <img className="w-2" src={Polygon6} alt="" />
@@ -757,10 +758,7 @@ function TableOS() {
                 <p className="text-xs font-bold ">Status</p>
                 <img className="w-2" src={Polygon6} alt="" />
               </div>
-              <div className="flex gap-2">
-                <p className="text-xs font-bold ">Persentase</p>
-                <img className="w-2" src={Polygon6} alt="" />
-              </div>
+
               <div className="flex gap-2">
                 <p className="text-xs font-bold ">Jadwal</p>
                 <img className="w-2" src={Polygon6} alt="" />
@@ -797,6 +795,36 @@ function TableOS() {
 
                     return `${year}/${month}/${day}  ${hours}:${minutes}`; // Example format (YYYY-MM-DD)
                   }
+                  function convertDateonly(datetime: any) {
+                    const dateObject = new Date(datetime);
+                    const hours = dateObject
+                      .getHours()
+                      .toString()
+                      .padStart(2, '0');
+                    const minutes = dateObject
+                      .getMinutes()
+                      .toString()
+                      .padStart(2, '0');
+                    return `${hours}:${minutes}`; // Example format (YYYY-MM-DD)
+                  }
+                  function convertTimeOnly(datetime: any) {
+                    const dateObject = new Date(datetime);
+                    const day = dateObject
+                      .getDate()
+                      .toString()
+                      .padStart(2, '0'); // Ensure two-digit day
+                    const month = (dateObject.getMonth() + 1)
+                      .toString()
+                      .padStart(2, '0'); // Adjust for zero-based month
+                    const year = dateObject.getFullYear();
+
+                    return `${year}/${month}/${day}`; // Example format (YYYY-MM-DD)
+                  }
+
+                  const waktumulaiJam = convertDateonly(data.waktu_mulai_mtc);
+                  const waktumulaimtcDate = convertTimeOnly(
+                    data.waktu_mulai_mtc,
+                  );
 
                   const dateMtc = convertDatetimeToDate(data.createdAt);
                   const waktuRespon = calculateResponTime(
@@ -813,7 +841,7 @@ function TableOS() {
                           >
                             {i + 1 + (page - 1) * 10}
                           </div>
-                          <div className="grid md:grid-cols-8 grid-cols-7 w-full gap-5">
+                          <div className="grid md:grid-cols-7 grid-cols-7 w-full gap-5">
                             <div className="flex flex-col md:gap-5 gap-1 ">
                               <div className="my-auto ">
                                 <p className="text-xs font-light">
@@ -842,37 +870,19 @@ function TableOS() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                        : data.status_tiket == 'monitoring'
-                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                          : data.status_tiket == 'temporary'
-                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                            : ''
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                      : data.status_tiket == 'monitoring'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                      : data.status_tiket == 'temporary'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                      : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
                                 </p>
                               </div>
                             </div>
-                            <div className="flex items-center md:gap-5 gap-1  p-2">
-                              <div className="flex ">
-                                <p
-                                  className={
-                                    data.status_tiket == 'pending'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'open'
-                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                        : data.status_tiket == 'monitoring'
-                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                          : data.status_tiket == 'temporary'
-                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
-                                            : ''
-                                  }
-                                >
-                                  {data.skor_mtc}%
-                                </p>
-                              </div>
-                            </div>
+
                             <div className="flex flex-col md:gap-5 gap-1 ">
                               <div>
                                 <p className="text-xs font-light">
@@ -1074,38 +1084,6 @@ function TableOS() {
                                       const tglMulaiMtc = convertDatetimeToDate(
                                         proses.waktu_mulai_mtc,
                                       );
-                                      function convertJam(datetime: any) {
-                                        const dateObject = new Date(datetime);
-                                        const hours = dateObject
-                                          .getHours()
-                                          .toString()
-                                          .padStart(2, '0');
-                                        const minutes = dateObject
-                                          .getMinutes()
-                                          .toString()
-                                          .padStart(2, '0');
-                                        return `${hours}:${minutes}`; // Example format (YYYY-MM-DD)
-                                      }
-                                      function convertTgl(datetime: any) {
-                                        const dateObject = new Date(datetime);
-                                        const day = dateObject
-                                          .getDate()
-                                          .toString()
-                                          .padStart(2, '0'); // Ensure two-digit day
-                                        const month = (dateObject.getMonth() + 1)
-                                          .toString()
-                                          .padStart(2, '0'); // Adjust for zero-based month
-                                        const year = dateObject.getFullYear();
-
-                                        return `${year}/${month}/${day}`; // Example format (YYYY-MM-DD)
-                                      }
-
-                                      const waktuMtc = convertTgl(
-                                        proses.waktu_mulai_mtc,
-                                      );
-                                      const jamMtc = convertJam(
-                                        proses.waktu_mulai_mtc,
-                                      );
                                       return (
                                         <>
                                           <div className="flex flex-col gap-2">
@@ -1129,14 +1107,14 @@ function TableOS() {
                                               <p
                                                 className={
                                                   proses.skor_mtc <= 100 &&
-                                                    proses.skor_mtc >= 60
+                                                  proses.skor_mtc >= 60
                                                     ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                                     : proses.skor_mtc >= 20 &&
                                                       proses.skor_mtc <= 59
-                                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                      : proses.skor_mtc < 20
-                                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                                        : ''
+                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
+                                                    : proses.skor_mtc < 20
+                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                                    : ''
                                                 }
                                               >
                                                 {proses.skor_mtc}%
@@ -1167,8 +1145,8 @@ function TableOS() {
                                               }
                                               kendala={data.nama_kendala}
                                               machineName={data.mesin}
-                                              tgl={waktuMtc}
-                                              jam={jamMtc}
+                                              tgl={waktumulaimtcDate}
+                                              jam={waktumulaiJam}
                                               namaPemeriksa={
                                                 proses.user_eksekutor.nama
                                               }
@@ -1235,7 +1213,7 @@ function TableOS() {
                 <img src={Polygon6} alt="" />
               </div>
               <div className="flex gap-[1px] justify-center items-center">
-                <p className="text-xs font-bold ">Persentase</p>
+                <p className="text-xs font-bold ">Status</p>
                 <img src={Polygon6} alt="" />
               </div>
             </div>
@@ -1377,15 +1355,15 @@ function TableOS() {
                             data.status_tiket == 'pending'
                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                               : data.status_tiket == 'open'
-                                ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                : data.status_tiket == 'monitoring'
-                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                  : data.status_tiket == 'temporary'
-                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                    : ''
+                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                              : data.status_tiket == 'monitoring'
+                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                              : data.status_tiket == 'temporary'
+                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                              : ''
                           }
                         >
-                          {data.skor_mtc}%
+                          {data.status_tiket}
                         </p>
                       </div>
                     </div>
@@ -1412,12 +1390,12 @@ function TableOS() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                        : data.status_tiket == 'monitoring'
-                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                          : data.status_tiket == 'temporary'
-                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                            : ''
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                      : data.status_tiket == 'monitoring'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                      : data.status_tiket == 'temporary'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                      : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -1450,36 +1428,6 @@ function TableOS() {
                           {data.proses_mtcs.map((proses: any, ii: any) => {
                             const tglMulaiMtc = convertDatetimeToDate(
                               proses.waktu_mulai_mtc,
-                            );
-                            function convertDateonly(datetime: any) {
-                              const dateObject = new Date(datetime);
-                              const hours = dateObject
-                                .getHours()
-                                .toString()
-                                .padStart(2, '0');
-                              const minutes = dateObject
-                                .getMinutes()
-                                .toString()
-                                .padStart(2, '0');
-                              return `${hours}:${minutes}`; // Example format (YYYY-MM-DD)
-                            }
-                            function convertTimeOnly(datetime: any) {
-                              const dateObject = new Date(datetime);
-                              const day = dateObject
-                                .getDate()
-                                .toString()
-                                .padStart(2, '0'); // Ensure two-digit day
-                              const month = (dateObject.getMonth() + 1)
-                                .toString()
-                                .padStart(2, '0'); // Adjust for zero-based month
-                              const year = dateObject.getFullYear();
-
-                              return `${year}/${month}/${day}`; // Example format (YYYY-MM-DD)
-                            }
-
-                            const waktumulaiJam = convertDateonly(data.waktu_mulai_mtc);
-                            const waktumulaimtcDate = convertTimeOnly(
-                              data.waktu_mulai_mtc,
                             );
                             return (
                               <>
@@ -1527,8 +1475,8 @@ function TableOS() {
                                           onClose={() => closeModalDetail(ii)}
                                           kendala={data.nama_kendala}
                                           machineName={data.mesin}
-                                          tgl={waktumulaimtcDate}
-                                          jam={waktumulaiJam}
+                                          tgl={'12/12/24'}
+                                          jam={'17.00'}
                                           namaPemeriksa={
                                             proses.user_eksekutor.nama
                                           }
@@ -1556,14 +1504,14 @@ function TableOS() {
                                         <p
                                           className={
                                             proses.skor_mtc <= 100 &&
-                                              proses.skor_mtc >= 60
+                                            proses.skor_mtc >= 60
                                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                               : proses.skor_mtc >= 20 &&
                                                 proses.skor_mtc <= 59
-                                                ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                : proses.skor_mtc < 20
-                                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                                  : ''
+                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
+                                              : proses.skor_mtc < 20
+                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                              : ''
                                           }
                                         >
                                           {proses.skor_mtc}%
@@ -1608,4 +1556,4 @@ function TableOS() {
   );
 }
 
-export default TableOS;
+export default TableService;

@@ -12,6 +12,7 @@ import TableThree from '../TableThree';
 import TableIncomingMaintenance from './TableIncomingMaintenance';
 import TableOS from './TableOS';
 import HistoriOS2 from './History';
+import TableService from './TableService';
 
 
 interface TabPanelProps {
@@ -144,7 +145,7 @@ export default function MachineFullWidthTabs() {
                 <TableOS />
             </TabPanel>
             <TabPanel value={value} index={2} dir={theme.direction}>
-
+                <TableService />
             </TabPanel>
             <TabPanel value={value} index={3} dir={theme.direction}>
                 <HistoriOS2 />

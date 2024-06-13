@@ -55,6 +55,11 @@ import SpbService from './pages/Maintenance/SPB/spbService';
 
 import Stockmaster from './pages/sparepart/stockmaster/stockmaster';
 import AddStock from './pages/sparepart/stockmaster/addStock';
+import MonitoringSparepart from './pages/sparepart/monitoring/monitoringSparepart';
+import AddStockLifetimes from './pages/sparepart/monitoring/addStock';
+import SubmitOpname from './pages/sparepart/submitOpname';
+import ProjectMtc from './components/Tables/Maintenance/projectMtc';
+import SpbSparePart from './pages/Maintenance/SPB/spbSparepart';
 
 
 function App() {
@@ -94,8 +99,9 @@ function App() {
             </>
           }
         />
+
         <Route
-          path="/maintenance/stockmaster_sparepart"
+          path="/maintenance/sparepart/stockmaster_sparepart"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -104,11 +110,38 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/stockmaster_sparepart/addStock"
+          path="/maintenance/sparepart/opname/submitOpname"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <SubmitOpname />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepart/stockmaster_sparepart/addStock"
           element={
             <>
               <PageTitle title="PT CBL" />
               <AddStock />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepart/monitoringSparepart"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MonitoringSparepart />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepart/monitoringSparepart/addStockLifetime"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <AddStockLifetimes />
             </>
           }
         />
@@ -140,7 +173,7 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/adjustment"
+          path="/maintenance/sparepart/opname/adjustment"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -149,7 +182,7 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/opname"
+          path="/maintenance/sparepart/opname/histori"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -182,6 +215,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <Machine />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/projectMtc"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProjectMtc />
               </ProtectedRoute>
             </>
           }
@@ -286,12 +330,23 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/serviceSpb"
+          path="maintenance/spb/serviceSpb"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <SpbService />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepartSpb"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <SpbSparePart />
               </ProtectedRoute>
             </>
           }

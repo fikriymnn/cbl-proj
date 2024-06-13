@@ -1,23 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import DefaultLayout from '../../../layout/DefaultLayout';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import axios from 'axios';
 
-function AddStock() {
-  const [addItem, setAddItem] = useState({
+function AddStockLifetimes() {
+  const [addMasterSparepart, setAddMasterSparepart] = useState({
+    id_mesin: 0,
+    nama_mesin: '',
     kode: '',
     nama_sparepart: '',
-    id_mesin: 0,
-    part_number: '',
-    lokasi: '',
-    limit_stok: 0,
-    grade: '',
-    type_part: '',
-    foto: '',
+    posisi_part: '',
+    tgl_pasang: '',
+    tgl_rusak: '',
+    umur_a: 0,
+    umur_grade: 0,
+    grade_2: '',
+    actual_umur: 0,
+    sisa_umur: 0,
     keterangan: '',
-    umur_sparepart: 0,
   });
-
   const [mesin, setMesin] = useState<any>();
+
   useEffect(() => {
     getMesin();
   }, []);
@@ -35,29 +40,33 @@ function AddStock() {
     }
   }
 
-  async function addStok() {
-    const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
+  async function addItem() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/sparepart`;
     try {
       const res = await axios.post(
         url,
         {
-          kode: addItem.kode,
-          nama_sparepart: addItem.nama_sparepart,
-          id_mesin: addItem.id_mesin,
-          part_number: addItem.part_number,
-          lokasi: addItem.lokasi,
-          limit_stok: addItem.limit_stok,
-          grade: addItem.limit_stok,
-          type_part: addItem.type_part,
-          foto: addItem.foto,
-          keterangan: addItem.keterangan,
-          umur_sparepart: addItem.umur_sparepart,
+          jenis_part: 'ganti',
+          id_mesin: addMasterSparepart.id_mesin,
+          nama_mesin: addMasterSparepart.nama_mesin,
+          kode: addMasterSparepart.kode,
+          nama_sparepart: addMasterSparepart.nama_sparepart,
+          posisi_part: addMasterSparepart.posisi_part,
+          tgl_pasang: addMasterSparepart.tgl_pasang,
+          tgl_rusak: addMasterSparepart.tgl_rusak,
+          umur_a: addMasterSparepart.umur_a,
+          umur_grade: addMasterSparepart.umur_grade,
+          grade_2: addMasterSparepart.grade_2,
+          actual_umur: addMasterSparepart.actual_umur,
+          sisa_umur: addMasterSparepart.sisa_umur,
+          keterangan: addMasterSparepart.keterangan,
         },
         {
           withCredentials: true,
         },
       );
       alert('Add Success');
+      window.location.reload();
       console.log(res.data);
     } catch (error: any) {
       alert(error.response.data.msg);
@@ -65,12 +74,28 @@ function AddStock() {
     }
   }
 
-  //change value Data
+  //change value data
   const handleChangeData = (e: any) => {
     const { name, value } = e.target;
-    const onchangeVal: any = addItem;
+    const onchangeVal: any = addMasterSparepart;
     onchangeVal[name] = value;
-    setAddItem(onchangeVal);
+    setAddMasterSparepart(onchangeVal);
+  };
+
+  //change value data
+  const handleChangeUmurGrade = (e: any) => {
+    const value = e;
+    const onchangeVal: any = addMasterSparepart;
+    onchangeVal['umur_grade'] = value;
+    setAddMasterSparepart(onchangeVal);
+  };
+
+  //change value data
+  const handleChangeActualUmur = (e: any) => {
+    const value = e;
+    const onchangeVal: any = addMasterSparepart;
+    onchangeVal['actual_umur'] = value;
+    setAddMasterSparepart(onchangeVal);
   };
 
   return (
@@ -81,46 +106,34 @@ function AddStock() {
         </p>
         <div className="grid md:grid-cols-3 gap-5 p-3 bg-white text-black">
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-semibold">Kode barang</p>
+            <p className="text-xs font-extrabold text-black">Kode barang</p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
                   name="kode"
                   onChange={(e) => handleChangeData(e)}
                   className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
-                                                }`}
+                                            }`}
                 />
               </div>
             </div>
           </div>
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-semibold">Part Number</p>
-            <div className="flex justify-center items-center">
-              <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
-                <input
-                  name="part_number"
-                  onChange={(e) => handleChangeData(e)}
-                  className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
-                                                }`}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-semibold">Nama Barang</p>
+            <p className="text-xs font-extrabold text-black">Nama Barang</p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
                   name="nama_sparepart"
                   onChange={(e) => handleChangeData(e)}
                   className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
-                                                }`}
+                                            }`}
                 />
               </div>
             </div>
           </div>
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-semibold">Nama Mesin</p>
+            <p className="text-xs font-extrabold text-black">Mesin</p>
+
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
@@ -177,11 +190,11 @@ function AddStock() {
             </div>
           </div>
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-semibold">Lokasi</p>
+            <p className="text-xs font-extrabold text-black">Posisi</p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
-                  name="lokasi"
+                  name="posisi_part"
                   onChange={(e) => handleChangeData(e)}
                   className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
                                             }`}
@@ -190,11 +203,35 @@ function AddStock() {
             </div>
           </div>
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-semibold">Umur Original</p>
+            <p className="text-xs font-extrabold text-black">Tanggal Pasang</p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
-                  name="umur_sparepart"
+                  name="tgl_pasang"
+                  onChange={(e) => handleChangeData(e)}
+                  type="date"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="mt-5 flex flex-col justify-center px-2">
+            <p className="text-xs font-extrabold text-black">Tanggal Rusak</p>
+            <div className="flex justify-center items-center">
+              <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                <input
+                  name="tgl_rusak"
+                  onChange={(e) => handleChangeData(e)}
+                  type="date"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="mt-5 flex flex-col justify-center px-2">
+            <p className="text-xs font-extrabold text-black">Umur A</p>
+            <div className="flex justify-center items-center">
+              <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                <input
+                  name="umur_a"
                   onChange={(e) => handleChangeData(e)}
                   className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
                                                 }`}
@@ -203,21 +240,8 @@ function AddStock() {
             </div>
           </div>
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-semibold">Grade (keperluan awal)</p>
-            <div className="flex justify-center items-center">
-              <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
-                <input
-                  name="grade"
-                  onChange={(e) => handleChangeData(e)}
-                  className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
-                                                }`}
-                />
-              </div>
-            </div>
-          </div>
+            <p className="text-xs font-extrabold text-black">Grade</p>
 
-          <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-semibold">Type Part </p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
@@ -231,22 +255,57 @@ function AddStock() {
                 </span>
 
                 <select
-                  name="type_part"
-                  onChange={(e) => handleChangeData(e)}
+                  name="grade_2"
+                  onChange={(e) => {
+                    handleChangeData(e);
+                    let umurGrade = 0;
+
+                    if (e.target.value == 'A') {
+                      umurGrade = 100;
+                    } else if (e.target.value == 'B') {
+                      umurGrade = 80;
+                    } else if (e.target.value == 'C') {
+                      umurGrade = 60;
+                    } else if (e.target.value == 'D') {
+                      umurGrade = 40;
+                    } else if (e.target.value == 'E') {
+                      umurGrade = 20;
+                    } else {
+                      umurGrade = 0;
+                    }
+
+                    handleChangeUmurGrade(umurGrade);
+
+                    const percent = umurGrade / 100;
+                    console.log(percent);
+                    const actualUmur = addMasterSparepart.umur_a * percent;
+                    handleChangeActualUmur(actualUmur);
+                  }}
                   className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
                                             }`}
                 >
                   <option
-                    value="CONSUMABLE"
+                    selected
+                    disabled
+                    value=""
                     className="text-body dark:text-bodydark"
                   >
-                    CONSUMABLE
+                    Select Grade
                   </option>
-                  <option
-                    value="NON CONSUMABLE"
-                    className="text-body dark:text-bodydark"
-                  >
-                    NON CONSUMABLE
+                  <option value="A" className="text-body dark:text-bodydark">
+                    A
+                  </option>
+                  <option value="B" className="text-body dark:text-bodydark">
+                    B
+                  </option>
+                  <option value="C" className="text-body dark:text-bodydark">
+                    C
+                  </option>
+                  <option value="D" className="text-body dark:text-bodydark">
+                    D
+                  </option>
+                  <option value="E" className="text-body dark:text-bodydark">
+                    E
                   </option>
                 </select>
 
@@ -271,14 +330,13 @@ function AddStock() {
               </div>
             </div>
           </div>
+
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-semibold">
-              Set Buffer Stock (Khusus Consumable)
-            </p>
+            <p className="text-xs font-extrabold text-black">Sisa Umur</p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
-                  name="limit_stok"
+                  name="sisa_umur"
                   onChange={(e) => handleChangeData(e)}
                   className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
                                                 }`}
@@ -287,22 +345,24 @@ function AddStock() {
             </div>
           </div>
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-semibold">Foto</p>
+            <p className="text-xs font-extrabold text-black">Keterangan</p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
+                  name="keterangan"
+                  onChange={(e) => handleChangeData(e)}
                   className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
                                                 }`}
                 />
               </div>
             </div>
           </div>
-          <div className="flex justify-end items-end col-span-2">
+          <div className="flex justify-center items-end col-span-3">
             <button
               onClick={() => {
-                addStok(), console.log(addItem);
+                addItem();
               }}
-              className="bg-green-500 h-9 px-10 text-white font-semibold rounded-md text-xs"
+              className="bg-green-500 h-9 px-10 text-white font-extrabold rounded-md text-xs"
             >
               SAVE
             </button>
@@ -313,4 +373,4 @@ function AddStock() {
   );
 }
 
-export default AddStock;
+export default AddStockLifetimes;

@@ -19,6 +19,8 @@ import ModalNewVendor from '../../Modals/ModalNewVendor';
 import Arrow from '../../../images/icon/arrowDown.svg';
 import axios from 'axios';
 import ModalKonfirmasi from '../../Modals/ModalKonfirmasi';
+import Loading from '../../Loading';
+
 
 const tiket = [
   {
@@ -165,9 +167,13 @@ const TableIncomingMaintenance = () => {
   useEffect(() => {
     getMTC();
   }, []);
+
+
+
   async function getMTC() {
     const url = `${import.meta.env.VITE_API_LINK}/ticket?bagian_tiket=incoming`;
     try {
+
       const res = await axios.get(url, {
         params: {
           page: 1,
@@ -190,18 +196,22 @@ const TableIncomingMaintenance = () => {
     }
   }
 
+  const [isLoading, setIsLoading] = useState(false)
+
   async function responMTC(id: number, indexModal: any) {
     const url = `${import.meta.env.VITE_API_LINK}/ticket/respon/${id}`;
     try {
+      setIsLoading(true);
       const res = await axios.get(url, {
         withCredentials: true,
       });
-
-      alert('respon berhasil');
+      setIsLoading(false);
+      // alert('respon berhasil');
       getMTC();
     } catch (error: any) {
       console.log(error.response);
       alert('error');
+      setIsLoading(false);
     }
   }
   return (
@@ -308,11 +318,13 @@ const TableIncomingMaintenance = () => {
                             <div className=" mx-auto flex gap-3">
                               <button
                                 type="button"
+                                disabled={isLoading}
                                 onClick={() => responMTC(brand.id, key)}
                                 className={`inline-flex py-2 rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
                               >
-                                RESPON
+                                {isLoading ? 'Loading...' : 'RESPON'}
                               </button>
+                              {isLoading && <Loading />}
                               {/* <button
                                 type="button"
                                 // onClick={() => openModal1(key)}
@@ -439,11 +451,13 @@ const TableIncomingMaintenance = () => {
                             <div className=" flex flex-wrap  w-4/12  border-b-[#D8EAFF] px-2 gap-1  py-2">
                               <button
                                 type="button"
+                                disabled={isLoading}
                                 onClick={() => responMTC(brand.id, key)}
                                 className={`inline-flex py-[6px] rounded-[3px] my-auto  md:px-5 px-1 md:text-[12px] text-[10px] sm:font-semibold bg-[#0065DE] text-white hover:bg-[#234a79] justify-center`}
                               >
-                                RESPON
+                                {isLoading ? 'Loading...' : 'RESPON'}
                               </button>
+                              {isLoading && <Loading />}
                               {/* <button
                               type="button"
                               // onClick={() => openModal1(key)}

@@ -46,6 +46,7 @@ const PM1Checklist = () => {
   }
 
   const [point, setPoint] = useState<any>();
+
   async function getPointPm1(id_mesin: any) {
     const url = `${import.meta.env.VITE_API_LINK}/master/pointPm1`;
     try {
@@ -61,6 +62,7 @@ const PM1Checklist = () => {
       for (let i = 0; i < res.data.length; i++) {
         data.push(false);
       }
+
       setShowEdit(data);
       setShowDelete(data)
       console.log(res.data);
@@ -167,6 +169,7 @@ const PM1Checklist = () => {
                             isOpen={showDelete[i]}
                             onClose={() => closeDelete(i)}
                             idPoint={data.id}
+                            onFinish={getPointPm1}
                           />
                         )}
                       </div>
@@ -292,6 +295,7 @@ const PM1Checklist = () => {
                             isOpen={showDelete[i]}
                             onClose={() => closeDelete(i)}
                             idPoint={data.id}
+                            onFinish={getPointPm1}
                           />
                         )}
                       </div>

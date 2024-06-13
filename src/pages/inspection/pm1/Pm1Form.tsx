@@ -11,6 +11,7 @@ import ModalPM1TambahInspection from '../../../components/Modals/ModalPMTambahIn
 import Logo from '../../../images/icon/ceklis.svg';
 import None from '../../../images/icon/none.svg';
 import moment from 'moment';
+import Loading from '../../../components/Loading';
 
 function Pm1Form() {
   const { id } = useParams();
@@ -121,7 +122,7 @@ function Pm1Form() {
         withCredentials: true,
       });
 
-      alert('task dimulai');
+
       getPM1();
     } catch (error: any) {
       console.log(error);
@@ -158,7 +159,7 @@ function Pm1Form() {
       );
 
       console.log('Succes', timestamp);
-      alert('task stop');
+
       getPM1();
     } catch (error: any) {
       console.log(error);
@@ -166,12 +167,15 @@ function Pm1Form() {
     }
   }
 
+  const [isLoading, setIsLoading] = useState(false)
+
   async function donePm1(id: any) {
     if (!catatan || !userKA || !userLeader || !userSuper) {
-      alert('incomplite data');
+      alert('Data Tidak Lengkap');
     }
     const url = `${import.meta.env.VITE_API_LINK}/pm1/done/${id}`;
     try {
+      setIsLoading(true);
       const res = await axios.put(
         url,
         {
@@ -185,11 +189,12 @@ function Pm1Form() {
         },
       );
 
-      alert('pm 1 done');
+      setIsLoading(false);
       getPM1();
     } catch (error: any) {
       console.log(error);
       alert(error.response.data.msg);
+      setIsLoading(false);
     }
   }
 
@@ -663,63 +668,83 @@ function Pm1Form() {
                                     ? data.lama_pengerjaan
                                     : ''}
                                 </p>
+                                {data.waktu_mulai == null ? (
+                                  <>
+                                    <p className='font-bold text-[#DE0000]'>
+                                      Task Belum Dimulai
+                                    </p>
+                                    <button
+                                      onClick={() => {
+                                        if (data.waktu_mulai != null) {
+                                          // alert('sudah di mulai');
+                                        } else {
+                                          startTask(data.id);
+                                        }
+                                      }}
+                                      className="flex w-full rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
+                                    >
+                                      <svg
+                                        width="14"
+                                        height="14"
+                                        viewBox="0 0 14 14"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path
+                                          d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                          fill="white"
+                                        />
+                                      </svg>
+                                    </button>
+                                  </>
+                                ) : (
+                                  <></>
+                                )
+                                }
+                                {data.waktu_mulai != null ? (
+                                  <>
+                                    <p className='font-bold text-green-500'>
+                                      Task Sudah Dimulai
+                                    </p>
+                                    <button
+                                      onClick={() => {
+                                        if (data.waktu_selesai != null) {
+                                          alert('sudah di kerjakan');
+                                        } else if (data.waktu_mulai == null) {
+                                          alert('belum mulai');
+                                        } else {
+                                          stopTask(
+                                            data.id,
+                                            data.hasil,
+                                            data.catatan,
+                                            data.waktu_mulai,
+                                          );
+                                        }
+                                      }}
+                                      className="flex w-full rounded-md bg-[#DE0000] justify-center items-center px-2  py-3 hover:cursor-pointer"
+                                    >
+                                      <svg
+                                        width="14"
+                                        height="12"
+                                        viewBox="0 0 14 12"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <rect
+                                          width="14"
+                                          height="12"
+                                          rx="3"
+                                          fill="white"
+                                        />
+                                      </svg>
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
 
-                                <button
-                                  onClick={() => {
-                                    if (data.waktu_mulai != null) {
-                                      alert('sudah di mulai');
-                                    } else {
-                                      startTask(data.id);
-                                    }
-                                  }}
-                                  className="flex w-full rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
-                                >
-                                  <svg
-                                    width="14"
-                                    height="14"
-                                    viewBox="0 0 14 14"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <path
-                                      d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                      fill="white"
-                                    />
-                                  </svg>
-                                </button>
+                                  </>
+                                )}
 
-                                <button
-                                  onClick={() => {
-                                    if (data.waktu_selesai != null) {
-                                      alert('sudah di kerjakan');
-                                    } else if (data.waktu_mulai == null) {
-                                      alert('belum mulai');
-                                    } else {
-                                      stopTask(
-                                        data.id,
-                                        data.hasil,
-                                        data.catatan,
-                                        data.waktu_mulai,
-                                      );
-                                    }
-                                  }}
-                                  className="flex w-full rounded-md bg-[#DE0000] justify-center items-center px-2 py-3 hover:cursor-pointer"
-                                >
-                                  <svg
-                                    width="14"
-                                    height="12"
-                                    viewBox="0 0 14 12"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                  >
-                                    <rect
-                                      width="14"
-                                      height="12"
-                                      rx="3"
-                                      fill="white"
-                                    />
-                                  </svg>
-                                </button>
                               </div>
                             </>
                           )}
@@ -846,12 +871,14 @@ function Pm1Form() {
                 <div className="flex w-full md:justify-end justify-start">
                   {pm1 != null && pm1.status != 'done' ? (
                     <button
+                      disabled={isLoading}
                       onClick={() => donePm1(id)}
                       className="py-2 px-10 mx-5 mt-5 bg-primary text-white rounded-md mb-5"
                     >
-                      SUBMIT INSPECTION
+                      {isLoading ? 'Loading...' : 'SUBMIT INSPECTION'}
                     </button>
                   ) : null}
+                  {isLoading && <Loading />}
                 </div>
               </section>
             </div>
@@ -1110,67 +1137,82 @@ function Pm1Form() {
                                   </p>
                                   {data.waktu_selesai == null && (
                                     <>
-                                      <button
-                                        onClick={() => {
-                                          if (data.waktu_mulai != null) {
-                                            alert('sudah di mulai');
-                                          } else {
-                                            startTask(data.id);
-                                          }
-                                        }}
-                                        className="flex w-full rounded-md bg-[#00B81D] justify-center items-center py-2 hover:cursor-pointer"
-                                      >
-                                        <svg
-                                          width="14"
-                                          height="14"
-                                          viewBox="0 0 14 14"
-                                          fill="none"
-                                          xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                          <path
-                                            d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                            fill="white"
-                                          />
-                                        </svg>
-                                      </button>
+                                      {data.waktu_mulai == null ? (
+                                        <>
+                                          <p className='font-bold text-xs text-[#DE0000]'>
+                                            Task Belum Dimulai
+                                          </p>
+                                          <button
+                                            onClick={() => {
+                                              if (data.waktu_mulai != null) {
+                                                // alert('sudah di mulai');
+                                              } else {
+                                                startTask(data.id);
+                                              }
+                                            }}
+                                            className="flex w-full rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
+                                          >
+                                            <svg
+                                              width="14"
+                                              height="14"
+                                              viewBox="0 0 14 14"
+                                              fill="none"
+                                              xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                              <path
+                                                d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                                fill="white"
+                                              />
+                                            </svg>
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <></>
+                                      )
+                                      }
+                                      {data.waktu_mulai != null ? (
+                                        <>
+                                          <p className='font-bold text-xs text-green-500'>
+                                            Task Sudah Dimulai
+                                          </p>
+                                          <button
+                                            onClick={() => {
+                                              if (data.waktu_selesai != null) {
+                                                alert('sudah di kerjakan');
+                                              } else if (data.waktu_mulai == null) {
+                                                alert('belum mulai');
+                                              } else {
+                                                stopTask(
+                                                  data.id,
+                                                  data.hasil,
+                                                  data.catatan,
+                                                  data.waktu_mulai,
+                                                );
+                                              }
+                                            }}
+                                            className="flex w-full rounded-md bg-[#DE0000] justify-center items-center px-2  py-3 hover:cursor-pointer"
+                                          >
+                                            <svg
+                                              width="14"
+                                              height="12"
+                                              viewBox="0 0 14 12"
+                                              fill="none"
+                                              xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                              <rect
+                                                width="14"
+                                                height="12"
+                                                rx="3"
+                                                fill="white"
+                                              />
+                                            </svg>
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <>
 
-                                      <button
-                                        onClick={() => {
-                                          if (data.waktu_selesai != null) {
-                                            alert('sudah di kerjakan');
-                                          } else if (data.waktu_mulai == null) {
-                                            alert('belum mulai');
-                                          } else {
-                                            stopTask(
-                                              data.id,
-                                              data.hasil,
-                                              data.catatan,
-                                              data.waktu_mulai,
-                                            );
-                                          }
-                                        }}
-                                        className="flex w-full rounded-md bg-[#DE0000] justify-center items-center  py-2 hover:cursor-pointer"
-                                      >
-                                        <svg
-                                          width="14"
-                                          height="12"
-                                          viewBox="0 0 14 12"
-                                          fill="none"
-                                          xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                          <rect
-                                            width="14"
-                                            height="12"
-                                            rx="3"
-                                            fill="white"
-                                          />
-                                        </svg>
-                                      </button>
-                                    </>
-                                  )}
-                                  {data.waktu_selesai == null && (
-                                    <>
-
+                                        </>
+                                      )}
                                     </>
                                   )}
                                 </div>
@@ -1455,7 +1497,6 @@ function Pm1Form() {
                     </>
                   )}
 
-
                   <div className='flex flex-col px-4 py-4 md:text-[14px] text-[9px] font-semibold '>
                     <p>
                       {'Total Waktu Pengerjaan : ' +
@@ -1471,12 +1512,14 @@ function Pm1Form() {
                   <div className="flex w-full md:justify-end justify-start">
                     {pm1 != null && pm1.status != 'done' ? (
                       <button
+                        disabled={isLoading}
                         onClick={() => donePm1(id)}
                         className="py-2 px-10 mx-5 mt-5 bg-primary text-white rounded-md mb-5"
                       >
-                        SUBMIT INSPECTION
+                        {isLoading ? 'Loading...' : 'SUBMIT INSPECTION'}
                       </button>
                     ) : null}
+                    {isLoading && <Loading />}
                   </div>
                 </section>
               </div>

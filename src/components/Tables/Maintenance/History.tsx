@@ -1007,7 +1007,7 @@ function HistoryOS2() {
                                 <img src={Polygon6} alt="" />
                             </div>
                             <div className="flex gap-[1px] justify-center items-center">
-                                <p className="text-xs font-bold ">Persentase</p>
+                                <p className="text-xs font-bold ">Status</p>
                                 <img src={Polygon6} alt="" />
                             </div>
                         </div>
@@ -1129,20 +1129,12 @@ function HistoryOS2() {
 
                                                 <p
                                                     className={
-                                                        data.skor_mtc === 100
-                                                            ? `text-sm px-2 py-2 font-light  rounded-xl flex justify-center items-center text-[#0057FF] bg-[#B1ECFF] `
-                                                            : data.skor_mtc >= 60 &&
-                                                                data.skor_mtc < 100
-                                                                ? `text-sm px-2 py-2  font-light  rounded-xl flex justify-center  items-center  text-green-600 bg-[#00de3f2f] `
-                                                                : data.skor_mtc >= 40 &&
-                                                                    data.skor_mtc < 60
-                                                                    ? `text-sm px-2 py-2 font-light  rounded-xl flex justify-center  items-center  text-[#DE0000] bg-[#FFDBB1] `
-                                                                    : data.skor_mtc < 40 && data.skor_mtc >= 0
-                                                                        ? `text-sm px-2 py-2 font-light  rounded-xl flex justify-center  items-center text-[#DE0000] bg-[#FFB1B1] `
-                                                                        : ''
+                                                        data.status_tiket === "closed"
+                                                            ? `text-sm px-2 py-2 font-light  rounded-xl flex justify-center items-center text-green-600 bg-[#00de3f2f] `
+                                                            : 'text-green-600 bg-[#00de3f2f]'
                                                     }
                                                 >
-                                                    {data.skor_mtc}%
+                                                    {data.status_tiket}
                                                 </p>
 
                                             </div>
@@ -1166,17 +1158,19 @@ function HistoryOS2() {
 
                                                                     <p
                                                                         className={
-                                                                            data.skor_mtc === 100
-                                                                                ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                                                                : data.skor_mtc >= 60 &&
-                                                                                    data.skor_mtc < 100
-                                                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                                                                    : data.skor_mtc >= 40 &&
-                                                                                        data.skor_mtc < 60
-                                                                                        ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
-                                                                                        : data.skor_mtc < 40 && data.skor_mtc >= 0
-                                                                                            ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                                                                            : ''
+                                                                            data.status_tiket == 'pending'
+                                                                                ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                                                                : data.status_tiket == 'open'
+                                                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                                                                    : data.status_tiket == 'monitoring'
+                                                                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                                                                        : data.status_tiket == 'temporary'
+                                                                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                                                                            :
+                                                                                            data.status_tiket == 'closed'
+                                                                                                ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-green-600 bg-[#00de3f2f]  `
+                                                                                                : ''
+
                                                                         }
                                                                     >
                                                                         {data.status_tiket}{' '}

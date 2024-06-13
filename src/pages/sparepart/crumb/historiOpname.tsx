@@ -47,9 +47,9 @@ function HistoriOpname() {
                     <p className='col-span-2 text-xs font-medium bg-[#EFEFEF] p-2 '>gudang/R1</p>
                     <p className='col-span-1 text-xs font-medium bg-[#EFEFEF] p-2 '>Pcs</p>
                     <p className='col-span-2 text-xs font-medium bg-[#EFEFEF] p-2 '>25</p>
-                    <input className='col-span-1 text-xs font-medium p-2 border rounded-md border-[#C6C6C6]' />
                     <p className='col-span-1 text-xs font-medium bg-[#EFEFEF] p-2 '>0</p>
-                    <input className='col-span-1 text-xs font-medium p-2 border rounded-md border-[#C6C6C6]' />
+                    <p className='col-span-1 text-xs font-medium bg-[#EFEFEF] p-2 '>0</p>
+                    <p className='col-span-1 text-xs font-medium bg-[#EFEFEF] p-2 '>0</p>
 
                 </div>
             </div>
@@ -61,9 +61,9 @@ function HistoriOpname() {
                     <p className='col-span-2 text-xs font-medium bg-[#EFEFEF] p-2 '>gudang/R1</p>
                     <p className='col-span-1 text-xs font-medium bg-[#EFEFEF] p-2 '>Pcs</p>
                     <p className='col-span-2 text-xs font-medium bg-[#EFEFEF] p-2 '>25</p>
-                    <input className='col-span-1 text-xs font-medium p-2 border rounded-md border-[#C6C6C6]' />
                     <p className='col-span-1 text-xs font-medium bg-[#EFEFEF] p-2 '>0</p>
-                    <input className='col-span-1 text-xs font-medium p-2 border rounded-md border-[#C6C6C6]' />
+                    <p className='col-span-1 text-xs font-medium bg-[#EFEFEF] p-2 '>0</p>
+                    <p className='col-span-1 text-xs font-medium bg-[#EFEFEF] p-2 '>0</p>
 
                 </div>
             </div>
@@ -75,9 +75,9 @@ function HistoriOpname() {
                     <p className='col-span-2 text-xs font-medium bg-[#EFEFEF] p-2 '>gudang/R1</p>
                     <p className='col-span-1 text-xs font-medium bg-[#EFEFEF] p-2 '>Pcs</p>
                     <p className='col-span-2 text-xs font-medium bg-[#EFEFEF] p-2 '>25</p>
-                    <input className='col-span-1 text-xs font-medium p-2 border rounded-md border-[#C6C6C6]' />
                     <p className='col-span-1 text-xs font-medium bg-[#EFEFEF] p-2 '>0</p>
-                    <input className='col-span-1 text-xs font-medium p-2 border rounded-md border-[#C6C6C6]' />
+                    <p className='col-span-1 text-xs font-medium bg-[#EFEFEF] p-2 '>0</p>
+                    <p className='col-span-1 text-xs font-medium bg-[#EFEFEF] p-2 '>0</p>
 
                 </div>
             </div>

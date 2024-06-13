@@ -5,7 +5,7 @@ import Arrow from '../../../../images/icon/arrowDown.svg';
 import Polygon6 from '../../../../images/icon/Polygon6.svg';
 import ModalSPBService from '../../../Modals/ModalNewSPBService';
 
-function TableSPBRequested() {
+function TableSPBHistory() {
     const [showModalSPBBaru, setShowModalSPBBaru] = useState(false);
 
     const openModalSPBBaru = () => setShowModalSPBBaru(true);
@@ -27,8 +27,6 @@ function TableSPBRequested() {
             window.removeEventListener('resize', handleResize);
         };
     }, []);
-
-    const [showDetailMobile, setShowDetailMobile] = useState<boolean>()
     return (
         <main>
             {!isMobile && (
@@ -43,7 +41,7 @@ function TableSPBRequested() {
                                     className="mx-3 my-auto"
                                 />
                             </div>
-                            <div className='flex flex-row w-6/12 justify-end'>
+                            <div className='flex flex-row justify-end w-6/12'>
                                 <input
                                     type="search"
                                     placeholder="search"
@@ -51,43 +49,34 @@ function TableSPBRequested() {
                                     id=""
                                     className="md:w-[330px] w-40 mx-3 px-3 bg-[#E9F3FF] rounded-md"
                                 />
-                                <button onClick={openModalSPBBaru} className='bg-green-600 rounded-md text-white text-xs font-semibold px-10'>
-                                    SPB BARU
-                                </button>
-                                {showModalSPBBaru && (
-                                    <ModalSPBService
-
-                                        isOpen={showModalSPBBaru}
-                                        onClose={closeModalSPBBaru}
-                                        noSPB={'MT-0001'} tglSpb={'20 MEI 2024'} data={undefined}
-                                    >
-                                        <p></p>
-                                    </ModalSPBService>
-                                )}
                             </div>
 
                         </div>
                         <div className="flex bg-white mt-2 py-2">
-                            <p className="w-10 px-3 text-stone-500 text-xs font-bold ">No</p>
-                            <div className="grid  grid-cols-6 w-full">
+                            <p className="w-10 px-3 text-xs font-bold ">No</p>
+                            <div className="grid  grid-cols-7 w-full">
                                 <div className="flex gap-2">
-                                    <p className="text-stone-500 text-xs font-bold ">Kode Tiket</p>
+                                    <p className="text-xs font-bold ">Kode Tiket</p>
                                     <img className="w-2" src={Polygon6} alt="" />
                                 </div>
                                 <div className="flex gap-2">
-                                    <p className="text-stone-500 text-xs font-bold ">Nama Mesin</p>
+                                    <p className="text-xs font-bold ">Nama Mesin</p>
                                     <img className="w-2" src={Polygon6} alt="" />
                                 </div>
                                 <div className="flex gap-2 col-span-2">
-                                    <p className="text-stone-500 text-xs font-bold ">Jenis Kendala</p>
+                                    <p className="text-xs font-bold ">Jenis Kendala</p>
                                     <img className="w-2" src={Polygon6} alt="" />
                                 </div>
                                 <div className="flex gap-2">
-                                    <p className="text-stone-500 text-xs font-bold ">Jadwal</p>
+                                    <p className="text-xs font-bold ">Jadwal</p>
+                                    <img className="w-2" src={Polygon6} alt="" />
+                                </div>
+                                <div className="flex gap-2">
+                                    <p className="text-xs font-bold ">Keputusan</p>
                                     <img className="w-2" src={Polygon6} alt="" />
                                 </div>
                                 <div className="flex gap-2 justify-end pr-8">
-                                    <p className="text-stone-500 text-xs font-bold ">Action</p>
+                                    <p className="text-xs font-bold ">Action</p>
                                 </div>
                             </div>
                         </div>
@@ -97,38 +86,42 @@ function TableSPBRequested() {
                                     <section className="flex  bg-white  rounded-lg px-2">
                                         <div
 
-                                            className=" py-3 text-neutral-500 text-sm font-light w-10 px-2 flex justify-start items-center"
+                                            className=" py-3 w-10 px-2 flex justify-start items-center"
                                         >
                                             1
                                         </div>
-                                        <div className="grid  grid-cols-6 w-full ">
+                                        <div className="grid  grid-cols-7 w-full ">
                                             <div className="flex flex-col md:gap-5 gap-1 ">
                                                 <div className="my-auto ">
-                                                    <p className="text-neutral-500 text-sm font-light">
+                                                    <p className="text-xs font-light">
                                                         EXC800802
                                                     </p>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col md:gap-5 gap-1 ">
                                                 <div className="my-auto">
-                                                    <p className="text-neutral-500 text-sm font-light">
+                                                    <p className="text-xs font-light">
                                                         R700
                                                     </p>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col col-span-2 md:gap-5 gap-1 ">
                                                 <div className="my-auto w-11/12">
-                                                    <p className="text-neutral-500 text-sm font-light">
+                                                    <p className="text-xs font-light">
                                                         3.1.7 - Feeder Tidak Bisa On
                                                     </p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center md:gap-5 gap-1 ">
-                                                <p className="text-neutral-500 text-sm font-light">
+                                                <p className="text-xs font-light">
                                                     2 Juni 2024
                                                 </p>
                                             </div>
-
+                                            <div className="flex items-center md:gap-5 gap-1 ">
+                                                <div className="text-xs font-light px-2 py-1 rounded-full bg-[#B1ECFF] text-[#0065DE]">
+                                                    DISETUJUI
+                                                </div>
+                                            </div>
                                             <div className="flex gap-2 items-center justify-end md:mb-0 mb-2">
                                                 <div>
                                                     <div>
@@ -163,6 +156,13 @@ function TableSPBRequested() {
                         <div className='flex flex-col gap-2  items-center bg-white p-2'>
 
                             <div className='flex flex-row w-full justify-end'>
+                                <div className='flex w-full'>
+                                    <img
+                                        src={Filter}
+                                        alt=""
+                                        className="mx-3 my-auto"
+                                    />
+                                </div>
                                 <input
                                     type="search"
                                     placeholder="search"
@@ -170,29 +170,10 @@ function TableSPBRequested() {
                                     id=""
                                     className=" mx-3 px-3 bg-[#E9F3FF] rounded-md"
                                 />
-                                <button onClick={openModalSPBBaru} className='bg-green-600 rounded-md text-white text-xs font-semibold px-10'>
-                                    SPB BARU
-                                </button>
-                                {showModalSPBBaru && (
-                                    <ModalSPBService
+                            </div>
 
-                                        isOpen={showModalSPBBaru}
-                                        onClose={closeModalSPBBaru}
-                                        noSPB={'MT-0001'} tglSpb={'20 MEI 2024'} data={undefined}
-                                    >
-                                        <p></p>
-                                    </ModalSPBService>
-                                )}
-                            </div>
-                            <div className='flex w-full'>
-                                <img
-                                    src={Filter}
-                                    alt=""
-                                    className="mx-3 my-auto"
-                                />
-                            </div>
                         </div>
-                        <div className="flex bg-white mt-2 py-2 px-2">
+                        <div className="flex bg-white mt-2 py-2 px-3">
 
                             <div className="flex gap-2 w-full">
 
@@ -200,12 +181,16 @@ function TableSPBRequested() {
                                     <p className="text-xs font-bold "> Mesin</p>
                                     <img className="w-2" src={Polygon6} alt="" />
                                 </div>
-                                <div className="flex  w-7/12 ">
+                                <div className="flex  w-3/12 ">
                                     <p className="text-xs font-bold "> Kendala</p>
                                     <img className="w-2" src={Polygon6} alt="" />
                                 </div>
-                                <div className="flex  w-2/12 ">
+                                <div className="flex  w-3/12 pl-2">
                                     <p className="text-xs font-bold ">Jadwal</p>
+                                    <img className="w-2" src={Polygon6} alt="" />
+                                </div>
+                                <div className="flex  w-2/12 pl-2">
+                                    <p className="text-xs font-bold ">Keputusan</p>
                                     <img className="w-2" src={Polygon6} alt="" />
                                 </div>
                             </div>
@@ -214,26 +199,29 @@ function TableSPBRequested() {
                             <div className="">
                                 <div className="my-2 ">
                                     <section className="flex flex-col bg-white  rounded-lg px-2">
-                                        <div className="flex w-full py-3 gap-1">
+                                        <div className="flex w-full py-2 gap-1">
 
                                             <div className="flex  w-2/12  ">
-                                                <p className="text-neutral-500 text-sm font-light">
+                                                <p className="text-xs font-light">
                                                     R700
                                                 </p>
                                             </div>
-                                            <div className="flex  w-7/12 ">
-
-                                                <p className="text-neutral-500 text-sm font-light">
+                                            <div className="flex  w-4/12 ">
+                                                <p className="text-xs font-light  line-clamp-1">
                                                     3.1.7 - Feeder Tidak Bisa On
                                                 </p>
 
                                             </div>
-                                            <div className="flex  w-3/12  ">
-                                                <p className="text-neutral-500 text-sm font-light">
+                                            <div className="flex  w-3/12 ">
+                                                <p className="text-xs font-light">
                                                     2 Juni 2024
                                                 </p>
                                             </div>
-
+                                            <div className="flex  w-3/12  ">
+                                                <div className="text-xs font-light px-2 rounded-full bg-[#B1ECFF] text-[#0065DE]">
+                                                    DISETUJUI
+                                                </div>
+                                            </div>
                                         </div>
                                         <div className="flex gap-2 items-center pb-2">
                                             <div>
@@ -264,4 +252,4 @@ function TableSPBRequested() {
     )
 }
 
-export default TableSPBRequested
+export default TableSPBHistory
