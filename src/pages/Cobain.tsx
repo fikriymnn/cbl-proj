@@ -162,7 +162,7 @@ const App = () => {
                 <button type="button"
                     onClick={openModal1}
                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Open Modal 1
+                    Open Modal 1.0
                 </button>
                 {showModal1 && (
                     <Modal
@@ -509,7 +509,7 @@ const App = () => {
                 <button type="button"
                     onClick={openModal21}
                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Open Modal New Vendro
+                    Open Modal New Vendroo
                 </button>
                 {showModal21 && (
                     <ModalNewVendor
