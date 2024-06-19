@@ -67,11 +67,11 @@ function TableSPBRequestedSparepart() {
                             </div>
 
                         </div>
-                        <div className="flex bg-white mt-2 py-2 gap-2">
+                        <div className="flex bg-white mt-2 py-2">
                             <p className="w-10 px-3 text-stone-500 text-xs font-bold ">No</p>
-                            <div className="grid  grid-cols-8 w-full ">
+                            <div className="grid  grid-cols-8 w-full">
                                 <div className="flex gap-2">
-                                    <p className="text-stone-500 text-xs font-bold ">Kode Tiket</p>
+                                    <p className="text-stone-500 text-xs font-bold ">No. SPB</p>
                                     <img className="w-2" src={Polygon6} alt="" />
                                 </div>
                                 <div className="flex gap-2">
@@ -82,7 +82,7 @@ function TableSPBRequestedSparepart() {
                                     <p className="text-stone-500 text-xs font-bold ">Nama Barang</p>
                                     <img className="w-2" src={Polygon6} alt="" />
                                 </div>
-                                <div className="flex gap-2 ">
+                                <div className="flex gap-2">
                                     <p className="text-stone-500 text-xs font-bold ">Kode Part</p>
                                     <img className="w-2" src={Polygon6} alt="" />
                                 </div>
@@ -91,7 +91,7 @@ function TableSPBRequestedSparepart() {
                                     <img className="w-2" src={Polygon6} alt="" />
                                 </div>
                                 <div className="flex gap-2">
-                                    <p className="text-stone-500 text-xs font-bold ">Kode Estimasi</p>
+                                    <p className="text-stone-500 text-xs font-bold ">Tanggal</p>
                                     <img className="w-2" src={Polygon6} alt="" />
                                 </div>
                                 <div className="flex gap-2 justify-end pr-8">
@@ -102,73 +102,48 @@ function TableSPBRequestedSparepart() {
                         <div className=" overflow-x-auto">
                             <div className="min-w-[700px] ">
                                 <div className="my-2 ">
-                                    <section className="flex  bg-white  rounded-lg px-2 gap-1">
-                                        <div
+                                    <section className="flex  bg-white  rounded-md px-1 py-2">
+                                        <p className="w-10 px-3 text-stone-500 pt-2 text-xs font-bold  items-center">1</p>
+                                        <div className="grid  grid-cols-8 w-full  items-center">
+                                            <div className="flex gap-2">
+                                                <p className="text-neutral-500 text-sm font-light line-clamp-1 ">SP24-0002</p>
 
-                                            className="text-neutral-500 text-sm font-light py-3 w-10 px-2 flex justify-start items-center"
-                                        >
-                                            1
-                                        </div>
-                                        <div className="grid  grid-cols-8 w-full ">
-                                            <div className="flex flex-col md:gap-5 gap-1 ">
-                                                <div className="my-auto ">
-                                                    <p className="text-neutral-500 text-sm font-light">
-                                                        SPB-0002
-                                                    </p>
-                                                </div>
                                             </div>
-                                            <div className="flex flex-col md:gap-5 gap-1 ">
-                                                <div className="my-auto">
-                                                    <p className="text-neutral-500 text-sm font-light">
-                                                        2024/06/02
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-col md:gap-5 gap-1 ">
-                                                <div className="my-auto">
-                                                    <p className="text-neutral-500 text-sm font-light line-clamp-1">
-                                                        Filter Separator LB900
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-col  md:gap-5 gap-1 ">
-                                                <div className="my-auto ">
-                                                    <p className="text-neutral-500 text-sm font-light line-clamp-1">
-                                                        SPRT-0106
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="flex  md:gap-5 gap-1 col-span-2">
-                                                <div className='my-auto'>
-                                                    <p className="text-neutral-500 text-sm font-light line-clamp-1">
-                                                        Menunggu Persetujuan MTC
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center md:gap-5 gap-1 ">
-                                                <p className="text-neutral-500 text-sm font-light">
-                                                    A-2 Hari
-                                                </p>
-                                            </div>
-                                            <div className="flex gap-2 items-center justify-end md:mb-0 mb-2">
-                                                <div>
-                                                    <div>
-                                                        <button
+                                            <div className="flex gap-2">
+                                                <p className="text-neutral-500 text-sm font-light line-clamp-1">2024/06/02</p>
 
-                                                            className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
-                                                        >
-                                                            <img src={Burger} alt="" className="mx-3" />
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <button
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <p className="text-neutral-500 text-sm font-light line-clamp-1">Filter Separator LB9</p>
 
-                                                        className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
-                                                    >
-                                                        <img src={Arrow} alt="" className="mx-3" />
-                                                    </button>
-                                                </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <p className="text-neutral-500 text-sm font-light line-clamp-1">SPRT-0106</p>
+
+                                            </div>
+                                            <div className="flex gap-2 col-span-2">
+                                                <p className="text-neutral-500 text-sm font-light line-clamp-1">Menunggu persetujuan MTC</p>
+
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <p className="text-neutral-500 text-sm font-light line-clamp-1">2024/07/02</p>
+
+                                            </div>
+                                            <div className="flex gap-2 justify-end pr-8">
+                                                <button className='px-4 py-2 bg-[#0065DE] rounded-md'>
+                                                    <svg width="4" height="11" viewBox="0 0 4 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <rect width="4" height="1.90909" fill="white" />
+                                                        <rect y="4.45312" width="4" height="1.90909" fill="white" />
+                                                        <rect y="8.9082" width="4" height="1.90909" fill="white" />
+                                                    </svg>
+
+                                                </button>
+                                                <button className='px-3 py-3 bg-[#0065DE] rounded-md'>
+                                                    <svg width="15" height="10" viewBox="0 0 15 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M14 9L7.64444 2L1 9" stroke="white" stroke-width="2.5" />
+                                                    </svg>
+
+                                                </button>
                                             </div>
                                         </div>
                                     </section>
@@ -181,7 +156,7 @@ function TableSPBRequestedSparepart() {
             {isMobile && (
                 <>
                     <div>
-                        <div className='flex flex-col gap-2  items-center bg-white p-2'>
+                        <div className='flex flex-col gap-2 items-center bg-white p-2'>
 
                             <div className='flex flex-row w-full justify-end'>
                                 <input
@@ -218,15 +193,15 @@ function TableSPBRequestedSparepart() {
                             <div className="flex gap-2 w-full">
 
                                 <div className="flex  w-2/12 ">
-                                    <p className="text-stone-500 text-xs font-bold "> Mesin</p>
+                                    <p className="text-xs font-bold "> Mesin</p>
                                     <img className="w-2" src={Polygon6} alt="" />
                                 </div>
                                 <div className="flex  w-7/12 ">
-                                    <p className="text-stone-500 text-xs font-bold "> Kendala</p>
+                                    <p className="text-xs font-bold "> Kendala</p>
                                     <img className="w-2" src={Polygon6} alt="" />
                                 </div>
                                 <div className="flex  w-2/12 ">
-                                    <p className="text-stone-500 text-xs font-bold ">Jadwal</p>
+                                    <p className="text-xs font-bold ">Jadwal</p>
                                     <img className="w-2" src={Polygon6} alt="" />
                                 </div>
                             </div>

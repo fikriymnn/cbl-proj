@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import TableSPBRequested from './TableSPBRequested';
 import TableSPBHistory from './TableSPBHistory';
+import TableSPBRequestedSparepart from './TableSPBRequestedSparepart';
 
 
 interface TabPanelProps {
@@ -126,8 +127,9 @@ export default function TableSPBService() {
                         aria-label="full width tabs example"
                         className='bg-white text-[#00499F] font-semibold mb-2 '
                     >
-                        <Tab label="Requested" {...a11yProps(0)} className='' />
-                        <Tab label="History" {...a11yProps(1)} />
+                        <Tab label="Service" {...a11yProps(0)} className='' />
+                        <Tab label="Sparepart" {...a11yProps(1)} className='' />
+                        {/* <Tab label="History" {...a11yProps(2)} /> */}
 
                     </Tabs>
                 </ThemeProvider>
@@ -136,6 +138,9 @@ export default function TableSPBService() {
                 <TableSPBRequested />
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
+                <TableSPBRequestedSparepart />
+            </TabPanel>
+            <TabPanel value={value} index={2} dir={theme.direction}>
                 <TableSPBHistory />
             </TabPanel>
 
