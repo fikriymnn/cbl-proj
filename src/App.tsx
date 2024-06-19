@@ -55,12 +55,13 @@ import SpbService from './pages/Maintenance/SPB/spbService';
 
 import Stockmaster from './pages/sparepart/stockmaster/stockmaster';
 import AddStock from './pages/sparepart/stockmaster/addStock';
-import MonitoringSparepart from './pages/sparepart/monitoring/monitoringSparepart';
-import AddStockLifetimes from './pages/sparepart/monitoring/addStock';
+import MonitoringSparepart from './pages/sparepart/monitoringSparepart/monitoringSparepart';
+import AddStockLifetimes from './pages/sparepart/monitoringSparepart/addStock';
 import SubmitOpname from './pages/sparepart/submitOpname';
 import ProjectMtc from './components/Tables/Maintenance/projectMtc';
 import SpbSparePart from './pages/Maintenance/SPB/spbSparepart';
-
+import MonitoringService from './pages/sparepart/monitoringService/monitoringService';
+import AddStockService from './pages/sparepart/monitoringService/addStock';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -81,7 +82,6 @@ function App() {
       <Routes>
         <Route
           index
-
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -128,11 +128,29 @@ function App() {
           }
         />
         <Route
+          path="/maintenance/sparepart/stockmaster_service/addStock"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <AddStockService />
+            </>
+          }
+        />
+        <Route
           path="/maintenance/sparepart/monitoringSparepart"
           element={
             <>
               <PageTitle title="PT CBL" />
               <MonitoringSparepart />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepart/monitoringService"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MonitoringService />
             </>
           }
         />
