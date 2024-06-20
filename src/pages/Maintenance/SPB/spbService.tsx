@@ -6,7 +6,7 @@ const SpbService = () => {
 
     return (
         <DefaultLayout>
-            <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>Maintenance &gt; SPB &gt; Service </p>
+            <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>Maintenance &gt; SPB  </p>
             <TableSPBService />
         </DefaultLayout>
     );
