@@ -13,6 +13,7 @@ import ModalDetail from '../../Modals/ModalDetail';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import ModalMtcLightHeavy from '../../Modals/ModalMtcLightHeavy';
+import ModalSPBService from '../../Modals/ModalNewSPBService';
 // import moment from 'moment';
 
 function TableOS() {
@@ -47,19 +48,9 @@ function TableOS() {
 
   const openModal4 = () => setShowModal4(true);
   const closeModal4 = () => setShowModal4(false);
-  // const handleClick = (index: number) => {
-  //   setShowTwoButtons((prevState) => {
-  //     const updatedShowTwoButtons = [...prevState]; // Create a copy
-  //     updatedShowTwoButtons[index] = !updatedShowTwoButtons[index]; // Toggle value
-  //     // Reset showTwoButtons for all other rows
-  //     for (let i = 0; i < updatedShowTwoButtons.length; i++) {
-  //       if (i !== index) {
-  //         updatedShowTwoButtons[i] = false;
-  //       }
-  //     }
-  //     return updatedShowTwoButtons;
-  //   });
-  // };
+  const openModal5 = () => setShowModal5(true);
+  const closeModal5 = () => setShowModal5(false);
+
   const handleClickDetail = (index: number) => {
     setShowDetail((prevState) => {
       const updatedShowDetail = [...prevState]; // Create a copy
@@ -198,8 +189,9 @@ function TableOS() {
     const minutesDiff = Math.floor(secondsDiff / 60);
     const hoursDiff = Math.floor(minutesDiff / 60);
 
-    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
-      } `;
+    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${
+      hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
+    } `;
 
     return formattedDifference; // Example format (YYYY-MM-DD)
   }
@@ -216,6 +208,7 @@ function TableOS() {
 
   const [showModal2, setShowModal2] = useState(false);
   const [showModal4, setShowModal4] = useState(false);
+  const [showModal5, setShowModal5] = useState(false);
 
   return (
     <main>
@@ -842,12 +835,12 @@ function TableOS() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                        : data.status_tiket == 'monitoring'
-                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                          : data.status_tiket == 'temporary'
-                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                            : ''
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                      : data.status_tiket == 'monitoring'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                      : data.status_tiket == 'temporary'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                      : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -861,12 +854,12 @@ function TableOS() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                        : data.status_tiket == 'monitoring'
-                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                          : data.status_tiket == 'temporary'
-                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
-                                            : ''
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                      : data.status_tiket == 'monitoring'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                      : data.status_tiket == 'temporary'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
+                                      : ''
                                   }
                                 >
                                   {data.skor_mtc}%
@@ -977,7 +970,10 @@ function TableOS() {
                                             </button>
                                           </div>
                                           <div className="pt-2">
-                                            <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                            <button
+                                              onClick={openModal5}
+                                              className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
+                                            >
                                               SERVICE
                                             </button>
                                           </div>
@@ -990,6 +986,17 @@ function TableOS() {
                                           children={undefined}
                                           machineName={undefined}
                                         ></ModalMtcDate>
+                                      )}
+                                      {showModal5 && (
+                                        <ModalSPBService
+                                          isOpen={showModal5}
+                                          onClose={closeModal5}
+                                          noSPB={'MT-0001'}
+                                          tglSpb={'20 MEI 2024'}
+                                          data={undefined}
+                                        >
+                                          <p></p>
+                                        </ModalSPBService>
                                       )}
                                     </div>
                                   ) : (
@@ -1092,7 +1099,9 @@ function TableOS() {
                                           .getDate()
                                           .toString()
                                           .padStart(2, '0'); // Ensure two-digit day
-                                        const month = (dateObject.getMonth() + 1)
+                                        const month = (
+                                          dateObject.getMonth() + 1
+                                        )
                                           .toString()
                                           .padStart(2, '0'); // Adjust for zero-based month
                                         const year = dateObject.getFullYear();
@@ -1129,14 +1138,14 @@ function TableOS() {
                                               <p
                                                 className={
                                                   proses.skor_mtc <= 100 &&
-                                                    proses.skor_mtc >= 60
+                                                  proses.skor_mtc >= 60
                                                     ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                                     : proses.skor_mtc >= 20 &&
                                                       proses.skor_mtc <= 59
-                                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                      : proses.skor_mtc < 20
-                                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                                        : ''
+                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
+                                                    : proses.skor_mtc < 20
+                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                                    : ''
                                                 }
                                               >
                                                 {proses.skor_mtc}%
@@ -1338,16 +1347,41 @@ function TableOS() {
                                   title={undefined}
                                 >
                                   <div className="pt-5">
-                                    <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                      LIGHT MAINTENANCE
+                                    <button
+                                      onClick={openModal4}
+                                      className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
+                                    >
+                                      PERBAIKAN INTERNAL
                                     </button>
                                   </div>
                                   <div className="pt-2">
-                                    <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                      HEAVY MAINTENANCE
+                                    <button
+                                      onClick={openModal5}
+                                      className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
+                                    >
+                                      SERVICE
                                     </button>
                                   </div>
                                 </ModalMtcLightHeavy>
+                              )}
+                              {showModal4 && (
+                                <ModalMtcDate
+                                  isOpen={showModal4}
+                                  onClose={closeModal4}
+                                  children={undefined}
+                                  machineName={undefined}
+                                ></ModalMtcDate>
+                              )}
+                              {showModal5 && (
+                                <ModalSPBService
+                                  isOpen={showModal5}
+                                  onClose={closeModal5}
+                                  noSPB={'MT-0001'}
+                                  tglSpb={'20 MEI 2024'}
+                                  data={undefined}
+                                >
+                                  <p></p>
+                                </ModalSPBService>
                               )}
                             </div>
                           ) : (
@@ -1377,12 +1411,12 @@ function TableOS() {
                             data.status_tiket == 'pending'
                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                               : data.status_tiket == 'open'
-                                ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                : data.status_tiket == 'monitoring'
-                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                  : data.status_tiket == 'temporary'
-                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                    : ''
+                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                              : data.status_tiket == 'monitoring'
+                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                              : data.status_tiket == 'temporary'
+                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                              : ''
                           }
                         >
                           {data.skor_mtc}%
@@ -1412,12 +1446,12 @@ function TableOS() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                        : data.status_tiket == 'monitoring'
-                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                          : data.status_tiket == 'temporary'
-                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                            : ''
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                      : data.status_tiket == 'monitoring'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                      : data.status_tiket == 'temporary'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                      : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -1477,7 +1511,9 @@ function TableOS() {
                               return `${year}/${month}/${day}`; // Example format (YYYY-MM-DD)
                             }
 
-                            const waktumulaiJam = convertDateonly(data.waktu_mulai_mtc);
+                            const waktumulaiJam = convertDateonly(
+                              data.waktu_mulai_mtc,
+                            );
                             const waktumulaimtcDate = convertTimeOnly(
                               data.waktu_mulai_mtc,
                             );
@@ -1556,14 +1592,14 @@ function TableOS() {
                                         <p
                                           className={
                                             proses.skor_mtc <= 100 &&
-                                              proses.skor_mtc >= 60
+                                            proses.skor_mtc >= 60
                                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                               : proses.skor_mtc >= 20 &&
                                                 proses.skor_mtc <= 59
-                                                ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                : proses.skor_mtc < 20
-                                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                                  : ''
+                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
+                                              : proses.skor_mtc < 20
+                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                              : ''
                                           }
                                         >
                                           {proses.skor_mtc}%
