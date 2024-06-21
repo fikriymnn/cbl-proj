@@ -200,8 +200,7 @@ function TableService() {
 
     const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
       } `;
-    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
-      } `;
+
 
     return formattedDifference; // Example format (YYYY-MM-DD)
   }
