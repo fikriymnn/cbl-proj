@@ -26,7 +26,9 @@ const MonitoringSPB = ({ children, isOpen, onClose }:
                 </button>
             </div>
             <div className="mt-5 flex flex-col justify-center px-2">
-                aaaaaaa
+                <button className='w-full justify-center text-center rounded md bg-blue-600 text-white font-semibold py-2'>
+                    Edit SPB
+                </button>
             </div>
         </div>
 
