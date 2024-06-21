@@ -144,9 +144,7 @@ const Login: React.FC = () => {
                   {isLoading && <Loading />}
                 </div>
 
-                <div className="mb-2">
-                  <Checkbox11 />
-                </div>
+
               </form>
             </div>
           </div>
