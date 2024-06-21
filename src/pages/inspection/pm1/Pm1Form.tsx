@@ -671,9 +671,10 @@ function Pm1Form() {
                                 <div className="p-4 flex flex-col justify-start items-start w-2/12 gap-3">
                                   <p className="md:text-[14px] text-[9px] font-semibold">
                                     Time :
-                                    {data.lama_pengerjaan != null
-                                      ? data.lama_pengerjaan
-                                      : ''}
+                                    {
+                                      data.lama_pengerjaan != null
+                                        ? data.lama_pengerjaan
+                                        : ''}
                                   </p>
                                   {data.waktu_mulai == null ? (
                                     <>
