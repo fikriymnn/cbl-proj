@@ -28,6 +28,7 @@ import ModalPM2Eksekutor from '../components/Modals/ModalPM2Eksekutor';
 import ModalPM26type from '../components/Modals/ModalPM26Type';
 import ModalFilter from '../components/Modals/ModalFilter';
 import ModalSPBService from '../components/Modals/ModalNewSPBService';
+import ModalTambahUser from '../components/Modals/ModalTambahUser';
 
 
 const App = () => {
@@ -227,9 +228,25 @@ const App = () => {
         console.log(`API : ${apiMinutes}`);
         console.log(`Formatted time: ${formattedTime.jam} jam ${formattedTime.menit} menit ${formattedTime.detik} detik`);
     }
+
+    const [showModalTambah, setShowModalTambah] = useState(false);
+
+    const openModalTambah = () => setShowModalTambah(true);
+    const closeModalTambah = () => setShowModalTambah(false);
     return (
         <div>
             <div className="container mx-auto">
+                <button onClick={openModalTambah} className=' bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1'>
+                    TAMBAH USER
+                </button>
+                {showModalTambah && (
+                    <ModalTambahUser
+                        children={undefined}
+                        isOpen={showModalTambah}
+                        onClose={closeModalTambah}
+                    />
+
+                )}
                 <button type="button"
                     onClick={openModal1}
                     className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
