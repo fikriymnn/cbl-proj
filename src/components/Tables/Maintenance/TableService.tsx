@@ -198,9 +198,9 @@ function TableService() {
     const minutesDiff = Math.floor(secondsDiff / 60);
     const hoursDiff = Math.floor(minutesDiff / 60);
 
-    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
-      } `;
-
+    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${
+      hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
+    } `;
 
     return formattedDifference; // Example format (YYYY-MM-DD)
   }
@@ -870,12 +870,12 @@ function TableService() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'requested'
-                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                        : data.status_tiket == 'active'
-                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                          : data.status_tiket == 'temporary'
-                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                            : ''
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                      : data.status_tiket == 'active'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                      : data.status_tiket == 'temporary'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                      : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -894,7 +894,10 @@ function TableService() {
                               <div>
                                 <div>
                                   {data.status_tiket == 'monitoring' ? (
-                                    <button className="text-xs font-bold bg-blue-200 py-2 text-white rounded-md opacity-0">
+                                    <button
+                                      title="button"
+                                      className="text-xs font-bold bg-blue-200 py-2 text-white rounded-md opacity-0"
+                                    >
                                       <img
                                         src={Burger}
                                         alt=""
@@ -903,6 +906,7 @@ function TableService() {
                                     </button>
                                   ) : (
                                     <button
+                                      title="button"
                                       className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
                                       onClick={() => handleClick(i)}
                                     >
@@ -935,7 +939,6 @@ function TableService() {
                                             PROSES
                                           </button>
                                         )}
-
                                       </div>
                                       {showModal1[i] == true && (
                                         <ModalStockCheck1
@@ -1004,6 +1007,7 @@ function TableService() {
                               </div>
                               <div>
                                 <button
+                                  title="button"
                                   onClick={() => handleClickDetail(i)}
                                   className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
                                 >
@@ -1107,14 +1111,14 @@ function TableService() {
                                               <p
                                                 className={
                                                   proses.skor_mtc <= 100 &&
-                                                    proses.skor_mtc >= 60
+                                                  proses.skor_mtc >= 60
                                                     ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                                     : proses.skor_mtc >= 20 &&
                                                       proses.skor_mtc <= 59
-                                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                      : proses.skor_mtc < 20
-                                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                                        : ''
+                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
+                                                    : proses.skor_mtc < 20
+                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                                    : ''
                                                 }
                                               >
                                                 {proses.skor_mtc}%
@@ -1251,6 +1255,7 @@ function TableService() {
                       <div className="flex gap-1">
                         <div>
                           <button
+                            title="button"
                             onClick={() => handleClick(i)}
                             className="text-xs px-1 py-2 font-bold bg-blue-700  text-white rounded-sm"
                           >
@@ -1265,7 +1270,6 @@ function TableService() {
                                   <></>
                                 ) : (
                                   <>
-
                                     <button
                                       onClick={() => {
                                         if (data.status_tiket == 'open') {
@@ -1279,15 +1283,11 @@ function TableService() {
                                     >
                                       PROSES
                                     </button>
-                                    <button
-
-                                      className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                    >
+                                    <button className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
                                       Verify
                                     </button>
                                   </>
                                 )}
-
                               </div>
                               {showModal1[i] == true && (
                                 <ModalStockCheck1
@@ -1349,6 +1349,7 @@ function TableService() {
                         </div>
 
                         <button
+                          title="button"
                           onClick={() => handleClickDetailMobile(i)}
                           className="text-xs h-6 font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-sm"
                         >
@@ -1370,12 +1371,12 @@ function TableService() {
                             data.status_tiket == 'pending'
                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                               : data.status_tiket == 'requested'
-                                ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                : data.status_tiket == 'active'
-                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                  : data.status_tiket == 'temporary'
-                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                    : ''
+                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                              : data.status_tiket == 'active'
+                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                              : data.status_tiket == 'temporary'
+                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                              : ''
                           }
                         >
                           {data.status_tiket}
@@ -1405,12 +1406,12 @@ function TableService() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                        : data.status_tiket == 'monitoring'
-                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                          : data.status_tiket == 'temporary'
-                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                            : ''
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                      : data.status_tiket == 'monitoring'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                      : data.status_tiket == 'temporary'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                      : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -1519,14 +1520,14 @@ function TableService() {
                                         <p
                                           className={
                                             proses.skor_mtc <= 100 &&
-                                              proses.skor_mtc >= 60
+                                            proses.skor_mtc >= 60
                                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                               : proses.skor_mtc >= 20 &&
                                                 proses.skor_mtc <= 59
-                                                ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                : proses.skor_mtc < 20
-                                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                                  : ''
+                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
+                                              : proses.skor_mtc < 20
+                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                              : ''
                                           }
                                         >
                                           {proses.skor_mtc}%

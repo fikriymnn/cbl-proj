@@ -877,7 +877,10 @@ function TableOS() {
                               <div>
                                 <div>
                                   {data.status_tiket == 'monitoring' ? (
-                                    <button className="text-xs font-bold bg-blue-200 py-2 text-white rounded-md opacity-0">
+                                    <button
+                                      title="button"
+                                      className="text-xs font-bold bg-blue-200 py-2 text-white rounded-md opacity-0"
+                                    >
                                       <img
                                         src={Burger}
                                         alt=""
@@ -886,6 +889,7 @@ function TableOS() {
                                     </button>
                                   ) : (
                                     <button
+                                      title="button"
                                       className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
                                       onClick={() => handleClick(i)}
                                     >
@@ -1006,6 +1010,7 @@ function TableOS() {
                               </div>
                               <div>
                                 <button
+                                  title="button"
                                   onClick={() => handleClickDetail(i)}
                                   className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
                                 >
@@ -1282,6 +1287,7 @@ function TableOS() {
                       <div className="flex gap-1">
                         <div>
                           <button
+                            title="button"
                             onClick={() => handleClick(i)}
                             className="text-xs px-1 py-2 font-bold bg-blue-700  text-white rounded-sm"
                           >
@@ -1390,6 +1396,7 @@ function TableOS() {
                         </div>
 
                         <button
+                          title="button"
                           onClick={() => handleClickDetailMobile(i)}
                           className="text-xs h-6 font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-sm"
                         >
