@@ -805,6 +805,8 @@ const App = () => {
             noSPB={'MT-0001'}
             tglSpb={'20 MEI 2024'}
             data={undefined}
+            onFinish={undefined}
+            idProses={undefined}
           >
             <p></p>
           </ModalSPBService>
