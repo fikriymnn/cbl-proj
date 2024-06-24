@@ -21,7 +21,6 @@ import axios from 'axios';
 import ModalKonfirmasi from '../../Modals/ModalKonfirmasi';
 import Loading from '../../Loading';
 
-
 const tiket = [
   {
     name: 'EX000003',
@@ -168,12 +167,9 @@ const TableIncomingMaintenance = () => {
     getMTC();
   }, []);
 
-
-
   async function getMTC() {
     const url = `${import.meta.env.VITE_API_LINK}/ticket?bagian_tiket=incoming`;
     try {
-
       const res = await axios.get(url, {
         params: {
           page: 1,
@@ -196,7 +192,7 @@ const TableIncomingMaintenance = () => {
     }
   }
 
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
   async function responMTC(id: number, indexModal: any) {
     const url = `${import.meta.env.VITE_API_LINK}/ticket/respon/${id}`;
@@ -435,12 +431,14 @@ const TableIncomingMaintenance = () => {
                       <div className="">
                         <div className="w-full">
                           <div
-                            className={`flex ${key === tiket.length - 1 ? '' : ' '
-                              }`}
+                            className={`flex ${
+                              key === tiket.length - 1 ? '' : ' '
+                            }`}
                             key={key}
                           >
                             <div className="flex justify-center items-center pl-2 py-2">
                               <button
+                                title="button"
                                 onClick={() => handleClickDetail(key)}
                                 className="h-14 w-8 text-xs font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-[4px]"
                               >
@@ -468,7 +466,9 @@ const TableIncomingMaintenance = () => {
                             </div>
 
                             <div className=" flex items-center w-6/12 justify-center  border-b-[#D8EAFF] ">
-                              <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">{brand.kode_ticket}</p>
+                              <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">
+                                {brand.kode_ticket}
+                              </p>
                             </div>
                             <div className=" flex items-center w-5/12 justify-center p-2.5 md:px-7.5 px-5 border-b-[#D8EAFF] ">
                               <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">

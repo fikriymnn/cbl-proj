@@ -170,7 +170,9 @@ function Pm1Form() {
   const [isLoading, setIsLoading] = useState(false)
 
   async function donePm1(id: any) {
-    if (!catatan || !userKA || !userLeader || !userSuper) {
+    if (!catatan
+      // || !userKA || !userLeader || !userSuper
+    ) {
       alert('Data Tidak Lengkap');
     }
     const url = `${import.meta.env.VITE_API_LINK}/pm1/done/${id}`;
@@ -180,9 +182,9 @@ function Pm1Form() {
         url,
         {
           catatan: catatan,
-          id_leader: selectionUserLeader,
-          id_supervisor: selectionUserSuper,
-          id_ka_bag: selectionUserKA,
+          // id_leader: selectionUserLeader,
+          // id_supervisor: selectionUserSuper,
+          // id_ka_bag: selectionUserKA,
         },
         {
           withCredentials: true,
@@ -305,7 +307,7 @@ function Pm1Form() {
                   </p>
                 </div>
 
-                <div className="flex flex-cols-3  md:gap-3 gap-1 ">
+                {/* <div className="flex flex-cols-3  md:gap-3 gap-1 ">
                   <p className="md:text-[14px] text-[9px] font-semibold w-35">
                     Leader
                   </p>
@@ -404,9 +406,9 @@ function Pm1Form() {
                             </option>
                           ))}
                       </select>
-                    )}
+                    )} 
                   </p>
-                </div>
+                </div>*/}
               </div>
             </div>
             <div>
@@ -514,6 +516,8 @@ function Pm1Form() {
                             <div className="grid grid-cols-4 max-h-[400px] min-h-[200px] w-10/12 gap-3 pl-3 ">
                               {data.inspection_task_pm1s.map(
                                 (task: any, ii: any) => {
+
+
                                   return (
                                     <>
                                       <div className="flex flex-col gap-y-10">
@@ -544,210 +548,426 @@ function Pm1Form() {
                           </div>
                         </div>
                         <div className="flex w-full">
-                          {data.waktu_selesai == null && (
-                            <>
-                              <div className="p-4 flex flex-col ">
-                                <p className="md:text-[14px] text-[9px] font-semibold">
-                                  Result:
-                                </p>
-                                <div className=" flex mt-3 w-full">
-                                  <div className="relative z-20   md:w-[200px] w-[150px] dark:bg-form-input">
-                                    <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                      {/* <div className='md:w-6 w-4'>
+                          {data.waktu_mulai == null &&
+                            data.waktu_selesai == null && (
+                              <>
+                                <div className="p-4 flex flex-col ">
+                                  <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Result:
+                                  </p>
+                                  <div className=" flex mt-3 w-full">
+                                    <div className="relative z-20   md:w-[200px] w-[150px] dark:bg-form-input">
+                                      <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                        {/* <div className='md:w-6 w-4'>
                                                                     {hasil == 'Baik' ? <img src={Logo} alt="" /> : hasil == 'Catatan' ? <img src={Polygon} alt="" /> : hasil == 'Jelek' ? <img src={X} alt="" /> : hasil == 'Tidak terpasang' ? <img src={Strip} alt="" /> : ""}
                                                                 </div> */}
-                                    </span>
+                                      </span>
 
-                                    <select
-                                      name="hasil"
-                                      defaultValue={data.hasil}
-                                      onChange={(e) => {
-                                        handleChangePoint(e, i);
-
-                                        console.log(pm1);
-                                        changeTextColor();
-                                      }}
-                                      className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
-                                        ? 'text-black dark:text-white'
-                                        : ''
-                                        }`}
-                                    >
-                                      <option
-                                        value=""
+                                      <select
+                                        name="hasil"
                                         disabled
-                                        selected
-                                        className="text-body dark:text-bodydark "
-                                      >
-                                        Select Result
-                                      </option>
-                                      <option
-                                        value="baik"
-                                        className="text-body dark:text-bodydark"
-                                      >
-                                        Good
-                                      </option>
-                                      <option
-                                        value="warning"
-                                        className="text-body dark:text-bodydark"
-                                      >
-                                        Warning
-                                      </option>
-                                      <option
-                                        value="jelek"
-                                        className="text-body dark:text-bodydark"
-                                      >
-                                        Bad
-                                      </option>
-                                      <option
-                                        value="tidak terpasang"
-                                        className="text-body dark:text-bodydark"
-                                      >
-                                        Not Installed
-                                      </option>
-                                    </select>
+                                        defaultValue={data.hasil}
+                                        onChange={(e) => {
+                                          handleChangePoint(e, i);
 
-                                    <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
-                                      <svg
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
+                                          console.log(pm1);
+                                          changeTextColor();
+                                        }}
+                                        className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
+                                          ? 'text-black dark:text-white'
+                                          : ''
+                                          }`}
                                       >
-                                        <g opacity="0.8">
-                                          <path
-                                            fillRule="evenodd"
-                                            clipRule="evenodd"
-                                            d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                            fill="#637381"
-                                          ></path>
-                                        </g>
-                                      </svg>
-                                    </span>
+                                        <option
+                                          value=""
+                                          disabled
+                                          selected
+                                          className="text-body dark:text-bodydark "
+                                        >
+                                          Select Result
+                                        </option>
+                                        <option
+                                          value="baik"
+                                          className="text-body dark:text-bodydark"
+                                        >
+                                          Good
+                                        </option>
+                                        <option
+                                          value="warning"
+                                          className="text-body dark:text-bodydark"
+                                        >
+                                          Warning
+                                        </option>
+                                        <option
+                                          value="jelek"
+                                          className="text-body dark:text-bodydark"
+                                        >
+                                          Bad
+                                        </option>
+                                        <option
+                                          value="tidak terpasang"
+                                          className="text-body dark:text-bodydark"
+                                        >
+                                          Not Installed
+                                        </option>
+                                      </select>
+
+                                      <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
+                                        <svg
+                                          width="24"
+                                          height="24"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <g opacity="0.8">
+                                            <path
+                                              fillRule="evenodd"
+                                              clipRule="evenodd"
+                                              d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                              fill="#637381"
+                                            ></path>
+                                          </g>
+                                        </svg>
+                                      </span>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                              <div className="p-4 flex flex-col ">
-                                <p className="md:text-[14px] text-[9px] font-semibold">
-                                  Upload Foto:
-                                </p>
 
-                                <br />
-                                <div className="">
-                                  <input
-                                    type="file"
-                                    name=""
-                                    id=""
-                                    className="w-60"
-                                  />
-                                </div>
-                              </div>
-                              <div className="p-4 flex flex-col w-5/12">
-                                <p className="md:text-[14px] text-[9px] font-semibold">
-                                  Catatan:
-                                </p>
+                                <div className="p-4 flex flex-col ">
+                                  <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Upload Foto:
+                                  </p>
 
-                                <>
-                                  <div className=" flex mt-3">
-                                    <textarea
-                                      onChange={(e) => handleChangePoint(e, i)}
-                                      name="catatan"
-                                      defaultValue={data.catatan}
+                                  <br />
+                                  <div className="">
+                                    <input
+                                      disabled
+                                      type="file"
+                                      name=""
                                       id=""
-                                      rows={3}
-                                      cols={90}
-                                      className=" border-2 border-[#D9D9D9] rounded-sm resize-none p-2 w-full"
-                                    ></textarea>
+                                      className="w-60"
+                                    />
                                   </div>
-                                </>
-                              </div>
-                              <div className="p-4 flex flex-col justify-start items-start w-2/12 gap-3">
-                                <p className="md:text-[14px] text-[9px] font-semibold">
-                                  Time :
-                                  {data.lama_pengerjaan != null
-                                    ? data.lama_pengerjaan
-                                    : ''}
-                                </p>
-                                {data.waktu_mulai == null ? (
+                                </div>
+                                <div className="p-4 flex flex-col w-5/12">
+                                  <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Catatan:
+                                  </p>
+
                                   <>
-                                    <p className='font-bold text-[#DE0000]'>
-                                      Task Belum Dimulai
-                                    </p>
-                                    <button
-                                      onClick={() => {
-                                        if (data.waktu_mulai != null) {
-                                          // alert('sudah di mulai');
-                                        } else {
-                                          startTask(data.id);
-                                        }
-                                      }}
-                                      className="flex w-full rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
-                                    >
-                                      <svg
-                                        width="14"
-                                        height="14"
-                                        viewBox="0 0 14 14"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                      >
-                                        <path
-                                          d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                          fill="white"
-                                        />
-                                      </svg>
-                                    </button>
+                                    <div className=" flex mt-3">
+                                      <textarea
+                                        disabled
+                                        onChange={(e) => handleChangePoint(e, i)}
+                                        name="catatan"
+                                        defaultValue={data.catatan}
+                                        id=""
+                                        rows={3}
+                                        cols={90}
+                                        className=" border-2 border-[#D9D9D9] rounded-sm resize-none p-2 w-full"
+                                      ></textarea>
+                                    </div>
                                   </>
-                                ) : (
-                                  <></>
-                                )
-                                }
-                                {data.waktu_mulai != null ? (
-                                  <>
-                                    <p className='font-bold text-green-500'>
-                                      Task Sudah Dimulai
-                                    </p>
-                                    <button
-                                      onClick={() => {
-                                        if (data.waktu_selesai != null) {
-                                          alert('sudah di kerjakan');
-                                        } else if (data.waktu_mulai == null) {
-                                          alert('belum mulai');
-                                        } else {
-                                          stopTask(
-                                            data.id,
-                                            data.hasil,
-                                            data.catatan,
-                                            data.waktu_mulai,
-                                          );
-                                        }
-                                      }}
-                                      className="flex w-full rounded-md bg-[#DE0000] justify-center items-center px-2  py-3 hover:cursor-pointer"
-                                    >
-                                      <svg
-                                        width="14"
-                                        height="12"
-                                        viewBox="0 0 14 12"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
+                                </div>
+                                <div className="p-4 flex flex-col justify-start items-start w-2/12 gap-3">
+                                  <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Time :
+                                    {
+                                      data.lama_pengerjaan != null
+                                        ? data.lama_pengerjaan
+                                        : ''}
+                                  </p>
+                                  {
+                                    data.waktu_mulai == null ? (
+                                      <>
+                                        <p className='font-bold text-[#DE0000]'>
+                                          Task Belum Dimulai
+                                        </p>
+                                        <button
+                                          onClick={() => {
+                                            if (data.waktu_mulai != null) {
+                                              // alert('sudah di mulai');
+                                            } else {
+                                              startTask(data.id);
+                                            }
+                                          }}
+                                          className="flex w-full rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
+                                        >
+                                          <svg
+                                            width="14"
+                                            height="14"
+                                            viewBox="0 0 14 14"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                          >
+                                            <path
+                                              d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                              fill="white"
+                                            />
+                                          </svg>
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <></>
+                                    )
+                                  }
+                                  {data.waktu_mulai != null ? (
+                                    <>
+                                      <p className='font-bold text-green-500'>
+                                        Task Sudah Dimulai
+                                      </p>
+                                      <button
+                                        onClick={() => {
+                                          if (data.waktu_selesai != null) {
+                                            alert('sudah di kerjakan');
+                                          } else if (data.waktu_mulai == null) {
+                                            alert('belum mulai');
+                                          } else {
+                                            stopTask(
+                                              data.id,
+                                              data.hasil,
+                                              data.catatan,
+                                              data.waktu_mulai,
+                                            );
+                                          }
+                                        }}
+                                        className="flex w-full rounded-md bg-[#DE0000] justify-center items-center px-2  py-3 hover:cursor-pointer"
                                       >
-                                        <rect
+                                        <svg
                                           width="14"
                                           height="12"
-                                          rx="3"
-                                          fill="white"
-                                        />
-                                      </svg>
-                                    </button>
-                                  </>
-                                ) : (
+                                          viewBox="0 0 14 12"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <rect
+                                            width="14"
+                                            height="12"
+                                            rx="3"
+                                            fill="white"
+                                          />
+                                        </svg>
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <>
+                                    </>
+                                  )}
+
+                                </div>
+                              </>
+                            )}
+                          {data.waktu_selesai == null &&
+                            data.waktu_mulai != null && (
+                              <>
+                                <div className="p-4 flex flex-col ">
+                                  <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Result:
+                                  </p>
+                                  <div className=" flex mt-3 w-full">
+                                    <div className="relative z-20   md:w-[200px] w-[150px] dark:bg-form-input">
+                                      <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                        {/* <div className='md:w-6 w-4'>
+                                                                    {hasil == 'Baik' ? <img src={Logo} alt="" /> : hasil == 'Catatan' ? <img src={Polygon} alt="" /> : hasil == 'Jelek' ? <img src={X} alt="" /> : hasil == 'Tidak terpasang' ? <img src={Strip} alt="" /> : ""}
+                                                                </div> */}
+                                      </span>
+
+                                      <select
+                                        name="hasil"
+
+                                        defaultValue={data.hasil}
+                                        onChange={(e) => {
+                                          handleChangePoint(e, i);
+
+                                          console.log(pm1);
+                                          changeTextColor();
+                                        }}
+                                        className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
+                                          ? 'text-black dark:text-white'
+                                          : ''
+                                          }`}
+                                      >
+                                        <option
+                                          value=""
+                                          disabled
+                                          selected
+                                          className="text-body dark:text-bodydark "
+                                        >
+                                          Select Result
+                                        </option>
+                                        <option
+                                          value="baik"
+                                          className="text-body dark:text-bodydark"
+                                        >
+                                          Good
+                                        </option>
+                                        <option
+                                          value="warning"
+                                          className="text-body dark:text-bodydark"
+                                        >
+                                          Warning
+                                        </option>
+                                        <option
+                                          value="jelek"
+                                          className="text-body dark:text-bodydark"
+                                        >
+                                          Bad
+                                        </option>
+                                        <option
+                                          value="tidak terpasang"
+                                          className="text-body dark:text-bodydark"
+                                        >
+                                          Not Installed
+                                        </option>
+                                      </select>
+
+                                      <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
+                                        <svg
+                                          width="24"
+                                          height="24"
+                                          viewBox="0 0 24 24"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <g opacity="0.8">
+                                            <path
+                                              fillRule="evenodd"
+                                              clipRule="evenodd"
+                                              d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                              fill="#637381"
+                                            ></path>
+                                          </g>
+                                        </svg>
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="p-4 flex flex-col ">
+                                  <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Upload Foto:
+                                  </p>
+
+                                  <br />
+                                  <div className="">
+                                    <input
+
+                                      type="file"
+                                      name=""
+                                      id=""
+                                      className="w-60"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="p-4 flex flex-col w-5/12">
+                                  <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Catatan:
+                                  </p>
+
                                   <>
+                                    <div className=" flex mt-3">
+                                      <textarea
 
+                                        onChange={(e) => handleChangePoint(e, i)}
+                                        name="catatan"
+                                        defaultValue={data.catatan}
+                                        id=""
+                                        rows={3}
+                                        cols={90}
+                                        className=" border-2 border-[#D9D9D9] rounded-sm resize-none p-2 w-full"
+                                      ></textarea>
+                                    </div>
                                   </>
-                                )}
+                                </div>
+                                <div className="p-4 flex flex-col justify-start items-start w-2/12 gap-3">
+                                  <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Time :
+                                    {data.lama_pengerjaan != null
+                                      ? data.lama_pengerjaan
+                                      : ''}
+                                  </p>
+                                  {data.waktu_mulai == null ? (
+                                    <>
+                                      <p className='font-bold text-[#DE0000]'>
+                                        Task Belum Dimulai
+                                      </p>
+                                      <button
+                                        onClick={() => {
+                                          if (data.waktu_mulai != null) {
+                                            // alert('sudah di mulai');
+                                          } else {
+                                            startTask(data.id);
+                                          }
+                                        }}
+                                        className="flex w-full rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
+                                      >
+                                        <svg
+                                          width="14"
+                                          height="14"
+                                          viewBox="0 0 14 14"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <path
+                                            d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                            fill="white"
+                                          />
+                                        </svg>
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <></>
+                                  )
+                                  }
+                                  {data.waktu_mulai != null ? (
+                                    <>
+                                      <p className='font-bold text-green-500'>
+                                        Task Sudah Dimulai
+                                      </p>
+                                      <button
+                                        onClick={() => {
+                                          if (data.waktu_selesai != null) {
+                                            alert('sudah di kerjakan');
+                                          } else if (data.waktu_mulai == null) {
+                                            alert('belum mulai');
+                                          } else {
+                                            stopTask(
+                                              data.id,
+                                              data.hasil,
+                                              data.catatan,
+                                              data.waktu_mulai,
+                                            );
+                                          }
+                                        }}
+                                        className="flex w-full rounded-md bg-[#DE0000] justify-center items-center px-2  py-3 hover:cursor-pointer"
+                                      >
+                                        <svg
+                                          width="14"
+                                          height="12"
+                                          viewBox="0 0 14 12"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <rect
+                                            width="14"
+                                            height="12"
+                                            rx="3"
+                                            fill="white"
+                                          />
+                                        </svg>
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <>
 
-                              </div>
-                            </>
-                          )}
+                                    </>
+                                  )}
+
+                                </div>
+
+                              </>
+                            )}
                           {data.waktu_selesai != null && (
                             <>
                               <div className="p-4 flex flex-col ">
@@ -927,7 +1147,7 @@ function Pm1Form() {
                     </p>
                   </div>
 
-                  <div className="flex flex-cols-3  gap-1 justify-between ">
+                  {/* <div className="flex flex-cols-3  gap-1 justify-between ">
                     <p className="md:text-[14px] text-[9px] font-semibold ">
                       Leader
                     </p>
@@ -1028,7 +1248,7 @@ function Pm1Form() {
                         </select>
                       )}
                     </p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
               <div className='flex flex-col w-full justify-start '>

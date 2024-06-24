@@ -206,7 +206,7 @@ const ModalStockCheck1 = ({
       console.log(error);
     }
   }
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
   async function postAnalisis() {
     const urlNormal = `${
@@ -340,7 +340,6 @@ const ModalStockCheck1 = ({
   const [showModalMsStok, setShowModalMsStok] = useState(false);
   const openModalMsStok = () => setShowModalMsStok(true);
   const closeModalMsStok = () => setShowModalMsStok(false);
-
 
   return (
     <div className="fixed z-50 inset-0 h-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
@@ -857,6 +856,7 @@ const ModalStockCheck1 = ({
                               // }}
                               onClick={() => toggleInfo(i)}
                               className="bg-primary px-2 my-auto rounded-md mx-2 h-9 "
+                              title="button"
                             >
                               <img src={Info} alt="" />
                             </button>
@@ -1155,6 +1155,7 @@ const ModalStockCheck1 = ({
                             )}
 
                             <button
+                              title="button"
                               onClick={() => toggleInfoPengganti(i)}
                               className="bg-primary px-2 my-auto rounded-md mx-2 h-9 "
                             >
@@ -1454,7 +1455,6 @@ const ModalStockCheck1 = ({
 
           <div className="pt-5">
             <button
-
               disabled={isLoading}
               onClick={() => {
                 postAnalisis();
@@ -1470,6 +1470,7 @@ const ModalStockCheck1 = ({
         </div>
 
         <button
+          title="button"
           type="button"
           onClick={() => {
             if (skor_mtc != 0) {

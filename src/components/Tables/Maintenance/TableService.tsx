@@ -198,8 +198,9 @@ function TableService() {
     const minutesDiff = Math.floor(secondsDiff / 60);
     const hoursDiff = Math.floor(minutesDiff / 60);
 
-    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
-      } `;
+    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${
+      hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
+    } `;
 
     return formattedDifference; // Example format (YYYY-MM-DD)
   }
@@ -740,7 +741,7 @@ function TableService() {
         <>
           <div className="flex bg-white mt-2 py-2">
             <p className="w-10 px-3 text-xs font-bold ">No</p>
-            <div className="grid md:grid-cols-7 grid-cols-7 w-full">
+            <div className="grid md:grid-cols-8 grid-cols-7 w-full">
               <div className="flex gap-2">
                 <p className="text-xs font-bold ">Kode Tiket</p>
                 <img className="w-2" src={Polygon6} alt="" />
@@ -762,7 +763,7 @@ function TableService() {
                 <p className="text-xs font-bold ">Jadwal</p>
                 <img className="w-2" src={Polygon6} alt="" />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2  col-span-2">
                 <p className="text-xs font-bold ">Action</p>
               </div>
             </div>
@@ -840,7 +841,7 @@ function TableService() {
                           >
                             {i + 1 + (page - 1) * 10}
                           </div>
-                          <div className="grid md:grid-cols-7 grid-cols-7 w-full gap-5">
+                          <div className="grid md:grid-cols-8 grid-cols-7 w-full gap-5">
                             <div className="flex flex-col md:gap-5 gap-1 ">
                               <div className="my-auto ">
                                 <p className="text-xs font-light">
@@ -869,12 +870,12 @@ function TableService() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'requested'
-                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                        : data.status_tiket == 'active'
-                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                          : data.status_tiket == 'temporary'
-                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                            : ''
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                      : data.status_tiket == 'active'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                      : data.status_tiket == 'temporary'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                      : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -889,11 +890,14 @@ function TableService() {
                                 </p>
                               </div>
                             </div>
-                            <div className="flex gap-2 items-center md:mb-0 mb-2">
+                            <div className="flex col-span-2 gap-2 items-center md:mb-0 mb-2">
                               <div>
                                 <div>
                                   {data.status_tiket == 'monitoring' ? (
-                                    <button className="text-xs font-bold bg-blue-200 py-2 text-white rounded-md opacity-0">
+                                    <button
+                                      title="button"
+                                      className="text-xs font-bold bg-blue-200 py-2 text-white rounded-md opacity-0"
+                                    >
                                       <img
                                         src={Burger}
                                         alt=""
@@ -902,6 +906,7 @@ function TableService() {
                                     </button>
                                   ) : (
                                     <button
+                                      title="button"
                                       className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
                                       onClick={() => handleClick(i)}
                                     >
@@ -934,12 +939,6 @@ function TableService() {
                                             PROSES
                                           </button>
                                         )}
-                                        <button
-                                          onClick={openModal2}
-                                          className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                        >
-                                          JADWALKAN{' '}
-                                        </button>
                                       </div>
                                       {showModal1[i] == true && (
                                         <ModalStockCheck1
@@ -1008,12 +1007,18 @@ function TableService() {
                               </div>
                               <div>
                                 <button
+                                  title="button"
                                   onClick={() => handleClickDetail(i)}
                                   className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
                                 >
                                   <img src={Arrow} alt="" className="mx-3" />
                                 </button>
                               </div>
+                              {/* <div>
+                                <button className="text-xs font-bold text-white bg-blue-700 py-2 border-blue-700 border rounded-md w-20">
+                                  Verify
+                                </button>
+                              </div> */}
                             </div>
                           </div>
                         </section>
@@ -1106,14 +1111,14 @@ function TableService() {
                                               <p
                                                 className={
                                                   proses.skor_mtc <= 100 &&
-                                                    proses.skor_mtc >= 60
+                                                  proses.skor_mtc >= 60
                                                     ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                                     : proses.skor_mtc >= 20 &&
                                                       proses.skor_mtc <= 59
-                                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                      : proses.skor_mtc < 20
-                                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                                        : ''
+                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
+                                                    : proses.skor_mtc < 20
+                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                                    : ''
                                                 }
                                               >
                                                 {proses.skor_mtc}%
@@ -1250,6 +1255,7 @@ function TableService() {
                       <div className="flex gap-1">
                         <div>
                           <button
+                            title="button"
                             onClick={() => handleClick(i)}
                             className="text-xs px-1 py-2 font-bold bg-blue-700  text-white rounded-sm"
                           >
@@ -1263,26 +1269,25 @@ function TableService() {
                                 {data.status_tiket == 'monitoring' ? (
                                   <></>
                                 ) : (
-                                  <button
-                                    onClick={() => {
-                                      if (data.status_tiket == 'open') {
-                                        openModal1(i);
-                                      } else {
-                                        reworkTiket(data.id, i);
-                                        // ini untuk fungsi rework
-                                      }
-                                    }}
-                                    className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                  >
-                                    PROSES
-                                  </button>
+                                  <>
+                                    <button
+                                      onClick={() => {
+                                        if (data.status_tiket == 'open') {
+                                          openModal1(i);
+                                        } else {
+                                          reworkTiket(data.id, i);
+                                          // ini untuk fungsi rework
+                                        }
+                                      }}
+                                      className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
+                                    >
+                                      PROSES
+                                    </button>
+                                    <button className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
+                                      Verify
+                                    </button>
+                                  </>
                                 )}
-                                <button
-                                  onClick={openModal2}
-                                  className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                >
-                                  JADWALKAN{' '}
-                                </button>
                               </div>
                               {showModal1[i] == true && (
                                 <ModalStockCheck1
@@ -1315,16 +1320,27 @@ function TableService() {
                                   title={undefined}
                                 >
                                   <div className="pt-5">
-                                    <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                      LIGHT MAINTENANCE
+                                    <button
+                                      onClick={openModal4}
+                                      className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
+                                    >
+                                      PERBAIKAN INTERNAL
                                     </button>
                                   </div>
                                   <div className="pt-2">
                                     <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                      HEAVY MAINTENANCE
+                                      SERVICE
                                     </button>
                                   </div>
                                 </ModalMtcLightHeavy>
+                              )}
+                              {showModal4 && (
+                                <ModalMtcDate
+                                  isOpen={showModal4}
+                                  onClose={closeModal4}
+                                  children={undefined}
+                                  machineName={undefined}
+                                ></ModalMtcDate>
                               )}
                             </div>
                           ) : (
@@ -1333,6 +1349,7 @@ function TableService() {
                         </div>
 
                         <button
+                          title="button"
                           onClick={() => handleClickDetailMobile(i)}
                           className="text-xs h-6 font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-sm"
                         >
@@ -1354,12 +1371,12 @@ function TableService() {
                             data.status_tiket == 'pending'
                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                               : data.status_tiket == 'requested'
-                                ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                : data.status_tiket == 'active'
-                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                  : data.status_tiket == 'temporary'
-                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                    : ''
+                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                              : data.status_tiket == 'active'
+                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                              : data.status_tiket == 'temporary'
+                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                              : ''
                           }
                         >
                           {data.status_tiket}
@@ -1389,12 +1406,12 @@ function TableService() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                        : data.status_tiket == 'monitoring'
-                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                          : data.status_tiket == 'temporary'
-                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                            : ''
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                      : data.status_tiket == 'monitoring'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                      : data.status_tiket == 'temporary'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                      : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -1503,14 +1520,14 @@ function TableService() {
                                         <p
                                           className={
                                             proses.skor_mtc <= 100 &&
-                                              proses.skor_mtc >= 60
+                                            proses.skor_mtc >= 60
                                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                               : proses.skor_mtc >= 20 &&
                                                 proses.skor_mtc <= 59
-                                                ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                : proses.skor_mtc < 20
-                                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                                  : ''
+                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
+                                              : proses.skor_mtc < 20
+                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                              : ''
                                           }
                                         >
                                           {proses.skor_mtc}%
