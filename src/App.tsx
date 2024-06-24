@@ -59,7 +59,7 @@ import MonitoringSparepart from './pages/sparepart/monitoringSparepart/monitorin
 import AddStockLifetimes from './pages/sparepart/monitoringSparepart/addStock';
 import SubmitOpname from './pages/sparepart/submitOpname';
 import ProjectMtc from './components/Tables/Maintenance/projectMtc';
-import SpbSparePart from './pages/Maintenance/SPB/spbSparepart';
+
 import MonitoringService from './pages/sparepart/monitoringService/monitoringService';
 import AddStockService from './pages/sparepart/monitoringService/addStock';
 
@@ -358,17 +358,7 @@ function App() {
             </>
           }
         />
-        <Route
-          path="/maintenance/sparepartSpb"
-          element={
-            <>
-              <PageTitle title="PT CBL" />
-              <ProtectedRoute>
-                <SpbSparePart />
-              </ProtectedRoute>
-            </>
-          }
-        />
+
         <Route
           path="/quality_control/mtc"
           element={

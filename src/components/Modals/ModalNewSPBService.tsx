@@ -628,7 +628,7 @@ const ModalSPBService = ({
           </div>
 
           <div className="flex pt-2 flex-col">
-            <div className="relative z-20 bg-white dark:bg-form-input w-full ">
+            <div className="relative bg-white dark:bg-form-input w-full ">
               <label
                 htmlFor="preparationName"
                 className="form-label block  text-black text-xs font-extrabold"
@@ -679,7 +679,7 @@ const ModalSPBService = ({
                                 <button
                                   type="button"
                                   onClick={openModalStokSparepart}
-                                  className="relative z-20 bg-white dark:bg-form-input rounded-md w-[190px] h-12 shadow-sm text-start px-2"
+                                  className="relative  bg-white dark:bg-form-input rounded-md w-[190px] h-12 shadow-sm text-start px-2"
                                 >
                                   {val.nama_sparepart == ''
                                     ? 'PILIH NAMA BARANG'
@@ -990,6 +990,7 @@ const ModalSPBService = ({
           </div>
         </div>
         <button
+          title="button"
           type="button"
           onClick={onClose}
           className="absolute top-auto right-auto bottom-3 left-auto transform translate-x-1/2 translate-y-1/2 text-gray-400 focus:outline-none"

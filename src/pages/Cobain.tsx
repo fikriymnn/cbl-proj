@@ -228,7 +228,7 @@ const App = () => {
     };
   }
 
-  const apiMinutes: number = 60.1; // Integer minutes from API
+  const apiMinutes: number = 30; // Integer minutes from API
 
   const formattedTime = detikKeJamMenitDetik(apiMinutes * 60); // Convert minutes to seconds first
 
