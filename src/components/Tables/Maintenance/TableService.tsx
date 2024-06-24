@@ -1263,26 +1263,30 @@ function TableService() {
                                 {data.status_tiket == 'monitoring' ? (
                                   <></>
                                 ) : (
-                                  <button
-                                    onClick={() => {
-                                      if (data.status_tiket == 'open') {
-                                        openModal1(i);
-                                      } else {
-                                        reworkTiket(data.id, i);
-                                        // ini untuk fungsi rework
-                                      }
-                                    }}
-                                    className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                  >
-                                    PROSES
-                                  </button>
+                                  <>
+
+                                    <button
+                                      onClick={() => {
+                                        if (data.status_tiket == 'open') {
+                                          openModal1(i);
+                                        } else {
+                                          reworkTiket(data.id, i);
+                                          // ini untuk fungsi rework
+                                        }
+                                      }}
+                                      className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
+                                    >
+                                      PROSES
+                                    </button>
+                                    <button
+
+                                      className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
+                                    >
+                                      Verify
+                                    </button>
+                                  </>
                                 )}
-                                <button
-                                  onClick={openModal2}
-                                  className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                >
-                                  JADWALKAN{' '}
-                                </button>
+
                               </div>
                               {showModal1[i] == true && (
                                 <ModalStockCheck1
@@ -1315,16 +1319,27 @@ function TableService() {
                                   title={undefined}
                                 >
                                   <div className="pt-5">
-                                    <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                      LIGHT MAINTENANCE3
+                                    <button
+                                      onClick={openModal4}
+                                      className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
+                                    >
+                                      PERBAIKAN INTERNAL
                                     </button>
                                   </div>
                                   <div className="pt-2">
                                     <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                      HEAVY MAINTENANCE
+                                      SERVICE
                                     </button>
                                   </div>
                                 </ModalMtcLightHeavy>
+                              )}
+                              {showModal4 && (
+                                <ModalMtcDate
+                                  isOpen={showModal4}
+                                  onClose={closeModal4}
+                                  children={undefined}
+                                  machineName={undefined}
+                                ></ModalMtcDate>
                               )}
                             </div>
                           ) : (
