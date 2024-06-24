@@ -28,6 +28,7 @@ import ModalPM2Eksekutor from '../components/Modals/ModalPM2Eksekutor';
 import ModalPM26type from '../components/Modals/ModalPM26Type';
 import ModalFilter from '../components/Modals/ModalFilter';
 import ModalSPBService from '../components/Modals/ModalNewSPBService';
+import ModalTambahUser from '../components/Modals/ModalTambahUser';
 
 const App = () => {
   const [showModal1, setShowModal1] = useState(false);

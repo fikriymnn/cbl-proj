@@ -11,7 +11,7 @@ function MasterRole() {
 
 
                         <div className='my-auto w-full flex justify-end items-end'>
-                            <button className='w-40 text-xs font-semibold rounded-sm py-1 text-white bg-primary '>ADD USER</button>
+                            <button className='w-40 text-xs font-semibold rounded-sm py-1 text-white bg-primary '>ADD ROLE</button>
                         </div>
                     </div>
                 </div>
@@ -19,7 +19,6 @@ function MasterRole() {
                     <p className='w-20'>No</p>
                     <div className='grid grid-cols-12 w-full'>
                         <div className='col-span-9'>Role</div>
-
                         <div className='col-span-3'></div>
 
                     </div>
