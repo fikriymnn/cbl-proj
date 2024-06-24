@@ -27,9 +27,7 @@ const DropdownUser = () => {
       const res = await axios.get(`${import.meta.env.VITE_API_LINK}/me`, {
         withCredentials: true,
       });
-      // if (res.data.success == false) {
-      //   navigate("/auth/login");
-      // }
+
       setUser(res.data);
       console.log(res.data);
     } catch (error: any) {
