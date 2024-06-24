@@ -201,6 +201,7 @@ function TableService() {
     const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
       } `;
 
+
     return formattedDifference; // Example format (YYYY-MM-DD)
   }
 
@@ -1009,11 +1010,11 @@ function TableService() {
                                   <img src={Arrow} alt="" className="mx-3" />
                                 </button>
                               </div>
-                              <div>
-                                <button className="text-xs font-bold text-white bg-blue-700 py-2 border-blue-700 border rounded-md px-2">
+                              {/* <div>
+                                <button className="text-xs font-bold text-white bg-blue-700 py-2 border-blue-700 border rounded-md w-20">
                                   Verify
                                 </button>
-                              </div>
+                              </div> */}
                             </div>
                           </div>
                         </section>

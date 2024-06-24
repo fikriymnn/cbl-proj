@@ -6,6 +6,7 @@ import Polygon6 from '../../../../images/icon/Polygon6.svg';
 import ModalSPBService from '../../../Modals/ModalNewSPBService';
 import axios from 'axios';
 import convertTimeStampToDate from '../../../../utils/convertDate';
+import MonitoringSPB from '../../../Modals/MonitoringSPB';
 
 function TableSPBRequested() {
   const [showModalSPBBaru, setShowModalSPBBaru] = useState(false);
@@ -65,6 +66,12 @@ function TableSPBRequested() {
       console.log(error.response);
     }
   }
+
+
+  const [showModalMonitoring, setShowModalMonitoring] = useState(false);
+
+  const openModalMonitoring = () => setShowModalMonitoring(true);
+  const closeModalMonitoring = () => setShowModalMonitoring(false);
 
   return (
     <main>
@@ -206,7 +213,7 @@ function TableSPBRequested() {
                                 />
                               </svg>
                             </button>
-                            <button className="px-3 py-3 bg-[#0065DE] rounded-md">
+                            <button onClick={openModalMonitoring} className="px-3 py-3 bg-[#0065DE] rounded-md">
                               <svg
                                 width="15"
                                 height="10"
@@ -221,6 +228,15 @@ function TableSPBRequested() {
                                 />
                               </svg>
                             </button>
+                            {showModalMonitoring && (
+                              <MonitoringSPB
+                                isOpen={showModalMonitoring}
+                                onClose={closeModalMonitoring}
+
+                              >
+                                <p></p>
+                              </MonitoringSPB>
+                            )}
                           </div>
                         </div>
                       </section>

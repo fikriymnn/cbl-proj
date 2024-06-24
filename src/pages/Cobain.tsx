@@ -156,6 +156,77 @@ const App = () => {
     const openModal30 = () => setShowModal30(true);
     const closeModal30 = () => setShowModal30(false);
 
+    // function detikKeJamMenitDetik(totalDetik: number): { jam: number; menit: number; sisaDetik2: number; formattedString: string } {
+    //     // Calculate hours
+    //     const jam = Math.floor(totalDetik / 3600);
+
+    //     // Calculate remaining seconds after calculating hours
+    //     const sisaDetik = totalDetik % 3600;
+
+    //     const menitAwal = 5;
+
+    //     const detikAwal = menitAwal / 60;
+
+
+    //     // Calculate minutes
+    //     const menit = Math.floor(sisaDetik / 60);
+
+    //     // Calculate remaining seconds after calculating minutes
+    //     const sisaDetik2 = sisaDetik % 60;
+
+    //     let outputString = "";
+    //     if (jam === 0) {
+    //         if (menit === 0) {
+    //             outputString = `${sisaDetik2} detik`;
+    //         } else {
+    //             outputString = `${menit} menit ${sisaDetik2} detik`;
+    //         }
+    //     } else {
+    //         outputString = `${jam} jam ${menit} menit ${sisaDetik2} detik`;
+    //     }
+    //     return { jam, menit, sisaDetik2: sisaDetik2, formattedString: outputString }; // Add formattedString property
+    // }
+    // const totalDetik = 60; // Masukkan integer detik yang ingin dikonversi
+
+    // const waktu = detikKeJamMenitDetik(totalDetik);
+
+    // console.log(`Hasil konversi: ${waktu.jam} jam, ${waktu.menit} menit, ${waktu.sisaDetik2} detik`);
+    function detikKeJamMenitDetik(totalDetik: number): { jam: number; menit: number; detik: number; formattedString: string, totalDetik: number } {
+        // Calculate hours
+        const jam = Math.floor(totalDetik / 3600);
+
+        // Calculate remaining seconds after calculating hours
+        const sisaDetik = totalDetik % 3600;
+
+        // Calculate minutes
+        const menit = Math.floor(sisaDetik / 60);
+
+        // Calculate remaining seconds after calculating minutes
+        const sisaDetik2 = sisaDetik % 60;
+
+        // Format and return the output
+        let outputString = "";
+        if (jam === 0) {
+            if (menit === 0) {
+                outputString = `${sisaDetik2} detik`;
+            } else {
+                outputString = `${menit} menit ${sisaDetik2} detik`;
+            }
+        } else {
+            outputString = `${jam} jam ${menit} menit ${sisaDetik2} detik`;
+        }
+        return { jam, menit, detik: sisaDetik2, formattedString: outputString, totalDetik };
+    }
+
+    const apiMinutes: number = 60.1; // Integer minutes from API
+
+    const formattedTime = detikKeJamMenitDetik(apiMinutes * 60); // Convert minutes to seconds first
+
+    if (formattedTime.totalDetik > 0) { // Check for non-zero time before displaying
+
+        console.log(`API : ${apiMinutes}`);
+        console.log(`Formatted time: ${formattedTime.jam} jam ${formattedTime.menit} menit ${formattedTime.detik} detik`);
+    }
     return (
         <div>
             <div className="container mx-auto">
@@ -166,13 +237,12 @@ const App = () => {
                 </button>
                 {showModal1 && (
                     <Modal
-                        title="Incoming Maintenance Ticket"
+
                         isOpen={showModal1}
                         onClose={closeModal1}
                         ticketCode={'CTR03591'}
-                        prepName={'GMC Ink 229'}
-                        incDate={'28 May, 2024 06:37AM'}
-                        prepCode={'3.2'}>
+
+                        incDate={'28 May, 2024 06:37AM'} namaMesin={undefined} jenisKendala={undefined} kendala={undefined}                        >
                         <p></p>
                     </Modal>
                 )}
