@@ -348,7 +348,7 @@ function App() {
           }
         />
         <Route
-          path="maintenance/spb/serviceSpb"
+          path="maintenance/spb"
           element={
             <>
               <PageTitle title="PT CBL" />

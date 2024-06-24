@@ -3,6 +3,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { useState } from "react";
+import ModalSPBPilihBarang from "./ModalSPBPilihBarang";
 
 const ModalSPBService = ({ children, isOpen, onClose, noSPB, tglSpb, data }:
     {
@@ -35,6 +36,9 @@ const ModalSPBService = ({ children, isOpen, onClose, noSPB, tglSpb, data }:
 
     const [isHidden, setIsHidden] = useState(true);
 
+    const [showModalPilihBarang, setShowModalPilihBarang] = useState(false);
+    const openModalPilihBarang = () => setShowModalPilihBarang(true);
+    const closeModalPilihBarang = () => setShowModalPilihBarang(false);
 
     return (
         <div className="fixed z-50 inset-0 overflow-y-auto backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
@@ -93,35 +97,34 @@ const ModalSPBService = ({ children, isOpen, onClose, noSPB, tglSpb, data }:
                                         return (
                                             <>
                                                 <div className="pb-2 bg-blue-100 px-4 py-1">
-                                                    <div className="flex w-full flex-row">
-                                                        <div className="flex w-full pl-8">
-                                                            <label className=" text-black  text-xs font-bold pt-2 lg:pl-4">
+                                                    <div className=" w-full grid grid-cols-5 ">
 
+                                                        <div className="pl-5">
+                                                            <label className=" text-black  text-xs font-bold pt-2 lg:pl-4">
                                                                 NAMA BARANG
                                                             </label>
                                                         </div>
-                                                        <div className="flex w-full pl-4">
+                                                        <div className="pl-4">
                                                             <label className=" text-black  text-xs font-bold pt-2 lg:pl-4">
                                                                 KODE PART
                                                             </label>
                                                         </div>
-                                                        <div className="flex w-full justify-start pl-4">
+                                                        <div className="ml-4 ">
                                                             <label className=" text-black  text-xs font-bold pt-2 lg:pl-4">
                                                                 MESIN
                                                             </label>
                                                         </div>
-                                                        <div className="flex w-full justify-center">
+                                                        <div className="ml-13">
                                                             <label className=" text-black  text-xs font-bold pt-2 lg:pl-4">
                                                                 QTY
                                                             </label>
+
                                                         </div>
-                                                        <div className="flex w-full justify-start pr-6">
+                                                        <div className="ml-4 ">
                                                             <label className=" text-black  text-xs font-bold pt-2 lg:pl-4">
                                                                 PILIH TANGGAL
                                                             </label>
                                                         </div>
-
-
                                                     </div>
                                                     <div>
                                                         <div className="flex flex-row px-3 pb-2 gap-4 bg-blue-100 ">
@@ -130,61 +133,21 @@ const ModalSPBService = ({ children, isOpen, onClose, noSPB, tglSpb, data }:
                                                                     {i + 1}
                                                                 </label>
                                                             </div>
-                                                            <div className="relative z-20 bg-white dark:bg-form-input rounded-md w-[262px] h-12 shadow-sm ">
-                                                                <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                                                    <svg
-                                                                        width="20"
-                                                                        height="20"
-                                                                        viewBox="0 0 20 20"
-                                                                        fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                            <div className="">
+                                                                <button type="button"
+                                                                    onClick={openModalPilihBarang}
+                                                                    className="relative z-20 bg-white dark:bg-form-input rounded-md w-[190px] h-12 shadow-sm text-start px-2">
+                                                                    PILIH NAMA BARANG
+                                                                </button>
+                                                                {showModalPilihBarang && (
+                                                                    <ModalSPBPilihBarang
+
+                                                                        isOpen={showModalPilihBarang}
+                                                                        onClose={closeModalPilihBarang} children={undefined}
                                                                     >
 
-                                                                    </svg>
-                                                                </span>
-
-                                                                <select
-                                                                    value={selectedOption}
-                                                                    onChange={(e) => {
-                                                                        setSelectedOption(e.target.value);
-                                                                        changeTextColor();
-                                                                    }}
-                                                                    className={`rounded-md relative z-20 appearance-none w-full h-full border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
-                                                                        }`}
-                                                                >
-                                                                    <option value="" disabled className="text-gray-800 text-base font-light">
-                                                                        PILIH NAMA BARANG
-                                                                    </option>
-
-                                                                    <option value="N" className="text-gray-800 text-base font-light">
-                                                                        BARANG 1
-                                                                    </option>
-                                                                    <option value="O" className="text-gray-800 text-base font-light">
-                                                                        BARANG 2
-                                                                    </option>
-                                                                    <option value="P" className="text-gray-800 text-base font-light">
-                                                                        BARANG 3
-                                                                    </option>
-                                                                </select>
-
-                                                                <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
-                                                                    <svg
-                                                                        width="24"
-                                                                        height="24"
-                                                                        viewBox="0 0 24 24"
-                                                                        fill="none"
-                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                    >
-                                                                        <g opacity="0.8">
-                                                                            <path
-                                                                                fillRule="evenodd"
-                                                                                clipRule="evenodd"
-                                                                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                                                                fill="#637381"
-                                                                            ></path>
-                                                                        </g>
-                                                                    </svg>
-                                                                </span>
+                                                                    </ModalSPBPilihBarang>
+                                                                )}
                                                             </div>
 
                                                             <input disabled name='kodepart' className="hidden w-[310px] border-2 shadow-sm bg-gray-200 rounded-md border-stroke sm:block text-black  text-xs font-bold pt-2 lg:pl-4">
@@ -197,9 +160,9 @@ const ModalSPBService = ({ children, isOpen, onClose, noSPB, tglSpb, data }:
                                                             <input name='qty' className=" text-black p-3 w-[86px] shadow-sm rounded-md text-gray-800 text-base font-light">
 
                                                             </input>
-                                                            <div>
+                                                            <div className="bg-white rounded-xl">
                                                                 <LocalizationProvider dateAdapter={AdapterDayjs} >
-                                                                    <DatePicker slotProps={{ textField: { fullWidth: true, size: 'small' } }} />
+                                                                    <DatePicker />
                                                                 </LocalizationProvider>
                                                             </div>
 
