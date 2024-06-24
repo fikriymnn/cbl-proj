@@ -995,6 +995,10 @@ function TableOS() {
                                         <ModalSPBService
                                           isOpen={showModal5}
                                           onClose={closeModal5}
+                                          onFinish={getTiket}
+                                          idProses={
+                                            data.proses_mtcs[lengthProses].id
+                                          }
                                           noSPB={'MT-0001'}
                                           tglSpb={'20 MEI 2024'}
                                           data={undefined}
