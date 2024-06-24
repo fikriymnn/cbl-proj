@@ -516,6 +516,8 @@ function Pm1Form() {
                             <div className="grid grid-cols-4 max-h-[400px] min-h-[200px] w-10/12 gap-3 pl-3 ">
                               {data.inspection_task_pm1s.map(
                                 (task: any, ii: any) => {
+
+
                                   return (
                                     <>
                                       <div className="flex flex-col gap-y-10">
@@ -676,38 +678,39 @@ function Pm1Form() {
                                         ? data.lama_pengerjaan
                                         : ''}
                                   </p>
-                                  {data.waktu_mulai == null ? (
-                                    <>
-                                      <p className='font-bold text-[#DE0000]'>
-                                        Task Belum Dimulai
-                                      </p>
-                                      <button
-                                        onClick={() => {
-                                          if (data.waktu_mulai != null) {
-                                            // alert('sudah di mulai');
-                                          } else {
-                                            startTask(data.id);
-                                          }
-                                        }}
-                                        className="flex w-full rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
-                                      >
-                                        <svg
-                                          width="14"
-                                          height="14"
-                                          viewBox="0 0 14 14"
-                                          fill="none"
-                                          xmlns="http://www.w3.org/2000/svg"
+                                  {
+                                    data.waktu_mulai == null ? (
+                                      <>
+                                        <p className='font-bold text-[#DE0000]'>
+                                          Task Belum Dimulai
+                                        </p>
+                                        <button
+                                          onClick={() => {
+                                            if (data.waktu_mulai != null) {
+                                              // alert('sudah di mulai');
+                                            } else {
+                                              startTask(data.id);
+                                            }
+                                          }}
+                                          className="flex w-full rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
                                         >
-                                          <path
-                                            d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                            fill="white"
-                                          />
-                                        </svg>
-                                      </button>
-                                    </>
-                                  ) : (
-                                    <></>
-                                  )
+                                          <svg
+                                            width="14"
+                                            height="14"
+                                            viewBox="0 0 14 14"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                          >
+                                            <path
+                                              d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                              fill="white"
+                                            />
+                                          </svg>
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <></>
+                                    )
                                   }
                                   {data.waktu_mulai != null ? (
                                     <>
