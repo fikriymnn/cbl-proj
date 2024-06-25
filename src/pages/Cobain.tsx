@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import Modal from '../components/Modals/ModalDetailPopup';
-import ModalPopupReq from '../components/Modals/ModalDetailPopupReq';
-import ModalPopupMon from '../components/Modals/ModalDetailPopupMon';
-import Modal2 from '../components/Modals/ModalDetailPopup2';
-import ModalPopupOut from '../components/Modals/ModalDetailPopupOut';
-import ModalPopupOnProg from '../components/Modals/ModalDetailPopupOnprog';
+
+
+
 import ModalMtc from '../components/Modals/ModalMtcType';
 import ModalMtcDate from '../components/Modals/ModalMtcDate';
-import ModalPopupOnProg2 from '../components/Modals/ModalDetailPopupOnprog2';
+
 import ModalPopupBgn from '../components/Modals/ModalPopupBgn';
 import ModalPopupReq2 from '../components/Modals/ModalPopupReq';
 import ModalPopupRev from '../components/Modals/ModalMtcRev';
@@ -16,14 +14,13 @@ import ModalMtcStockCheck2 from '../components/Modals/ModalMtcStockCheck2';
 import ModalPurchasing from '../components/Modals/ModalPurchasing';
 import ModalReplaced from '../components/Modals/ModalReplaced';
 import Bars from '../components/Charts/TestChart';
-import ModalMtc6type from '../components/Modals/Modal6type';
+
 import ModalMtcLightHeavy from '../components/Modals/ModalMtcLightHeavy';
-import ModalNewVendor from '../components/Modals/ModalNewVendor';
+
 import ModalPM2Schedule from '../components/Modals/ModalPM2Schedule';
 import ModalResponse from '../components/Modals/ModalResponse';
 import ModalStockCheck1 from '../components/Modals/ModalStockCheck1';
-import ModalStockCheckRusak from '../components/Modals/ModalStockCheckPilihRusak';
-import ModalStockCheckPengganti from '../components/Modals/ModalStockCheckPilihPengganti';
+
 import ModalPM2Eksekutor from '../components/Modals/ModalPM2Eksekutor';
 import ModalPM26type from '../components/Modals/ModalPM26Type';
 import ModalFilter from '../components/Modals/ModalFilter';
@@ -263,133 +260,8 @@ const App = () => {
             <p></p>
           </Modal>
         )}
-        <button
-          type="button"
-          onClick={openModal2}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Modal 2
-        </button>
-        {showModal2 && (
-          <ModalPopupReq
-            title="Maintenance"
-            isOpen={showModal2}
-            onClose={closeModal2}
-            ticketCode={'CTR03591'}
-            machineName={'GMC Printer 2'}
-            incDate={'05 May, 2024 06:37AM'}
-            machineCode={'3.2'}
-            children={''}
-            mtcSchedule={'12 April, 2024 to 24 April, 2024'}
-            status={'Maintenance Schedule Requested '}
-          ></ModalPopupReq>
-        )}
-        <button
-          type="button"
-          onClick={openModal3}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Modal 3
-        </button>
-        {showModal3 && (
-          <ModalPopupReq
-            title="Maintenance"
-            isOpen={showModal3}
-            onClose={closeModal3}
-            ticketCode={'CTR03591'}
-            machineName={'GMC Printer 2'}
-            incDate={'05 May, 2024 06:37AM'}
-            machineCode={'3.2'}
-            children={''}
-            mtcSchedule={'12 April, 2024 to 24 April, 2024'}
-            status={'Waiting to be verified by QC '}
-          ></ModalPopupReq>
-        )}
-        <button
-          type="button"
-          onClick={openModal4}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Modal 4
-        </button>
-        {showModal4 && (
-          <ModalPopupMon
-            title="Maintenance"
-            isOpen={showModal4}
-            onClose={closeModal4}
-            ticketCode={'CTR03591'}
-            machineName={'GMC Printer 2'}
-            incDate={'05 May, 2024 06:37AM'}
-            machineCode={'3.2'}
-            children={''}
-            mtcSchedule={'12 April, 2024 to 24 April, 2024'}
-            status={
-              'Maintenance verified, Monitoring after maintenance for 3 months.'
-            }
-          ></ModalPopupMon>
-        )}
-        <button
-          type="button"
-          onClick={openModal5}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Modal 5
-        </button>
-        {showModal5 && (
-          <Modal2
-            title="Maintenance Detail"
-            isOpen={showModal5}
-            onClose={closeModal5}
-            ticketCode={'CTR03591'}
-            prepName={'GMC Ink 229'}
-            incDate={'28 May, 2024 06:37AM'}
-          >
-            <p></p>
-          </Modal2>
-        )}
-        <button
-          type="button"
-          onClick={openModal6}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Modal 6
-        </button>
-        {showModal6 && (
-          <ModalPopupOut
-            title="Incomming Maintenance Ticket"
-            isOpen={showModal6}
-            onClose={closeModal6}
-            ticketCode={'CTR03591'}
-            machineName={'GMC Printer 2'}
-            incDate={'05 May, 2024 06:37AM'}
-            machineCode={'3.2'}
-            children={''}
-            mtcDate={'4 April, 2024 to 12 April, 2024'}
-            outDate={'12 April, 2024'}
-          ></ModalPopupOut>
-        )}
 
-        <button
-          type="button"
-          onClick={openModal7}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Modal 7
-        </button>
-        {showModal7 && (
-          <ModalPopupOnProg
-            title="Maintenance"
-            isOpen={showModal7}
-            onClose={closeModal7}
-            ticketCode={'CTR03591'}
-            machineName={'GMC Printer 2'}
-            incDate={'05 May, 2024 06:37AM'}
-            machineCode={'3.2'}
-            children={''}
-            mtcSchedule={'12 April, 2024 to 24 April, 2024'}
-            status={'Maintenance On Progress'}
-          ></ModalPopupOnProg>
-        )}
+
       </div>
       <div className="flex gap-3 mt-10 px-10">
         <button
@@ -425,27 +297,7 @@ const App = () => {
             <p></p>
           </ModalMtcDate>
         )}
-        <button
-          type="button"
-          onClick={openModal10}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Modal On Prog
-        </button>
-        {showModal10 && (
-          <ModalPopupOnProg2
-            title="Maintenance"
-            isOpen={showModal10}
-            onClose={closeModal10}
-            ticketCode={'CTR03591'}
-            machineName={'GMC Printer 2'}
-            incDate={'05 May, 2024 06:37AM'}
-            machineCode={'3.2'}
-            children={''}
-            mtcSchedule={'12 April, 2024 to 24 April, 2024'}
-            status={'Maintenance On Progress'}
-          ></ModalPopupOnProg2>
-        )}
+
         <button
           type="button"
           onClick={openModal11}
@@ -581,22 +433,7 @@ const App = () => {
             <p></p>
           </ModalReplaced>
         )}
-        <button
-          type="button"
-          onClick={openModal19}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Modal 6 Type
-        </button>
-        {showModal19 && (
-          <ModalMtc6type
-            isOpen={showModal19}
-            onClose={closeModal19}
-            ticketCode={'EXC0008'}
-          >
-            <p></p>
-          </ModalMtc6type>
-        )}
+
       </div>
       <div className="pt-4 gap-3">
         <button
@@ -624,22 +461,7 @@ const App = () => {
             </div>
           </ModalMtcLightHeavy>
         )}
-        <button
-          type="button"
-          onClick={openModal21}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Modal New Vendroo
-        </button>
-        {showModal21 && (
-          <ModalNewVendor isOpen={showModal21} onClose={closeModal21}>
-            <div className="flex pt-[300PX] w-full h-full justify-end justify-items-end ">
-              <button className=" w-96 h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                SEND REQUEST
-              </button>
-            </div>
-          </ModalNewVendor>
-        )}
+
         <button
           type="button"
           onClick={openModal22}
@@ -701,50 +523,8 @@ const App = () => {
             <p></p>
           </ModalStockCheck1>
         )}
-        <button
-          type="button"
-          onClick={openModal25}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open StockCHeck Rusak
-        </button>
-        {showModal25 && (
-          <ModalStockCheckRusak
-            isOpen={showModal25}
-            onClose={closeModal25}
-            machineName={'R700'}
-            kendala={'Settingan tidak pas'}
-            tgl={'20 MEI 2024'}
-            jam={'14:00'}
-            namaPemeriksa={'Acep Piere'}
-            no={2}
-          >
-            <p></p>
-          </ModalStockCheckRusak>
-        )}
 
-        <button
-          type="button"
-          onClick={openModal26}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open StockCHeck Pengganti
-        </button>
-        {showModal26 && (
-          <ModalStockCheckPengganti
-            isOpen={showModal26}
-            onClose={closeModal26}
-            machineName={'R700'}
-            kendala={'Settingan tidak pas'}
-            tgl={'20 MEI 2024'}
-            jam={'14:00'}
-            namaPemeriksa={'Acep Piere'}
-            no={2}
-            onFinish={undefined}
-          >
-            <p></p>
-          </ModalStockCheckPengganti>
-        )}
+
       </div>
       <div className="pt-4">
         <button

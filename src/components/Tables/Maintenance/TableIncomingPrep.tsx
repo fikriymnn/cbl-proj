@@ -7,7 +7,7 @@ import { BRAND } from '../../../types/brand';
 import { useState } from 'react';
 import Modal from '../../../components/Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
-import ModalMtc6type from '../../Modals/Modal6type';
+
 import ModalMtc2 from '../../Modals/ModalMtcType2';
 import ModalMtcStockCheck2 from '../../Modals/ModalMtcStockCheck2';
 

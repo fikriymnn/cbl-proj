@@ -1,13 +1,13 @@
 import { BRAND } from '../../../types/brand';
 import { useState } from 'react';
-import Modal from '../../../components/Modals/ModalDetailPopup';
+
 // import Gambar from '../../images/BACKGROUND.png';
-import Logo from '../../images/logo/logo-cbl 1.svg';
+
 import ModalMtcDate from '../../Modals/ModalMtcDate';
-import ModalPopupReq from '../../Modals/ModalDetailPopupReq';
+
 import ModalPopupBgn from '../../Modals/ModalPopupBgn';
-import ModalPopupOnProg2 from '../../Modals/ModalDetailPopupOnprog2';
-import ModalPopupMon from '../../Modals/ModalDetailPopupMon';
+
+
 
 const brandData: BRAND[] = [
     {
@@ -270,21 +270,7 @@ const TableMANHistory = () => {
                                         >
                                             {brand.action}
                                         </button>
-                                        {showModal2 && (
-                                            <ModalPopupReq
-                                                title="Maintenance"
-                                                isOpen={showModal2}
-                                                onClose={closeModal2}
-                                                ticketCode={'CTR03591'}
-                                                machineName={'GMC Printer 2'}
-                                                incDate={'05 May, 2024 06:37AM'}
-                                                machineCode={'3.2'} children={''}
-                                                mtcSchedule={'12 April, 2024 to 24 April, 2024'}
-                                                status={"Maintenance Schedule Requested "}>
 
-                                            </ModalPopupReq>
-
-                                        )}
                                     </>
                                 )}
                                 {brand.action === 'reschedule' && (
@@ -314,18 +300,7 @@ const TableMANHistory = () => {
                                         >
                                             {brand.action}
                                         </button>
-                                        <ModalPopupOnProg2
-                                            title="Maintenance"
-                                            isOpen={showModal5}
-                                            onClose={closeModal5}
-                                            ticketCode={'CTR03591'}
-                                            machineName={'GMC Printer 2'}
-                                            incDate={'05 May, 2024 06:37AM'}
-                                            machineCode={'3.2'} children={''}
-                                            mtcSchedule={'12 April, 2024 to 24 April, 2024'}
-                                            status={"Maintenance On Progress"}>
 
-                                        </ModalPopupOnProg2>
                                     </>
                                 )}
                                 {brand.action === 'request mtc' && (
@@ -357,21 +332,7 @@ const TableMANHistory = () => {
                                         >
                                             {brand.action}
                                         </button>
-                                        {showModal6 && (
-                                            <ModalPopupReq
-                                                title="Maintenance"
-                                                isOpen={showModal6}
-                                                onClose={closeModal6}
-                                                ticketCode={'CTR03591'}
-                                                machineName={'GMC Printer 2'}
-                                                incDate={'05 May, 2024 06:37AM'}
-                                                machineCode={'3.2'} children={''}
-                                                mtcSchedule={'12 April, 2024 to 24 April, 2024'}
-                                                status={"Waiting to be verified by QC "}>
 
-                                            </ModalPopupReq>
-
-                                        )}
                                     </>
                                 )}
                                 {brand.action === 'detail' && brand.status === 'monitoring' && (
@@ -384,23 +345,6 @@ const TableMANHistory = () => {
                                         >
                                             {brand.action}
                                         </button>
-                                        {showModal7 && (
-
-
-                                            <ModalPopupMon
-                                                title="Maintenance"
-                                                isOpen={showModal7}
-                                                onClose={closeModal7}
-                                                ticketCode={'CTR03591'}
-                                                machineName={'GMC Printer 2'}
-                                                incDate={'05 May, 2024 06:37AM'}
-                                                machineCode={'3.2'} children={''}
-                                                mtcSchedule={'12 April, 2024 to 24 April, 2024'}
-                                                status={"Maintenance verified, Monitoring after maintenance for 3 months."}>
-
-                                            </ModalPopupMon>
-                                        )}
-
 
                                     </>
                                 )}
