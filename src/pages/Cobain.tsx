@@ -1,31 +1,24 @@
 import React, { useState } from 'react';
 import Modal from '../components/Modals/ModalDetailPopup';
 
-
-
-import ModalMtc from '../components/Modals/ModalMtcType';
 import ModalMtcDate from '../components/Modals/ModalMtcDate';
 
-import ModalPopupBgn from '../components/Modals/ModalPopupBgn';
-import ModalPopupReq2 from '../components/Modals/ModalPopupReq';
-import ModalPopupRev from '../components/Modals/ModalMtcRev';
 import ModalMtcStockCheck from '../components/Modals/ModalMtcStockCheck';
 import ModalMtcStockCheck2 from '../components/Modals/ModalMtcStockCheck2';
-import ModalPurchasing from '../components/Modals/ModalPurchasing';
-import ModalReplaced from '../components/Modals/ModalReplaced';
+
 import Bars from '../components/Charts/TestChart';
 
 import ModalMtcLightHeavy from '../components/Modals/ModalMtcLightHeavy';
 
 import ModalPM2Schedule from '../components/Modals/ModalPM2Schedule';
-import ModalResponse from '../components/Modals/ModalResponse';
+
 import ModalStockCheck1 from '../components/Modals/ModalStockCheck1';
 
 import ModalPM2Eksekutor from '../components/Modals/ModalPM2Eksekutor';
-import ModalPM26type from '../components/Modals/ModalPM26Type';
+
 import ModalFilter from '../components/Modals/ModalFilter';
 import ModalSPBService from '../components/Modals/ModalNewSPBService';
-import ModalTambahUser from '../components/Modals/ModalTambahUser';
+import ModalTambahUser from '../components/Modals/Master/User/ModalTambahUser';
 
 const App = () => {
   const [showModal1, setShowModal1] = useState(false);
@@ -264,23 +257,7 @@ const App = () => {
 
       </div>
       <div className="flex gap-3 mt-10 px-10">
-        <button
-          type="button"
-          onClick={openModal8}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Modal MTC Type
-        </button>
-        {showModal8 && (
-          <ModalMtc
-            title="Select Maintenance Type"
-            isOpen={showModal8}
-            onClose={closeModal8}
-            machineName={'GMC Printer 2'}
-          >
-            <p></p>
-          </ModalMtc>
-        )}
+
         <button
           type="button"
           onClick={openModal9}
@@ -298,83 +275,10 @@ const App = () => {
           </ModalMtcDate>
         )}
 
-        <button
-          type="button"
-          onClick={openModal11}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Modal MTC Type 2
-        </button>
-        {showModal11 && (
-          <ModalMtc
-            title="Select Maintenance Type"
-            isOpen={showModal11}
-            onClose={closeModal11}
-            machineName={'GMC Printer 2'}
-          >
-            <p></p>
-          </ModalMtc>
-        )}
-        <button
-          type="button"
-          onClick={openModal12}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Modal BGN
-        </button>
-        {showModal12 && (
-          <ModalPopupBgn
-            title="Maintenance"
-            isOpen={showModal12}
-            onClose={closeModal12}
-            ticketCode={'CTR03591'}
-            machineName={'GMC Printer 2'}
-            incDate={'05 May, 2024 06:37AM'}
-            machineCode={'3.2'}
-            children={''}
-            mtcSchedule={'12 April, 2024 to 24 April, 2024'}
-          ></ModalPopupBgn>
-        )}
-        <button
-          type="button"
-          onClick={openModal13}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Modal Req 2
-        </button>
-        {showModal13 && (
-          <ModalPopupReq2
-            title="Maintenance Request"
-            isOpen={showModal13}
-            onClose={closeModal13}
-            ticketCode={'CTR03591'}
-            machineName={'GMC Printer 2'}
-            incDate={'05 May, 2024 06:37AM'}
-            machineCode={'3.2'}
-            children={''}
-            reqSchedule={'12 April, 2024 to 24 April, 2024'}
-          ></ModalPopupReq2>
-        )}
-        <button
-          type="button"
-          onClick={openModal14}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Modal Rev
-        </button>
-        {showModal14 && (
-          <ModalPopupRev
-            title="Maintenance Review"
-            isOpen={showModal14}
-            onClose={closeModal14}
-            ticketCode={'CTR03591'}
-            machineName={'GMC Printer 2'}
-            incDate={'05 May, 2024 06:37AM'}
-            machineCode={'3.2'}
-            children={''}
-            mtcDate={'12 April, 2024 to 24 April, 2024'}
-          ></ModalPopupRev>
-        )}
+
+
+
+
       </div>
       <div>
         <button
@@ -411,28 +315,8 @@ const App = () => {
             <p></p>
           </ModalMtcStockCheck2>
         )}
-        <button
-          type="button"
-          onClick={openModal17}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Modal Purchasing
-        </button>
-        {showModal17 && (
-          <ModalPurchasing isOpen={showModal17} onClose={closeModal17} />
-        )}
-        <button
-          type="button"
-          onClick={openModal18}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Modal Replaced
-        </button>
-        {showModal18 && (
-          <ModalReplaced isOpen={showModal18} onClose={closeModal18}>
-            <p></p>
-          </ModalReplaced>
-        )}
+
+
 
       </div>
       <div className="pt-4 gap-3">
@@ -478,24 +362,7 @@ const App = () => {
             <p></p>
           </ModalPM2Schedule>
         )}
-        <button
-          type="button"
-          onClick={openModal23}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open Respon
-        </button>
-        {showModal23 && (
-          <ModalResponse
-            isOpen={showModal23}
-            onClose={closeModal23}
-            machineName={'R700'}
-            ticketCode={'undefined'}
-            incDate={'undefined'}
-          >
-            <p></p>
-          </ModalResponse>
-        )}
+
         <button
           type="button"
           onClick={openModal24}
@@ -543,22 +410,7 @@ const App = () => {
             <p></p>
           </ModalPM2Eksekutor>
         )}
-        <button
-          type="button"
-          onClick={openModal28}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Open
-        </button>
-        {showModal28 && (
-          <ModalPM26type
-            isOpen={showModal28}
-            onClose={closeModal28}
-            machineName={'R700'}
-          >
-            <p></p>
-          </ModalPM26type>
-        )}
+
         <button
           type="button"
           onClick={openModal29}

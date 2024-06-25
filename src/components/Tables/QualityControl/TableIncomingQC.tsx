@@ -8,7 +8,6 @@ import { useState } from 'react';
 import Modal from '../../../components/Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
 import Logo from '../../images/logo/logo-cbl 1.svg';
-import ModalPopupReq2 from '../../Modals/ModalPopupReq';
 
 const brandData: BRAND[] = [
     {
@@ -142,18 +141,7 @@ const TableIncomingQC = () => {
                                                 {brand.action}
 
                                             </button>
-                                            {showModal2 && (
-                                                <ModalPopupReq2
-                                                    title="Maintenance Request"
-                                                    isOpen={showModal2}
-                                                    onClose={closeModal2}
-                                                    ticketCode={'CTR03591'}
-                                                    machineName={'GMC Printer 2'}
-                                                    incDate={'05 May, 2024 06:37AM'}
-                                                    machineCode={'3.2'} children={''} reqSchedule={'12 April, 2024 to 24 April, 2024'}
-                                                >
-                                                </ModalPopupReq2>
-                                            )}
+
                                         </>
                                     )
                                     }
@@ -167,18 +155,7 @@ const TableIncomingQC = () => {
                                             >
                                                 {brand.action}
                                             </button>
-                                            {showModal1 && (
-                                                <Modal title="Incoming Maintenance Ticket"
-                                                    isOpen={showModal1}
-                                                    onClose={closeModal1}
-                                                    ticketCode={'CTR03591'}
-                                                    prepName={'GMC Ink 229'}
-                                                    incDate={'28 May, 2024 06:37AM'}
-                                                    prepCode={'3.2'} >
-                                                    <p></p>
-                                                </Modal>
 
-                                            )}
                                         </>
                                     )}
                                 </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Filter from '../../../images/icon/filter.svg';
 import ModalEditAnalisisMaster from '../../Modals/ModalEditAnalisisMaster';
 
+
 const brandData: MasterAnalisis[] = [
     {
         kategori: 'PRODUKSI',

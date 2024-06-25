@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import CheckStockPengganti from "../Tables/Modals/SparepartPengganti";
 import axios from "axios";
 
 
