@@ -109,7 +109,7 @@ const ModalEditUser = ({ children, isOpen, onClose, id, data, onFinish }:
                     <>
                         <div className="flex flex-col pt-4  ">
                             <label className="text-black text-xs font-bold">
-                                USERNAME-{id}
+                                USERNAME
                             </label>
                             <input
                                 defaultValue={email}
