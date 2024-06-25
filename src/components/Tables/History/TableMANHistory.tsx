@@ -3,10 +3,6 @@ import { useState } from 'react';
 
 // import Gambar from '../../images/BACKGROUND.png';
 
-import ModalMtcDate from '../../Modals/ModalMtcDate';
-
-import ModalPopupBgn from '../../Modals/ModalPopupBgn';
-
 
 
 const brandData: BRAND[] = [
@@ -245,18 +241,7 @@ const TableMANHistory = () => {
                                             {brand.action}
 
                                         </button>
-                                        <ModalPopupBgn
-                                            title="Maintenance"
-                                            isOpen={showModal4}
-                                            onClose={closeModal4}
-                                            ticketCode={'CTR03591'}
-                                            machineName={'GMC Printer 2'}
-                                            incDate={'05 May, 2024 06:37AM'}
-                                            machineCode={'3.2'} children={''}
-                                            mtcSchedule={'12 April, 2024 to 24 April, 2024'}
 
-                                        >
-                                        </ModalPopupBgn>
                                     </>
                                 )
                                 }
@@ -282,12 +267,7 @@ const TableMANHistory = () => {
                                         >
                                             {brand.action}
                                         </button>
-                                        <ModalMtcDate
-                                            isOpen={showModal3}
-                                            onClose={closeModal3}
-                                            machineName={'GMC Printer 2'}>
-                                            <p></p>
-                                        </ModalMtcDate>
+
                                     </>
                                 )}
                                 {brand.action === 'action' && (
@@ -314,12 +294,7 @@ const TableMANHistory = () => {
                                             onClick={openModal3} >
                                             {brand.action}
                                         </button>
-                                        <ModalMtcDate
-                                            isOpen={showModal3}
-                                            onClose={closeModal3}
-                                            machineName={'GMC Printer 2'}>
-                                            <p></p>
-                                        </ModalMtcDate>
+
                                     </>
                                 )}
                                 {brand.action === 'detail' && brand.status === 'pending verification' && (
