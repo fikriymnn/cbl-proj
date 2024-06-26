@@ -1,24 +1,8 @@
-import { BRAND } from '../../../types/brand';
-// import BrandOne from '../../images/brand/brand-01.svg';
-// import BrandTwo from '../../images/brand/brand-02.svg';
-// import BrandThree from '../../images/brand/brand-03.svg';
-// import BrandFour from '../../images/brand/brand-04.svg';
-// import BrandFive from '../../images/brand/brand-05.svg';
+
 import { useEffect, useState } from 'react';
-import Modal from '../../../components/Modals/ModalDetailPopup';
-// import Gambar from '../../images/BACKGROUND.png';
-import Logo from '../../images/logo/logo-cbl 1.svg';
-import ModalMtc from '../../Modals/ModalMtcType';
-import ModalMtc6type from '../../Modals/Modal6type';
-import ModalMtcStockCheck from '../../Modals/ModalMtcStockCheck';
-import ModalMtcDate from '../../Modals/ModalMtcDate';
-import ModalReplaced from '../../Modals/ModalReplaced';
-import ModalPurchasing from '../../Modals/ModalPurchasing';
-import ModalMtcLightHeavy from '../../Modals/ModalMtcLightHeavy';
-import ModalNewVendor from '../../Modals/ModalNewVendor';
 import Arrow from '../../../images/icon/arrowDown.svg';
 import axios from 'axios';
-import ModalKonfirmasi from '../../Modals/ModalKonfirmasi';
+
 import Loading from '../../Loading';
 
 const tiket = [
@@ -431,9 +415,8 @@ const TableIncomingMaintenance = () => {
                       <div className="">
                         <div className="w-full">
                           <div
-                            className={`flex ${
-                              key === tiket.length - 1 ? '' : ' '
-                            }`}
+                            className={`flex ${key === tiket.length - 1 ? '' : ' '
+                              }`}
                             key={key}
                           >
                             <div className="flex justify-center items-center pl-2 py-2">

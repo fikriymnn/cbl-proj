@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import DefaultLayout from '../../../layout/DefaultLayout'
-import ModalPopupBgn from '../../../components/Modals/ModalPopupBgn';
-import ModalPopupReq from '../../../components/Modals/ModalDetailPopupReq';
+
 import { Link } from 'react-router-dom';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';

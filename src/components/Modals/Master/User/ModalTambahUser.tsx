@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { useEffect, useState } from "react";
-import Loading from '../Loading';
+import Loading from '../../../Loading';
 
 const ModalTambahUser = ({ children, isOpen, onClose, onFinish }:
 
@@ -19,13 +19,7 @@ const ModalTambahUser = ({ children, isOpen, onClose, onFinish }:
     const [confpassword, setconfpassword] = useState('')
     const [passwordMatch, setPasswordmatch] = useState(false);
 
-    useEffect(() => {
-        checkpassword();
-    }, [password, confpassword]);
 
-    const checkpassword = () => {
-        setPasswordmatch(password === confpassword)
-    };
 
     const [isLoading, setIsLoading] = useState(false)
 
@@ -37,8 +31,18 @@ const ModalTambahUser = ({ children, isOpen, onClose, onFinish }:
     const [confpassword1, setConfPassword1] = useState<any>();
     const [no, setNo] = useState<any>();
 
+
+    useEffect(() => {
+        checkpassword();
+    }, [password1, confpassword1]);
+
+    const checkpassword = () => {
+        setPasswordmatch(password1 === confpassword1)
+    };
+
     async function submitTambahUser() {
         const url = `${import.meta.env.VITE_API_LINK}/users`;
+
         try {
             setIsLoading(true);
             const res = await axios.post(
@@ -101,7 +105,6 @@ const ModalTambahUser = ({ children, isOpen, onClose, onFinish }:
                         <input
                             onChange={(e) => setEmail(e.target.value)}
                             type='text' className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex" />
-
                         <label className="text-black text-xs font-bold pt-4">
                             NAMA
                         </label>
@@ -208,18 +211,16 @@ const ModalTambahUser = ({ children, isOpen, onClose, onFinish }:
                             <label className="text-black text-xs font-bold pt-4">
                                 KONFIRMASI PASSWORD
                             </label>
-                            {/* {!passwordMatch && <label className=' text-red-600 text-xs font-bold pt-4 '> PASSWORD TIDAK COCOK </label>} */}
+                            {!passwordMatch && <label className=' text-red-600 text-xs font-bold pt-4 '> PASSWORD TIDAK COCOK </label>}
 
                         </div>
                         <input
-                            // className={`... ${!passwordMatch ? 'w-full h-10 self-stretch p-4 bg-white rounded-md  justify-start items-center gap-4 inline-flex border border-red-500' : 'w-full h-10 self-stretch p-4 bg-white rounded-md border border-stroke  justify-start items-center gap-4 inline-flex'} ...`}
-
+                            className={`... ${!passwordMatch ? 'w-full h-10 self-stretch p-4 bg-white rounded-md  justify-start items-center gap-4 inline-flex border border-red-500' : 'w-full h-10 self-stretch p-4 bg-white rounded-md border border-stroke  justify-start items-center gap-4 inline-flex'} ...`}
                             id="confirmoldpassword"
                             placeholder="Masukkan Password Konfirmasi"
-
                             type="password"
                             onChange={(e) => setConfPassword1(e.target.value)}
-                            className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
+                        //     className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
                         />
 
                         <div className="pt-4">

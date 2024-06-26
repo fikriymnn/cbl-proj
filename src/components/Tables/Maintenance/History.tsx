@@ -2,8 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import Filter from '../../../images/icon/filter.svg';
 import Burger from '../../../images/icon/burger.svg';
 import Arrow from '../../../images/icon/arrowDown.svg';
-import ModalStockCheckPengganti from '../../Modals/ModalStockCheckPilihPengganti';
-import ModalPopupReq from '../../Modals/ModalDetailPopupReq';
 import ModalMtcDate from '../../Modals/ModalMtcDate';
 import ModalStockCheck1 from '../../Modals/ModalStockCheck1';
 import Polygon6 from '../../../images/icon/Polygon6.svg';

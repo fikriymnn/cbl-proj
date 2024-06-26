@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import DefaultLayout from '../../../layout/DefaultLayout'
-import ModalPopupBgn from '../../../components/Modals/ModalPopupBgn';
-import ModalPopupReq from '../../../components/Modals/ModalDetailPopupReq';
+
 import { Link } from 'react-router-dom';
 import ModalMtcDate from '../../../components/Modals/ModalMtcDate';
 const brandData = [
