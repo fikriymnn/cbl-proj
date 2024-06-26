@@ -6,6 +6,7 @@ import axios from 'axios';
 import Bel from '../../images/icon/bel.svg';
 
 import { useNavigate } from 'react-router-dom';
+import { useCookies } from 'react-cookie';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -26,6 +27,9 @@ const DropdownUser = () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_LINK}/me`, {
         withCredentials: true,
+        // headers: {
+        //   Authorization: `Bearer ${cookies.access_token}`,
+        // },
       });
 
       setUser(res.data);

@@ -15,6 +15,20 @@ function TableSPBRequested() {
   const closeModalSPBBaru = () => setShowModalSPBBaru(false);
 
   const [isMobile, setIsMobile] = useState(false);
+  const [openButton, setOpenButton] = useState(null);
+
+  const [showModalMonitoring, setShowModalMonitoring] = useState(null);
+
+  const handleClick = (index: any) => {
+    setOpenButton((prevState: any) => {
+      return prevState === index ? null : index;
+    });
+  };
+  const handleClickMonitoring = (index: any) => {
+    setShowModalMonitoring((prevState: any) => {
+      return prevState === index ? null : index;
+    });
+  };
 
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
@@ -67,11 +81,7 @@ function TableSPBRequested() {
     }
   }
 
-
-  const [showModalMonitoring, setShowModalMonitoring] = useState(false);
-
-  const openModalMonitoring = () => setShowModalMonitoring(true);
-  const closeModalMonitoring = () => setShowModalMonitoring(false);
+  const closeModalMonitoring = () => setShowModalMonitoring(null);
 
   return (
     <main>
@@ -103,6 +113,8 @@ function TableSPBRequested() {
                     noSPB={'MT-0001'}
                     tglSpb={'20 MEI 2024'}
                     data={undefined}
+                    onFinish={undefined}
+                    idProses={undefined}
                   >
                     <p></p>
                   </ModalSPBService>
@@ -190,7 +202,10 @@ function TableSPBRequested() {
                             </p>
                           </div>
                           <div className="flex gap-2 justify-end pr-8">
-                            <button className="px-4 py-2 bg-[#0065DE] rounded-md">
+                            <button
+                              onClick={() => handleClick(index)}
+                              className="px-4 py-2 bg-[#0065DE] rounded-md"
+                            >
                               <svg
                                 width="4"
                                 height="11"
@@ -213,7 +228,26 @@ function TableSPBRequested() {
                                 />
                               </svg>
                             </button>
-                            <button onClick={openModalMonitoring} className="px-3 py-3 bg-[#0065DE] rounded-md">
+                            {openButton == index ? (
+                              <>
+                                <div className="absolute bg-white mt-10 p-1 shadow-5 rounded-md">
+                                  <div className="flex flex-col gap-1">
+                                    <button className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
+                                      Setujui{' '}
+                                    </button>
+                                    {/* <button className="w-25 text-xs font-bold bg-red-600 py-2 text-white rounded-md">
+                                      Tolak{' '}
+                                    </button> */}
+                                  </div>
+                                </div>
+                              </>
+                            ) : (
+                              <></>
+                            )}
+                            <button
+                              onClick={() => handleClickMonitoring(index)}
+                              className="px-3 py-3 bg-[#0065DE] rounded-md"
+                            >
                               <svg
                                 width="15"
                                 height="10"
@@ -228,14 +262,24 @@ function TableSPBRequested() {
                                 />
                               </svg>
                             </button>
-                            {showModalMonitoring && (
+                            {showModalMonitoring == index ? (
                               <MonitoringSPB
                                 isOpen={showModalMonitoring}
                                 onClose={closeModalMonitoring}
-
+                                status={data.status_pengajuan}
+                                waktu_tiket_masuk={tglSpb}
+                                pelapor={data.pelapor.nama}
+                                kode_part={data.master_part.kode}
+                                nama_barang={data.master_part.nama_sparepart}
+                                mesin={data.master_part.nama_mesin}
+                                qty={data.qty}
+                                tanggal_estimasi={tglPermintaanKedatangan}
+                                catatan={data.note}
                               >
                                 <p></p>
                               </MonitoringSPB>
+                            ) : (
+                              <></>
                             )}
                           </div>
                         </div>
@@ -273,6 +317,8 @@ function TableSPBRequested() {
                     noSPB={'MT-0001'}
                     tglSpb={'20 MEI 2024'}
                     data={undefined}
+                    onFinish={undefined}
+                    idProses={undefined}
                   >
                     <p></p>
                   </ModalSPBService>
@@ -288,52 +334,114 @@ function TableSPBRequested() {
                   <p className="text-xs font-bold "> Mesin</p>
                   <img className="w-2" src={Polygon6} alt="" />
                 </div>
-                <div className="flex  w-7/12 ">
-                  <p className="text-xs font-bold "> Kendala</p>
+                <div className="flex  w-5/12 ">
+                  <p className="text-xs font-bold "> Nama Barang</p>
                   <img className="w-2" src={Polygon6} alt="" />
                 </div>
                 <div className="flex  w-2/12 ">
-                  <p className="text-xs font-bold ">Jadwal</p>
+                  <p className="text-xs font-bold ">Status</p>
+                  <img className="w-2" src={Polygon6} alt="" />
+                </div>
+                <div className="flex  w-2/12 ">
+                  <p className="text-xs font-bold ">Action</p>
                   <img className="w-2" src={Polygon6} alt="" />
                 </div>
               </div>
             </div>
             <div className=" overflow-x-auto">
-              <div className="">
-                <div className="my-2 ">
-                  <section className="flex flex-col bg-white  rounded-lg px-2">
-                    <div className="flex w-full py-3 gap-1">
-                      <div className="flex  w-2/12  ">
-                        <p className="text-neutral-500 text-sm font-light">
-                          R700
-                        </p>
-                      </div>
-                      <div className="flex  w-7/12 ">
-                        <p className="text-neutral-500 text-sm font-light">
-                          3.1.7 - Feeder Tidak Bisa On
-                        </p>
-                      </div>
-                      <div className="flex  w-3/12  ">
-                        <p className="text-neutral-500 text-sm font-light">
-                          2 Juni 2024
-                        </p>
+              {spbService?.map((data: any, index: number) => {
+                const tglSpb = convertTimeStampToDate(data.tgl_spb);
+                const tglPermintaanKedatangan = convertTimeStampToDate(
+                  data.tgl_permintaan_kedatangan,
+                );
+                return (
+                  <>
+                    <div className="">
+                      <div className="my-2 ">
+                        <section className="flex flex-col bg-white  rounded-lg px-2">
+                          <div className="flex w-full py-3 gap-1">
+                            <div className="flex  w-2/12  ">
+                              <p className="text-neutral-500 text-xs font-light">
+                                {data.master_part.nama_mesin}
+                              </p>
+                            </div>
+                            <div className="flex  w-6/12 ">
+                              <p className="text-neutral-500 text-xs font-light w-10/12">
+                                {data.master_part.nama_sparepart}
+                              </p>
+                            </div>
+                            <div className="flex  w-2/12  ">
+                              <p className="text-neutral-500 text-xs font-light">
+                                {data.status_pengajuan}
+                              </p>
+                            </div>
+                            <div className="flex gap-2 items-center pb-2">
+                              <div>
+                                <button
+                                  title="button"
+                                  onClick={() => handleClick(index)}
+                                  className="text-xs px-1  py-2 font-bold bg-blue-700  text-white rounded-sm"
+                                >
+                                  <img src={Burger} alt="" className="mx-1" />
+                                </button>
+                              </div>
+
+                              <div>
+                                <button
+                                  title="button"
+                                  onClick={() => handleClickMonitoring(index)}
+                                  className="text-xs  h-6 font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-sm"
+                                >
+                                  <img src={Arrow} alt="" className="mx-1" />
+                                </button>
+                              </div>
+                              {openButton == index ? (
+                                <>
+                                  <div className="absolute bg-white mt-20 -translate-x-10 p-1 shadow-5 rounded-md">
+                                    <div className="flex flex-col gap-1">
+                                      <button className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
+                                        Setujui{' '}
+                                      </button>
+                                      {/* <button className="w-25 text-xs font-bold bg-red-600 py-2 text-white rounded-md">
+                                      Tolak{' '}
+                                    </button> */}
+                                    </div>
+                                  </div>
+                                </>
+                              ) : (
+                                <></>
+                              )}
+                              {showModalMonitoring == index ? (
+                                <div className="">
+                                  <MonitoringSPB
+                                    isOpen={showModalMonitoring}
+                                    onClose={closeModalMonitoring}
+                                    status={data.status_pengajuan}
+                                    waktu_tiket_masuk={tglSpb}
+                                    pelapor={data.pelapor.nama}
+                                    kode_part={data.master_part.kode}
+                                    nama_barang={
+                                      data.master_part.nama_sparepart
+                                    }
+                                    mesin={data.master_part.nama_mesin}
+                                    qty={data.qty}
+                                    tanggal_estimasi={tglPermintaanKedatangan}
+                                    catatan={data.note}
+                                  >
+                                    <p></p>
+                                  </MonitoringSPB>
+                                </div>
+                              ) : (
+                                <></>
+                              )}
+                            </div>
+                          </div>
+                        </section>
                       </div>
                     </div>
-                    <div className="flex gap-2 items-center pb-2">
-                      <div>
-                        <button className="text-xs px-1  py-2 font-bold bg-blue-700  text-white rounded-sm">
-                          <img src={Burger} alt="" className="mx-1" />
-                        </button>
-                      </div>
-                      <div>
-                        <button className="text-xs  h-6 font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-sm">
-                          <img src={Arrow} alt="" className="mx-1" />
-                        </button>
-                      </div>
-                    </div>
-                  </section>
-                </div>
-              </div>
+                  </>
+                );
+              })}
             </div>
           </div>
         </>
