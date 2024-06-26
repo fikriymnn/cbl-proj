@@ -211,7 +211,7 @@ const ModalEditUser = ({ children, isOpen, onClose, id, data, onFinish }:
                                     Shift
                                 </option>
                             </select>
-                            <label className="text-black text-xs font-bold pt-4">
+                            {/* <label className="text-black text-xs font-bold pt-4">
                                 PASSWORD
                             </label>
                             <input
@@ -228,7 +228,7 @@ const ModalEditUser = ({ children, isOpen, onClose, id, data, onFinish }:
                                 </label>
                                 {/* {!passwordMatch && <label className=' text-red-600 text-xs font-bold pt-4 '> PASSWORD TIDAK COCOK </label>} */}
 
-                            </div>
+                            {/* </div> 
                             <input
                                 // className={`... ${!passwordMatch ? 'w-full h-10 self-stretch p-4 bg-white rounded-md  justify-start items-center gap-4 inline-flex border border-red-500' : 'w-full h-10 self-stretch p-4 bg-white rounded-md border border-stroke  justify-start items-center gap-4 inline-flex'} ...`}
                                 id="confirmoldpassword"
@@ -237,7 +237,7 @@ const ModalEditUser = ({ children, isOpen, onClose, id, data, onFinish }:
 
                                 onChange={(e) => setConfPassword1(e.target.value)}
                                 className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
-                            />
+                            />  */}
 
                             <div className="pt-4">
                                 <button

@@ -141,14 +141,22 @@ function Pm1Form() {
     const url = `${import.meta.env.VITE_API_LINK}/pm1/taskStop/${id}`;
     console.log(hasil);
     try {
-      const elapsedTime = await calculateElapsedTime(start, stopTime);
-      const formattedTime = formatElapsedTime(elapsedTime);
+      const elapsedSeconds = await calculateElapsedTime(start, stopTime);
+
+      // **Save total seconds elsewhere**
+      const totalSecondsToSave = elapsedSeconds;
+      // Use totalSecondsToSave for your saving logic (e.g., local storage, separate API)
+
+      // Formatted time can be used for logging if needed
+      const formattedTime = formatElapsedTime(elapsedSeconds);
+
       console.log(formattedTime);
+
       const res = await axios.put(
         url,
         {
           hasil: hasil,
-          lama_pengerjaan: formattedTime,
+          lama_pengerjaan: totalSecondsToSave,
           waktu_selesai: timestamp,
           catatan: catatan,
           file: '',
@@ -204,16 +212,33 @@ function Pm1Form() {
     const start = new Date(startTime);
     const diffInMs = stopTime.getTime() - start.getTime();
     // Convert milliseconds to your desired unit (minutes, hours)
-    const elapsedTime = Math.round(diffInMs / (1000 * 60));
+    const elapsedTime = Math.round(diffInMs / (1000));
     console.log(elapsedTime); // Example: minutes
     return elapsedTime;
   }
 
   // Helper function to format elapsed time for 'menit' (replace with your format)
-  function formatElapsedTime(minutes: number, seconds: number = 0) {
-    const formattedMinutes = minutes.toString().padStart(2, '0'); // Pad minutes with leading 0
-    // Customize the format as needed
-    return `${formattedMinutes}`; // Example: 00:30 menit
+  function formatElapsedTime(seconds: number): string {
+    // Ensure seconds is non-negative
+    seconds = Math.max(0, seconds);
+
+    const hours = Math.floor(seconds / 3600);
+    const remainingSeconds = seconds % 3600;
+
+    const minutes = Math.floor(remainingSeconds / 60);
+    const remainingSecondsAfterMinutes = remainingSeconds % 60;
+
+    // Use template literals and conditional operators for formatting
+    let formattedTime = '';
+    if (hours > 0) {
+      formattedTime += `${hours} Jam :`; // Add hours if present
+    }
+    if (hours > 0 || minutes > 0) { // Only add minutes if hours are present or minutes are non-zero
+      formattedTime += `${minutes.toString().padStart(2, '0')} Menit : `;
+    }
+    formattedTime += remainingSecondsAfterMinutes.toString().padStart(2, '0');
+
+    return formattedTime;
   }
 
   // const start1 = moment(start)
@@ -517,7 +542,7 @@ function Pm1Form() {
                               {data.inspection_task_pm1s.map(
                                 (task: any, ii: any) => {
 
-
+                                  const formattedTime = formatElapsedTime(data.lama_pengerjaan);
                                   return (
                                     <>
                                       <div className="flex flex-col gap-y-10">
@@ -969,6 +994,7 @@ function Pm1Form() {
                               </>
                             )}
                           {data.waktu_selesai != null && (
+
                             <>
                               <div className="p-4 flex flex-col ">
                                 <p className="md:text-[14px] text-[9px] font-semibold">
@@ -1016,13 +1042,17 @@ function Pm1Form() {
                                   </div>
                                 </>
                               </div>
-                              <div className="p-4 flex flex-col justify-start items-start w-2/12 gap-3">
+                              <div className="p-4 flex flex-col justify-start items-start w-2/12 gap-1">
                                 <p className="md:text-[14px] text-[9px] font-semibold">
-                                  Time : {''}
-                                  {data.lama_pengerjaan != null
-                                    ? data.lama_pengerjaan
-                                    : ''}{' '}
-                                  Menit
+                                  Waktu Pengerjaan :{''}
+
+                                </p>
+                                <p className='md:text-[12px] text-[9px] font-semibold'>
+                                  {
+                                    data.lama_pengerjaan != null
+                                      ? formatElapsedTime(data.lama_pengerjaan)
+                                      : ''}{' '}
+                                  Detik
                                 </p>
                               </div>
                             </>
@@ -1080,9 +1110,9 @@ function Pm1Form() {
                   <p>
                     {'Total Waktu Pengerjaan : ' +
                       ' ' +
-                      totalWaktuTask +
+                      formatElapsedTime(totalWaktuTask) +
                       ' ' +
-                      'Menit'}
+                      'Detik'}
                   </p>
                   <p>{'Waktu Mulai PM1 : ' + waktuMulaiPm1}</p>
                   <p>{'Waktu Selesai PM1 : ' + waktuSelesaiPm1}</p>
@@ -1350,10 +1380,13 @@ function Pm1Form() {
 
                                 <div className="flex flex-col justify-start items-start w-full gap-1 pr-3">
                                   <p className="text-[11px] font-semibold">
-                                    Time :
+                                    Waktu :
+                                  </p>
+                                  <p className="text-[10px] font-semibold">
                                     {data.lama_pengerjaan != null
-                                      ? data.lama_pengerjaan
-                                      : ''}
+                                      ? formatElapsedTime(data.lama_pengerjaan)
+                                      : ' '}
+                                    Detik
                                   </p>
                                   {data.waktu_selesai == null && (
                                     <>
@@ -1485,108 +1518,216 @@ function Pm1Form() {
                             </div>
                           </div>
                           <div className="flex w-full">
-                            {data.waktu_selesai == null && (
-                              <>
-                                <div className="flex flex-col px-2 w-full">
-                                  <p className="md:text-[14px] text-[9px] font-semibold">
-                                    Result:
-                                  </p>
-                                  <div className=" flex w-full">
-                                    <div className="relative z-20 w-[130px] dark:bg-form-input">
-                                      <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                        <div className=' w-4'>
-                                          {data.hasil == 'baik' ? <img src={Logo} alt="" /> : data.hasil == 'catatan' ? <img src={Polygon} alt="" /> : data.hasil == 'warning' ? <img src={X} alt="" /> : data.hasil == 'tidak terpasang' ? <img src={Strip} alt="" /> : ""}
-                                        </div>
-                                      </span>
+                            {data.waktu_mulai == null &&
+                              data.waktu_selesai == null && (
+                                <>
+                                  <div className="flex flex-col px-2 w-full">
+                                    <p className="md:text-[14px] text-[9px] font-semibold">
+                                      Result:
+                                    </p>
+                                    <div className=" flex w-full">
+                                      <div className="relative z-20 w-[130px] dark:bg-form-input">
+                                        <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                          <div className=' w-4'>
+                                            {data.hasil == 'baik' ? <img src={Logo} alt="" /> : data.hasil == 'catatan' ? <img src={Polygon} alt="" /> : data.hasil == 'warning' ? <img src={X} alt="" /> : data.hasil == 'tidak terpasang' ? <img src={Strip} alt="" /> : ""}
+                                          </div>
+                                        </span>
 
-                                      <select
-                                        name="hasil"
-                                        defaultValue={data.hasil}
-                                        onChange={(e) => {
-                                          handleChangePoint(e, i);
-
-                                          console.log(pm1);
-                                          changeTextColor();
-                                        }}
-                                        className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent px-8 py-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
-                                          ? 'text-black dark:text-white'
-                                          : ''
-                                          }`}
-                                      >
-                                        <option
-                                          value=""
+                                        <select
+                                          name="hasil"
+                                          defaultValue={data.hasil}
                                           disabled
-                                          selected
-                                          className="text-body dark:text-bodydark "
-                                        >
-                                          Select Result
-                                        </option>
-                                        <option
-                                          value="baik"
-                                          className="text-body dark:text-bodydark"
-                                        >
-                                          Good
-                                        </option>
-                                        <option
-                                          value="warning"
-                                          className="text-body dark:text-bodydark"
-                                        >
-                                          Warning
-                                        </option>
-                                        <option
-                                          value="jelek"
-                                          className="text-body dark:text-bodydark"
-                                        >
-                                          Bad
-                                        </option>
-                                        <option
-                                          value="tidak terpasang"
-                                          className="text-body dark:text-bodydark"
-                                        >
-                                          Not Installed
-                                        </option>
-                                      </select>
+                                          onChange={(e) => {
+                                            handleChangePoint(e, i);
 
-                                      <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
-                                        <svg
-                                          width="24"
-                                          height="24"
-                                          viewBox="0 0 24 24"
-                                          fill="none"
-                                          xmlns="http://www.w3.org/2000/svg"
+                                            console.log(pm1);
+                                            changeTextColor();
+                                          }}
+                                          className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent px-8 py-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
+                                            ? 'text-black dark:text-white'
+                                            : ''
+                                            }`}
                                         >
-                                          <g opacity="0.8">
-                                            <path
-                                              fillRule="evenodd"
-                                              clipRule="evenodd"
-                                              d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                              fill="#637381"
-                                            ></path>
-                                          </g>
-                                        </svg>
-                                      </span>
+                                          <option
+                                            value=""
+                                            disabled
+                                            selected
+                                            className="text-body dark:text-bodydark "
+                                          >
+                                            Select Result
+                                          </option>
+                                          <option
+                                            value="baik"
+                                            className="text-body dark:text-bodydark"
+                                          >
+                                            Good
+                                          </option>
+                                          <option
+                                            value="warning"
+                                            className="text-body dark:text-bodydark"
+                                          >
+                                            Warning
+                                          </option>
+                                          <option
+                                            value="jelek"
+                                            className="text-body dark:text-bodydark"
+                                          >
+                                            Bad
+                                          </option>
+                                          <option
+                                            value="tidak terpasang"
+                                            className="text-body dark:text-bodydark"
+                                          >
+                                            Not Installed
+                                          </option>
+                                        </select>
+
+                                        <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
+                                          <svg
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                          >
+                                            <g opacity="0.8">
+                                              <path
+                                                fillRule="evenodd"
+                                                clipRule="evenodd"
+                                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                                fill="#637381"
+                                              ></path>
+                                            </g>
+                                          </svg>
+                                        </span>
+
+                                      </div>
 
                                     </div>
-
                                   </div>
-                                </div>
-                                <div className=" flex flex-col ">
-                                  <p className="md:text-[14px] text-[9px] font-semibold">
-                                    Upload Foto:
-                                  </p>
-                                  <div className="pt-2">
-                                    <input
-                                      type="file"
-                                      name=""
-                                      id=""
-                                      className=""
-                                    />
+                                  <div className=" flex flex-col ">
+                                    <p className="md:text-[14px] text-[9px] font-semibold">
+                                      Upload Foto:
+                                    </p>
+                                    <div className="pt-2">
+                                      <input
+                                        disabled
+                                        type="file"
+                                        name=""
+                                        id=""
+                                        className=""
+                                      />
+                                    </div>
                                   </div>
-                                </div>
 
 
-                              </>
-                            )}
+                                </>
+                              )}
+                            {data.waktu_mulai != null &&
+                              data.waktu_selesai == null && (
+                                <>
+                                  <div className="flex flex-col px-2 w-full">
+                                    <p className="md:text-[14px] text-[9px] font-semibold">
+                                      Result:
+                                    </p>
+                                    <div className=" flex w-full">
+                                      <div className="relative z-20 w-[130px] dark:bg-form-input">
+                                        <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                          <div className=' w-4'>
+                                            {data.hasil == 'baik' ? <img src={Logo} alt="" /> : data.hasil == 'catatan' ? <img src={Polygon} alt="" /> : data.hasil == 'warning' ? <img src={X} alt="" /> : data.hasil == 'tidak terpasang' ? <img src={Strip} alt="" /> : ""}
+                                          </div>
+                                        </span>
+
+                                        <select
+                                          name="hasil"
+                                          defaultValue={data.hasil}
+
+                                          onChange={(e) => {
+                                            handleChangePoint(e, i);
+
+                                            console.log(pm1);
+                                            changeTextColor();
+                                          }}
+                                          className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent px-8 py-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
+                                            ? 'text-black dark:text-white'
+                                            : ''
+                                            }`}
+                                        >
+                                          <option
+                                            value=""
+                                            disabled
+                                            selected
+                                            className="text-body dark:text-bodydark "
+                                          >
+                                            Select Result
+                                          </option>
+                                          <option
+                                            value="baik"
+                                            className="text-body dark:text-bodydark"
+                                          >
+                                            Good
+                                          </option>
+                                          <option
+                                            value="warning"
+                                            className="text-body dark:text-bodydark"
+                                          >
+                                            Warning
+                                          </option>
+                                          <option
+                                            value="jelek"
+                                            className="text-body dark:text-bodydark"
+                                          >
+                                            Bad
+                                          </option>
+                                          <option
+                                            value="tidak terpasang"
+                                            className="text-body dark:text-bodydark"
+                                          >
+                                            Not Installed
+                                          </option>
+                                        </select>
+
+                                        <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
+                                          <svg
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                          >
+                                            <g opacity="0.8">
+                                              <path
+                                                fillRule="evenodd"
+                                                clipRule="evenodd"
+                                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                                fill="#637381"
+                                              ></path>
+                                            </g>
+                                          </svg>
+                                        </span>
+
+                                      </div>
+
+                                    </div>
+                                  </div>
+                                  <div className=" flex flex-col ">
+                                    <p className="md:text-[14px] text-[9px] font-semibold">
+                                      Upload Foto:
+                                    </p>
+                                    <div className="pt-2">
+                                      <input
+                                        disabled
+                                        type="file"
+                                        name=""
+                                        id=""
+                                        className=""
+                                      />
+                                    </div>
+                                  </div>
+
+
+                                </>
+                              )}
                             {data.waktu_selesai != null && (
                               <>
                                 <div className="flex flex-col px-2 w-full">
@@ -1619,29 +1760,56 @@ function Pm1Form() {
                               </>
                             )}
                           </div>
-                          {data.waktu_selesai == null && (
-                            <>
-                              <div className=" flex flex-col w-full px-2 py-2">
-                                <p className="md:text-[14px] text-[9px] font-semibold">
-                                  Catatan:
-                                </p>
+                          {data.waktu_mulai == null &&
+                            data.waktu_selesai == null && (
+                              <>
+                                <div className=" flex flex-col w-full px-2 py-2">
+                                  <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Catatan:
+                                  </p>
 
-                                <>
-                                  <div className=" flex">
-                                    <textarea
-                                      onChange={(e) => handleChangePoint(e, i)}
-                                      name="catatan"
-                                      defaultValue={data.catatan}
-                                      id=""
-                                      rows={3}
-                                      cols={90}
-                                      className=" border-2 border-[#D9D9D9] rounded-sm resize-none p-2 w-full"
-                                    ></textarea>
-                                  </div>
-                                </>
-                              </div>
-                            </>
-                          )}
+                                  <>
+                                    <div className=" flex">
+                                      <textarea
+                                        disabled
+                                        onChange={(e) => handleChangePoint(e, i)}
+                                        name="catatan"
+                                        defaultValue={data.catatan}
+                                        id=""
+                                        rows={3}
+                                        cols={90}
+                                        className=" border-2 border-[#D9D9D9] rounded-sm resize-none p-2 w-full"
+                                      ></textarea>
+                                    </div>
+                                  </>
+                                </div>
+                              </>
+                            )}
+                          {data.waktu_mulai != null &&
+                            data.waktu_selesai == null && (
+                              <>
+                                <div className=" flex flex-col w-full px-2 py-2">
+                                  <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Catatan:
+                                  </p>
+
+                                  <>
+                                    <div className=" flex">
+                                      <textarea
+
+                                        onChange={(e) => handleChangePoint(e, i)}
+                                        name="catatan"
+                                        defaultValue={data.catatan}
+                                        id=""
+                                        rows={3}
+                                        cols={90}
+                                        className=" border-2 border-[#D9D9D9] rounded-sm resize-none p-2 w-full"
+                                      ></textarea>
+                                    </div>
+                                  </>
+                                </div>
+                              </>
+                            )}
                           {data.waktu_selesai != null && (
                             <>
                               <div className=" flex flex-col w-full px-2 py-2">
@@ -1721,9 +1889,9 @@ function Pm1Form() {
                     <p>
                       {'Total Waktu Pengerjaan : ' +
                         ' ' +
-                        totalWaktuTask +
+                        formatElapsedTime(totalWaktuTask) +
                         ' ' +
-                        'Menit'}
+                        'Detik'}
                     </p>
                     <p>{'Waktu Mulai PM1 : ' + waktuMulaiPm1}</p>
                     <p>{'Waktu Selesai PM1 : ' + waktuSelesaiPm1}</p>

@@ -157,11 +157,11 @@ function Pm1() {
 
                                 <p>Inspector</p>
 
-                                <p>Leader</p>
+                                {/* <p>Leader</p>
 
                                 <p>Supervisor</p>
 
-                                <p>KA BAG MTC</p>
+                                <p>KA BAG MTC</p> */}
 
                                 <div className='w-[125px]'>{""}</div>
 
@@ -190,26 +190,36 @@ function Pm1() {
                                                 </div>
                                                 <div className='flex flex-col justify-center'>
 
-                                                    <p className=''>{data.leader != null ? data.leader.nama : '-'}</p>
+                                                    {/* <p className=''>{data.leader != null ? data.leader.nama : '-'}</p> */}
                                                 </div>
                                                 <div className='flex flex-col justify-center'>
 
-                                                    <p className=''>{data.supervisor != null ? data.supervisor.nama : '-'}</p>
+                                                    {/* <p className=''>{data.supervisor != null ? data.supervisor.nama : '-'}</p> */}
                                                 </div>
                                                 <div className='flex flex-col justify-center'>
 
-                                                    <p className=''>{data.ka_bag != null ? data.ka_bag.nama : '-'}</p>
+                                                    {/* <p className=''>{data.ka_bag != null ? data.ka_bag.nama : '-'}</p> */}
                                                 </div>
 
                                                 <div>
 
                                                     <>
-                                                        <button onClick={() => inspectPM1(data.id)}
-                                                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
-                                                        >
-                                                            INSPECT
+                                                        {
+                                                            data.status == "done" ?
+                                                                <Link to={`/maintenance/inspection/pm_1_form/${data.id}`}
+                                                                    className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                                >
+                                                                    INSPECT
 
-                                                        </button>
+                                                                </Link> :
+                                                                <button onClick={() => inspectPM1(data.id)}
+                                                                    className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                                >
+                                                                    INSPECT
+
+                                                                </button>
+                                                        }
+
                                                     </>
 
 
@@ -228,12 +238,13 @@ function Pm1() {
 
                         <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>{tanggal}</p>
                         {
-                            <button onClick={createPM1}
-                                className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center }`} // Dynamic class assignment
-                            >
-                                TAMBAH PM1
-                            </button>
+                            pm1?.length <= 0 ?
+                                <button onClick={createPM1}
+                                    className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center }`} // Dynamic class assignment
+                                >
+                                    TAMBAH PM1
 
+                                </button> : null
                         }
                         <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
 
@@ -267,12 +278,22 @@ function Pm1() {
                                                         <div>
 
                                                             <>
-                                                                <Link to={`/maintenance/inspection/pm_1_form/${data.id}`}
-                                                                    className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
-                                                                >
-                                                                    INSPECT
+                                                                {
+                                                                    data.status == "done" ?
+                                                                        <Link to={`/maintenance/inspection/pm_1_form/${data.id}`}
+                                                                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                                        >
+                                                                            INSPECT
 
-                                                                </Link>
+                                                                        </Link> :
+                                                                        <button onClick={() => inspectPM1(data.id)}
+                                                                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                                        >
+                                                                            INSPECT
+
+                                                                        </button>
+                                                                }
+
                                                             </>
 
 

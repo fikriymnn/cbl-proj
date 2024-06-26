@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import ModalEditSparepartMaster from '../../Modals/ModalEditSparepartMaster';
 import ModalTambahUser from '../../Modals/Master/User/ModalTambahUser';
 import ModalEditUser from '../../Modals/Master/User/ModalUpdateUserMaster';
+import ModalConfDelete from '../../Modals/Master/User/ModalConfDelete';
 
 const TableUser = () => {
 
@@ -57,6 +58,21 @@ const TableUser = () => {
         onchangeVal[i] = false;
 
         setShowEdit(onchangeVal);
+    };
+
+    const [showDelete, setShowDelete] = useState<any>([]);
+
+    const openDelete = (i: any) => {
+        const onchangeVal: any = [...showDelete];
+        onchangeVal[i] = true;
+
+        setShowDelete(onchangeVal);
+    };
+    const closeDelete = (i: any) => {
+        const onchangeVal: any = [...showDelete];
+        onchangeVal[i] = false;
+
+        setShowDelete(onchangeVal);
     };
 
     const [showModalTambah, setShowModalTambah] = useState(false);
@@ -166,9 +182,20 @@ const TableUser = () => {
                                                         />
 
                                                     )}
-                                                    <button className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                    <button
+                                                        onClick={() => openDelete(i)}
+                                                        className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                         DELETE
                                                     </button>
+                                                    {showDelete[i] == true && (
+                                                        <ModalConfDelete
+                                                            children={undefined}
+                                                            isOpen={showDelete[i]}
+                                                            onClose={() => closeDelete(i)}
+                                                            idUser={data.uuid}
+                                                            onFinish={getuser}
+                                                        />
+                                                    )}
                                                 </div>
                                             </div>
 
