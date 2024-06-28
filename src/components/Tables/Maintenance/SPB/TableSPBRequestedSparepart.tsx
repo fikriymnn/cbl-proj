@@ -269,7 +269,7 @@ function TableSPBRequestedSparepart() {
                                   nama_barang={
                                     data.stok_sparepart.nama_sparepart
                                   }
-                                  mesin={data.stok_sparepart.nama_mesin}
+                                  mesin={data.stok_sparepart.mesin.nama_mesin}
                                   qty={data.qty}
                                   tanggal_estimasi={tglPermintaanKedatangan}
                                   catatan={data.note}
@@ -422,7 +422,7 @@ function TableSPBRequestedSparepart() {
                                     nama_barang={
                                       data.stok_sparepart.nama_sparepart
                                     }
-                                    mesin={data.stok_sparepart.nama_mesin}
+                                    mesin={data.stok_sparepart.mesin.nama_mesin}
                                     qty={data.qty}
                                     tanggal_estimasi={tglPermintaanKedatangan}
                                     catatan={data.note}
