@@ -109,9 +109,7 @@ const MonitoringSPB = ({
           <p className="md:text-sm text-xs font-semibold">Catatan</p>
           <p className="md:text-base text-xs">{catatan}</p>
         </div>
-        <button className="w-full justify-center text-center rounded md bg-blue-600 text-white font-semibold py-2">
-          Edit SPB
-        </button>
+        {children}
       </div>
     </div>
   );

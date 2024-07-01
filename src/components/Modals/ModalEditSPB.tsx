@@ -1,6 +1,6 @@
 // import React, { useState } from 'react';
 
-const ModalPM2Eksekutor = ({
+const ModalEditSPB = ({
   children,
   isOpen,
   onClose,
@@ -35,7 +35,7 @@ const ModalPM2Eksekutor = ({
           </svg>
 
           <label className="flex w-10/12 text-blue-700 text-sm font-bold ">
-            Pilih Eksekutor
+            EDIT SPB
           </label>
           <button
             type="button"
@@ -80,25 +80,52 @@ const ModalPM2Eksekutor = ({
             >
               NAMA MESIN
             </label>
-            <span
+            <button
               id="ticketCode"
               className="text-neutral-500 text-xl font-normal "
             >
               {machineName}
-            </span>
+            </button>
           </div>
           <div className="pt-2">
             <label
               htmlFor="ticketCode"
               className="form-label block  text-black text-xs font-extrabold"
             >
-              PILIH EKSEKUTOR
+              NAMA BARANG
             </label>
-            <input type="text" className="w-full h-8 bg-zinc-300"></input>
+            <input
+              type="text"
+              className="w-full h-8 bg-zinc-100 border border-zinc-400 rounded-sm "
+            ></input>
+          </div>
+          <div className="pt-2">
+            <label
+              htmlFor="ticketCode"
+              className="form-label block  text-black text-xs font-extrabold"
+            >
+              QTY
+            </label>
+            <input
+              type="text"
+              className="w-full h-8 bg-zinc-100 border border-zinc-400 rounded-sm"
+            ></input>
+          </div>
+          <div className="pt-2">
+            <label
+              htmlFor="ticketCode"
+              className="form-label block  text-black text-xs font-extrabold"
+            >
+              Tanggal
+            </label>
+            <input
+              type="date"
+              className="w-full h-8 bg-zinc-100 border border-zinc-400 rounded-sm"
+            ></input>
           </div>
           <div className="pt-4">
             <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-              PILIH EKSEKUTOR
+              SUBMIT
             </button>
           </div>
           {children}
@@ -115,4 +142,4 @@ const ModalPM2Eksekutor = ({
   );
 };
 
-export default ModalPM2Eksekutor;
+export default ModalEditSPB;
