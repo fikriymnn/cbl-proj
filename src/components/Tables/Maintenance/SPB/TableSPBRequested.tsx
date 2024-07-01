@@ -235,9 +235,9 @@ function TableSPBRequested() {
                                     <button className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
                                       Setujui{' '}
                                     </button>
-                                    {/* <button className="w-25 text-xs font-bold bg-red-600 py-2 text-white rounded-md">
+                                    <button className="w-25 text-xs font-bold bg-red-600 py-2 text-white rounded-md">
                                       Tolak{' '}
-                                    </button> */}
+                                    </button>
                                   </div>
                                 </div>
                               </>
