@@ -25,6 +25,7 @@ const ModalStockCheck1 = ({
   kodeLkh,
   namaMesin,
   skor_mtc,
+  jenis_perbaikan,
 }: {
   children: any;
   isOpen: any;
@@ -41,6 +42,7 @@ const ModalStockCheck1 = ({
   kodeLkh: any;
   namaMesin: any;
   skor_mtc: any;
+  jenis_perbaikan: any;
 }) => {
   if (!isOpen) return null;
 
@@ -368,7 +370,7 @@ const ModalStockCheck1 = ({
           <button
             type="button"
             onClick={() => {
-              if (skor_mtc != 0) {
+              if (skor_mtc != 0 && jenis_perbaikan == null) {
                 deleteExit(idTiket, idProses);
               }
               onClose();
@@ -1473,7 +1475,7 @@ const ModalStockCheck1 = ({
           title="button"
           type="button"
           onClick={() => {
-            if (skor_mtc != 0) {
+            if (skor_mtc != 0 && jenis_perbaikan == null) {
               deleteExit(idTiket, idProses);
             }
             onClose();
