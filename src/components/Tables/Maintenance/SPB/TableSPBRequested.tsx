@@ -204,7 +204,13 @@ function TableSPBRequested() {
                             </p>
                           </div>
                           <div className="flex gap-2 col-span-2">
-                            <p className="text-neutral-500 text-sm font-light line-clamp-1">
+                            <p
+                              className={
+                                data.status_pengajuan == 'section head approval'
+                                  ? 'text-white bg-green-600  px-2 rounded-2xl text-sm font-light line-clamp-1'
+                                  : 'text-neutral-500 text-sm font-light line-clamp-1'
+                              }
+                            >
                               {data.status_pengajuan}
                             </p>
                           </div>
@@ -416,24 +422,31 @@ function TableSPBRequested() {
                   <>
                     <div className="">
                       <div className="my-2 ">
-                        <section className="flex flex-col bg-white  rounded-lg px-2">
-                          <div className="flex w-full py-3 gap-1">
-                            <div className="flex  w-2/12  ">
+                        <section className="flex flex-col bg-white  justify-center items-center  rounded-lg px-2">
+                          <div className="flex w-full py-3 gap-1  justify-center items-center">
+                            <div className="flex  w-2/12   justify-center items-center">
                               <p className="text-neutral-500 text-xs font-light">
                                 {data.master_part.nama_mesin}
                               </p>
                             </div>
-                            <div className="flex  w-6/12 ">
+                            <div className="flex  w-5/12 ">
                               <p className="text-neutral-500 text-xs font-light w-10/12">
                                 {data.master_part.nama_sparepart}
                               </p>
                             </div>
-                            <div className="flex  w-2/12  ">
-                              <p className="text-neutral-500 text-xs font-light">
+                            <div className="flex  w-3/12 justify-center items-center ">
+                              <p
+                                className={
+                                  data.status_pengajuan ==
+                                  'section head approval'
+                                    ? 'text-white bg-green-600  px-2 py-1 rounded-md text-[9px] font-light text-center leading-[9px]'
+                                    : 'text-neutral-500 text-xs font-light text-center'
+                                }
+                              >
                                 {data.status_pengajuan}
                               </p>
                             </div>
-                            <div className="flex gap-2 items-center pb-2">
+                            <div className="flex gap-2 justify-center  items-center">
                               <div>
                                 <button
                                   title="button"
@@ -444,7 +457,7 @@ function TableSPBRequested() {
                                 </button>
                               </div>
 
-                              <div>
+                              <div className="flex flex-col items-center justify-center">
                                 <button
                                   title="button"
                                   onClick={() => handleClickMonitoring(index)}
