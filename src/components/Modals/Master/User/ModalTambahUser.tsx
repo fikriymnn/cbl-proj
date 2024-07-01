@@ -196,6 +196,12 @@ const ModalTambahUser = ({ children, isOpen, onClose, onFinish }:
                             >
                                 Shift
                             </option>
+                            <option
+                                value="teknisi junior"
+                                className="text-body dark:text-bodydark"
+                            >
+                                Teknisi Junior
+                            </option>
                         </select>
                         <label className="text-black text-xs font-bold pt-4">
                             PASSWORD

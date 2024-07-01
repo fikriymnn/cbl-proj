@@ -9,6 +9,7 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import ModalPM1TambahInspection from '../../../components/Modals/ModalPMTambahInspection';
 import Logo from '../../../images/icon/ceklis.svg';
+
 import None from '../../../images/icon/none.svg';
 import moment from 'moment';
 import Loading from '../../../components/Loading';
@@ -436,44 +437,46 @@ function Pm1Form() {
                 </div>*/}
               </div>
             </div>
-            <div>
+            <div className='w-full pl-[20%]'>
+
+            </div>
+            <div className='flex w-full flex-col justify-end '>
               <p className="md:text-[14px] text-[9px] font-semibold">
                 Form filling Guide
               </p>
-              <div>
-                <div className="flex justify-start md:gap-3 gap-1">
-                  <div className="md:w-5 w-4 flex justify-center items-center">
-                    <img className="" src={Ceklis} alt="" />
-                  </div>
-                  <p className="md:text-[14px] text-[9px] font-semibold">
-                    : Kondisi Baik
-                  </p>
+              <div className="flex  md:gap-3 gap-1">
+                <div className="md:w-5 w-4 flex justify-center items-center">
+                  <img className="" src={Ceklis} alt="" />
                 </div>
-                <div className="flex justify-start md:gap-3 gap-1">
-                  <div className="md:w-5 w-4 flex justify-center items-center">
-                    <img className="" src={Polygon} alt="" />
-                  </div>
-                  <p className="md:text-[14px] text-[9px] font-semibold">
-                    : Dapat Digunakan Dengan Catatan
-                  </p>
-                </div>
-                <div className="flex justify-start md:gap-3 gap-1">
-                  <div className="md:w-5 w-4 flex justify-center items-center">
-                    <img className="" src={X} alt="" />
-                  </div>
-                  <p className="md:text-[14px] text-[9px] font-semibold">
-                    : Jelek / Rusak
-                  </p>
-                </div>
-                <div className="flex justify-start md:gap-3 gap-1">
-                  <div className="md:w-5 w-4 flex justify-center items-center">
-                    <img className="" src={Strip} alt="" />
-                  </div>
-                  <p className="md:text-[14px] text-[9px] font-semibold">
-                    : Tidak Ada / Tidak Terpasang
-                  </p>
-                </div>
+                <p className="md:text-[14px] text-[9px] font-semibold">
+                  : Kondisi Baik
+                </p>
               </div>
+              <div className="flex  md:gap-3 gap-1">
+                <div className="md:w-5 w-4 flex justify-center items-center">
+                  <img className="" src={Polygon} alt="" />
+                </div>
+                <p className="md:text-[14px] text-[9px] font-semibold">
+                  : Dapat Digunakan Dengan Catatan
+                </p>
+              </div>
+              <div className="flex  md:gap-3 gap-1">
+                <div className="md:w-5 w-4 flex justify-center items-center">
+                  <img className="" src={X} alt="" />
+                </div>
+                <p className="md:text-[14px] text-[9px] font-semibold">
+                  : Jelek / Rusak
+                </p>
+              </div>
+              <div className="flex  md:gap-3 gap-1">
+                <div className="md:w-5 w-4 flex justify-center items-center">
+                  <img className="" src={Strip} alt="" />
+                </div>
+                <p className="md:text-[14px] text-[9px] font-semibold">
+                  : Tidak Ada / Tidak Terpasang
+                </p>
+              </div>
+
             </div>
           </section>
           <div className="overflow-x-scroll ">
@@ -788,19 +791,22 @@ function Pm1Form() {
                               <>
                                 <div className="p-4 flex flex-col ">
                                   <p className="md:text-[14px] text-[9px] font-semibold">
-                                    Result:
+                                    Result:{data.hasil}
+                                    <span className="absolute top-4">
+                                      <div className='md:w-6 w-4'>
+                                        {data.hasil == 'baik' ? <img src={Logo} alt="aaa" />
+                                          : data.hasil == 'catatan' ? <img src={Polygon} alt="bb" />
+                                            : data.hasil == 'jelek' ? <img src={X} alt="cc" />
+                                              : data.hasil == 'tidak terpasang' ? <img src={Strip} alt="dd" />
+                                                : ""}
+                                      </div>
+                                    </span>
                                   </p>
                                   <div className=" flex mt-3 w-full">
                                     <div className="relative z-20   md:w-[200px] w-[150px] dark:bg-form-input">
-                                      <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                        {/* <div className='md:w-6 w-4'>
-                                                                    {hasil == 'Baik' ? <img src={Logo} alt="" /> : hasil == 'Catatan' ? <img src={Polygon} alt="" /> : hasil == 'Jelek' ? <img src={X} alt="" /> : hasil == 'Tidak terpasang' ? <img src={Strip} alt="" /> : ""}
-                                                                </div> */}
-                                      </span>
 
                                       <select
                                         name="hasil"
-
                                         defaultValue={data.hasil}
                                         onChange={(e) => {
                                           handleChangePoint(e, i);
@@ -825,25 +831,25 @@ function Pm1Form() {
                                           value="baik"
                                           className="text-body dark:text-bodydark"
                                         >
-                                          Good
+                                          <img src={Logo} alt="aaa" />Good
                                         </option>
                                         <option
                                           value="warning"
                                           className="text-body dark:text-bodydark"
                                         >
-                                          Warning
+                                          <img src={Polygon} alt="bb" /> Warning
                                         </option>
                                         <option
                                           value="jelek"
                                           className="text-body dark:text-bodydark"
                                         >
-                                          Bad
+                                          <img src={X} alt="cc" />Bad
                                         </option>
                                         <option
                                           value="tidak terpasang"
                                           className="text-body dark:text-bodydark"
                                         >
-                                          Not Installed
+                                          <img src={Strip} alt="dd" />Not Installed
                                         </option>
                                       </select>
 
@@ -1107,15 +1113,15 @@ function Pm1Form() {
                 )}
 
                 <div className='flex flex-col px-4 py-4 md:text-[14px] text-[9px] font-semibold '>
-                  <p>
+                  <p className='text-[17px]'>
                     {'Total Waktu Pengerjaan : ' +
                       ' ' +
                       formatElapsedTime(totalWaktuTask) +
                       ' ' +
                       'Detik'}
                   </p>
-                  <p>{'Waktu Mulai PM1 : ' + waktuMulaiPm1}</p>
-                  <p>{'Waktu Selesai PM1 : ' + waktuSelesaiPm1}</p>
+                  <p className='text-[17px]'>{'Waktu Mulai PM1 : ' + waktuMulaiPm1}</p>
+                  <p className='text-[17px]'>{'Waktu Selesai PM1 : ' + waktuSelesaiPm1}</p>
                 </div>
 
                 <div className="flex w-full md:justify-end justify-start">
@@ -1528,9 +1534,9 @@ function Pm1Form() {
                                     <div className=" flex w-full">
                                       <div className="relative z-20 w-[130px] dark:bg-form-input">
                                         <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                          <div className=' w-4'>
-                                            {data.hasil == 'baik' ? <img src={Logo} alt="" /> : data.hasil == 'catatan' ? <img src={Polygon} alt="" /> : data.hasil == 'warning' ? <img src={X} alt="" /> : data.hasil == 'tidak terpasang' ? <img src={Strip} alt="" /> : ""}
-                                          </div>
+
+                                          {data.hasil == 'baik' ? <img src={Ceklis} alt="" className='' /> : data.hasil == 'catatan' ? <img src={Polygon} alt="" /> : data.hasil == 'warning' ? <img src={X} alt="" /> : data.hasil == 'tidak terpasang' ? <img src={Strip} alt="" /> : ""}
+
                                         </span>
 
                                         <select
@@ -1548,6 +1554,7 @@ function Pm1Form() {
                                             : ''
                                             }`}
                                         >
+
                                           <option
                                             value=""
                                             disabled
@@ -1886,15 +1893,15 @@ function Pm1Form() {
                   )}
 
                   <div className='flex flex-col px-4 py-4 md:text-[14px] text-[9px] font-semibold '>
-                    <p>
+                    <p className='text-[15px]'>
                       {'Total Waktu Pengerjaan : ' +
                         ' ' +
                         formatElapsedTime(totalWaktuTask) +
                         ' ' +
                         'Detik'}
                     </p>
-                    <p>{'Waktu Mulai PM1 : ' + waktuMulaiPm1}</p>
-                    <p>{'Waktu Selesai PM1 : ' + waktuSelesaiPm1}</p>
+                    <p className='text-[15px]'>{'Waktu Mulai PM1 : ' + waktuMulaiPm1}</p>
+                    <p className='text-[15px]'>{'Waktu Selesai PM1 : ' + waktuSelesaiPm1}</p>
                   </div>
 
                   <div className="flex w-full md:justify-end justify-start">
