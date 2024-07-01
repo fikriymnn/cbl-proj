@@ -932,9 +932,23 @@ function TableService() {
                                             onClick={() => {
                                               if (data.status_tiket == 'open') {
                                                 openModal1(i);
+                                              } else if (
+                                                data.status_tiket ==
+                                                  'temporary' &&
+                                                data.proses_mtcs[lengthProses]
+                                                  .cara_perbaikan == null
+                                              ) {
+                                                openModal1(i);
+
+                                                // ini untuk fungsi rework
+                                              } else if (
+                                                data.status_tiket ==
+                                                  'requested' ||
+                                                data.status_tiket == 'active'
+                                              ) {
+                                                openModal1(i);
                                               } else {
                                                 reworkTiket(data.id, i);
-                                                // ini untuk fungsi rework
                                               }
                                             }}
                                             className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
@@ -967,6 +981,10 @@ function TableService() {
                                           skor_mtc={
                                             data.proses_mtcs[lengthProses]
                                               .skor_mtc
+                                          }
+                                          jenis_perbaikan={
+                                            data.proses_mtcs[lengthProses]
+                                              .cara_perbaikan
                                           }
                                         />
                                         // <ModalStockCheckPengganti children={undefined} isOpen={showModal1[i]} onClose={() => closeModal1(i)} kendala={"nu"} onFinish={"nu"} machineName={"nu"} tgl={"nu"} jam={"nu"} namaPemeriksa={"nu"} no={"nu"}>
@@ -1277,9 +1295,21 @@ function TableService() {
                                       onClick={() => {
                                         if (data.status_tiket == 'open') {
                                           openModal1(i);
+                                        } else if (
+                                          data.status_tiket == 'temporary' &&
+                                          data.proses_mtcs[lengthProses]
+                                            .cara_perbaikan == null
+                                        ) {
+                                          openModal1(i);
+
+                                          // ini untuk fungsi rework
+                                        } else if (
+                                          data.status_tiket == 'requested' ||
+                                          data.status_tiket == 'active'
+                                        ) {
+                                          openModal1(i);
                                         } else {
                                           reworkTiket(data.id, i);
-                                          // ini untuk fungsi rework
                                         }
                                       }}
                                       className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
@@ -1313,6 +1343,10 @@ function TableService() {
                                   namaMesin={data.mesin}
                                   skor_mtc={
                                     data.proses_mtcs[lengthProses].skor_mtc
+                                  }
+                                  jenis_perbaikan={
+                                    data.proses_mtcs[lengthProses]
+                                      .cara_perbaikan
                                   }
                                 />
                               )}
