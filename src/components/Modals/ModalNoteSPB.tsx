@@ -1,6 +1,6 @@
 // import React, { useState } from 'react';
 
-const ModalPM2Eksekutor = ({
+const ModalNoteSPB = ({
   children,
   isOpen,
   onClose,
@@ -35,7 +35,7 @@ const ModalPM2Eksekutor = ({
           </svg>
 
           <label className="flex w-10/12 text-blue-700 text-sm font-bold ">
-            Pilih Eksekutor
+            SPB
           </label>
           <button
             type="button"
@@ -73,34 +73,24 @@ const ModalPM2Eksekutor = ({
         </div>
 
         <div className="px-4 pb-4">
-          <div className="pt-4">
-            <label
-              htmlFor="ticketCode"
-              className="form-label block  text-black text-xs font-extrabold"
-            >
-              NAMA MESIN
-            </label>
-            <span
-              id="ticketCode"
-              className="text-neutral-500 text-xl font-normal "
-            >
-              {machineName}
-            </span>
-          </div>
           <div className="pt-2">
             <label
               htmlFor="ticketCode"
               className="form-label block  text-black text-xs font-extrabold"
             >
-              PILIH EKSEKUTOR
+              Catatan
             </label>
-            <input type="text" className="w-full h-8 bg-zinc-300"></input>
+
+            <textarea
+              name=""
+              rows={3}
+              cols={6}
+              id=""
+              className="w-full p-2 bg-zinc-100 border border-zinc-400 rounded-sm  "
+            ></textarea>
           </div>
-          <div className="pt-4">
-            <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-              PILIH EKSEKUTOR
-            </button>
-          </div>
+
+          <div className="pt-4"></div>
           {children}
         </div>
 
@@ -115,4 +105,4 @@ const ModalPM2Eksekutor = ({
   );
 };
 
-export default ModalPM2Eksekutor;
+export default ModalNoteSPB;

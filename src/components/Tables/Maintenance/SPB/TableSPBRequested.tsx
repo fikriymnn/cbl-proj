@@ -7,6 +7,9 @@ import ModalSPBService from '../../../Modals/ModalNewSPBService';
 import axios from 'axios';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import MonitoringSPB from '../../../Modals/MonitoringSPB';
+import ModalPM2Eksekutor from '../../../Modals/ModalPM2Eksekutor';
+import ModalEditSPB from '../../../Modals/ModalEditSPB';
+import ModalNoteSPB from '../../../Modals/ModalNoteSPB';
 
 function TableSPBRequested() {
   const [showModalSPBBaru, setShowModalSPBBaru] = useState(false);
@@ -16,6 +19,15 @@ function TableSPBRequested() {
 
   const [isMobile, setIsMobile] = useState(false);
   const [openButton, setOpenButton] = useState(null);
+  const [showModal27, setShowModal27] = useState(false);
+  const openModal27 = () => setShowModal27(true);
+  const closeModal27 = () => setShowModal27(false);
+  const [showModal28, setShowModal28] = useState(false);
+  const openModal28 = () => setShowModal28(true);
+  const closeModal28 = () => setShowModal28(false);
+  const [showModal29, setShowModal29] = useState(false);
+  const openModal29 = () => setShowModal29(true);
+  const closeModal29 = () => setShowModal29(false);
 
   const [showModalMonitoring, setShowModalMonitoring] = useState(null);
 
@@ -232,10 +244,16 @@ function TableSPBRequested() {
                               <>
                                 <div className="absolute bg-white mt-10 p-1 shadow-5 rounded-md">
                                   <div className="flex flex-col gap-1">
-                                    <button className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
+                                    <button
+                                      onClick={openModal28}
+                                      className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
+                                    >
                                       Setujui{' '}
                                     </button>
-                                    <button className="w-25 text-xs font-bold bg-red-600 py-2 text-white rounded-md">
+                                    <button
+                                      onClick={openModal29}
+                                      className="w-25 text-xs font-bold bg-red-600 py-2 text-white rounded-md"
+                                    >
                                       Tolak{' '}
                                     </button>
                                   </div>
@@ -276,12 +294,52 @@ function TableSPBRequested() {
                                 tanggal_estimasi={tglPermintaanKedatangan}
                                 catatan={data.note}
                               >
-                                <p></p>
+                                <button
+                                  onClick={openModal27}
+                                  className="w-full justify-center text-center rounded md bg-blue-600 text-white font-semibold py-2"
+                                >
+                                  Edit SPB
+                                </button>
                               </MonitoringSPB>
                             ) : (
                               <></>
                             )}
                           </div>
+                          {showModal27 && (
+                            <ModalEditSPB
+                              isOpen={showModal27}
+                              onClose={closeModal27}
+                              machineName={'R700'}
+                            >
+                              <p></p>
+                            </ModalEditSPB>
+                          )}
+                          {showModal28 && (
+                            <>
+                              <ModalNoteSPB
+                                isOpen={showModal28}
+                                onClose={closeModal28}
+                                machineName={'R700'}
+                              >
+                                <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                  Setujui
+                                </button>
+                              </ModalNoteSPB>
+                            </>
+                          )}
+                          {showModal29 && (
+                            <>
+                              <ModalNoteSPB
+                                isOpen={showModal29}
+                                onClose={closeModal29}
+                                machineName={'R700'}
+                              >
+                                <button className="w-full h-12 text-center text-white text-xs font-bold bg-red-700 rounded-md">
+                                  Tolak
+                                </button>
+                              </ModalNoteSPB>
+                            </>
+                          )}
                         </div>
                       </section>
                     </div>
@@ -399,12 +457,18 @@ function TableSPBRequested() {
                                 <>
                                   <div className="absolute bg-white mt-20 -translate-x-10 p-1 shadow-5 rounded-md">
                                     <div className="flex flex-col gap-1">
-                                      <button className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md">
+                                      <button
+                                        onClick={openModal28}
+                                        className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
+                                      >
                                         Setujui{' '}
                                       </button>
-                                      {/* <button className="w-25 text-xs font-bold bg-red-600 py-2 text-white rounded-md">
-                                      Tolak{' '}
-                                    </button> */}
+                                      <button
+                                        onClick={openModal29}
+                                        className="w-25 text-xs font-bold bg-red-600 py-2 text-white rounded-md"
+                                      >
+                                        Tolak{' '}
+                                      </button>
                                     </div>
                                   </div>
                                 </>
@@ -428,11 +492,51 @@ function TableSPBRequested() {
                                     tanggal_estimasi={tglPermintaanKedatangan}
                                     catatan={data.note}
                                   >
-                                    <p></p>
+                                    <button
+                                      onClick={openModal27}
+                                      className="w-full justify-center text-center rounded md bg-blue-600 text-white font-semibold py-2"
+                                    >
+                                      Edit SPB
+                                    </button>
                                   </MonitoringSPB>
                                 </div>
                               ) : (
                                 <></>
+                              )}
+                              {showModal27 && (
+                                <ModalEditSPB
+                                  isOpen={showModal27}
+                                  onClose={closeModal27}
+                                  machineName={'R700'}
+                                >
+                                  <p></p>
+                                </ModalEditSPB>
+                              )}
+                              {showModal28 && (
+                                <>
+                                  <ModalNoteSPB
+                                    isOpen={showModal28}
+                                    onClose={closeModal28}
+                                    machineName={'R700'}
+                                  >
+                                    <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                      Setujui
+                                    </button>
+                                  </ModalNoteSPB>
+                                </>
+                              )}
+                              {showModal29 && (
+                                <>
+                                  <ModalNoteSPB
+                                    isOpen={showModal29}
+                                    onClose={closeModal29}
+                                    machineName={'R700'}
+                                  >
+                                    <button className="w-full h-12 text-center text-white text-xs font-bold bg-red-700 rounded-md">
+                                      Tolak
+                                    </button>
+                                  </ModalNoteSPB>
+                                </>
                               )}
                             </div>
                           </div>
