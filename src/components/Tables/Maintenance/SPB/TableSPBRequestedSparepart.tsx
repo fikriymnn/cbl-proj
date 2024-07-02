@@ -12,14 +12,6 @@ import ModalNoteSPB from '../../../Modals/ModalNoteSPB';
 
 function TableSPBRequestedSparepart() {
   const [showModalSPBBaru, setShowModalSPBBaru] = useState(false);
-  const [showModalMonitoring, setShowModalMonitoring] = useState(null);
-
-  const handleClickMonitoring = (index: any) => {
-    setShowModalMonitoring((prevState: any) => {
-      return prevState === index ? null : index;
-    });
-  };
-  const closeModalMonitoring = () => setShowModalMonitoring(null);
 
   const openModalSPBBaru = () => setShowModalSPBBaru(true);
   const closeModalSPBBaru = () => setShowModalSPBBaru(false);
@@ -35,11 +27,38 @@ function TableSPBRequestedSparepart() {
   const [showModal29, setShowModal29] = useState(false);
   const openModal29 = () => setShowModal29(true);
   const closeModal29 = () => setShowModal29(false);
+
+  const [showModalMonitoring, setShowModalMonitoring] = useState(null);
+  const [showModalEdit, setShowModalEdit] = useState(null);
+  const [showModalCatatan, setShowModalCatatan] = useState(null);
+  const [showModalTolak, setShowModalTolak] = useState(null);
+
   const handleClick = (index: any) => {
     setOpenButton((prevState: any) => {
       return prevState === index ? null : index;
     });
   };
+  const handleClickMonitoring = (index: any) => {
+    setShowModalMonitoring((prevState: any) => {
+      return prevState === index ? null : index;
+    });
+  };
+  const handleClickCatatan = (index: any) => {
+    setShowModalCatatan((prevState: any) => {
+      return prevState === index ? null : index;
+    });
+  };
+  const handleClickTolak = (index: any) => {
+    setShowModalTolak((prevState: any) => {
+      return prevState === index ? null : index;
+    });
+  };
+  const handleClickEdit = (index: any) => {
+    setShowModalEdit((prevState: any) => {
+      return prevState === index ? null : index;
+    });
+  };
+
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
   };
@@ -90,6 +109,12 @@ function TableSPBRequestedSparepart() {
       console.log(error.response);
     }
   }
+
+  const closeModalMonitoring = () => setShowModalMonitoring(null);
+  const closeModalEdit = () => setShowModalEdit(null);
+  const closeModalCatatan = () => setShowModalCatatan(null);
+  const closeModalTolak = () => setShowModalTolak(null);
+
   return (
     <main>
       {!isMobile && (
@@ -256,13 +281,13 @@ function TableSPBRequestedSparepart() {
                                 <div className="absolute bg-white mt-10 -translate-x-10 p-1 shadow-5 rounded-md">
                                   <div className="flex flex-col gap-1">
                                     <button
-                                      onClick={openModal28}
+                                      onClick={() => handleClickCatatan(index)}
                                       className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
                                     >
                                       Setujui{' '}
                                     </button>
                                     <button
-                                      onClick={openModal29}
+                                      onClick={() => handleClickTolak(index)}
                                       className="w-25 text-xs font-bold bg-red-600 py-2 text-white rounded-md"
                                     >
                                       Tolak{' '}
@@ -291,7 +316,7 @@ function TableSPBRequestedSparepart() {
                                   catatan={data.note}
                                 >
                                   <button
-                                    onClick={openModal27}
+                                    onClick={() => handleClickEdit(index)}
                                     className="w-full justify-center text-center rounded md bg-blue-600 text-white font-semibold py-2"
                                   >
                                     Edit SPB
@@ -301,20 +326,20 @@ function TableSPBRequestedSparepart() {
                             ) : (
                               <></>
                             )}
-                            {showModal27 && (
+                            {showModalEdit == index && (
                               <ModalEditSPB
-                                isOpen={showModal27}
-                                onClose={closeModal27}
-                                machineName={'R700'}
+                                isOpen={showModalEdit}
+                                onClose={closeModalEdit}
+                                idSpb={data.id} // machineName={'R700'}
                               >
                                 <p></p>
                               </ModalEditSPB>
                             )}
-                            {showModal28 && (
+                            {showModalCatatan == index && (
                               <>
                                 <ModalNoteSPB
-                                  isOpen={showModal28}
-                                  onClose={closeModal28}
+                                  isOpen={showModalCatatan}
+                                  onClose={closeModalCatatan}
                                   machineName={'R700'}
                                 >
                                   <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
@@ -323,11 +348,11 @@ function TableSPBRequestedSparepart() {
                                 </ModalNoteSPB>
                               </>
                             )}
-                            {showModal29 && (
+                            {showModalTolak == index && (
                               <>
                                 <ModalNoteSPB
-                                  isOpen={showModal29}
-                                  onClose={closeModal29}
+                                  isOpen={showModalTolak}
+                                  onClose={closeModalTolak}
                                   machineName={'R700'}
                                 >
                                   <button className="w-full h-12 text-center text-white text-xs font-bold bg-red-700 rounded-md">
@@ -455,13 +480,15 @@ function TableSPBRequestedSparepart() {
                                   <div className="absolute bg-white mt-20 -translate-x-10 p-1 shadow-5 rounded-md">
                                     <div className="flex flex-col gap-1">
                                       <button
-                                        onClick={openModal28}
+                                        onClick={() =>
+                                          handleClickCatatan(index)
+                                        }
                                         className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
                                       >
                                         Setujui{' '}
                                       </button>
                                       <button
-                                        onClick={openModal29}
+                                        onClick={() => handleClickTolak(index)}
                                         className="w-25 text-xs font-bold bg-red-600 py-2 text-white rounded-md"
                                       >
                                         Tolak{' '}
@@ -490,7 +517,7 @@ function TableSPBRequestedSparepart() {
                                     catatan={data.note}
                                   >
                                     <button
-                                      onClick={openModal27}
+                                      onClick={() => handleClickEdit(index)}
                                       className="w-full justify-center text-center rounded md bg-blue-600 text-white font-semibold py-2"
                                     >
                                       Edit SPB
@@ -500,20 +527,20 @@ function TableSPBRequestedSparepart() {
                               ) : (
                                 <></>
                               )}
-                              {showModal27 && (
+                              {showModalEdit && (
                                 <ModalEditSPB
-                                  isOpen={showModal27}
-                                  onClose={closeModal27}
-                                  machineName={'R700'}
+                                  isOpen={showModalEdit}
+                                  onClose={closeModalEdit}
+                                  idSpb={undefined}
                                 >
                                   <p></p>
                                 </ModalEditSPB>
                               )}
-                              {showModal28 && (
+                              {showModalCatatan == index && (
                                 <>
                                   <ModalNoteSPB
-                                    isOpen={showModal28}
-                                    onClose={closeModal28}
+                                    isOpen={showModalCatatan}
+                                    onClose={closeModalCatatan}
                                     machineName={'R700'}
                                   >
                                     <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
@@ -522,11 +549,11 @@ function TableSPBRequestedSparepart() {
                                   </ModalNoteSPB>
                                 </>
                               )}
-                              {showModal29 && (
+                              {showModalTolak == null && (
                                 <>
                                   <ModalNoteSPB
-                                    isOpen={showModal29}
-                                    onClose={closeModal29}
+                                    isOpen={showModalTolak}
+                                    onClose={closeModalTolak}
                                     machineName={'R700'}
                                   >
                                     <button className="w-full h-12 text-center text-white text-xs font-bold bg-red-700 rounded-md">

@@ -1,17 +1,50 @@
 // import React, { useState } from 'react';
 
+import axios from 'axios';
+import { useState } from 'react';
+
 const ModalNoteSPB = ({
-  children,
   isOpen,
   onClose,
-  machineName,
+  onFinish,
+  isApprove,
+  data,
 }: {
-  children: any;
   isOpen: any;
   onClose: any;
-  machineName: any;
+  onFinish: any;
+  isApprove: any;
+  data: any;
 }) => {
-  if (!isOpen) return null;
+  if (isOpen == null) return null;
+
+  const [note, setNote] = useState('');
+
+  async function submitSpbValidasi(id: any, statusPengajuan: any) {
+    const url = `${import.meta.env.VITE_API_LINK}/spbServiceSparepart/${id}`;
+    try {
+      //setIsLoading(true);
+      const res = await axios.put(
+        url,
+        {
+          note_validasi: note,
+          status_pengajuan: statusPengajuan,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      //setIsLoading(false);
+      alert('success');
+      onClose();
+      onFinish();
+    } catch (error: any) {
+      console.log(error);
+      //setIsLoading(false);
+      //alert(error.data.msg);
+    }
+  }
 
   return (
     <div className="fixed z-50 inset-0 overflow-y-auto backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
@@ -82,6 +115,7 @@ const ModalNoteSPB = ({
             </label>
 
             <textarea
+              onChange={(e) => setNote(e.target.value)}
               name=""
               rows={3}
               cols={6}
@@ -91,7 +125,21 @@ const ModalNoteSPB = ({
           </div>
 
           <div className="pt-4"></div>
-          {children}
+          {isApprove == true ? (
+            <button
+              onClick={() => submitSpbValidasi(data.id, 'request purchase')}
+              className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
+            >
+              Setujui
+            </button>
+          ) : (
+            <button
+              onClick={() => submitSpbValidasi(data.id, 'spb rejected')}
+              className="w-full h-12 text-center text-white text-xs font-bold bg-red-700 rounded-md"
+            >
+              Tolak
+            </button>
+          )}
         </div>
 
         <button
