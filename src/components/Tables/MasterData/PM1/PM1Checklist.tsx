@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import Logo from '../../images/logo/logo-cbl 1.svg';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import ModalEditPM1Master from '../../../Modals/ModalEditPM1Master';
-import ModalKonfirmasi from '../../../Modals/ModalKonfirmasi';
+import ModalEditPM1Master from '../../../Modals/Master/PM1/ModalEditPM1Master';
+import ModalKonfirmasi from '../../../Modals/Master/PM1/ModalKonfirmasi';
 
 const PM1Checklist = () => {
   const { id } = useParams();

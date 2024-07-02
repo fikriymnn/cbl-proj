@@ -7,7 +7,7 @@ import Strip from '../../../images/icon/strip.svg';
 import SelectGroupTwo from '../../../components/Forms/SelectGroup/SelectGroupTwo';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import ModalPM1TambahInspection from '../../../components/Modals/ModalPMTambahInspection';
+import ModalPM1TambahInspection from '../../../components/Modals/PM1/ModalPMTambahInspection';
 import Logo from '../../../images/icon/ceklis.svg';
 
 import None from '../../../images/icon/none.svg';

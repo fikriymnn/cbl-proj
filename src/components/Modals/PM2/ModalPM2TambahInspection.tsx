@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
-import CheckStockPengganti from "../Tables/Modals/SparepartPengganti";
+import CheckStockPengganti from "../../Tables/Modals/SparepartPengganti";
 import axios from "axios";
 
-
-
-const ModalPM1TambahInspection = ({ children, isOpen, onClose, onFinish, idTicket }:
+const ModalPM2TambahInspection = ({ children, isOpen, onClose, onFinish, idTicket }:
     {
         children: any, isOpen: any, onClose: any, onFinish: any, idTicket: number
 
@@ -30,7 +28,7 @@ const ModalPM1TambahInspection = ({ children, isOpen, onClose, onFinish, idTicke
         };
     }, []);
 
-    const [pointPm1, setPointPm1] = useState([
+    const [pointPm2, setPointPm2] = useState([
         {
             inspection_point: '',
             sub_inspection: [
@@ -46,38 +44,38 @@ const ModalPM1TambahInspection = ({ children, isOpen, onClose, onFinish, idTicke
 
     //add Point Task
     const handleAddPointTask = () => {
-        const onchangeVal = [...pointPm1];
+        const onchangeVal = [...pointPm2];
         onchangeVal[0]['sub_inspection'].push({
             task: '',
             acceptance_criteria: '',
             method: '',
             tools: '',
         });
-        setPointPm1(onchangeVal);
+        setPointPm2(onchangeVal);
 
     };
 
     //change value point pm1
     const handleChangePoint = (e: any,) => {
         const { name, value } = e.target;
-        const onchangeVal: any = [...pointPm1];
+        const onchangeVal: any = [...pointPm2];
         onchangeVal[0].inspection_point = value;
-        setPointPm1(onchangeVal);
+        setPointPm2(onchangeVal);
     };
 
     //change value point Task pm1
     const handleChangePointTask = (e: any, i: number,) => {
         const { name, value } = e.target;
-        const onchangeVal: any = [...pointPm1];
+        const onchangeVal: any = [...pointPm2];
         onchangeVal[0]['sub_inspection'][i][name] = value;
-        setPointPm1(onchangeVal);
+        setPointPm2(onchangeVal);
     };
 
     //delete Point task pm1
     const handleDeletePointTask = (i: number,) => {
-        const deleteVal: any = [...pointPm1];
+        const deleteVal: any = [...pointPm2];
         deleteVal[0]['sub_inspection'].splice(i, 1);
-        setPointPm1(deleteVal);
+        setPointPm2(deleteVal);
         console.log(deleteVal)
     };
 
@@ -85,14 +83,14 @@ const ModalPM1TambahInspection = ({ children, isOpen, onClose, onFinish, idTicke
 
 
     async function submitAddPoint(id: number) {
-        const url = `${import.meta.env.VITE_API_LINK}/pm1/createPoint`;
+        const url = `${import.meta.env.VITE_API_LINK}/pm2/createPoint`;
 
         try {
             const res = await axios.post(
                 url,
                 {
                     id_ticket: id,
-                    inspection_point: pointPm1[0],
+                    inspection_point: pointPm2[0],
 
                 },
                 {
@@ -157,7 +155,7 @@ const ModalPM1TambahInspection = ({ children, isOpen, onClose, onFinish, idTicke
                             <div className="flex w-10/12">
                                 <input
                                     name="inspection_point"
-                                    defaultValue={pointPm1[0].inspection_point}
+                                    defaultValue={pointPm2[0].inspection_point}
                                     onChange={(e) => handleChangePoint(e)}
                                     type="text"
                                     className=" w-[387px] h-10 border-2 border-stroke rounded-md"
@@ -173,7 +171,7 @@ const ModalPM1TambahInspection = ({ children, isOpen, onClose, onFinish, idTicke
                                     </label>
                                 </div>
                                 {
-                                    pointPm1[0].sub_inspection.map((task: any, i: number) => {
+                                    pointPm2[0].sub_inspection.map((task: any, i: number) => {
                                         return (
                                             <div className="flex  pt-4 border-b border-stroke ml-[70px] pb-4">
                                                 <div className="flex w-[60px] justify-center">
@@ -280,7 +278,7 @@ const ModalPM1TambahInspection = ({ children, isOpen, onClose, onFinish, idTicke
                                     </label>
                                 </div>
                                 {
-                                    pointPm1[0].sub_inspection.map((task: any, i: number) => {
+                                    pointPm2[0].sub_inspection.map((task: any, i: number) => {
                                         return (
                                             <div className="flex  pt-4 border-b border-stroke  pb-4">
                                                 <div className="flex w-[20px] justify-center">
@@ -416,4 +414,4 @@ const ModalPM1TambahInspection = ({ children, isOpen, onClose, onFinish, idTicke
 
 };
 
-export default ModalPM1TambahInspection;
+export default ModalPM2TambahInspection;
