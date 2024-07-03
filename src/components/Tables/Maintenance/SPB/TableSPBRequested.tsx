@@ -228,9 +228,12 @@ function TableSPBRequested() {
                           <div className="flex gap-2 col-span-2">
                             <p
                               className={
-                                data.status_pengajuan == 'section head approval'
+                                data.status_pengajuan ==
+                                  'section head approval' ||
+                                data.status_pengajuan ==
+                                  'section head verifikasi'
                                   ? 'text-white bg-green-600  px-2 rounded-2xl text-sm font-light line-clamp-1'
-                                  : 'text-white bg-green-600  px-2 rounded-2xl text-sm font-light line-clamp-1'
+                                  : 'text-white bg-yellow-600  px-2 rounded-2xl text-sm font-light line-clamp-1'
                               }
                             >
                               {data.status_pengajuan}
@@ -472,9 +475,11 @@ function TableSPBRequested() {
                               <p
                                 className={
                                   data.status_pengajuan ==
-                                  'section head approval'
+                                    'section head approval' ||
+                                  data.status_pengajuan ==
+                                    'section head verifikasi'
                                     ? 'text-white bg-green-600  px-2 py-1 rounded-md text-[9px] font-light text-center leading-[9px]'
-                                    : 'text-neutral-500 text-xs font-light text-center'
+                                    : 'text-white bg-yellow-600  px-2 py-1 rounded-md text-[9px] font-light text-center leading-[9px]'
                                 }
                               >
                                 {data.status_pengajuan}

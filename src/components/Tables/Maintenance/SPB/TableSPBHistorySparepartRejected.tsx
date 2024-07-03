@@ -227,11 +227,13 @@ function TableHistorySparepartRejected() {
                             <p className="text-neutral-500 text-sm font-light line-clamp-1"></p>
                           </div>
                           <div className="flex gap-2 col-span-2">
-                            <p className={
+                            <p
+                              className={
                                 data.status_pengajuan == 'section head approval'
-                                  ? 'text-white bg-green-600  px-2 rounded-2xl text-sm font-light line-clamp-1'
-                                  : 'text-white bg-green-600  px-2 rounded-2xl text-sm font-light line-clamp-1'
-                              }>
+                                  ? 'text-white bg-red-600  px-2 rounded-2xl text-sm font-light line-clamp-1'
+                                  : 'text-white bg-red-600  px-2 rounded-2xl text-sm font-light line-clamp-1'
+                              }
+                            >
                               {data.status_pengajuan}
                             </p>
                           </div>
@@ -314,7 +316,7 @@ function TableHistorySparepartRejected() {
                                 <p></p>
                               </ModalEditSparepartSPB>
                             )}
-                            {showModalCatatan == index && (
+                            {/* {showModalCatatan == index && (
                               <>
                                 <ModalNoteSPBSparepart
                                   isOpen={showModalCatatan}
@@ -335,7 +337,7 @@ function TableHistorySparepartRejected() {
                                   data={undefined}
                                 ></ModalNoteSPBSparepart>
                               </>
-                            )}
+                            )} */}
                           </div>
                         </div>
                       </section>
@@ -427,7 +429,14 @@ function TableHistorySparepartRejected() {
                               </p>
                             </div>
                             <div className="flex  w-2/12  ">
-                              <p className="text-neutral-500 text-xs font-light">
+                              <p
+                                className={
+                                  data.status_pengajuan ==
+                                  'section head approval'
+                                    ? 'text-white bg-red-600  px-2 py-1 rounded-md text-[9px] font-light text-center leading-[9px]'
+                                    : 'text-white bg-red-600  px-2 py-1 rounded-md text-[9px] font-light text-center leading-[9px]'
+                                }
+                              >
                                 {data.status_pengajuan}
                               </p>
                             </div>
@@ -500,7 +509,7 @@ function TableHistorySparepartRejected() {
                                   <p></p>
                                 </ModalEditSparepartSPB>
                               )}
-                              {showModalCatatan == index && (
+                              {/* {showModalCatatan == index && (
                                 <>
                                   <ModalNoteSPBSparepart
                                     isOpen={showModalCatatan}
@@ -521,7 +530,7 @@ function TableHistorySparepartRejected() {
                                     data={undefined}
                                   ></ModalNoteSPBSparepart>
                                 </>
-                              )}
+                              )} */}
                             </div>
                           </div>
                         </section>
