@@ -15,7 +15,7 @@ function MonitoringService() {
     try {
       const res = await axios.get(url, {
         params: {
-          jenis_part: 'ganti',
+          jenis_part: 'service',
         },
         withCredentials: true,
       });

@@ -84,7 +84,9 @@ function TableSPBHistoryServiceRejected() {
   const [spbService, setSpbService] = useState<any>();
 
   async function getSpbService() {
-    const url = `${import.meta.env.VITE_API_LINK}/spbServiceSparepart`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/spbServiceSparepart/historyRejected`;
     try {
       const res = await axios.get(url, {
         // params: {
@@ -145,8 +147,9 @@ function TableSPBHistoryServiceRejected() {
                     onClose={closeModalSPBBaru}
                     noSPB={'MT-0001'}
                     tglSpb={'20 MEI 2024'}
+                    sumber={'kebutuhan'}
                     data={undefined}
-                    onFinish={undefined}
+                    onFinish={getSpbService}
                     idProses={undefined}
                   >
                     <p></p>
@@ -312,7 +315,7 @@ function TableSPBHistoryServiceRejected() {
                           ) : (
                             ''
                           )}
-                          {showModalCatatan == index && (
+                          {/* {showModalCatatan == index && (
                             <>
                               <ModalNoteSPB
                                 isOpen={showModalCatatan}
@@ -333,7 +336,7 @@ function TableSPBHistoryServiceRejected() {
                                 data={data}
                               ></ModalNoteSPB>
                             </>
-                          )}
+                          )} */}
                         </div>
                       </section>
                     </div>
@@ -368,8 +371,9 @@ function TableSPBHistoryServiceRejected() {
                     onClose={closeModalSPBBaru}
                     noSPB={'MT-0001'}
                     tglSpb={'20 MEI 2024'}
+                    sumber={'kebutuhan'}
                     data={undefined}
-                    onFinish={undefined}
+                    onFinish={getSpbService}
                     idProses={undefined}
                   >
                     <p></p>
@@ -505,7 +509,7 @@ function TableSPBHistoryServiceRejected() {
                                   <p></p>
                                 </ModalEditSPB>
                               )}
-                              {showModalCatatan == index ? (
+                              {/* {showModalCatatan == index ? (
                                 <>
                                   <ModalNoteSPB
                                     isOpen={showModalCatatan}
@@ -530,7 +534,7 @@ function TableSPBHistoryServiceRejected() {
                                 </>
                               ) : (
                                 ''
-                              )}
+                              )} */}
                             </div>
                           </div>
                         </section>

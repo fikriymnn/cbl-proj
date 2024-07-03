@@ -1001,6 +1001,7 @@ function TableOS() {
                                           idProses={
                                             data.proses_mtcs[lengthProses].id
                                           }
+                                          sumber={'Os2'}
                                           noSPB={'MT-0001'}
                                           tglSpb={'20 MEI 2024'}
                                           data={undefined}
@@ -1393,8 +1394,9 @@ function TableOS() {
                                   onClose={closeModal5}
                                   noSPB={'MT-0001'}
                                   tglSpb={'20 MEI 2024'}
+                                  sumber={'Os2'}
                                   data={undefined}
-                                  onFinish={undefined}
+                                  onFinish={getTiket}
                                   idProses={undefined}
                                 >
                                   <p></p>

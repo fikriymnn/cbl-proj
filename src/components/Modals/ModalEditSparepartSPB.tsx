@@ -24,8 +24,8 @@ const ModalEditSparepartSPB = ({
   const closeModalService = () => setShowModalService(false);
 
   const [service, setService] = useState<any>({
-    id_master_sparepart: data.master_part.id_master_sparepart,
-    nama_sparepart: data.master_part.nama_sparepart,
+    id_stok_sparepart: data.stok_sparepart.id_stok_sparepart,
+    nama_sparepart: data.stok_sparepart.nama_sparepart,
   });
   const [qty, setQty] = useState<any>(data.qty);
   const tglPermintaan = convertTimeStampToDateOnly(
@@ -34,7 +34,7 @@ const ModalEditSparepartSPB = ({
   const [tglPermintaanKedatangan, setTglPermintaanKedatangan] =
     useState<any>(tglPermintaan);
   const [masterMesin, setmasterMesin] = useState<any>();
-  const [masterSparepart, setMasterSparepart] = useState<any>([]);
+  const [stokSparepart, setstokSparepart] = useState<any>([]);
 
   useEffect(() => {
     getMasterMesin();
@@ -54,8 +54,8 @@ const ModalEditSparepartSPB = ({
     }
   }
 
-  async function getMasterSparepart(idMesin: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/master/sparepart`;
+  async function getStokSparepart(idMesin: any) {
+    const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
     try {
       const res = await axios.get(url, {
         params: {
@@ -64,7 +64,7 @@ const ModalEditSparepartSPB = ({
         withCredentials: true,
       });
 
-      setMasterSparepart(res.data);
+      setstokSparepart(res.data);
       console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
@@ -72,13 +72,13 @@ const ModalEditSparepartSPB = ({
   }
 
   async function submitSpbEdit(id: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/spbServiceSparepart/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK}/spbStokSparepart/${id}`;
     try {
       //setIsLoading(true);
       const res = await axios.put(
         url,
         {
-          id_master_sparepart: service.id_master_sparepart,
+          id_stok_sparepart: service.id_stok_sparepart,
           tgl_permintaan_kedatangan: tglPermintaanKedatangan,
           qty: qty,
         },
@@ -100,7 +100,7 @@ const ModalEditSparepartSPB = ({
 
   const handleChangeServiceId = (value: any) => {
     const onchangeVal: any = service;
-    onchangeVal.id_master_sparepart = value;
+    onchangeVal.id_stok_sparepart = value;
     setService(onchangeVal);
   };
   const handleChangeServiceName = (value: any) => {
@@ -180,7 +180,7 @@ const ModalEditSparepartSPB = ({
               id="ticketCode"
               className="text-neutral-500 text-xl font-normal "
             >
-              {data.master_part.mesin.nama_mesin}
+              {data.stok_sparepart.mesin.nama_mesin}
             </button>
           </div>
           <div className="pt-2">
@@ -264,7 +264,7 @@ const ModalEditSparepartSPB = ({
                     <div className="relative flex w-full gap-10 justify-start pb-2 pt-3">
                       <select
                         onChange={(e) => {
-                          getMasterSparepart(e.target.value);
+                          getStokSparepart(e.target.value);
                           // changeTextColor();
                         }}
                         className={`relative z-20 w-8/12  appearance-none rounded-md  text-xs bg-blue-100 py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${'text-gray-800 dark:text-white'}`}
@@ -341,7 +341,7 @@ const ModalEditSparepartSPB = ({
                         </div>
                       </div>
 
-                      {masterSparepart?.map((data: any, index: number) => {
+                      {stokSparepart?.map((data: any, index: number) => {
                         return (
                           <div className="flex border-b border-stroke dark:border-strokedark ">
                             <div className="flex items-center justify-start  w-1/12 gap-3 p-2.5 ">

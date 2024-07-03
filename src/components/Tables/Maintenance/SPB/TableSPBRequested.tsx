@@ -145,8 +145,9 @@ function TableSPBRequested() {
                     onClose={closeModalSPBBaru}
                     noSPB={'MT-0001'}
                     tglSpb={'20 MEI 2024'}
+                    sumber={'kebutuhan'}
                     data={undefined}
-                    onFinish={undefined}
+                    onFinish={getSpbService}
                     idProses={undefined}
                   >
                     <p></p>
@@ -351,6 +352,12 @@ function TableSPBRequested() {
                                 onClose={closeModalCatatan}
                                 onFinish={getSpbService}
                                 isApprove={true}
+                                isValidate={
+                                  data.status_pengajuan ==
+                                  'section head approval'
+                                    ? true
+                                    : false
+                                }
                                 data={data}
                               ></ModalNoteSPB>
                             </>
@@ -362,6 +369,12 @@ function TableSPBRequested() {
                                 onClose={closeModalTolak}
                                 onFinish={getSpbService}
                                 isApprove={false}
+                                isValidate={
+                                  data.status_pengajuan ==
+                                  'section head approval'
+                                    ? true
+                                    : false
+                                }
                                 data={data}
                               ></ModalNoteSPB>
                             </>
@@ -400,8 +413,9 @@ function TableSPBRequested() {
                     onClose={closeModalSPBBaru}
                     noSPB={'MT-0001'}
                     tglSpb={'20 MEI 2024'}
+                    sumber={'kebutuhan'}
                     data={undefined}
-                    onFinish={undefined}
+                    onFinish={getSpbService}
                     idProses={undefined}
                   >
                     <p></p>
@@ -557,6 +571,12 @@ function TableSPBRequested() {
                                     onClose={closeModalCatatan}
                                     onFinish={getSpbService}
                                     isApprove={true}
+                                    isValidate={
+                                      data.status_pengajuan ==
+                                      'section head approval'
+                                        ? true
+                                        : false
+                                    }
                                     data={data}
                                   ></ModalNoteSPB>
                                 </>
@@ -570,6 +590,12 @@ function TableSPBRequested() {
                                     onClose={closeModalTolak}
                                     onFinish={getSpbService}
                                     isApprove={false}
+                                    isValidate={
+                                      data.status_pengajuan ==
+                                      'section head approval'
+                                        ? true
+                                        : false
+                                    }
                                     data={data}
                                   ></ModalNoteSPB>
                                 </>

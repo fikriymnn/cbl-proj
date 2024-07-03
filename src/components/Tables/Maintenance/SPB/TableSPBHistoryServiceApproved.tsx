@@ -84,7 +84,7 @@ function TableSPBHistoryServiceApproved() {
   const [spbService, setSpbService] = useState<any>();
 
   async function getSpbService() {
-    const url = `${import.meta.env.VITE_API_LINK}/spbServiceSparepart`;
+    const url = `${import.meta.env.VITE_API_LINK}/spbServiceSparepart/history`;
     try {
       const res = await axios.get(url, {
         // params: {
@@ -145,8 +145,9 @@ function TableSPBHistoryServiceApproved() {
                     onClose={closeModalSPBBaru}
                     noSPB={'MT-0001'}
                     tglSpb={'20 MEI 2024'}
+                    sumber={'kebutuhan'}
                     data={undefined}
-                    onFinish={undefined}
+                    onFinish={getSpbService}
                     idProses={undefined}
                   >
                     <p></p>
@@ -312,7 +313,7 @@ function TableSPBHistoryServiceApproved() {
                           ) : (
                             ''
                           )}
-                          {showModalCatatan == index && (
+                          {/* {showModalCatatan == index && (
                             <>
                               <ModalNoteSPB
                                 isOpen={showModalCatatan}
@@ -333,7 +334,7 @@ function TableSPBHistoryServiceApproved() {
                                 data={data}
                               ></ModalNoteSPB>
                             </>
-                          )}
+                          )} */}
                         </div>
                       </section>
                     </div>
@@ -368,8 +369,9 @@ function TableSPBHistoryServiceApproved() {
                     onClose={closeModalSPBBaru}
                     noSPB={'MT-0001'}
                     tglSpb={'20 MEI 2024'}
+                    sumber={'kebutuhan'}
                     data={undefined}
-                    onFinish={undefined}
+                    onFinish={getSpbService}
                     idProses={undefined}
                   >
                     <p></p>
@@ -505,7 +507,7 @@ function TableSPBHistoryServiceApproved() {
                                   <p></p>
                                 </ModalEditSPB>
                               )}
-                              {showModalCatatan == index ? (
+                              {/* {showModalCatatan == index ? (
                                 <>
                                   <ModalNoteSPB
                                     isOpen={showModalCatatan}
@@ -530,7 +532,7 @@ function TableSPBHistoryServiceApproved() {
                                 </>
                               ) : (
                                 ''
-                              )}
+                              )} */}
                             </div>
                           </div>
                         </section>

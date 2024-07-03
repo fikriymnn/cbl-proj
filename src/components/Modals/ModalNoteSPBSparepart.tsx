@@ -8,12 +8,14 @@ const ModalNoteSPBSparepart = ({
   onClose,
   onFinish,
   isApprove,
+  isValidate,
   data,
 }: {
   isOpen: any;
   onClose: any;
   onFinish: any;
   isApprove: any;
+  isValidate: any;
   data: any;
 }) => {
   if (isOpen == null) return null;
@@ -21,7 +23,7 @@ const ModalNoteSPBSparepart = ({
   const [note, setNote] = useState('');
 
   async function submitSpbValidasi(id: any, statusPengajuan: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/spbServiceSparepart/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK}/spbStokSparepart/${id}`;
     try {
       //setIsLoading(true);
       const res = await axios.put(
@@ -29,6 +31,56 @@ const ModalNoteSPBSparepart = ({
         {
           note_validasi: note,
           status_pengajuan: statusPengajuan,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      //setIsLoading(false);
+      alert('success');
+      onClose();
+      onFinish();
+    } catch (error: any) {
+      console.log(error);
+      //setIsLoading(false);
+      //alert(error.data.msg);
+    }
+  }
+
+  async function approveSpbVerifikasi(id: any) {
+    const url = `${import.meta.env.VITE_API_LINK}/approveSpbStok/${id}`;
+    try {
+      //setIsLoading(true);
+      const res = await axios.put(
+        url,
+        {
+          note_verifikasi: note,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      //setIsLoading(false);
+      alert('success');
+      onClose();
+      onFinish();
+    } catch (error: any) {
+      console.log(error);
+      //setIsLoading(false);
+      //alert(error.data.msg);
+    }
+  }
+
+  async function tolakSpbVerifikasi(id: any) {
+    const url = `${import.meta.env.VITE_API_LINK}/tolakSpbStok/${id}`;
+    try {
+      //setIsLoading(true);
+      const res = await axios.put(
+        url,
+        {
+          note_verifikasi: note,
         },
         {
           withCredentials: true,
@@ -125,16 +177,25 @@ const ModalNoteSPBSparepart = ({
           </div>
 
           <div className="pt-4"></div>
+
           {isApprove == true ? (
             <button
-              onClick={() => submitSpbValidasi(data.id, 'request purchase')}
+              onClick={() =>
+                isValidate == true
+                  ? submitSpbValidasi(data.id, 'request purchase')
+                  : approveSpbVerifikasi(data.id)
+              }
               className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
             >
               Setujui
             </button>
           ) : (
             <button
-              onClick={() => submitSpbValidasi(data.id, 'spb rejected')}
+              onClick={() =>
+                isValidate == true
+                  ? submitSpbValidasi(data.id, 'spb rejected')
+                  : tolakSpbVerifikasi(data.id)
+              }
               className="w-full h-12 text-center text-white text-xs font-bold bg-red-700 rounded-md"
             >
               Tolak

@@ -85,7 +85,7 @@ function TableHistorySparepartApproved() {
   const [spbSparepart, setSpbSparepart] = useState<any>();
 
   async function getSpbSeparepart() {
-    const url = `${import.meta.env.VITE_API_LINK}/spbStokSparepart`;
+    const url = `${import.meta.env.VITE_API_LINK}/spbStokSparepart/history`;
     try {
       const res = await axios.get(url, {
         // params: {
@@ -146,8 +146,9 @@ function TableHistorySparepartApproved() {
                     onClose={closeModalSPBBaru}
                     noSPB={'MT-0001'}
                     tglSpb={'20 MEI 2024'}
+                    sumber={'kebutuhan'}
                     data={undefined}
-                    onFinish={undefined}
+                    onFinish={getSpbSeparepart}
                     idProses={undefined}
                   >
                     <p></p>
@@ -364,8 +365,9 @@ function TableHistorySparepartApproved() {
                     onClose={closeModalSPBBaru}
                     noSPB={'MT-0001'}
                     tglSpb={'20 MEI 2024'}
+                    sumber={'kebutuhan'}
                     data={undefined}
-                    onFinish={undefined}
+                    onFinish={getSpbSeparepart}
                     idProses={undefined}
                   >
                     <p></p>

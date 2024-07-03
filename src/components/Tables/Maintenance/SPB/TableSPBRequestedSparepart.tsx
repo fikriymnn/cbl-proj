@@ -146,8 +146,9 @@ function TableSPBRequestedSparepart() {
                     onClose={closeModalSPBBaru}
                     noSPB={'MT-0001'}
                     tglSpb={'20 MEI 2024'}
+                    sumber={'kebutuhan'}
                     data={undefined}
-                    onFinish={undefined}
+                    onFinish={getSpbSeparepart}
                     idProses={undefined}
                   >
                     <p></p>
@@ -332,8 +333,8 @@ function TableSPBRequestedSparepart() {
                               <ModalEditSparepartSPB
                                 isOpen={showModalEdit}
                                 onClose={closeModalEdit}
-                                onFinish={undefined}
-                                data={undefined}
+                                onFinish={getSpbSeparepart}
+                                data={data}
                               >
                                 <p></p>
                               </ModalEditSparepartSPB>
@@ -343,9 +344,15 @@ function TableSPBRequestedSparepart() {
                                 <ModalNoteSPBSparepart
                                   isOpen={showModalCatatan}
                                   onClose={closeModalCatatan}
-                                  onFinish={undefined}
-                                  isApprove={undefined}
-                                  data={undefined}
+                                  onFinish={getSpbSeparepart}
+                                  isApprove={true}
+                                  isValidate={
+                                    data.status_pengajuan ==
+                                    'section head approval'
+                                      ? true
+                                      : false
+                                  }
+                                  data={data}
                                 ></ModalNoteSPBSparepart>
                               </>
                             )}
@@ -354,9 +361,15 @@ function TableSPBRequestedSparepart() {
                                 <ModalNoteSPBSparepart
                                   isOpen={showModalTolak}
                                   onClose={closeModalTolak}
-                                  onFinish={undefined}
-                                  isApprove={undefined}
-                                  data={undefined}
+                                  onFinish={getSpbSeparepart}
+                                  isApprove={false}
+                                  isValidate={
+                                    data.status_pengajuan ==
+                                    'section head approval'
+                                      ? true
+                                      : false
+                                  }
+                                  data={data}
                                 ></ModalNoteSPBSparepart>
                               </>
                             )}
@@ -395,8 +408,9 @@ function TableSPBRequestedSparepart() {
                     onClose={closeModalSPBBaru}
                     noSPB={'MT-0001'}
                     tglSpb={'20 MEI 2024'}
+                    sumber={'kebutuhan'}
                     data={undefined}
-                    onFinish={undefined}
+                    onFinish={getSpbSeparepart}
                     idProses={undefined}
                   >
                     <p></p>
@@ -530,8 +544,8 @@ function TableSPBRequestedSparepart() {
                                 <ModalEditSparepartSPB
                                   isOpen={showModalEdit}
                                   onClose={closeModalEdit}
-                                  onFinish={undefined}
-                                  data={undefined}
+                                  onFinish={getSpbSeparepart}
+                                  data={data}
                                 >
                                   <p></p>
                                 </ModalEditSparepartSPB>
@@ -541,20 +555,32 @@ function TableSPBRequestedSparepart() {
                                   <ModalNoteSPBSparepart
                                     isOpen={showModalCatatan}
                                     onClose={closeModalCatatan}
-                                    onFinish={undefined}
-                                    isApprove={undefined}
-                                    data={undefined}
+                                    onFinish={getSpbSeparepart}
+                                    isApprove={true}
+                                    isValidate={
+                                      data.status_pengajuan ==
+                                      'section head approval'
+                                        ? true
+                                        : false
+                                    }
+                                    data={data}
                                   ></ModalNoteSPBSparepart>
                                 </>
                               )}
                               {showModalTolak == null && (
                                 <>
                                   <ModalNoteSPBSparepart
-                                    isOpen={showModalTolak}
-                                    onClose={closeModalTolak}
-                                    onFinish={undefined}
-                                    isApprove={undefined}
-                                    data={undefined}
+                                    isOpen={showModalCatatan}
+                                    onClose={closeModalCatatan}
+                                    onFinish={getSpbSeparepart}
+                                    isApprove={false}
+                                    isValidate={
+                                      data.status_pengajuan ==
+                                      'section head approval'
+                                        ? true
+                                        : false
+                                    }
+                                    data={data}
                                   ></ModalNoteSPBSparepart>
                                 </>
                               )}

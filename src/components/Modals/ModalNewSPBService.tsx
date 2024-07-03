@@ -14,6 +14,7 @@ const ModalSPBService = ({
   noSPB,
   tglSpb,
   idProses,
+  sumber,
   data,
 }: {
   children: any;
@@ -23,6 +24,7 @@ const ModalSPBService = ({
   noSPB: any;
   tglSpb: any;
   idProses: any;
+  sumber: any;
   data: any;
 }) => {
   if (!isOpen) return null;
@@ -115,7 +117,7 @@ const ModalSPBService = ({
         tgl_permintaan_kedatangan: '',
         kriteria: '',
         kode_estimasi: '',
-        sumber: 'Os2',
+        sumber: sumber,
       },
     ]);
   };
@@ -152,7 +154,7 @@ const ModalSPBService = ({
         tgl_permintaan_kedatangan: '',
         kriteria: '',
         kode_estimasi: '',
-        sumber: 'Os2',
+        sumber: sumber,
       },
     ]);
   };
