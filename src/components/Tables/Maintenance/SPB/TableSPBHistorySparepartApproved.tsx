@@ -225,7 +225,11 @@ function TableHistorySparepartApproved() {
                             <p className="text-neutral-500 text-sm font-light line-clamp-1"></p>
                           </div>
                           <div className="flex gap-2 col-span-2">
-                            <p className="text-neutral-500 text-sm font-light line-clamp-1">
+                            <p className={
+                                data.status_pengajuan == 'section head approval'
+                                  ? 'text-white bg-green-600  px-2 rounded-2xl text-sm font-light line-clamp-1'
+                                  : 'text-white bg-green-600  px-2 rounded-2xl text-sm font-light line-clamp-1'
+                              }>
                               {data.status_pengajuan}
                             </p>
                           </div>

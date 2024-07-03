@@ -528,8 +528,8 @@ function Pm1Form() {
 
                   return (
                     <>
-                      <section className=" border-b-8 border-[#D8EAFF]">
-                        <div className="flex p-4 border-b-2 border-[#6D6C6C] ">
+                      <section  className={data.hasil == 'warning'?"border-2 border-yellow-400 bg-[#FFF9E8]":data.hasil == 'jelek'?"border-2 border-red-400 bg-[#FFEFEF]":data.hasil == 'tidak terpasang'?"border-2 border-red-400 bg-[#FFEFEF]":" border-b-8 border-[#D8EAFF]"}>
+                        <div className="flex p-4 border-b-2 ">
                           <div className="w-1/12">
                             <p className="md:text-[14px] text-[9px] font-semibold">
                               {i + 1}
