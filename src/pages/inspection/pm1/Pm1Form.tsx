@@ -25,6 +25,7 @@ function Pm1Form() {
   const [selectionUserKA, setSelectionUserKA] = useState<any>();
   const [selectionUserSuper, setSelectionUserSuper] = useState<any>();
   const [selectionUserLeader, setSelectionUserLeader] = useState<any>();
+  const [hasil,setHasil] = useState<String>('');
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -791,7 +792,7 @@ function Pm1Form() {
                               <>
                                 <div className="p-4 flex flex-col ">
                                   <p className="md:text-[14px] text-[9px] font-semibold">
-                                    Result:{data.hasil}
+                                    Result:s{hasil == 'bagus'? (<><img src={Logo} alt="aaa" /></>):""}
                                     <span className="absolute top-4">
                                       <div className='md:w-6 w-4'>
                                         {data.hasil == 'baik' ? <img src={Logo} alt="aaa" />
@@ -828,26 +829,31 @@ function Pm1Form() {
                                           Select Result
                                         </option>
                                         <option
+                                        onClick={()=>setHasil("baik")}
                                           value="baik"
                                           className="text-body dark:text-bodydark"
                                         >
                                           <img src={Logo} alt="aaa" />Good
                                         </option>
+                                       
                                         <option
                                           value="warning"
                                           className="text-body dark:text-bodydark"
+                                          onClick={()=>setHasil("warning")}
                                         >
                                           <img src={Polygon} alt="bb" /> Warning
                                         </option>
                                         <option
                                           value="jelek"
                                           className="text-body dark:text-bodydark"
+                                          onClick={()=>setHasil("jelek")}
                                         >
                                           <img src={X} alt="cc" />Bad
                                         </option>
                                         <option
                                           value="tidak terpasang"
                                           className="text-body dark:text-bodydark"
+                                          onClick={()=>setHasil("tidak terpasang")}
                                         >
                                           <img src={Strip} alt="dd" />Not Installed
                                         </option>
