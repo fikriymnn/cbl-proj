@@ -3,7 +3,7 @@
 import axios from 'axios';
 import { useState } from 'react';
 
-const ModalNoteSPB = ({
+const ModalNoteSPBSparepart = ({
   isOpen,
   onClose,
   onFinish,
@@ -153,4 +153,4 @@ const ModalNoteSPB = ({
   );
 };
 
-export default ModalNoteSPB;
+export default ModalNoteSPBSparepart;

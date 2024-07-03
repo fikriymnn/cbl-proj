@@ -7,12 +7,11 @@ import ModalSPBService from '../../../Modals/ModalNewSPBService';
 import axios from 'axios';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import MonitoringSPB from '../../../Modals/MonitoringSPB';
+import ModalPM2Eksekutor from '../../../Modals/ModalPM2Eksekutor';
 import ModalEditSPB from '../../../Modals/ModalEditSPB';
 import ModalNoteSPB from '../../../Modals/ModalNoteSPB';
-import ModalEditSparepartSPB from '../../../Modals/ModalEditSparepartSPB';
-import ModalNoteSPBSparepart from '../../../Modals/ModalNoteSPBSparepart';
 
-function TableSPBRequestedSparepart() {
+function TableSPBHistoryServiceApproved() {
   const [showModalSPBBaru, setShowModalSPBBaru] = useState(false);
 
   const openModalSPBBaru = () => setShowModalSPBBaru(true);
@@ -20,15 +19,15 @@ function TableSPBRequestedSparepart() {
 
   const [isMobile, setIsMobile] = useState(false);
   const [openButton, setOpenButton] = useState(null);
-  const [showModal27, setShowModal27] = useState(false);
-  const openModal27 = () => setShowModal27(true);
-  const closeModal27 = () => setShowModal27(false);
-  const [showModal28, setShowModal28] = useState(false);
-  const openModal28 = () => setShowModal28(true);
-  const closeModal28 = () => setShowModal28(false);
-  const [showModal29, setShowModal29] = useState(false);
-  const openModal29 = () => setShowModal29(true);
-  const closeModal29 = () => setShowModal29(false);
+  // const [showModal27, setShowModal27] = useState(false);
+  // const openModal27 = () => setShowModal27(true);
+  // const closeModal27 = () => setShowModal27(false);
+  // const [showModal28, setShowModal28] = useState(false);
+  // const openModal28 = () => setShowModal28(true);
+  // const closeModal28 = () => setShowModal28(false);
+  // const [showModal29, setShowModal29] = useState(false);
+  // const openModal29 = () => setShowModal29(true);
+  // const closeModal29 = () => setShowModal29(false);
 
   const [showModalMonitoring, setShowModalMonitoring] = useState(null);
   const [showModalEdit, setShowModalEdit] = useState(null);
@@ -79,13 +78,13 @@ function TableSPBRequestedSparepart() {
   const [showDetailMobile, setShowDetailMobile] = useState<boolean>();
 
   useEffect(() => {
-    getSpbSeparepart();
+    getSpbService();
   }, []);
 
-  const [spbSparepart, setSpbSparepart] = useState<any>();
+  const [spbService, setSpbService] = useState<any>();
 
-  async function getSpbSeparepart() {
-    const url = `${import.meta.env.VITE_API_LINK}/spbStokSparepart`;
+  async function getSpbService() {
+    const url = `${import.meta.env.VITE_API_LINK}/spbServiceSparepart`;
     try {
       const res = await axios.get(url, {
         // params: {
@@ -96,7 +95,7 @@ function TableSPBRequestedSparepart() {
         withCredentials: true,
       });
 
-      setSpbSparepart(res.data);
+      setSpbService(res.data);
       console.log(res.data);
 
       let data: any[] = [];
@@ -191,13 +190,13 @@ function TableSPBRequestedSparepart() {
                 </div>
               </div>
             </div>
-            {spbSparepart?.map((data: any, index: number) => {
+            {spbService?.map((data: any, index: number) => {
               const tglSpb = convertTimeStampToDate(data.tgl_spb);
               const tglPermintaanKedatangan = convertTimeStampToDate(
                 data.tgl_permintaan_kedatangan,
               );
               return (
-                <div className=" overflow-x-auto">
+                <div key={index} className=" overflow-x-auto">
                   <div className="min-w-[700px] ">
                     <div className="my-2 ">
                       <section className="flex  bg-white  rounded-md px-1 py-2">
@@ -217,14 +216,22 @@ function TableSPBRequestedSparepart() {
                           </div>
                           <div className="flex gap-2">
                             <p className="text-neutral-500 text-sm font-light line-clamp-1">
-                              {data.stok_sparepart.nama_sparepart}
+                              {data.master_part.nama_sparepart}
                             </p>
                           </div>
                           <div className="flex gap-2">
-                            <p className="text-neutral-500 text-sm font-light line-clamp-1"></p>
+                            <p className="text-neutral-500 text-sm font-light line-clamp-1">
+                              {data.master_part.kode}
+                            </p>
                           </div>
                           <div className="flex gap-2 col-span-2">
-                            <p className="text-neutral-500 text-sm font-light line-clamp-1">
+                            <p
+                              className={
+                                data.status_pengajuan == 'section head approval'
+                                  ? 'text-white bg-green-600  px-2 rounded-2xl text-sm font-light line-clamp-1'
+                                  : 'text-neutral-500 text-sm font-light line-clamp-1'
+                              }
+                            >
                               {data.status_pengajuan}
                             </p>
                           </div>
@@ -234,53 +241,9 @@ function TableSPBRequestedSparepart() {
                             </p>
                           </div>
                           <div className="flex gap-2 justify-end pr-8">
-                            <button
-                              onClick={() => handleClick(index)}
-                              className="px-4 py-2 bg-[#0065DE] rounded-md"
-                            >
-                              <svg
-                                width="4"
-                                height="11"
-                                viewBox="0 0 4 11"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <rect width="4" height="1.90909" fill="white" />
-                                <rect
-                                  y="4.45312"
-                                  width="4"
-                                  height="1.90909"
-                                  fill="white"
-                                />
-                                <rect
-                                  y="8.9082"
-                                  width="4"
-                                  height="1.90909"
-                                  fill="white"
-                                />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => handleClickMonitoring(index)}
-                              className="px-3 py-3 bg-[#0065DE] rounded-md"
-                            >
-                              <svg
-                                width="15"
-                                height="10"
-                                viewBox="0 0 15 10"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M14 9L7.64444 2L1 9"
-                                  stroke="white"
-                                  stroke-width="2.5"
-                                />
-                              </svg>
-                            </button>
                             {openButton == index ? (
                               <>
-                                <div className="absolute bg-white mt-10 -translate-x-10 p-1 shadow-5 rounded-md">
+                                <div className="absolute bg-white mt-10 p-1 shadow-5 rounded-md">
                                   <div className="flex flex-col gap-1">
                                     <button
                                       onClick={() => handleClickCatatan(index)}
@@ -300,67 +263,77 @@ function TableSPBRequestedSparepart() {
                             ) : (
                               <></>
                             )}
+                            <button
+                              onClick={() => handleClickMonitoring(index)}
+                              className="px-3 py-3 bg-[#0065DE] rounded-md"
+                            >
+                              <svg
+                                width="15"
+                                height="10"
+                                viewBox="0 0 15 10"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M14 9L7.64444 2L1 9"
+                                  stroke="white"
+                                  stroke-width="2.5"
+                                />
+                              </svg>
+                            </button>
                             {showModalMonitoring == index ? (
-                              <div className="">
-                                <MonitoringSPB
-                                  isOpen={showModalMonitoring}
-                                  onClose={closeModalMonitoring}
-                                  status={data.status_pengajuan}
-                                  waktu_tiket_masuk={tglSpb}
-                                  pelapor={data.pelapor.nama}
-                                  kode_part={data.stok_sparepart.kode}
-                                  nama_barang={
-                                    data.stok_sparepart.nama_sparepart
-                                  }
-                                  mesin={data.stok_sparepart.mesin.nama_mesin}
-                                  qty={data.qty}
-                                  tanggal_estimasi={tglPermintaanKedatangan}
-                                  catatan={data.note}
-                                >
-                                  <button
-                                    onClick={() => handleClickEdit(index)}
-                                    className="w-full justify-center text-center rounded md bg-blue-600 text-white font-semibold py-2"
-                                  >
-                                    Edit SPB
-                                  </button>
-                                </MonitoringSPB>
-                              </div>
+                              <MonitoringSPB
+                                isOpen={showModalMonitoring}
+                                onClose={closeModalMonitoring}
+                                status={data.status_pengajuan}
+                                waktu_tiket_masuk={tglSpb}
+                                pelapor={data.pelapor.nama}
+                                kode_part={data.master_part.kode}
+                                nama_barang={data.master_part.nama_sparepart}
+                                mesin={data.master_part.mesin.nama_mesin}
+                                qty={data.qty}
+                                tanggal_estimasi={tglPermintaanKedatangan}
+                                catatan={data.note}
+                                children={undefined}
+                              ></MonitoringSPB>
                             ) : (
                               <></>
                             )}
-                            {showModalEdit == index && (
-                              <ModalEditSparepartSPB
-                                isOpen={showModalEdit}
-                                onClose={closeModalEdit}
-                                onFinish={undefined}
-                                data={undefined}
-                              >
-                                <p></p>
-                              </ModalEditSparepartSPB>
-                            )}
-                            {showModalCatatan == index && (
-                              <>
-                                <ModalNoteSPBSparepart
-                                  isOpen={showModalCatatan}
-                                  onClose={closeModalCatatan}
-                                  onFinish={undefined}
-                                  isApprove={undefined}
-                                  data={undefined}
-                                ></ModalNoteSPBSparepart>
-                              </>
-                            )}
-                            {showModalTolak == index && (
-                              <>
-                                <ModalNoteSPBSparepart
-                                  isOpen={showModalTolak}
-                                  onClose={closeModalTolak}
-                                  onFinish={undefined}
-                                  isApprove={undefined}
-                                  data={undefined}
-                                ></ModalNoteSPBSparepart>
-                              </>
-                            )}
                           </div>
+                          {showModalEdit == index ? (
+                            <ModalEditSPB
+                              isOpen={showModalEdit}
+                              onClose={closeModalEdit}
+                              onFinish={getSpbService}
+                              data={data}
+                            >
+                              <p></p>
+                            </ModalEditSPB>
+                          ) : (
+                            ''
+                          )}
+                          {showModalCatatan == index && (
+                            <>
+                              <ModalNoteSPB
+                                isOpen={showModalCatatan}
+                                onClose={closeModalCatatan}
+                                onFinish={getSpbService}
+                                isApprove={true}
+                                data={data}
+                              ></ModalNoteSPB>
+                            </>
+                          )}
+                          {showModalTolak == index && (
+                            <>
+                              <ModalNoteSPB
+                                isOpen={showModalTolak}
+                                onClose={closeModalTolak}
+                                onFinish={getSpbService}
+                                isApprove={false}
+                                data={data}
+                              ></ModalNoteSPB>
+                            </>
+                          )}
                         </div>
                       </section>
                     </div>
@@ -428,7 +401,7 @@ function TableSPBRequestedSparepart() {
               </div>
             </div>
             <div className=" overflow-x-auto">
-              {spbSparepart?.map((data: any, index: number) => {
+              {spbService?.map((data: any, index: number) => {
                 const tglSpb = convertTimeStampToDate(data.tgl_spb);
                 const tglPermintaanKedatangan = convertTimeStampToDate(
                   data.tgl_permintaan_kedatangan,
@@ -437,35 +410,34 @@ function TableSPBRequestedSparepart() {
                   <>
                     <div className="">
                       <div className="my-2 ">
-                        <section className="flex flex-col bg-white  rounded-lg px-2">
-                          <div className="flex w-full py-3 gap-1">
-                            <div className="flex  w-2/12  ">
+                        <section className="flex flex-col bg-white  justify-center items-center  rounded-lg px-2">
+                          <div className="flex w-full py-3 gap-1  justify-center items-center">
+                            <div className="flex  w-2/12   justify-center items-center">
                               <p className="text-neutral-500 text-xs font-light">
-                                {data.stok_sparepart.nama_mesin}
+                                {data.master_part.nama_mesin}
                               </p>
                             </div>
-                            <div className="flex  w-6/12 ">
+                            <div className="flex  w-5/12 ">
                               <p className="text-neutral-500 text-xs font-light w-10/12">
-                                {data.stok_sparepart.nama_sparepart}
+                                {data.master_part.nama_sparepart}
                               </p>
                             </div>
-                            <div className="flex  w-2/12  ">
-                              <p className="text-neutral-500 text-xs font-light">
+                            <div className="flex  w-3/12 justify-center items-center ">
+                              <p
+                                className={
+                                  data.status_pengajuan ==
+                                  'section head approval'
+                                    ? 'text-white bg-green-600  px-2 py-1 rounded-md text-[9px] font-light text-center leading-[9px]'
+                                    : 'text-neutral-500 text-xs font-light text-center'
+                                }
+                              >
                                 {data.status_pengajuan}
                               </p>
                             </div>
-                            <div className="flex gap-2 items-center pb-2">
-                              <div>
-                                <button
-                                  title="button"
-                                  onClick={() => handleClick(index)}
-                                  className="text-xs px-1  py-2 font-bold bg-blue-700  text-white rounded-sm"
-                                >
-                                  <img src={Burger} alt="" className="mx-1" />
-                                </button>
-                              </div>
+                            <div className="flex gap-2 justify-center  items-center">
+                              <div></div>
 
-                              <div>
+                              <div className="flex flex-col items-center justify-center">
                                 <button
                                   title="button"
                                   onClick={() => handleClickMonitoring(index)}
@@ -487,7 +459,9 @@ function TableSPBRequestedSparepart() {
                                         Setujui{' '}
                                       </button>
                                       <button
-                                        onClick={() => handleClickTolak(index)}
+                                        onClick={() =>
+                                          handleClickCatatan(index)
+                                        }
                                         className="w-25 text-xs font-bold bg-red-600 py-2 text-white rounded-md"
                                       >
                                         Tolak{' '}
@@ -506,57 +480,56 @@ function TableSPBRequestedSparepart() {
                                     status={data.status_pengajuan}
                                     waktu_tiket_masuk={tglSpb}
                                     pelapor={data.pelapor.nama}
-                                    kode_part={data.stok_sparepart.kode}
+                                    kode_part={data.master_part.kode}
                                     nama_barang={
-                                      data.stok_sparepart.nama_sparepart
+                                      data.master_part.nama_sparepart
                                     }
-                                    mesin={data.stok_sparepart.mesin.nama_mesin}
+                                    mesin={data.master_part.mesin.nama_mesin}
                                     qty={data.qty}
                                     tanggal_estimasi={tglPermintaanKedatangan}
                                     catatan={data.note}
                                   >
-                                    <button
-                                      onClick={() => handleClickEdit(index)}
-                                      className="w-full justify-center text-center rounded md bg-blue-600 text-white font-semibold py-2"
-                                    >
-                                      Edit SPB
-                                    </button>
+                                    <p></p>
                                   </MonitoringSPB>
                                 </div>
                               ) : (
                                 <></>
                               )}
-                              {showModalEdit && (
-                                <ModalEditSparepartSPB
+                              {showModalEdit == index && (
+                                <ModalEditSPB
                                   isOpen={showModalEdit}
                                   onClose={closeModalEdit}
-                                  onFinish={undefined}
-                                  data={undefined}
+                                  onFinish={getSpbService}
+                                  data={data}
                                 >
                                   <p></p>
-                                </ModalEditSparepartSPB>
+                                </ModalEditSPB>
                               )}
-                              {showModalCatatan == index && (
+                              {showModalCatatan == index ? (
                                 <>
-                                  <ModalNoteSPBSparepart
+                                  <ModalNoteSPB
                                     isOpen={showModalCatatan}
                                     onClose={closeModalCatatan}
-                                    onFinish={undefined}
-                                    isApprove={undefined}
-                                    data={undefined}
-                                  ></ModalNoteSPBSparepart>
+                                    onFinish={getSpbService}
+                                    isApprove={true}
+                                    data={data}
+                                  ></ModalNoteSPB>
                                 </>
+                              ) : (
+                                ''
                               )}
-                              {showModalTolak == null && (
+                              {showModalTolak == index ? (
                                 <>
-                                  <ModalNoteSPBSparepart
+                                  <ModalNoteSPB
                                     isOpen={showModalTolak}
                                     onClose={closeModalTolak}
-                                    onFinish={undefined}
-                                    isApprove={undefined}
-                                    data={undefined}
-                                  ></ModalNoteSPBSparepart>
+                                    onFinish={getSpbService}
+                                    isApprove={false}
+                                    data={data}
+                                  ></ModalNoteSPB>
                                 </>
+                              ) : (
+                                ''
                               )}
                             </div>
                           </div>
@@ -574,4 +547,4 @@ function TableSPBRequestedSparepart() {
   );
 }
 
-export default TableSPBRequestedSparepart;
+export default TableSPBHistoryServiceApproved;

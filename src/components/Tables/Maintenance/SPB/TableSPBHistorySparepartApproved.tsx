@@ -12,7 +12,7 @@ import ModalNoteSPB from '../../../Modals/ModalNoteSPB';
 import ModalEditSparepartSPB from '../../../Modals/ModalEditSparepartSPB';
 import ModalNoteSPBSparepart from '../../../Modals/ModalNoteSPBSparepart';
 
-function TableSPBRequestedSparepart() {
+function TableHistorySparepartApproved() {
   const [showModalSPBBaru, setShowModalSPBBaru] = useState(false);
 
   const openModalSPBBaru = () => setShowModalSPBBaru(true);
@@ -235,32 +235,6 @@ function TableSPBRequestedSparepart() {
                           </div>
                           <div className="flex gap-2 justify-end pr-8">
                             <button
-                              onClick={() => handleClick(index)}
-                              className="px-4 py-2 bg-[#0065DE] rounded-md"
-                            >
-                              <svg
-                                width="4"
-                                height="11"
-                                viewBox="0 0 4 11"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <rect width="4" height="1.90909" fill="white" />
-                                <rect
-                                  y="4.45312"
-                                  width="4"
-                                  height="1.90909"
-                                  fill="white"
-                                />
-                                <rect
-                                  y="8.9082"
-                                  width="4"
-                                  height="1.90909"
-                                  fill="white"
-                                />
-                              </svg>
-                            </button>
-                            <button
                               onClick={() => handleClickMonitoring(index)}
                               className="px-3 py-3 bg-[#0065DE] rounded-md"
                             >
@@ -317,12 +291,7 @@ function TableSPBRequestedSparepart() {
                                   tanggal_estimasi={tglPermintaanKedatangan}
                                   catatan={data.note}
                                 >
-                                  <button
-                                    onClick={() => handleClickEdit(index)}
-                                    className="w-full justify-center text-center rounded md bg-blue-600 text-white font-semibold py-2"
-                                  >
-                                    Edit SPB
-                                  </button>
+                                  <p></p>
                                 </MonitoringSPB>
                               </div>
                             ) : (
@@ -455,15 +424,7 @@ function TableSPBRequestedSparepart() {
                               </p>
                             </div>
                             <div className="flex gap-2 items-center pb-2">
-                              <div>
-                                <button
-                                  title="button"
-                                  onClick={() => handleClick(index)}
-                                  className="text-xs px-1  py-2 font-bold bg-blue-700  text-white rounded-sm"
-                                >
-                                  <img src={Burger} alt="" className="mx-1" />
-                                </button>
-                              </div>
+                              <div></div>
 
                               <div>
                                 <button
@@ -515,12 +476,7 @@ function TableSPBRequestedSparepart() {
                                     tanggal_estimasi={tglPermintaanKedatangan}
                                     catatan={data.note}
                                   >
-                                    <button
-                                      onClick={() => handleClickEdit(index)}
-                                      className="w-full justify-center text-center rounded md bg-blue-600 text-white font-semibold py-2"
-                                    >
-                                      Edit SPB
-                                    </button>
+                                    <p></p>
                                   </MonitoringSPB>
                                 </div>
                               ) : (
@@ -574,4 +530,4 @@ function TableSPBRequestedSparepart() {
   );
 }
 
-export default TableSPBRequestedSparepart;
+export default TableHistorySparepartApproved;

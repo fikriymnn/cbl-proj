@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import convertTimeStampToDateOnly from '../../utils/convertDateOnly';
 
-const ModalEditSPB = ({
+const ModalEditSparepartSPB = ({
   children,
   isOpen,
   onClose,
@@ -437,4 +437,4 @@ const ModalEditSPB = ({
   );
 };
 
-export default ModalEditSPB;
+export default ModalEditSparepartSPB;

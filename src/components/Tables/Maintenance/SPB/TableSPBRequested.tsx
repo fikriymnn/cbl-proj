@@ -19,17 +19,20 @@ function TableSPBRequested() {
 
   const [isMobile, setIsMobile] = useState(false);
   const [openButton, setOpenButton] = useState(null);
-  const [showModal27, setShowModal27] = useState(false);
-  const openModal27 = () => setShowModal27(true);
-  const closeModal27 = () => setShowModal27(false);
-  const [showModal28, setShowModal28] = useState(false);
-  const openModal28 = () => setShowModal28(true);
-  const closeModal28 = () => setShowModal28(false);
-  const [showModal29, setShowModal29] = useState(false);
-  const openModal29 = () => setShowModal29(true);
-  const closeModal29 = () => setShowModal29(false);
+  // const [showModal27, setShowModal27] = useState(false);
+  // const openModal27 = () => setShowModal27(true);
+  // const closeModal27 = () => setShowModal27(false);
+  // const [showModal28, setShowModal28] = useState(false);
+  // const openModal28 = () => setShowModal28(true);
+  // const closeModal28 = () => setShowModal28(false);
+  // const [showModal29, setShowModal29] = useState(false);
+  // const openModal29 = () => setShowModal29(true);
+  // const closeModal29 = () => setShowModal29(false);
 
   const [showModalMonitoring, setShowModalMonitoring] = useState(null);
+  const [showModalEdit, setShowModalEdit] = useState(null);
+  const [showModalCatatan, setShowModalCatatan] = useState(null);
+  const [showModalTolak, setShowModalTolak] = useState(null);
 
   const handleClick = (index: any) => {
     setOpenButton((prevState: any) => {
@@ -38,6 +41,21 @@ function TableSPBRequested() {
   };
   const handleClickMonitoring = (index: any) => {
     setShowModalMonitoring((prevState: any) => {
+      return prevState === index ? null : index;
+    });
+  };
+  const handleClickCatatan = (index: any) => {
+    setShowModalCatatan((prevState: any) => {
+      return prevState === index ? null : index;
+    });
+  };
+  const handleClickTolak = (index: any) => {
+    setShowModalTolak((prevState: any) => {
+      return prevState === index ? null : index;
+    });
+  };
+  const handleClickEdit = (index: any) => {
+    setShowModalEdit((prevState: any) => {
       return prevState === index ? null : index;
     });
   };
@@ -94,6 +112,9 @@ function TableSPBRequested() {
   }
 
   const closeModalMonitoring = () => setShowModalMonitoring(null);
+  const closeModalEdit = () => setShowModalEdit(null);
+  const closeModalCatatan = () => setShowModalCatatan(null);
+  const closeModalTolak = () => setShowModalTolak(null);
 
   return (
     <main>
@@ -251,13 +272,13 @@ function TableSPBRequested() {
                                 <div className="absolute bg-white mt-10 p-1 shadow-5 rounded-md">
                                   <div className="flex flex-col gap-1">
                                     <button
-                                      onClick={openModal28}
+                                      onClick={() => handleClickCatatan(index)}
                                       className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
                                     >
                                       Setujui{' '}
                                     </button>
                                     <button
-                                      onClick={openModal29}
+                                      onClick={() => handleClickTolak(index)}
                                       className="w-25 text-xs font-bold bg-red-600 py-2 text-white rounded-md"
                                     >
                                       Tolak{' '}
@@ -301,7 +322,7 @@ function TableSPBRequested() {
                                 catatan={data.note}
                               >
                                 <button
-                                  onClick={openModal27}
+                                  onClick={() => handleClickEdit(index)}
                                   className="w-full justify-center text-center rounded md bg-blue-600 text-white font-semibold py-2"
                                 >
                                   Edit SPB
@@ -311,39 +332,38 @@ function TableSPBRequested() {
                               <></>
                             )}
                           </div>
-                          {showModal27 && (
+                          {showModalEdit == index ? (
                             <ModalEditSPB
-                              isOpen={showModal27}
-                              onClose={closeModal27}
-                              machineName={'R700'}
+                              isOpen={showModalEdit}
+                              onClose={closeModalEdit}
+                              onFinish={getSpbService}
+                              data={data}
                             >
                               <p></p>
                             </ModalEditSPB>
+                          ) : (
+                            ''
                           )}
-                          {showModal28 && (
+                          {showModalCatatan == index && (
                             <>
                               <ModalNoteSPB
-                                isOpen={showModal28}
-                                onClose={closeModal28}
-                                machineName={'R700'}
-                              >
-                                <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                  Setujui
-                                </button>
-                              </ModalNoteSPB>
+                                isOpen={showModalCatatan}
+                                onClose={closeModalCatatan}
+                                onFinish={getSpbService}
+                                isApprove={true}
+                                data={data}
+                              ></ModalNoteSPB>
                             </>
                           )}
-                          {showModal29 && (
+                          {showModalTolak == index && (
                             <>
                               <ModalNoteSPB
-                                isOpen={showModal29}
-                                onClose={closeModal29}
-                                machineName={'R700'}
-                              >
-                                <button className="w-full h-12 text-center text-white text-xs font-bold bg-red-700 rounded-md">
-                                  Tolak
-                                </button>
-                              </ModalNoteSPB>
+                                isOpen={showModalTolak}
+                                onClose={closeModalTolak}
+                                onFinish={getSpbService}
+                                isApprove={false}
+                                data={data}
+                              ></ModalNoteSPB>
                             </>
                           )}
                         </div>
@@ -471,13 +491,17 @@ function TableSPBRequested() {
                                   <div className="absolute bg-white mt-20 -translate-x-10 p-1 shadow-5 rounded-md">
                                     <div className="flex flex-col gap-1">
                                       <button
-                                        onClick={openModal28}
+                                        onClick={() =>
+                                          handleClickCatatan(index)
+                                        }
                                         className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
                                       >
                                         Setujui{' '}
                                       </button>
                                       <button
-                                        onClick={openModal29}
+                                        onClick={() =>
+                                          handleClickCatatan(index)
+                                        }
                                         className="w-25 text-xs font-bold bg-red-600 py-2 text-white rounded-md"
                                       >
                                         Tolak{' '}
@@ -506,7 +530,7 @@ function TableSPBRequested() {
                                     catatan={data.note}
                                   >
                                     <button
-                                      onClick={openModal27}
+                                      onClick={() => handleClickEdit(index)}
                                       className="w-full justify-center text-center rounded md bg-blue-600 text-white font-semibold py-2"
                                     >
                                       Edit SPB
@@ -516,40 +540,41 @@ function TableSPBRequested() {
                               ) : (
                                 <></>
                               )}
-                              {showModal27 && (
+                              {showModalEdit == index && (
                                 <ModalEditSPB
-                                  isOpen={showModal27}
-                                  onClose={closeModal27}
-                                  machineName={'R700'}
+                                  isOpen={showModalEdit}
+                                  onClose={closeModalEdit}
+                                  onFinish={getSpbService}
+                                  data={data}
                                 >
                                   <p></p>
                                 </ModalEditSPB>
                               )}
-                              {showModal28 && (
+                              {showModalCatatan == index ? (
                                 <>
                                   <ModalNoteSPB
-                                    isOpen={showModal28}
-                                    onClose={closeModal28}
-                                    machineName={'R700'}
-                                  >
-                                    <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                      Setujui
-                                    </button>
-                                  </ModalNoteSPB>
+                                    isOpen={showModalCatatan}
+                                    onClose={closeModalCatatan}
+                                    onFinish={getSpbService}
+                                    isApprove={true}
+                                    data={data}
+                                  ></ModalNoteSPB>
                                 </>
+                              ) : (
+                                ''
                               )}
-                              {showModal29 && (
+                              {showModalTolak == index ? (
                                 <>
                                   <ModalNoteSPB
-                                    isOpen={showModal29}
-                                    onClose={closeModal29}
-                                    machineName={'R700'}
-                                  >
-                                    <button className="w-full h-12 text-center text-white text-xs font-bold bg-red-700 rounded-md">
-                                      Tolak
-                                    </button>
-                                  </ModalNoteSPB>
+                                    isOpen={showModalTolak}
+                                    onClose={closeModalTolak}
+                                    onFinish={getSpbService}
+                                    isApprove={false}
+                                    data={data}
+                                  ></ModalNoteSPB>
                                 </>
+                              ) : (
+                                ''
                               )}
                             </div>
                           </div>
