@@ -140,12 +140,12 @@ export default function TableSPBService() {
             className="bg-white text-xs text-[#00499F] font-light mb-2 overflow-x-scroll"
             
           >
-            <Tab label="Service" {...a11yProps(0)} className="text-xs" />
+            <Tab label="Service" {...a11yProps(0)} className="text-xs " />
             <Tab label="Sparepart" {...a11yProps(1)} className="" />
-            <Tab label="History Service Approved" {...a11yProps(2)} />
-            <Tab label="History Service Rejected" {...a11yProps(3)} />
-            <Tab label="History Sparepart Approved" {...a11yProps(4)} />
-            <Tab label="History Sparepart Rejected" {...a11yProps(5)} />
+            <Tab label="Approved  Service " {...a11yProps(2)} />
+            <Tab label="Rejected  Service " {...a11yProps(3)} />
+            <Tab label="  Approved Sparepart" {...a11yProps(4)} />
+            <Tab label="  Rejected Sparepart" {...a11yProps(5)} />
           </Tabs>
         </ThemeProvider>
       </AppBar>
