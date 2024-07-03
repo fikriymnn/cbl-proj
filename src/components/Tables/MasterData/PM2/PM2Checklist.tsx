@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import Logo from '../../images/logo/logo-cbl 1.svg';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import ModalEditPM1Master from '../../../Modals/ModalEditPM1Master';
-import ModalKonfirmasi from '../../../Modals/ModalKonfirmasi';
+import ModalEditPM1Master from '../../../Modals/Master/PM1/ModalEditPM1Master';
+import ModalKonfirmasi from '../../../Modals/Master/PM1/ModalKonfirmasi';
+import ModalKonfirmasiPm2 from '../../../Modals/Master/PM2/ModalKonfirmasiPm2';
+import ModalEditPM2Master from '../../../Modals/Master/PM2/ModalEditPM2Master';
 
 const PM2Checklist = () => {
     const { id } = useParams();
@@ -38,7 +40,7 @@ const PM2Checklist = () => {
             });
 
             setMesin(res.data);
-            getPointPm1(res.data.id);
+            getPointPm2(res.data.id);
 
         } catch (error: any) {
             console.log(error.data.msg);
@@ -46,7 +48,7 @@ const PM2Checklist = () => {
     }
 
     const [point, setPoint] = useState<any>();
-    async function getPointPm1(id_mesin: any) {
+    async function getPointPm2(id_mesin: any) {
         const url = `${import.meta.env.VITE_API_LINK}/master/pointPm2`;
         try {
             const res = await axios.get(url, {
@@ -149,7 +151,7 @@ const PM2Checklist = () => {
                                                     EDIT
                                                 </button>
                                                 {showEdit[i] == true && (
-                                                    <ModalEditPM1Master
+                                                    <ModalEditPM2Master
                                                         children={undefined}
                                                         isOpen={showEdit[i]}
                                                         onClose={() => closeEdit(i)}
@@ -161,12 +163,12 @@ const PM2Checklist = () => {
                                                     DELETE
                                                 </button>
                                                 {showDelete[i] == true && (
-                                                    <ModalKonfirmasi
+                                                    <ModalKonfirmasiPm2
                                                         children={undefined}
                                                         isOpen={showDelete[i]}
                                                         onClose={() => closeDelete(i)}
                                                         idPoint={data.id}
-                                                    />
+                                                        onFinish={getPointPm2} />
                                                 )}
                                             </div>
                                         </div >
@@ -174,7 +176,7 @@ const PM2Checklist = () => {
                                             <div className="flex w-full  pt-6 border-b border-stroke ml-[70px]">
                                                 <label className="text-black text-xs font-bold">TASK LIST</label>
                                             </div>
-                                            {data.ms_inspection_task_pm1s.map((task: any, ii: number) => {
+                                            {data.ms_inspection_task_pm2s.map((task: any, ii: number) => {
                                                 return (
                                                     <>
                                                         <div className="flex w-full  pt-4 border-b border-stroke ml-[70px] pb-4">

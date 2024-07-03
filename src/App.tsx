@@ -173,7 +173,7 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/inspection/pm_2_form"
+          path="/maintenance/inspection/pm_2_form/:id"
           element={
             <>
               <PageTitle title="PT CBL" />

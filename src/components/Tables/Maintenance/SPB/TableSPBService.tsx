@@ -31,7 +31,7 @@ function TabPanel(props: TabPanelProps) {
       id={`full-width-tabpanel-${index}`}
       aria-labelledby={`full-width-tab-${index}`}
       {...other}
-      className=""
+      className="text-xs"
     >
       {value === index && (
         <Box sx={{ p: 0 }}>
@@ -57,6 +57,8 @@ export default function TableSPBService() {
         main: '#ffffff',
         dark: '#002884',
         contrastText: '#fff',
+        
+        
       },
       secondary: {
         light: '#0065DE',
@@ -81,6 +83,7 @@ export default function TableSPBService() {
     width: 'w-full',
     borderTopRightRadius: '12px',
     borderTopLeftRadius: '12px',
+    fontSize:'7px'
   };
   return (
     <Box
@@ -91,29 +94,35 @@ export default function TableSPBService() {
           borderTopLeftRadius: '12px',
           background: '#D8EAFF',
           boxShadow: 0,
+          fontSize:'7px'
         },
         '& .MuiBox-root': {
           borderTopRightRadius: '12px',
           borderTopLeftRadius: '12px',
           background: '#D8EAFF',
           boxShadow: 0,
+            fontSize:'7px'
         },
         '& .MuiTabs-root': {
           borderTopRightRadius: '12px',
           borderTopLeftRadius: '12px',
+            fontSize:'7px'
         },
         '& .MuiTabs-flexcontainer': {
           borderTopRightRadius: '12px',
           borderTopLeftRadius: '12px',
+            fontSize:'7px'
         },
         '& fieldset': {
           borderRadius: '12px',
+            fontSize:'7px'
         },
       }}
     >
       <AppBar position="static" className="">
         <ThemeProvider theme={theme}>
           <Tabs
+          
             value={value}
             onChange={handleChange}
             indicatorColor="primary"
@@ -121,14 +130,17 @@ export default function TableSPBService() {
               style: {
                 backgroundColor: '#00499F',
                 height: '4px',
+                fontSize:'9px'
               },
             }}
             textColor="inherit"
             variant="standard"
             aria-label="full width tabs example"
-            className="bg-white text-[#00499F] font-semibold mb-2 "
+            
+            className="bg-white text-xs text-[#00499F] font-light mb-2 overflow-x-scroll"
+            
           >
-            <Tab label="Service" {...a11yProps(0)} className="" />
+            <Tab label="Service" {...a11yProps(0)} className="text-xs" />
             <Tab label="Sparepart" {...a11yProps(1)} className="" />
             <Tab label="History Service Approved" {...a11yProps(2)} />
             <Tab label="History Service Rejected" {...a11yProps(3)} />
