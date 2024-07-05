@@ -414,7 +414,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                                   className={({ isActive }) =>
                                     `group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out ` +
                                     (isActive &&
-                                      '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                      '')
                                   }
                                   onClick={(e) => {
                                     e.preventDefault();
@@ -463,7 +463,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
                                                 className={({ isActive }) =>
                                                   `group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-1 font-medium text-bodydark1 duration-300 ease-in-out ` +
                                                   (isActive &&
-                                                    '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                                    '')
                                                 }
                                                 onClick={(e) => {
                                                   e.preventDefault();

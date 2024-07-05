@@ -16,6 +16,12 @@ function TableSPBRequested() {
 
   const openModalSPBBaru = () => setShowModalSPBBaru(true);
   const closeModalSPBBaru = () => setShowModalSPBBaru(false);
+  
+  const today = new Date();
+  const month = today.getMonth() + 1;
+  const year = today.getFullYear();
+  const date = today.getDate();
+  const currentDate =  date +"/"+ month  + "/" + year;
 
   const [isMobile, setIsMobile] = useState(false);
   const [openButton, setOpenButton] = useState(null);
@@ -115,7 +121,7 @@ function TableSPBRequested() {
   const closeModalEdit = () => setShowModalEdit(null);
   const closeModalCatatan = () => setShowModalCatatan(null);
   const closeModalTolak = () => setShowModalTolak(null);
-
+  
   return (
     <main>
       {!isMobile && (
@@ -140,11 +146,13 @@ function TableSPBRequested() {
                   SPB BARU
                 </button>
                 {showModalSPBBaru && (
+                  <>
+                
                   <ModalSPBService
                     isOpen={showModalSPBBaru}
                     onClose={closeModalSPBBaru}
-                    noSPB={'MT-0001'}
-                    tglSpb={'20 MEI 2024'}
+                    noSPB={'MT-0201'}
+                    tglSpb={currentDate}
                     sumber={'kebutuhan'}
                     data={undefined}
                     onFinish={getSpbService}
@@ -152,6 +160,8 @@ function TableSPBRequested() {
                   >
                     <p></p>
                   </ModalSPBService>
+                  
+                  </>
                 )}
               </div>
             </div>

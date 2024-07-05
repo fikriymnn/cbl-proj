@@ -134,26 +134,8 @@ function TableHistorySparepartApproved() {
                   id=""
                   className="md:w-[330px] w-40 mx-3 px-3 bg-[#E9F3FF] rounded-md"
                 />
-                <button
-                  onClick={openModalSPBBaru}
-                  className="bg-green-600 rounded-md text-white text-xs font-semibold px-10"
-                >
-                  SPB BARU
-                </button>
-                {showModalSPBBaru && (
-                  <ModalSPBService
-                    isOpen={showModalSPBBaru}
-                    onClose={closeModalSPBBaru}
-                    noSPB={'MT-0001'}
-                    tglSpb={'20 MEI 2024'}
-                    sumber={'kebutuhan'}
-                    data={undefined}
-                    onFinish={getSpbSeparepart}
-                    idProses={undefined}
-                  >
-                    <p></p>
-                  </ModalSPBService>
-                )}
+                
+                
               </div>
             </div>
             <div className="flex bg-white mt-2 py-2">
@@ -319,8 +301,7 @@ function TableHistorySparepartApproved() {
                                   onClose={closeModalCatatan}
                                   onFinish={undefined}
                                   isApprove={undefined}
-                                  data={undefined}
-                                ></ModalNoteSPBSparepart>
+                                  data={undefined} isValidate={undefined}                                ></ModalNoteSPBSparepart>
                               </>
                             )}
                             {showModalTolak == index && (
@@ -331,6 +312,7 @@ function TableHistorySparepartApproved() {
                                   onFinish={undefined}
                                   isApprove={undefined}
                                   data={undefined}
+                                  isValidate={undefined} 
                                 ></ModalNoteSPBSparepart>
                               </>
                             )}
@@ -505,8 +487,7 @@ function TableHistorySparepartApproved() {
                                     onClose={closeModalCatatan}
                                     onFinish={undefined}
                                     isApprove={undefined}
-                                    data={undefined}
-                                  ></ModalNoteSPBSparepart>
+                                    data={undefined} isValidate={undefined}                                  ></ModalNoteSPBSparepart>
                                 </>
                               )}
                               {showModalTolak == null && (
@@ -517,6 +498,7 @@ function TableHistorySparepartApproved() {
                                     onFinish={undefined}
                                     isApprove={undefined}
                                     data={undefined}
+                                    isValidate={undefined} 
                                   ></ModalNoteSPBSparepart>
                                 </>
                               )}
