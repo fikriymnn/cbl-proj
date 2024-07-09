@@ -226,6 +226,7 @@ const ModalStockCheck1 = ({
             id_proses: idProses,
             kode_analisis_mtc: selectedKodeAnalisis.kode_analisis,
             nama_analisis_mtc: selectedKodeAnalisis.nama_analisis,
+            jenis_analisis_mtc: selectedKodeAnalisis.bagian_analisis,
             note_analisis: '',
             masalah_sparepart: kebutuhanSparepart,
             skor_mtc: selectedSkorPerbaikan.skor,
