@@ -23,7 +23,7 @@ function Dashboard() {
                             </div>
 
                             <div className='flex justify-center items-center'>
-                                <div className="relative z-20 bg-[#D8EAFF] rounded-md dark:bg-form-input  w-40 m-3">
+                                <div className="relative z-20 bg-[#D8EAFF] rounded-md dark:bg-form-input  m-3">
                                     <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
                                         <svg
                                             width="20"
@@ -82,20 +82,16 @@ function Dashboard() {
                             </div>
                             <div className='flex md:justify-center items-center gap-2'>
                                 <p className='text-sm text-primary font-medium md:w-3/12 w-2/12'>Dari:</p>
-                                <div className='w-44 bg-[#D8EAFF]'>
+                                <div className='w-44 bg-[#D8EAFF] rounded-md'>
 
-                                    <LocalizationProvider dateAdapter={AdapterDayjs} >
-                                        <DatePicker slotProps={{ textField: { fullWidth: true, size: 'small' } }} />
-                                    </LocalizationProvider>
+                                   <input type="date" name="" id="" className='w-44 bg-[#D8EAFF] py-1 border rounded-md'/>
                                 </div>
                             </div>
                             <div className='flex md:justify-center items-center gap-2'>
                                 <p className='text-sm text-primary font-medium md:w-3/12 w-2/12'>Sampai:</p>
-                                <div className='w-44 bg-[#D8EAFF]'>
+                                <div className='w-44 bg-[#D8EAFF] rounded-md'>
 
-                                    <LocalizationProvider dateAdapter={AdapterDayjs} >
-                                        <DatePicker slotProps={{ textField: { fullWidth: true, size: 'small' } }} />
-                                    </LocalizationProvider>
+                                   <input type="date" name="" id="" className='w-44 bg-[#D8EAFF] py-1 border rounded-md'/>
                                 </div>
                             </div>
 
