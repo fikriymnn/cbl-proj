@@ -896,6 +896,7 @@ function TableOS3() {
                               <div>
                                 <div>
                                   <button
+                                  title='button'
                                     className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
                                     onClick={() => handleClick(i)}
                                   >
@@ -979,6 +980,7 @@ function TableOS3() {
                               </div>
                               <div>
                                 <button
+                                title='button'
                                   onClick={() => handleClickDetail(i)}
                                   className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
                                 >
@@ -1244,6 +1246,7 @@ function TableOS3() {
                               <div>
                                 <div>
                                   <button
+                                  title='button'
                                     className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
                                     onClick={() => handleClick(i)}
                                   >
@@ -1327,6 +1330,7 @@ function TableOS3() {
                               </div>
                               <div>
                                 <button
+                                title='button'
                                   onClick={() => handleClickDetail(i)}
                                   className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
                                 >
