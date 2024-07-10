@@ -7,6 +7,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import TableSPBRequested from './TableSPBRequested';
+import '../../../../css/style.css'
 
 import TableSPBRequestedSparepart from './TableSPBRequestedSparepart';
 import TableSPBHistoryServiceApproved from './TableSPBHistoryServiceApproved';
@@ -86,7 +87,7 @@ export default function TableSPBService() {
     fontSize:'7px'
   };
   return (
-    <Box
+    <Box 
       sx={{
         ...commonStyles,
         '& .MuiPaper-root': {
@@ -106,7 +107,9 @@ export default function TableSPBService() {
         '& .MuiTabs-root': {
           borderTopRightRadius: '12px',
           borderTopLeftRadius: '12px',
-            fontSize:'7px'
+          fontSize:'7px',
+          overflowX:"auto"
+            
         },
         '& .MuiTabs-flexcontainer': {
           borderTopRightRadius: '12px',
@@ -118,9 +121,12 @@ export default function TableSPBService() {
             fontSize:'7px'
         },
       }}
+    
     >
       <AppBar position="static" className="">
-        <ThemeProvider theme={theme}>
+        <ThemeProvider theme={theme} >
+          <div className='overflow-x-scroll scroll-tapi-eweh'>
+
           <Tabs
           
             value={value}
@@ -137,7 +143,8 @@ export default function TableSPBService() {
             variant="standard"
             aria-label="full width tabs example"
             
-            className="bg-white text-xs text-[#00499F] font-light mb-2 overflow-x-scroll"
+            className="bg-white text-xs text-[#00499F] font-light mb-2  min-w-[1000px]"
+            scrollButtons={true} 
             
           >
             <Tab label="Service" {...a11yProps(0)} className="text-xs " />
@@ -147,6 +154,7 @@ export default function TableSPBService() {
             <Tab label="  Approved Sparepart" {...a11yProps(4)} />
             <Tab label="  Rejected Sparepart" {...a11yProps(5)} />
           </Tabs>
+          </div>
         </ThemeProvider>
       </AppBar>
       <TabPanel value={value} index={0} dir={theme.direction}>

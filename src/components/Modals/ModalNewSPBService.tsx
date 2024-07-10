@@ -275,7 +275,7 @@ const ModalSPBService = ({
               id="ticketCode"
               className="text-neutral-500 text-xl font-normal "
             >
-              {noSPB}
+               <input type="text" className='border-2 border-gray p-2 rounded-md'/>
             </span>
           </div>
           <div className=" flex pt-2 gap-2">
