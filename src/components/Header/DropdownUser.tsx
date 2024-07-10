@@ -6,7 +6,7 @@ import axios from 'axios';
 import Bel from '../../images/icon/bel.svg';
 
 import { useNavigate } from 'react-router-dom';
-import { useCookies } from 'react-cookie';
+// import { useCookies } from 'react-cookie';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -156,7 +156,7 @@ const DropdownUser = () => {
   return (
     <div className="relative">
       <div className="flex items-center gap-4">
-        <span className="hidden lg:block">
+        <span className="block ">
           <span className="block text-sm font-medium text-black dark:text-white">
             {user == null ? (
               <>
@@ -169,9 +169,8 @@ const DropdownUser = () => {
                     <div
                       onFocus={() => setNotif(true)}
                       onBlur={() => setNotif(false)}
-                      className={`absolute right-0 mt-10 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${
-                        notif === true ? 'block' : 'hidden'
-                      }`}
+                      className={`absolute right-0 mt-10 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${notif === true ? 'block' : 'hidden'
+                        }`}
                     >
                       <div className="flex flex-col ">
                         <p className="text-xs font-bold text-primary p-2">
@@ -254,7 +253,7 @@ const DropdownUser = () => {
                       {user.nama}
                     </p>
                     <svg
-                      className="hidden fill-current sm:block"
+                      className=" fill-current block"
                       width="12"
                       height="8"
                       viewBox="0 0 12 8"
@@ -293,9 +292,8 @@ const DropdownUser = () => {
         ref={dropdown}
         onFocus={() => setDropdownOpen(true)}
         onBlur={() => setDropdownOpen(false)}
-        className={`absolute right-0 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${
-          dropdownOpen === true ? 'block' : 'hidden'
-        }`}
+        className={`absolute right-0 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${dropdownOpen === true ? 'block' : 'hidden'
+          }`}
       >
         <ul className="flex flex-col gap-5 border-b border-stroke px-6 py-7.5 dark:border-strokedark">
           <li>

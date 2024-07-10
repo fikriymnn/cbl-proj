@@ -98,7 +98,7 @@ function Pm2() {
                 withCredentials: true,
             });
 
-            alert("succes")
+
             getPM2()
         } catch (error: any) {
             console.log(error);
