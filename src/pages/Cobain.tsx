@@ -10,7 +10,7 @@ import Bars from '../components/Charts/TestChart';
 
 import ModalMtcLightHeavy from '../components/Modals/ModalMtcLightHeavy';
 
-import ModalPM2Schedule from '../components/Modals/ModalPM2Schedule';
+import ModalPM2Schedule from '../components/Modals/ModalPM3Schedule';
 
 import ModalStockCheck1 from '../components/Modals/ModalStockCheck1';
 
@@ -19,6 +19,7 @@ import ModalPM2Eksekutor from '../components/Modals/ModalPM2Eksekutor';
 import ModalFilter from '../components/Modals/ModalFilter';
 import ModalSPBService from '../components/Modals/ModalNewSPBService';
 import ModalTambahUser from '../components/Modals/Master/User/ModalTambahUser';
+import ModalPM3Schedule from '../components/Modals/ModalPM3Schedule';
 
 const App = () => {
   const [showModal1, setShowModal1] = useState(false);
@@ -354,13 +355,12 @@ const App = () => {
           Open Modal PM 2 Inspection
         </button>
         {showModal22 && (
-          <ModalPM2Schedule
+          <ModalPM3Schedule
             isOpen={showModal22}
             onClose={closeModal22}
-            machineName={'R700'}
-          >
-            <p></p>
-          </ModalPM2Schedule>
+            machineName={'R700'} children={undefined}          >
+            
+          </ModalPM3Schedule>
         )}
 
         <button
@@ -385,9 +385,8 @@ const App = () => {
             idProses={undefined}
             kodeLkh={undefined}
             namaMesin={undefined}
-            skor_mtc={undefined}
-          >
-            <p></p>
+            skor_mtc={undefined} children={undefined} jenis_perbaikan={undefined}          >
+            
           </ModalStockCheck1>
         )}
 
@@ -438,9 +437,8 @@ const App = () => {
             tglSpb={'20 MEI 2024'}
             data={undefined}
             onFinish={undefined}
-            idProses={undefined}
-          >
-            <p></p>
+            idProses={undefined} children={undefined} sumber={undefined}          >
+          
           </ModalSPBService>
         )}
       </div>

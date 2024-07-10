@@ -125,7 +125,7 @@ export default function TableSPBService() {
     >
       <AppBar position="static" className="">
         <ThemeProvider theme={theme} >
-          <div className='overflow-x-scroll scroll-tapi-eweh'>
+          <div className='overflow-x-scroll scroll-tapi-eweh text-xs'>
 
           <Tabs
           
