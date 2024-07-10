@@ -3,7 +3,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
-const ModalPM2Schedule = ({ children, isOpen, onClose, machineName }:
+const ModalPM3Schedule = ({ children, isOpen, onClose, machineName }:
     { children: any, isOpen: any, onClose: any, machineName: any, }) => {
     if (!isOpen) return null;
 
@@ -44,13 +44,19 @@ const ModalPM2Schedule = ({ children, isOpen, onClose, machineName }:
                     </div>
                     <div className="pt-4">
                         <label htmlFor="ticketCode" className="form-label block  text-black text-xs font-extrabold">
-                            PILIH JADWAL
+                            Dari
                         </label>
                     </div>
                     <div className='pt-1 w-full'>
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DatePicker slotProps={{ textField: { fullWidth: true, size: 'small' } }} />
-                        </LocalizationProvider>
+                        <input type="date" className='p-2 border border-slate-600 rounded-md w-full' />
+                    </div>
+                    <div className="pt-4">
+                        <label htmlFor="ticketCode" className="form-label block  text-black text-xs font-extrabold">
+                            Sampai
+                        </label>
+                    </div>
+                    <div className='pt-1 w-full'>
+                        <input type="date" className='p-2 border border-slate-600 rounded-md w-full' />
                     </div>
                     <div className="pt-5">
                         <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
@@ -61,6 +67,7 @@ const ModalPM2Schedule = ({ children, isOpen, onClose, machineName }:
 
                 </div>
                 <button
+                title='button'
                     type="button"
                     onClick={onClose}
                     className="absolute top-auto right-auto bottom-3 left-auto transform translate-x-1/2 translate-y-1/2 text-gray-400 focus:outline-none"
@@ -75,4 +82,4 @@ const ModalPM2Schedule = ({ children, isOpen, onClose, machineName }:
     );
 };
 
-export default ModalPM2Schedule;
+export default ModalPM3Schedule;

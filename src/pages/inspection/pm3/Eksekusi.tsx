@@ -36,7 +36,7 @@ const brandData = [
     
 
 ];
-function Pm3() {
+function Eksekusi() {
     const [isMobile, setIsMobile] = useState(false);
 
     const handleResize = () => {
@@ -76,19 +76,13 @@ function Pm3() {
                        <div className='w-2 h-full '>
 
                        </div>
-                       <section className='grid grid-cols-5 w-full py-4  font-semibold text-[14px]'>
+                       <section className='grid grid-cols-3 justify-between w-full py-4  font-semibold text-[14px]'>
 
 
                            <p className=''>Nama Mesin</p>
 
 
-                           <p>Tanggal Permintaan</p>
-
-
-                           <p>Jadwal Diajukan</p>
-
-
-                           <p>Jadwal Terverifikasi</p>
+                           <p>Jadwal</p>
 
 
                            <div className='w-[125px]'>{""}</div>
@@ -109,7 +103,7 @@ function Pm3() {
 
                                <div className=' w-full h-full flex flex-col justify-center relative'>
 
-                                   <div className='ps-7 w-full grid grid-cols-5'>
+                                   <div className='ps-7 w-full grid grid-cols-3 justify-between'>
 
 
                                        <div className='flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
@@ -117,28 +111,21 @@ function Pm3() {
                                        </div>
 
                                       
-                                       <div className='flex flex-col justify-center'>
-
-                                           <p className=''>{brand.tgl_permintaan != null ? brand.tgl_permintaan : '-'}</p>
-                                       </div>
-                                       <div className='flex flex-col justify-center'>
-
-                                           <p className='text-[#DE8500] font-bold'>{brand.tgl_diajukan != null ? brand.tgl_diajukan : '-'}</p>
-                                       </div>
+                                     
                                        <div className='flex flex-col justify-center'>
 
                                            <p className='text-[#00AF09] font-bold'>{brand.tgl_terverifikasi != null ? brand.tgl_terverifikasi : '-'}</p>
                                        </div>
 
 
-                                       <div>
+                                       <div className='w-full flex justify-end px-3'>
 
                                            <>
                                                <div 
                                                    className={`cursor-pointer uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center `} // Dynamic class assignment
                                                    onClick={openModal22}
                                                >
-                                                   REQUEST
+                                                   Eksekusi
 
                                                </div>
                                                {showModal22 && (
@@ -256,4 +243,4 @@ function Pm3() {
     )
 }
 
-export default Pm3
+export default Eksekusi

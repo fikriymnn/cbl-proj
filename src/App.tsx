@@ -62,6 +62,8 @@ import ProjectMtc from './components/Tables/Maintenance/projectMtc';
 
 import MonitoringService from './pages/sparepart/monitoringService/monitoringService';
 import AddStockService from './pages/sparepart/monitoringService/addStock';
+import TabsPm from './pages/inspection/pm3/TabsPm';
+import Pm3page from './pages/inspection/pm3/Pm3page';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -276,7 +278,7 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <Pm3 />
+                <Pm3page/>
               </ProtectedRoute>
             </>
           }
