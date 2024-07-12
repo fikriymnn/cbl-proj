@@ -147,6 +147,82 @@ const App = () => {
           </ModalMtcStockCheck2>
         )}
 
+
+
+      </div>
+      <div className="pt-4 gap-3">
+        <button
+          type="button"
+          onClick={openModal20}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Open Modal MTC Light Heavy
+        </button>
+        {showModal20 && (
+          <ModalMtcLightHeavy
+            isOpen={showModal20}
+            onClose={closeModal20}
+            title={undefined}
+          >
+            <div className="pt-5">
+              <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                LIGHT MAINTENANCE
+              </button>
+            </div>
+            <div className="pt-2">
+              <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                HEAVY MAINTENANCE
+              </button>
+            </div>
+          </ModalMtcLightHeavy>
+        )}
+
+        <button
+          type="button"
+          onClick={openModal22}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Open Modal PM 2 Inspection
+        </button>
+        {showModal22 && (
+          <ModalPM2Schedule
+            isOpen={showModal22}
+            onClose={closeModal22}
+            machineName={'R700'}
+          >
+            <p></p>
+          </ModalPM2Schedule>
+        )}
+
+        <button
+          type="button"
+          onClick={openModal24}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Open StockCHeck
+        </button>
+        {showModal24 && (
+          <ModalStockCheck1
+            isOpen={showModal24}
+            onClose={closeModal24}
+            machineName={'R700'}
+            kendala={'3.X.Y - Settingan tidak pas'}
+            tgl={'20 MEI 2024'}
+            jam={'14:00'}
+            namaPemeriksa={'Acep Piere'}
+            no={2}
+            onFinish={undefined}
+            idTiket={undefined}
+            idProses={undefined}
+            kodeLkh={undefined}
+            namaMesin={undefined}
+            skor_mtc={undefined}
+          >
+            <p></p>
+          </ModalStockCheck1>
+        )}
+
+
       </div>
       <div className="pt-4">
         <button
@@ -156,7 +232,48 @@ const App = () => {
         >
           Open
         </button>
+        {showModal27 && (
+          <ModalPM2Eksekutor
+            isOpen={showModal27}
+            onClose={closeModal27}
+            machineName={'R700'}
+          >
+            <p></p>
+          </ModalPM2Eksekutor>
+        )}
 
+        <button
+          type="button"
+          onClick={openModal29}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Open Filter
+        </button>
+        {showModal29 && (
+          <ModalFilter isOpen={showModal29} onClose={closeModal29}>
+            <p></p>
+          </ModalFilter>
+        )}
+        <button
+          type="button"
+          onClick={openModal30}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Open New SPB Service
+        </button>
+        {showModal30 && (
+          <ModalSPBService
+            isOpen={showModal30}
+            onClose={closeModal30}
+            noSPB={'MT-0001'}
+            tglSpb={'20 MEI 2024'}
+            data={undefined}
+            onFinish={undefined}
+            idProses={undefined}
+          >
+            <p></p>
+          </ModalSPBService>
+        )}
       </div>
       <div className="pt-20"></div>
     </div>
