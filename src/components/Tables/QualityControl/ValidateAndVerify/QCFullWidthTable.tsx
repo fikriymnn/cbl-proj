@@ -1,17 +1,15 @@
 import * as React from 'react';
 // import SwipeableViews from 'react-swipeable-views';
-import { ThemeProvider, createTheme, useTheme } from '@mui/material/styles';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 
-import TableTwo from '../Maintenance/TableOS';
-import TableThree from '../TableThree';
-import TableIncomingPrep from '../Maintenance/TableIncomingPrep';
-import TableOS from '../Maintenance/TableOS';
-import TableIncomingQC from './TableIncomingQC';
+import TableVerifikasi from './TableVerify';
+import TableValidasi from './TableValidate';
+import TableHistory from './TableHistory';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -128,16 +126,20 @@ export default function QCFullWidthTabs() {
                         aria-label="full width tabs example"
                         className='bg-white text-[#00499F] font-semibold mb-2'
                     >
-                        <Tab label="Incoming OS2" {...a11yProps(0)} className='' />
-                        <Tab label="OS 2" {...a11yProps(1)} />
+                        <Tab label="Validasi" {...a11yProps(0)} className='' />
+                        <Tab label="Verifikasi" {...a11yProps(1)} />
+                        <Tab label="History" {...a11yProps(2)} />
                     </Tabs>
                 </ThemeProvider>
             </AppBar>
             <TabPanel value={value} index={0} dir={theme.direction}>
-                <TableIncomingQC />
+                <TableValidasi />
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
-                <TableOS />
+                <TableVerifikasi />
+            </TabPanel>
+            <TabPanel value={value} index={2} dir={theme.direction}>
+                <TableHistory />
             </TabPanel>
         </Box>
     );

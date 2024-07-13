@@ -13,7 +13,7 @@ import Machine from './pages/Maintenance/Machine';
 import Preparation from './pages/Maintenance/Preparation';
 import MAN from './pages/Maintenance/MAN';
 import Material from './pages/Maintenance/Material';
-import MaintenanceQC from './pages/QualityControl/maintenanceQC';
+import MaintenanceQC from './pages/QualityControl/validatenverify';
 import HistoryMtc from './pages/History/Maintenance';
 
 import MasterData from './pages/MasterData/Master';
@@ -278,7 +278,7 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <Pm3page/>
+                <Pm3page />
               </ProtectedRoute>
             </>
           }
@@ -362,7 +362,7 @@ function App() {
         />
 
         <Route
-          path="/quality_control/mtc"
+          path="/qc/validatenverify"
           element={
             <>
               <PageTitle title="PT CBL" />
