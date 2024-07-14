@@ -791,7 +791,9 @@ function TableOS() {
 
                   const dateMtc = convertDatetimeToDate(data.createdAt);
                   const waktuRespon = calculateResponTime(
-                    data.createdAt,
+                    data.waktu_respon_qc == null
+                      ? data.createdAt
+                      : data.waktu_respon_qc,
                     data.waktu_respon,
                   );
                   return (
@@ -874,7 +876,8 @@ function TableOS() {
                             <div className="flex gap-2 items-center md:mb-0 mb-2">
                               <div>
                                 <div>
-                                  {data.status_tiket == 'monitoring' ? (
+                                  {data.status_tiket == 'monitoring' ||
+                                  data.status_tiket == 'request to qc' ? (
                                     <button
                                       title="button"
                                       className="text-xs font-bold bg-blue-200 py-2 text-white rounded-md opacity-0"
