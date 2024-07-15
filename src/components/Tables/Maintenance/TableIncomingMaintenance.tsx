@@ -4,6 +4,8 @@ import Arrow from '../../../images/icon/arrowDown.svg';
 import axios from 'axios';
 
 import Loading from '../../Loading';
+import Stack from '@mui/material/Stack';
+import Pagination from '@mui/material/Pagination';
 
 const tiket = [
   {
@@ -68,6 +70,7 @@ const tiket = [
 
 const TableIncomingMaintenance = () => {
   const [showModal2, setShowModal2] = useState(false);
+  const [page, setPage] = useState(1);
 
   //const openModal2 = () => setShowModal2(true);
   //const closeModal2 = () => setShowModal2(false);
@@ -512,6 +515,18 @@ const TableIncomingMaintenance = () => {
           </div>
         </>
       )}
+      <div className="w-full flex justify-center mt-5 ">
+              <Stack spacing={2}>
+                <Pagination
+                  count={mtc?.total_page}
+                  color="primary"
+                  onChange={(e, i) => {
+                    setPage(i);
+                    console.log(i);
+                  }}
+                />
+              </Stack>
+            </div>
     </div>
   );
 };
