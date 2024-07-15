@@ -143,8 +143,6 @@ const Login: React.FC = () => {
                   </button>
                   {isLoading && <Loading />}
                 </div>
-
-
               </form>
             </div>
           </div>

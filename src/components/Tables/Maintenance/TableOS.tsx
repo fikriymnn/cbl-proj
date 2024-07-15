@@ -1288,7 +1288,9 @@ function TableOS() {
 
                 const dateMtc = convertDatetimeToDate(data.createdAt);
                 const waktuRespon = calculateResponTime(
-                  data.createdAt,
+                  data.waktu_respon_qc == null
+                    ? data.createdAt
+                    : data.waktu_respon_qc,
                   data.waktu_respon,
                 );
                 return (
