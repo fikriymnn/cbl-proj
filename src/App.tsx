@@ -64,6 +64,7 @@ import MonitoringService from './pages/sparepart/monitoringService/monitoringSer
 import AddStockService from './pages/sparepart/monitoringService/addStock';
 import TabsPm from './pages/inspection/pm3/TabsPm';
 import Pm3page from './pages/inspection/pm3/Pm3page';
+import Qualityinspection from './pages/QualityControl/QualityInspection';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -368,6 +369,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MaintenanceQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <Qualityinspection />
               </ProtectedRoute>
             </>
           }
