@@ -2156,13 +2156,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role }: SidebarProps) => {
               {role === 'super admin' && renderAll()}
               {role === 'section head' && renderMTC()}
               {role === 'admin' && renderMTC()}
+              {role === 'supervisor' && renderMTC()}
 
-              {role === 'leader' ||
-                (role === 'senior technician' && renderShift())}
-              {role === 'supervisor' ||
-                (role === 'shift technician' && renderShift())}
-              {role === 'shift' ||
-                (role === 'junior technician' && renderShift())}
+              {role === 'senior technician' && renderShift()}
+              {role === 'shift technician' && renderShift()}
+              {role === 'junior technician' && renderShift()}
             </ul>
           </div>
         </nav>
