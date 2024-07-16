@@ -131,7 +131,6 @@ const ModalStockCheck1 = ({
     getKodeAnalisis();
     getSkorPerbaikan();
     getMasterMesin();
-    getMasterSparepart(mesinMsSparepart);
   }, []);
   async function getKodeAnalisis() {
     const url = `${import.meta.env.VITE_API_LINK}/master/kodeAnalisis`;
@@ -192,12 +191,12 @@ const ModalStockCheck1 = ({
     }
   }
 
-  async function getMasterSparepart(mesinName: any) {
+  async function getMasterSparepart(id_mesin: any) {
     const url = `${import.meta.env.VITE_API_LINK}/master/sparepart`;
     try {
       const res = await axios.get(url, {
         params: {
-          nama_mesin: mesinName,
+          id_mesin: id_mesin,
         },
         withCredentials: true,
       });
@@ -689,9 +688,7 @@ const ModalStockCheck1 = ({
                                     <div className="px-5 pb-4">
                                       <div className="relative flex w-full gap-10 justify-start pb-2 pt-3">
                                         <select
-                                          value={mesinMsSparepart}
                                           onChange={(e) => {
-                                            setMesin(e.target.value);
                                             getMasterSparepart(e.target.value);
                                             changeTextColor();
                                           }}
@@ -702,19 +699,19 @@ const ModalStockCheck1 = ({
                                           }`}
                                         >
                                           <option
-                                            value={mesinMsSparepart}
+                                            value=""
                                             selected
                                             disabled
                                             className="text-gray-800 text-xs font-light dark:text-bodydark"
                                           >
-                                            {mesinMsSparepart}
+                                            SELECT MESIN
                                           </option>
                                           {masterMesin != null &&
-                                            masterMesin.map(
+                                            masterMesin?.map(
                                               (data: any, i: number) => {
                                                 return (
                                                   <option
-                                                    value={data.nama_mesin}
+                                                    value={data.id}
                                                     className="text-gray-800 text-xs font-light dark:text-bodydark"
                                                   >
                                                     {data.nama_mesin}
@@ -776,7 +773,7 @@ const ModalStockCheck1 = ({
                                           </div>
                                         </div>
 
-                                        {masterSparepart.map(
+                                        {masterSparepart?.map(
                                           (
                                             SparepartMaster: any,
                                             ii: number,
@@ -993,15 +990,15 @@ const ModalStockCheck1 = ({
                                         }`}
                                       >
                                         <option
-                                          value={mesin}
+                                          value=""
                                           selected
                                           disabled
                                           className="text-gray-800 text-xs font-light dark:text-bodydark"
                                         >
-                                          {mesin}
+                                          SELECT MESIN
                                         </option>
                                         {masterMesin != null &&
-                                          masterMesin.map(
+                                          masterMesin?.map(
                                             (data: any, i: number) => {
                                               return (
                                                 <option

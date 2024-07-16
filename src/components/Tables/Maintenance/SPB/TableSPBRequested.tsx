@@ -15,7 +15,6 @@ import Pagination from '@mui/material/Pagination';
 
 function TableSPBRequested() {
   const [page, setPage] = useState(1);
-  const [page2, setPage2] = useState(1);
   const [showModalSPBBaru, setShowModalSPBBaru] = useState(false);
 
   const openModalSPBBaru = () => setShowModalSPBBaru(true);
@@ -83,7 +82,6 @@ function TableSPBRequested() {
   }, [page]);
 
   const [spbService, setSpbService] = useState<any>();
-  const [spbServicePurchase, setSpbServicePurchase] = useState<any>();
 
   async function getSpbService() {
     const url = `${import.meta.env.VITE_API_LINK}/spbServiceSparepart`;
@@ -118,6 +116,8 @@ function TableSPBRequested() {
   const closeModalTolak = () => setShowModalTolak(null);
 
   //ini untuk purchase sementara
+  const [page2, setPage2] = useState(1);
+  const [spbServicePurchase, setSpbServicePurchase] = useState<any>();
   const [statusPengajuan, setStatusPengajuan] = useState<any>();
   const [openButtonPurchase, setOpenButtonPurchase] = useState(null);
   const [showModalMonitoringPurchase, setShowModalMonitoringPurchase] =
