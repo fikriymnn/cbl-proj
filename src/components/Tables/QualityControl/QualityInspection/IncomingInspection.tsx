@@ -281,13 +281,82 @@ function IncomingInspection() {
                             <label className='text-neutral-500 text-sm font-semibold '>
                                 Keterangan
                             </label>
-                            <label className='text-neutral-500 text-sm font-semibold'>
+                            <label className='text-neutral-500 text-sm font-semibold flex justify-end'>
                                 Bobot (%)
                             </label>
                         </div>
-                        <div className='px-3 py-4 border-b-8 border-[#D8EAFF]'>
 
+                        <div className='grid grid-cols-12 px-3 py-4 '>
+                            <div className='flex gap-4 col-span-2'>
+                                <label className='text-neutral-500 text-sm font-semibold'>
+                                    1
+                                </label>
+                                <label className='text-neutral-500 text-sm font-semibold'>
+                                    Jenis Kertas
+                                </label>
+                            </div>
+                            <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                -
+                            </label>
+                            <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                Visual
+                            </label>
+                            <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                Sesuai Surat Jalan
+                            </label>
+                            <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                <select >
+                                    <option> Select Result</option>
+
+                                </select>
+                            </label>
+                            <div className='flex flex-col gap-1'>
+                                <label className='text-neutral-500 text-sm font-semibold '>
+                                    <input type='checkbox' />Sesuai
+                                </label>
+                                <label className='text-neutral-500 text-sm font-semibold '>
+                                    <input type='checkbox' />Tidak Sesuai
+                                </label>
+                            </div>
+                            <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                25
+                            </label>
                         </div>
+                        <div className='grid grid-cols-10 bg-[#F5F5F5] px-3 py-4 border-b-8 border-[#D8EAFF]'>
+                            <div className='col-span-2'>
+                                <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Time : -
+
+                                </p>
+                                <>
+                                    <p className='font-bold text-[#DE0000]'>
+                                        Task Belum Dimulai
+                                    </p>
+                                    <button
+
+                                        className="flex w-full rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
+                                    >
+                                        <svg
+                                            width="14"
+                                            height="14"
+                                            viewBox="0 0 14 14"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                                fill="white"
+                                            />
+                                        </svg>
+                                    </button>
+                                </>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+
                     </div>
                 </main>
             )}
