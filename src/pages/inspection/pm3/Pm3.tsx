@@ -37,6 +37,8 @@ const brandData = [
 
 ];
 function Pm3() {
+
+    
     const [isMobile, setIsMobile] = useState(false);
 
     const handleResize = () => {
@@ -158,11 +160,18 @@ function Pm3() {
                                    </div>
                                </div>
                            </section>
+                           
                        </>
                    ))}
 
 
+<section className=' grid grid-cols-5 w-full  justify-end  h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black'> 
+    <div className='col-span-4'></div>
+    <div className='w-full flex  '>
 
+    <button className='my-2 w-27 mx-2 px-2 bg-blue-700 text-sm text-white font-semibold uppercase'>Submit </button>
+    </div>
+</section>
 
 
 
