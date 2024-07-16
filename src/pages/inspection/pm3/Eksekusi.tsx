@@ -121,13 +121,13 @@ function Eksekusi() {
                                        <div className='w-full flex justify-end px-3'>
 
                                            <>
-                                               <div 
+                                               <Link to={'/maintenance/inspection/pm_3_form'} 
                                                    className={`cursor-pointer uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center `} // Dynamic class assignment
-                                                   onClick={openModal22}
+                                                  
                                                >
                                                    Eksekusi
 
-                                               </div>
+                                               </Link>
                                                {showModal22 && (
      <ModalPM3Schedule
        isOpen={showModal22}

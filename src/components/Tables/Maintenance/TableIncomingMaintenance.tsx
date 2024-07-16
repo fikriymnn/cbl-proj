@@ -515,7 +515,7 @@ const TableIncomingMaintenance = () => {
           </div>
         </>
       )}
-      <div className="w-full flex justify-center mt-5 ">
+      <div className="w-full flex justify-end mt-5 ">
               <Stack spacing={2}>
                 <Pagination
                   count={mtc?.total_page}
