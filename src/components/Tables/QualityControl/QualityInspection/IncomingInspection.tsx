@@ -222,6 +222,7 @@ function IncomingInspection() {
                                 <label className='text-neutral-500 text-sm font-semibold'>
 
                                 </label>
+
                                 <label className='text-black text-lg font-bold'>
                                     STANDAR PEMERIKSAAN
                                 </label>
@@ -1269,7 +1270,7 @@ function IncomingInspection() {
                     <div className='bg-white flex w-full justify-between px-4 py-4'>
                         <div className='flex flex-col'>
                             <label className='text-neutral-500 text-sm font-semibold '>
-                                <input type='checkbox' /> {' '}DITERIMA
+                                <input type='checkbox' className='rounded-full' /> {' '}DITERIMA
                             </label>
                             <label className='text-neutral-500 text-sm font-semibold '>
                                 <input type='checkbox' className='' /> {' '}DITOLAK
