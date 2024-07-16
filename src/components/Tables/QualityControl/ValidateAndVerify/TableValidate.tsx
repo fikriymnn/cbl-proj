@@ -106,23 +106,25 @@ const TableValidasi = () => {
     <>
       <div className="flex flex-col gap-2">
         <div className=" border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
-          <div className="flex flex-col">
-            <div className="grid grid-cols-10 dark:border-strokedark  ">
-              <div className="flex w-full justify-center col-span-2">
-                <p className="text-slate-600  text-[14px] font-semibold  dark:text-white">
+          <div className="flex w-full  ">
+              <p className='text-slate-600  text-[14px] font-semibold  dark:text-white w-5 mx-3 '>No</p>
+            <div className="grid grid-cols-10  w-full dark:border-strokedark  ">
+              <div className="flex w-full col-span-2 ">
+              
+                <p className="text-slate-600  text-[14px] font-semibold  dark:text-white  ">
                   Kode Tiket
                 </p>
               </div>
-              <div className=" text-[14px] justify-center col-span-2 ">
+              <div className=" text-[14px]  col-span-2 ">
                 <p className="text-slate-600 font-semibold  dark:text-white">
                   Waktu Masuk
                 </p>
               </div>
 
-              <div className=" text-[14px] justify-center col-span-2 ">
+              <div className=" text-[14px]  col-span-2 ">
                 <p className="text-slate-600 font-semibold ">Nama Mesin</p>
               </div>
-              <div className=" text-[14px] justify-center ">
+              <div className=" text-[14px]  ">
                 <p className="text-slate-600 font-semibold ">Kendala</p>
               </div>
             </div>
@@ -133,13 +135,14 @@ const TableValidasi = () => {
           return (
             <div
               key={index}
-              className="rounded-xl border  border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark "
+              className="flex w-full  rounded-xl border  border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark "
             >
-              <div className="grid grid-cols-10 items-center dark:border-strokedark px-4">
-                <div className="flex w-full justify-start col-span-2 gap-14">
-                  <p className="text-neutral-500 text-sm font-light  dark:text-white">
+              <p className="text-neutral-500 text-sm font-light  dark:text-white mx-3 w-5 flex items-center">
                     {index + 1}{' '}
                   </p>
+              <div className="grid grid-cols-10 w-full items-center dark:border-strokedark ">
+                <div className="flex w-full justify-start col-span-2 gap-14 ">
+                  
                   <p className="text-neutral-500 text-sm font-light  dark:text-white">
                     {' '}
                     {data.kode_ticket}
@@ -161,23 +164,26 @@ const TableValidasi = () => {
                     {data.kode_lkh + ' - ' + data.nama_kendala}
                   </p>
                 </div>
+                <div className='flex flex-col gap-1'>
+
                 <button
                   onClick={() => validasiTicket(data.id)}
-                  className="text-xs font-bold bg-blue-700 py-2 px-5 text-white rounded-sm"
+                  className="text-xs font-bold bg-blue-600 py-2 px-5 text-white  w-20 rounded-md"
                 >
                   Validasi
                 </button>
                 <button
                   onClick={() => tolakTicket(data.id)}
-                  className="text-xs font-bold bg-red-700 py-2 px-5 text-white rounded-sm"
+                  className="text-xs font-bold bg-red-600 py-2 px-5 text-white  w-20 rounded-md"
                 >
                   Tolak
                 </button>
+                </div>
               </div>
             </div>
           );
         })}
-        <div className="w-full flex justify-center mt-5 ">
+        <div className="w-full flex  mt-5 ">
           <Stack spacing={2}>
             <Pagination
               count={ticketValidasi?.total_page}
