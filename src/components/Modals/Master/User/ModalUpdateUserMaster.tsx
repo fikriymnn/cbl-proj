@@ -215,6 +215,7 @@ const ModalEditUser = ({
                 <option
                   value=""
                   disabled
+                  selected
                   className="text-body dark:text-bodydark"
                 >
                   Pilih Role
@@ -225,18 +226,33 @@ const ModalEditUser = ({
                 >
                   Section Head
                 </option>
+
                 <option
                   value="supervisor"
                   className="text-body dark:text-bodydark"
                 >
                   Supervisor
                 </option>
-
-                <option value="leader" className="text-body dark:text-bodydark">
-                  Leader
+                <option value="admin" className="text-body dark:text-bodydark">
+                  Admin
                 </option>
-                <option value="shift" className="text-body dark:text-bodydark">
-                  Shift
+                <option
+                  value="senior technician"
+                  className="text-body dark:text-bodydark"
+                >
+                  Senior Technician
+                </option>
+                <option
+                  value="shift technician"
+                  className="text-body dark:text-bodydark"
+                >
+                  Shift Technician
+                </option>
+                <option
+                  value="junior technician"
+                  className="text-body dark:text-bodydark"
+                >
+                  Junior Technician
                 </option>
               </select>
               <label className="text-black text-xs font-bold pt-4">

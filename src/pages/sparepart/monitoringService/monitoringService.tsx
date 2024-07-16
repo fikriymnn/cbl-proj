@@ -62,15 +62,9 @@ function MonitoringService() {
               </p>
               <p className="text-[10px] font-semibold w-[7%] ">Mesin</p>
               <p className="text-[10px] font-semibold w-[7%]">Posisi</p>
-              <p className="text-[10px] font-semibold w-[8%]">Tgl Datang</p>
               <p className="text-[10px] font-semibold w-[8%]">Tgl Pasang</p>
               <p className="text-[10px] font-semibold w-[8%]">Tgl Rusak</p>
-              <p className="text-[10px] font-semibold w-[7%]">Umur A</p>
-              <p className="text-[10px] font-semibold w-[7%]">Umur Grade</p>
-              <p className="text-[10px] font-semibold w-[6%]">Grade </p>
-              <p className="text-[10px] font-semibold w-[7%]">Umur Aktual</p>
               <p className="text-[10px] font-semibold w-[7%]">Sisa Umur</p>
-              <p className="text-[10px] font-semibold w-[7%]">Ket. </p>
             </div>
           </div>
           {masterSparepart?.map((data: any, index: number) => {
@@ -104,15 +98,9 @@ function MonitoringService() {
                     {data.mesin.nama_mesin}
                   </p>
                   <p className="text-[10px]  w-[7%]">{data.posisi_part}</p>
-                  <p className="text-[10px]  w-[8%]">12 March 2024</p>
                   <p className="text-[10px]  w-[8%]">{tglPasang}</p>
                   <p className="text-[10px]  w-[8%]">{tglRusak}</p>
-                  <p className="text-[10px]  w-[7%]">{data.umur_a}</p>
-                  <p className="text-[10px]  w-[7%]">{data.umur_grade}%</p>
-                  <p className="text-[10px]  w-[6%]">{data.grade_2} </p>
-                  <p className="text-[10px]  w-[7%]">{data.actual_umur}</p>
-                  <p className="text-[10px]  w-[7%]">{data.sisa_umur}</p>
-                  <p className="text-[10px]  w-[7%]">{data.keterangan}</p>
+                  <p className="text-[10px]  w-[7%]">{data.umur_service}</p>
                 </div>
               </div>
             );
