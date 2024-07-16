@@ -69,28 +69,29 @@ const TableHistory = () => {
   }
   return (
     <div className="flex flex-col gap-2">
-      <div className=" border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
-        <div className="flex flex-col">
-          <div className="grid grid-cols-12 dark:border-strokedark  ">
-            <div className="flex w-full justify-center col-span-2">
+      <div className="flex px-2 border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
+        <p className='w-5 text-[14px] font-semibold mr-3'>No</p>
+        <div className="flex flex-col w-full">
+          <div className="grid grid-cols-12 w-full dark:border-strokedark  ">
+            <div className="flex w-full justify-start col-span-2">
               <p className="text-slate-600  text-[14px] font-semibold  dark:text-white">
                 Kode Tiket
               </p>
             </div>
-            <div className=" text-[14px] justify-center col-span-2 ">
+            <div className=" text-[14px] justify-start col-span-2 ">
               <p className="text-slate-600 font-semibold  dark:text-white">
                 Waktu Masuk
               </p>
             </div>
-            <div className=" text-[14px] justify-center col-span-2 ">
+            <div className=" text-[14px] justify-start col-span-2 ">
               <p className="text-slate-600 font-semibold  dark:text-white">
                 Waktu Selesai
               </p>
             </div>
-            <div className=" text-[14px] justify-center col-span-2 ">
+            <div className=" text-[14px] justify-start col-span-2 ">
               <p className="text-slate-600 font-semibold ">Nama Mesin</p>
             </div>
-            <div className=" text-[14px] justify-center ">
+            <div className=" text-[14px] justify-start ">
               <p className="text-slate-600 font-semibold ">Kendala</p>
             </div>
             {/* <div className=" text-[14px] justify-center ">
@@ -105,13 +106,17 @@ const TableHistory = () => {
         return (
           <div
             key={index}
-            className="rounded-xl border  border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark "
+            className=" flex w-full rounded-xl border px-2  border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark "
           >
-            <div className="grid grid-cols-12 items-center dark:border-strokedark px-4">
-              <div className="flex w-full justify-start col-span-2 gap-14">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+            <div className='flex items-center'>
+
+            <p className="text-neutral-500 text-sm font-light  dark:text-white w-5 mr-3">
                   {index + 1}{' '}
                 </p>
+            </div>
+            <div className="grid grid-cols-12 w-full items-center dark:border-strokedark">
+              <div className="flex w-full justify-start col-span-2 gap-14">
+                
                 <p className="text-neutral-500 text-sm font-light  dark:text-white">
                   {' '}
                   {data.tiket.kode_ticket}
