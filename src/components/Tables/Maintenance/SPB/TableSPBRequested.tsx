@@ -711,7 +711,7 @@ function TableSPBRequested() {
           </div>
         </>
       )}
-      <div className="w-full flex justify-center mt-5 ">
+      <div className="w-full flex justify-end mt-5 ">
         <Stack spacing={2}>
           <Pagination
             count={spbService?.total_page}
@@ -963,7 +963,7 @@ function TableSPBRequested() {
           </div>
         );
       })}
-      <div className="w-full flex justify-center mt-5 ">
+      <div className="w-full flex justify-end mt-5 ">
         <Stack spacing={2}>
           <Pagination
             count={spbServicePurchase?.total_page}
