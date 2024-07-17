@@ -15,6 +15,7 @@ import convertTimeStampToDate from '../../../../utils/convertDate';
 import ModalStockCheck1 from '../../../Modals/ModalStockCheck1';
 import zIndex from '@mui/material/styles/zIndex';
 import ModalVerifikasi from '../../../Modals/Qc/ModalVerifikasi';
+import calculateTime from '../../../../utils/calculateTime';
 
 const TableVerifikasi = () => {
   const [page, setPage] = useState(1);
@@ -168,8 +169,19 @@ const TableVerifikasi = () => {
         </div>
       </div>
       {ticketVerifikasi?.data.map((data: any, index: number) => {
+        
         const lengthProses = data.proses_mtcs.length - 1;
+        const lengthProsesSebelum = lengthProses - 1;
+        const skorAwal = lengthProses == 0 ? 0:data.proses_mtcs[lengthProsesSebelum]
+        .skor_mtc;
+        const skorBaru = data.proses_mtcs[lengthProses]
+        .skor_mtc;
         const tglTicket = convertTimeStampToDate(data.waktu_selesai_mtc);
+        const waktuPengerjaan = calculateTime(
+          data.proses_mtcs[lengthProses].waktu_mulai_mtc ,
+          data.proses_mtcs[lengthProses].waktu_selesai_mtc,
+        );
+        console.log(lengthProses)
         return (
           <div
             key={index}
@@ -204,9 +216,17 @@ const TableVerifikasi = () => {
                   {data.kode_lkh + ' - ' + data.nama_kendala}
                 </p>
               </div>
-              <div className="flex w-full text-[14px] justify-start col-span-2">
+              <div className="flex w-full text-[14px] justify-start col-span-2 items-center gap-2">
+                <p className="px-2 rounded-full text-sm font-light text-orange-600 bg-orange-200 ">
+                 {skorAwal} 
+                </p>
+
+                <svg width="23" height="8" viewBox="0 0 23 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 3.82353H22M22 3.82353L19.25 1M22 3.82353L19.25 7" stroke="#0065DE"/>
+</svg>
+
                 <p className="px-2 rounded-full text-sm font-light text-[#FCBF11] bg-[#FFF2B1] ">
-                  {data.skor_mtc}
+                {skorBaru}
                 </p>
               </div>
               <div className="flex w-full text-[14px] justify-start ">
@@ -224,34 +244,39 @@ const TableVerifikasi = () => {
                 
                 {showModal1[index] == true && (
                                         <ModalVerifikasi
-                                         
-                                          isOpen={showModal1[index]}
-                                          onClose={() => closeModal1(index)}
-                                          onFinish={undefined}
-                                          kendala={data.nama_kendala}
-                                          kodeLkh={data.kode_lkh}
-                                          machineName={data.kode_ticket}
-                                          tgl={data.waktu_respon}
-                                          jam={'19.09'}
-                                          namaPemeriksa={
-                                            data.proses_mtcs[lengthProses]
-                                              .user_eksekutor.nama
-                                          }
-                                          no={'109299'}
-                                          idTiket={data.id}
-                                          idProses={
-                                            data.proses_mtcs[lengthProses].id
-                                          }
-                                          namaMesin={data.mesin}
-                                          skor_mtc={
-                                            data.proses_mtcs[lengthProses]
-                                              .skor_mtc
-                                          }
-                                          jenis_perbaikan={
-                                            data.proses_mtcs[lengthProses]
-                                              .cara_perbaikan
-                                          }
-                                        ><div className=' z-50 my-5 rounded-md'>
+                    kodeTiket={data.kode_ticket}
+                    isOpen={showModal1[index]}
+                    waktuMasuk={data.createdAt}
+                    persentaseAwal={skorAwal}
+                    onClose={() => closeModal1(index)}
+                    onFinish={undefined}
+                    kendala={data.kode_lkh + " - " + data.nama_kendala  }
+                    kodeLkh={data.kode_lkh}
+                    machineName={data.kode_ticket}
+                    tgl={data.waktu_respon}
+                    jam={'19.09'}
+                    namaPemeriksa={data.proses_mtcs[lengthProses]
+                      .user_eksekutor.nama}
+                    no={'109299'}
+                    idTiket={data.id}
+                    idProses={data.proses_mtcs[lengthProses].id}
+                    namaMesin={data.mesin}
+                    skor_mtc={skorAwal}
+                    jenis_perbaikan={data.proses_mtcs[lengthProses]
+                      .cara_perbaikan}  persentaseBelumVerif={skorBaru} kode_analisis={data.proses_mtcs[lengthProses]
+                        .kode_analisis_mtc + " - " + data.proses_mtcs[lengthProses]
+                        .nama_analisis_mtc} durasiPerbaikan={waktuPengerjaan} eksekutor={data.operator} 
+                                                               >
+                                                                 <div>
+          <label
+                htmlFor="namaPemeriksa"
+                className="form-label block  text-black text-xs font-extrabold my-2 "
+              >
+                CATATAN
+              </label>
+            <textarea className='w-full border border-neutral-600 h-56 p-2 rounded-sm'  name="" id=""></textarea>
+          </div>
+                                                                <div className=' z-50 my-5 rounded-md'>
                                         <div className='flex flex-col gap-2'>
                                         
                                                         <button

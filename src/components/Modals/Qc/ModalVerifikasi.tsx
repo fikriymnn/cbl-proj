@@ -13,17 +13,14 @@ const ModalVerifikasi = ({
   onClose,
   onFinish,
   kendala,
-  machineName,
-  tgl,
-  jam,
-  namaPemeriksa,
-  no,
-  idTiket,
-  idProses,
-  kodeLkh,
   namaMesin,
-  skor_mtc,
-  jenis_perbaikan,
+  kodeTiket,
+  waktuMasuk,
+  persentaseAwal,
+  persentaseBelumVerif,
+  kode_analisis,
+  durasiPerbaikan,
+  eksekutor,
 }: {
   children: any;
   isOpen: any;
@@ -41,32 +38,16 @@ const ModalVerifikasi = ({
   namaMesin: any;
   skor_mtc: any;
   jenis_perbaikan: any;
+  kodeTiket: any;
+  waktuMasuk:any;
+  persentaseAwal:any;
+  persentaseBelumVerif:any,
+  kode_analisis:any
+  durasiPerbaikan:any,
+  eksekutor:any,
+
 }) => {
   if (!isOpen) return null;
-
-  const [sparepart, setSparepart] = useState([
-    {
-      rusak: '',
-      pengganti: '',
-    },
-  ]);
-  const [selectedOption, setSelectedOption] = useState<string>('');
-  const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
-
-  const [selectedNamaAnalisis, setSelectedNamaAnalisis] = useState<any>();
-
-  const changeTextColor = () => {
-    setIsOptionSelected(true);
-  };
-  const [isHidden, setIsHidden] = useState(true);
-  const [buttonHidden, setButtonHidden] = useState(true);
-
-  const handleClick = () => {
-    setIsHidden(false);
-    setButtonHidden(false);
-    setSparepart([]);
-  };
-
   const [isMobile, setIsMobile] = useState(false);
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
@@ -83,8 +64,6 @@ const ModalVerifikasi = ({
     };
   }, []);
 
-  const [rusak, setRusak] = useState(false);
-
   function convertDatetimeToDate(datetime: any) {
     const dateObject = new Date(datetime);
     const day = dateObject.getDate().toString().padStart(2, '0'); // Ensure two-digit day
@@ -93,6 +72,8 @@ const ModalVerifikasi = ({
 
     return `${year}/${month}/${day}`; // Example format (YYYY-MM-DD)
   }
+  const waktuPeriksa = convertDatetimeToTime(waktuMasuk);
+  const tanggalPeriksa = convertDatetimeToDate(waktuMasuk);
 
   function convertDatetimeToTime(datetime: any) {
     const dateObject = new Date(datetime);
@@ -102,166 +83,6 @@ const ModalVerifikasi = ({
     // Optional milliseconds
 
     return `${hours}:${minutes}:${seconds}`; // Example format (HH:mm:ss.SSS)
-  }
-
-  const tanggalPeriksa = convertDatetimeToDate(tgl);
-  const waktuPeriksa = convertDatetimeToTime(tgl);
-
-  const [typePost, setTypePost] = useState<any>('normal');
-
-  const [mesin, setMesin] = useState<any>(namaMesin);
-  const [mesinMsSparepart, setMesinMsSparepart] = useState<any>(namaMesin);
-  const [masterMesin, setmasterMesin] = useState<any>();
-
-  const [selectedKodeAnalisis, setSelectedKodeAnalisis] = useState<any>();
-  const [selectedSkorPerbaikan, setSelectedSkorPerbaikan] = useState<any>();
-  const [noteMaintenance, setNoteMaintenance] = useState<any>();
-  const [alasanPending, setAlasanPending] = useState<any>();
-
-  const [kodeAnalisis, setKodeAnalisis] = useState<any>(null);
-  const [skorPerbaikan, setSkorPerbaikan] = useState<any>(null);
-
-  const [stokSparepart, setStokSparepart] = useState<any>([]);
-  const [masterSparepart, setMasterSparepart] = useState<any>(null);
-  const [kebutuhanSparepart, setKebutuhanSparepart] = useState<any>([]);
-
-  useEffect(() => {
-    getKodeAnalisis();
-    getSkorPerbaikan();
-    getMasterMesin();
-    getMasterSparepart(mesinMsSparepart);
-  }, []);
-  async function getKodeAnalisis() {
-    const url = `${import.meta.env.VITE_API_LINK}/master/kodeAnalisis`;
-    try {
-      const res = await axios.get(url, {
-        withCredentials: true,
-      });
-
-      setKodeAnalisis(res.data);
-      console.log(res.data);
-    } catch (error: any) {
-      console.log(error.data.msg);
-    }
-  }
-
-  async function getSkorPerbaikan() {
-    const url = `${import.meta.env.VITE_API_LINK}/master/skorMtc`;
-    try {
-      const res = await axios.get(url, {
-        withCredentials: true,
-      });
-
-      setSkorPerbaikan(res.data);
-      console.log(res.data);
-    } catch (error: any) {
-      console.log(error.data.msg);
-    }
-  }
-
-  async function getMasterMesin() {
-    const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
-    try {
-      const res = await axios.get(url, {
-        withCredentials: true,
-      });
-
-      setmasterMesin(res.data);
-      console.log(res.data);
-    } catch (error: any) {
-      console.log(error.data.msg);
-    }
-  }
-
-  async function getStokSparepart(idMesin: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
-    try {
-      const res = await axios.get(url, {
-        params: {
-          id_mesin: idMesin,
-        },
-        withCredentials: true,
-      });
-
-      setStokSparepart(res.data);
-      console.log(res.data);
-    } catch (error: any) {
-      console.log(error.data.msg);
-    }
-  }
-
-  async function getMasterSparepart(mesinName: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/master/sparepart`;
-    try {
-      const res = await axios.get(url, {
-        params: {
-          nama_mesin: mesinName,
-        },
-        withCredentials: true,
-      });
-
-      setMasterSparepart(res.data);
-      console.log(res.data);
-    } catch (error: any) {
-      console.log(error);
-    }
-  }
-  const [isLoading, setIsLoading] = useState(false);
-
-  async function postAnalisis() {
-    const urlNormal = `${
-      import.meta.env.VITE_API_LINK
-    }/ticket/analisis/${idTiket}`;
-    const urlPending = `${
-      import.meta.env.VITE_API_LINK
-    }/ticket/pending/${idTiket}`;
-    try {
-      if (typePost === 'normal') {
-        setIsLoading(true);
-        const res = await axios.put(
-          urlNormal,
-          {
-            id_proses: idProses,
-            kode_analisis_mtc: selectedKodeAnalisis.kode_analisis,
-            nama_analisis_mtc: selectedKodeAnalisis.nama_analisis,
-            jenis_analisis_mtc: selectedKodeAnalisis.bagian_analisis,
-            note_analisis: '',
-            masalah_sparepart: kebutuhanSparepart,
-            skor_mtc: selectedSkorPerbaikan.skor,
-            cara_perbaikan: selectedSkorPerbaikan.nama_skor,
-            note_mtc: noteMaintenance,
-
-            nama_mesin: namaMesin,
-          },
-          {
-            withCredentials: true,
-          },
-        );
-
-        // alert(res.data.msg);
-      } else {
-        const res = await axios.put(
-          urlPending,
-          {
-            id_proses: idProses,
-            note_mtc: noteMaintenance,
-            alasan_pending: alasanPending,
-          },
-          {
-            withCredentials: true,
-          },
-        );
-
-        // alert(res.data.msg);
-      }
-      setIsLoading(false);
-      onClose();
-      onFinish();
-    } catch (error: any) {
-      console.log(error);
-      //alert(error.data.msg);
-      setIsLoading(false);
-    }
   }
   async function deleteExit(id_ticket: any, id_proses: any) {
     const url = `${import.meta.env.VITE_API_LINK}/ticket/delete/${id_ticket}`;
@@ -281,67 +102,6 @@ const ModalVerifikasi = ({
       console.log(error);
     }
   }
-
-  //add Point
-  const handleAddPoint = () => {
-    setKebutuhanSparepart([
-      ...kebutuhanSparepart,
-      {
-        id_stok: null,
-        detail_stok: {
-          kode: '',
-          part_number: '',
-          nama_sparepart: '',
-          nama_mesin: '',
-          lokasi: '',
-          umur: null,
-          grade: '',
-        },
-
-        id_ms_sparepart: null,
-        detail_ms_sparepart: {
-          kode: '',
-          nama_sparepart: '',
-          nama_mesin: '',
-          posisi_part: '',
-          sisa_umur: null,
-          grade: '',
-        },
-      },
-    ]);
-  };
-
-  const handleDeletePoint = (i: number) => {
-    const deleteVal: any = [...kebutuhanSparepart];
-    deleteVal.splice(i, 1);
-    setKebutuhanSparepart(deleteVal);
-  };
-
-  const [info, setInfo] = useState<{ [key: number]: boolean }>({});
-
-  const toggleInfo = (index: number) => {
-    setInfo((prevState) => ({
-      ...prevState,
-      [index]: !prevState[index],
-    }));
-  };
-  const [infoPengganti, setInfoPengganti] = useState<{
-    [key: number]: boolean;
-  }>({});
-  const toggleInfoPengganti = (index: number) => {
-    setInfoPengganti((prevState) => ({
-      ...prevState,
-      [index]: !prevState[index],
-    }));
-  };
-  const [showModalStok, setShowModalStok] = useState(false);
-  const openModalStok = () => setShowModalStok(true);
-  const closeModalStok = () => setShowModalStok(false);
-
-  const [showModalMsStok, setShowModalMsStok] = useState(false);
-  const openModalMsStok = () => setShowModalMsStok(true);
-  const closeModalMsStok = () => setShowModalMsStok(false);
-
   return (
     <div className="fixed z-50 inset-0 h-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
       <div className="w-full max-w-4xl bg-white rounded-xl shadow-md max-h-screen overflow-y-auto">
@@ -364,14 +124,12 @@ const ModalVerifikasi = ({
           </svg>
 
           <label className="flex w-11/12 text-blue-700 text-sm font-bold ">
-            Form Respon Maintenance
+            Verify Maintenance
           </label>
           <button
             type="button"
             onClick={() => {
-              if (skor_mtc != 0 && jenis_perbaikan == null) {
-                deleteExit(idTiket, idProses);
-              }
+            
               onClose();
             }}
             className="text-gray-400 focus:outline-none"
@@ -413,21 +171,21 @@ const ModalVerifikasi = ({
                 htmlFor="namamesin"
                 className="form-label block  text-black text-xs font-extrabold"
               >
-                NAMA MESIN
+                 KODE TIKET
               </label>
 
               <span
                 id="namamesin"
                 className="text-neutral-500 text-xl font-normal"
               >
-                {machineName}
+                {kodeTiket}
               </span>
               <div className="pt-2">
                 <label
                   htmlFor="kendala"
                   className="form-label block  text-black text-xs font-extrabold"
                 >
-                  KENDALA
+                  WAKTU MASUK
                 </label>
               </div>
               <div>
@@ -435,7 +193,40 @@ const ModalVerifikasi = ({
                   id="kendala"
                   className="text-neutral-500 text-xl font-normal"
                 >
-                  {kodeLkh} - {kendala}
+                 {tanggalPeriksa} - {waktuPeriksa}
+                </span>
+              </div>
+              <div className="pt-2">
+                <label
+                  htmlFor="kendala"
+                  className="form-label block  text-black text-xs font-extrabold"
+                >
+                  PERSENTASE AWAL
+                </label>
+              </div>
+              <div>
+                <span
+                  id="kendala"
+                  className="text-neutral-500 text-xl font-normal"
+                >
+                 {persentaseAwal}%
+                </span>
+              </div>
+             
+              <div className="pt-2">
+                <label
+                  htmlFor="kendala"
+                  className="form-label block  text-blue-900 text-xs font-extrabold"
+                >
+                  PERSENTASE BELUM TERVERIFIKASI
+                </label>
+              </div>
+              <div>
+                <span
+                  id="kendala"
+                  className="text-orange-700 text-xl font-normal "
+                >
+                  {persentaseBelumVerif}%
                 </span>
               </div>
             </div>
@@ -444,43 +235,56 @@ const ModalVerifikasi = ({
                 htmlFor="tgl"
                 className="form-label block  text-black text-xs font-extrabold"
               >
-                TANGGAL PEMERIKSAAN
+                NAMA MESIN
               </label>
               <span id="tgl" className="text-neutral-500 text-xl font-normal">
-                {tanggalPeriksa}
+                {namaMesin}
               </span>
               <label
                 htmlFor="jam"
                 className="form-label block  text-black text-xs font-extrabold mt-2"
               >
-                JAM PEMERIKSAAN
+                KENDALA
               </label>
               <span id="jam" className="text-neutral-500 text-xl font-normal">
-                {waktuPeriksa}
+                {kendala}
+              </span>
+              <label
+                htmlFor="jam"
+                className="form-label block  text-black text-xs font-extrabold mt-2"
+              >
+                KODE ANALISIS
+              </label>
+              <span id="jam" className="text-neutral-500 text-xl font-normal">
+                {kode_analisis}
               </span>
               <label
                 htmlFor="namaPemeriksa"
                 className="form-label block  text-black text-xs font-extrabold mt-2"
               >
-                NAMA PEMERIKSAAN
+                DURASI PERBAIKAN
               </label>
               <span
                 id="namaPemeriksa"
                 className="text-neutral-500 text-xl font-normal"
               >
-                {namaPemeriksa}
+                {durasiPerbaikan}
+              </span>
+              <label
+                htmlFor="namaPemeriksa"
+                className="form-label block  text-black text-xs font-extrabold mt-2"
+              >
+                EKSEKUTOR
+              </label>
+              <span
+                id="namaPemeriksa"
+                className="text-neutral-500 text-xl font-normal"
+              >
+                {eksekutor}
               </span>
             </div>
           </div>
-          <div>
-          <label
-                htmlFor="namaPemeriksa"
-                className="form-label block  text-black text-xs font-extrabold my-2 "
-              >
-                CATATAN
-              </label>
-            <textarea className='w-full border border-neutral-600 h-56 p-2 rounded-sm'  name="" id=""></textarea>
-          </div>
+         
          
 
         
