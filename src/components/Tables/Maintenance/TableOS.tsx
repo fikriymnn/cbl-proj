@@ -842,7 +842,8 @@ function TableOS() {
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
                                       : data.status_tiket == 'request to qc'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                      : ''
+                                      : data.status_tiket == 'qc rejected'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `: ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -863,7 +864,8 @@ function TableOS() {
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#fff2b1bd] `
                                       : data.status_tiket == 'request to qc'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#fcb911] bg-[#FFF2B1] `
-                                      : ''
+                                      : data.status_tiket == 'qc rejected'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `: ''
                                   }
                                 >
                                   {data.skor_mtc}%
@@ -1159,10 +1161,10 @@ function TableOS() {
                                                   proses.skor_mtc <= 100 &&
                                                   proses.skor_mtc >= 60
                                                     ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                                    : proses.skor_mtc >= 20 &&
+                                                    : proses.skor_mtc > 20 &&
                                                       proses.skor_mtc <= 59
                                                     ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                    : proses.skor_mtc < 20
+                                                    : proses.skor_mtc <= 20
                                                     ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
                                                     : ''
                                                 }
@@ -1445,7 +1447,10 @@ function TableOS() {
                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
                               : data.status_tiket == 'temporary'
                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                              : ''
+                              : data.status_tiket == 'request to qc'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#fcb911] bg-[#FFF2B1] `
+                                      : data.status_tiket == 'qc rejected'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `: ''
                           }
                         >
                           {data.skor_mtc}%
@@ -1480,7 +1485,10 @@ function TableOS() {
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
                                       : data.status_tiket == 'temporary'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                      : ''
+                                      : data.status_tiket == 'request to qc'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#fcb911] bg-[#FFF2B1] `
+                                      : data.status_tiket == 'qc rejected'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `: ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
