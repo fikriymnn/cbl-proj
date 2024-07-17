@@ -67,6 +67,11 @@ import Pm3page from './pages/inspection/pm3/Pm3page';
 import Qualityinspection from './pages/QualityControl/QualityInspection';
 import IncomingInspection from './components/Tables/QualityControl/QualityInspection/IncomingInspection';
 import IncomingIns from './pages/QualityControl/Incomingins';
+import ProsesPotong from './pages/QualityControl/Prosespotong/Prosespotong';
+import PotongJadi from './components/Tables/QualityControl/QualityInspection/ProsesPotong/potongbahan';
+import PotongBahan from './components/Tables/QualityControl/QualityInspection/ProsesPotong/potongbahan';
+import PotongBahanPage from './pages/QualityControl/Prosespotong/potongBahanpage';
+import PotongJadiPage from './pages/QualityControl/Prosespotong/potongJadiPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -393,6 +398,39 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <IncomingIns />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/potong"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesPotong />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/potong/potongbahan"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongBahanPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/potong/potongjadi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongJadiPage />
               </ProtectedRoute>
             </>
           }
