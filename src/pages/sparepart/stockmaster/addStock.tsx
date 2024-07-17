@@ -47,7 +47,7 @@ function AddStock() {
           part_number: addItem.part_number,
           lokasi: addItem.lokasi,
           limit_stok: addItem.limit_stok,
-          grade: addItem.limit_stok,
+          grade: addItem.grade,
           type_part: addItem.type_part,
           foto: addItem.foto,
           keterangan: addItem.keterangan,
@@ -236,6 +236,13 @@ function AddStock() {
                   className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
                                             }`}
                 >
+                  <option
+                    value=""
+                    selected
+                    className="text-body dark:text-bodydark"
+                  >
+                    SELECT DATA
+                  </option>
                   <option
                     value="CONSUMABLE"
                     className="text-body dark:text-bodydark"
