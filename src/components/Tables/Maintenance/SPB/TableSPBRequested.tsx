@@ -551,7 +551,7 @@ function TableSPBRequested() {
                   <>
                     <div className="">
                       <div className="my-2 ">
-                        <section className="flex flex-col bg-white  justify-center items-center  rounded-lg px-2">
+                        <section className="flex flex-col bg-white z-50 justify-center items-center  rounded-lg px-2">
                           <div className="flex w-full py-3 gap-1  justify-center items-center">
                             <div className="flex  w-2/12   justify-center items-center">
                               <p className="text-neutral-500 text-xs font-light">
@@ -599,13 +599,13 @@ function TableSPBRequested() {
                               </div>
                               {openButton == index ? (
                                 <>
-                                  <div className="absolute bg-white mt-20 -translate-x-10 p-1 shadow-5 rounded-md">
-                                    <div className="flex flex-col gap-1">
+                                  <div className="absolute z-50 bg-white mt-20 -translate-x-10 p-1 shadow-5 rounded-md">
+                                    <div className="flex flex-col gap-1 z-50">
                                       <button
                                         onClick={() =>
                                           handleClickCatatan(index)
                                         }
-                                        className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
+                                        className="w-25 z-50 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
                                       >
                                         Setujui{' '}
                                       </button>
@@ -624,7 +624,7 @@ function TableSPBRequested() {
                                 <></>
                               )}
                               {showModalMonitoring == index ? (
-                                <div className="">
+                                <div className="z-50">
                                   <MonitoringSPB
                                     isOpen={showModalMonitoring}
                                     onClose={closeModalMonitoring}
@@ -642,7 +642,7 @@ function TableSPBRequested() {
                                   >
                                     <button
                                       onClick={() => handleClickEdit(index)}
-                                      className="w-full justify-center text-center rounded md bg-blue-600 text-white font-semibold py-2"
+                                      className="w-full justify-center text-center rounded md bg-blue-600 text-white font-semibold py-2 z-50"
                                     >
                                       Edit SPB
                                     </button>
@@ -711,7 +711,7 @@ function TableSPBRequested() {
           </div>
         </>
       )}
-      <div className="w-full flex justify-end mt-5 ">
+      <div className="w-full flex justify-end mt-5 z-10">
         <Stack spacing={2}>
           <Pagination
             count={spbService?.total_page}
@@ -731,7 +731,7 @@ function TableSPBRequested() {
           data.tgl_permintaan_kedatangan,
         );
         return (
-          <div key={index} className=" overflow-x-auto">
+          <div key={index} className=" overflow-x-auto z-50">
             <div className="min-w-[700px] ">
               <div className="my-2 ">
                 <section className="flex  bg-white  rounded-md px-1 py-2">
@@ -805,7 +805,7 @@ function TableSPBRequested() {
                       </button>
                       {openButtonPurchase == index ? (
                         <>
-                          <div className="absolute bg-white mt-10 p-1 shadow-5 rounded-md">
+                          <div className="absolute bg-white mt-10 p-1 shadow-5 rounded-md z-50">
                             <div className="flex flex-col gap-1">
                               <button
                                 onClick={() => handleClickEditPurchase(index)}
@@ -844,6 +844,8 @@ function TableSPBRequested() {
                         </svg>
                       </button>
                       {showModalMonitoringPurchase == index ? (
+                        <div className='z-50'>
+
                         <MonitoringSPB
                           isOpen={showModalMonitoringPurchase}
                           onClose={closeModalMonitoringPurchase}
@@ -859,6 +861,7 @@ function TableSPBRequested() {
                         >
                           <div></div>
                         </MonitoringSPB>
+                        </div>
                       ) : (
                         <></>
                       )}
@@ -963,7 +966,7 @@ function TableSPBRequested() {
           </div>
         );
       })}
-      <div className="w-full flex justify-end mt-5 ">
+      <div className="w-full flex justify-end mt-5 z-0">
         <Stack spacing={2}>
           <Pagination
             count={spbServicePurchase?.total_page}
