@@ -170,8 +170,8 @@ function IncomingInspection() {
                             {" "} Incoming Inspection Checksheet
                         </p>
 
-                        <div className='grid grid-cols-10 px-10 py-4 border-b-8 border-[#D8EAFF]'>
-                            <div className='grid grid-rows-6 gap-1 col-span-2'>
+                        <div className='grid grid-cols-12  border-b-8 border-[#D8EAFF]'>
+                            <div className='flex flex-col gap-4 col-span-2 px-10 py-4'>
                                 <label className='text-neutral-500 text-sm font-semibold'>
                                     Tanggal
                                 </label>
@@ -191,7 +191,7 @@ function IncomingInspection() {
                                     Ukuran
                                 </label>
                             </div>
-                            <div className='grid grid-rows-6 gap-1 col-span-3'>
+                            <div className='flex flex-col gap-4 col-span-3 px-10 py-4'>
                                 <label className='text-neutral-500 text-sm font-semibold'>
                                     : {jo.tgl}
                                 </label>
@@ -212,7 +212,7 @@ function IncomingInspection() {
                                 </label>
                             </div>
 
-                            <div className='grid grid-rows-6  gap-1 col-span-2 justify-between'>
+                            <div className='flex flex-col  gap-4 col-span-3 justify-between pl-10 py-4'>
                                 <label className='text-neutral-500 text-sm font-semibold'>
                                     Jam
                                 </label>
@@ -226,6 +226,7 @@ function IncomingInspection() {
                                 <label className='text-black text-lg font-bold'>
                                     STANDAR PEMERIKSAAN
                                 </label>
+
                                 <label className='text-neutral-500 text-sm font-semibold'>
                                     Jumlah
                                 </label>
@@ -235,7 +236,7 @@ function IncomingInspection() {
 
 
                             </div>
-                            <div className='grid grid-rows-6  gap-1 col-span-2 justify-between '>
+                            <div className='flex flex-col  gap-4 col-span-2 justify-between py-4'>
                                 <label className='text-neutral-500 text-sm font-semibold'>
                                     : {jo.jam}
                                 </label>
@@ -245,16 +246,66 @@ function IncomingInspection() {
                                 <label className='text-neutral-500 text-sm font-semibold'>
 
                                 </label>
-                                <label className='text-neutral-500 text-sm font-semibold'>
 
+
+                                <label className='text-black text-lg font-bold mt-12'>
+                                    {' '}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
                                     : {jo.jumlah}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : <input type='text' className='rounded-[3px]  border border-zinc-300' />
+                                    : <input type='text' className='rounded-[3px] w-[50%] border border-zinc-300' />
                                 </label>
 
+
+                            </div>
+                            <div className='flex flex-col max-h-[300] w-full  justify-start gap-2  py-4 col-span-2  bg-[#F6FAFF]'>
+
+                                <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Time : -
+
+                                </p>
+                                <>
+                                    <p className='font-bold text-[#DE0000]'>
+                                        Task Belum Dimulai
+                                    </p>
+                                    <button
+
+                                        className="flex w-[60%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                    >
+                                        <svg
+                                            width="14"
+                                            height="14"
+                                            viewBox="0 0 14 14"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <path
+                                                d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                                fill="white"
+                                            />
+                                        </svg>
+                                    </button>
+                                </>
+                                <div className="flex flex-col pt-3 overflow-x-hidden">
+                                    <p className="md:text-[14px] text-[9px] font-semibold">
+                                        Upload Foto :
+                                    </p>
+
+
+                                    <div className="">
+                                        <input
+
+                                            type="file"
+                                            name=""
+                                            id=""
+                                            className="w-45"
+                                        />
+                                    </div>
+
+
+                                </div>
 
                             </div>
                         </div>
@@ -332,40 +383,8 @@ function IncomingInspection() {
                                     25
                                 </label>
                             </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-3 py-4 border-b-8 border-[#D8EAFF]'>
-                                <div className='col-span-2'>
-                                    <p className="md:text-[14px] text-[9px] font-semibold">
-                                        Time : -
+                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
 
-                                    </p>
-                                    <>
-                                        <p className='font-bold text-[#DE0000]'>
-                                            Task Belum Dimulai
-                                        </p>
-                                        <button
-
-                                            className="flex w-[70%] rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
-                                        >
-                                            <svg
-                                                width="14"
-                                                height="14"
-                                                viewBox="0 0 14 14"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                                    fill="white"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </>
-
-
-                                </div>
-                                <div className='col-span-4'>
-
-                                </div>
                                 <div className='col-span-4'>
                                     <div className="flex flex-col ">
                                         <p className="md:text-[14px] text-[9px] font-semibold">
@@ -454,40 +473,8 @@ function IncomingInspection() {
                                     20
                                 </label>
                             </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-3 py-4 border-b-8 border-[#D8EAFF]'>
-                                <div className='col-span-2'>
-                                    <p className="md:text-[14px] text-[9px] font-semibold">
-                                        Time : -
+                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
 
-                                    </p>
-                                    <>
-                                        <p className='font-bold text-[#DE0000]'>
-                                            Task Belum Dimulai
-                                        </p>
-                                        <button
-
-                                            className="flex w-[70%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
-                                        >
-                                            <svg
-                                                width="14"
-                                                height="14"
-                                                viewBox="0 0 14 14"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                                    fill="white"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </>
-
-
-                                </div>
-                                <div className='col-span-4'>
-
-                                </div>
                                 <div className='col-span-4'>
                                     <div className="flex flex-col ">
                                         <p className="md:text-[14px] text-[9px] font-semibold">
@@ -569,40 +556,8 @@ function IncomingInspection() {
                                     15
                                 </label>
                             </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-3 py-4 border-b-8 border-[#D8EAFF]'>
-                                <div className='col-span-2'>
-                                    <p className="md:text-[14px] text-[9px] font-semibold">
-                                        Time : -
+                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
 
-                                    </p>
-                                    <>
-                                        <p className='font-bold text-[#DE0000]'>
-                                            Task Belum Dimulai
-                                        </p>
-                                        <button
-
-                                            className="flex w-[70%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
-                                        >
-                                            <svg
-                                                width="14"
-                                                height="14"
-                                                viewBox="0 0 14 14"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                                    fill="white"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </>
-
-
-                                </div>
-                                <div className='col-span-4'>
-
-                                </div>
                                 <div className='col-span-4'>
                                     <div className="flex flex-col ">
                                         <p className="md:text-[14px] text-[9px] font-semibold">
@@ -674,40 +629,8 @@ function IncomingInspection() {
                                     10
                                 </label>
                             </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-3 py-4 border-b-8 border-[#D8EAFF]'>
-                                <div className='col-span-2'>
-                                    <p className="md:text-[14px] text-[9px] font-semibold">
-                                        Time : -
+                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
 
-                                    </p>
-                                    <>
-                                        <p className='font-bold text-[#DE0000]'>
-                                            Task Belum Dimulai
-                                        </p>
-                                        <button
-
-                                            className="flex w-[70%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
-                                        >
-                                            <svg
-                                                width="14"
-                                                height="14"
-                                                viewBox="0 0 14 14"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                                    fill="white"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </>
-
-
-                                </div>
-                                <div className='col-span-4'>
-
-                                </div>
                                 <div className='col-span-4'>
                                     <div className="flex flex-col ">
                                         <p className="md:text-[14px] text-[9px] font-semibold">
@@ -785,40 +708,8 @@ function IncomingInspection() {
                                     10
                                 </label>
                             </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-3 py-4 border-b-8 border-[#D8EAFF]'>
-                                <div className='col-span-2'>
-                                    <p className="md:text-[14px] text-[9px] font-semibold">
-                                        Time : -
+                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
 
-                                    </p>
-                                    <>
-                                        <p className='font-bold text-[#DE0000]'>
-                                            Task Belum Dimulai
-                                        </p>
-                                        <button
-
-                                            className="flex w-[70%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
-                                        >
-                                            <svg
-                                                width="14"
-                                                height="14"
-                                                viewBox="0 0 14 14"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                                    fill="white"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </>
-
-
-                                </div>
-                                <div className='col-span-4'>
-
-                                </div>
                                 <div className='col-span-4'>
                                     <div className="flex flex-col ">
                                         <p className="md:text-[14px] text-[9px] font-semibold">
@@ -892,40 +783,8 @@ function IncomingInspection() {
                                     5
                                 </label>
                             </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-3 py-4 border-b-8 border-[#D8EAFF]'>
-                                <div className='col-span-2'>
-                                    <p className="md:text-[14px] text-[9px] font-semibold">
-                                        Time : -
+                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
 
-                                    </p>
-                                    <>
-                                        <p className='font-bold text-[#DE0000]'>
-                                            Task Belum Dimulai
-                                        </p>
-                                        <button
-
-                                            className="flex w-[70%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
-                                        >
-                                            <svg
-                                                width="14"
-                                                height="14"
-                                                viewBox="0 0 14 14"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                                    fill="white"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </>
-
-
-                                </div>
-                                <div className='col-span-4'>
-
-                                </div>
                                 <div className='col-span-4'>
                                     <div className="flex flex-col ">
                                         <p className="md:text-[14px] text-[9px] font-semibold">
@@ -998,40 +857,8 @@ function IncomingInspection() {
                                     5
                                 </label>
                             </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-3 py-4 border-b-8 border-[#D8EAFF]'>
-                                <div className='col-span-2'>
-                                    <p className="md:text-[14px] text-[9px] font-semibold">
-                                        Time : -
+                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
 
-                                    </p>
-                                    <>
-                                        <p className='font-bold text-[#DE0000]'>
-                                            Task Belum Dimulai
-                                        </p>
-                                        <button
-
-                                            className="flex w-[70%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
-                                        >
-                                            <svg
-                                                width="14"
-                                                height="14"
-                                                viewBox="0 0 14 14"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                                    fill="white"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </>
-
-
-                                </div>
-                                <div className='col-span-4'>
-
-                                </div>
                                 <div className='col-span-4'>
                                     <div className="flex flex-col ">
                                         <p className="md:text-[14px] text-[9px] font-semibold">
@@ -1104,40 +931,8 @@ function IncomingInspection() {
                                     5
                                 </label>
                             </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-3 py-4 border-b-8 border-[#D8EAFF]'>
-                                <div className='col-span-2'>
-                                    <p className="md:text-[14px] text-[9px] font-semibold">
-                                        Time : -
+                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
 
-                                    </p>
-                                    <>
-                                        <p className='font-bold text-[#DE0000]'>
-                                            Task Belum Dimulai
-                                        </p>
-                                        <button
-
-                                            className="flex w-[70%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
-                                        >
-                                            <svg
-                                                width="14"
-                                                height="14"
-                                                viewBox="0 0 14 14"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                                    fill="white"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </>
-
-
-                                </div>
-                                <div className='col-span-4'>
-
-                                </div>
                                 <div className='col-span-4'>
                                     <div className="flex flex-col ">
                                         <p className="md:text-[14px] text-[9px] font-semibold">
@@ -1210,40 +1005,8 @@ function IncomingInspection() {
                                     5
                                 </label>
                             </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-3 py-4 border-b-8 border-[#D8EAFF]'>
-                                <div className='col-span-2'>
-                                    <p className="md:text-[14px] text-[9px] font-semibold">
-                                        Time : -
+                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
 
-                                    </p>
-                                    <>
-                                        <p className='font-bold text-[#DE0000]'>
-                                            Task Belum Dimulai
-                                        </p>
-                                        <button
-
-                                            className="flex w-[70%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
-                                        >
-                                            <svg
-                                                width="14"
-                                                height="14"
-                                                viewBox="0 0 14 14"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                                    fill="white"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </>
-
-
-                                </div>
-                                <div className='col-span-4'>
-
-                                </div>
                                 <div className='col-span-4'>
                                     <div className="flex flex-col ">
                                         <p className="md:text-[14px] text-[9px] font-semibold">
