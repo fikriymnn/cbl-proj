@@ -115,6 +115,7 @@ function TableSPBRequestedSparepart() {
   const [page2, setPage2] = useState(1);
   const [spbServicePurchase, setSpbServicePurchase] = useState<any>();
   const [statusPengajuan, setStatusPengajuan] = useState<any>();
+  const [qtyUpdate, setQtyUpdate] = useState<any>();
   const [openButtonPurchase, setOpenButtonPurchase] = useState(null);
   const [showModalMonitoringPurchase, setShowModalMonitoringPurchase] =
     useState(null);
@@ -169,6 +170,7 @@ function TableSPBRequestedSparepart() {
         url,
         {
           status_pengajuan: statusPengajuan,
+          qty_update: qtyUpdate,
         },
         {
           withCredentials: true,
@@ -272,6 +274,12 @@ function TableSPBRequestedSparepart() {
                   <p className="text-stone-500 text-xs font-bold ">Tanggal</p>
                   <img className="w-2" src={Polygon6} alt="" />
                 </div>
+                <div className="flex gap-2">
+                  <p className="text-stone-500 text-xs font-bold ">
+                    Qty Update
+                  </p>
+                  <img className="w-2" src={Polygon6} alt="" />
+                </div>
                 <div className="flex gap-2 justify-end pr-8">
                   <p className="text-stone-500 text-xs font-bold ">Action</p>
                 </div>
@@ -328,6 +336,11 @@ function TableSPBRequestedSparepart() {
                           <div className="flex gap-2">
                             <p className="text-neutral-500 text-sm font-light line-clamp-1">
                               {tglPermintaanKedatangan}
+                            </p>
+                          </div>
+                          <div className="flex gap-2">
+                            <p className="text-neutral-500 text-sm font-light line-clamp-1">
+                              {data.qty_update}
                             </p>
                           </div>
                           <div className="flex gap-2 justify-end pr-8">
@@ -773,6 +786,11 @@ function TableSPBRequestedSparepart() {
                         {tglPermintaanKedatangan}
                       </p>
                     </div>
+                    <div className="flex gap-2">
+                      <p className="text-neutral-500 text-sm font-light line-clamp-1">
+                        {data.qty_update}
+                      </p>
+                    </div>
                     <div className="flex gap-2 justify-end pr-8">
                       <button
                         onClick={() => handleClickPurchase(index)}
@@ -923,11 +941,29 @@ function TableSPBRequestedSparepart() {
                                     setStatusPengajuan(e.target.value)
                                   }
                                   name=""
+                                  defaultValue={data.status_pengajuan}
                                   rows={3}
                                   cols={6}
                                   id=""
                                   className="w-full p-2 bg-zinc-100 border border-zinc-400 rounded-sm  "
                                 ></textarea>
+                              </div>
+
+                              <div className="pt-2">
+                                <label
+                                  htmlFor="ticketCode"
+                                  className="form-label block  text-black text-xs font-extrabold"
+                                >
+                                  QTY UPDATE
+                                </label>
+
+                                <input
+                                  onChange={(e) => setQtyUpdate(e.target.value)}
+                                  defaultValue={data.qty_update}
+                                  id=""
+                                  type="number"
+                                  className="w-full p-2 bg-zinc-100 border border-zinc-400 rounded-sm  "
+                                ></input>
                               </div>
 
                               <div className="pt-4"></div>
