@@ -43,7 +43,19 @@ const brandData: BRAND[] = [
 const TableValidasi = () => {
   const [page, setPage] = useState(1);
   const [ticketValidasi, setTicketValidasi] = useState<any>(null);
+  const [action,setAction] = useState(false);
 
+  const handleClickDetail = (index: number) => {
+    setShowDetail((prevState) => {
+      const updatedShowDetail = [...prevState]; // Create a copy
+      updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
+      return updatedShowDetail;
+    });
+  };
+  const [showDetail, setShowDetail] = useState<boolean[]>(
+    new Array(ticketValidasi != null && ticketValidasi.length).fill(false),
+  );
+ 
   useEffect(() => {
     getMTC();
   }, [page]);
@@ -164,22 +176,81 @@ const TableValidasi = () => {
                     {data.kode_lkh + ' - ' + data.nama_kendala}
                   </p>
                 </div>
-                <div className='flex flex-col gap-1'>
-
-                <button
-                  onClick={() => validasiTicket(data.id)}
-                  className="text-xs font-bold bg-blue-600 py-2 px-5 text-white  w-20 rounded-md"
-                >
-                  Validasi
-                </button>
-                <button
-                  onClick={() => tolakTicket(data.id)}
-                  className="text-xs font-bold bg-red-600 py-2 px-5 text-white  w-20 rounded-md"
-                >
-                  Tolak
-                </button>
+                <div>
+                  <button onClick={()=>handleClickDetail(index)} className='w-20 bg-blue-600 text-white text-sm py-1'>
+                    Aksi
+                  </button>
                 </div>
-              </div>
+{showDetail[index] &&(
+
+  <>
+  <div className='fixed z-50 inset-0 overflow-y-auto w-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center'>
+
+  <div className='flex flex-col gap-1 justify-center w-4/12 bg-white p-3 rounded-xl'>
+  <div className='w-full flex justify-between'>
+
+<label
+                htmlFor="namaPemeriksa"
+                className="form-label block  text-black text-xs font-extrabold my-2 "
+              >
+                CATATAN
+              </label>
+              <button
+            type="button"
+            onClick={() => {
+              handleClickDetail(index)
+            }}
+            className="text-gray-400 focus:outline-none"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 22 22"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="11" cy="11" r="11" fill="#0065DE" />
+              <rect
+                x="6.03955"
+                y="4.23242"
+                width="17"
+                height="3"
+                rx="1.5"
+                transform="rotate(42.8321 6.03955 4.23242)"
+                fill="white"
+              />
+              <rect
+                x="4.18213"
+                y="16.0609"
+                width="17"
+                height="3"
+                rx="1.5"
+                transform="rotate(-45 4.18213 16.0609)"
+                fill="white"
+              />
+            </svg>
+          </button>
+  </div>
+            <textarea className='w-full border border-neutral-600 h-56 p-2 rounded-sm'  name="" id=""></textarea>
+          
+  <button
+    onClick={() => validasiTicket(data.id)}
+    className="text-xs font-bold bg-blue-600 py-2 px-5 text-white  w-full rounded-md"
+  >
+    Validasi
+  </button>
+  <button
+    onClick={() => tolakTicket(data.id)}
+    className="text-xs font-bold bg-red-600 py-2 px-5 text-white  w-full rounded-md"
+  >
+    Tolak
+  </button>
+  </div>
+  </div>
+  
+  </>
+)}
+</div>
             </div>
           );
         })}
