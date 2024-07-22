@@ -90,7 +90,6 @@ function IncomingInspection() {
                 {
                     ...objek
                 }
-
                 ,
                 {
 
@@ -126,6 +125,14 @@ function IncomingInspection() {
     }
 
     // const tanggal = convertDatetimeToDate(new Date());
+
+    const [kiri, setKiri] = useState<number>(0);
+    const [kanan, setKanan] = useState<number>(0);
+    const [tengah, setTengah] = useState<number>(0);
+
+    const ratarata = (kiri + kanan + tengah) / 3
+
+    const hasilRata = ratarata.toFixed(2)
 
     return (
         <>
@@ -426,7 +433,7 @@ function IncomingInspection() {
                                                             }
 
                                                         </label>
-                                                        <div className='flex flex-col gap-1 pr-[10%]'>
+                                                        <div className='flex flex-col gap-1  w-[50%]'>
                                                             {!incoming?.inspeksi_bahan_result[0]?.send ? (
                                                                 <>
                                                                     <div>
@@ -452,7 +459,10 @@ function IncomingInspection() {
                                                                 </>
                                                             ) : (
                                                                 <>
-                                                                    {incoming?.inspeksi_bahan_result[0].keterangan_hasil}
+                                                                    <div className='text-neutral-500 text-sm font-semibold'>
+                                                                        {incoming?.inspeksi_bahan_result[0].keterangan_hasil}
+                                                                    </div>
+
                                                                 </>
                                                             )}
 
@@ -467,33 +477,67 @@ function IncomingInspection() {
                                                 <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
 
                                                     <div className='col-span-4'>
-                                                        <div className="flex flex-col ">
-                                                            <p className="md:text-[14px] text-[9px] font-semibold">
-                                                                Upload Foto (Optional):
-                                                            </p>
+                                                        {!incoming?.inspeksi_bahan_result[0]?.send ? (
+                                                            <>
+                                                                <div className="flex flex-col ">
+                                                                    <p className="md:text-[14px] text-[9px] font-semibold">
+                                                                        Upload Foto (Optional):
+                                                                    </p>
 
-                                                            <br />
-                                                            <div className="">
-                                                                <input
+                                                                    <br />
+                                                                    <div className="">
+                                                                        <input
 
-                                                                    type="file"
-                                                                    name=""
-                                                                    id=""
-                                                                    className="w-60"
-                                                                />
-                                                            </div>
-                                                        </div>
+                                                                            type="file"
+                                                                            name=""
+                                                                            id=""
+                                                                            className="w-60"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div className="flex flex-col ">
+                                                                    <p className="md:text-[14px] text-[9px] font-semibold">
+                                                                        Upload Foto (Optional):
+                                                                    </p>
+
+                                                                    <br />
+                                                                    <div className="">
+                                                                        <input
+                                                                            disabled
+                                                                            type="file"
+                                                                            name=""
+                                                                            id=""
+                                                                            className="w-60"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        )
+                                                        }
+
                                                     </div>
                                                     <div className='col-span-6 justify-end  w-full h-full flex items-center'>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.preventDefault()
-                                                                sumbitPoint1(incoming?.inspeksi_bahan_result[0]);
-                                                            }}
-                                                            className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
-                                                        >
-                                                            Simpan
-                                                        </button>
+                                                        {!incoming?.inspeksi_bahan_result[0]?.send ? (
+                                                            <>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault()
+                                                                        sumbitPoint1(incoming?.inspeksi_bahan_result[0]);
+                                                                    }}
+                                                                    className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                                                >
+                                                                    Simpan
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                            </>
+                                                        )
+                                                        }
+
                                                     </div>
 
                                                 </div>
@@ -534,32 +578,129 @@ function IncomingInspection() {
                                                 </div>
 
                                                 <div className='flex justify-between  col-span-3'>
+
                                                     <div className='flex flex-col  w-[60%]'>
-                                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                                            Kiri
-                                                        </label>
-                                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
-                                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
-                                                            Tengah
-                                                        </label>
-                                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
-                                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
-                                                            Kanan
-                                                        </label>
-                                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
-                                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
-                                                            Rata-Rata
-                                                        </label>
-                                                        <input type='text' disabled className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                        {!incoming?.inspeksi_bahan_result[1]?.send ? (
+                                                            <>
+                                                                <label className='text-neutral-500 text-sm font-semibold '>
+                                                                    Kiri
+                                                                </label>
+                                                                <input
+                                                                    onChange={(e) => {
+                                                                        let array = [...incoming?.inspeksi_bahan_result]
+                                                                        array[1].hasil_kiri = e.target.value
+                                                                        setKiri(parseInt(e.target.value))
+                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                    }}
+
+                                                                    type='number' className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                                <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                                    Tengah
+                                                                </label>
+                                                                <input type='number'
+
+                                                                    onChange={(e) => {
+                                                                        let array = [...incoming?.inspeksi_bahan_result]
+                                                                        array[1].hasil_tengah = e.target.value
+                                                                        setTengah(parseInt(e.target.value))
+                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                    }}
+
+                                                                    className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                                <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                                    Kanan
+                                                                </label>
+                                                                <input type='number'
+                                                                    onChange={(e) => {
+                                                                        let array = [...incoming?.inspeksi_bahan_result]
+                                                                        array[1].hasil_kanan = e.target.value
+                                                                        setKanan(parseInt(e.target.value))
+                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                    }}
+                                                                    className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                                <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                                    Rata-Rata
+                                                                </label>
+                                                                <input type='number'
+                                                                    onChange={(e) => {
+                                                                        let array = [...incoming?.inspeksi_bahan_result]
+                                                                        array[1].hasil_rata_rata = hasilRata
+
+                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                    }}
+                                                                    value={hasilRata}
+                                                                    disabled className='border-2 border-stroke w-[80%] rounded-sm' />
+
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div className='flex flex-col gap-1'>
+                                                                    <label className='text-neutral-500 text-sm font-semibold '>
+                                                                        Kiri
+                                                                    </label>
+                                                                    <label className='text-neutral-500 text-sm font-semibold '>
+                                                                        {incoming?.inspeksi_bahan_result[1].hasil_kiri}
+                                                                    </label>
+                                                                    <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                                        Tengah
+                                                                    </label>
+                                                                    <label className='text-neutral-500 text-sm font-semibold '>
+                                                                        {incoming?.inspeksi_bahan_result[1].hasil_tengah}
+                                                                    </label>
+                                                                    <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                                        Kanan
+                                                                    </label>
+                                                                    <label className='text-neutral-500 text-sm font-semibold '>
+                                                                        {incoming?.inspeksi_bahan_result[1].hasil_kanan}
+                                                                    </label>
+                                                                    <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                                        Rata-Rata
+                                                                    </label>
+                                                                    <label className='text-neutral-500 text-sm font-semibold '>
+                                                                        {incoming?.inspeksi_bahan_result[1].hasil_rata_rata}
+                                                                    </label>
+                                                                </div>
+
+
+                                                            </>
+                                                        )
+                                                        }
 
                                                     </div>
+
                                                     <div className='flex flex-col gap-1  w-[50%]'>
-                                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                                            <input type='checkbox' />Sesuai
-                                                        </label>
-                                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                                            <input type='checkbox' className='' />Tidak Sesuai
-                                                        </label>
+                                                        {!incoming?.inspeksi_bahan_result[1]?.send ? (
+                                                            <>
+                                                                <div>
+                                                                    <input
+                                                                        onChange={(e) => {
+                                                                            let array = [...incoming?.inspeksi_bahan_result]
+                                                                            array[1].keterangan_hasil = e.target.value
+                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        }}
+                                                                        type="radio" id="sesuai1" name="sesuai1" value="sesuai" />
+                                                                    <label>Sesuai</label>
+                                                                </div>
+                                                                <div>
+                                                                    <input
+                                                                        onChange={(e) => {
+                                                                            let array = [...incoming?.inspeksi_bahan_result]
+                                                                            array[1].keterangan_hasil = e.target.value
+                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        }}
+                                                                        type="radio" id="sesuai2" name="sesuai1" value="tidak sesuai" />
+                                                                    <label>Tidak Sesuai</label>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <p className='text-neutral-500 text-sm font-semibold'>
+                                                                    {incoming?.inspeksi_bahan_result[1].keterangan_hasil}
+                                                                </p>
+
+                                                            </>
+                                                        )}
+
                                                     </div>
                                                 </div>
                                                 <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
@@ -569,24 +710,70 @@ function IncomingInspection() {
                                             <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
 
                                                 <div className='col-span-4'>
-                                                    <div className="flex flex-col ">
-                                                        <p className="md:text-[14px] text-[9px] font-semibold">
-                                                            Upload Foto (Optional):
-                                                        </p>
 
-                                                        <br />
-                                                        <div className="">
-                                                            <input
+                                                    {!incoming?.inspeksi_bahan_result[1]?.send ? (
+                                                        <>
+                                                            <div className="flex flex-col ">
+                                                                <p className="md:text-[14px] text-[9px] font-semibold">
+                                                                    Upload Foto (Optional):
+                                                                </p>
 
-                                                                type="file"
-                                                                name=""
-                                                                id=""
-                                                                className="w-60"
-                                                            />
-                                                        </div>
-                                                    </div>
+                                                                <br />
+                                                                <div className="">
+                                                                    <input
+
+                                                                        type="file"
+                                                                        name=""
+                                                                        id=""
+                                                                        className="w-60"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div className="flex flex-col ">
+                                                                <p className="md:text-[14px] text-[9px] font-semibold">
+                                                                    Upload Foto (Optional):
+                                                                </p>
+
+                                                                <br />
+                                                                <div className="">
+                                                                    <input
+                                                                        disabled
+                                                                        type="file"
+                                                                        name=""
+                                                                        id=""
+                                                                        className="w-60"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </>
+                                                    )
+                                                    }
+
+
                                                 </div>
+                                                <div className='col-span-6 justify-end  w-full h-full flex items-center'>
+                                                    {!incoming?.inspeksi_bahan_result[1]?.send ? (
+                                                        <>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.preventDefault()
+                                                                    sumbitPoint1(incoming?.inspeksi_bahan_result[1]);
+                                                                }}
+                                                                className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                                            >
+                                                                Simpan
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                        </>
+                                                    )
+                                                    }
 
+                                                </div>
                                             </div>
                                         </>
 
