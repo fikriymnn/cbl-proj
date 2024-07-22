@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Button } from '@mui/material';
 
 
-function InspeksiQuality() {
+function ProsesCetakMesin() {
     const [isMobile, setIsMobile] = useState(false);
     const kosong: any = []
     const today = new Date();
@@ -81,7 +81,7 @@ function InspeksiQuality() {
     //             }
     //         );
     //         console.log(res.data);
-    //         navigate(`/maintenance/inspection/pm_1_form/${id}`)
+    //         navigate(`/maintenance/mesin/pm_1_form/${id}`)
     //     } catch (error: any) {
     //         console.log(error);
     //     }
@@ -141,35 +141,20 @@ function InspeksiQuality() {
 
     const tanggal = convertDatetimeToDate(new Date());
 
-    const inspection = [
+    const mesin = [
         {
 
-            nama: 'INCOMING BAHAN',
+            nama: 'R700',
 
         },
         {
 
-            nama: 'PROSES POTONG',
+            nama: 'SM74',
 
         },
         {
 
-            nama: 'PROSES CETAK',
-
-        },
-        {
-
-            nama: 'PROSES COATING',
-
-        },
-        {
-
-            nama: 'PROSES POND',
-
-        },
-        {
-
-            nama: 'PROSES LEM',
+            nama: 'GTO',
 
         },
     ];
@@ -181,14 +166,30 @@ function InspeksiQuality() {
                     <div className='min-w-[700px] bg-white rounded-xl'>
                         <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>{tanggal}</p>
                         <div className=' w-full h-full flex-col border-b-8 border-[#D8EAFF]'>
+                            <div className='grid grid-cols-8 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2'>
 
+                                <label className='text-neutral-500 text-sm font-semibold'>
+                                    Point Check
+                                </label>
+
+                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                    Standar
+                                </label>
+                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                    Hasil Check
+                                </label>
+                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                    Keterangan
+                                </label>
+
+                            </div>
                             <div className='w-2 h-full '>
 
                             </div>
-                            {inspection.map((data: any, i: any) => (
+                            {mesin.map((data: any, i: any) => (
                                 <>
                                     <section className=' flex  justify-center  w-full h-[59px] border-b-8 border-[#D8EAFF] text-[14px]  text-black'>
-                                        <div className={`w-2 h-full sticky left-0 z-20 ${data.nama == 'INCOMING BAHAN' ? 'bg-green-600' : data.nama == 'PROSES POTONG' ? 'bg-green-600' : data.nama == 'PROSES CETAK' ? 'bg-[#DE8500]' : data.nama == 'PROSES COATING' ? 'bg-[#DE8500]' : data.nama == 'PROSES POND' ? 'bg-[#DE8500]' : data.nama == 'PROSES COATING' ? 'bg-[#DE8500]' : data.nama == 'PROSES LEM' ? 'bg-[#DE8500]' : ''}`}>
+                                        <div className={`w-2 h-full sticky left-0 z-20 bg-green-600  `}>
 
                                         </div>
 
@@ -201,9 +202,9 @@ function InspeksiQuality() {
                                             </div>
                                         </div>
                                         <div className='justify-end pr-4'>
-                                            {data.nama == 'INCOMING BAHAN' ? (
+                                            {data.nama == 'R700' ? (
                                                 <>
-                                                    <Link to={`/qc/qualityinspection/list`}>
+                                                    <Link to={``}>
 
                                                         <button
                                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
@@ -213,9 +214,9 @@ function InspeksiQuality() {
                                                         </button>
                                                     </Link>
                                                 </>
-                                            ) : data.nama == 'PROSES POTONG' ? (
+                                            ) : data.nama == 'SM74' ? (
                                                 <>
-                                                    <Link to={`/qc/potong`}>
+                                                    <Link to={``}>
                                                         <button
                                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                         >
@@ -224,9 +225,9 @@ function InspeksiQuality() {
                                                         </button>
                                                     </Link>
                                                 </>
-                                            ) : data.nama == 'PROSES CETAK' ? (
+                                            ) : data.nama == 'GTO' ? (
                                                 <>
-                                                    <Link to={`/qc/cetak`}>
+                                                    <Link to={``}>
                                                         <button
                                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                         >
@@ -234,36 +235,10 @@ function InspeksiQuality() {
 
                                                         </button>
                                                     </Link>
-                                                </>
-                                            ) : data.nama == 'PROSES COATING' ? (
-                                                <>
-                                                    <button
-                                                        className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
-                                                    >
-                                                        PILIH
-
-                                                    </button>
-                                                </>
-                                            ) : data.nama == 'PROSES POND' ? (
-                                                <>
-                                                    <button
-                                                        className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
-                                                    >
-                                                        PILIH
-
-                                                    </button>
                                                 </>
                                             ) :
-                                                (
-                                                    <>
-                                                        <button
-                                                            className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
-                                                        >
-                                                            PILIH
-
-                                                        </button>
-                                                    </>
-                                                )
+                                                <>
+                                                </>
                                             }
 
                                         </div>
@@ -279,4 +254,4 @@ function InspeksiQuality() {
     )
 }
 
-export default InspeksiQuality
+export default ProsesCetakMesin

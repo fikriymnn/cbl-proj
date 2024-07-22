@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
 
@@ -13,6 +13,8 @@ function IncomingInspection() {
     const date = today.getDate();
     const currentDate = month + "/" + date + "/" + year;
     const navigate = useNavigate();
+
+    const { id } = useParams();
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
     };
@@ -28,94 +30,78 @@ function IncomingInspection() {
         };
     }, []);
 
-    const [showModal4, setShowModal4] = useState(false);
 
-    const openModal4 = () => setShowModal4(true);
+    const [incoming, setIncoming] = useState<any>();
 
-    const [pm1, setPm1] = useState<any>();
+    useEffect(() => {
 
-    // useEffect(() => {
-    //     getPM1();
-    //     getMe();
-    // }, []);
+        getInspection();
+    }, []);
 
-    // async function getPM1() {
-    //     const url = `${import.meta.env.VITE_API_LINK}/pm1`;
-    //     try {
-    //         const res = await axios.get(url, {
-    //             params: {
-    //                 tgl: currentDate
-    //             },
-    //             withCredentials: true,
-    //         });
+    async function getInspection() {
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahan/${id}`;
 
-    //         setPm1(res.data);
-    //         console.log(res.data);
-    //     } catch (error: any) {
-    //         console.log(error.data.msg);
-    //     }
-    // }
+        try {
+            const res = await axios.get(url, {
 
-    // const [me, setMe] = useState<any>();
+                withCredentials: true,
+            });
 
-    // async function getMe() {
-    //     const url = `${import.meta.env.VITE_API_LINK}/me`;
-    //     try {
-    //         const res = await axios.get(url, {
-    //             withCredentials: true,
-    //         });
+            setIncoming(res.data.data);
+            console.log(res.data.data);
+        } catch (error: any) {
+            console.log(error.data.msg);
+        }
+    }
 
-    //         setMe(res.data);
-    //     } catch (error: any) {
-    //         console.log(error.data.msg);
-    //     }
-    // }
-
-    // async function inspectPM1(id: any) {
-    //     const url = `${import.meta.env.VITE_API_LINK}/pm1/response/${id}`;
-    //     try {
-    //         const res = await axios.get(url,
-    //             {
-
-    //                 withCredentials: true,
-    //             }
-    //         );
-    //         console.log(res.data);
-    //         navigate(`/maintenance/inspection/pm_1_form/${id}`)
-    //     } catch (error: any) {
-    //         console.log(error);
-    //     }
-    // }
+    async function startTask(id: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahan/start/${id}`;
 
 
+        try {
+            const res = await axios.get(url, {
+                withCredentials: true,
+            });
 
-    // async function createPM1() {
-    //     const url = `${import.meta.env.VITE_API_LINK}/pm1/create`;
-    //     try {
-    //         const res = await axios.post(url, {
-    //             withCredentials: true,
-    //         });
+            getInspection();
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
 
+    async function stopTask(id: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahan/stop/${id}`;
+        try {
+            const res = await axios.get(url, {
+                withCredentials: true,
+            });
 
-    //         getPM1()
-    //     } catch (error: any) {
-    //         console.log(error);
-    //     }
-    // }
+            getInspection();
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
 
-    const [showConfirm, setShowConfirm] = useState<any>([]);
+    async function sumbitPoint1(objek: any) {
+        alert(objek.keterangan_hasil)
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${objek.id}`;
+        try {
+            const res = await axios.put(url,
+                {
+                    ...objek
+                }
 
-    const openConfirm = (i: any) => {
-        const onchangeVal: any = [...showConfirm];
-        onchangeVal[i] = true
-        setShowConfirm(onchangeVal);
-    };
+                ,
+                {
 
-    const closeConfirm = (i: any) => {
-        const onchangeVal: any = [...showConfirm];
-        onchangeVal[i] = false;
-        setShowConfirm(onchangeVal);
-    };
+                    withCredentials: true,
+                });
+            console.log(objek.id)
+            getInspection();
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
 
     function convertDatetimeToDate(datetime: any) {
         const dateObject = new Date(datetime);
@@ -139,23 +125,8 @@ function IncomingInspection() {
         return `${year}/${month}/${day} `; // Example format (YYYY-MM-DD)
     }
 
-    const tanggal = convertDatetimeToDate(new Date());
+    // const tanggal = convertDatetimeToDate(new Date());
 
-
-
-    class JO {
-        tgl: string = '8 July 2024'
-        nolot: string = ''
-        no_surat_jalan: string = '074/BDK MAS/0624'
-        supplier: string = 'PT. SUPARMA'
-        jenis_kertas: string = 'DUPLEX 250 GR'
-        ukuran: string = '109 x 79 CM'
-        jam: string = '10:32:00'
-        inspector: string = 'Cristian Bale'
-        jumlah: string = '25 RIM'
-        itu: string = ''
-    }
-    const jo = new JO();
     return (
         <>
 
@@ -193,22 +164,22 @@ function IncomingInspection() {
                             </div>
                             <div className='flex flex-col gap-4 col-span-3 px-10 py-4'>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : {jo.tgl}
+                                    : {incoming?.tanggal}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
                                     : <input type='text' className='rounded-[3px]  border border-zinc-300' />
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : {jo.no_surat_jalan}
+                                    : {incoming?.no_surat_jalan}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : {jo.supplier}
+                                    : {incoming?.supplier}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : {jo.jenis_kertas}
+                                    : {incoming?.jenis_kertas}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : {jo.ukuran}
+                                    : {incoming?.ukuran}
                                 </label>
                             </div>
 
@@ -238,10 +209,10 @@ function IncomingInspection() {
                             </div>
                             <div className='flex flex-col  gap-4 col-span-2 justify-between py-4'>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : {jo.jam}
+                                    : {incoming?.jam}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : {jo.inspector}
+                                    : {incoming?.inspector}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
 
@@ -252,7 +223,7 @@ function IncomingInspection() {
                                     {' '}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : {jo.jumlah}
+                                    : {incoming?.jumlah}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
                                     : <input type='text' className='rounded-[3px] w-[50%] border border-zinc-300' />
@@ -260,52 +231,93 @@ function IncomingInspection() {
 
 
                             </div>
-                            <div className='flex flex-col max-h-[300] w-full  justify-start gap-2  py-4 col-span-2  bg-[#F6FAFF]'>
+                            <div className='flex flex-col h-full w-full items-center justify-end gap-2  py-4 col-span-2  bg-[#F6FAFF]'>
+                                {incoming?.waktu_mulai == null &&
+                                    incoming?.waktu_selesai == null && (
+                                        <>
+                                            <div>
+                                                <p className="md:text-[14px] text-[9px] font-semibold">
+                                                    Time : -
 
-                                <p className="md:text-[14px] text-[9px] font-semibold">
-                                    Time : -
+                                                </p>
+                                                <>
+                                                    <p className='font-bold text-[#DE0000]'>
+                                                        Task Belum Dimulai
+                                                    </p>
+                                                    <button
+                                                        onClick={() => {
+                                                            startTask(incoming?.id);
+                                                        }}
+                                                        className="flex w-full  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                                    >
+                                                        <svg
+                                                            width="14"
+                                                            height="14"
+                                                            viewBox="0 0 14 14"
+                                                            fill="none"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                        >
+                                                            <path
+                                                                d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                                                fill="white"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </>
 
-                                </p>
-                                <>
-                                    <p className='font-bold text-[#DE0000]'>
-                                        Task Belum Dimulai
-                                    </p>
-                                    <button
+                                            </div>
+                                        </>
+                                    )
+                                }
+                                {incoming?.waktu_mulai != null &&
+                                    incoming?.waktu_selesai == null && (
+                                        <>
+                                            <div>
+                                                <p className="md:text-[14px] text-[9px] font-semibold">
+                                                    Time : -
 
-                                        className="flex w-[60%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
-                                    >
-                                        <svg
-                                            width="14"
-                                            height="14"
-                                            viewBox="0 0 14 14"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                            <path
-                                                d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                                fill="white"
-                                            />
-                                        </svg>
-                                    </button>
-                                </>
-                                <div className="flex flex-col pt-3 overflow-x-hidden">
-                                    <p className="md:text-[14px] text-[9px] font-semibold">
-                                        Upload Foto :
-                                    </p>
+                                                </p>
+                                                <>
+                                                    <p className='font-bold text-[#00B81D]'>
+                                                        Task Sudah Dimulai
+                                                    </p>
+                                                    <button
+                                                        onClick={() => {
+                                                            stopTask(incoming?.id);
+                                                        }}
+                                                        className="flex w-full  rounded-md bg-[#DE0000] justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                                    >
+                                                        <svg
+                                                            width="14"
+                                                            height="14"
+                                                            viewBox="0 0 14 14"
+                                                            fill="none"
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                        >
+                                                            <path
+                                                                d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                                                fill="white"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                </>
 
+                                            </div>
+                                        </>
+                                    )
+                                }
+                                {incoming?.waktu_mulai != null &&
+                                    incoming?.waktu_selesai != null && (
+                                        <>
+                                            <div>
+                                                <p className="md:text-[14px] text-[9px] font-semibold">
+                                                    Time :
 
-                                    <div className="">
-                                        <input
-
-                                            type="file"
-                                            name=""
-                                            id=""
-                                            className="w-45"
-                                        />
-                                    </div>
-
-
-                                </div>
+                                                </p>
+                                            </div>
+                                        </>
+                                    )
+                                }
 
                             </div>
                         </div>
@@ -341,712 +353,1498 @@ function IncomingInspection() {
                             </label>
                         </div>
 
-                        {/* =============================Point 1========================== */}
+
+
                         <>
-                            <div className='grid grid-cols-12 px-3 py-4 gap-2'>
-                                <div className='flex gap-4 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        1
-                                    </label>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        Jenis Kertas
-                                    </label>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    -
-                                </label>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    Visual
-                                </label>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    Sesuai Surat Jalan
-                                </label>
-                                <div className='flex justify-between  col-span-3'>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        <select >
-                                            <option> Select Result</option>
-
-                                        </select>
-                                    </label>
-                                    <div className='flex flex-col gap-1 pr-[10%]'>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Sesuai
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Tidak Sesuai
-                                        </label>
-                                    </div>
-                                </div>
-
-
-                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                    25
-                                </label>
-                            </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
-
-                                <div className='col-span-4'>
-                                    <div className="flex flex-col ">
-                                        <p className="md:text-[14px] text-[9px] font-semibold">
-                                            Upload Foto (Optional):
-                                        </p>
-
-                                        <br />
-                                        <div className="">
-                                            <input
-
-                                                type="file"
-                                                name=""
-                                                id=""
-                                                className="w-60"
-                                            />
+                            {/* =============================================Checksheet Not Start==========================================================*/}
+                            {incoming?.waktu_mulai == null &&
+                                incoming?.waktu_selesai == null && (
+                                    <>
+                                        <div className='flex px-4 py-5'>
+                                            <p className='font-bold text-[#00B81D]'>
+                                                Mulai Task Untuk Memunculkan Checksheet
+                                            </p>
                                         </div>
-                                    </div>
-                                </div>
 
-                            </div>
+                                    </>
+                                )}
+
+                            {/* =============================================Checksheet Start==========================================================*/}
+                            {incoming?.waktu_mulai != null &&
+                                incoming?.waktu_selesai == null && (
+                                    <>
+                                        <>
+                                            <form>
+                                                <div className='grid grid-cols-12 px-3 py-4 gap-2'>
+                                                    <div className='flex gap-4 col-span-2'>
+                                                        <label className='text-neutral-500 text-sm font-semibold'>
+                                                            1
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold'>
+                                                            Jenis Kertas
+                                                        </label>
+                                                    </div>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        -
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Visual
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Sesuai Surat Jalan
+                                                    </label>
+                                                    <div className='flex justify-between  col-span-3'>
+                                                        <label className='text-neutral-500 text-sm font-semibold'>
+
+                                                            {!incoming?.inspeksi_bahan_result[0]?.send ? (
+                                                                <>
+                                                                    <select onChange={(e) => {
+                                                                        let array = [...incoming?.inspeksi_bahan_result]
+                                                                        array[0].hasil = e.target.value
+                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                    }}>
+                                                                        <option disabled selected> Select Result</option>
+                                                                        <option value={'DUPLEX'}>
+                                                                            DUPLEX
+                                                                        </option>
+                                                                        <option value={'IVORY'}>
+                                                                            IVORY
+                                                                        </option>
+                                                                        <option value={'ART PAPER'}>
+                                                                            ART PAPER
+                                                                        </option>
+                                                                        <option value={'HVS'}>
+                                                                            HVS
+                                                                        </option>
+                                                                    </select>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    {incoming?.inspeksi_bahan_result[0]?.hasil}
+                                                                </>
+                                                            )
+                                                            }
+
+                                                        </label>
+                                                        <div className='flex flex-col gap-1 pr-[10%]'>
+                                                            {!incoming?.inspeksi_bahan_result[0]?.send ? (
+                                                                <>
+                                                                    <div>
+                                                                        <input
+                                                                            onChange={(e) => {
+                                                                                let array = [...incoming?.inspeksi_bahan_result]
+                                                                                array[0].keterangan_hasil = e.target.value
+                                                                                setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            }}
+                                                                            type="radio" id="sesuai1" name="sesuai1" value="sesuai" />
+                                                                        <label>Sesuai</label>
+                                                                    </div>
+                                                                    <div>
+                                                                        <input
+                                                                            onChange={(e) => {
+                                                                                let array = [...incoming?.inspeksi_bahan_result]
+                                                                                array[0].keterangan_hasil = e.target.value
+                                                                                setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            }}
+                                                                            type="radio" id="sesuai2" name="sesuai1" value="tidak sesuai" />
+                                                                        <label>Tidak Sesuai</label>
+                                                                    </div>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    {incoming?.inspeksi_bahan_result[0].keterangan_hasil}
+                                                                </>
+                                                            )}
+
+
+
+                                                        </div>
+                                                    </div>
+                                                    <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                        25
+                                                    </label>
+                                                </div>
+                                                <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                    <div className='col-span-4'>
+                                                        <div className="flex flex-col ">
+                                                            <p className="md:text-[14px] text-[9px] font-semibold">
+                                                                Upload Foto (Optional):
+                                                            </p>
+
+                                                            <br />
+                                                            <div className="">
+                                                                <input
+
+                                                                    type="file"
+                                                                    name=""
+                                                                    id=""
+                                                                    className="w-60"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className='col-span-6 justify-end  w-full h-full flex items-center'>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.preventDefault()
+                                                                sumbitPoint1(incoming?.inspeksi_bahan_result[0]);
+                                                            }}
+                                                            className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                                        >
+                                                            Simpan
+                                                        </button>
+                                                    </div>
+
+                                                </div>
+                                            </form>
+                                        </>
+                                        {/* =============================Point 2========================== */}
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        2
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Gramatur
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Timbangan Digital
+                                                </label>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Potong Kertas Ukuran 10x10cm di area KIRI, TENGAH, KANAN
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Timbang Masing-Masing beratnya
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Jumlahkan dan hitung nilai rata-ratanya (KIRI &lt; TENGAH &lt; KANAN : 3)
+                                                    </label>
+                                                </div>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Gramatur Sesuai Surat Jalan
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Toleransi &#xb1; 4%
+                                                    </label>
+                                                </div>
+
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <div className='flex flex-col  w-[60%]'>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            Kiri
+                                                        </label>
+                                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                            Tengah
+                                                        </label>
+                                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                            Kanan
+                                                        </label>
+                                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                            Rata-Rata
+                                                        </label>
+                                                        <input type='text' disabled className='border-2 border-stroke w-[80%] rounded-sm' />
+
+                                                    </div>
+                                                    <div className='flex flex-col gap-1  w-[50%]'>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    20
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+
+
+
+                                        {/* =============================Point 3========================== */}
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        3
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Thickness
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Thickness Gauge
+                                                </label>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Ukuran ketebalan Masing-Masing kertas yang sudah dipotong di point-2
+                                                    </label>
+
+                                                </div>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        -
+                                                    </label>
+
+                                                </div>
+
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <div className='flex flex-col  w-[60%]'>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            Kiri
+                                                        </label>
+                                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                            Tengah
+                                                        </label>
+                                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                            Kanan
+                                                        </label>
+                                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
+
+
+                                                    </div>
+                                                    <div className='flex flex-col gap-1  w-[50%]'>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    15
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+                                        {/* =============================Point 4========================== */}
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        4
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Arah Serat
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Label Tercantum
+                                                </label>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Lihat Ukuran
+                                                    </label>
+
+                                                </div>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Sesuai arah serat di surat jalan
+                                                    </label>
+
+                                                </div>
+
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <div className='flex flex-col  w-[60%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Panjang
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Pendek
+                                                        </label>
+                                                    </div>
+                                                    <div className='flex flex-col gap-1  w-[50%]'>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    10
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+                                        {/* =============================Point 5========================== */}
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        5
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Coating Depan
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Kaca Pembesar
+                                                </label>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Lihat Ukuran
+                                                    </label>
+
+                                                </div>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Visual
+                                                    </label>
+
+                                                </div>
+
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <div className='flex flex-col  w-[60%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Ok
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Not Ok
+                                                        </label>
+                                                    </div>
+                                                    <div className='flex flex-col gap-1  w-[50%]'>
+                                                        <label className='text-neutral-500 text-sm font-semibold'>
+                                                            <select >
+                                                                <option> Select Coating</option>
+
+                                                            </select>
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    10
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+
+                                        {/* =============================Point 6========================== */}
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        6
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Ukuran
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Mistar/Penggaris
+                                                </label>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Diukur panjang dan lebar
+                                                    </label>
+
+                                                </div>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Sesuai size di surat jalan, toleransi tidak boleh &lt;= 2mm
+                                                    </label>
+
+                                                </div>
+
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <div className='flex flex-col  w-[60%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold'>
+                                                            <select className='w-[80%]'>
+                                                                <option> Select </option>
+
+                                                            </select>
+                                                        </label>
+                                                    </div>
+                                                    <div className='flex flex-col gap-1  w-[50%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    5
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+                                        {/* =============================Point 7========================== */}
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        7
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Gelombang
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Penggaris
+                                                </label>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Toleransi melengkung / gelombanng = &#xb1; 8mm
+                                                    </label>
+
+                                                </div>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        -
+                                                    </label>
+
+                                                </div>
+
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <div className='flex flex-col  w-[60%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Toleransi
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Not Toleransi
+                                                        </label>
+                                                    </div>
+                                                    <div className='flex flex-col gap-1  w-[50%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    5
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+                                        {/* =============================Point 8========================== */}
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        8
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Warna
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Color Tolerance / Sample
+                                                </label>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Visual
+                                                    </label>
+
+                                                </div>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Warna Dasar Sesuai
+                                                    </label>
+
+                                                </div>
+
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <div className='flex flex-col  w-[60%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Ok
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Not Ok
+                                                        </label>
+                                                    </div>
+                                                    <div className='flex flex-col gap-1  w-[50%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    5
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+                                        {/* =============================Point 9========================== */}
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        9
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Quantity
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Hitung Manual
+                                                </label>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Sampling sesuai standard AQL
+                                                    </label>
+
+                                                </div>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Sesuai per pack
+                                                    </label>
+
+                                                </div>
+
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <div className='flex flex-col  w-[60%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Ok
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Not Ok
+                                                        </label>
+                                                    </div>
+                                                    <div className='flex flex-col gap-1  w-[50%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    5
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+                                    </>
+                                )}
+                            {/* =============================================Checksheet Stop==========================================================*/}
+                            {incoming?.waktu_mulai != null &&
+                                incoming?.waktu_selesai != null && (
+                                    <>
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2'>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        1
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Jenis Kertas
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    -
+                                                </label>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Visual
+                                                </label>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Sesuai Surat Jalan
+                                                </label>
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        <select >
+                                                            <option> Select Result</option>
+
+                                                        </select>
+                                                    </label>
+                                                    <div className='flex flex-col gap-1 pr-[10%]'>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    25
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+                                        {/* =============================Point 2========================== */}
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        2
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Gramatur
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Timbangan Digital
+                                                </label>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Potong Kertas Ukuran 10x10cm di area KIRI, TENGAH, KANAN
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Timbang Masing-Masing beratnya
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Jumlahkan dan hitung nilai rata-ratanya (KIRI &lt; TENGAH &lt; KANAN : 3)
+                                                    </label>
+                                                </div>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Gramatur Sesuai Surat Jalan
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Toleransi &#xb1; 4%
+                                                    </label>
+                                                </div>
+
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <div className='flex flex-col  w-[60%]'>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            Kiri
+                                                        </label>
+                                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                            Tengah
+                                                        </label>
+                                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                            Kanan
+                                                        </label>
+                                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                            Rata-Rata
+                                                        </label>
+                                                        <input type='text' disabled className='border-2 border-stroke w-[80%] rounded-sm' />
+
+                                                    </div>
+                                                    <div className='flex flex-col gap-1  w-[50%]'>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    20
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+
+
+
+                                        {/* =============================Point 3========================== */}
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        3
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Thickness
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Thickness Gauge
+                                                </label>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Ukuran ketebalan Masing-Masing kertas yang sudah dipotong di point-2
+                                                    </label>
+
+                                                </div>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        -
+                                                    </label>
+
+                                                </div>
+
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <div className='flex flex-col  w-[60%]'>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            Kiri
+                                                        </label>
+                                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                            Tengah
+                                                        </label>
+                                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                            Kanan
+                                                        </label>
+                                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
+
+
+                                                    </div>
+                                                    <div className='flex flex-col gap-1  w-[50%]'>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    15
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+                                        {/* =============================Point 4========================== */}
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        4
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Arah Serat
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Label Tercantum
+                                                </label>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Lihat Ukuran
+                                                    </label>
+
+                                                </div>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Sesuai arah serat di surat jalan
+                                                    </label>
+
+                                                </div>
+
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <div className='flex flex-col  w-[60%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Panjang
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Pendek
+                                                        </label>
+                                                    </div>
+                                                    <div className='flex flex-col gap-1  w-[50%]'>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    10
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+                                        {/* =============================Point 5========================== */}
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        5
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Coating Depan
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Kaca Pembesar
+                                                </label>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Lihat Ukuran
+                                                    </label>
+
+                                                </div>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Visual
+                                                    </label>
+
+                                                </div>
+
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <div className='flex flex-col  w-[60%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Ok
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Not Ok
+                                                        </label>
+                                                    </div>
+                                                    <div className='flex flex-col gap-1  w-[50%]'>
+                                                        <label className='text-neutral-500 text-sm font-semibold'>
+                                                            <select >
+                                                                <option> Select Coating</option>
+
+                                                            </select>
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    10
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+
+                                        {/* =============================Point 6========================== */}
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        6
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Ukuran
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Mistar/Penggaris
+                                                </label>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Diukur panjang dan lebar
+                                                    </label>
+
+                                                </div>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Sesuai size di surat jalan, toleransi tidak boleh &lt;= 2mm
+                                                    </label>
+
+                                                </div>
+
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <div className='flex flex-col  w-[60%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold'>
+                                                            <select className='w-[80%]'>
+                                                                <option> Select </option>
+
+                                                            </select>
+                                                        </label>
+                                                    </div>
+                                                    <div className='flex flex-col gap-1  w-[50%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    5
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+                                        {/* =============================Point 7========================== */}
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        7
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Gelombang
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Penggaris
+                                                </label>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Toleransi melengkung / gelombanng = &#xb1; 8mm
+                                                    </label>
+
+                                                </div>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        -
+                                                    </label>
+
+                                                </div>
+
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <div className='flex flex-col  w-[60%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Toleransi
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Not Toleransi
+                                                        </label>
+                                                    </div>
+                                                    <div className='flex flex-col gap-1  w-[50%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    5
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+                                        {/* =============================Point 8========================== */}
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        8
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Warna
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Color Tolerance / Sample
+                                                </label>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Visual
+                                                    </label>
+
+                                                </div>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Warna Dasar Sesuai
+                                                    </label>
+
+                                                </div>
+
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <div className='flex flex-col  w-[60%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Ok
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Not Ok
+                                                        </label>
+                                                    </div>
+                                                    <div className='flex flex-col gap-1  w-[50%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    5
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+                                        {/* =============================Point 9========================== */}
+                                        <>
+                                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        9
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Quantity
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Hitung Manual
+                                                </label>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Sampling sesuai standard AQL
+                                                    </label>
+
+                                                </div>
+                                                <div className='flex flex-col gap-2 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Sesuai per pack
+                                                    </label>
+
+                                                </div>
+
+                                                <div className='flex justify-between  col-span-3'>
+                                                    <div className='flex flex-col  w-[60%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Ok
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Not Ok
+                                                        </label>
+                                                    </div>
+                                                    <div className='flex flex-col gap-1  w-[50%]'>
+
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' />Sesuai
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            <input type='checkbox' className='' />Tidak Sesuai
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
+                                                    5
+                                                </label>
+                                            </div>
+                                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
+
+                                                <div className='col-span-4'>
+                                                    <div className="flex flex-col ">
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Upload Foto (Optional):
+                                                        </p>
+
+                                                        <br />
+                                                        <div className="">
+                                                            <input
+
+                                                                type="file"
+                                                                name=""
+                                                                id=""
+                                                                className="w-60"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                        </>
+                                    </>
+                                )}
+
                         </>
-                        {/* =============================Point 2========================== */}
-                        <>
-                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
-                                <div className='flex gap-4 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        2
-                                    </label>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        Gramatur
-                                    </label>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    Timbangan Digital
-                                </label>
-                                <div className='flex flex-col gap-2 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Potong Kertas Ukuran 10x10cm di area KIRI, TENGAH, KANAN
-                                    </label>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Timbang Masing-Masing beratnya
-                                    </label>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Jumlahkan dan hitung nilai rata-ratanya (KIRI &lt; TENGAH &lt; KANAN : 3)
-                                    </label>
-                                </div>
-                                <div className='flex flex-col gap-2 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Gramatur Sesuai Surat Jalan
-                                    </label>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Toleransi &#xb1; 4%
-                                    </label>
-                                </div>
-
-                                <div className='flex justify-between  col-span-3'>
-                                    <div className='flex flex-col  w-[60%]'>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            Kiri
-                                        </label>
-                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
-                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
-                                            Tengah
-                                        </label>
-                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
-                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
-                                            Kanan
-                                        </label>
-                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
-                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
-                                            Rata-Rata
-                                        </label>
-                                        <input type='text' disabled className='border-2 border-stroke w-[80%] rounded-sm' />
-
-                                    </div>
-                                    <div className='flex flex-col gap-1  w-[50%]'>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Sesuai
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Tidak Sesuai
-                                        </label>
-                                    </div>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                    20
-                                </label>
-                            </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
-
-                                <div className='col-span-4'>
-                                    <div className="flex flex-col ">
-                                        <p className="md:text-[14px] text-[9px] font-semibold">
-                                            Upload Foto (Optional):
-                                        </p>
-
-                                        <br />
-                                        <div className="">
-                                            <input
-
-                                                type="file"
-                                                name=""
-                                                id=""
-                                                className="w-60"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </>
-
-
-
-                        {/* =============================Point 3========================== */}
-                        <>
-                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
-                                <div className='flex gap-4 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        3
-                                    </label>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        Thickness
-                                    </label>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    Thickness Gauge
-                                </label>
-                                <div className='flex flex-col gap-2 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Ukuran ketebalan Masing-Masing kertas yang sudah dipotong di point-2
-                                    </label>
-
-                                </div>
-                                <div className='flex flex-col gap-2 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        -
-                                    </label>
-
-                                </div>
-
-                                <div className='flex justify-between  col-span-3'>
-                                    <div className='flex flex-col  w-[60%]'>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            Kiri
-                                        </label>
-                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
-                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
-                                            Tengah
-                                        </label>
-                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
-                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
-                                            Kanan
-                                        </label>
-                                        <input type='text' className='border-2 border-stroke w-[80%] rounded-sm' />
-
-
-                                    </div>
-                                    <div className='flex flex-col gap-1  w-[50%]'>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Sesuai
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Tidak Sesuai
-                                        </label>
-                                    </div>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                    15
-                                </label>
-                            </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
-
-                                <div className='col-span-4'>
-                                    <div className="flex flex-col ">
-                                        <p className="md:text-[14px] text-[9px] font-semibold">
-                                            Upload Foto (Optional):
-                                        </p>
-
-                                        <br />
-                                        <div className="">
-                                            <input
-
-                                                type="file"
-                                                name=""
-                                                id=""
-                                                className="w-60"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </>
-                        {/* =============================Point 4========================== */}
-                        <>
-                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
-                                <div className='flex gap-4 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        4
-                                    </label>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        Arah Serat
-                                    </label>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    Label Tercantum
-                                </label>
-                                <div className='flex flex-col gap-2 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Lihat Ukuran
-                                    </label>
-
-                                </div>
-                                <div className='flex flex-col gap-2 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Sesuai arah serat di surat jalan
-                                    </label>
-
-                                </div>
-
-                                <div className='flex justify-between  col-span-3'>
-                                    <div className='flex flex-col  w-[60%]'>
-
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Panjang
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Pendek
-                                        </label>
-                                    </div>
-                                    <div className='flex flex-col gap-1  w-[50%]'>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Sesuai
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Tidak Sesuai
-                                        </label>
-                                    </div>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                    10
-                                </label>
-                            </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
-
-                                <div className='col-span-4'>
-                                    <div className="flex flex-col ">
-                                        <p className="md:text-[14px] text-[9px] font-semibold">
-                                            Upload Foto (Optional):
-                                        </p>
-
-                                        <br />
-                                        <div className="">
-                                            <input
-
-                                                type="file"
-                                                name=""
-                                                id=""
-                                                className="w-60"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </>
-                        {/* =============================Point 5========================== */}
-                        <>
-                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
-                                <div className='flex gap-4 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        5
-                                    </label>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        Coating Depan
-                                    </label>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    Kaca Pembesar
-                                </label>
-                                <div className='flex flex-col gap-2 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Lihat Ukuran
-                                    </label>
-
-                                </div>
-                                <div className='flex flex-col gap-2 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Visual
-                                    </label>
-
-                                </div>
-
-                                <div className='flex justify-between  col-span-3'>
-                                    <div className='flex flex-col  w-[60%]'>
-
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Ok
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Not Ok
-                                        </label>
-                                    </div>
-                                    <div className='flex flex-col gap-1  w-[50%]'>
-                                        <label className='text-neutral-500 text-sm font-semibold'>
-                                            <select >
-                                                <option> Select Coating</option>
-
-                                            </select>
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Sesuai
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Tidak Sesuai
-                                        </label>
-                                    </div>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                    10
-                                </label>
-                            </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
-
-                                <div className='col-span-4'>
-                                    <div className="flex flex-col ">
-                                        <p className="md:text-[14px] text-[9px] font-semibold">
-                                            Upload Foto (Optional):
-                                        </p>
-
-                                        <br />
-                                        <div className="">
-                                            <input
-
-                                                type="file"
-                                                name=""
-                                                id=""
-                                                className="w-60"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </>
-
-                        {/* =============================Point 6========================== */}
-                        <>
-                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
-                                <div className='flex gap-4 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        6
-                                    </label>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        Ukuran
-                                    </label>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    Mistar/Penggaris
-                                </label>
-                                <div className='flex flex-col gap-2 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Diukur panjang dan lebar
-                                    </label>
-
-                                </div>
-                                <div className='flex flex-col gap-2 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Sesuai size di surat jalan, toleransi tidak boleh &lt;= 2mm
-                                    </label>
-
-                                </div>
-
-                                <div className='flex justify-between  col-span-3'>
-                                    <div className='flex flex-col  w-[60%]'>
-
-                                        <label className='text-neutral-500 text-sm font-semibold'>
-                                            <select className='w-[80%]'>
-                                                <option> Select </option>
-
-                                            </select>
-                                        </label>
-                                    </div>
-                                    <div className='flex flex-col gap-1  w-[50%]'>
-
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Sesuai
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Tidak Sesuai
-                                        </label>
-                                    </div>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                    5
-                                </label>
-                            </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
-
-                                <div className='col-span-4'>
-                                    <div className="flex flex-col ">
-                                        <p className="md:text-[14px] text-[9px] font-semibold">
-                                            Upload Foto (Optional):
-                                        </p>
-
-                                        <br />
-                                        <div className="">
-                                            <input
-
-                                                type="file"
-                                                name=""
-                                                id=""
-                                                className="w-60"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </>
-                        {/* =============================Point 7========================== */}
-                        <>
-                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
-                                <div className='flex gap-4 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        7
-                                    </label>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        Gelombang
-                                    </label>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    Penggaris
-                                </label>
-                                <div className='flex flex-col gap-2 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Toleransi melengkung / gelombanng = &#xb1; 8mm
-                                    </label>
-
-                                </div>
-                                <div className='flex flex-col gap-2 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        -
-                                    </label>
-
-                                </div>
-
-                                <div className='flex justify-between  col-span-3'>
-                                    <div className='flex flex-col  w-[60%]'>
-
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Toleransi
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Not Toleransi
-                                        </label>
-                                    </div>
-                                    <div className='flex flex-col gap-1  w-[50%]'>
-
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Sesuai
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Tidak Sesuai
-                                        </label>
-                                    </div>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                    5
-                                </label>
-                            </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
-
-                                <div className='col-span-4'>
-                                    <div className="flex flex-col ">
-                                        <p className="md:text-[14px] text-[9px] font-semibold">
-                                            Upload Foto (Optional):
-                                        </p>
-
-                                        <br />
-                                        <div className="">
-                                            <input
-
-                                                type="file"
-                                                name=""
-                                                id=""
-                                                className="w-60"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </>
-                        {/* =============================Point 8========================== */}
-                        <>
-                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
-                                <div className='flex gap-4 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        8
-                                    </label>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        Warna
-                                    </label>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    Color Tolerance / Sample
-                                </label>
-                                <div className='flex flex-col gap-2 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Visual
-                                    </label>
-
-                                </div>
-                                <div className='flex flex-col gap-2 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Warna Dasar Sesuai
-                                    </label>
-
-                                </div>
-
-                                <div className='flex justify-between  col-span-3'>
-                                    <div className='flex flex-col  w-[60%]'>
-
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Ok
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Not Ok
-                                        </label>
-                                    </div>
-                                    <div className='flex flex-col gap-1  w-[50%]'>
-
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Sesuai
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Tidak Sesuai
-                                        </label>
-                                    </div>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                    5
-                                </label>
-                            </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
-
-                                <div className='col-span-4'>
-                                    <div className="flex flex-col ">
-                                        <p className="md:text-[14px] text-[9px] font-semibold">
-                                            Upload Foto (Optional):
-                                        </p>
-
-                                        <br />
-                                        <div className="">
-                                            <input
-
-                                                type="file"
-                                                name=""
-                                                id=""
-                                                className="w-60"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </>
-                        {/* =============================Point 9========================== */}
-                        <>
-                            <div className='grid grid-cols-12 px-3 py-4 gap-2 '>
-                                <div className='flex gap-4 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        9
-                                    </label>
-                                    <label className='text-neutral-500 text-sm font-semibold'>
-                                        Quantity
-                                    </label>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    Hitung Manual
-                                </label>
-                                <div className='flex flex-col gap-2 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Sampling sesuai standard AQL
-                                    </label>
-
-                                </div>
-                                <div className='flex flex-col gap-2 col-span-2'>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Sesuai per pack
-                                    </label>
-
-                                </div>
-
-                                <div className='flex justify-between  col-span-3'>
-                                    <div className='flex flex-col  w-[60%]'>
-
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Ok
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Not Ok
-                                        </label>
-                                    </div>
-                                    <div className='flex flex-col gap-1  w-[50%]'>
-
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Sesuai
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Tidak Sesuai
-                                        </label>
-                                    </div>
-                                </div>
-                                <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                    5
-                                </label>
-                            </div>
-                            <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
-
-                                <div className='col-span-4'>
-                                    <div className="flex flex-col ">
-                                        <p className="md:text-[14px] text-[9px] font-semibold">
-                                            Upload Foto (Optional):
-                                        </p>
-
-                                        <br />
-                                        <div className="">
-                                            <input
-
-                                                type="file"
-                                                name=""
-                                                id=""
-                                                className="w-60"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-                        </>
-
                     </div>
-                    <div className='bg-white flex w-full justify-between px-4 py-4'>
-                        <div className='flex flex-col'>
-                            <label className='text-neutral-500 text-sm font-semibold '>
-                                <input type='checkbox' className='rounded-full' /> {' '}DITERIMA
-                            </label>
-                            <label className='text-neutral-500 text-sm font-semibold '>
-                                <input type='checkbox' className='' /> {' '}DITOLAK
-                            </label>
-                        </div>
-                        <div>
-                            <button className='bg-[#0065DE] px-4 py-2 rounded-sm text-center text-white text-xs font-bold'>
-                                SUBMIT CHECKSHEET
-                            </button>
-                        </div>
-                    </div>
-                </main>
-            )}
+                    {incoming?.waktu_mulai != null &&
+                        incoming?.waktu_selesai != null && (
+                            <>
+                                <div className='bg-white flex w-full justify-between px-4 py-4'>
+
+                                    <div className='flex flex-col'>
+                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                            <input type='checkbox' className='rounded-full' /> {' '}DITERIMA
+                                        </label>
+                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                            <input type='checkbox' className='' /> {' '}DITOLAK
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <button className='bg-[#0065DE] px-4 py-2 rounded-sm text-center text-white text-xs font-bold'>
+                                            SUBMIT CHECKSHEET
+                                        </button>
+                                    </div>
+
+
+                                </div>
+                            </>
+                        )}
+
+                </main >
+            )
+            }
 
         </>
     )

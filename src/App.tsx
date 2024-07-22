@@ -72,6 +72,8 @@ import PotongJadi from './components/Tables/QualityControl/QualityInspection/Pro
 import PotongBahan from './components/Tables/QualityControl/QualityInspection/ProsesPotong/potongbahan';
 import PotongBahanPage from './pages/QualityControl/Prosespotong/potongBahanpage';
 import PotongJadiPage from './pages/QualityControl/Prosespotong/potongJadiPage';
+import ProsesCetak from './pages/QualityControl/ProsesCetak/ProsesCetak';
+import IncomingList from './pages/QualityControl/DaftarIncoming';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -392,7 +394,18 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/incoming"
+          path="/qc/qualityinspection/list"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingList />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/list/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -402,6 +415,7 @@ function App() {
             </>
           }
         />
+
         <Route
           path="/qc/potong"
           element={
@@ -409,6 +423,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <ProsesPotong />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/cetak"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesCetak />
               </ProtectedRoute>
             </>
           }
