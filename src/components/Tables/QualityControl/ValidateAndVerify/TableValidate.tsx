@@ -43,6 +43,7 @@ const brandData: BRAND[] = [
 const TableValidasi = () => {
   const [page, setPage] = useState(1);
   const [ticketValidasi, setTicketValidasi] = useState<any>(null);
+  
 
   useEffect(() => {
     getMTC();
@@ -164,6 +165,7 @@ const TableValidasi = () => {
                     {data.kode_lkh + ' - ' + data.nama_kendala}
                   </p>
                 </div>
+
                 <div className='flex flex-col gap-1'>
 
                 <button

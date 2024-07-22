@@ -711,7 +711,7 @@ function TableSPBRequested() {
           </div>
         </>
       )}
-      <div className="w-full flex justify-end mt-5 z-10">
+      <div className="w-full flex justify-end mt-5 z-0">
         <Stack spacing={2}>
           <Pagination
             count={spbService?.total_page}

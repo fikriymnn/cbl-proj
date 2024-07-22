@@ -5,6 +5,9 @@ import ModalMtcDate from '../components/Modals/ModalMtcDate';
 
 import ModalMtcStockCheck from '../components/Modals/ModalMtcStockCheck';
 import ModalMtcStockCheck2 from '../components/Modals/ModalMtcStockCheck2';
+import ModalMtcLightHeavy from '../components/Modals/ModalMtcLightHeavy';
+import ModalPM2Eksekutor from '../components/Modals/ModalPM2Eksekutor';
+import ModalStockCheck1 from '../components/Modals/ModalStockCheck1';
 
 const App = () => {
   const [showModal1, setShowModal1] = useState(false);

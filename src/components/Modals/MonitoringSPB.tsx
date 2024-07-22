@@ -30,8 +30,8 @@ const MonitoringSPB = ({
   if (isOpen == null) return null;
 
   return (
-    <div className="absolute rounded-md  bg-white shadow-2xl md:w-96 w-11/12 p-2  md:translate-y-10 translate-y-7 right-5  border border-gray">
-      <div className="flex justify-end gap-5 px-4 py-2">
+    <div className="absolute z-50 rounded-md  bg-white shadow-2xl md:w-96 w-11/12 p-2  md:translate-y-10 translate-y-7 right-5  border border-gray">
+      <div className="flex justify-end gap-5 px-4 py-2 z-50">
         <label className=" text-center text-blue-700 text-[28px] font-semibold">
           MONITORING SPB
         </label>
