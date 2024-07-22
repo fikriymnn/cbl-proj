@@ -17,7 +17,7 @@ import Loading from '../../../components/Loading';
 function Pm3Form() {
   const { id } = useParams();
 
-  const [pm1, setPm1] = useState<any>();
+  const [pm1, setPm3] = useState<any>();
   const [userKA, setUserKA] = useState<any>();
   const [userSuper, setUserSuper] = useState<any>();
   const [userLeader, setUserLeader] = useState<any>();
@@ -25,7 +25,7 @@ function Pm3Form() {
   const [selectionUserKA, setSelectionUserKA] = useState<any>();
   const [selectionUserSuper, setSelectionUserSuper] = useState<any>();
   const [selectionUserLeader, setSelectionUserLeader] = useState<any>();
-  const [hasil,setHasil] = useState<String>('');
+  const [hasil, setHasil] = useState<String>('');
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -44,88 +44,32 @@ function Pm3Form() {
     };
   }, []);
 
-
   const [catatan, setCatatan] = useState<any>();
   useEffect(() => {
-    getPM1();
-    getUserKA();
-    getUserLeader();
-    getUserSuper();
+    getPM3();
   }, []);
-  async function getPM1() {
-    const url = `${import.meta.env.VITE_API_LINK}/pm1/${id}`;
+  async function getPM3() {
+    const url = `${import.meta.env.VITE_API_LINK}/pm3/${id}`;
     try {
       const res = await axios.get(url, {
         withCredentials: true,
       });
 
-      setPm1(res.data);
+      setPm3(res.data);
       console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
 
-  async function getUserKA() {
-    const url = `${import.meta.env.VITE_API_LINK}/users`;
-    try {
-      const res = await axios.get(url, {
-        params: {
-          bagian: 'maintenance',
-          role: 'section head',
-        },
-        withCredentials: true,
-      });
-
-      setUserKA(res.data);
-    } catch (error: any) {
-      console.log(error.data.msg);
-    }
-  }
-
-  async function getUserLeader() {
-    const url = `${import.meta.env.VITE_API_LINK}/users`;
-    try {
-      const res = await axios.get(url, {
-        params: {
-          bagian: 'maintenance',
-          role: 'leader',
-        },
-        withCredentials: true,
-      });
-
-      setUserLeader(res.data);
-    } catch (error: any) {
-      console.log(error.data.msg);
-    }
-  }
-
-  async function getUserSuper() {
-    const url = `${import.meta.env.VITE_API_LINK}/users`;
-    try {
-      const res = await axios.get(url, {
-        params: {
-          bagian: 'maintenance',
-          role: 'supervisor',
-        },
-        withCredentials: true,
-      });
-
-      setUserSuper(res.data);
-    } catch (error: any) {
-      console.log(error.data.msg);
-    }
-  }
-
   async function startTask(id: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/pm1/taskStart/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK}/pm3/taskStart/${id}`;
     try {
       const res = await axios.put(url, {
         withCredentials: true,
       });
 
-
-      getPM1();
+      getPM3();
     } catch (error: any) {
       console.log(error);
     }
@@ -140,7 +84,7 @@ function Pm3Form() {
 
     const stopTime = new Date();
     const timestamp = convertDatetimeToDate(new Date());
-    const url = `${import.meta.env.VITE_API_LINK}/pm1/taskStop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK}/pm3/taskStop/${id}`;
     console.log(hasil);
     try {
       const elapsedSeconds = await calculateElapsedTime(start, stopTime);
@@ -170,22 +114,23 @@ function Pm3Form() {
 
       console.log('Succes', timestamp);
 
-      getPM1();
+      getPM3();
     } catch (error: any) {
       console.log(error);
       alert(error.response.data.msg);
     }
   }
 
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
   async function donePm1(id: any) {
-    if (!catatan
+    if (
+      !catatan
       // || !userKA || !userLeader || !userSuper
     ) {
       alert('Data Tidak Lengkap');
     }
-    const url = `${import.meta.env.VITE_API_LINK}/pm1/done/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK}/pm3/done/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.put(
@@ -202,7 +147,7 @@ function Pm3Form() {
       );
 
       setIsLoading(false);
-      getPM1();
+      getPM3();
     } catch (error: any) {
       console.log(error);
       alert(error.response.data.msg);
@@ -214,7 +159,7 @@ function Pm3Form() {
     const start = new Date(startTime);
     const diffInMs = stopTime.getTime() - start.getTime();
     // Convert milliseconds to your desired unit (minutes, hours)
-    const elapsedTime = Math.round(diffInMs / (1000));
+    const elapsedTime = Math.round(diffInMs / 1000);
     console.log(elapsedTime); // Example: minutes
     return elapsedTime;
   }
@@ -235,7 +180,8 @@ function Pm3Form() {
     if (hours > 0) {
       formattedTime += `${hours} Jam :`; // Add hours if present
     }
-    if (hours > 0 || minutes > 0) { // Only add minutes if hours are present or minutes are non-zero
+    if (hours > 0 || minutes > 0) {
+      // Only add minutes if hours are present or minutes are non-zero
       formattedTime += `${minutes.toString().padStart(2, '0')} Menit : `;
     }
     formattedTime += remainingSecondsAfterMinutes.toString().padStart(2, '0');
@@ -276,13 +222,13 @@ function Pm3Form() {
   const handleChangePoint = (e: any, i: number) => {
     const { name, value } = e.target;
     const onchangeVal: any = pm1;
-    onchangeVal.inspection_point_pm1s[i][name] = value;
-    setPm1(onchangeVal);
+    onchangeVal.inspection_point_pm3s[i][name] = value;
+    setPm3(onchangeVal);
   };
 
   const totalWaktuTask =
     pm1 != null &&
-    pm1.inspection_point_pm1s.reduce(
+    pm1.inspection_point_pm3s.reduce(
       (total: any, item: any) => total + item.lama_pengerjaan,
       0,
     );
@@ -438,10 +384,8 @@ function Pm3Form() {
                 </div>*/}
               </div>
             </div>
-            <div className='w-full pl-[20%]'>
-
-            </div>
-            <div className='flex w-full flex-col justify-end '>
+            <div className="w-full pl-[20%]"></div>
+            <div className="flex w-full flex-col justify-end ">
               <p className="md:text-[14px] text-[9px] font-semibold">
                 Form filling Guide
               </p>
@@ -477,7 +421,6 @@ function Pm3Form() {
                   : Tidak Ada / Tidak Terpasang
                 </p>
               </div>
-
             </div>
           </section>
           <div className="overflow-x-scroll ">
@@ -499,14 +442,19 @@ function Pm3Form() {
                   <p className="md:text-[14px] text-[9px] font-semibold">
                     Inspection Method
                   </p>
-                  <p className="md:text-[14px] text-[9px] font-semibold">Tools</p>
+                  <p className="md:text-[14px] text-[9px] font-semibold">
+                    Tools
+                  </p>
                 </div>
               </section>
               {pm1 != null &&
-                pm1.inspection_point_pm1s.map((data: any, i: any) => {
+                pm1.inspection_point_pm3s.map((data: any, i: any) => {
                   function convertDatetimeToDate(datetime: any) {
                     const dateObject = new Date(datetime);
-                    const day = dateObject.getDate().toString().padStart(2, '0'); // Ensure two-digit day
+                    const day = dateObject
+                      .getDate()
+                      .toString()
+                      .padStart(2, '0'); // Ensure two-digit day
                     const month = (dateObject.getMonth() + 1)
                       .toString()
                       .padStart(2, '0'); // Adjust for zero-based month
@@ -528,7 +476,17 @@ function Pm3Form() {
 
                   return (
                     <>
-                      <section  className={data.hasil == 'warning'?"border-2 border-yellow-400 bg-[#FFF9E8]":data.hasil == 'jelek'?"border-2 border-red-400 bg-[#FFEFEF]":data.hasil == 'tidak terpasang'?"border-2 border-red-400 bg-[#FFEFEF]":" border-b-8 border-[#D8EAFF]"}>
+                      <section
+                        className={
+                          data.hasil == 'warning'
+                            ? 'border-2 border-yellow-400 bg-[#FFF9E8]'
+                            : data.hasil == 'jelek'
+                            ? 'border-2 border-red-400 bg-[#FFEFEF]'
+                            : data.hasil == 'tidak terpasang'
+                            ? 'border-2 border-red-400 bg-[#FFEFEF]'
+                            : ' border-b-8 border-[#D8EAFF]'
+                        }
+                      >
                         <div className="flex p-4 border-b-2 ">
                           <div className="w-1/12">
                             <p className="md:text-[14px] text-[9px] font-semibold">
@@ -543,10 +501,11 @@ function Pm3Form() {
                               </p>
                             </div>
                             <div className="grid grid-cols-4 max-h-[400px] min-h-[200px] w-10/12 gap-3 pl-3 ">
-                              {data.inspection_task_pm1s.map(
+                              {data.inspection_task_pm3s.map(
                                 (task: any, ii: any) => {
-
-                                  const formattedTime = formatElapsedTime(data.lama_pengerjaan);
+                                  const formattedTime = formatElapsedTime(
+                                    data.lama_pengerjaan,
+                                  );
                                   return (
                                     <>
                                       <div className="flex flex-col gap-y-10">
@@ -602,10 +561,11 @@ function Pm3Form() {
                                           console.log(pm1);
                                           changeTextColor();
                                         }}
-                                        className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
-                                          ? 'text-black dark:text-white'
-                                          : ''
-                                          }`}
+                                        className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${
+                                          isOptionSelected
+                                            ? 'text-black dark:text-white'
+                                            : ''
+                                        }`}
                                       >
                                         <option
                                           value=""
@@ -688,7 +648,9 @@ function Pm3Form() {
                                     <div className=" flex mt-3">
                                       <textarea
                                         disabled
-                                        onChange={(e) => handleChangePoint(e, i)}
+                                        onChange={(e) =>
+                                          handleChangePoint(e, i)
+                                        }
                                         name="catatan"
                                         defaultValue={data.catatan}
                                         id=""
@@ -702,48 +664,45 @@ function Pm3Form() {
                                 <div className="p-4 flex flex-col justify-start items-start w-2/12 gap-3">
                                   <p className="md:text-[14px] text-[9px] font-semibold">
                                     Time :
-                                    {
-                                      data.lama_pengerjaan != null
-                                        ? data.lama_pengerjaan
-                                        : ''}
+                                    {data.lama_pengerjaan != null
+                                      ? data.lama_pengerjaan
+                                      : ''}
                                   </p>
-                                  {
-                                    data.waktu_mulai == null ? (
-                                      <>
-                                        <p className='font-bold text-[#DE0000]'>
-                                          Task Belum Dimulai
-                                        </p>
-                                        <button
-                                          onClick={() => {
-                                            if (data.waktu_mulai != null) {
-                                              // alert('sudah di mulai');
-                                            } else {
-                                              startTask(data.id);
-                                            }
-                                          }}
-                                          className="flex w-full rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
+                                  {data.waktu_mulai == null ? (
+                                    <>
+                                      <p className="font-bold text-[#DE0000]">
+                                        Task Belum Dimulai
+                                      </p>
+                                      <button
+                                        onClick={() => {
+                                          if (data.waktu_mulai != null) {
+                                            // alert('sudah di mulai');
+                                          } else {
+                                            startTask(data.id);
+                                          }
+                                        }}
+                                        className="flex w-full rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
+                                      >
+                                        <svg
+                                          width="14"
+                                          height="14"
+                                          viewBox="0 0 14 14"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
                                         >
-                                          <svg
-                                            width="14"
-                                            height="14"
-                                            viewBox="0 0 14 14"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                          >
-                                            <path
-                                              d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                              fill="white"
-                                            />
-                                          </svg>
-                                        </button>
-                                      </>
-                                    ) : (
-                                      <></>
-                                    )
-                                  }
+                                          <path
+                                            d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                            fill="white"
+                                          />
+                                        </svg>
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <></>
+                                  )}
                                   {data.waktu_mulai != null ? (
                                     <>
-                                      <p className='font-bold text-green-500'>
+                                      <p className="font-bold text-green-500">
                                         Task Sudah Dimulai
                                       </p>
                                       <button
@@ -780,10 +739,8 @@ function Pm3Form() {
                                       </button>
                                     </>
                                   ) : (
-                                    <>
-                                    </>
+                                    <></>
                                   )}
-
                                 </div>
                               </>
                             )}
@@ -792,20 +749,32 @@ function Pm3Form() {
                               <>
                                 <div className="p-4 flex flex-col ">
                                   <p className="md:text-[14px] text-[9px] font-semibold">
-                                    Result:s{hasil == 'bagus'? (<><img src={Logo} alt="aaa" /></>):""}
+                                    Result:s
+                                    {hasil == 'bagus' ? (
+                                      <>
+                                        <img src={Logo} alt="aaa" />
+                                      </>
+                                    ) : (
+                                      ''
+                                    )}
                                     <span className="absolute top-4">
-                                      <div className='md:w-6 w-4'>
-                                        {data.hasil == 'baik' ? <img src={Logo} alt="aaa" />
-                                          : data.hasil == 'catatan' ? <img src={Polygon} alt="bb" />
-                                            : data.hasil == 'jelek' ? <img src={X} alt="cc" />
-                                              : data.hasil == 'tidak terpasang' ? <img src={Strip} alt="dd" />
-                                                : ""}
+                                      <div className="md:w-6 w-4">
+                                        {data.hasil == 'baik' ? (
+                                          <img src={Logo} alt="aaa" />
+                                        ) : data.hasil == 'catatan' ? (
+                                          <img src={Polygon} alt="bb" />
+                                        ) : data.hasil == 'jelek' ? (
+                                          <img src={X} alt="cc" />
+                                        ) : data.hasil == 'tidak terpasang' ? (
+                                          <img src={Strip} alt="dd" />
+                                        ) : (
+                                          ''
+                                        )}
                                       </div>
                                     </span>
                                   </p>
                                   <div className=" flex mt-3 w-full">
                                     <div className="relative z-20   md:w-[200px] w-[150px] dark:bg-form-input">
-
                                       <select
                                         name="hasil"
                                         defaultValue={data.hasil}
@@ -815,10 +784,11 @@ function Pm3Form() {
                                           console.log(pm1);
                                           changeTextColor();
                                         }}
-                                        className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
-                                          ? 'text-black dark:text-white'
-                                          : ''
-                                          }`}
+                                        className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${
+                                          isOptionSelected
+                                            ? 'text-black dark:text-white'
+                                            : ''
+                                        }`}
                                       >
                                         <option
                                           value=""
@@ -829,33 +799,38 @@ function Pm3Form() {
                                           Select Result
                                         </option>
                                         <option
-                                        onClick={()=>setHasil("baik")}
+                                          onClick={() => setHasil('baik')}
                                           value="baik"
                                           className="text-body dark:text-bodydark"
                                         >
-                                          <img src={Logo} alt="aaa" />Good
+                                          <img src={Logo} alt="aaa" />
+                                          Good
                                         </option>
-                                       
+
                                         <option
                                           value="warning"
                                           className="text-body dark:text-bodydark"
-                                          onClick={()=>setHasil("warning")}
+                                          onClick={() => setHasil('warning')}
                                         >
                                           <img src={Polygon} alt="bb" /> Warning
                                         </option>
                                         <option
                                           value="jelek"
                                           className="text-body dark:text-bodydark"
-                                          onClick={()=>setHasil("jelek")}
+                                          onClick={() => setHasil('jelek')}
                                         >
-                                          <img src={X} alt="cc" />Bad
+                                          <img src={X} alt="cc" />
+                                          Bad
                                         </option>
                                         <option
                                           value="tidak terpasang"
                                           className="text-body dark:text-bodydark"
-                                          onClick={()=>setHasil("tidak terpasang")}
+                                          onClick={() =>
+                                            setHasil('tidak terpasang')
+                                          }
                                         >
-                                          <img src={Strip} alt="dd" />Not Installed
+                                          <img src={Strip} alt="dd" />
+                                          Not Installed
                                         </option>
                                       </select>
 
@@ -889,7 +864,6 @@ function Pm3Form() {
                                   <br />
                                   <div className="">
                                     <input
-
                                       type="file"
                                       name=""
                                       id=""
@@ -905,8 +879,9 @@ function Pm3Form() {
                                   <>
                                     <div className=" flex mt-3">
                                       <textarea
-
-                                        onChange={(e) => handleChangePoint(e, i)}
+                                        onChange={(e) =>
+                                          handleChangePoint(e, i)
+                                        }
                                         name="catatan"
                                         defaultValue={data.catatan}
                                         id=""
@@ -926,7 +901,7 @@ function Pm3Form() {
                                   </p>
                                   {data.waktu_mulai == null ? (
                                     <>
-                                      <p className='font-bold text-[#DE0000]'>
+                                      <p className="font-bold text-[#DE0000]">
                                         Task Belum Dimulai
                                       </p>
                                       <button
@@ -955,11 +930,10 @@ function Pm3Form() {
                                     </>
                                   ) : (
                                     <></>
-                                  )
-                                  }
+                                  )}
                                   {data.waktu_mulai != null ? (
                                     <>
-                                      <p className='font-bold text-green-500'>
+                                      <p className="font-bold text-green-500">
                                         Task Sudah Dimulai
                                       </p>
                                       <button
@@ -996,17 +970,12 @@ function Pm3Form() {
                                       </button>
                                     </>
                                   ) : (
-                                    <>
-
-                                    </>
+                                    <></>
                                   )}
-
                                 </div>
-
                               </>
                             )}
                           {data.waktu_selesai != null && (
-
                             <>
                               <div className="p-4 flex flex-col ">
                                 <p className="md:text-[14px] text-[9px] font-semibold">
@@ -1057,13 +1026,11 @@ function Pm3Form() {
                               <div className="p-4 flex flex-col justify-start items-start w-2/12 gap-1">
                                 <p className="md:text-[14px] text-[9px] font-semibold">
                                   Waktu Pengerjaan :{''}
-
                                 </p>
-                                <p className='md:text-[12px] text-[9px] font-semibold'>
-                                  {
-                                    data.lama_pengerjaan != null
-                                      ? formatElapsedTime(data.lama_pengerjaan)
-                                      : ''}{' '}
+                                <p className="md:text-[12px] text-[9px] font-semibold">
+                                  {data.lama_pengerjaan != null
+                                    ? formatElapsedTime(data.lama_pengerjaan)
+                                    : ''}{' '}
                                   Detik
                                 </p>
                               </div>
@@ -1089,14 +1056,16 @@ function Pm3Form() {
                 {showModalADD && (
                   <ModalPM1TambahInspection
                     children={undefined}
-                    onFinish={() => getPM1()}
+                    onFinish={() => getPM3()}
                     isOpen={showModalADD}
                     onClose={closeModalADD}
                     idTicket={pm1.id}
                   />
                 )}
 
-                <p className="text-sm font-semibold p-5">Catatan Keseluruhan:</p>
+                <p className="text-sm font-semibold p-5">
+                  Catatan Keseluruhan:
+                </p>
                 {waktuSelesaiPm1 != '-' && (
                   <>
                     <textarea
@@ -1105,7 +1074,6 @@ function Pm3Form() {
                       onChange={(e) => setCatatan(e.target.value)}
                       className="border-2 border-[#D9D9D9] rounded-sm resize-none mx-4 px-4"
                     ></textarea>
-
                   </>
                 )}
                 {waktuSelesaiPm1 == '-' && (
@@ -1118,16 +1086,20 @@ function Pm3Form() {
                   </>
                 )}
 
-                <div className='flex flex-col px-4 py-4 md:text-[14px] text-[9px] font-semibold '>
-                  <p className='text-[17px]'>
+                <div className="flex flex-col px-4 py-4 md:text-[14px] text-[9px] font-semibold ">
+                  <p className="text-[17px]">
                     {'Total Waktu Pengerjaan : ' +
                       ' ' +
                       formatElapsedTime(totalWaktuTask) +
                       ' ' +
                       'Detik'}
                   </p>
-                  <p className='text-[17px]'>{'Waktu Mulai PM1 : ' + waktuMulaiPm1}</p>
-                  <p className='text-[17px]'>{'Waktu Selesai PM1 : ' + waktuSelesaiPm1}</p>
+                  <p className="text-[17px]">
+                    {'Waktu Mulai PM1 : ' + waktuMulaiPm1}
+                  </p>
+                  <p className="text-[17px]">
+                    {'Waktu Selesai PM1 : ' + waktuSelesaiPm1}
+                  </p>
                 </div>
 
                 <div className="flex w-full md:justify-end justify-start">
@@ -1163,7 +1135,9 @@ function Pm3Form() {
                       {' '}
                       Nama Mesin{' '}
                     </p>
-                    <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
+                    <p className="md:text-[14px] text-[9px] font-semibold ">
+                      :
+                    </p>
                     <p className="md:text-[14px] text-[9px] font-semibold pl-3.5">
                       {pm1 != null && pm1.nama_mesin}
                     </p>
@@ -1173,7 +1147,9 @@ function Pm3Form() {
                       {' '}
                       Nomor Mesin{' '}
                     </p>
-                    <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
+                    <p className="md:text-[14px] text-[9px] font-semibold ">
+                      :
+                    </p>
                     <p className="md:text-[14px] text-[9px] font-semibold">
                       {pm1 != null && pm1.mesin.kode_mesin}
                     </p>
@@ -1183,7 +1159,9 @@ function Pm3Form() {
                     <p className="md:text-[14px] text-[9px] font-semibold ">
                       Tanggal
                     </p>
-                    <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
+                    <p className="md:text-[14px] text-[9px] font-semibold ">
+                      :
+                    </p>
                     <p className="md:text-[14px] text-[9px] text-start font-semibold">
                       {pm1 != null && tiketMasuk}
                     </p>
@@ -1293,7 +1271,7 @@ function Pm3Form() {
                   </div> */}
                 </div>
               </div>
-              <div className='flex flex-col w-full justify-start '>
+              <div className="flex flex-col w-full justify-start ">
                 <p className="md:text-[14px] text-[9px] font-semibold">
                   Form filling Guide
                 </p>
@@ -1302,9 +1280,7 @@ function Pm3Form() {
                     <div className="md:w-5 w-4 flex justify-center items-center">
                       <img className="" src={Ceklis} alt="" />
                     </div>
-                    <p className="text-[9px] font-semibold">
-                      : Kondisi Baik
-                    </p>
+                    <p className="text-[9px] font-semibold">: Kondisi Baik</p>
                   </div>
                   <div className="flex justify-start gap-1">
                     <div className="md:w-5 w-4 flex justify-center items-center">
@@ -1318,9 +1294,7 @@ function Pm3Form() {
                     <div className="md:w-5 w-4 flex justify-center items-center">
                       <img className="" src={X} alt="" />
                     </div>
-                    <p className=" text-[9px] font-semibold">
-                      : Jelek / Rusak
-                    </p>
+                    <p className=" text-[9px] font-semibold">: Jelek / Rusak</p>
                   </div>
                   <div className="flex justify-start md:gap-3 gap-1">
                     <div className="md:w-5 w-4 flex justify-center items-center">
@@ -1353,10 +1327,13 @@ function Pm3Form() {
                   </div> */}
                 </section>
                 {pm1 != null &&
-                  pm1.inspection_point_pm1s.map((data: any, i: any) => {
+                  pm1.inspection_point_pm3s.map((data: any, i: any) => {
                     function convertDatetimeToDate(datetime: any) {
                       const dateObject = new Date(datetime);
-                      const day = dateObject.getDate().toString().padStart(2, '0'); // Ensure two-digit day
+                      const day = dateObject
+                        .getDate()
+                        .toString()
+                        .padStart(2, '0'); // Ensure two-digit day
                       const month = (dateObject.getMonth() + 1)
                         .toString()
                         .padStart(2, '0'); // Adjust for zero-based month
@@ -1378,7 +1355,6 @@ function Pm3Form() {
 
                     return (
                       <>
-
                         <section className=" border-b-8 border-[#D8EAFF]">
                           <div className="flex p-4 border-b-2 border-[#6D6C6C] ">
                             <div className="flex w-full ">
@@ -1404,7 +1380,7 @@ function Pm3Form() {
                                     <>
                                       {data.waktu_mulai == null ? (
                                         <>
-                                          <p className='font-bold text-xs text-[#DE0000]'>
+                                          <p className="font-bold text-xs text-[#DE0000]">
                                             Task Belum Dimulai
                                           </p>
                                           <button
@@ -1433,18 +1409,19 @@ function Pm3Form() {
                                         </>
                                       ) : (
                                         <></>
-                                      )
-                                      }
+                                      )}
                                       {data.waktu_mulai != null ? (
                                         <>
-                                          <p className='font-bold text-xs text-green-500'>
+                                          <p className="font-bold text-xs text-green-500">
                                             Task Sudah Dimulai
                                           </p>
                                           <button
                                             onClick={() => {
                                               if (data.waktu_selesai != null) {
                                                 alert('sudah di kerjakan');
-                                              } else if (data.waktu_mulai == null) {
+                                              } else if (
+                                                data.waktu_mulai == null
+                                              ) {
                                                 alert('belum mulai');
                                               } else {
                                                 stopTask(
@@ -1474,22 +1451,19 @@ function Pm3Form() {
                                           </button>
                                         </>
                                       ) : (
-                                        <>
-
-                                        </>
+                                        <></>
                                       )}
                                     </>
                                   )}
                                 </div>
                               </div>
-                              <div className='flex flex-col gap-3 w-full'>
-                                {data.inspection_task_pm1s.map(
+                              <div className="flex flex-col gap-3 w-full">
+                                {data.inspection_task_pm3s.map(
                                   (task: any, ii: any) => {
                                     return (
                                       <>
-                                        <div className='grid grid-cols-2 grid-rows-1 justify-start items-start border-stroke border-b-2'>
-
-                                          <div className='flex flex-col w-32'>
+                                        <div className="grid grid-cols-2 grid-rows-1 justify-start items-start border-stroke border-b-2">
+                                          <div className="flex flex-col w-32">
                                             <p className="text-[11px] font-bold">
                                               Task List{' '}
                                             </p>
@@ -1497,7 +1471,7 @@ function Pm3Form() {
                                               {task.task}
                                             </p>
                                           </div>
-                                          <div className='flex flex-col w-32 pl-2'>
+                                          <div className="flex flex-col w-32 pl-2">
                                             <p className="text-[11px] font-bold ">
                                               Inspection Method{' '}
                                             </p>
@@ -1505,7 +1479,7 @@ function Pm3Form() {
                                               {task.method}
                                             </p>
                                           </div>
-                                          <div className='flex flex-col w-32'>
+                                          <div className="flex flex-col w-32">
                                             <p className="text-[11px] font-bold">
                                               Acceptance Criteria{' '}
                                             </p>
@@ -1513,7 +1487,7 @@ function Pm3Form() {
                                               {task.acceptance_criteria}
                                             </p>
                                           </div>
-                                          <div className='flex flex-col w-32 pl-2'>
+                                          <div className="flex flex-col w-32 pl-2">
                                             <p className="text-[11px] font-bold">
                                               Tools{' '}
                                             </p>
@@ -1526,7 +1500,7 @@ function Pm3Form() {
                                     );
                                   },
                                 )}
-                              </div >
+                              </div>
                             </div>
                           </div>
                           <div className="flex w-full">
@@ -1540,9 +1514,22 @@ function Pm3Form() {
                                     <div className=" flex w-full">
                                       <div className="relative z-20 w-[130px] dark:bg-form-input">
                                         <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-
-                                          {data.hasil == 'baik' ? <img src={Ceklis} alt="" className='' /> : data.hasil == 'catatan' ? <img src={Polygon} alt="" /> : data.hasil == 'warning' ? <img src={X} alt="" /> : data.hasil == 'tidak terpasang' ? <img src={Strip} alt="" /> : ""}
-
+                                          {data.hasil == 'baik' ? (
+                                            <img
+                                              src={Ceklis}
+                                              alt=""
+                                              className=""
+                                            />
+                                          ) : data.hasil == 'catatan' ? (
+                                            <img src={Polygon} alt="" />
+                                          ) : data.hasil == 'warning' ? (
+                                            <img src={X} alt="" />
+                                          ) : data.hasil ==
+                                            'tidak terpasang' ? (
+                                            <img src={Strip} alt="" />
+                                          ) : (
+                                            ''
+                                          )}
                                         </span>
 
                                         <select
@@ -1555,12 +1542,12 @@ function Pm3Form() {
                                             console.log(pm1);
                                             changeTextColor();
                                           }}
-                                          className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent px-8 py-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
-                                            ? 'text-black dark:text-white'
-                                            : ''
-                                            }`}
+                                          className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent px-8 py-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${
+                                            isOptionSelected
+                                              ? 'text-black dark:text-white'
+                                              : ''
+                                          }`}
                                         >
-
                                           <option
                                             value=""
                                             disabled
@@ -1613,9 +1600,7 @@ function Pm3Form() {
                                             </g>
                                           </svg>
                                         </span>
-
                                       </div>
-
                                     </div>
                                   </div>
                                   <div className=" flex flex-col ">
@@ -1632,8 +1617,6 @@ function Pm3Form() {
                                       />
                                     </div>
                                   </div>
-
-
                                 </>
                               )}
                             {data.waktu_mulai != null &&
@@ -1646,25 +1629,36 @@ function Pm3Form() {
                                     <div className=" flex w-full">
                                       <div className="relative z-20 w-[130px] dark:bg-form-input">
                                         <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                          <div className=' w-4'>
-                                            {data.hasil == 'baik' ? <img src={Logo} alt="" /> : data.hasil == 'catatan' ? <img src={Polygon} alt="" /> : data.hasil == 'warning' ? <img src={X} alt="" /> : data.hasil == 'tidak terpasang' ? <img src={Strip} alt="" /> : ""}
+                                          <div className=" w-4">
+                                            {data.hasil == 'baik' ? (
+                                              <img src={Logo} alt="" />
+                                            ) : data.hasil == 'catatan' ? (
+                                              <img src={Polygon} alt="" />
+                                            ) : data.hasil == 'warning' ? (
+                                              <img src={X} alt="" />
+                                            ) : data.hasil ==
+                                              'tidak terpasang' ? (
+                                              <img src={Strip} alt="" />
+                                            ) : (
+                                              ''
+                                            )}
                                           </div>
                                         </span>
 
                                         <select
                                           name="hasil"
                                           defaultValue={data.hasil}
-
                                           onChange={(e) => {
                                             handleChangePoint(e, i);
 
                                             console.log(pm1);
                                             changeTextColor();
                                           }}
-                                          className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent px-8 py-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
-                                            ? 'text-black dark:text-white'
-                                            : ''
-                                            }`}
+                                          className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent px-8 py-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${
+                                            isOptionSelected
+                                              ? 'text-black dark:text-white'
+                                              : ''
+                                          }`}
                                         >
                                           <option
                                             value=""
@@ -1718,9 +1712,7 @@ function Pm3Form() {
                                             </g>
                                           </svg>
                                         </span>
-
                                       </div>
-
                                     </div>
                                   </div>
                                   <div className=" flex flex-col ">
@@ -1737,8 +1729,6 @@ function Pm3Form() {
                                       />
                                     </div>
                                   </div>
-
-
                                 </>
                               )}
                             {data.waktu_selesai != null && (
@@ -1751,7 +1741,6 @@ function Pm3Form() {
                                     <div className="relative z-20 w-[130px] dark:bg-form-input">
                                       {data.hasil}
                                     </div>
-
                                   </div>
                                 </div>
                                 <div className=" flex flex-col ">
@@ -1768,8 +1757,6 @@ function Pm3Form() {
                                     />
                                   </div>
                                 </div>
-
-
                               </>
                             )}
                           </div>
@@ -1785,7 +1772,9 @@ function Pm3Form() {
                                     <div className=" flex">
                                       <textarea
                                         disabled
-                                        onChange={(e) => handleChangePoint(e, i)}
+                                        onChange={(e) =>
+                                          handleChangePoint(e, i)
+                                        }
                                         name="catatan"
                                         defaultValue={data.catatan}
                                         id=""
@@ -1809,8 +1798,9 @@ function Pm3Form() {
                                   <>
                                     <div className=" flex">
                                       <textarea
-
-                                        onChange={(e) => handleChangePoint(e, i)}
+                                        onChange={(e) =>
+                                          handleChangePoint(e, i)
+                                        }
                                         name="catatan"
                                         defaultValue={data.catatan}
                                         id=""
@@ -1866,14 +1856,16 @@ function Pm3Form() {
                   {showModalADD && (
                     <ModalPM1TambahInspection
                       children={undefined}
-                      onFinish={() => getPM1()}
+                      onFinish={() => getPM3()}
                       isOpen={showModalADD}
                       onClose={closeModalADD}
                       idTicket={pm1.id}
                     />
                   )}
 
-                  <p className="text-[11px] font-semibold px-2 pt-4 pb-2">Catatan Keseluruhan:</p>
+                  <p className="text-[11px] font-semibold px-2 pt-4 pb-2">
+                    Catatan Keseluruhan:
+                  </p>
                   {waktuSelesaiPm1 != '-' && (
                     <>
                       <textarea
@@ -1882,32 +1874,34 @@ function Pm3Form() {
                         onChange={(e) => setCatatan(e.target.value)}
                         className="border-2 border-[#D9D9D9] rounded-sm resize-none mx-4 px-4 "
                       ></textarea>
-
                     </>
                   )}
                   {waktuSelesaiPm1 == '-' && (
                     <>
-                      <div className='px-2'>
+                      <div className="px-2">
                         <textarea
                           defaultValue={pm1 != null ? pm1.catatan : ''}
                           onChange={(e) => setCatatan(e.target.value)}
                           className="border-2 border-[#D9D9D9] rounded-sm resize-none p-2 w-full"
                         ></textarea>
                       </div>
-
                     </>
                   )}
 
-                  <div className='flex flex-col px-4 py-4 md:text-[14px] text-[9px] font-semibold '>
-                    <p className='text-[15px]'>
+                  <div className="flex flex-col px-4 py-4 md:text-[14px] text-[9px] font-semibold ">
+                    <p className="text-[15px]">
                       {'Total Waktu Pengerjaan : ' +
                         ' ' +
                         formatElapsedTime(totalWaktuTask) +
                         ' ' +
                         'Detik'}
                     </p>
-                    <p className='text-[15px]'>{'Waktu Mulai PM1 : ' + waktuMulaiPm1}</p>
-                    <p className='text-[15px]'>{'Waktu Selesai PM1 : ' + waktuSelesaiPm1}</p>
+                    <p className="text-[15px]">
+                      {'Waktu Mulai PM1 : ' + waktuMulaiPm1}
+                    </p>
+                    <p className="text-[15px]">
+                      {'Waktu Selesai PM1 : ' + waktuSelesaiPm1}
+                    </p>
                   </div>
 
                   <div className="flex w-full md:justify-end justify-start">
