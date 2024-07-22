@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const TablePM2 = () => {
+const TablePM3 = () => {
     const [isMobile, setIsMobile] = useState(false);
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
@@ -47,7 +47,7 @@ const TablePM2 = () => {
                             id=""
                             className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
                         />
-                        
+                       
                     </div>
 
                     <div className="flex flex-col">
@@ -114,7 +114,7 @@ const TablePM2 = () => {
                                             <div className="flex items-center w-2/12 justify-center p-2.5 gap-2"></div>
                                             <div className="flex items-center w-3/12 justify-center p-2.5 gap-2">
                                                 <a
-                                                    href={`/masterdata/masterpm2/pm2checklist/${data.id}`}
+                                                    href={`/masterdata/masterpm3/pm3checklist/${data.id}`}
                                                 >
                                                     <button className="bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1">
                                                         DETAIL
@@ -222,4 +222,4 @@ const TablePM2 = () => {
     );
 };
 
-export default TablePM2;
+export default TablePM3;

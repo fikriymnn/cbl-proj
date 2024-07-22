@@ -178,7 +178,7 @@ const PM1TambahInspection = () => {
                           {i + 1}
                         </label>
                       </div>
-                      <div className="flex w-10/12">
+                      <div className="flex w-10/12 gap-3">
                         <input
                           name="inspection_point"
                           value={data.inspection_point}
@@ -188,10 +188,11 @@ const PM1TambahInspection = () => {
                         />
 
                         <select
+                        className='border-2 border-stroke rounded-md'
                           name="category"
                           onChange={(e) => handleChangePoint(e, i)}
                         >
-                          <option selected disabled value={''}>
+                          <option className='text-sm ' selected disabled value={''}>
                             Select Category
                           </option>
                           <option value={'machine'}>Machine</option>
@@ -216,7 +217,7 @@ const PM1TambahInspection = () => {
                     {data.sub_inspection.map((task: any, ii: number) => {
                       return (
                         <>
-                          <div className="flex w-full  pt-4 border-b border-stroke ml-[70px] pb-4">
+                          <div className="flex w-full  pt-4 border-b border-stroke ml-[40px] pb-4">
                             <div className="flex w-[60px] justify-center">
                               <label className="text-black text-xs font-bold">
                                 {ii + 1}

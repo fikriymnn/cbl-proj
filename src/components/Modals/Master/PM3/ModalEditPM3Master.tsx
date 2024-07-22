@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const ModalEditPM1Master = ({
+const ModalEditPM3Master = ({
   children,
   isOpen,
   onClose,
@@ -53,12 +53,12 @@ const ModalEditPM1Master = ({
   const handleChangePointTask = (e: any, i: number) => {
     const { name, value } = e.target;
     const onchangeVal: any = point;
-    onchangeVal.ms_inspection_task_pm1s[i][name] = value;
+    onchangeVal.ms_inspection_task_pm3s[i][name] = value;
     setPoint(onchangeVal);
   };
 
-  async function submitEDitPointPm1(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK}/master/pointPm1/${id}`;
+  async function submitEDitPointPm3(id: number) {
+    const url = `${import.meta.env.VITE_API_LINK}/master/pointPm3/${id}`;
 
     try {
       const res = await axios.put(
@@ -66,7 +66,7 @@ const ModalEditPM1Master = ({
         {
           inspection_point: point.inspection_point,
           category: point.category,
-          ms_inspection_task_pm1s: point.ms_inspection_task_pm1s,
+          ms_inspection_task_pm3s: point.ms_inspection_task_pm3s,
         },
         {
           withCredentials: true,
@@ -164,7 +164,7 @@ const ModalEditPM1Master = ({
                   name="category"
                   defaultValue={point.category}
                   onChange={(e) => handleChangePointCategory(e)}
-                  className='border-2 border-stroke rounded-md'
+                  className='border-2 border-stroke rounded-md '
                 >
                   <option selected disabled value={''}>
                     Select Category
@@ -182,7 +182,7 @@ const ModalEditPM1Master = ({
                     TASK LIST
                   </label>
                 </div>
-                {data.ms_inspection_task_pm1s.map((task: any, i: number) => {
+                {data.ms_inspection_task_pm3s.map((task: any, i: number) => {
                   return (
                     <div className="flex  pt-4 border-b border-stroke ml-[70px] pb-4">
                       <div className="flex w-[60px] justify-center">
@@ -199,7 +199,7 @@ const ModalEditPM1Master = ({
                           defaultValue={task.task}
                           onChange={(e) => handleChangePointTask(e, i)}
                           type="text"
-                          className=" w-full px-2 h-12 border-2 border-stroke rounded-md"
+                          className=" w-full h-12 border-2 border-stroke rounded-md"
                         />
                         <label className="text-black text-xs font-bold pt-2">
                           INSPECTION METHOD
@@ -209,7 +209,7 @@ const ModalEditPM1Master = ({
                           defaultValue={task.method}
                           onChange={(e) => handleChangePointTask(e, i)}
                           type="text"
-                          className=" w-full px-2 h-12 border-2 border-stroke rounded-md"
+                          className=" w-full h-12 border-2 border-stroke rounded-md"
                         />
                       </div>
                       <div className="flex w-5/12 justify-start pl-6 flex-col gap-2">
@@ -221,7 +221,7 @@ const ModalEditPM1Master = ({
                           defaultValue={task.acceptance_criteria}
                           onChange={(e) => handleChangePointTask(e, i)}
                           type="text"
-                          className=" w-full px-2 h-12 border-2 border-stroke rounded-md"
+                          className=" w-full h-12 border-2 border-stroke rounded-md"
                         />
                         <label className="text-black text-xs font-bold pt-2">
                           TOOLS
@@ -231,7 +231,7 @@ const ModalEditPM1Master = ({
                           defaultValue={task.tools}
                           onChange={(e) => handleChangePointTask(e, i)}
                           type="text"
-                          className=" w-full px-2 h-12 border-2 border-stroke rounded-md"
+                          className=" w-full h-12 border-2 border-stroke rounded-md"
                         />
                       </div>
                     </div>
@@ -246,7 +246,7 @@ const ModalEditPM1Master = ({
                     TASK LIST
                   </label>
                 </div>
-                {data.ms_inspection_task_pm1s.map((task: any, i: number) => {
+                {data.ms_inspection_task_pm3s.map((task: any, i: number) => {
                   return (
                     <div className="flex  pt-4 border-b border-stroke  pb-4">
                       <div className="flex w-[30px] justify-center">
@@ -263,7 +263,7 @@ const ModalEditPM1Master = ({
                           defaultValue={task.task}
                           onChange={(e) => handleChangePointTask(e, i)}
                           type="text"
-                          className=" w-full px-2 h-12 border-2 border-stroke rounded-md"
+                          className=" w-full h-12 border-2 border-stroke rounded-md"
                         />
                         <label className="text-black text-xs font-bold pt-2">
                           INSPECTION METHOD
@@ -273,7 +273,7 @@ const ModalEditPM1Master = ({
                           defaultValue={task.method}
                           onChange={(e) => handleChangePointTask(e, i)}
                           type="text"
-                          className=" w-full px-2 h-12 border-2 border-stroke rounded-md"
+                          className=" w-full h-12 border-2 border-stroke rounded-md"
                         />
                       </div>
                       <div className="flex w-5/12 justify-start  flex-col gap-2 pl-2">
@@ -285,7 +285,7 @@ const ModalEditPM1Master = ({
                           defaultValue={task.acceptance_criteria}
                           onChange={(e) => handleChangePointTask(e, i)}
                           type="text"
-                          className=" w-full px-2 h-12 border-2 border-stroke rounded-md"
+                          className=" w-full h-12 border-2 border-stroke rounded-md"
                         />
                         <label className="text-black text-xs font-bold pt-2">
                           TOOLS
@@ -295,7 +295,7 @@ const ModalEditPM1Master = ({
                           defaultValue={task.tools}
                           onChange={(e) => handleChangePointTask(e, i)}
                           type="text"
-                          className=" w-full px-2 h-12 border-2 border-stroke rounded-md"
+                          className=" w-full h-12 border-2 border-stroke rounded-md"
                         />
                       </div>
                     </div>
@@ -306,7 +306,7 @@ const ModalEditPM1Master = ({
 
             <div className="flex w-full px-6 py-3 justify-end">
               <button
-                onClick={() => submitEDitPointPm1(idPoint)}
+                onClick={() => submitEDitPointPm3(idPoint)}
                 className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
               >
                 SIMPAN
@@ -332,4 +332,4 @@ const ModalEditPM1Master = ({
   );
 };
 
-export default ModalEditPM1Master;
+export default ModalEditPM3Master;

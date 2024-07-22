@@ -74,6 +74,9 @@ import PotongBahanPage from './pages/QualityControl/Prosespotong/potongBahanpage
 import PotongJadiPage from './pages/QualityControl/Prosespotong/potongJadiPage';
 import ProsesCetak from './pages/QualityControl/ProsesCetak/ProsesCetak';
 import IncomingList from './pages/QualityControl/DaftarIncoming';
+import MasterPM3 from './pages/MasterData/MasterPM3';
+import MasterPM3Check from './pages/MasterData/MasterPM3Check';
+import MasterPM3TambahInspection from './pages/MasterData/MasterPM3TambahInspection';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -559,6 +562,17 @@ function App() {
             </>
           }
         />
+        <Route
+          path="/masterdata/masterpm3"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM3 />
+              </ProtectedRoute>
+            </>
+          }
+        />
 
         <Route
           path="/masterdata/masterpm1/pm1checklist/:id"
@@ -584,6 +598,17 @@ function App() {
           }
         />
         <Route
+          path="/masterdata/masterpm3/pm3checklist/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM3Check />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/masterdata/masterpm1/pm1checklist/addinspection/:id"
           element={
             <>
@@ -601,6 +626,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterPM2TambahInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterpm3/pm3checklist/addinspection/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM3TambahInspection />
               </ProtectedRoute>
             </>
           }
