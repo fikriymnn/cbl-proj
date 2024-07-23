@@ -47,7 +47,7 @@ const TablePM3 = () => {
                             id=""
                             className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
                         />
-                       
+                      
                     </div>
 
                     <div className="flex flex-col">

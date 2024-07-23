@@ -3,6 +3,7 @@ import DefaultLayout from '../../../layout/DefaultLayout'
 
 import { Link } from 'react-router-dom';
 import ModalPM3Schedule from '../../../components/Modals/ModalPM3Schedule';
+import MyCalendar from '../../../components/Modals/Master/PM3/calender';
 const brandData = [
     {
 
@@ -70,11 +71,16 @@ function Pm3() {
        
        {!isMobile && (
            <main className='overflow-x-scroll'>
+                   <div className='bg-white w-full pb-5'>
+<MyCalendar/>
+</div>
+<div className='w-2 h-full '>
+
+</div>
                <div className='min-w-[700px] bg-white rounded-xl'>
 
                   
                    <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
-
                        <div className='w-2 h-full '>
 
                        </div>
