@@ -2,12 +2,12 @@
 
 import axios from "axios";
 
-const ModalKonfirmasiPm2 = ({ children, isOpen, onClose, idPoint, onFinish }:
+const ModalKonfirmasiPm3 = ({ children, isOpen, onClose, idPoint, onFinish }:
     { children: any, isOpen: any, onClose: any, idPoint: any, onFinish: any }) => {
     if (isOpen == false) return null;
 
-    async function deletePointPm2(id: number) {
-        const url = `${import.meta.env.VITE_API_LINK}/master/pointPm2/${id}`;
+    async function deletePointPm3(id: number) {
+        const url = `${import.meta.env.VITE_API_LINK}/master/pointPm3/${id}`;
 
         try {
             const res = await axios.delete(
@@ -53,7 +53,7 @@ const ModalKonfirmasiPm2 = ({ children, isOpen, onClose, idPoint, onFinish }:
                 <div className="flex w-full gap-4 pt-10 px-4">
 
                     <button
-                        onClick={() => deletePointPm2(idPoint)}
+                        onClick={() => deletePointPm3(idPoint)}
                         className="bg-[#DE0000] w-full h-8 text-center text-white text-xs font-bold  rounded-md"
                     >
                         HAPUS
@@ -78,4 +78,4 @@ const ModalKonfirmasiPm2 = ({ children, isOpen, onClose, idPoint, onFinish }:
     );
 };
 
-export default ModalKonfirmasiPm2;
+export default ModalKonfirmasiPm3;

@@ -128,30 +128,41 @@ const PM2Checklist = () => {
                 <>
                   <div className="flex py-4 flex-col">
                     <div className="flex flex-row gap-4 px-4">
-                      <label className="text-black text-xs font-bold">
+                      <label className="text-black text-xs font-bold w-20">
                         POINT
                       </label>
-                      <label className="text-black text-xs font-bold">
+                      <label className="text-black text-xs font-bold w-56">
                         INSPECTION POINT
                       </label>
-                      <label className="text-black text-xs font-bold">
+                      <label className="text-black text-xs font-bold w-56">
                         CATEGORY
+                      </label>
+                    </div>
+                    <div className="flex flex-row gap-4 px-4 mt-4">
+                      <label className="text-neutral-500 text-sm font-semibold w-20">
+                        {i + 1}
+                      </label>
+                      <label className="text-neutral-500 text-sm font-semibold w-56">
+                        {data.inspection_point}
+                      </label>
+                      <label className="text-neutral-500 text-sm font-semibold w-56">
+                      {data.category}
                       </label>
                     </div>
                     <div className="flex w-full flex-row gap-4 pt-3 px-4">
                       <div className="flex w-[40px] justify-center">
                         <label className="text-neutral-500 text-sm font-semibold">
-                          {i + 1}
+                          
                         </label>
                       </div>
                       <div className="flex w-10/12">
                         <label className="text-neutral-500 text-sm font-semibold">
-                          {data.inspection_point}
+                         
                         </label>
                       </div>
                       <div className="flex w-10/12">
                         <label className="text-neutral-500 text-sm font-semibold">
-                          {data.category}
+                          
                         </label>
                       </div>
                       <div className="flex flex-row gap-3">

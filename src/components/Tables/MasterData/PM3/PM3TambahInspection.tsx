@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 
-const PM2TambahInspection = () => {
+const PM3TambahInspection = () => {
   const { id } = useParams();
   const [isMobile, setIsMobile] = useState(false);
   const handleResize = () => {
@@ -39,7 +39,7 @@ const PM2TambahInspection = () => {
     }
   }
 
-  const [pointPm2, setPointPm2] = useState([
+  const [pointPm3, setPointPm3] = useState([
     {
       inspection_point: '',
       category: '',
@@ -56,8 +56,8 @@ const PM2TambahInspection = () => {
 
   //add Point
   const handleAddPoint = () => {
-    setPointPm2([
-      ...pointPm2,
+    setPointPm3([
+      ...pointPm3,
       {
         inspection_point: '',
         category: '',
@@ -75,48 +75,48 @@ const PM2TambahInspection = () => {
 
   //add Point Task
   const handleAddPointTask = (i: any) => {
-    const onchangeVal = [...pointPm2];
+    const onchangeVal = [...pointPm3];
     onchangeVal[i]['sub_inspection'].push({
       task: '',
       acceptance_criteria: '',
       method: '',
       tools: '',
     });
-    setPointPm2(onchangeVal);
+    setPointPm3(onchangeVal);
   };
 
   //change value point pm1
   const handleChangePoint = (e: any, i: number) => {
     const { name, value } = e.target;
-    const onchangeVal: any = [...pointPm2];
+    const onchangeVal: any = [...pointPm3];
     onchangeVal[i][name] = value;
-    setPointPm2(onchangeVal);
+    setPointPm3(onchangeVal);
   };
 
   //change value point Task pm1
   const handleChangePointTask = (e: any, i: number, ii: number) => {
     const { name, value } = e.target;
-    const onchangeVal: any = [...pointPm2];
+    const onchangeVal: any = [...pointPm3];
     onchangeVal[i]['sub_inspection'][ii][name] = value;
-    setPointPm2(onchangeVal);
+    setPointPm3(onchangeVal);
   };
 
   //delete Point pm1
   const handleDeletePoint = (i: number) => {
-    const deleteVal: any = [...pointPm2];
+    const deleteVal: any = [...pointPm3];
     deleteVal.splice(i, 1);
-    setPointPm2(deleteVal);
+    setPointPm3(deleteVal);
   };
 
   //delete Point task pm1
   const handleDeletePointTask = (i: number, ii: number) => {
-    const deleteVal: any = [...pointPm2];
+    const deleteVal: any = [...pointPm3];
     deleteVal[i]['sub_inspection'].splice(ii, 1);
-    setPointPm2(deleteVal);
+    setPointPm3(deleteVal);
   };
 
-  async function submitPointPm2() {
-    const url = `${import.meta.env.VITE_API_LINK}/master/pointPm2`;
+  async function submitPointPm3() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/pointPm3`;
 
     try {
       const res = await axios.post(
@@ -124,7 +124,7 @@ const PM2TambahInspection = () => {
         {
           id_mesin: mesin.id,
           nama_mesin: mesin.nama_mesin,
-          inspection_point: pointPm2,
+          inspection_point: pointPm3,
         },
         {
           withCredentials: true,
@@ -155,7 +155,7 @@ const PM2TambahInspection = () => {
             </div>
 
             <div className="flex py-4 flex-col">
-              {pointPm2.map((data: any, i: number) => {
+              {pointPm3.map((data: any, i: number) => {
                 return (
                   <>
                     <div className="flex flex-row gap-4 px-4">
@@ -335,7 +335,7 @@ const PM2TambahInspection = () => {
               + INSPECTION POINT
             </button>
             <button
-              onClick={submitPointPm2}
+              onClick={submitPointPm3}
               className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
             >
               SUBMIT
@@ -344,9 +344,9 @@ const PM2TambahInspection = () => {
         </>
       )}
 
-      {/* {JSON.stringify(pointPm2)} */}
+      {/* {JSON.stringify(pointPm3)} */}
     </div>
   );
 };
 
-export default PM2TambahInspection;
+export default PM3TambahInspection;

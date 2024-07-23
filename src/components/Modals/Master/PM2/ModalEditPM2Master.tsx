@@ -164,6 +164,7 @@ const ModalEditPM2Master = ({
                   name="category"
                   defaultValue={point.category}
                   onChange={(e) => handleChangePointCategory(e)}
+                  className='border-2 border-stroke rounded-md '
                 >
                   <option selected disabled value={''}>
                     Select Category
