@@ -4,6 +4,8 @@ import DefaultLayout from '../../../layout/DefaultLayout';
 import { Link } from 'react-router-dom';
 import ModalPM3Schedule from '../../../components/Modals/ModalPM3Schedule';
 import MyCalendar from '../../../components/Modals/Master/PM3/calender';
+import axios from 'axios';
+import convertTimeStampToDate from '../../../utils/convertDate';
 const brandData = [
   {
     name: 'R700',
@@ -180,14 +182,14 @@ function Pm3() {
                   >
                     <div
                       className={`w-2 h-full sticky left-0 z-20 ${data.mesin.bagian_mesin == 'printing'
-                          ? 'bg-green-600'
-                          : data.mesin.bagian_mesin == 'water base'
-                            ? 'bg-yellow-600'
-                            : data.mesin.bagian_mesin == 'pond'
-                              ? 'bg-violet-900'
-                              : data.mesin.bagian_mesin == 'finishing'
-                                ? 'bg-red-900'
-                                : ''
+                        ? 'bg-green-600'
+                        : data.mesin.bagian_mesin == 'water base'
+                          ? 'bg-yellow-600'
+                          : data.mesin.bagian_mesin == 'pond'
+                            ? 'bg-violet-900'
+                            : data.mesin.bagian_mesin == 'finishing'
+                              ? 'bg-red-900'
+                              : ''
                         }`}
                     ></div>
 
@@ -408,14 +410,14 @@ function Pm3() {
                 >
                   <div
                     className={`w-2 h-full sticky left-0 z-20 ${brand.partOf == 'printing'
-                        ? 'bg-green-600'
-                        : brand.partOf == 'water base'
-                          ? 'bg-yellow-600'
-                          : brand.partOf == 'pond'
-                            ? 'bg-violet-900'
-                            : brand.partOf == 'finishing'
-                              ? 'bg-red-900'
-                              : ''
+                      ? 'bg-green-600'
+                      : brand.partOf == 'water base'
+                        ? 'bg-yellow-600'
+                        : brand.partOf == 'pond'
+                          ? 'bg-violet-900'
+                          : brand.partOf == 'finishing'
+                            ? 'bg-red-900'
+                            : ''
                       }`}
                   ></div>
 
