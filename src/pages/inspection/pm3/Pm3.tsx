@@ -3,9 +3,7 @@ import DefaultLayout from '../../../layout/DefaultLayout';
 
 import { Link } from 'react-router-dom';
 import ModalPM3Schedule from '../../../components/Modals/ModalPM3Schedule';
-import axios from 'axios';
-import convertTimeStampToDateOnly from '../../../utils/convertDateOnly';
-import convertTimeStampToDate from '../../../utils/convertDate';
+import MyCalendar from '../../../components/Modals/Master/PM3/calender';
 const brandData = [
   {
     name: 'R700',
@@ -140,21 +138,28 @@ function Pm3() {
 
   return (
     <>
+
+
       {!isMobile && (
-        <main className="overflow-x-scroll">
-          <div className="min-w-[700px] bg-white rounded-xl">
-            <div className=" ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]">
-              {pm3?.length <= 0 ? (
-                <button
-                  onClick={createPM3}
-                  className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center }`} // Dynamic class assignment
-                >
-                  TAMBAH PM1
-                </button>
-              ) : null}
-              <div className="w-2 h-full "></div>
-              <section className="grid grid-cols-5 w-full py-4  font-semibold text-[14px]">
-                <p className="">Nama Mesin</p>
+        <main className='overflow-x-scroll'>
+          <div className='bg-white w-full pb-5'>
+            <MyCalendar />
+          </div>
+          <div className='w-2 h-full '>
+
+          </div>
+          <div className='min-w-[700px] bg-white rounded-xl'>
+
+
+            <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
+              <div className='w-2 h-full '>
+
+              </div>
+              <section className='grid grid-cols-5 w-full py-4  font-semibold text-[14px]'>
+
+
+                <p className=''>Nama Mesin</p>
+
 
                 <p>Tanggal Permintaan</p>
 
@@ -174,17 +179,16 @@ function Pm3() {
                     className=" flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black"
                   >
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 ${
-                        data.mesin.bagian_mesin == 'printing'
+                      className={`w-2 h-full sticky left-0 z-20 ${data.mesin.bagian_mesin == 'printing'
                           ? 'bg-green-600'
                           : data.mesin.bagian_mesin == 'water base'
-                          ? 'bg-yellow-600'
-                          : data.mesin.bagian_mesin == 'pond'
-                          ? 'bg-violet-900'
-                          : data.mesin.bagian_mesin == 'finishing'
-                          ? 'bg-red-900'
-                          : ''
-                      }`}
+                            ? 'bg-yellow-600'
+                            : data.mesin.bagian_mesin == 'pond'
+                              ? 'bg-violet-900'
+                              : data.mesin.bagian_mesin == 'finishing'
+                                ? 'bg-red-900'
+                                : ''
+                        }`}
                     ></div>
 
                     <div className=" w-full h-full flex flex-col justify-center relative">
@@ -403,17 +407,16 @@ function Pm3() {
                   className=" flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black"
                 >
                   <div
-                    className={`w-2 h-full sticky left-0 z-20 ${
-                      brand.partOf == 'printing'
+                    className={`w-2 h-full sticky left-0 z-20 ${brand.partOf == 'printing'
                         ? 'bg-green-600'
                         : brand.partOf == 'water base'
-                        ? 'bg-yellow-600'
-                        : brand.partOf == 'pond'
-                        ? 'bg-violet-900'
-                        : brand.partOf == 'finishing'
-                        ? 'bg-red-900'
-                        : ''
-                    }`}
+                          ? 'bg-yellow-600'
+                          : brand.partOf == 'pond'
+                            ? 'bg-violet-900'
+                            : brand.partOf == 'finishing'
+                              ? 'bg-red-900'
+                              : ''
+                      }`}
                   ></div>
 
                   <div className=" w-full h-full flex flex-col justify-center relative">
@@ -426,7 +429,7 @@ function Pm3() {
                         <>
                           <div
                             className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center `} // Dynamic class assignment
-                            //onClick={}
+                          //onClick={}
                           >
                             REQUEST
                           </div>
