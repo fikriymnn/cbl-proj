@@ -48,7 +48,6 @@ function IncomingInspection() {
             });
 
             setIncoming(res.data.data);
-            console.log(res.data.data);
         } catch (error: any) {
             console.log(error.data.msg);
         }
@@ -83,7 +82,6 @@ function IncomingInspection() {
     }
 
     async function sumbitPoint1(objek: any) {
-        alert(objek.keterangan_hasil)
         const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${objek.id}`;
         try {
             const res = await axios.put(url,
@@ -95,7 +93,7 @@ function IncomingInspection() {
 
                     withCredentials: true,
                 });
-            console.log(objek.id)
+            console.log(objek)
             getInspection();
         } catch (error: any) {
             console.log(error);
@@ -129,6 +127,11 @@ function IncomingInspection() {
     const [kiri, setKiri] = useState<number>(0);
     const [kanan, setKanan] = useState<number>(0);
     const [tengah, setTengah] = useState<number>(0);
+    const [rataRata, setRataRata] = useState<number>(0);
+
+
+
+
 
     const ratarata = (kiri + kanan + tengah) / 3
 
@@ -589,9 +592,12 @@ function IncomingInspection() {
                                                                     onChange={(e) => {
                                                                         let array = [...incoming?.inspeksi_bahan_result]
                                                                         array[1].hasil_kiri = e.target.value
+                                                                        array[1].hasil_rata_rata = hasilRata
+
                                                                         setKiri(parseInt(e.target.value))
                                                                         setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                     }}
+
 
                                                                     type='number' className='border-2 border-stroke w-[80%] rounded-sm' />
                                                                 <label className='text-neutral-500 text-sm font-semibold pt-1'>
@@ -602,9 +608,12 @@ function IncomingInspection() {
                                                                     onChange={(e) => {
                                                                         let array = [...incoming?.inspeksi_bahan_result]
                                                                         array[1].hasil_tengah = e.target.value
+                                                                        array[1].hasil_rata_rata = hasilRata
+
                                                                         setTengah(parseInt(e.target.value))
                                                                         setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                     }}
+
 
                                                                     className='border-2 border-stroke w-[80%] rounded-sm' />
                                                                 <label className='text-neutral-500 text-sm font-semibold pt-1'>
@@ -614,9 +623,12 @@ function IncomingInspection() {
                                                                     onChange={(e) => {
                                                                         let array = [...incoming?.inspeksi_bahan_result]
                                                                         array[1].hasil_kanan = e.target.value
+                                                                        array[1].hasil_rata_rata = hasilRata
+
                                                                         setKanan(parseInt(e.target.value))
                                                                         setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                     }}
+
                                                                     className='border-2 border-stroke w-[80%] rounded-sm' />
                                                                 <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                                     Rata-Rata
@@ -627,11 +639,18 @@ function IncomingInspection() {
                                                                         let array = [...incoming?.inspeksi_bahan_result]
                                                                         array[1].hasil_rata_rata = hasilRata
 
+
                                                                         setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                     }}
 
                                                                     disabled className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                                <button onClick={() => {
+                                                                    let array = [...incoming?.inspeksi_bahan_result]
+                                                                    array[1].hasil_rata_rata = hasilRata
 
+
+                                                                    setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                }}>Hitung</button>
                                                             </>
                                                         ) : (
                                                             <>
@@ -761,7 +780,7 @@ function IncomingInspection() {
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.preventDefault()
-                                                                    console.log(incoming)
+
                                                                     sumbitPoint1(incoming?.inspeksi_bahan_result[1]);
                                                                 }}
                                                                 className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
@@ -973,8 +992,8 @@ function IncomingInspection() {
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.preventDefault()
-                                                                    console.log(incoming)
-                                                                    //sumbitPoint1(incoming?.inspeksi_bahan_result[2]);
+
+                                                                    sumbitPoint1(incoming?.inspeksi_bahan_result[2]);
                                                                 }}
                                                                 className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
                                                             >
@@ -1020,20 +1039,70 @@ function IncomingInspection() {
                                                 <div className='flex justify-between  col-span-3'>
                                                     <div className='flex flex-col  w-[60%]'>
 
-                                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                                            <input type='checkbox' />Panjang
-                                                        </label>
-                                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                                            <input type='checkbox' className='' />Pendek
-                                                        </label>
+                                                        {!incoming?.inspeksi_bahan_result[3]?.send ? (
+                                                            <>
+                                                                <div>
+                                                                    <input
+                                                                        onChange={(e) => {
+                                                                            let array = [...incoming?.inspeksi_bahan_result]
+                                                                            array[3].hasil = e.target.value
+                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        }}
+                                                                        type="radio" id="sesuai1" name="sesuai1" value="Panjang" />
+                                                                    <label>Panjang</label>
+                                                                </div>
+                                                                <div>
+                                                                    <input
+                                                                        onChange={(e) => {
+                                                                            let array = [...incoming?.inspeksi_bahan_result]
+                                                                            array[3].hasil = e.target.value
+                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        }}
+                                                                        type="radio" id="sesuai2" name="sesuai1" value="Pendek" />
+                                                                    <label>Pendek</label>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <p className='text-neutral-500 text-sm font-semibold'>
+                                                                    {incoming?.inspeksi_bahan_result[3].hasil}
+                                                                </p>
+
+                                                            </>
+                                                        )}
                                                     </div>
                                                     <div className='flex flex-col gap-1  w-[50%]'>
-                                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                                            <input type='checkbox' />Sesuai
-                                                        </label>
-                                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                                            <input type='checkbox' className='' />Tidak Sesuai
-                                                        </label>
+                                                        {!incoming?.inspeksi_bahan_result[3]?.send ? (
+                                                            <>
+                                                                <div>
+                                                                    <input
+                                                                        onChange={(e) => {
+                                                                            let array = [...incoming?.inspeksi_bahan_result]
+                                                                            array[3].keterangan_hasil = e.target.value
+                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        }}
+                                                                        type="radio" id="sesuai1" name="sesuai1" value="sesuai" />
+                                                                    <label>Sesuai</label>
+                                                                </div>
+                                                                <div>
+                                                                    <input
+                                                                        onChange={(e) => {
+                                                                            let array = [...incoming?.inspeksi_bahan_result]
+                                                                            array[3].keterangan_hasil = e.target.value
+                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        }}
+                                                                        type="radio" id="sesuai2" name="sesuai1" value="tidak sesuai" />
+                                                                    <label>Tidak Sesuai</label>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <p className='text-neutral-500 text-sm font-semibold'>
+                                                                    {incoming?.inspeksi_bahan_result[3].keterangan_hasil}
+                                                                </p>
+
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
                                                 <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
@@ -1043,24 +1112,68 @@ function IncomingInspection() {
                                             <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
 
                                                 <div className='col-span-4'>
-                                                    <div className="flex flex-col ">
-                                                        <p className="md:text-[14px] text-[9px] font-semibold">
-                                                            Upload Foto (Optional):
-                                                        </p>
+                                                    {!incoming?.inspeksi_bahan_result[3]?.send ? (
+                                                        <>
+                                                            <div className="flex flex-col ">
+                                                                <p className="md:text-[14px] text-[9px] font-semibold">
+                                                                    Upload Foto (Optional):
+                                                                </p>
 
-                                                        <br />
-                                                        <div className="">
-                                                            <input
+                                                                <br />
+                                                                <div className="">
+                                                                    <input
 
-                                                                type="file"
-                                                                name=""
-                                                                id=""
-                                                                className="w-60"
-                                                            />
-                                                        </div>
-                                                    </div>
+                                                                        type="file"
+                                                                        name=""
+                                                                        id=""
+                                                                        className="w-60"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <div className="flex flex-col ">
+                                                                <p className="md:text-[14px] text-[9px] font-semibold">
+                                                                    Upload Foto (Optional):
+                                                                </p>
+
+                                                                <br />
+                                                                <div className="">
+                                                                    <input
+                                                                        disabled
+                                                                        type="file"
+                                                                        name=""
+                                                                        id=""
+                                                                        className="w-60"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </>
+                                                    )
+                                                    }
                                                 </div>
+                                                <div className='col-span-6 justify-end  w-full h-full flex items-center'>
+                                                    {!incoming?.inspeksi_bahan_result[3]?.send ? (
+                                                        <>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.preventDefault()
 
+                                                                    sumbitPoint1(incoming?.inspeksi_bahan_result[3]);
+                                                                }}
+                                                                className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                                            >
+                                                                Simpan
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                        </>
+                                                    )
+                                                    }
+
+                                                </div>
                                             </div>
                                         </>
                                         {/* =============================Point 5========================== */}
