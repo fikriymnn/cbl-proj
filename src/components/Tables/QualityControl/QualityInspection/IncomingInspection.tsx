@@ -46,7 +46,7 @@ function IncomingInspection() {
 
                 withCredentials: true,
             });
-
+            console.log(res.data.data)
             setIncoming(res.data.data);
         } catch (error: any) {
             console.log(error.data.msg);
@@ -447,7 +447,7 @@ function IncomingInspection() {
                                                                                 setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                             }}
                                                                             type="radio" id="sesuai1" name="sesuai1" value="sesuai" />
-                                                                        <label>Sesuai</label>
+                                                                        <label className='pl-2'>Sesuai</label>
                                                                     </div>
                                                                     <div>
                                                                         <input
@@ -457,7 +457,7 @@ function IncomingInspection() {
                                                                                 setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                             }}
                                                                             type="radio" id="sesuai2" name="sesuai1" value="tidak sesuai" />
-                                                                        <label>Tidak Sesuai</label>
+                                                                        <label className='pl-2'>Tidak Sesuai</label>
                                                                     </div>
                                                                 </>
                                                             ) : (
@@ -699,7 +699,7 @@ function IncomingInspection() {
                                                                             setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                         }}
                                                                         type="radio" id="sesuai1" name="sesuai1" value="sesuai" />
-                                                                    <label>Sesuai</label>
+                                                                    <label className='pl-2'>Sesuai</label>
                                                                 </div>
                                                                 <div>
                                                                     <input
@@ -709,7 +709,7 @@ function IncomingInspection() {
                                                                             setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                         }}
                                                                         type="radio" id="sesuai2" name="sesuai1" value="tidak sesuai" />
-                                                                    <label>Tidak Sesuai</label>
+                                                                    <label className='pl-2'>Tidak Sesuai</label>
                                                                 </div>
                                                             </>
                                                         ) : (
@@ -911,7 +911,7 @@ function IncomingInspection() {
                                                                             setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                         }}
                                                                         type="radio" id="sesuai1" name="sesuai1" value="sesuai" />
-                                                                    <label>Sesuai</label>
+                                                                    <label className='pl-2'>Sesuai</label>
                                                                 </div>
                                                                 <div>
                                                                     <input
@@ -921,7 +921,7 @@ function IncomingInspection() {
                                                                             setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                         }}
                                                                         type="radio" id="sesuai2" name="sesuai1" value="tidak sesuai" />
-                                                                    <label>Tidak Sesuai</label>
+                                                                    <label className='pl-2'>Tidak Sesuai</label>
                                                                 </div>
                                                             </>
                                                         ) : (
@@ -1048,8 +1048,8 @@ function IncomingInspection() {
                                                                             array[3].hasil = e.target.value
                                                                             setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                         }}
-                                                                        type="radio" id="sesuai1" name="sesuai1" value="Panjang" />
-                                                                    <label>Panjang</label>
+                                                                        type="radio" id="panjang1" name="pp1" value="Panjang" />
+                                                                    <label className='pl-2'>Panjang</label>
                                                                 </div>
                                                                 <div>
                                                                     <input
@@ -1058,8 +1058,8 @@ function IncomingInspection() {
                                                                             array[3].hasil = e.target.value
                                                                             setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                         }}
-                                                                        type="radio" id="sesuai2" name="sesuai1" value="Pendek" />
-                                                                    <label>Pendek</label>
+                                                                        type="radio" id="panjang2" name="pp1" value="Pendek" />
+                                                                    <label className='pl-2'>Pendek</label>
                                                                 </div>
                                                             </>
                                                         ) : (
@@ -1081,8 +1081,8 @@ function IncomingInspection() {
                                                                             array[3].keterangan_hasil = e.target.value
                                                                             setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                         }}
-                                                                        type="radio" id="sesuai1" name="sesuai1" value="sesuai" />
-                                                                    <label>Sesuai</label>
+                                                                        type="radio" id="sesuai3" name="sesuai3" value="sesuai" />
+                                                                    <label className='pl-2'>Sesuai</label>
                                                                 </div>
                                                                 <div>
                                                                     <input
@@ -1091,8 +1091,8 @@ function IncomingInspection() {
                                                                             array[3].keterangan_hasil = e.target.value
                                                                             setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                         }}
-                                                                        type="radio" id="sesuai2" name="sesuai1" value="tidak sesuai" />
-                                                                    <label>Tidak Sesuai</label>
+                                                                        type="radio" id="sesuai4" name="sesuai3" value="tidak sesuai" />
+                                                                    <label className='pl-2'>Tidak Sesuai</label>
                                                                 </div>
                                                             </>
                                                         ) : (
@@ -1206,26 +1206,137 @@ function IncomingInspection() {
                                                 <div className='flex justify-between  col-span-3'>
                                                     <div className='flex flex-col  w-[60%]'>
 
-                                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                                            <input type='checkbox' />Ok
-                                                        </label>
-                                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                                            <input type='checkbox' className='' />Not Ok
-                                                        </label>
+                                                        {!incoming?.inspeksi_bahan_result[4]?.send ? (
+                                                            <>
+                                                                <div>
+                                                                    <input
+                                                                        onChange={(e) => {
+                                                                            let array = [...incoming?.inspeksi_bahan_result]
+                                                                            array[4].hasil = e.target.value
+                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        }}
+                                                                        type="radio" id="ok1" name="ok1" value="Ok" />
+                                                                    <label className='pl-2'>Ok</label>
+                                                                </div>
+                                                                <div>
+                                                                    <input
+                                                                        onChange={(e) => {
+                                                                            let array = [...incoming?.inspeksi_bahan_result]
+                                                                            array[4].hasil = e.target.value
+                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        }}
+                                                                        type="radio" id="ok12" name="ok1" value="Not Ok" />
+                                                                    <label className='pl-2'>Not Ok</label>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <p className='text-neutral-500 text-sm font-semibold'>
+                                                                    {incoming?.inspeksi_bahan_result[4].hasil}
+                                                                </p>
+
+                                                            </>
+                                                        )}
                                                     </div>
                                                     <div className='flex flex-col gap-1  w-[50%]'>
                                                         <label className='text-neutral-500 text-sm font-semibold'>
-                                                            <select >
-                                                                <option> Select Coating</option>
+                                                            {!incoming?.inspeksi_bahan_result[4]?.send ? (
+                                                                <>
+                                                                    <select id="coatingSelect" onChange={(e) => {
+                                                                        let array = [...incoming?.inspeksi_bahan_result];
+                                                                        if (e.target.value === "Hapus") {
+                                                                            e.target.value = ""; // Reset select
+                                                                            const inputText = document.getElementById("inputText") as HTMLInputElement;
+                                                                            inputText.value = "";
+                                                                            inputText.hidden = false; // Enable input
+                                                                        } else {
+                                                                            // Update coating for other selections
+                                                                            array[4].coating = e.target.value;
+                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array });
 
-                                                            </select>
+                                                                            // Disable input if a non-"IVORY" value is selected
+                                                                            const inputText = document.getElementById("inputText") as HTMLInputElement;
+                                                                            inputText.hidden = true;
+                                                                        }
+                                                                        console.log(...incoming?.inspeksi_bahan_result[4].coating)
+                                                                    }}>
+                                                                        <option disabled selected>Select Result</option>
+                                                                        <option value="BERGARIS">BERGARIS</option>
+                                                                        <option value="JAMUR">JAMUR</option>
+                                                                        <option value="TITIK-TITIK">TITIK-TITIK</option>
+                                                                        <option value="Hapus">Hapus</option>
+                                                                    </select>
+
+                                                                    <input type="text" id="inputText"
+                                                                        onChange={(e) => {
+                                                                            let array = [...incoming?.inspeksi_bahan_result];
+                                                                            array[4].coating = e.target.value;
+                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array });
+                                                                        }}
+                                                                        className="border-2 border-stroke w-full rounded-sm" />
+
+                                                                    {/* <select onChange={(e) => {
+                                                                        let array = [...incoming?.inspeksi_bahan_result]
+                                                                        array[4].coating = e.target.value
+                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                    }}>
+                                                                        <option disabled selected> Select Result</option>
+                                                                        <option value={'BERGARIS'}>
+                                                                            BERGARIS
+                                                                        </option>
+                                                                        <option value={'JAMUR'}>
+                                                                            JAMUR
+                                                                        </option>
+                                                                        <option value={'TITIK-TITIK'}>
+                                                                            TITIK-TITIK
+                                                                        </option>
+
+                                                                    </select> */}
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <div className='flex flex-col gap-1'>
+                                                                        <p>
+                                                                            {incoming?.inspeksi_bahan_result[4]?.coating}
+                                                                        </p>
+
+                                                                    </div>
+
+                                                                </>
+                                                            )
+                                                            }
                                                         </label>
-                                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                                            <input type='checkbox' />Sesuai
-                                                        </label>
-                                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                                            <input type='checkbox' className='' />Tidak Sesuai
-                                                        </label>
+                                                        {!incoming?.inspeksi_bahan_result[4]?.send ? (
+                                                            <>
+                                                                <div>
+                                                                    <input
+                                                                        onChange={(e) => {
+                                                                            let array = [...incoming?.inspeksi_bahan_result]
+                                                                            array[4].keterangan_hasil = e.target.value
+                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        }}
+                                                                        type="radio" id="ss23" name="ss22" value="sesuai" />
+                                                                    <label className='pl-2'>Sesuai</label>
+                                                                </div>
+                                                                <div>
+                                                                    <input
+                                                                        onChange={(e) => {
+                                                                            let array = [...incoming?.inspeksi_bahan_result]
+                                                                            array[4].keterangan_hasil = e.target.value
+                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        }}
+                                                                        type="radio" id="ss24" name="ss22" value="tidak sesuai" />
+                                                                    <label className='pl-2'>Tidak Sesuai</label>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <p className='text-neutral-500 text-sm font-semibold'>
+                                                                    {incoming?.inspeksi_bahan_result[4].keterangan_hasil}
+                                                                </p>
+
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
                                                 <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
@@ -1236,23 +1347,69 @@ function IncomingInspection() {
 
                                                 <div className='col-span-4'>
                                                     <div className="flex flex-col ">
-                                                        <p className="md:text-[14px] text-[9px] font-semibold">
-                                                            Upload Foto (Optional):
-                                                        </p>
+                                                        {!incoming?.inspeksi_bahan_result[4]?.send ? (
+                                                            <>
+                                                                <div className="flex flex-col ">
+                                                                    <p className="md:text-[14px] text-[9px] font-semibold">
+                                                                        Upload Foto (Optional):
+                                                                    </p>
 
-                                                        <br />
-                                                        <div className="">
-                                                            <input
+                                                                    <br />
+                                                                    <div className="">
+                                                                        <input
 
-                                                                type="file"
-                                                                name=""
-                                                                id=""
-                                                                className="w-60"
-                                                            />
-                                                        </div>
+                                                                            type="file"
+                                                                            name=""
+                                                                            id=""
+                                                                            className="w-60"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div className="flex flex-col ">
+                                                                    <p className="md:text-[14px] text-[9px] font-semibold">
+                                                                        Upload Foto (Optional):
+                                                                    </p>
+
+                                                                    <br />
+                                                                    <div className="">
+                                                                        <input
+                                                                            disabled
+                                                                            type="file"
+                                                                            name=""
+                                                                            id=""
+                                                                            className="w-60"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        )
+                                                        }
                                                     </div>
                                                 </div>
+                                                <div className='col-span-6 justify-end  w-full h-full flex items-center'>
+                                                    {!incoming?.inspeksi_bahan_result[4]?.send ? (
+                                                        <>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.preventDefault()
+                                                                    console.log(incoming?.inspeksi_bahan_result[4])
+                                                                    sumbitPoint1(incoming?.inspeksi_bahan_result[4]);
+                                                                }}
+                                                                className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                                            >
+                                                                Simpan
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                        </>
+                                                    )
+                                                    }
 
+                                                </div>
                                             </div>
                                         </>
 
@@ -1285,22 +1442,116 @@ function IncomingInspection() {
 
                                                 <div className='flex justify-between  col-span-3'>
                                                     <div className='flex flex-col  w-[60%]'>
+                                                        {!incoming?.inspeksi_bahan_result[5]?.send ? (
+                                                            <>
+                                                                <label className='text-neutral-500 text-sm font-semibold'>
 
-                                                        <label className='text-neutral-500 text-sm font-semibold'>
-                                                            <select className='w-[80%]'>
-                                                                <option> Select </option>
+                                                                    <select id="hasilSelect2" onChange={(e) => {
+                                                                        // Store selected value
+                                                                        let selectedValue = e.target.value;
 
-                                                            </select>
-                                                        </label>
+                                                                        // Get input text (optional)
+                                                                        const inputText = document.getElementById("inputText2") as HTMLInputElement;
+                                                                        let inputTextValue = "";
+                                                                        if (inputText) {
+                                                                            inputTextValue = inputText.value;
+                                                                        }
+
+                                                                        // Combine values (consider using a separator like a space)
+                                                                        let combinedValue = selectedValue;
+                                                                        if (inputTextValue) {
+                                                                            combinedValue += " = " + inputTextValue; // Add space as separator
+                                                                        }
+
+                                                                        // Update array with combined value
+                                                                        let array = [...incoming?.inspeksi_bahan_result];
+                                                                        array[5].hasil = combinedValue;
+                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array });
+
+
+                                                                    }}>
+                                                                        <option disabled selected>Select Result</option>
+                                                                        <option value="PANJANG">PANJANG</option>
+                                                                        <option value="LEBAR">LEBAR</option>
+                                                                    </select>
+                                                                    <label className="text-neutral-500 text-sm font-semibold pt-1">
+                                                                        Input (CM)
+                                                                    </label>
+                                                                    <input onChange={(e) => {
+                                                                        // Get input text (optional)
+                                                                        let inputText = e.target.value;
+                                                                        // Store selected value
+                                                                        const selectedValue = document.getElementById("hasilSelect2") as HTMLInputElement;;
+                                                                        let selectedTextValue = "";
+                                                                        if (selectedValue) {
+                                                                            selectedTextValue = selectedValue.value;
+                                                                        }
+
+
+
+                                                                        // Combine values (consider using a separator like a space)
+                                                                        let combinedValue = inputText;
+                                                                        if (selectedTextValue) {
+                                                                            combinedValue = selectedTextValue + " = " + combinedValue; // Add space as separator
+                                                                        }
+
+                                                                        // Update array with combined value
+                                                                        let array = [...incoming?.inspeksi_bahan_result];
+                                                                        array[5].hasil = combinedValue;
+                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array });
+
+
+                                                                    }} type="number" id="inputText2"
+                                                                        className="border-2 border-stroke w-[90%] rounded-sm" />
+
+                                                                </label>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div className='flex flex-col gap-1'>
+                                                                    <p>
+                                                                        {incoming?.inspeksi_bahan_result[5]?.hasil}
+                                                                    </p>
+
+                                                                </div>
+
+                                                            </>
+                                                        )
+                                                        }
                                                     </div>
                                                     <div className='flex flex-col gap-1  w-[50%]'>
 
-                                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                                            <input type='checkbox' />Sesuai
-                                                        </label>
-                                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                                            <input type='checkbox' className='' />Tidak Sesuai
-                                                        </label>
+                                                        {!incoming?.inspeksi_bahan_result[5]?.send ? (
+                                                            <>
+                                                                <div>
+                                                                    <input
+                                                                        onChange={(e) => {
+                                                                            let array = [...incoming?.inspeksi_bahan_result]
+                                                                            array[5].keterangan_hasil = e.target.value
+                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        }}
+                                                                        type="radio" id="ss24" name="ss24" value="sesuai" />
+                                                                    <label className='pl-2'>Sesuai</label>
+                                                                </div>
+                                                                <div>
+                                                                    <input
+                                                                        onChange={(e) => {
+                                                                            let array = [...incoming?.inspeksi_bahan_result]
+                                                                            array[5].keterangan_hasil = e.target.value
+                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        }}
+                                                                        type="radio" id="ss25" name="ss24" value="tidak sesuai" />
+                                                                    <label className='pl-2'>Tidak Sesuai</label>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <p className='text-neutral-500 text-sm font-semibold'>
+                                                                    {incoming?.inspeksi_bahan_result[5].keterangan_hasil}
+                                                                </p>
+
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </div>
                                                 <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
@@ -1311,23 +1562,69 @@ function IncomingInspection() {
 
                                                 <div className='col-span-4'>
                                                     <div className="flex flex-col ">
-                                                        <p className="md:text-[14px] text-[9px] font-semibold">
-                                                            Upload Foto (Optional):
-                                                        </p>
+                                                        {!incoming?.inspeksi_bahan_result[5]?.send ? (
+                                                            <>
+                                                                <div className="flex flex-col ">
+                                                                    <p className="md:text-[14px] text-[9px] font-semibold">
+                                                                        Upload Foto (Optional):
+                                                                    </p>
 
-                                                        <br />
-                                                        <div className="">
-                                                            <input
+                                                                    <br />
+                                                                    <div className="">
+                                                                        <input
 
-                                                                type="file"
-                                                                name=""
-                                                                id=""
-                                                                className="w-60"
-                                                            />
-                                                        </div>
+                                                                            type="file"
+                                                                            name=""
+                                                                            id=""
+                                                                            className="w-60"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div className="flex flex-col ">
+                                                                    <p className="md:text-[14px] text-[9px] font-semibold">
+                                                                        Upload Foto (Optional):
+                                                                    </p>
+
+                                                                    <br />
+                                                                    <div className="">
+                                                                        <input
+                                                                            disabled
+                                                                            type="file"
+                                                                            name=""
+                                                                            id=""
+                                                                            className="w-60"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        )
+                                                        }
                                                     </div>
                                                 </div>
+                                                <div className='col-span-6 justify-end  w-full h-full flex items-center'>
+                                                    {!incoming?.inspeksi_bahan_result[5]?.send ? (
+                                                        <>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.preventDefault()
 
+                                                                    sumbitPoint1(incoming?.inspeksi_bahan_result[5]);
+                                                                }}
+                                                                className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                                            >
+                                                                Simpan
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                        </>
+                                                    )
+                                                    }
+
+                                                </div>
                                             </div>
                                         </>
                                         {/* =============================Point 7========================== */}
