@@ -145,17 +145,20 @@ function ProsesCetakMesin() {
         {
 
             nama: 'R700',
-
+            no_job_order: '00-000A',
+            inspector: 'Iko Uwais'
         },
         {
 
             nama: 'SM74',
-
+            no_job_order: '00-000A',
+            inspector: 'Cris Pratt'
         },
         {
 
             nama: 'GTO',
-
+            no_job_order: '00-000A',
+            inspector: 'Zoe Saldana'
         },
     ];
 
@@ -166,21 +169,19 @@ function ProsesCetakMesin() {
                     <div className='min-w-[700px] bg-white rounded-xl'>
                         <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>{tanggal}</p>
                         <div className=' w-full h-full flex-col border-b-8 border-[#D8EAFF]'>
-                            <div className='grid grid-cols-8 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2'>
-
-                                <label className='text-neutral-500 text-sm font-semibold'>
-                                    Point Check
-                                </label>
+                            <div className='grid grid-cols-8 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 '>
 
                                 <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    Standar
+                                    MESIN
+                                </label>
+
+                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                    No. Job Order
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    Hasil Check
+                                    Inspector
                                 </label>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    Keterangan
-                                </label>
+
 
                             </div>
                             <div className='w-2 h-full '>
@@ -189,16 +190,19 @@ function ProsesCetakMesin() {
                             {mesin.map((data: any, i: any) => (
                                 <>
                                     <section className=' flex  justify-center  w-full h-[59px] border-b-8 border-[#D8EAFF] text-[14px]  text-black'>
+
                                         <div className={`w-2 h-full sticky left-0 z-20 bg-green-600  `}>
 
                                         </div>
 
                                         <div className=' w-full h-full flex flex-col justify-center relative'>
-                                            <div className='ps-7 w-full flex'>
+                                            <div className='ps-7 w-full flex gap-2'>
                                                 <div className='flex flex-col justify-center text-stone-500 text-sm font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
                                                     <p className=''>{data.nama}</p>
-                                                </div>
 
+                                                </div>
+                                                <p className=''>{data.no_job_order}</p>
+                                                <p className=''>{data.inspector}</p>
                                             </div>
                                         </div>
                                         <div className='justify-end pr-4'>
@@ -210,7 +214,6 @@ function ProsesCetakMesin() {
                                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                         >
                                                             PILIH
-
                                                         </button>
                                                     </Link>
                                                 </>

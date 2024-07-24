@@ -463,6 +463,7 @@ function App() {
             </>
           }
         />
+
         <Route
           path="/history"
           element={
