@@ -162,17 +162,14 @@ const ModalPM3TambahInspection = ({ children, isOpen, onClose, onFinish, idTicke
                                     1
                                 </label>
                             </div>
-                            <div className="flex w-10/12">
+                            <div className="md:flex gap-4 w-10/12">
                                 <input
                                     name="inspection_point"
                                     defaultValue={pointPm3[0].inspection_point}
                                     onChange={(e) => handleChangePoint(e)}
                                     type="text"
-                                    className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                    className=" md:w-[387px] w-full h-10 border-2 border-stroke rounded-md"
                                 />
-                            </div>
-                            <div className="flex w-10/12 gap-4">
-                       
                         <select
                           name="category"
                           onChange={(e) => handleChangeCategory(e)}
@@ -184,6 +181,9 @@ const ModalPM3TambahInspection = ({ children, isOpen, onClose, onFinish, idTicke
                           <option value={'machine'}>Machine</option>
                           <option value={'man'}>Man</option>
                         </select>
+                            </div>
+                            <div className="flex w-10/12 gap-4">
+                       
                       </div>
                         </div>
                         {!isMobile && (

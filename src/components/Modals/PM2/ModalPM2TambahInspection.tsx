@@ -31,6 +31,7 @@ const ModalPM2TambahInspection = ({ children, isOpen, onClose, onFinish, idTicke
     const [pointPm2, setPointPm2] = useState([
         {
             inspection_point: '',
+            category:'',
             sub_inspection: [
                 {
                     task: '',
@@ -70,6 +71,13 @@ const ModalPM2TambahInspection = ({ children, isOpen, onClose, onFinish, idTicke
         onchangeVal[0]['sub_inspection'][i][name] = value;
         setPointPm2(onchangeVal);
     };
+    const handleChangeCategory = (e: any,) => {
+        const { name, value } = e.target;
+        const onchangeVal: any = [...pointPm2];
+        onchangeVal[0].category = value;
+        setPointPm2(onchangeVal);
+    };
+
 
     //delete Point task pm1
     const handleDeletePointTask = (i: number,) => {
@@ -152,15 +160,27 @@ const ModalPM2TambahInspection = ({ children, isOpen, onClose, onFinish, idTicke
                                     1
                                 </label>
                             </div>
-                            <div className="flex w-10/12">
+                            <div className="md:flex gap-5 w-10/12">
                                 <input
                                     name="inspection_point"
                                     defaultValue={pointPm2[0].inspection_point}
                                     onChange={(e) => handleChangePoint(e)}
                                     type="text"
-                                    className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                    className=" md:w-[387px] w-full h-10 border-2 border-stroke rounded-md"
                                 />
+                                <select
+                          name="category"
+                          onChange={(e) => handleChangeCategory(e)}
+                          className='border-2 border-stroke rounded-md md:my-0 py-2 md:mt-0 mt-5'
+                        >
+                          <option selected disabled value={''}>
+                            Select Category
+                          </option>
+                          <option value={'machine'}>Machine</option>
+                          <option value={'man'}>Man</option>
+                        </select>
                             </div>
+                            
 
                         </div>
                         {!isMobile && (

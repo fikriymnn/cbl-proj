@@ -6,33 +6,7 @@ import ModalPM3Schedule from '../../../components/Modals/ModalPM3Schedule';
 import MyCalendar from '../../../components/Modals/Master/PM3/calender';
 import axios from 'axios';
 import convertTimeStampToDate from '../../../utils/convertDate';
-const brandData = [
-  {
-    name: 'R700',
-    tgl_permintaan: '25 Jun 2024',
-    tgl_diajukan: '4 Jul 2024',
-    tgl_terverifikasi: '6 Jul 2024',
-    partOf: 'printing',
-  },
-  {
-    name: 'SM 74',
-    tgl_permintaan: '25 Jun 2024',
-    tgl_diajukan: '4 Jul 2024',
-    tgl_terverifikasi: '6 Jul 2024',
-  },
-  {
-    name: 'GTO',
-    tgl_permintaan: '25 Jun 2024',
-    tgl_diajukan: '4 Jul 2024',
-    tgl_terverifikasi: '6 Jul 2024',
-  },
-  {
-    name: 'ITOH',
-    tgl_permintaan: '25 Jun 2024',
-    tgl_diajukan: '4 Jul 2024',
-    tgl_terverifikasi: '6 Jul 2024',
-  },
-];
+
 function Pm3() {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -142,14 +116,16 @@ function Pm3() {
     <>
 
 
-      {!isMobile && (
-        <main className='overflow-x-scroll'>
-          <div className='bg-white w-full mb-5 rounded-md'>
-            <MyCalendar />
+     
+        <main >
+          <div className='bg-white w-full mb-5 rounded-md '>
+            <MyCalendar data={pm3}/>
           </div>
           <div className='w-2 h-full '>
 
           </div>
+          <div className='overflow-x-scroll'>
+
           <div className='min-w-[700px] bg-white rounded-xl'>
 
 
@@ -386,65 +362,10 @@ function Pm3() {
               </div>
             </section>
           </div>
-        </main>
-      )}
-      {isMobile && (
-        <main className="overflow-x-scroll">
-          <div className="w-full bg-white rounded-xl">
-            <p className="text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
-              01 April 2024
-            </p>
-            <div className=" ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]">
-              <div className="w-2 h-full "></div>
-              <section className="grid grid-cols-1 w-full py-4  font-semibold text-[14px]">
-                <p className="">Nama Mesin</p>
-
-                <div className="w-[125px]">{''}</div>
-              </section>
-            </div>
-            {brandData.map((brand, key) => (
-              <>
-                <section
-                  key={key}
-                  className=" flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black"
-                >
-                  <div
-                    className={`w-2 h-full sticky left-0 z-20 ${brand.partOf == 'printing'
-                      ? 'bg-green-600'
-                      : brand.partOf == 'water base'
-                        ? 'bg-yellow-600'
-                        : brand.partOf == 'pond'
-                          ? 'bg-violet-900'
-                          : brand.partOf == 'finishing'
-                            ? 'bg-red-900'
-                            : ''
-                      }`}
-                  ></div>
-
-                  <div className=" w-full h-full flex flex-col justify-center relative">
-                    <div className="ps-7 w-full grid grid-cols-2">
-                      <div className="flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">
-                        <p className="">{brand.name}</p>
-                      </div>
-
-                      <div className="flex w-full justify-center">
-                        <>
-                          <div
-                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center `} // Dynamic class assignment
-                          //onClick={}
-                          >
-                            REQUEST
-                          </div>
-                        </>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              </>
-            ))}
           </div>
         </main>
-      )}
+     
+     
     </>
   );
 }

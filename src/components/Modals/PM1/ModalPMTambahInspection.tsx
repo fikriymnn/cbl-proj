@@ -33,6 +33,7 @@ const ModalPM1TambahInspection = ({ children, isOpen, onClose, onFinish, idTicke
     const [pointPm1, setPointPm1] = useState([
         {
             inspection_point: '',
+            category:'',
             sub_inspection: [
                 {
                     task: '',
@@ -43,6 +44,12 @@ const ModalPM1TambahInspection = ({ children, isOpen, onClose, onFinish, idTicke
             ],
         },]
     );
+    const handleChangeCategory = (e: any,) => {
+        const { name, value } = e.target;
+        const onchangeVal: any = [...pointPm1];
+        onchangeVal[0].category = value;
+        setPointPm1(onchangeVal);
+    };
 
     //add Point Task
     const handleAddPointTask = () => {
@@ -148,20 +155,31 @@ const ModalPM1TambahInspection = ({ children, isOpen, onClose, onFinish, idTicke
                                 INSPECTION POINT
                             </label>
                         </div>
-                        <div className="flex w-full flex-row gap-4 pt-3 px-4">
+                        <div className="flex w-full  flex-row gap-4 pt-3 px-4">
                             <div className="flex w-[40px] justify-center">
                                 <label className="text-neutral-500 text-sm font-semibold">
                                     1
                                 </label>
                             </div>
-                            <div className="flex w-10/12">
+                            <div className="md:flex w-10/12 gap-5">
                                 <input
                                     name="inspection_point"
                                     defaultValue={pointPm1[0].inspection_point}
                                     onChange={(e) => handleChangePoint(e)}
                                     type="text"
-                                    className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                    className=" md:w-[387px] w-full h-10 border-2 border-stroke rounded-md"
                                 />
+                                <select
+                          name="category"
+                          onChange={(e) => handleChangeCategory(e)}
+                          className='border-2 border-stroke rounded-md md:my-0 py-2 md:mt-0 mt-5'
+                        >
+                          <option selected disabled value={''}>
+                            Select Category
+                          </option>
+                          <option value={'machine'}>Machine</option>
+                          <option value={'man'}>Man</option>
+                        </select>
                             </div>
 
                         </div>

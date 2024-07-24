@@ -576,6 +576,9 @@ function Pm1Form() {
                             </div>
                           </div>
                         </div>
+                        <div className='border-b px-5 h-8 my-auto font-semibold text-sm flex w-full items-center'>
+                          {"Category:"+" " + data.category }
+                        </div>
                         <div className="flex w-full">
                           {data.waktu_mulai == null &&
                             data.waktu_selesai == null && (
@@ -1071,6 +1074,7 @@ function Pm1Form() {
                           )}
                         </div>
                       </section>
+                      
                     </>
                   );
                 })}
@@ -1293,6 +1297,7 @@ function Pm1Form() {
                   </div> */}
                 </div>
               </div>
+              
               <div className='flex flex-col w-full justify-start '>
                 <p className="md:text-[14px] text-[9px] font-semibold">
                   Form filling Guide
@@ -1529,6 +1534,9 @@ function Pm1Form() {
                               </div >
                             </div>
                           </div>
+                          <div className='border-b px-5 h-8 my-auto font-semibold text-xs flex w-full items-center'>
+                          {"Category:"+" " + data.category }
+                        </div>
                           <div className="flex w-full">
                             {data.waktu_mulai == null &&
                               data.waktu_selesai == null && (

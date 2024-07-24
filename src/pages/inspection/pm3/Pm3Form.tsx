@@ -496,15 +496,12 @@ function Pm3Form() {
                           </div>
 
                           <div className="flex w-full gap-10">
-                            <div className="flex flex-col w-2/12">
+                            <div className="flex w-2/12">
                               <p className="md:text-[14px] text-[9px] font-semibold">
                                 {data.inspection_point}{' '}
                               </p>
                               
-                              <p className="md:text-[14px] text-[9px] font-semibold">
-                                {"Category:"+ " " + data.category}{' '}
-                              </p>
-                              
+                             
                             </div> 
                             <div className="grid grid-cols-4 max-h-[400px] min-h-[200px] w-10/12 gap-3 pl-3 ">
                               {data.inspection_task_pm3s.map(
@@ -541,6 +538,9 @@ function Pm3Form() {
                               )}
                             </div>
                           </div>
+                        </div>
+                        <div className='border-b px-5 h-8 my-auto font-semibold text-sm flex w-full items-center'>
+                          {"Category:"+" " + data.category }
                         </div>
                         <div className="flex w-full">
                           {data.waktu_mulai == null &&
@@ -1469,7 +1469,7 @@ function Pm3Form() {
                                   (task: any, ii: any) => {
                                     return (
                                       <>
-                                        <div className="grid grid-cols-2 grid-rows-1 justify-start items-start border-stroke border-b-2">
+                                        <div className="grid grid-cols-2 grid-rows-1 justify-start items-start border-stroke ">
                                           <div className="flex flex-col w-32">
                                             <p className="text-[11px] font-bold">
                                               Task List{' '}
@@ -1510,6 +1510,9 @@ function Pm3Form() {
                               </div>
                             </div>
                           </div>
+                          <div className='border-b px-5 h-8 my-auto font-semibold text-xs flex w-full items-center'>
+                          {"Category:"+" " + data.category }
+                        </div>
                           <div className="flex w-full">
                             {data.waktu_mulai == null &&
                               data.waktu_selesai == null && (

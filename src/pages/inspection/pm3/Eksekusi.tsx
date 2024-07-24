@@ -167,7 +167,7 @@ function Eksekusi() {
 
   return (
     <>
-      {!isMobile && (
+     
         <main className="overflow-x-scroll">
           <div className="min-w-[700px] bg-white rounded-xl">
             <div className=" ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]">
@@ -176,7 +176,7 @@ function Eksekusi() {
                 <p className="">Nama Mesin</p>
 
                 <p>Jadwal</p>
-                <p>Inspector</p>
+                <p className='md:flex hidden'>Inspector</p>
 
                 <div className="mx-5 flex justify-end">
                   
@@ -226,12 +226,12 @@ function Eksekusi() {
                           <p className="">{data.nama_mesin}</p>
                         </div>
 
-                        <div className="flex flex-col justify-center">
+                        <div className="flex flex-col justify-center  ">
                           <p className="text-[#00AF09] font-bold">{tglFrom}</p>
                           <p className="text-[#00AF09] font-bold">{tglTo}</p>
                         </div>
                         
-                        <div className="flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">
+                        <div className="md:flex hidden flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">
                         {data.inspector != null ? data.inspector.nama : '-'}
                         </div>
 
@@ -275,8 +275,8 @@ function Eksekusi() {
             })}
           </div>
         </main>
-      )}
-      {isMobile && (
+     
+      {/* {isMobile && (
         <main className="overflow-x-scroll">
           <div className="w-full bg-white rounded-xl">
             <p className="text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
@@ -333,7 +333,7 @@ function Eksekusi() {
             ))}
           </div>
         </main>
-      )}
+      )} */}
     </>
   );
 }
