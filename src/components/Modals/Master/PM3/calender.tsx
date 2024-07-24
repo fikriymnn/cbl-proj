@@ -30,7 +30,7 @@ const CustomToolbar: React.FC<ToolbarProps> = ({
   onNavigate,
   onView,
 }) => {
-  const handleNavigate = (action: "PREV" | "NEXT") => {
+  const handleNavigate = (action: "PREV" | "NEXT" | "TODAY") => {
    
     onNavigate(action); // Call the provided onNavigate function
   };
@@ -44,9 +44,13 @@ const CustomToolbar: React.FC<ToolbarProps> = ({
         padding: "10px",
       }}
     >
-      <button onClick={() => handleNavigate("PREV")}>Previous</button>
-      <span>{label}</span>
-      <button onClick={() => handleNavigate("NEXT")}>Next</button>
+        <div className="flex gap-2">
+
+      <button className="bg-blue-600 font-semibold rounded-sm py-1 px-2 hover:bg-blue-500 text-white uppercase text-sm" onClick={() => handleNavigate("PREV")}>PREV</button>
+      <button className="bg-blue-600 font-semibold rounded-sm py-1 px-2 hover:bg-blue-500 text-white uppercase text-sm" onClick={() => handleNavigate("TODAY")}>TODAY</button>
+        </div>
+      <span className=" text-xl">{label}</span>
+      <button className="bg-blue-600 font-semibold rounded-sm py-1 px-2 hover:bg-blue-500 text-white uppercase text-sm" onClick={() => handleNavigate("NEXT")}>NEXT</button>
     </div>
   );
 };
@@ -86,7 +90,7 @@ const MyCalendar: React.FC = () => {
   });
 
   return (
-    <div>
+    <div className="w-12/12">
       <Calendar
         localizer={localizer}
         events={events}
@@ -94,7 +98,7 @@ const MyCalendar: React.FC = () => {
         endAccessor="end"
         style={{ height: 500 }}
         eventPropGetter={eventPropGetter} // Apply custom styles
-        // components={{ toolbar: CustomToolbar }} // Use custom toolbar
+        components={{ toolbar: CustomToolbar }} // Use custom toolbar
       />
     </div>
   );

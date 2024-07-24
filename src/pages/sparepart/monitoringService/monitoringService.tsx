@@ -62,8 +62,8 @@ function MonitoringService() {
               </p>
               <p className="text-[10px] font-semibold w-[7%] ">Mesin</p>
               <p className="text-[10px] font-semibold w-[7%]">Posisi</p>
-              <p className="text-[10px] font-semibold w-[8%]">Tgl Pasang</p>
-              <p className="text-[10px] font-semibold w-[8%]">Tgl Rusak</p>
+              <p className="text-[10px] font-semibold w-[8%]">Tgl Pasang Service</p>
+              <p className="text-[10px] font-semibold w-[8%]">Tgl Service</p>
               <p className="text-[10px] font-semibold w-[7%]">Sisa Umur</p>
             </div>
           </div>

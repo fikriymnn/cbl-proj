@@ -7,17 +7,18 @@ import Strip from '../../../images/icon/strip.svg';
 import SelectGroupTwo from '../../../components/Forms/SelectGroup/SelectGroupTwo';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import ModalPM1TambahInspection from '../../../components/Modals/PM1/ModalPMTambahInspection';
+
 import Logo from '../../../images/icon/ceklis.svg';
 
 import None from '../../../images/icon/none.svg';
 import moment from 'moment';
 import Loading from '../../../components/Loading';
+import ModalPM3TambahInspection from '../../../components/Modals/PM3/ModalPM3TambahInspection';
 
 function Pm3Form() {
   const { id } = useParams();
 
-  const [pm1, setPm3] = useState<any>();
+  const [pm3, setPm3] = useState<any>();
   const [userKA, setUserKA] = useState<any>();
   const [userSuper, setUserSuper] = useState<any>();
   const [userLeader, setUserLeader] = useState<any>();
@@ -123,7 +124,7 @@ function Pm3Form() {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  async function donePm1(id: any) {
+  async function donePm3(id: any) {
     if (
       !catatan
       // || !userKA || !userLeader || !userSuper
@@ -210,7 +211,7 @@ function Pm3Form() {
     return `${year}/${month}/${day} ${hours}:${minutes}`; // Example format (YYYY-MM-DD)
   }
 
-  const tiketMasuk = convertDatetimeToDate(pm1 != null && pm1.createdAt);
+  const tiketMasuk = convertDatetimeToDate(pm3 != null && pm3.createdAt);
 
   const [selectedOption, setSelectedOption] = useState<string>('');
   const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
@@ -221,22 +222,22 @@ function Pm3Form() {
 
   const handleChangePoint = (e: any, i: number) => {
     const { name, value } = e.target;
-    const onchangeVal: any = pm1;
+    const onchangeVal: any = pm3;
     onchangeVal.inspection_point_pm3s[i][name] = value;
     setPm3(onchangeVal);
   };
 
   const totalWaktuTask =
-    pm1 != null &&
-    pm1.inspection_point_pm3s.reduce(
+    pm3 != null &&
+    pm3.inspection_point_pm3s.reduce(
       (total: any, item: any) => total + item.lama_pengerjaan,
       0,
     );
 
-  const waktuMulaiPm1 = convertDatetimeToDate(pm1 != null && pm1.waktu_mulai);
-  const waktuSelesaiPm1 =
-    pm1 != null && pm1.waktu_selesai != null
-      ? convertDatetimeToDate(pm1.waktu_selesai)
+  const waktuMulaiPm3 = convertDatetimeToDate(pm3 != null && pm3.waktu_mulai);
+  const waktuSelesaiPm3 =
+    pm3 != null && pm3.waktu_selesai != null
+      ? convertDatetimeToDate(pm3.waktu_selesai)
       : '-';
 
   return (
@@ -256,7 +257,7 @@ function Pm3Form() {
                   </p>
                   <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
                   <p className="md:text-[14px] text-[9px] font-semibold ">
-                    {pm1 != null && pm1.nama_mesin}
+                    {pm3 != null && pm3.nama_mesin}
                   </p>
                 </div>
                 <div className="flex flex-cols-3 md:gap-3 gap-1">
@@ -266,7 +267,7 @@ function Pm3Form() {
                   </p>
                   <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
                   <p className="md:text-[14px] text-[9px] font-semibold">
-                    {pm1 != null && pm1.mesin.kode_mesin}
+                    {pm3 != null && pm3.mesin.kode_mesin}
                   </p>
                 </div>
 
@@ -276,7 +277,7 @@ function Pm3Form() {
                   </p>
                   <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
                   <p className="md:text-[14px] text-[9px] text-start font-semibold">
-                    {pm1 != null && tiketMasuk}
+                    {pm3 != null && tiketMasuk}
                   </p>
                 </div>
 
@@ -286,9 +287,9 @@ function Pm3Form() {
                   </p>
                   <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
                   <p className="md:text-[14px] text-[9px] text-start font-semibold">
-                    {pm1 != null && pm1.id_leader != null ? (
+                    {pm3 != null && pm3.id_leader != null ? (
                       <p className="text-body dark:text-bodydark uppercase">
-                        {pm1.leader.nama}
+                        {pm3.leader.nama}
                       </p>
                     ) : (
                       <select
@@ -320,9 +321,9 @@ function Pm3Form() {
                   </p>
                   <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
                   <p className="md:text-[14px] text-[9px] text-start font-semibold">
-                    {pm1 != null && pm1.id_supervisor != null ? (
+                    {pm3 != null && pm3.id_supervisor != null ? (
                       <p className="text-body dark:text-bodydark uppercase">
-                        {pm1.supervisor.nama}
+                        {pm3.supervisor.nama}
                       </p>
                     ) : (
                       <select
@@ -354,9 +355,9 @@ function Pm3Form() {
                   </p>
                   <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
                   <p className="md:text-[14px] text-[9px] text-start font-semibold">
-                    {pm1 != null && pm1.id_ka_bag != null ? (
+                    {pm3 != null && pm3.id_ka_bag != null ? (
                       <p className="text-body dark:text-bodydark uppercase">
-                        {pm1.ka_bag.nama}
+                        {pm3.ka_bag.nama}
                       </p>
                     ) : (
                       <select
@@ -447,8 +448,8 @@ function Pm3Form() {
                   </p>
                 </div>
               </section>
-              {pm1 != null &&
-                pm1.inspection_point_pm3s.map((data: any, i: any) => {
+              {pm3 != null &&
+                pm3.inspection_point_pm3s.map((data: any, i: any) => {
                   function convertDatetimeToDate(datetime: any) {
                     const dateObject = new Date(datetime);
                     const day = dateObject
@@ -495,11 +496,16 @@ function Pm3Form() {
                           </div>
 
                           <div className="flex w-full gap-10">
-                            <div className="flex w-2/12">
+                            <div className="flex flex-col w-2/12">
                               <p className="md:text-[14px] text-[9px] font-semibold">
                                 {data.inspection_point}{' '}
                               </p>
-                            </div>
+                              
+                              <p className="md:text-[14px] text-[9px] font-semibold">
+                                {"Category:"+ " " + data.category}{' '}
+                              </p>
+                              
+                            </div> 
                             <div className="grid grid-cols-4 max-h-[400px] min-h-[200px] w-10/12 gap-3 pl-3 ">
                               {data.inspection_task_pm3s.map(
                                 (task: any, ii: any) => {
@@ -518,6 +524,7 @@ function Pm3Form() {
                                           {task.acceptance_criteria}
                                         </p>
                                       </div>
+                                     
                                       <div className="flex flex-col gap-y-10 pl-4">
                                         <p className="md:text-[14px] text-[9px] font-semibold h-10">
                                           {task.method}
@@ -558,7 +565,7 @@ function Pm3Form() {
                                         onChange={(e) => {
                                           handleChangePoint(e, i);
 
-                                          console.log(pm1);
+                                          console.log(pm3);
                                           changeTextColor();
                                         }}
                                         className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${
@@ -781,7 +788,7 @@ function Pm3Form() {
                                         onChange={(e) => {
                                           handleChangePoint(e, i);
 
-                                          console.log(pm1);
+                                          console.log(pm3);
                                           changeTextColor();
                                         }}
                                         className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${
@@ -1044,7 +1051,7 @@ function Pm3Form() {
 
               <section className=" border-b-8 border-[#D8EAFF] flex flex-col">
                 <div>
-                  {pm1 != null && pm1.status != 'done' ? (
+                  {pm3 != null && pm3.status != 'done' ? (
                     <button
                       onClick={openModalADD}
                       className="py-2 px-20 mx-5 mt-5 bg-primary text-white rounded-md"
@@ -1054,32 +1061,32 @@ function Pm3Form() {
                   ) : null}
                 </div>
                 {showModalADD && (
-                  <ModalPM1TambahInspection
+                  <ModalPM3TambahInspection
                     children={undefined}
                     onFinish={() => getPM3()}
                     isOpen={showModalADD}
                     onClose={closeModalADD}
-                    idTicket={pm1.id}
+                    idTicket={pm3.id}
                   />
                 )}
 
                 <p className="text-sm font-semibold p-5">
                   Catatan Keseluruhan:
                 </p>
-                {waktuSelesaiPm1 != '-' && (
+                {waktuSelesaiPm3 != '-' && (
                   <>
                     <textarea
-                      defaultValue={pm1 != null ? pm1.catatan : ''}
+                      defaultValue={pm3 != null ? pm3.catatan : ''}
                       disabled
                       onChange={(e) => setCatatan(e.target.value)}
                       className="border-2 border-[#D9D9D9] rounded-sm resize-none mx-4 px-4"
                     ></textarea>
                   </>
                 )}
-                {waktuSelesaiPm1 == '-' && (
+                {waktuSelesaiPm3 == '-' && (
                   <>
                     <textarea
-                      defaultValue={pm1 != null ? pm1.catatan : ''}
+                      defaultValue={pm3 != null ? pm3.catatan : ''}
                       onChange={(e) => setCatatan(e.target.value)}
                       className="peer h-full min-h-[100px] w-[96%] mx-5 mb-5 resize-none rounded-[7px] border-2 border-stroke bg-transparent px-3 py-2.5  font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                     ></textarea>
@@ -1095,18 +1102,18 @@ function Pm3Form() {
                       'Detik'}
                   </p>
                   <p className="text-[17px]">
-                    {'Waktu Mulai PM1 : ' + waktuMulaiPm1}
+                    {'Waktu Mulai PM3 : ' + waktuMulaiPm3}
                   </p>
                   <p className="text-[17px]">
-                    {'Waktu Selesai PM1 : ' + waktuSelesaiPm1}
+                    {'Waktu Selesai PM3 : ' + waktuSelesaiPm3}
                   </p>
                 </div>
 
                 <div className="flex w-full md:justify-end justify-start">
-                  {pm1 != null && pm1.status != 'done' ? (
+                  {pm3 != null && pm3.status != 'done' ? (
                     <button
                       disabled={isLoading}
-                      onClick={() => donePm1(id)}
+                      onClick={() => donePm3(id)}
                       className="py-2 px-10 mx-5 mt-5 bg-primary text-white rounded-md mb-5"
                     >
                       {isLoading ? 'Loading...' : 'SUBMIT INSPECTION'}
@@ -1139,7 +1146,7 @@ function Pm3Form() {
                       :
                     </p>
                     <p className="md:text-[14px] text-[9px] font-semibold pl-3.5">
-                      {pm1 != null && pm1.nama_mesin}
+                      {pm3 != null && pm3.nama_mesin}
                     </p>
                   </div>
                   <div className="flex flex-cols-3 gap-1 justify-between">
@@ -1151,7 +1158,7 @@ function Pm3Form() {
                       :
                     </p>
                     <p className="md:text-[14px] text-[9px] font-semibold">
-                      {pm1 != null && pm1.mesin.kode_mesin}
+                      {pm3 != null && pm3.mesin.kode_mesin}
                     </p>
                   </div>
 
@@ -1163,7 +1170,7 @@ function Pm3Form() {
                       :
                     </p>
                     <p className="md:text-[14px] text-[9px] text-start font-semibold">
-                      {pm1 != null && tiketMasuk}
+                      {pm3 != null && tiketMasuk}
                     </p>
                   </div>
 
@@ -1173,9 +1180,9 @@ function Pm3Form() {
                     </p>
                     <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
                     <p className="md:text-[14px] text-[9px] text-start font-semibold">
-                      {pm1 != null && pm1.id_leader != null ? (
+                      {pm3 != null && pm3.id_leader != null ? (
                         <p className="text-body dark:text-bodydark uppercase">
-                          {pm1.leader.nama}
+                          {pm3.leader.nama}
                         </p>
                       ) : (
                         <select
@@ -1207,9 +1214,9 @@ function Pm3Form() {
                     </p>
                     <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
                     <p className="md:text-[14px] text-[9px] text-start font-semibold">
-                      {pm1 != null && pm1.id_supervisor != null ? (
+                      {pm3 != null && pm3.id_supervisor != null ? (
                         <p className="text-body dark:text-bodydark uppercase">
-                          {pm1.supervisor.nama}
+                          {pm3.supervisor.nama}
                         </p>
                       ) : (
                         <select
@@ -1241,9 +1248,9 @@ function Pm3Form() {
                     </p>
                     <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
                     <p className="md:text-[14px] text-[9px] text-start font-semibold">
-                      {pm1 != null && pm1.id_ka_bag != null ? (
+                      {pm3 != null && pm3.id_ka_bag != null ? (
                         <p className="text-body dark:text-bodydark uppercase">
-                          {pm1.ka_bag.nama}
+                          {pm3.ka_bag.nama}
                         </p>
                       ) : (
                         <select
@@ -1326,8 +1333,8 @@ function Pm3Form() {
                     <p className="md:text-[14px] text-[9px] font-semibold">Tools</p>
                   </div> */}
                 </section>
-                {pm1 != null &&
-                  pm1.inspection_point_pm3s.map((data: any, i: any) => {
+                {pm3 != null &&
+                  pm3.inspection_point_pm3s.map((data: any, i: any) => {
                     function convertDatetimeToDate(datetime: any) {
                       const dateObject = new Date(datetime);
                       const day = dateObject
@@ -1539,7 +1546,7 @@ function Pm3Form() {
                                           onChange={(e) => {
                                             handleChangePoint(e, i);
 
-                                            console.log(pm1);
+                                            console.log(pm3);
                                             changeTextColor();
                                           }}
                                           className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent px-8 py-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${
@@ -1651,7 +1658,7 @@ function Pm3Form() {
                                           onChange={(e) => {
                                             handleChangePoint(e, i);
 
-                                            console.log(pm1);
+                                            console.log(pm3);
                                             changeTextColor();
                                           }}
                                           className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent px-8 py-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${
@@ -1844,7 +1851,7 @@ function Pm3Form() {
 
                 <section className=" border-b-8 border-[#D8EAFF] flex flex-col">
                   <div>
-                    {pm1 != null && pm1.status != 'done' ? (
+                    {pm3 != null && pm3.status != 'done' ? (
                       <button
                         onClick={openModalADD}
                         className="py-2 px-20 mx-5 mt-5 bg-primary text-white rounded-md"
@@ -1854,33 +1861,33 @@ function Pm3Form() {
                     ) : null}
                   </div>
                   {showModalADD && (
-                    <ModalPM1TambahInspection
+                    <ModalPM3TambahInspection
                       children={undefined}
                       onFinish={() => getPM3()}
                       isOpen={showModalADD}
                       onClose={closeModalADD}
-                      idTicket={pm1.id}
+                      idTicket={pm3.id}
                     />
                   )}
 
                   <p className="text-[11px] font-semibold px-2 pt-4 pb-2">
                     Catatan Keseluruhan:
                   </p>
-                  {waktuSelesaiPm1 != '-' && (
+                  {waktuSelesaiPm3 != '-' && (
                     <>
                       <textarea
-                        defaultValue={pm1 != null ? pm1.catatan : ''}
+                        defaultValue={pm3 != null ? pm3.catatan : ''}
                         disabled
                         onChange={(e) => setCatatan(e.target.value)}
                         className="border-2 border-[#D9D9D9] rounded-sm resize-none mx-4 px-4 "
                       ></textarea>
                     </>
                   )}
-                  {waktuSelesaiPm1 == '-' && (
+                  {waktuSelesaiPm3 == '-' && (
                     <>
                       <div className="px-2">
                         <textarea
-                          defaultValue={pm1 != null ? pm1.catatan : ''}
+                          defaultValue={pm3 != null ? pm3.catatan : ''}
                           onChange={(e) => setCatatan(e.target.value)}
                           className="border-2 border-[#D9D9D9] rounded-sm resize-none p-2 w-full"
                         ></textarea>
@@ -1897,18 +1904,18 @@ function Pm3Form() {
                         'Detik'}
                     </p>
                     <p className="text-[15px]">
-                      {'Waktu Mulai PM1 : ' + waktuMulaiPm1}
+                      {'Waktu Mulai PM3 : ' + waktuMulaiPm3}
                     </p>
                     <p className="text-[15px]">
-                      {'Waktu Selesai PM1 : ' + waktuSelesaiPm1}
+                      {'Waktu Selesai PM3 : ' + waktuSelesaiPm3}
                     </p>
                   </div>
 
                   <div className="flex w-full md:justify-end justify-start">
-                    {pm1 != null && pm1.status != 'done' ? (
+                    {pm3 != null && pm3.status != 'done' ? (
                       <button
                         disabled={isLoading}
-                        onClick={() => donePm1(id)}
+                        onClick={() => donePm3(id)}
                         className="py-2 px-10 mx-5 mt-5 bg-primary text-white rounded-md mb-5"
                       >
                         {isLoading ? 'Loading...' : 'SUBMIT INSPECTION'}

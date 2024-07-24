@@ -172,24 +172,30 @@ function Eksekusi() {
           <div className="min-w-[700px] bg-white rounded-xl">
             <div className=" ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]">
               <div className="w-2 h-full "></div>
-              <section className="grid grid-cols-3 justify-between w-full py-4  font-semibold text-[14px]">
+              <section className="grid grid-cols-4  justify-between w-full py-4  font-semibold text-[14px]">
                 <p className="">Nama Mesin</p>
 
                 <p>Jadwal</p>
                 <p>Inspector</p>
 
-                <div className="w-[125px]">{''}</div>
-              </section>
+                <div className="mx-5 flex justify-end">
+                  
+              <div className='my-auto '>
+
               <select
+              className='border rounded-sm py-1'
                 onChange={(e) => {
                   getPM3(e.target.value);
                 }}
               >
-                <option value={''}>SELECT MONTH</option>
+                <option className='text-xs' value={''}>Select Month</option>
                 {monthName.map((month, key) => {
                   return <option value={month.value}>{month.name}</option>;
                 })}
               </select>
+              </div>
+                </div>
+              </section>
             </div>
             {pm3?.map((data: any, index: number) => {
               const tglFrom = convertTimeStampToDate(data.tgl_approve_from);
@@ -224,9 +230,10 @@ function Eksekusi() {
                           <p className="text-[#00AF09] font-bold">{tglFrom}</p>
                           <p className="text-[#00AF09] font-bold">{tglTo}</p>
                         </div>
-                        <p className="">
-                          {data.inspector != null ? data.inspector.nama : '-'}
-                        </p>
+                        
+                        <div className="flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">
+                        {data.inspector != null ? data.inspector.nama : '-'}
+                        </div>
 
                         <div className="w-full flex justify-end px-3">
                           {data.id_inspector == me?.id ? (

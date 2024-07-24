@@ -144,7 +144,7 @@ function Pm3() {
 
       {!isMobile && (
         <main className='overflow-x-scroll'>
-          <div className='bg-white w-full pb-5'>
+          <div className='bg-white w-full mb-5 rounded-md'>
             <MyCalendar />
           </div>
           <div className='w-2 h-full '>
@@ -202,7 +202,7 @@ function Pm3() {
                         <div className="flex flex-col justify-center">
                           <p className="">{tglPermintaan}</p>
                         </div>
-                        <div className="flex flex-col justify-center">
+                        <div className="flex flex-col justify-center text-[#DE8500]">
                           <p className="">
                             {data.tgl_request_from != null
                               ? data.tgl_request_from
@@ -351,8 +351,8 @@ function Pm3() {
                                       />
                                     </div>
                                     <div className="pt-5">
-                                      <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                        KIRIM PERMINTAAN
+                                      <button onClick={() => closeModalRequest()} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                       SIMPAN SEMENTARA
                                       </button>
                                     </div>
                                   </div>
