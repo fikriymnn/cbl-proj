@@ -2,15 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import UserOne from '../../images/user/user-01.png';
-import axios from "axios";
+import axios from 'axios';
+import Bel from '../../images/icon/bel.svg';
 
 import { useNavigate } from 'react-router-dom';
+// import { useCookies } from 'react-cookie';
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const trigger = useRef<any>(null);
   const dropdown = useRef<any>(null);
+
+  const [notif, setNotif] = useState(false);
 
   const [user, setUser] = useState<any>(null);
 
@@ -23,12 +27,13 @@ const DropdownUser = () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_LINK}/me`, {
         withCredentials: true,
+        // headers: {
+        //   Authorization: `Bearer ${cookies.access_token}`,
+        // },
       });
-      // if (res.data.success == false) {
-      //   navigate("/auth/login");
-      // }
+
       setUser(res.data);
-      console.log(res.data)
+      console.log(res.data);
     } catch (error: any) {
       console.log(error.response);
     }
@@ -40,14 +45,46 @@ const DropdownUser = () => {
         `${import.meta.env.VITE_API_LINK}/logout`,
         {
           withCredentials: true,
-        }
+        },
       );
 
-      alert("logout success");
-      navigate("/auth/login");
+      alert('logout success');
+      navigate('/auth/login');
     } catch (error: any) {
       alert(error.msg);
-      console.log(error)
+      console.log(error);
+    }
+  }
+
+  async function readAllNotif() {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_LINK}/notification/readAll`,
+        {
+          withCredentials: true,
+        },
+      );
+
+      getUser();
+    } catch (error: any) {
+      alert(error.msg);
+      console.log(error);
+    }
+  }
+
+  async function deleteAllNotif(userId: number) {
+    try {
+      const response = await axios.delete(
+        `${import.meta.env.VITE_API_LINK}/notification/deleteAll/${userId}`,
+        {
+          withCredentials: true,
+        },
+      );
+
+      getUser();
+    } catch (error: any) {
+      alert(error.msg);
+      console.log(error);
     }
   }
 
@@ -77,32 +114,170 @@ const DropdownUser = () => {
     return () => document.removeEventListener('keydown', keyHandler);
   });
 
+  function convertDatetimeToDate(datetime: any) {
+    const dateObject = new Date(datetime);
+    const day = dateObject.getDate().toString().padStart(2, '0'); // Ensure two-digit day
+    const month = (dateObject.getMonth() + 1).toString(); // Adjust for zero-based month
+    const year = dateObject.getFullYear();
+    const monthName = getMonthName(month);
+
+    return `${year}/${monthName}/${day}  `; // Example format (YYYY-MM-DD)
+  }
+
+  function getMonthName(monthString: string) {
+    const months = [
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
+    ];
+
+    const monthNumber = parseInt(monthString);
+
+    if (monthNumber < 1 || monthNumber > 12) {
+      return 'Bulan tidak valid';
+    } else {
+      return months[monthNumber - 1];
+    }
+  }
+
+  const unreadNotif = user?.notifications.filter(
+    (item: any) => item.status === 'unread',
+  );
+
   return (
     <div className="relative">
-      <Link
-        ref={trigger}
-        onClick={() => setDropdownOpen(!dropdownOpen)}
-        className="flex items-center gap-4"
-        to="#"
-      >
-        <span className="hidden text-right lg:block">
+      <div className="flex items-center gap-4">
+        <span className="block ">
           <span className="block text-sm font-medium text-black dark:text-white">
             {user == null ? (
-              <><div className="w-full h-7 text-blue-700 text-xl font-semibold">
-
-              </div></>
+              <>
+                <div className="w-full h-7 text-blue-700 text-xl font-semibold"></div>
+              </>
             ) : (
-              <p className="w-full h-7 text-blue-700 text-xl font-semibold">
-                {user.nama}
-              </p>
+              <>
+                {notif == true && (
+                  <>
+                    <div
+                      onFocus={() => setNotif(true)}
+                      onBlur={() => setNotif(false)}
+                      className={`absolute right-0 mt-10 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${notif === true ? 'block' : 'hidden'
+                        }`}
+                    >
+                      <div className="flex flex-col ">
+                        <p className="text-xs font-bold text-primary p-2">
+                          Notifikasi
+                        </p>
+                        {user?.notifications.length > 0 ? (
+                          <div className="flex flex-row justify-between">
+                            <button
+                              onClick={readAllNotif}
+                              className="text-xs font-bold text-primary p-2"
+                            >
+                              Read All
+                            </button>
+                            <button
+                              onClick={() => deleteAllNotif(user?.id)}
+                              className="text-xs font-bold text-danger p-2"
+                            >
+                              delete All
+                            </button>
+                          </div>
+                        ) : null}
+
+                        {user?.notifications.map((data: any, index: number) => {
+                          const date = convertDatetimeToDate(data.createdAt);
+                          return (
+                            <>
+                              {data.status == 'unread' ? (
+                                <div className=" bg-blue-200 p-2">
+                                  <p className="text-[9px] text-[#ACACAC] font-semibold">
+                                    {date}
+                                  </p>
+                                  <p className="text-xs font-bold text-primary">
+                                    {data.subject}
+                                  </p>
+                                  {/* <div className="flex justify-between text-[9px] text-primary">
+                                  <p>Kode: JK1-AA05</p>
+                                  <p>Mesin: JK100</p>
+                                </div> */}
+                                </div>
+                              ) : (
+                                <div className=" border-t text-[#ACACAC] p-2">
+                                  <p className="text-[9px] font-semibold">
+                                    {date}
+                                  </p>
+                                  <p className="text-xs font-bold ">
+                                    {data.subject}
+                                  </p>
+                                  {/* <div className="flex justify-between text-[9px] ">
+                                      <p>Kode: JK1-AA05</p>
+                                      <p>Mesin: JK100</p>
+                                    </div> */}
+                                </div>
+                              )}
+                            </>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                )}
+                <div className="flex gap-2">
+                  {unreadNotif?.length > 0 ? (
+                    <div className="absolute rounded-full h-3 w-3 bg-red-600 z-1"></div>
+                  ) : null}
+
+                  <img
+                    onClick={() => setNotif(!notif)}
+                    src={Bel}
+                    alt=""
+                    className="z-9"
+                  />
+
+                  <Link
+                    ref={trigger}
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                    to="#"
+                    className="flex gap-2 justify-center items-center"
+                  >
+                    <p className="w-full h-7 text-blue-700 text-xl font-semibold">
+                      {user.nama}
+                    </p>
+                    <svg
+                      className=" fill-current block"
+                      width="12"
+                      height="8"
+                      viewBox="0 0 12 8"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M0.410765 0.910734C0.736202 0.585297 1.26384 0.585297 1.58928 0.910734L6.00002 5.32148L10.4108 0.910734C10.7362 0.585297 11.2638 0.585297 11.5893 0.910734C11.9147 1.23617 11.9147 1.76381 11.5893 2.08924L6.58928 7.08924C6.26384 7.41468 5.7362 7.41468 5.41077 7.08924L0.410765 2.08924C0.0853277 1.76381 0.0853277 1.23617 0.410765 0.910734Z"
+                        fill=""
+                      />
+                    </svg>
+                  </Link>
+                </div>
+              </>
             )}
           </span>
 
           <span className="block text-xs">
             {user == null ? (
-              <><div className="w-full h-7 text-blue-700 text-xl font-semibold">
-
-              </div></>
+              <>
+                <div className="w-full h-7 text-blue-700 text-xl font-semibold"></div>
+              </>
             ) : (
               <p className="w-full h-7 text-blue-700 text- font-normal">
                 {user.role}
@@ -110,34 +285,14 @@ const DropdownUser = () => {
             )}
           </span>
         </span>
-
-        {/* <span className="h-12 w-12 rounded-full">
-          <img src={UserOne} alt="User" />
-        </span> */}
-
-        <svg
-          className="hidden fill-current sm:block"
-          width="12"
-          height="8"
-          viewBox="0 0 12 8"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M0.410765 0.910734C0.736202 0.585297 1.26384 0.585297 1.58928 0.910734L6.00002 5.32148L10.4108 0.910734C10.7362 0.585297 11.2638 0.585297 11.5893 0.910734C11.9147 1.23617 11.9147 1.76381 11.5893 2.08924L6.58928 7.08924C6.26384 7.41468 5.7362 7.41468 5.41077 7.08924L0.410765 2.08924C0.0853277 1.76381 0.0853277 1.23617 0.410765 0.910734Z"
-            fill=""
-          />
-        </svg>
-      </Link>
+      </div>
 
       {/* <!-- Dropdown Start --> */}
       <div
         ref={dropdown}
         onFocus={() => setDropdownOpen(true)}
         onBlur={() => setDropdownOpen(false)}
-        className={`absolute right-0 mt-4 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${dropdownOpen === true ? 'block' : 'hidden'
+        className={`absolute right-0 flex w-62.5 flex-col rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark ${dropdownOpen === true ? 'block' : 'hidden'
           }`}
       >
         <ul className="flex flex-col gap-5 border-b border-stroke px-6 py-7.5 dark:border-strokedark">
@@ -213,7 +368,10 @@ const DropdownUser = () => {
             </Link>
           </li>
         </ul>
-        <button onClick={logout} className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base">
+        <button
+          onClick={logout}
+          className="flex items-center gap-3.5 px-6 py-4 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
+        >
           <svg
             className="fill-current"
             width="22"

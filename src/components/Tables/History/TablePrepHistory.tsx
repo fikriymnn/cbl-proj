@@ -145,17 +145,7 @@ const TablePrepHistory = () => {
                                     >
                                         DETAIL
                                     </button>
-                                    {showModal1 && (
-                                        <Modal title="Incoming Maintenance Ticket"
-                                            isOpen={showModal1}
-                                            onClose={closeModal1}
-                                            ticketCode={'CTR03591'}
-                                            prepName={'GMC Ink 229'}
-                                            incDate={'28 May, 2024 06:37AM'}
-                                            prepCode={'3.2'} >
-                                            <p></p>
-                                        </Modal>
-                                    )}
+
 
                                 </div>
 

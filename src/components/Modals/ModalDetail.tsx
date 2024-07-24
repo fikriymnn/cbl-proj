@@ -176,8 +176,6 @@ const ModalDetail = ({ children, isOpen, onClose, kendala, machineName, tgl, jam
                     {isMobile && (
                         <>
 
-
-
                             <div className="flex  w-full mt-2 rounded-md border border-stroke px-2 py-2">
 
 
@@ -251,6 +249,7 @@ const ModalDetail = ({ children, isOpen, onClose, kendala, machineName, tgl, jam
                 </div>
 
                 <button
+                title="button"
                     type="button"
                     onClick={onClose}
                     className="absolute top-auto right-auto bottom-3 left-auto transform translate-x-1/2 translate-y-1/2 text-gray-400 focus:outline-none"

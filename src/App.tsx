@@ -13,7 +13,7 @@ import Machine from './pages/Maintenance/Machine';
 import Preparation from './pages/Maintenance/Preparation';
 import MAN from './pages/Maintenance/MAN';
 import Material from './pages/Maintenance/Material';
-import MaintenanceQC from './pages/QualityControl/maintenanceQC';
+import MaintenanceQC from './pages/QualityControl/validatenverify';
 import HistoryMtc from './pages/History/Maintenance';
 
 import MasterData from './pages/MasterData/Master';
@@ -26,10 +26,57 @@ import Pm2Form from './pages/inspection/pm2/Pm2Form';
 import Pm3Form from './pages/inspection/pm3/Pm3Form';
 import Pm3 from './pages/inspection/pm3/Pm3';
 import OS3 from './pages/inspection/os3/Os3';
-import Preventive from './pages/inspection/os3/Preventive';
-import KPI from './pages/Maintenance/KPI';
+
+import KPI from './pages/Maintenance/KPI/KPI';
 import MasterSparepart from './pages/MasterData/MasterSparepart';
 import MasterAnalisis from './pages/MasterData/MasterAnalisis';
+import MasterPM1 from './pages/MasterData/MasterPM1';
+import MasterPM1Check from './pages/MasterData/MasterPM1Check';
+import MasterPM1TambahInspection from './pages/MasterData/MasterPM1TambahInspection';
+import Preventive from './pages/inspection/os3/Preventive';
+import HistoriPage from './pages/inspection/histori/HistoriPage';
+import KPIForm from './pages/Maintenance/KPI/KPIForm';
+import KPIInput from './pages/Maintenance/KPI/KPIInput';
+import MasterPM2 from './pages/MasterData/MasterPM2';
+import PM2Checklist from './components/Tables/MasterData/PM2/PM2Checklist';
+import MasterPM2Check from './pages/MasterData/MasterPM2Check';
+import MasterPM2TambahInspection from './pages/MasterData/MasterPM2TambahInspection';
+import MasterKPI from './pages/MasterData/MasterKPI';
+import MasterKPIForm from './pages/MasterData/MasterKPIForm';
+import Sparepart from './pages/sparepart/submitOpname';
+import MasterUsers from './pages/MasterData/MasterUsers';
+import MasterRole from './pages/MasterData/MasterRole';
+import Adjustment from './pages/sparepart/adjustment';
+import HistoriOpname from './pages/sparepart/crumb/historiOpname';
+import CrumbSparepart from './pages/sparepart/crumb/header';
+import MainOpname from './pages/sparepart/crumb/main';
+import MasterMonitoring from './pages/MasterData/MasterMonitoring';
+import SpbService from './pages/Maintenance/SPB/spbService';
+
+import Stockmaster from './pages/sparepart/stockmaster/stockmaster';
+import AddStock from './pages/sparepart/stockmaster/addStock';
+import MonitoringSparepart from './pages/sparepart/monitoringSparepart/monitoringSparepart';
+import AddStockLifetimes from './pages/sparepart/monitoringSparepart/addStock';
+import SubmitOpname from './pages/sparepart/submitOpname';
+import ProjectMtc from './components/Tables/Maintenance/projectMtc';
+
+import MonitoringService from './pages/sparepart/monitoringService/monitoringService';
+import AddStockService from './pages/sparepart/monitoringService/addStock';
+import TabsPm from './pages/inspection/pm3/TabsPm';
+import Pm3page from './pages/inspection/pm3/Pm3page';
+import Qualityinspection from './pages/QualityControl/QualityInspection';
+import IncomingInspection from './components/Tables/QualityControl/QualityInspection/IncomingInspection';
+import IncomingIns from './pages/QualityControl/Incomingins';
+import ProsesPotong from './pages/QualityControl/Prosespotong/Prosespotong';
+import PotongJadi from './components/Tables/QualityControl/QualityInspection/ProsesPotong/potongbahan';
+import PotongBahan from './components/Tables/QualityControl/QualityInspection/ProsesPotong/potongbahan';
+import PotongBahanPage from './pages/QualityControl/Prosespotong/potongBahanpage';
+import PotongJadiPage from './pages/QualityControl/Prosespotong/potongJadiPage';
+import ProsesCetak from './pages/QualityControl/ProsesCetak/ProsesCetak';
+import IncomingList from './pages/QualityControl/DaftarIncoming';
+import MasterPM3 from './pages/MasterData/MasterPM3';
+import MasterPM3Check from './pages/MasterData/MasterPM3Check';
+import MasterPM3TambahInspection from './pages/MasterData/MasterPM3TambahInspection';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -54,7 +101,7 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
 
-              <ECommerce />
+              <Login />
             </>
           }
         />
@@ -67,8 +114,72 @@ function App() {
             </>
           }
         />
+
         <Route
-          path="/maintenance/inspection/pm_1_form"
+          path="/maintenance/sparepart/stockmaster_sparepart"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Stockmaster />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepart/opname/submitOpname"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <SubmitOpname />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepart/stockmaster_sparepart/addStock"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <AddStock />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepart/stockmaster_service/addStock"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <AddStockService />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepart/monitoringSparepart"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MonitoringSparepart />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepart/monitoringService"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MonitoringService />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepart/monitoringSparepart/addStockLifetime"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <AddStockLifetimes />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/inspection/pm_1_form/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -77,7 +188,7 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/inspection/pm_2_form"
+          path="/maintenance/inspection/pm_2_form/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -86,11 +197,47 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/inspection/pm_3_form"
+          path="/maintenance/Stock_opname"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Sparepart />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepart/opname/adjustment"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <Adjustment />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/sparepart/opname/histori"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <MainOpname />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/inspection/pm_3_form/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
               <Pm3Form />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/KPI/Form/Input"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <KPIInput />
             </>
           }
         />
@@ -101,6 +248,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <Machine />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/projectMtc"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProjectMtc />
               </ProtectedRoute>
             </>
           }
@@ -133,7 +291,7 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <Pm3 />
+                <Pm3page />
               </ProtectedRoute>
             </>
           }
@@ -145,6 +303,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <Preventive />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/inspection/histori"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoriPage />
               </ProtectedRoute>
             </>
           }
@@ -172,12 +341,12 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/material"
+          path="/maintenance/sparepart"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <Material />
+                <Sparepart />
               </ProtectedRoute>
             </>
           }
@@ -193,14 +362,103 @@ function App() {
             </>
           }
         />
+        <Route
+          path="maintenance/spb"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <SpbService />
+              </ProtectedRoute>
+            </>
+          }
+        />
 
         <Route
-          path="/quality_control/mtc"
+          path="/qc/validatenverify"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MaintenanceQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <Qualityinspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/list"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingList />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/list/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingIns />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/qc/potong"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesPotong />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/cetak"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesCetak />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/potong/potongbahan"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongBahanPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/potong/potongjadi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongJadiPage />
               </ProtectedRoute>
             </>
           }
@@ -215,7 +473,6 @@ function App() {
               </ProtectedRoute>
             </>
           }
-
         />
         <Route
           path="/masterdata/machine"
@@ -224,6 +481,28 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterData />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterUsers"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterUsers />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterRole"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterRole />
               </ProtectedRoute>
             </>
           }
@@ -251,11 +530,154 @@ function App() {
           }
         />
         <Route
+          path="/masterdata/mastermonitoring"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterMonitoring />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterpm1"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM1 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterpm2"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM2 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterpm3"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM3 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/masterdata/masterpm1/pm1checklist/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM1Check />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/masterdata/masterpm2/pm2checklist/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM2Check />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterpm3/pm3checklist/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM3Check />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterpm1/pm1checklist/addinspection/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM1TambahInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterpm2/pm2checklist/addinspection/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM2TambahInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterpm3/pm3checklist/addinspection/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM3TambahInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/auth/login"
           element={
             <>
               <PageTitle title="PT CBL" />
               <Login />
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterkpi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterKPI />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterkpi/form"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterKPIForm />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/KPIForm"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <KPIForm />
             </>
           }
         />

@@ -12,6 +12,7 @@ import TableThree from '../TableThree';
 import TableIncomingMaintenance from './TableIncomingMaintenance';
 import TableOS from './TableOS';
 import HistoriOS2 from './History';
+import TableService from './TableService';
 
 
 interface TabPanelProps {
@@ -115,7 +116,6 @@ export default function MachineFullWidthTabs() {
         }}>
             <AppBar position="static" className=''>
                 <ThemeProvider theme={theme}>
-
                     <Tabs
                         value={value}
                         onChange={handleChange}
@@ -126,45 +126,30 @@ export default function MachineFullWidthTabs() {
                                 height: '4px'
                             }
                         }}
-
                         textColor="inherit"
                         variant="standard"
                         aria-label="full width tabs example"
                         className='bg-white text-[#00499F] font-semibold mb-2 '
-
                     >
                         <Tab label="Incoming" {...a11yProps(0)} className='' />
                         <Tab label="OS 2" {...a11yProps(1)} />
-                        <Tab label="Histori" {...a11yProps(2)} />
-                        {/* <Tab label="OS 3" {...a11yProps(2)} /> */}
-                        {/* <Tab label={<Typography variant='h1'>OS 4</Typography>} /> */}
+                        <Tab label="Service" {...a11yProps(2)} />
+                        <Tab label="Histori" {...a11yProps(3)} />
                     </Tabs>
                 </ThemeProvider>
             </AppBar>
-            {/* <SwipeableViews
-        axis={theme.direction === 'rtl' ? 'x-reverse' : 'x'}
-        index={value}
-        onChangeIndex={handleChangeIndex}
-      > */}
             <TabPanel value={value} index={0} dir={theme.direction}>
-
                 <TableIncomingMaintenance />
-
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
-
-                {/* <TableOS2 /> */}
                 <TableOS />
-
-
             </TabPanel>
             <TabPanel value={value} index={2} dir={theme.direction}>
-
-
-                <HistoriOS2 />
-
+                <TableService />
             </TabPanel>
-            {/* </SwipeableViews> */}
+            <TabPanel value={value} index={3} dir={theme.direction}>
+                <HistoriOS2 />
+            </TabPanel>
         </Box>
     );
 }

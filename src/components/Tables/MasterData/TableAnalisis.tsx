@@ -2,6 +2,8 @@ import axios from 'axios';
 import { MasterAnalisis, MasterMachine } from '../../../types/master';
 import { useEffect, useState } from 'react';
 import Filter from '../../../images/icon/filter.svg';
+import ModalEditAnalisisMaster from '../../Modals/ModalEditAnalisisMaster';
+
 
 const brandData: MasterAnalisis[] = [
     {
@@ -60,6 +62,19 @@ const TableAnalisis = () => {
             console.log(error.data.msg);
         }
     }
+    const [showEdit, setShowEdit] = useState<any>([]);
+    const openEdit = (i: any) => {
+        const onchangeVal: any = [...showEdit];
+        onchangeVal[i] = true;
+
+        setShowEdit(onchangeVal);
+    };
+    const closeEdit = (i: any) => {
+        const onchangeVal: any = [...showEdit];
+        onchangeVal[i] = false;
+
+        setShowEdit(onchangeVal);
+    };
     return (
         <div className="rounded-xl border border-stroke bg-white pt-4 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
 
@@ -145,9 +160,18 @@ const TableAnalisis = () => {
                                             </div>
 
                                             <div className="flex items-center w-4/12 justify-end p-2.5 gap-2 pr-10">
-                                                <button className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                <button onClick={() => openEdit(i)} className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                     EDIT
                                                 </button>
+                                                {showEdit[i] == true && (
+                                                    <ModalEditAnalisisMaster
+                                                        children={undefined}
+                                                        isOpen={showEdit[i]}
+                                                        onClose={() => closeEdit(i)}
+                                                        idAnalisis={data.id}
+                                                        data={data}
+                                                    />
+                                                )}
                                                 <button className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                     DELETE
                                                 </button>
@@ -219,9 +243,18 @@ const TableAnalisis = () => {
 
                                         </div>
                                         <div className="flex items-start w-full justify-start p-2.5 gap-2 border-b border-stroke dark:border-strokedark">
-                                            <button className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                            <button onClick={() => openEdit(i)} className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                 EDIT
                                             </button>
+                                            {showEdit[i] == true && (
+                                                <ModalEditAnalisisMaster
+                                                    children={undefined}
+                                                    isOpen={showEdit[i]}
+                                                    onClose={() => closeEdit(i)}
+                                                    idAnalisis={data.id}
+                                                    data={data}
+                                                />
+                                            )}
                                             <button className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                 DELETE
                                             </button>
