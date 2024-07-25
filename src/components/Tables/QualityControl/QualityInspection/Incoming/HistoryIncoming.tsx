@@ -52,7 +52,40 @@ function HistoryIncoming() {
             console.log(error.data.msg);
         }
     }
+    function formatElapsedTime(seconds: number): string {
+        // Ensure seconds is non-negative
+        seconds = Math.max(0, seconds);
 
+        const hours = Math.floor(seconds / 3600);
+        const remainingSeconds = seconds % 3600;
+
+        const minutes = Math.floor(remainingSeconds / 60);
+        const remainingSecondsAfterMinutes = remainingSeconds % 60;
+
+        // Use template literals and conditional operators for formatting
+        let formattedTime = '';
+        if (hours > 0) {
+            formattedTime += `${hours} Jam :`; // Add hours if present
+        }
+        if (hours > 0 || minutes > 0) { // Only add minutes if hours are present or minutes are non-zero
+            formattedTime += `${minutes.toString().padStart(2, '0')} Menit : `;
+        }
+        formattedTime += remainingSecondsAfterMinutes.toString().padStart(2, '0');
+
+        return formattedTime;
+    }
+    function convertDatetimeToDate(datetime: any) {
+        const dateObject = new Date(datetime);
+        const day = dateObject.getDate().toString().padStart(2, '0'); // Ensure two-digit day
+        const month = (dateObject.getMonth() + 1).toString().padStart(2, '0'); // Adjust for zero-based month
+        const year = dateObject.getFullYear();
+        const hours = dateObject.getHours().toString().padStart(2, '0');
+        const minutes = dateObject.getMinutes().toString().padStart(2, '0');
+
+        return `${year}/${month}/${day} ${hours}:${minutes}`; // Example format (YYYY-MM-DD)
+    }
+    const waktuMulai = convertDatetimeToDate(incoming != null && incoming?.waktu_mulai);
+    const waktuSelesai = convertDatetimeToDate(incoming != null && incoming?.waktu_selesai);
 
     return (
         <>
@@ -160,9 +193,30 @@ function HistoryIncoming() {
 
 
                             </div>
-                            <div className={`flex flex-col h-full w-full items-center gap-2  py-4 col-span-2 uppercase font-semibold text-lg bg-[#F6FAFF] ${incoming?.verifikasi == 'Diterima' ? 'text-green-500' : 'text-red-500'}`}>
-
-                                {incoming?.verifikasi}
+                            <div className={`flex flex-col h-full w-full  gap-2  py-4 col-span-2  font-semibold  bg-[#F6FAFF]`}>
+                                <p className={` uppercase font-semibold text-lg bg-[#F6FAFF] ${incoming?.verifikasi == 'Diterima' ? 'text-green-500' : 'text-red-500'}`}>
+                                    {incoming?.verifikasi}
+                                </p>
+                                <div className='text-sm gap-1 flex flex-col'>
+                                    <p>
+                                        Waktu Mulai :
+                                    </p>
+                                    <p>
+                                        {waktuMulai}
+                                    </p>
+                                    <p>
+                                        Waktu Selesai :
+                                    </p>
+                                    <p>
+                                        {waktuSelesai}
+                                    </p>
+                                    <p>
+                                        Time :
+                                    </p>
+                                    <p>
+                                        {formatElapsedTime(incoming?.lama_pengerjaan)} Detik
+                                    </p>
+                                </div>
 
                             </div>
                         </div>
@@ -648,7 +702,7 @@ function HistoryIncoming() {
                                 <div className='flex justify-between  col-span-3'>
                                     <div className='flex flex-col  w-[60%]'>
 
-                                        <div className='flex flex-col gap-1'>
+                                        <div className='flex flex-col gap-1 font-semibold text-sm'>
                                             <p>
                                                 {incoming?.inspeksi_bahan_result[5]?.hasil}
                                             </p>

@@ -1685,7 +1685,7 @@ function IncomingInspection() {
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <div className='flex flex-col gap-1'>
+                                                                <div className='flex flex-col gap-1 font-semibold  text-sm'>
                                                                     <p>
                                                                         {incoming?.inspeksi_bahan_result[5]?.hasil}
                                                                     </p>
@@ -2773,7 +2773,7 @@ function IncomingInspection() {
                                             <div className='flex justify-between  col-span-3'>
                                                 <div className='flex flex-col  w-[60%]'>
 
-                                                    <div className='flex flex-col gap-1'>
+                                                    <div className='flex flex-col gap-1 font-semibold  text-sm'>
                                                         <p>
                                                             {incoming?.inspeksi_bahan_result[5]?.hasil}
                                                         </p>
