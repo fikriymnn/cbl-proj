@@ -36,7 +36,7 @@ function Pm3() {
 
   const closeModalRequest = () => setShowModal22(null);
 
-  const [pm3, setPm3] = useState<any>();
+  const [pm3, setPm3] = useState<any>([]);
 
   useEffect(() => {
     getPM3();
@@ -118,8 +118,9 @@ function Pm3() {
 
      
         <main >
-          <div className='bg-white w-full mb-5 rounded-md '>
+          <div className='bg-white w-full mb-5 rounded-md p-3'>
             <MyCalendar data={pm3}/>
+            
           </div>
           <div className='w-2 h-full '>
 
@@ -133,17 +134,17 @@ function Pm3() {
               <div className='w-2 h-full '>
 
               </div>
-              <section className='grid grid-cols-5 w-full py-4  font-semibold text-[14px]'>
+              <section className='grid md:grid-cols-4 grid-cols-3 w-full py-4  font-semibold text-[14px]'>
 
 
                 <p className=''>Nama Mesin</p>
 
 
-                <p>Tanggal Permintaan</p>
+                <p className='md:flex hidden '>Tanggal Permintaan</p>
 
                 <p>Jadwal Diajukan</p>
 
-                <p>Jadwal Terverifikasi</p>
+                
 
                 <div className="w-[125px]">{''}</div>
               </section>
@@ -170,12 +171,12 @@ function Pm3() {
                     ></div>
 
                     <div className=" w-full h-full flex flex-col justify-center relative">
-                      <div className="ps-7 w-full grid grid-cols-5">
+                      <div className="ps-7 w-full grid md:grid-cols-4 grid-cols-3">
                         <div className="flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">
                           <p className="">{data.nama_mesin}</p>
                         </div>
 
-                        <div className="flex flex-col justify-center">
+                        <div className="md:flex flex-col justify-center hidden">
                           <p className="">{tglPermintaan}</p>
                         </div>
                         <div className="flex flex-col justify-center text-[#DE8500]">
@@ -190,7 +191,7 @@ function Pm3() {
                               : '-'}
                           </p>
                         </div>
-                        <div className="flex flex-col justify-center">
+                        {/* <div className="flex flex-col justify-center">
                           <p className="text-[#00AF09] font-bold">
                             {data.tgl_approve_from != null
                               ? data.tgl_approve_from
@@ -201,9 +202,9 @@ function Pm3() {
                               ? data.tgl_approve_to
                               : '-'}
                           </p>
-                        </div>
+                        </div> */}
 
-                        <div>
+                        <div className='flex justify-center'>
                           <>
                             <div
                               className={`cursor-pointer uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center `} // Dynamic class assignment

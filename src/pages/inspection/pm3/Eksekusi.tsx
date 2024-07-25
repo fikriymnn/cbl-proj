@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import ModalPM3Schedule from '../../../components/Modals/ModalPM3Schedule';
 import axios from 'axios';
 import convertTimeStampToDate from '../../../utils/convertDate';
+import MyCalendar from '../../../components/Modals/Master/PM3/calender';
 const brandData = [
   {
     name: 'R700',
@@ -110,10 +111,12 @@ function Eksekusi() {
   const openModal22 = () => setShowModal22(true);
   const closeModal22 = () => setShowModal22(false);
 
-  const [pm3, setPm3] = useState<any>();
+  const [pm3, setPm3] = useState<any>([]);
+  const [pm3Calender, setPm3Calender] = useState<any>([]);
 
   useEffect(() => {
     getPM3(null);
+    getPM3Calender();
     getMe();
   }, []);
 
@@ -131,6 +134,23 @@ function Eksekusi() {
       });
 
       setPm3(res.data);
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
+  async function getPM3Calender() {
+    const url = `${import.meta.env.VITE_API_LINK}/pm3`;
+   
+    try {
+      const res = await axios.get(url, {
+        params: {
+          year: true
+        },
+        withCredentials: true,
+      });
+
+      setPm3Calender(res.data);
       console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
@@ -169,6 +189,21 @@ function Eksekusi() {
     <>
      
         <main className="overflow-x-scroll">
+        <div className='bg-white w-full mb-5 rounded-md p-3'>
+       
+            <MyCalendar data={pm3Calender}/>
+            <div className='flex flex-col gap-3 font-semibold text-black pt-3'>
+              
+              <div className=' flex gap-3 items-center'>
+                <div className='bg-red-500 w-5 h-5'></div>
+                <p>JADWAL DIMINTA</p>
+              </div>
+              <div className=' flex gap-3 items-center'>
+                <div className='bg-blue-500 w-5 h-5'></div>
+                <p>JADWAL TERVERIFIKASI</p>
+              </div>
+              </div>
+          </div>
           <div className="min-w-[700px] bg-white rounded-xl">
             <div className=" ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]">
               <div className="w-2 h-full "></div>

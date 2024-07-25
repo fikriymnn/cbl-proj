@@ -58,26 +58,22 @@ const CustomToolbar: React.FC<ToolbarProps> = ({
 const MyCalendar = ({data}:{data:any}) => {
   // Example array of events with color property
   
-  const [events, setEvents] = useState<CalendarEvent[]>([
-    {
-      start: parseDate("2024-07-22"),
-      end: parseDate("2024-07-22", true),
-      title: "R700",
-      color: "lightcoral",
-    },
-    // {
-    //   start: parseDate("2024-07-24"),
-    //   end: parseDate("2024-08-4", true),
-    //   title: "SM70",
-    //   color: "lightblue",
-    // },
-    // {
-    //   start: parseDate("2024-07-26"),
-    //   end: parseDate("2024-07-27", true),
-    //   title: "2-Day Mark",
-    //   color: "lightgreen",
-    // },
-  ]);
+
+
+  const events = [
+    ...data?.map((data:any, index:number) => ({
+      start: parseDate(data.tgl_request_from, true),
+      end: parseDate(data.tgl_request_to, true),
+      title: data.nama_mesin,
+      color: "red",
+    })),
+    ...data?.map((data:any, index:number) => ({
+      start: parseDate(data.tgl_approve_from, true),
+      end: parseDate(data.tgl_approve_to, true),
+      title: data.nama_mesin,
+      color: "blue",
+    }))
+  ];
 
   // Function to set custom styles for each event
   const eventPropGetter = (event: CalendarEvent) => ({
@@ -95,21 +91,12 @@ const MyCalendar = ({data}:{data:any}) => {
     
       <Calendar
         localizer={localizer}
-        events={data?.map((data:any,index:number)=>{
-          return {
-            start: parseDate(data.tgl_request_from, true),
-      end: parseDate(data.tgl_request_to, true),
-      title: data.nama_mesin,
-      color: "lightcoral",
-      
-          }
-        })
-      }
+        events={events}
         startAccessor="start"
         endAccessor="end"
         style={{ height: 500 }}
         eventPropGetter={eventPropGetter} // Apply custom styles
-        components={{ toolbar: CustomToolbar }} // Use custom toolbar
+       // components={{ toolbar: CustomToolbar }} // Use custom toolbar
       />
     </div>
   );

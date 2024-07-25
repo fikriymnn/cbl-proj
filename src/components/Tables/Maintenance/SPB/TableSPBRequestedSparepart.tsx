@@ -245,7 +245,7 @@ function TableSPBRequestedSparepart() {
             </div>
             <div className="flex bg-white mt-2 py-2">
               <p className="w-10 px-3 text-stone-500 text-xs font-bold ">No</p>
-              <div className="grid  grid-cols-8 w-full">
+              <div className="grid  grid-cols-9 w-full">
                 <div className="flex gap-2">
                   <p className="text-stone-500 text-xs font-bold ">No. SPB</p>
                   <img className="w-2" src={Polygon6} alt="" />
@@ -280,7 +280,7 @@ function TableSPBRequestedSparepart() {
                   </p>
                   <img className="w-2" src={Polygon6} alt="" />
                 </div>
-                <div className="flex gap-2 justify-end pr-8">
+                <div className="flex gap-2 pr-8">
                   <p className="text-stone-500 text-xs font-bold ">Action</p>
                 </div>
               </div>
@@ -298,7 +298,7 @@ function TableSPBRequestedSparepart() {
                         <p className="w-10 px-3 text-stone-500 pt-2 text-xs font-bold  items-center">
                           {index + 1}
                         </p>
-                        <div className="grid  grid-cols-8 w-full  items-center">
+                        <div className="grid  grid-cols-9 w-full  items-center">
                           <div className="flex gap-2">
                             <p className="text-neutral-500 text-sm font-light line-clamp-1 ">
                               {data.no_spb}
