@@ -6,33 +6,7 @@ import ModalPM3Schedule from '../../../components/Modals/ModalPM3Schedule';
 import MyCalendar from '../../../components/Modals/Master/PM3/calender';
 import axios from 'axios';
 import convertTimeStampToDate from '../../../utils/convertDate';
-const brandData = [
-  {
-    name: 'R700',
-    tgl_permintaan: '25 Jun 2024',
-    tgl_diajukan: '4 Jul 2024',
-    tgl_terverifikasi: '6 Jul 2024',
-    partOf: 'printing',
-  },
-  {
-    name: 'SM 74',
-    tgl_permintaan: '25 Jun 2024',
-    tgl_diajukan: '4 Jul 2024',
-    tgl_terverifikasi: '6 Jul 2024',
-  },
-  {
-    name: 'GTO',
-    tgl_permintaan: '25 Jun 2024',
-    tgl_diajukan: '4 Jul 2024',
-    tgl_terverifikasi: '6 Jul 2024',
-  },
-  {
-    name: 'ITOH',
-    tgl_permintaan: '25 Jun 2024',
-    tgl_diajukan: '4 Jul 2024',
-    tgl_terverifikasi: '6 Jul 2024',
-  },
-];
+
 function Pm3() {
   const [isMobile, setIsMobile] = useState(false);
 
@@ -62,7 +36,7 @@ function Pm3() {
 
   const closeModalRequest = () => setShowModal22(null);
 
-  const [pm3, setPm3] = useState<any>();
+  const [pm3, setPm3] = useState<any>([]);
 
   useEffect(() => {
     getPM3();
@@ -142,14 +116,17 @@ function Pm3() {
     <>
 
 
-      {!isMobile && (
-        <main className='overflow-x-scroll'>
-          <div className='bg-white w-full pb-5'>
-            <MyCalendar />
+     
+        <main >
+          <div className='bg-white w-full mb-5 rounded-md p-3'>
+            <MyCalendar data={pm3}/>
+            
           </div>
           <div className='w-2 h-full '>
 
           </div>
+          <div className='overflow-x-scroll'>
+
           <div className='min-w-[700px] bg-white rounded-xl'>
 
 
@@ -157,17 +134,17 @@ function Pm3() {
               <div className='w-2 h-full '>
 
               </div>
-              <section className='grid grid-cols-5 w-full py-4  font-semibold text-[14px]'>
+              <section className='grid md:grid-cols-4 grid-cols-3 w-full py-4  font-semibold text-[14px]'>
 
 
                 <p className=''>Nama Mesin</p>
 
 
-                <p>Tanggal Permintaan</p>
+                <p className='md:flex hidden '>Tanggal Permintaan</p>
 
                 <p>Jadwal Diajukan</p>
 
-                <p>Jadwal Terverifikasi</p>
+                
 
                 <div className="w-[125px]">{''}</div>
               </section>
@@ -194,15 +171,15 @@ function Pm3() {
                     ></div>
 
                     <div className=" w-full h-full flex flex-col justify-center relative">
-                      <div className="ps-7 w-full grid grid-cols-5">
+                      <div className="ps-7 w-full grid md:grid-cols-4 grid-cols-3">
                         <div className="flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">
                           <p className="">{data.nama_mesin}</p>
                         </div>
 
-                        <div className="flex flex-col justify-center">
+                        <div className="md:flex flex-col justify-center hidden">
                           <p className="">{tglPermintaan}</p>
                         </div>
-                        <div className="flex flex-col justify-center">
+                        <div className="flex flex-col justify-center text-[#DE8500]">
                           <p className="">
                             {data.tgl_request_from != null
                               ? data.tgl_request_from
@@ -214,7 +191,7 @@ function Pm3() {
                               : '-'}
                           </p>
                         </div>
-                        <div className="flex flex-col justify-center">
+                        {/* <div className="flex flex-col justify-center">
                           <p className="text-[#00AF09] font-bold">
                             {data.tgl_approve_from != null
                               ? data.tgl_approve_from
@@ -225,9 +202,9 @@ function Pm3() {
                               ? data.tgl_approve_to
                               : '-'}
                           </p>
-                        </div>
+                        </div> */}
 
-                        <div>
+                        <div className='flex justify-center'>
                           <>
                             <div
                               className={`cursor-pointer uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center `} // Dynamic class assignment
@@ -351,8 +328,8 @@ function Pm3() {
                                       />
                                     </div>
                                     <div className="pt-5">
-                                      <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                        KIRIM PERMINTAAN
+                                      <button onClick={() => closeModalRequest()} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
+                                       SIMPAN SEMENTARA
                                       </button>
                                     </div>
                                   </div>
@@ -386,65 +363,10 @@ function Pm3() {
               </div>
             </section>
           </div>
-        </main>
-      )}
-      {isMobile && (
-        <main className="overflow-x-scroll">
-          <div className="w-full bg-white rounded-xl">
-            <p className="text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
-              01 April 2024
-            </p>
-            <div className=" ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]">
-              <div className="w-2 h-full "></div>
-              <section className="grid grid-cols-1 w-full py-4  font-semibold text-[14px]">
-                <p className="">Nama Mesin</p>
-
-                <div className="w-[125px]">{''}</div>
-              </section>
-            </div>
-            {brandData.map((brand, key) => (
-              <>
-                <section
-                  key={key}
-                  className=" flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black"
-                >
-                  <div
-                    className={`w-2 h-full sticky left-0 z-20 ${brand.partOf == 'printing'
-                      ? 'bg-green-600'
-                      : brand.partOf == 'water base'
-                        ? 'bg-yellow-600'
-                        : brand.partOf == 'pond'
-                          ? 'bg-violet-900'
-                          : brand.partOf == 'finishing'
-                            ? 'bg-red-900'
-                            : ''
-                      }`}
-                  ></div>
-
-                  <div className=" w-full h-full flex flex-col justify-center relative">
-                    <div className="ps-7 w-full grid grid-cols-2">
-                      <div className="flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">
-                        <p className="">{brand.name}</p>
-                      </div>
-
-                      <div className="flex w-full justify-center">
-                        <>
-                          <div
-                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center `} // Dynamic class assignment
-                          //onClick={}
-                          >
-                            REQUEST
-                          </div>
-                        </>
-                      </div>
-                    </div>
-                  </div>
-                </section>
-              </>
-            ))}
           </div>
         </main>
-      )}
+     
+     
     </>
   );
 }

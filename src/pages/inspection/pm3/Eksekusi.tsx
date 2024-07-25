@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import ModalPM3Schedule from '../../../components/Modals/ModalPM3Schedule';
 import axios from 'axios';
 import convertTimeStampToDate from '../../../utils/convertDate';
+import MyCalendar from '../../../components/Modals/Master/PM3/calender';
 const brandData = [
   {
     name: 'R700',
@@ -110,10 +111,12 @@ function Eksekusi() {
   const openModal22 = () => setShowModal22(true);
   const closeModal22 = () => setShowModal22(false);
 
-  const [pm3, setPm3] = useState<any>();
+  const [pm3, setPm3] = useState<any>([]);
+  const [pm3Calender, setPm3Calender] = useState<any>([]);
 
   useEffect(() => {
     getPM3(null);
+    getPM3Calender();
     getMe();
   }, []);
 
@@ -131,6 +134,23 @@ function Eksekusi() {
       });
 
       setPm3(res.data);
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
+  async function getPM3Calender() {
+    const url = `${import.meta.env.VITE_API_LINK}/pm3`;
+   
+    try {
+      const res = await axios.get(url, {
+        params: {
+          year: true
+        },
+        withCredentials: true,
+      });
+
+      setPm3Calender(res.data);
       console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
@@ -167,29 +187,50 @@ function Eksekusi() {
 
   return (
     <>
-      {!isMobile && (
+     
         <main className="overflow-x-scroll">
+        <div className='bg-white w-full mb-5 rounded-md p-3'>
+       
+            <MyCalendar data={pm3Calender}/>
+            <div className='flex flex-col gap-3 font-semibold text-black pt-3'>
+              
+              <div className=' flex gap-3 items-center'>
+                <div className='bg-red-500 w-5 h-5'></div>
+                <p>JADWAL DIMINTA</p>
+              </div>
+              <div className=' flex gap-3 items-center'>
+                <div className='bg-blue-500 w-5 h-5'></div>
+                <p>JADWAL TERVERIFIKASI</p>
+              </div>
+              </div>
+          </div>
           <div className="min-w-[700px] bg-white rounded-xl">
             <div className=" ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]">
               <div className="w-2 h-full "></div>
-              <section className="grid grid-cols-3 justify-between w-full py-4  font-semibold text-[14px]">
+              <section className="grid grid-cols-4  justify-between w-full py-4  font-semibold text-[14px]">
                 <p className="">Nama Mesin</p>
 
                 <p>Jadwal</p>
-                <p>Inspector</p>
+                <p className='md:flex hidden'>Inspector</p>
 
-                <div className="w-[125px]">{''}</div>
-              </section>
+                <div className="mx-5 flex justify-end">
+                  
+              <div className='my-auto '>
+
               <select
+              className='border rounded-sm py-1'
                 onChange={(e) => {
                   getPM3(e.target.value);
                 }}
               >
-                <option value={''}>SELECT MONTH</option>
+                <option className='text-xs' value={''}>Select Month</option>
                 {monthName.map((month, key) => {
                   return <option value={month.value}>{month.name}</option>;
                 })}
               </select>
+              </div>
+                </div>
+              </section>
             </div>
             {pm3?.map((data: any, index: number) => {
               const tglFrom = convertTimeStampToDate(data.tgl_approve_from);
@@ -220,13 +261,14 @@ function Eksekusi() {
                           <p className="">{data.nama_mesin}</p>
                         </div>
 
-                        <div className="flex flex-col justify-center">
+                        <div className="flex flex-col justify-center  ">
                           <p className="text-[#00AF09] font-bold">{tglFrom}</p>
                           <p className="text-[#00AF09] font-bold">{tglTo}</p>
                         </div>
-                        <p className="">
-                          {data.inspector != null ? data.inspector.nama : '-'}
-                        </p>
+                        
+                        <div className="md:flex hidden flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">
+                        {data.inspector != null ? data.inspector.nama : '-'}
+                        </div>
 
                         <div className="w-full flex justify-end px-3">
                           {data.id_inspector == me?.id ? (
@@ -268,8 +310,8 @@ function Eksekusi() {
             })}
           </div>
         </main>
-      )}
-      {isMobile && (
+     
+      {/* {isMobile && (
         <main className="overflow-x-scroll">
           <div className="w-full bg-white rounded-xl">
             <p className="text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
@@ -326,7 +368,7 @@ function Eksekusi() {
             ))}
           </div>
         </main>
-      )}
+      )} */}
     </>
   );
 }
