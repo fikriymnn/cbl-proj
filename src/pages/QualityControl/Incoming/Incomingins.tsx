@@ -1,7 +1,7 @@
 
 
-import IncomingInspection from '../../components/Tables/QualityControl/QualityInspection/IncomingInspection';
-import DefaultLayout from '../../layout/DefaultLayout';
+import IncomingInspection from '../../../components/Tables/QualityControl/QualityInspection/Incoming/IncomingInspection';
+import DefaultLayout from '../../../layout/DefaultLayout';
 
 const IncomingIns = () => {
 

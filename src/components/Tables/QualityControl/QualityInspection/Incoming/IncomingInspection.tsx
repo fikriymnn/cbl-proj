@@ -72,10 +72,23 @@ function IncomingInspection() {
 
         if (!start) {
             // Check if start time is available
-            console.error('Task tidak bisa diberhentikan: Belum Start.');
+            alert('Task tidak bisa diberhentikan: Belum Start.');
             return; // Exit function if no start time
         }
+        if (incoming?.inspeksi_bahan_result[0].send == false ||
+            incoming?.inspeksi_bahan_result[1].send == false ||
+            incoming?.inspeksi_bahan_result[2].send == false ||
+            incoming?.inspeksi_bahan_result[3].send == false ||
+            incoming?.inspeksi_bahan_result[4].send == false ||
+            incoming?.inspeksi_bahan_result[5].send == false ||
+            incoming?.inspeksi_bahan_result[6].send == false ||
+            incoming?.inspeksi_bahan_result[7].send == false ||
+            incoming?.inspeksi_bahan_result[8].send == false
+        ) {
 
+            alert('Checksheet belum terisi semua');
+            return;
+        }
         const stopTime = new Date();
         const timestamp = convertDatetimeToDate(new Date());
         const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahan/stop/${id}`;
@@ -140,13 +153,10 @@ function IncomingInspection() {
 
         if (no_lot == null || hasil_rumus == null || verifikasi == null) {
             // Check if start time is available
-            console.error('Data Tidak Lengkap');
+            alert('Data Tidak Lengkap');
             return; // Exit function if no start time
         }
-        console.log(id)
-        console.log(no_lot)
-        console.log(hasil_rumus)
-        console.log(verifikasi)
+
 
         const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahan/update/${id}`;
         try {

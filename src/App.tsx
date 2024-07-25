@@ -65,18 +65,19 @@ import AddStockService from './pages/sparepart/monitoringService/addStock';
 import TabsPm from './pages/inspection/pm3/TabsPm';
 import Pm3page from './pages/inspection/pm3/Pm3page';
 import Qualityinspection from './pages/QualityControl/QualityInspection';
-import IncomingInspection from './components/Tables/QualityControl/QualityInspection/IncomingInspection';
-import IncomingIns from './pages/QualityControl/Incomingins';
+import IncomingInspection from './components/Tables/QualityControl/QualityInspection/Incoming/IncomingInspection';
+import IncomingIns from './pages/QualityControl/Incoming/Incomingins';
 import ProsesPotong from './pages/QualityControl/Prosespotong/Prosespotong';
 import PotongJadi from './components/Tables/QualityControl/QualityInspection/ProsesPotong/potongbahan';
 import PotongBahan from './components/Tables/QualityControl/QualityInspection/ProsesPotong/potongbahan';
 import PotongBahanPage from './pages/QualityControl/Prosespotong/potongBahanpage';
 import PotongJadiPage from './pages/QualityControl/Prosespotong/potongJadiPage';
 import ProsesCetak from './pages/QualityControl/ProsesCetak/ProsesCetak';
-import IncomingList from './pages/QualityControl/DaftarIncoming';
+import IncomingList from './pages/QualityControl/Incoming/DaftarIncoming';
 import MasterPM3 from './pages/MasterData/MasterPM3';
 import MasterPM3Check from './pages/MasterData/MasterPM3Check';
 import MasterPM3TambahInspection from './pages/MasterData/MasterPM3TambahInspection';
+import HistoryIns from './pages/QualityControl/Incoming/HistoryIns';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -418,7 +419,17 @@ function App() {
             </>
           }
         />
-
+        <Route
+          path="/qc/qualityinspection/history/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoryIns />
+              </ProtectedRoute>
+            </>
+          }
+        />
         <Route
           path="/qc/potong"
           element={
