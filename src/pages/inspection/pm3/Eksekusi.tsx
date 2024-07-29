@@ -207,10 +207,11 @@ function Eksekusi() {
           <div className="min-w-[700px] bg-white rounded-xl">
             <div className=" ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]">
               <div className="w-2 h-full "></div>
-              <section className="grid grid-cols-4  justify-between w-full py-4  font-semibold text-[14px]">
+              <section className="grid grid-cols-5  justify-between w-full py-4  font-semibold text-[14px]">
                 <p className="">Nama Mesin</p>
 
-                <p>Jadwal</p>
+                <p>Jadwal diminta</p>
+                <p>Jadwal terverifikasi</p>
                 <p className='md:flex hidden'>Inspector</p>
 
                 <div className="mx-5 flex justify-end">
@@ -233,8 +234,10 @@ function Eksekusi() {
               </section>
             </div>
             {pm3?.map((data: any, index: number) => {
-              const tglFrom = convertTimeStampToDate(data.tgl_approve_from);
-              const tglTo = convertTimeStampToDate(data.tgl_approve_to);
+              const tglFrom = convertTimeStampToDate(data.tgl_request_from);
+              const tglTo = convertTimeStampToDate(data.tgl_request_to);
+              const tglFromVerif = convertTimeStampToDate(data.tgl_approve_from);
+              const tglToVerif = convertTimeStampToDate(data.tgl_approve_to);
               return (
                 <>
                   <section
@@ -256,14 +259,18 @@ function Eksekusi() {
                     ></div>
 
                     <div className=" w-full h-full flex flex-col justify-center relative">
-                      <div className="ps-7 w-full grid grid-cols-4 justify-between">
+                      <div className="ps-7 w-full grid grid-cols-5 justify-between">
                         <div className="flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">
                           <p className="">{data.nama_mesin}</p>
                         </div>
 
                         <div className="flex flex-col justify-center  ">
-                          <p className="text-[#00AF09] font-bold">{tglFrom}</p>
-                          <p className="text-[#00AF09] font-bold">{tglTo}</p>
+                          <p className="text-red-500 font-bold">{tglFrom}</p>
+                          <p className="text-red-500 font-bold">{tglTo}</p>
+                        </div>
+                        <div className="flex flex-col justify-center  ">
+                          <p className="text-blue-500 font-bold">{tglFromVerif}</p>
+                          <p className="text-blue-500 font-bold">{tglToVerif}</p>
                         </div>
                         
                         <div className="md:flex hidden flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">

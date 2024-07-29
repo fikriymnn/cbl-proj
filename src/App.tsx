@@ -77,6 +77,7 @@ import IncomingList from './pages/QualityControl/DaftarIncoming';
 import MasterPM3 from './pages/MasterData/MasterPM3';
 import MasterPM3Check from './pages/MasterData/MasterPM3Check';
 import MasterPM3TambahInspection from './pages/MasterData/MasterPM3TambahInspection';
+import ProfilSetting from './pages/profilSetting';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -111,6 +112,15 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <ECommerce />
+            </>
+          }
+        />
+        <Route
+          path="/profil_setting"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProfilSetting/>
             </>
           }
         />
