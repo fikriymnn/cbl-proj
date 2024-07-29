@@ -78,6 +78,10 @@ import MasterPM3 from './pages/MasterData/MasterPM3';
 import MasterPM3Check from './pages/MasterData/MasterPM3Check';
 import MasterPM3TambahInspection from './pages/MasterData/MasterPM3TambahInspection';
 import HistoryIns from './pages/QualityControl/Incoming/HistoryIns';
+import PotongBahan1 from './pages/QualityControl/Prosespotong/PotongBahan1';
+import PotongJadi1 from './pages/QualityControl/Prosespotong/PotongJadi1';
+import ListBahan1 from './pages/QualityControl/Prosespotong/ListBahan';
+import ListBahan2 from './pages/QualityControl/Prosespotong/ListBahan2';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -442,6 +446,50 @@ function App() {
           }
         />
         <Route
+          path="/qc/potongbahan"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongBahan1 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/potongbahan/listbahanitoh"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ListBahan1 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/potongbahan/listbahanpolar"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ListBahan2 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/potongjadi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongJadi1 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/qc/cetak"
           element={
             <>
@@ -453,7 +501,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/potong/potongbahan"
+          path="/qc/potong/potongbahan/:id"
           element={
             <>
               <PageTitle title="PT CBL" />

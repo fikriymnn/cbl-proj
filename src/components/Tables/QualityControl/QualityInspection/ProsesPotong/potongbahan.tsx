@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
 
@@ -28,33 +28,33 @@ function PotongBahan() {
         };
     }, []);
 
+    const { id } = useParams();
+
     const [showModal4, setShowModal4] = useState(false);
 
     const openModal4 = () => setShowModal4(true);
 
-    const [pm1, setPm1] = useState<any>();
+    const [incoming, setIncoming] = useState<any>();
 
-    // useEffect(() => {
-    //     getPM1();
-    //     getMe();
-    // }, []);
+    useEffect(() => {
 
-    // async function getPM1() {
-    //     const url = `${import.meta.env.VITE_API_LINK}/pm1`;
-    //     try {
-    //         const res = await axios.get(url, {
-    //             params: {
-    //                 tgl: currentDate
-    //             },
-    //             withCredentials: true,
-    //         });
+        getInspection();
+    }, []);
 
-    //         setPm1(res.data);
-    //         console.log(res.data);
-    //     } catch (error: any) {
-    //         console.log(error.data.msg);
-    //     }
-    // }
+    async function getInspection() {
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPotong/${id}`;
+
+        try {
+            const res = await axios.get(url, {
+
+                withCredentials: true,
+            });
+            console.log(res.data.data)
+            setIncoming(res.data.data);
+        } catch (error: any) {
+            console.log(error.data.msg);
+        }
+    }
 
     // const [me, setMe] = useState<any>();
 
@@ -191,24 +191,22 @@ function PotongBahan() {
                             </div>
                             <div className='grid grid-rows-6 gap-1 col-span-2 px-10 py-4'>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : {jo.tgl}
+                                    : {incoming?.tanggal}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : {jo.no_jo}
+                                    : {incoming?.no_io}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : {jo.no_io}
+                                    : {incoming?.no_jo}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : <select>
-                                        <option>Pilih Mesin</option>
-                                    </select>
+                                    : {incoming?.mesin}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : {jo.operator}
+                                    : {incoming?.operator}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : {jo.Shift}
+                                    : {incoming?.shift}
                                 </label>
                             </div>
 
@@ -226,13 +224,13 @@ function PotongBahan() {
                             </div>
                             <div className='grid grid-rows-6  gap-1 col-span-2 justify-between px-10 py-4'>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : {jo.jam}
+                                    : {incoming?.jam}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : {jo.item}
+                                    : {incoming?.item}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : {jo.inspector}
+                                    : {incoming?.inspector}
                                 </label>
                             </div>
                             <div className='flex flex-col w-full items-center gap-4 px-10 py-4 col-span-2  bg-[#F6FAFF]'>

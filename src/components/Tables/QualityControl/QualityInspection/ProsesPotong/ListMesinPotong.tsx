@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Button } from '@mui/material';
 
 
-function ProsesPotong2() {
+function ListMesinPotongBahan() {
     const [isMobile, setIsMobile] = useState(false);
     const kosong: any = []
     const today = new Date();
@@ -144,12 +144,12 @@ function ProsesPotong2() {
     const inspection = [
         {
 
-            nama: 'POTONG BAHAN',
+            nama: 'POLAR',
 
         },
         {
 
-            nama: 'POTONG JADI',
+            nama: 'ITOH',
 
         },
     ];
@@ -181,9 +181,9 @@ function ProsesPotong2() {
                                             </div>
                                         </div>
                                         <div className='justify-end pr-4'>
-                                            {data.nama == 'POTONG BAHAN' ? (
+                                            {data.nama == 'POLAR' ? (
                                                 <>
-                                                    <Link to={`/qc/potongbahan`}>
+                                                    <Link to={`/qc/potongbahan/listbahanpolar`}>
 
                                                         <button
                                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
@@ -193,9 +193,10 @@ function ProsesPotong2() {
                                                         </button>
                                                     </Link>
                                                 </>
-                                            ) : data.nama == 'POTONG JADI' ? (
+                                            ) : data.nama == 'ITOH' ? (
                                                 <>
-                                                    <Link to={`/qc/potongjadi`}>
+                                                    <Link to={`/qc/potongbahan/listbahanitoh`}>
+
                                                         <button
                                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                         >
@@ -222,4 +223,4 @@ function ProsesPotong2() {
     )
 }
 
-export default ProsesPotong2
+export default ListMesinPotongBahan
