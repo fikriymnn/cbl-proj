@@ -849,7 +849,13 @@ function TableOS3() {
                                   <img className="" src={X} alt="" />
                                 </div>
                                 <p className="text-xs  px-1 font-light  rounded-xl flex justify-center items-center">
-                                  {data.point_pm1.hasil}
+                                  {data.sumber == 'pm1'
+                                    ? data.point_pm1.hasil
+                                    : data.sumber == 'pm2'
+                                    ? data.point_pm2.hasil
+                                    : data.sumber == 'pm3'
+                                    ? data.point_pm3.hasil
+                                    : ''}
                                 </p>
                               </div>
                             </div>
@@ -896,7 +902,7 @@ function TableOS3() {
                               <div>
                                 <div>
                                   <button
-                                  title='button'
+                                    title="button"
                                     className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
                                     onClick={() => handleClick(i)}
                                   >
@@ -980,7 +986,7 @@ function TableOS3() {
                               </div>
                               <div>
                                 <button
-                                title='button'
+                                  title="button"
                                   onClick={() => handleClickDetail(i)}
                                   className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
                                 >
@@ -1246,7 +1252,7 @@ function TableOS3() {
                               <div>
                                 <div>
                                   <button
-                                  title='button'
+                                    title="button"
                                     className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
                                     onClick={() => handleClick(i)}
                                   >
@@ -1330,7 +1336,7 @@ function TableOS3() {
                               </div>
                               <div>
                                 <button
-                                title='button'
+                                  title="button"
                                   onClick={() => handleClickDetail(i)}
                                   className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
                                 >
