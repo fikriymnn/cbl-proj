@@ -180,11 +180,7 @@ function Pm2Form() {
     const [isLoading, setIsLoading] = useState(false)
 
     async function donePm2(id: any) {
-        if (!catatan
-            // || !userKA || !userLeader || !userSuper
-        ) {
-            alert('Data Tidak Lengkap');
-        }
+       
         const url = `${import.meta.env.VITE_API_LINK}/pm2/done/${id}`;
         try {
             setIsLoading(true);
