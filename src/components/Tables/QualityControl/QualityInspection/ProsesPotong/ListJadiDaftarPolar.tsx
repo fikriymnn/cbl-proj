@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Button } from '@mui/material';
 
 
-function ListBahanDaftarItoh() {
+function ListJadiDaftarPolar() {
     const [isMobile, setIsMobile] = useState(false);
     const kosong: any = []
     const today = new Date();
@@ -37,7 +37,7 @@ function ListBahanDaftarItoh() {
     }, []);
 
     async function getInspection() {
-        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPotong?status=incoming&jenis_potong=potong bahan&mesin=ITOH`;
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPotong?status=incoming&jenis_potong=potong jadi&mesin=POLAR`;
         try {
             const res = await axios.get(url, {
 
@@ -109,7 +109,7 @@ function ListBahanDaftarItoh() {
 
                                         <div className='flex flex-col  justify-end col-span-4 items-end'>
 
-                                            <Link to={`/qc/potong/potongbahan/${data.id}`}>
+                                            <Link to={`/qc/potong/potongjadi/${data.id}`}>
 
                                                 <button
                                                     className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
@@ -132,4 +132,4 @@ function ListBahanDaftarItoh() {
     )
 }
 
-export default ListBahanDaftarItoh
+export default ListJadiDaftarPolar

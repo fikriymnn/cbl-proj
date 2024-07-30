@@ -82,6 +82,8 @@ import PotongBahan1 from './pages/QualityControl/Prosespotong/PotongBahan1';
 import PotongJadi1 from './pages/QualityControl/Prosespotong/PotongJadi1';
 import ListBahan1 from './pages/QualityControl/Prosespotong/ListBahan';
 import ListBahan2 from './pages/QualityControl/Prosespotong/ListBahan2';
+import ListJadiItoh from './pages/QualityControl/Prosespotong/ListJadiItoh';
+import ListJadiPolar from './pages/QualityControl/Prosespotong/ListJadiPolar';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -457,6 +459,28 @@ function App() {
           }
         />
         <Route
+          path="/qc/potong/listjadiitoh"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ListJadiItoh />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/potong/listjadipolar"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ListJadiPolar />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/qc/potongbahan/listbahanitoh"
           element={
             <>
@@ -512,7 +536,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/potong/potongjadi"
+          path="/qc/potong/potongjadi/:id"
           element={
             <>
               <PageTitle title="PT CBL" />

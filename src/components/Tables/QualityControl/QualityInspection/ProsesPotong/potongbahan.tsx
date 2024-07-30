@@ -30,10 +30,6 @@ function PotongBahan() {
 
     const { id } = useParams();
 
-    const [showModal4, setShowModal4] = useState(false);
-
-    const openModal4 = () => setShowModal4(true);
-
     const [incoming, setIncoming] = useState<any>();
 
     useEffect(() => {
@@ -55,105 +51,167 @@ function PotongBahan() {
             console.log(error.data.msg);
         }
     }
-
-    // const [me, setMe] = useState<any>();
-
-    // async function getMe() {
-    //     const url = `${import.meta.env.VITE_API_LINK}/me`;
-    //     try {
-    //         const res = await axios.get(url, {
-    //             withCredentials: true,
-    //         });
-
-    //         setMe(res.data);
-    //     } catch (error: any) {
-    //         console.log(error.data.msg);
-    //     }
-    // }
-
-    // async function inspectPM1(id: any) {
-    //     const url = `${import.meta.env.VITE_API_LINK}/pm1/response/${id}`;
-    //     try {
-    //         const res = await axios.get(url,
-    //             {
-
-    //                 withCredentials: true,
-    //             }
-    //         );
-    //         console.log(res.data);
-    //         navigate(`/maintenance/inspection/pm_1_form/${id}`)
-    //     } catch (error: any) {
-    //         console.log(error);
-    //     }
-    // }
+    async function startTask(id: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPotong/start/${id}`;
 
 
+        try {
+            const res = await axios.get(url, {
+                withCredentials: true,
+            });
 
-    // async function createPM1() {
-    //     const url = `${import.meta.env.VITE_API_LINK}/pm1/create`;
-    //     try {
-    //         const res = await axios.post(url, {
-    //             withCredentials: true,
-    //         });
+            getInspection();
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
 
+    async function stopTask(id: any, start: any) {
+        if (!start) {
+            // Check if start time is available
+            alert('Task tidak bisa diberhentikan: Belum Start.');
+            return; // Exit function if no start time
+        }
+        if (incoming?.inspeksi_potong_result[0].send == false ||
 
-    //         getPM1()
-    //     } catch (error: any) {
-    //         console.log(error);
-    //     }
-    // }
+            incoming?.inspeksi_potong_result[1].send == false ||
 
-    const [showConfirm, setShowConfirm] = useState<any>([]);
+            incoming?.inspeksi_potong_result[2].send == false ||
 
-    const openConfirm = (i: any) => {
-        const onchangeVal: any = [...showConfirm];
-        onchangeVal[i] = true
-        setShowConfirm(onchangeVal);
-    };
+            incoming?.inspeksi_potong_result[3].send == false
 
-    const closeConfirm = (i: any) => {
-        const onchangeVal: any = [...showConfirm];
-        onchangeVal[i] = false;
-        setShowConfirm(onchangeVal);
-    };
+        ) {
+
+            alert('Checksheet belum terisi semua');
+            return;
+        }
+
+        const stopTime = new Date();
+        const timestamp = convertDatetimeToDate(new Date());
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPotong/stop/${id}`;
+
+        try {
+            const elapsedSeconds = await calculateElapsedTime(start, stopTime);
+
+            // **Save total seconds elsewhere**
+            const totalSecondsToSave = elapsedSeconds;
+            // Use totalSecondsToSave for your saving logic (e.g., local storage, separate API)
+
+            // Formatted time can be used for logging if needed
+            const formattedTime = formatElapsedTime(elapsedSeconds);
+
+            console.log(formattedTime);
+
+            const res = await axios.put(
+                url,
+                {
+
+                    lama_pengerjaan: totalSecondsToSave,
+
+                },
+                {
+                    withCredentials: true,
+                },
+            );
+
+            console.log('Succes', timestamp);
+
+            getInspection();
+        } catch (error: any) {
+            console.log(error);
+            alert(error.response.data.msg);
+        }
+
+    }
+    function formatElapsedTime(seconds: number): string {
+        // Ensure seconds is non-negative
+        seconds = Math.max(0, seconds);
+
+        const hours = Math.floor(seconds / 3600);
+        const remainingSeconds = seconds % 3600;
+
+        const minutes = Math.floor(remainingSeconds / 60);
+        const remainingSecondsAfterMinutes = remainingSeconds % 60;
+
+        // Use template literals and conditional operators for formatting
+        let formattedTime = '';
+        if (hours > 0) {
+            formattedTime += `${hours} Jam :`; // Add hours if present
+        }
+        if (hours > 0 || minutes > 0) { // Only add minutes if hours are present or minutes are non-zero
+            formattedTime += `${minutes.toString().padStart(2, '0')} Menit : `;
+        }
+        formattedTime += remainingSecondsAfterMinutes.toString().padStart(2, '0');
+
+        return formattedTime;
+    }
 
     function convertDatetimeToDate(datetime: any) {
         const dateObject = new Date(datetime);
-        const day = dateObject
-            .getDate()
-            .toString()
-            .padStart(2, '0'); // Ensure two-digit day
-        const month = (dateObject.getMonth() + 1)
-            .toString()
-            .padStart(2, '0'); // Adjust for zero-based month
+        const day = dateObject.getDate().toString().padStart(2, '0'); // Ensure two-digit day
+        const month = (dateObject.getMonth() + 1).toString().padStart(2, '0'); // Adjust for zero-based month
         const year = dateObject.getFullYear();
-        const hours = dateObject
-            .getHours()
-            .toString()
-            .padStart(2, '0');
-        const minutes = dateObject
-            .getMinutes()
-            .toString()
-            .padStart(2, '0');
+        const hours = dateObject.getHours().toString().padStart(2, '0');
+        const minutes = dateObject.getMinutes().toString().padStart(2, '0');
 
-        return `${year}/${month}/${day} `; // Example format (YYYY-MM-DD)
+        return `${year}/${month}/${day} ${hours}:${minutes}`; // Example format (YYYY-MM-DD)
+    }
+    function calculateElapsedTime(startTime: any, stopTime: Date) {
+
+        const start = new Date(startTime);
+        const diffInMs = stopTime.getTime() - start.getTime();
+        // Convert milliseconds to your desired unit (minutes, hours)
+        const elapsedTime = Math.round(diffInMs / (1000));
+        console.log(elapsedTime); // Example: minutes
+        return elapsedTime;
+
     }
 
-    const tanggal = convertDatetimeToDate(new Date());
+    const waktuMulaiincoming = convertDatetimeToDate(incoming != null && incoming?.waktu_mulai);
+
+    const waktuSelesaiincoming =
+        incoming != null && incoming?.waktu_selesai != null
+            ? convertDatetimeToDate(incoming?.waktu_selesai)
+            : '-';
 
 
+    async function sumbitChecksheet(id: number) {
 
-    class JO {
-        tgl: string = '8 July 2024'
-        no_jo: string = '00-0000A'
-        no_io: string = '0000-0A'
-        operator: string = 'Mick Fleetwood'
-        Shift: string = 'I'
-        jam: string = '10:32:00'
-        item: string = 'Dus Arkine'
-        inspector: string = 'Cristian Bale'
+        if (incoming?.inspeksi_potong_result[0].hasil_check == null ||
+            incoming?.inspeksi_potong_result[0].keterangan == null ||
+            incoming?.inspeksi_potong_result[1].hasil_check == null ||
+            incoming?.inspeksi_potong_result[1].keterangan == null ||
+            incoming?.inspeksi_potong_result[2].hasil_check == null ||
+            incoming?.inspeksi_potong_result[2].keterangan == null ||
+            incoming?.inspeksi_potong_result[3].hasil_check == null ||
+            incoming?.inspeksi_potong_result[3].keterangan == null
+
+
+        ) {
+
+            alert('Checksheet belum terisi semua');
+            return;
+        }
+
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPotong/done/${id}`;
+        try {
+            const res = await axios.put(url,
+                {
+                    hasil_check: incoming.inspeksi_potong_result
+                }
+                ,
+                {
+
+                    withCredentials: true,
+                });
+            alert("Data Berhasil Di-Update");
+            console.log('succes')
+            getInspection();
+        } catch (error: any) {
+
+            console.log(error);
+        }
     }
-    const jo = new JO();
     return (
         <>
 
@@ -235,48 +293,128 @@ function PotongBahan() {
                             </div>
                             <div className='flex flex-col w-full items-center gap-4 px-10 py-4 col-span-2  bg-[#F6FAFF]'>
                                 <div >
-                                    <p className="md:text-[14px] text-[9px] font-semibold">
-                                        Time : -
 
-                                    </p>
-                                    <>
-                                        <p className='font-bold text-[#DE0000]'>
-                                            Task Belum Dimulai
-                                        </p>
-                                        <button
+                                    {incoming?.waktu_mulai == null &&
+                                        incoming?.waktu_selesai == null && (
+                                            <>
+                                                <div>
+                                                    <p className="md:text-[14px] text-[9px] font-semibold">
+                                                        Time : -
 
-                                            className="flex w-[60%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
-                                        >
-                                            <svg
-                                                width="14"
-                                                height="14"
-                                                viewBox="0 0 14 14"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <path
-                                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                                    fill="white"
-                                                />
-                                            </svg>
-                                        </button>
-                                    </>
-                                    <div className="flex flex-col pt-3">
-                                        <p className="md:text-[14px] text-[9px] font-semibold">
-                                            Upload Foto :
-                                        </p>
+                                                    </p>
+                                                    <>
+                                                        <p className='font-bold text-[#DE0000]'>
+                                                            Task Belum Dimulai
+                                                        </p>
+                                                        <button
+                                                            onClick={() => {
+                                                                startTask(incoming?.id);
+                                                            }}
+                                                            className="flex w-full  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                                        >
+                                                            <svg
+                                                                width="14"
+                                                                height="14"
+                                                                viewBox="0 0 14 14"
+                                                                fill="none"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                            >
+                                                                <path
+                                                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                                                    fill="white"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </>
 
+                                                </div>
+                                            </>
+                                        )
+                                    }
+                                    {incoming?.waktu_mulai != null &&
+                                        incoming?.waktu_selesai == null && (
+                                            <>
+                                                <div>
+                                                    <p className='md:text-[14px] text-[9px] font-semibold'>
+                                                        Waktu Mulai : {waktuMulaiincoming}
+                                                    </p>
+                                                    <p className='md:text-[14px] text-[9px] font-semibold'>
+                                                        Waktu Selesai : {waktuSelesaiincoming}
+                                                    </p>
+                                                    <p className="md:text-[14px] text-[9px] font-semibold">
+                                                        Time : -
 
-                                        <div className="">
-                                            <input
+                                                    </p>
+                                                    <>
+                                                        <p className='font-bold text-[#00B81D]'>
+                                                            Task Sudah Dimulai
+                                                        </p>
+                                                        <button
+                                                            onClick={() => {
+                                                                if (incoming?.waktu_selesai != null) {
+                                                                    alert('sudah di kerjakan');
+                                                                } else if (incoming?.waktu_mulai == null) {
+                                                                    alert('belum mulai');
+                                                                } else {
 
-                                                type="file"
-                                                name=""
-                                                id=""
-                                                className="w-60"
-                                            />
-                                        </div>
-                                    </div>
+                                                                    stopTask(
+                                                                        incoming?.id,
+                                                                        incoming?.waktu_mulai
+                                                                    );
+                                                                }
+                                                            }}
+
+                                                            className="flex w-full  rounded-md bg-[#DE0000] justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                                        >
+                                                            <svg
+                                                                width="14"
+                                                                height="14"
+                                                                viewBox="0 0 14 14"
+                                                                fill="none"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                            >
+                                                                <path
+                                                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                                                    fill="white"
+                                                                />
+                                                            </svg>
+                                                        </button>
+                                                    </>
+
+                                                </div>
+                                            </>
+                                        )
+                                    }
+                                    {incoming?.waktu_mulai != null &&
+                                        incoming?.waktu_selesai != null && (
+                                            <>
+                                                <div className='gap-1 flex flex-col'>
+                                                    <p className='md:text-[14px] text-[9px] font-semibold'>
+                                                        Waktu Mulai :
+                                                    </p>
+                                                    <p className='md:text-[14px] text-[9px] font-semibold text-stone-400'>
+                                                        {waktuMulaiincoming}
+                                                    </p>
+                                                    <p className='md:text-[14px] text-[9px] font-semibold'>
+                                                        Waktu Selesai :
+                                                    </p>
+                                                    <p className='md:text-[14px] text-[9px] font-semibold text-stone-400'>
+                                                        {waktuSelesaiincoming}
+                                                    </p>
+                                                    <p className="md:text-[14px] text-[9px] font-semibold">
+                                                        Time :
+                                                    </p>
+                                                    <p className='md:text-[14px] text-[9px] font-semibold text-stone-400'>
+                                                        {
+                                                            incoming?.lama_pengerjaan != null
+                                                                ? formatElapsedTime(incoming?.lama_pengerjaan)
+                                                                : ''}
+                                                        {" "} Detik
+                                                    </p>
+                                                </div>
+                                            </>
+                                        )
+                                    }
 
 
                                 </div>
@@ -305,145 +443,450 @@ function PotongBahan() {
                             </label>
 
                         </div>
-
-                        {/* =============================Point 1========================== */}
                         <>
-                            <div className='border-b-8 border-[#D8EAFF]'>
-                                <div className='grid grid-cols-8 px-3 py-4 gap-2 items-center'>
-                                    <div className='flex gap-4 col-span-2'>
-                                        <label className='text-neutral-500 text-sm font-semibold'>
-                                            1
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold'>
-                                            Jenis Kertas
-                                        </label>
-                                    </div>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Job Order
-                                    </label>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        <select>
-                                            <option>Select Result</option>
-                                        </select>
-                                    </label>
-                                    <div className='flex flex-col gap-1  w-[50%] col-span-2'>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Sesuai
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Tidak Sesuai
-                                        </label>
-                                    </div>
-                                </div>
+                            {/* =============================================Checksheet Not Start==========================================================*/}
+                            {incoming?.waktu_mulai == null &&
+                                incoming?.waktu_selesai == null && (
+                                    <>
+                                        <div className='flex px-4 py-5'>
+                                            <p className='font-bold text-[#00B81D]'>
+                                                Mulai Task Untuk Memunculkan Checksheet
+                                            </p>
+                                        </div>
 
-                            </div>
+                                    </>
+                                )}
 
+                            {/* =============================================Checksheet Start==========================================================*/}
+                            {incoming?.waktu_mulai != null &&
+                                incoming?.waktu_selesai == null && (
+                                    <>
+                                        {/* =============================Point 1========================== */}
+
+                                        <>
+                                            <div className='border-b-8 border-[#D8EAFF]'>
+                                                <div className='grid grid-cols-8 px-3 py-4 gap-2 items-center'>
+                                                    <div className='flex gap-4 col-span-2'>
+                                                        <label className='text-neutral-500 text-sm font-semibold'>
+                                                            1
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold'>
+                                                            Jenis Kertas
+                                                        </label>
+                                                    </div>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Job Order
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+
+
+                                                        <select onChange={(e) => {
+                                                            let array = [...incoming?.inspeksi_potong_result]
+                                                            array[0].hasil_check = e.target.value
+                                                            setIncoming({ ...incoming, inspeksi_potong_result: array })
+                                                        }}>
+                                                            <option disabled selected> Select Result</option>
+                                                            <option value={'DUPLEX'}>
+                                                                DUPLEX
+                                                            </option>
+                                                            <option value={'IVORY'}>
+                                                                IVORY
+                                                            </option>
+                                                            <option value={'ART PAPER'}>
+                                                                ART PAPER
+                                                            </option>
+                                                            <option value={'HVS'}>
+                                                                HVS
+                                                            </option>
+                                                        </select>
+
+
+                                                    </label>
+                                                    <div className='flex flex-col gap-1  w-[50%] col-span-2'>
+
+                                                        <div>
+                                                            <input
+                                                                onChange={(e) => {
+                                                                    let array = [...incoming?.inspeksi_potong_result]
+                                                                    array[0].keterangan = e.target.value
+                                                                    setIncoming({ ...incoming, inspeksi_potong_result: array })
+                                                                }}
+                                                                type="radio" id="sesuai11" name="sesuai11" value="sesuai" />
+                                                            <label className='pl-2'>Sesuai</label>
+                                                        </div>
+                                                        <div>
+                                                            <input
+                                                                onChange={(e) => {
+                                                                    let array = [...incoming?.inspeksi_potong_result]
+                                                                    array[0].keterangan = e.target.value
+                                                                    setIncoming({ ...incoming, inspeksi_potong_result: array })
+                                                                }}
+                                                                type="radio" id="sesuai12" name="sesuai11" value="tidak sesuai" />
+                                                            <label className='pl-2'>Tidak Sesuai</label>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                        </>
+                                        {/* =============================Point 2========================== */}
+                                        <>
+                                            <div className='border-b-8 border-[#D8EAFF]'>
+                                                <div className='grid grid-cols-8 px-3 py-4 gap-2 items-center'>
+                                                    <div className='flex gap-4 col-span-2'>
+                                                        <label className='text-neutral-500 text-sm font-semibold'>
+                                                            2
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold'>
+                                                            Gramatur
+                                                        </label>
+                                                    </div>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Job Order
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+
+
+                                                        <input
+                                                            onChange={(e) => {
+                                                                let array = [...incoming?.inspeksi_potong_result]
+                                                                array[1].hasil_check = e.target.value
+
+                                                                setIncoming({ ...incoming, inspeksi_potong_result: array })
+                                                            }}
+
+                                                            type='text' className='border-2 border-stroke w-[40%] rounded-sm' />
+
+
+                                                    </label>
+                                                    <div className='flex flex-col gap-1  w-[50%] col-span-2'>
+
+                                                        <div>
+                                                            <input
+                                                                onChange={(e) => {
+                                                                    let array = [...incoming?.inspeksi_potong_result]
+                                                                    array[1].keterangan = e.target.value
+                                                                    setIncoming({ ...incoming, inspeksi_potong_result: array })
+                                                                }}
+                                                                type="radio" id="sesuai21" name="sesuai21" value="sesuai" />
+                                                            <label className='pl-2'>Sesuai</label>
+                                                        </div>
+                                                        <div>
+                                                            <input
+                                                                onChange={(e) => {
+                                                                    let array = [...incoming?.inspeksi_potong_result]
+                                                                    array[1].keterangan = e.target.value
+                                                                    setIncoming({ ...incoming, inspeksi_potong_result: array })
+                                                                }}
+                                                                type="radio" id="sesuai22" name="sesuai21" value="tidak sesuai" />
+                                                            <label className='pl-2'>Tidak Sesuai</label>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                        </>
+                                        {/* =============================Point 3========================== */}
+                                        <>
+                                            <div className='border-b-8 border-[#D8EAFF]'>
+                                                <div className='grid grid-cols-8 px-3 py-4 gap-2 items-center'>
+                                                    <div className='flex gap-4 col-span-2'>
+                                                        <label className='text-neutral-500 text-sm font-semibold'>
+                                                            3
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold'>
+                                                            Ukuran Potong
+                                                        </label>
+                                                    </div>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Job Order
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+
+                                                        <select onChange={(e) => {
+                                                            let array = [...incoming?.inspeksi_potong_result]
+                                                            array[2].hasil_check = e.target.value
+                                                            setIncoming({ ...incoming, inspeksi_potong_result: array })
+                                                        }}>
+                                                            <option disabled selected> Select Result</option>
+                                                            <option value={'PANJANG = 600 MM'}>
+                                                                PANJANG = 600 MM
+                                                            </option>
+                                                            <option value={'LEBAR = 400 MM'}>
+                                                                LEBAR = 400 MM
+                                                            </option>
+
+                                                        </select>
+
+                                                    </label>
+                                                    <div className='flex flex-col gap-1  w-[50%] col-span-2'>
+
+                                                        <div>
+                                                            <input
+                                                                onChange={(e) => {
+                                                                    let array = [...incoming?.inspeksi_potong_result]
+                                                                    array[2].keterangan = e.target.value
+                                                                    setIncoming({ ...incoming, inspeksi_potong_result: array })
+                                                                }}
+                                                                type="radio" id="sesuai31" name="sesuai31" value="sesuai" />
+                                                            <label className='pl-2'>Sesuai</label>
+                                                        </div>
+                                                        <div>
+                                                            <input
+                                                                onChange={(e) => {
+                                                                    let array = [...incoming?.inspeksi_potong_result]
+                                                                    array[2].keterangan = e.target.value
+                                                                    setIncoming({ ...incoming, inspeksi_potong_result: array })
+                                                                }}
+                                                                type="radio" id="sesuai32" name="sesuai31" value="tidak sesuai" />
+                                                            <label className='pl-2'>Tidak Sesuai</label>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                        </>
+                                        {/* =============================Point 4========================== */}
+                                        <>
+                                            <div className='border-b-8 border-[#D8EAFF]'>
+                                                <div className='grid grid-cols-8 px-3 py-4 gap-2 items-center'>
+                                                    <div className='flex gap-4 col-span-2'>
+                                                        <label className='text-neutral-500 text-sm font-semibold'>
+                                                            4
+                                                        </label>
+                                                        <label className='text-neutral-500 text-sm font-semibold'>
+                                                            Arah Serat
+                                                        </label>
+                                                    </div>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        Mounting di BOM
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+
+                                                        <select onChange={(e) => {
+                                                            let array = [...incoming?.inspeksi_potong_result]
+                                                            array[3].hasil_check = e.target.value
+                                                            setIncoming({ ...incoming, inspeksi_potong_result: array })
+                                                        }}>
+                                                            <option disabled selected> Select Result</option>
+                                                            <option value={'PANJANG'}>
+                                                                PANJANG
+                                                            </option>
+                                                            <option value={'PENDEK'}>
+                                                                PENDEK
+                                                            </option>
+
+                                                        </select>
+
+                                                    </label>
+                                                    <div className='flex flex-col gap-1  w-[50%] col-span-2'>
+
+                                                        <div>
+                                                            <input
+                                                                onChange={(e) => {
+                                                                    let array = [...incoming?.inspeksi_potong_result]
+                                                                    array[3].keterangan = e.target.value
+                                                                    setIncoming({ ...incoming, inspeksi_potong_result: array })
+                                                                }}
+                                                                type="radio" id="sesuai41" name="sesuai41" value="sesuai" />
+                                                            <label className='pl-2'>Sesuai</label>
+                                                        </div>
+                                                        <div>
+                                                            <input
+                                                                onChange={(e) => {
+                                                                    let array = [...incoming?.inspeksi_potong_result]
+                                                                    array[3].keterangan = e.target.value
+                                                                    setIncoming({ ...incoming, inspeksi_potong_result: array })
+                                                                }}
+                                                                type="radio" id="sesuai42" name="sesuai41" value="tidak sesuai" />
+                                                            <label className='pl-2'>Tidak Sesuai</label>
+                                                        </div>
+
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                        </>
+                                    </>
+                                )}
                         </>
-                        {/* =============================Point 2========================== */}
-                        <>
-                            <div className='border-b-8 border-[#D8EAFF]'>
-                                <div className='grid grid-cols-8 px-3 py-4 gap-2 items-center'>
-                                    <div className='flex gap-4 col-span-2'>
-                                        <label className='text-neutral-500 text-sm font-semibold'>
-                                            2
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold'>
-                                            Gramatur
-                                        </label>
-                                    </div>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Job Order
-                                    </label>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        <select>
-                                            <option>Select Result</option>
-                                        </select>
-                                    </label>
-                                    <div className='flex flex-col gap-1  w-[50%] col-span-2'>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Sesuai
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Tidak Sesuai
-                                        </label>
-                                    </div>
-                                </div>
+                        {/* =============================================Checksheet STOP==========================================================*/}
+                        {incoming?.waktu_mulai != null &&
+                            incoming?.waktu_selesai != null && (
+                                <>
+                                    {/* =============================Point 1========================== */}
 
-                            </div>
+                                    <>
+                                        <div className='border-b-8 border-[#D8EAFF]'>
+                                            <div className='grid grid-cols-8 px-3 py-4 gap-2 items-center'>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        1
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Jenis Kertas
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Job Order
+                                                </label>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
 
-                        </>
-                        {/* =============================Point 3========================== */}
-                        <>
-                            <div className='border-b-8 border-[#D8EAFF]'>
-                                <div className='grid grid-cols-8 px-3 py-4 gap-2 items-center'>
-                                    <div className='flex gap-4 col-span-2'>
-                                        <label className='text-neutral-500 text-sm font-semibold'>
-                                            3
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold'>
-                                            Ukuran Potong
-                                        </label>
-                                    </div>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Job Order
-                                    </label>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        <input type='text' className='border-2 border-stroke w-[38%] rounded-sm' />
-                                    </label>
-                                    <div className='flex flex-col gap-1  w-[50%] col-span-2'>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Sesuai
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Tidak Sesuai
-                                        </label>
-                                    </div>
-                                </div>
 
-                            </div>
+                                                    {incoming?.inspeksi_potong_result[0].hasil_check}
 
-                        </>
-                        {/* =============================Point 4========================== */}
-                        <>
-                            <div className='border-b-8 border-[#D8EAFF]'>
-                                <div className='grid grid-cols-8 px-3 py-4 gap-2 items-center'>
-                                    <div className='flex gap-4 col-span-2'>
-                                        <label className='text-neutral-500 text-sm font-semibold'>
-                                            4
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold'>
-                                            Arah Serat
-                                        </label>
-                                    </div>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        Mounting di BOM
-                                    </label>
-                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                        <select>
-                                            <option>Select Result</option>
-                                        </select>
-                                    </label>
-                                    <div className='flex flex-col gap-1  w-[50%] col-span-2'>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' />Sesuai
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            <input type='checkbox' className='' />Tidak Sesuai
-                                        </label>
-                                    </div>
-                                </div>
 
-                            </div>
+                                                </label>
+                                                <div className='flex flex-col gap-1  w-[50%] col-span-2'>
 
-                        </>
+                                                    {incoming?.inspeksi_potong_result[0].keterangan}
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                    </>
+                                    {/* =============================Point 2========================== */}
+                                    <>
+                                        <div className='border-b-8 border-[#D8EAFF]'>
+                                            <div className='grid grid-cols-8 px-3 py-4 gap-2 items-center'>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        2
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Gramatur
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Job Order
+                                                </label>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+
+
+                                                    {incoming?.inspeksi_potong_result[1].hasil_check}
+
+
+
+                                                </label>
+                                                <div className='flex flex-col gap-1  w-[50%] col-span-2'>
+
+                                                    {incoming?.inspeksi_potong_result[1].keterangan}
+
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                    </>
+                                    {/* =============================Point 3========================== */}
+                                    <>
+                                        <div className='border-b-8 border-[#D8EAFF]'>
+                                            <div className='grid grid-cols-8 px-3 py-4 gap-2 items-center'>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        3
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Ukuran Potong
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Job Order
+                                                </label>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+
+                                                    {incoming?.inspeksi_potong_result[2].hasil_check}
+
+                                                </label>
+                                                <div className='flex flex-col gap-1  w-[50%] col-span-2'>
+
+                                                    {incoming?.inspeksi_potong_result[2].keterangan}
+
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                    </>
+                                    {/* =============================Point 4========================== */}
+                                    <>
+                                        <div className='border-b-8 border-[#D8EAFF]'>
+                                            <div className='grid grid-cols-8 px-3 py-4 gap-2 items-center'>
+                                                <div className='flex gap-4 col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        4
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                        Arah Serat
+                                                    </label>
+                                                </div>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    Mounting di BOM
+                                                </label>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+
+                                                    {incoming?.inspeksi_potong_result[3].hasil_check}
+
+                                                </label>
+                                                <div className='flex flex-col gap-1  w-[50%] col-span-2'>
+
+                                                    {incoming?.inspeksi_potong_result[3].keterangan}
+
+
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                    </>
+                                </>
+                            )}
 
                         <div className='bg-white flex w-full justify-end px-4 py-4'>
+                            {/* {!incoming?.inspeksi_bahan_result[0]?.send ? (
+                                <>
+                                    <button onClick={() => {
+                                        console.log(incoming)
+                                        sumbitChecksheet(incoming?.id)
+                                    }
+                                    } className='bg-[#0065DE] px-4 py-2 rounded-sm text-center text-white text-xs font-bold'>
+                                        SUBMIT CHECKSHEET
+                                    </button>
+                                </>
+                            ) :
+                                (
+                                    <>
+                                    </>
+                                )} */}
+                            {incoming?.status == 'incoming' ? (
+                                <>
+                                    <button onClick={() => {
 
-                            <button className='bg-[#0065DE] px-4 py-2 rounded-sm text-center text-white text-xs font-bold'>
-                                SUBMIT CHECKSHEET
-                            </button>
+                                        console.log(incoming)
+                                        sumbitChecksheet(incoming?.id)
+                                    }
+                                    } className='bg-[#0065DE] px-4 py-2 rounded-sm text-center text-white text-xs font-bold'>
+                                        SUBMIT CHECKSHEET
+                                    </button>
+                                </>
+                            ) :
+                                (
+                                    <>
+                                    </>
+                                )
+                            }
 
                         </div>
+
+
                     </div>
 
                 </main>
