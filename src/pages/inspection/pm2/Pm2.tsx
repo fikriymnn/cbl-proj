@@ -221,13 +221,14 @@ function Pm2() {
                                                         data.id_inspector == me?.id ? (
                                                             <>
                                                                 {
-                                                                    data.status == "done" ?
+                                                                    data.status == "done" || data.status == "on progres" ?
                                                                         <Link to={`/maintenance/inspection/pm_2_form/${data.id}`}
                                                                             className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
                                                                         >
                                                                             INSPECT
 
                                                                         </Link> :
+                                                                    
                                                                         <button onClick={() => inspectPM2(data.id)}
                                                                             className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
                                                                         >
