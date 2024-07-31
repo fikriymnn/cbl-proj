@@ -30,7 +30,7 @@ const DefaultLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
       {/* <!-- ===== Page Wrapper Start ===== --> */}
       <div className="flex h-screen overflow-hidden">
         {/* <!-- ===== Sidebar Start ===== --> */}
-        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} role={user != null ? user.role : ''} />
+        <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} role={user != null ? user.role : ''} bagian={user != null ? user.bagian : ''} />
         {/* <!-- ===== Sidebar End ===== --> */}
 
         {/* <!-- ===== Content Area Start ===== --> */}

@@ -182,9 +182,8 @@ const ModalEditUser = ({
                   changeTextColor();
                 }}
                 defaultValue={bagian}
-                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                  isOptionSelected ? 'text-black dark:text-white' : ''
-                }`}
+                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
+                  }`}
               >
                 <option
                   value=""
@@ -200,6 +199,12 @@ const ModalEditUser = ({
                 >
                   Maintenance
                 </option>
+                <option
+                  value="quality control"
+                  className="text-body dark:text-bodydark"
+                >
+                  Quality Control
+                </option>
               </select>
               <label className="text-black text-xs font-bold pt-4">ROLE</label>
               <select
@@ -208,9 +213,8 @@ const ModalEditUser = ({
                   changeTextColor();
                 }}
                 defaultValue={role}
-                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                  isOptionSelected ? 'text-black dark:text-white' : ''
-                }`}
+                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
+                  }`}
               >
                 <option
                   value=""
