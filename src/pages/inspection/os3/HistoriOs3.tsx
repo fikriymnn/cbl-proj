@@ -803,7 +803,13 @@ function HistoriOS3() {
                           <div className="flex flex-col  md:gap-5 gap-1 ">
                             <div className="my-auto w-11/12">
                               <p className="text-xs font-light">
-                                {data.nama_kendala}
+                              {data.sumber == 'pm1'
+                                  ? data.point_pm1.inspection_point
+                                  : data.sumber == 'pm2'
+                                  ? data.point_pm2.inspection_point
+                                  : data.sumber == 'pm3'
+                                  ? data.point_pm3.inspection_point
+                                  : ''}
                               </p>
                             </div>
                           </div>
@@ -986,23 +992,16 @@ function HistoriOS3() {
                                             machineName={data.nama_mesin}
                                             tgl={'12/12/24'}
                                             jam={'17.00'}
-                                            namaPemeriksa={
-                                              proses.user_eksekutor.nama
-                                            }
+                                            namaPemeriksa={proses.user_eksekutor.nama}
                                             no={'1'}
                                             idTiket={data.id}
                                             kodeLkh={data.kode_lkh}
-                                            analisisPenyebab={
-                                              `${proses.kode_analisis_mtc}` +
+                                            analisisPenyebab={`${proses.kode_analisis_mtc}` +
                                               ' - ' +
-                                              `${proses.nama_analisis_mtc}`
-                                            }
+                                              `${proses.nama_analisis_mtc}`}
                                             kebutuhanSparepart={'undefined'}
-                                            tipeMaintenance={
-                                              proses.cara_perbaikan
-                                            }
-                                            catatan={proses.note_mtc}
-                                          ></ModalDetailOS3>
+                                            tipeMaintenance={proses.cara_perbaikan}
+                                            catatan={proses.note_mtc} inspection_point={""} acceptance_criteria={undefined} method={undefined} tools={undefined}                                          ></ModalDetailOS3>
                                         )}
                                       </>
                                     );
