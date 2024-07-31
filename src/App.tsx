@@ -442,7 +442,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/potong/potongbahan/historyitoh/:id"
+          path="/qc/qualityinspection/potong/potongbahan/historyitoh/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -453,7 +453,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/potong/potongbahan/historypolar/:id"
+          path="/qc/qualityinspection/potong/potongbahan/historypolar/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -464,7 +464,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/potong/potongjadi/historypolar/:id"
+          path="/qc/qualityinspection/potong/potongjadi/historypolar/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -475,7 +475,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/potong/potongjadi/historyitoh/:id"
+          path="/qc/qualityinspection/potong/potongjadi/historyitoh/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -486,7 +486,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/potong"
+          path="/qc/qualityinspection/potong"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -497,7 +497,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/potongbahan"
+          path="/qc/qualityinspection/potongbahan"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -508,7 +508,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/potong/listjadiitoh"
+          path="/qc/qualityinspection/potong/listjadiitoh"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -519,7 +519,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/potong/listjadipolar"
+          path="/qc/qualityinspection/potong/listjadipolar"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -530,7 +530,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/potongbahan/listbahanitoh"
+          path="/qc/qualityinspection/potongbahan/listbahanitoh"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -541,7 +541,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/potongbahan/listbahanpolar"
+          path="/qc/qualityinspection/potongbahan/listbahanpolar"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -552,7 +552,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/potongjadi"
+          path="/qc/qualityinspection/potongjadi"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -563,7 +563,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/cetak"
+          path="/qc/qualityinspection/cetak"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -574,7 +574,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/potong/potongbahan/:id"
+          path="/qc/qualityinspection/potong/potongbahan/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -585,7 +585,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/potong/potongjadi/:id"
+          path="/qc/qualityinspection/potong/potongjadi/:id"
           element={
             <>
               <PageTitle title="PT CBL" />

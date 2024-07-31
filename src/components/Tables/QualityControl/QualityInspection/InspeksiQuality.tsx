@@ -215,7 +215,7 @@ function InspeksiQuality() {
                                                 </>
                                             ) : data.nama == 'PROSES POTONG' ? (
                                                 <>
-                                                    <Link to={`/qc/potong`}>
+                                                    <Link to={`/qc/qualityinspection/potong`}>
                                                         <button
                                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                         >
@@ -226,7 +226,7 @@ function InspeksiQuality() {
                                                 </>
                                             ) : data.nama == 'PROSES CETAK' ? (
                                                 <>
-                                                    <Link to={`/qc/cetak`}>
+                                                    <Link to={`/qc/qualityinspection/cetak`}>
                                                         <button
                                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                         >

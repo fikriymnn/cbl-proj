@@ -183,7 +183,7 @@ function ListMesinPotongJadi() {
                                         <div className='justify-end pr-4'>
                                             {data.nama == 'POLAR' ? (
                                                 <>
-                                                    <Link to={`/qc/potong/listjadipolar`}>
+                                                    <Link to={`/qc/qualityinspection/potong/listjadipolar`}>
 
                                                         <button
                                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
@@ -195,7 +195,7 @@ function ListMesinPotongJadi() {
                                                 </>
                                             ) : data.nama == 'ITOH' ? (
                                                 <>
-                                                    <Link to={`/qc/potong/listjadiitoh`}>
+                                                    <Link to={`/qc/qualityinspection/potong/listjadiitoh`}>
 
                                                         <button
                                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment

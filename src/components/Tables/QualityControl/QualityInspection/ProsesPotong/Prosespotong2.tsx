@@ -183,7 +183,7 @@ function ProsesPotong2() {
                                         <div className='justify-end pr-4'>
                                             {data.nama == 'POTONG BAHAN' ? (
                                                 <>
-                                                    <Link to={`/qc/potongbahan`}>
+                                                    <Link to={`/qc/qualityinspection/potongbahan`}>
 
                                                         <button
                                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
@@ -195,7 +195,7 @@ function ProsesPotong2() {
                                                 </>
                                             ) : data.nama == 'POTONG JADI' ? (
                                                 <>
-                                                    <Link to={`/qc/potongjadi`}>
+                                                    <Link to={`/qc/qualityinspection/potongjadi`}>
                                                         <button
                                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                         >
