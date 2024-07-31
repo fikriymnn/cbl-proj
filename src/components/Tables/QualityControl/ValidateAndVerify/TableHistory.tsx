@@ -51,29 +51,29 @@ const TableHistory = () => {
                 Kode Tiket
               </p>
             </div>
-            <div className=" text-[14px] justify-start col-span-2 ">
+            <div className=" text-[14px] justify-start ">
               <p className="text-slate-600 font-semibold  dark:text-white">
                 Waktu Masuk
               </p>
             </div>
-            <div className=" text-[14px] justify-start col-span-2 ">
+            <div className=" text-[14px] justify-start ">
               <p className="text-slate-600 font-semibold  dark:text-white">
                 Waktu Selesai
               </p>
             </div>
-            <div className=" text-[14px] justify-start col-span-2 ">
+            <div className=" text-[14px] justify-start ">
               <p className="text-slate-600 font-semibold ">Nama Mesin</p>
             </div>
-            <div className=" text-[14px] justify-start ">
+            <div className=" text-[14px] justify-start col-span-2 ">
               <p className="text-slate-600 font-semibold ">Kendala</p>
             </div>
             <div className=" text-[14px] justify-start ">
               <p className="text-slate-600 font-semibold ">status</p>
             </div>
             <div className=" text-[14px] justify-start ">
-              <p className="text-slate-600 font-semibold ">note</p>
+              <p className="text-slate-600 font-semibold ">Skor</p>
             </div>
-            <div className=" text-[14px] justify-start ">
+            <div className=" text-[14px] justify-start col-span-2">
               <p className="text-slate-600 font-semibold ">Waktu Respon</p>
             </div>
             {/* <div className=" text-[14px] justify-center ">
@@ -106,37 +106,43 @@ const TableHistory = () => {
                   {data.tiket.kode_ticket}
                 </p>
               </div>
-              <div className="flex w-full  justify-start col-span-2">
+              <div className="flex w-full  justify-start ">
                 <p className="text-neutral-500 text-sm font-light  dark:text-white">
                   {tglTicket}
                 </p>
               </div>
-              <div className="flex w-full  justify-start col-span-2">
+              <div className="flex w-full  justify-start ">
                 <p className="text-neutral-500 text-sm font-light  dark:text-white">
                   {tglSelesaiTicket}
                 </p>
               </div>
-              <div className="flex w-full  justify-start col-span-2 ">
+              <div className="flex w-full  justify-start  ">
                 <p className="text-neutral-500 text-sm font-light ">
                   {data.tiket.mesin}
                 </p>
               </div>
-              <div className="flex w-full  justify-start col-span-3">
+              <div className="flex w-full  justify-start col-span-2 ">
                 <p className="text-neutral-500 text-sm font-light ">
                   {data.tiket.kode_lkh + ' - ' + data.tiket.nama_kendala}
                 </p>
               </div>
-              <div className="flex w-full  justify-start col-span-3">
-                <p className="text-neutral-500 text-sm font-light ">
+              <div className="flex w-full  justify-start  ">
+                <p
+                  className={
+                    data.status_qc == 'approved'
+                      ? 'text-white text-sm font-light   bg-green-600 rounded-lg px-2'
+                      : 'text-white text-sm font-light  dark:text-white bg-red-600 rounded-lg px-2'
+                  }
+                >
                   {data.status_qc}
                 </p>
               </div>
-              <div className="flex w-full  justify-start col-span-3">
+              <div className="flex w-full  justify-start ">
                 <p className="text-neutral-500 text-sm font-light ">
-                  {data.note_qc}
+                  {data.skor_mtc}
                 </p>
               </div>
-              <div className="flex w-full  justify-start col-span-3">
+              <div className="flex w-full  justify-start col-span-2">
                 <p className="text-neutral-500 text-sm font-light ">
                   {waktuRespon}
                 </p>

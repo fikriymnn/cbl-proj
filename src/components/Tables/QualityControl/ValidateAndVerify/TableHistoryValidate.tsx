@@ -45,31 +45,29 @@ const TableHistoryValidate = () => {
       <div className="flex px-2 border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
         <p className="w-5 text-[14px] font-semibold mr-3">No</p>
         <div className="flex flex-col w-full">
-          <div className="grid grid-cols-12 w-full dark:border-strokedark  ">
-            <div className="flex w-full justify-start col-span-2">
+          <div className="grid grid-cols-7 w-full dark:border-strokedark  ">
+            <div className="flex w-full justify-start ">
               <p className="text-slate-600  text-[14px] font-semibold  dark:text-white">
                 Kode Tiket
               </p>
             </div>
-            <div className=" text-[14px] justify-start col-span-2 ">
+            <div className=" text-[14px] justify-start  ">
               <p className="text-slate-600 font-semibold  dark:text-white">
                 Waktu Masuk
               </p>
             </div>
-            <div className=" text-[14px] justify-start col-span-2 ">
+            <div className=" text-[14px] justify-start  ">
               <p className="text-slate-600 font-semibold  dark:text-white">
                 Status
               </p>
             </div>
-            <div className=" text-[14px] justify-start col-span-2 ">
+            <div className=" text-[14px] justify-start  ">
               <p className="text-slate-600 font-semibold ">Nama Mesin</p>
             </div>
             <div className=" text-[14px] justify-start ">
               <p className="text-slate-600 font-semibold ">Kendala</p>
             </div>
-            <div className=" text-[14px] justify-start ">
-              <p className="text-slate-600 font-semibold ">note</p>
-            </div>
+
             <div className=" text-[14px] justify-start ">
               <p className="text-slate-600 font-semibold ">Waktu Respone</p>
             </div>
@@ -93,39 +91,41 @@ const TableHistoryValidate = () => {
                 {index + 1}{' '}
               </p>
             </div>
-            <div className="grid grid-cols-12 w-full items-center dark:border-strokedark">
-              <div className="flex w-full justify-start col-span-2 gap-14">
+            <div className="grid grid-cols-7 w-full items-center dark:border-strokedark">
+              <div className="flex w-full justify-start  gap-14">
                 <p className="text-neutral-500 text-sm font-light  dark:text-white">
                   {' '}
                   {data.kode_ticket}
                 </p>
               </div>
-              <div className="flex w-full  justify-start col-span-2">
+              <div className="flex w-full  justify-start ">
                 <p className="text-neutral-500 text-sm font-light  dark:text-white">
                   {tglTicket}
                 </p>
               </div>
-              <div className="flex w-full  justify-start col-span-2">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+              <div className="flex w-full  justify-start ">
+                <p
+                  className={
+                    data.status_qc == 'di validasi'
+                      ? 'text-white text-sm font-light   bg-green-600 rounded-lg px-2'
+                      : 'text-white text-sm font-light  dark:text-white bg-red-600 rounded-lg px-2'
+                  }
+                >
                   {data.status_qc}
                 </p>
               </div>
-              <div className="flex w-full  justify-start col-span-2 ">
+              <div className="flex w-full  justify-start  ">
                 <p className="text-neutral-500 text-sm font-light ">
                   {data.mesin}
                 </p>
               </div>
-              <div className="flex w-full  justify-start col-span-3">
+              <div className="flex w-full  justify-start ">
                 <p className="text-neutral-500 text-sm font-light ">
                   {data.kode_lkh + ' - ' + data.nama_kendala}
                 </p>
               </div>
-              <div className="flex w-full  justify-start col-span-3">
-                <p className="text-neutral-500 text-sm font-light ">
-                  {data.note_qc}
-                </p>
-              </div>
-              <div className="flex w-full  justify-start col-span-3">
+
+              <div className="flex w-full  justify-start ">
                 <p className="text-neutral-500 text-sm font-light ">
                   {waktuRespon}
                 </p>
@@ -135,9 +135,11 @@ const TableHistoryValidate = () => {
                   {data.skor_mtc}
                 </p>
               </div> */}
-              <button className="text-xs font-bold bg-blue-700 py-2 px-5 text-white rounded-sm">
-                Detail
-              </button>
+              <div className="flex w-full justify-end">
+                <button className="text-xs font-bold bg-blue-700 py-2 px-10 text-white rounded-sm">
+                  Detail
+                </button>
+              </div>
             </div>
           </div>
         );
