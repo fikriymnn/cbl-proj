@@ -988,10 +988,16 @@ function HistoriOS3() {
                                             children={undefined}
                                             isOpen={showModalDetail[ii]}
                                             onClose={() => closeModalDetail(ii)}
-                                            kendala={data.nama_kendala}
+                                            kendala={data.sumber == 'pm1'
+                                              ? data.point_pm1.inspection_point
+                                              : data.sumber == 'pm2'
+                                                ? data.point_pm2.inspection_point
+                                                : data.sumber == 'pm3'
+                                                  ? data.point_pm3.inspection_point
+                                                  : ''}
                                             machineName={data.nama_mesin}
-                                            tgl={'12/12/24'}
-                                            jam={'17.00'}
+                                            tgl={dateMtc}
+
                                             namaPemeriksa={proses.user_eksekutor.nama}
                                             no={'1'}
                                             idTiket={data.id}
@@ -1001,7 +1007,57 @@ function HistoriOS3() {
                                               `${proses.nama_analisis_mtc}`}
                                             kebutuhanSparepart={'undefined'}
                                             tipeMaintenance={proses.cara_perbaikan}
-                                            catatan={proses.note_mtc} inspection_point={""} acceptance_criteria={undefined} method={undefined} tools={undefined}                                          ></ModalDetailOS3>
+                                            catatan={data.sumber == 'pm1'
+                                              ? data.point_pm1.catatan
+                                              : data.sumber == 'pm2'
+                                              ? data.point_pm2.catatan
+                                              : data.sumber == 'pm3'
+                                              ? data.point_pm3.catatan
+                                              : ''}
+                                             inspection_point={data.sumber == 'pm1'
+                                              ? data.point_pm1.inspection_point
+                                              : data.sumber == 'pm2'
+                                                ? data.point_pm2.inspection_point
+                                                : data.sumber == 'pm3'
+                                                  ? data.point_pm3.inspection_point
+                                                  : ''}
+
+                                            acceptance_criteria={data.sumber == 'pm1'
+                                              ? data.point_pm1.inspection_task_pm1s[0].acceptance_criteria
+                                              : data.sumber == 'pm2'
+                                                ? data.point_pm2.inspection_task_pm2s[0].acceptance_criteria
+                                                : data.sumber == 'pm3'
+                                                  ? data.point_pm3.inspection_task_pm3s[0].acceptance_criteria
+                                                  : ''}
+                                            inspection_method={data.sumber == 'pm1'
+                                              ? data.point_pm1.inspection_task_pm1s[0].method
+                                              : data.sumber == 'pm2'
+                                                ? data.point_pm2.inspection_task_pm2s[0].method
+                                                : data.sumber == 'pm3'
+                                                  ? data.point_pm3.inspection_task_pm3s[0].method
+                                                  : ''}
+                                            tools={data.sumber == 'pm1'
+                                              ? data.point_pm1.inspection_task_pm1s[0].tools
+                                              : data.sumber == 'pm2'
+                                                ? data.point_pm2.inspection_task_pm2s[0].tools
+                                                : data.sumber == 'pm3'
+                                                  ? data.point_pm3.inspection_task_pm3s[0].tools
+                                                  : ''}
+                                            sumber={data.sumber}
+                                            indikator={data.sumber == 'pm1'
+                                              ? data.point_pm1.hasil
+                                              : data.sumber == 'pm2'
+                                                ? data.point_pm2.hasil
+                                                : data.sumber == 'pm3'
+                                                  ? data.point_pm3.hasil
+                                                  : ''} 
+                                            task_list={data.sumber == 'pm1'
+                                                    ? data.point_pm1.inspection_task_pm1s[0].task
+                                                    : data.sumber == 'pm2'
+                                                    ? data.point_pm2.inspection_task_pm2s[0].task
+                                                    : data.sumber == 'pm3'
+                                                    ? data.point_pm3.inspection_task_pm3s[0].task
+                                                    : ''}                                          ></ModalDetailOS3>
                                         )}
                                       </>
                                     );

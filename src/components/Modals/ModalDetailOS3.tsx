@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import CheckStockPengganti from "../Tables/Modals/SparepartPengganti";
 
-const ModalDetailOS3 = ({ children, isOpen, onClose, kendala, machineName, tgl, jam, namaPemeriksa, no, idTiket, kodeLkh, analisisPenyebab, kebutuhanSparepart, tipeMaintenance, catatan }:
+const ModalDetailOS3 = ({ children, isOpen, onClose, kendala, machineName, tgl, namaPemeriksa, no, idTiket, kodeLkh, analisisPenyebab, kebutuhanSparepart, tipeMaintenance, catatan, tools, inspection_point, acceptance_criteria,inspection_method,sumber, indikator, task_list }:
     {
         children: any, isOpen: any, onClose: any,
-        kendala: any, machineName: any, tgl: any, jam: any, namaPemeriksa: any, no: any, idTiket: any, kodeLkh: any, analisisPenyebab: any, kebutuhanSparepart: any, tipeMaintenance: any, catatan: any
+        kendala: any, machineName: any, tgl: any, namaPemeriksa: any, no: any, idTiket: any, kodeLkh: any, analisisPenyebab: any, kebutuhanSparepart: any, tipeMaintenance: any, catatan: any,tools:any, inspection_point:any, acceptance_criteria:any,inspection_method:any, sumber:any, indikator:any,task_list:any
     }) => {
     if (!isOpen) return null;
 
@@ -98,6 +98,16 @@ const ModalDetailOS3 = ({ children, isOpen, onClose, kendala, machineName, tgl, 
                                     {kodeLkh} - {kendala}
                                 </span>
                             </div>
+                            <div className='pt-2'>
+                                <label htmlFor="kendala" className="form-label block  text-black text-xs font-extrabold">
+                                    INDIKATOR KENDALA
+                                </label>
+                            </div>
+                            <div>
+                                <span id="kendala" className="text-neutral-500 text-xl font-normal">
+                                    {indikator}
+                                </span>
+                            </div>
                         </div>
                         <div className="w-6/12 justify-end justify-items-end">
                             <label htmlFor="tgl" className="form-label block  text-black text-xs font-extrabold">
@@ -106,12 +116,13 @@ const ModalDetailOS3 = ({ children, isOpen, onClose, kendala, machineName, tgl, 
                             <span id="tgl" className="text-neutral-500 text-xl font-normal">
                                 {tgl}
                             </span>
-                            <label htmlFor="jam" className="form-label block  text-black text-xs font-extrabold mt-2">
-                                JAM PEMERIKSAAN
+                            <label htmlFor="tgl" className="form-label block  text-black text-xs font-extrabold">
+                                SUMBER
                             </label>
-                            <span id="jam" className="text-neutral-500 text-xl font-normal">
-                                {jam}
+                            <span id="tgl" className="text-neutral-500 text-xl font-normal">
+                                {sumber}
                             </span>
+                            
                             <label htmlFor="namaPemeriksa" className="form-label block  text-black text-xs font-extrabold mt-2">
                                 NAMA PEMERIKSAAN
                             </label>
@@ -128,6 +139,7 @@ const ModalDetailOS3 = ({ children, isOpen, onClose, kendala, machineName, tgl, 
                         <div className="flex gap-5 bg-[#D8EAFF]">
                             <div className=" flex flex-col gap-5 bg-[#E8F3FF] p-5">
                                 <p className=" text-sm font-semibold min-h-10 max-h-15">Inspection Point</p>
+                                <p className=" text-sm font-semibold min-h-10 max-h-15">Task List</p>
                                 <p className=" text-sm font-semibold min-h-10 max-h-15">Acceptance Criteria</p>
                                 <p className=" text-sm font-semibold min-h-10 max-h-15">Inspection Method</p>
                                 <p className=" text-sm font-semibold min-h-10 max-h-15">Tools</p>
@@ -135,17 +147,13 @@ const ModalDetailOS3 = ({ children, isOpen, onClose, kendala, machineName, tgl, 
                             <div className="flex bg-[#D8EAFF] gap-5 p-5">
 
                                 <div className="flex flex-col gap-5  ">
-                                    <p className=" text-sm font-semibold min-h-10 max-h-15 ">Periksa Kondisi Kebersihan roller</p>
-                                    <p className=" text-sm font-semibold min-h-10 max-h-15 "> debu pada roller debu pada rollerdebu pada rollerdebu pada rollerdebu pada rollerdebu pada rollerdebu pada rollerdebu pada rollerdebu pada roller</p>
-                                    <p className=" text-sm font-semibold min-h-10 max-h-15 ">Visual</p>
-                                    <p className=" text-sm font-semibold min-h-10 max-h-15 ">Air Kompressor</p>
+                                    <p className=" text-sm font-semibold min-h-10 max-h-15 ">{inspection_point}</p>
+                                    <p className=" text-sm font-semibold min-h-10 max-h-15 "> {task_list}</p>
+                                    <p className=" text-sm font-semibold min-h-10 max-h-15 "> {acceptance_criteria}</p>
+                                    <p className=" text-sm font-semibold min-h-10 max-h-15 ">{inspection_method}</p>
+                                    <p className=" text-sm font-semibold min-h-10 max-h-15 ">{tools}</p>
                                 </div>
-                                <div className="flex flex-col gap-5  ">
-                                    <p className=" text-sm font-semibold min-h-10 max-h-15 ">Periksa Kondisi Kebersihan roller</p>
-                                    <p className=" text-sm font-semibold min-h-10 max-h-15 "> debu pada roller</p>
-                                    <p className=" text-sm font-semibold min-h-10 max-h-15 ">Visual</p>
-                                    <p className=" text-sm font-semibold min-h-10 max-h-15 ">Air Kompressor</p>
-                                </div>
+                               
                             </div>
                         </div>
                     </div>
@@ -189,11 +197,7 @@ const ModalDetailOS3 = ({ children, isOpen, onClose, kendala, machineName, tgl, 
                         </div>
                     </div>
 
-                    <div className="pt-5">
-                        <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                            SIMPAN
-                        </button>
-                    </div>
+                  
                 </div>
  
                 <button
