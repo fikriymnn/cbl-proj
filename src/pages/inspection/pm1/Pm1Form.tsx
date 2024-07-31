@@ -330,108 +330,7 @@ function Pm1Form() {
                   </p>
                 </div>
 
-                {/* <div className="flex flex-cols-3  md:gap-3 gap-1 ">
-                  <p className="md:text-[14px] text-[9px] font-semibold w-35">
-                    Leader
-                  </p>
-                  <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
-                  <p className="md:text-[14px] text-[9px] text-start font-semibold">
-                    {pm1 != null && pm1.id_leader != null ? (
-                      <p className="text-body dark:text-bodydark uppercase">
-                        {pm1.leader.nama}
-                      </p>
-                    ) : (
-                      <select
-                        className="uppercase"
-                        onChange={(e) => {
-                          setSelectionUserLeader(e.target.value);
-                        }}
-                      >
-                        <option selected disabled>
-                          Pilih Leader
-                        </option>
-                        {userLeader != null &&
-                          userLeader.map((leader: any, i: number) => (
-                            <option
-                              key={i}
-                              value={leader.id}
-                              className="text-body dark:text-bodydark uppercase"
-                            >
-                              {leader.nama}
-                            </option>
-                          ))}
-                      </select>
-                    )}
-                  </p>
-                </div>
-                <div className="flex flex-cols-3  md:gap-3 gap-1 ">
-                  <p className="md:text-[14px] text-[9px] font-semibold w-35">
-                    Supervisor
-                  </p>
-                  <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
-                  <p className="md:text-[14px] text-[9px] text-start font-semibold">
-                    {pm1 != null && pm1.id_supervisor != null ? (
-                      <p className="text-body dark:text-bodydark uppercase">
-                        {pm1.supervisor.nama}
-                      </p>
-                    ) : (
-                      <select
-                        className="uppercase"
-                        onChange={(e) => {
-                          setSelectionUserSuper(e.target.value);
-                        }}
-                      >
-                        <option selected disabled>
-                          Pilih Supervisor
-                        </option>
-                        {userSuper != null &&
-                          userSuper.map((Super: any, i: number) => (
-                            <option
-                              key={i}
-                              value={Super.id}
-                              className="text-body dark:text-bodydark uppercase"
-                            >
-                              {Super.nama}
-                            </option>
-                          ))}
-                      </select>
-                    )}
-                  </p>
-                </div>
-                <div className="flex flex-cols-3  md:gap-3 gap-1 ">
-                  <p className="md:text-[14px] text-[9px] font-semibold w-35">
-                    KA BAG
-                  </p>
-                  <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
-                  <p className="md:text-[14px] text-[9px] text-start font-semibold">
-                    {pm1 != null && pm1.id_ka_bag != null ? (
-                      <p className="text-body dark:text-bodydark uppercase">
-                        {pm1.ka_bag.nama}
-                      </p>
-                    ) : (
-                      <select
-                        className="uppercase"
-                        onChange={(e) => {
-                          setSelectionUserKA(e.target.value);
-                        }}
-                      >
-                        <option selected disabled>
-                          Pilih KA BAG
-                        </option>
-                        {userKA != null &&
-                          userKA.map((ka: any, i: number) => (
-                            <option
-                              key={i}
-                              value={ka.id}
-                              className="text-body dark:text-bodydark uppercase"
-                            >
-                              {ka.nama}
-                            </option>
-                          ))}
-                      </select>
-                    )} 
-                  </p>
-                </div>*/}
+              
               </div>
             </div>
             <div className='w-full pl-[20%]'>
@@ -791,7 +690,7 @@ function Pm1Form() {
                               <>
                                 <div className="p-4 flex flex-col ">
                                   <p className="md:text-[14px] text-[9px] font-semibold">
-                                    Result:s{hasil == 'bagus'? (<><img src={Logo} alt="aaa" /></>):""}
+                                    Result:{data.hasil}{data.hasil == 'bagus'? (<><img src={Logo} alt="aaa" /></>):""}
                                     <span className="absolute top-4">
                                       <div className='md:w-6 w-4'>
                                         {data.hasil == 'baik' ? <img src={Logo} alt="aaa" />
