@@ -45,7 +45,7 @@ function PotongJadi() {
 
                 withCredentials: true,
             });
-            console.log(res.data.data)
+
             setIncoming(res.data.data);
         } catch (error: any) {
             console.log(error.data.msg);
@@ -66,63 +66,63 @@ function PotongJadi() {
         }
     }
 
-    async function stopTask(id: any, start: any) {
-        if (!start) {
-            // Check if start time is available
-            alert('Task tidak bisa diberhentikan: Belum Start.');
-            return; // Exit function if no start time
-        }
-        if (incoming?.inspeksi_potong_result[0].send == false ||
+    // async function stopTask(id: any, start: any) {
+    //     if (!start) {
+    //         // Check if start time is available
+    //         alert('Task tidak bisa diberhentikan: Belum Start.');
+    //         return; // Exit function if no start time
+    //     }
+    //     if (incoming?.inspeksi_potong_result[0].send == false ||
 
-            incoming?.inspeksi_potong_result[1].send == false ||
+    //         incoming?.inspeksi_potong_result[1].send == false ||
 
-            incoming?.inspeksi_potong_result[2].send == false ||
+    //         incoming?.inspeksi_potong_result[2].send == false ||
 
-            incoming?.inspeksi_potong_result[3].send == false
+    //         incoming?.inspeksi_potong_result[3].send == false
 
-        ) {
+    //     ) {
 
-            alert('Checksheet belum terisi semua');
-            return;
-        }
+    //         alert('Checksheet belum terisi semua');
+    //         return;
+    //     }
 
-        const stopTime = new Date();
-        const timestamp = convertDatetimeToDate(new Date());
-        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPotong/stop/${id}`;
+    //     const stopTime = new Date();
+    //     const timestamp = convertDatetimeToDate(new Date());
+    //     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPotong/stop/${id}`;
 
-        try {
-            const elapsedSeconds = await calculateElapsedTime(start, stopTime);
+    //     try {
+    //         const elapsedSeconds = await calculateElapsedTime(start, stopTime);
 
-            // **Save total seconds elsewhere**
-            const totalSecondsToSave = elapsedSeconds;
-            // Use totalSecondsToSave for your saving logic (e.g., local storage, separate API)
+    //         // **Save total seconds elsewhere**
+    //         const totalSecondsToSave = elapsedSeconds;
+    //         // Use totalSecondsToSave for your saving logic (e.g., local storage, separate API)
 
-            // Formatted time can be used for logging if needed
-            const formattedTime = formatElapsedTime(elapsedSeconds);
+    //         // Formatted time can be used for logging if needed
+    //         const formattedTime = formatElapsedTime(elapsedSeconds);
 
-            console.log(formattedTime);
+    //         console.log(formattedTime);
 
-            const res = await axios.put(
-                url,
-                {
+    //         const res = await axios.put(
+    //             url,
+    //             {
 
-                    lama_pengerjaan: totalSecondsToSave,
+    //                 lama_pengerjaan: totalSecondsToSave,
 
-                },
-                {
-                    withCredentials: true,
-                },
-            );
+    //             },
+    //             {
+    //                 withCredentials: true,
+    //             },
+    //         );
 
-            console.log('Succes', timestamp);
+    //         console.log('Succes', timestamp);
 
-            getInspection();
-        } catch (error: any) {
-            console.log(error);
-            alert(error.response.data.msg);
-        }
+    //         getInspection();
+    //     } catch (error: any) {
+    //         console.log(error);
+    //         alert(error.response.data.msg);
+    //     }
 
-    }
+    // }
     function formatElapsedTime(seconds: number): string {
         // Ensure seconds is non-negative
         seconds = Math.max(0, seconds);
@@ -175,13 +175,18 @@ function PotongJadi() {
             : '-';
 
 
-    async function sumbitChecksheet(id: number) {
-
+    async function sumbitChecksheet(id: number, start: any) {
+        if (!start) {
+            // Check if start time is available
+            alert('Task tidak bisa diberhentikan: Belum Start.');
+            return; // Exit function if no start time
+        }
         if (
             incoming?.inspeksi_potong_result[0].standar == null ||
             incoming?.inspeksi_potong_result[0].hasil_check == null ||
             incoming?.inspeksi_potong_result[0].keterangan == null ||
-            incoming?.inspeksi_potong_result[1].hasil_check == null ||
+            incoming?.inspeksi_potong_result[1].hasil_lebar == null ||
+            incoming?.inspeksi_potong_result[1].hasil_panjang == null ||
             incoming?.inspeksi_potong_result[1].keterangan == null ||
             incoming?.inspeksi_potong_result[2].hasil_check == null ||
             incoming?.inspeksi_potong_result[2].keterangan == null ||
@@ -192,11 +197,24 @@ function PotongJadi() {
             alert('Checksheet belum terisi semua');
             return;
         }
-
+        const stopTime = new Date();
+        const timestamp = convertDatetimeToDate(new Date());
         const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPotong/done/${id}`;
         try {
+            const elapsedSeconds = await calculateElapsedTime(start, stopTime);
+
+            // **Save total seconds elsewhere**
+            const totalSecondsToSave = elapsedSeconds;
+            // Use totalSecondsToSave for your saving logic (e.g., local storage, separate API)
+
+            // Formatted time can be used for logging if needed
+            const formattedTime = formatElapsedTime(elapsedSeconds);
+
+            console.log(formattedTime);
             const res = await axios.put(url,
                 {
+                    lama_pengerjaan: totalSecondsToSave,
+
                     hasil_check: incoming.inspeksi_potong_result
                 }
                 ,
@@ -204,6 +222,8 @@ function PotongJadi() {
 
                     withCredentials: true,
                 });
+
+            console.log('Succes', timestamp);
             alert("Data Berhasil Di-Update");
             console.log('succes')
             getInspection();
@@ -348,36 +368,7 @@ function PotongJadi() {
                                                         <p className='font-bold text-[#00B81D]'>
                                                             Task Sudah Dimulai
                                                         </p>
-                                                        <button
-                                                            onClick={() => {
-                                                                if (incoming?.waktu_selesai != null) {
-                                                                    alert('sudah di kerjakan');
-                                                                } else if (incoming?.waktu_mulai == null) {
-                                                                    alert('belum mulai');
-                                                                } else {
 
-                                                                    stopTask(
-                                                                        incoming?.id,
-                                                                        incoming?.waktu_mulai
-                                                                    );
-                                                                }
-                                                            }}
-
-                                                            className="flex w-full  rounded-md bg-[#DE0000] justify-center items-center px-2 py-2 hover:cursor-pointer"
-                                                        >
-                                                            <svg
-                                                                width="14"
-                                                                height="14"
-                                                                viewBox="0 0 14 14"
-                                                                fill="none"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                            >
-                                                                <path
-                                                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                                                    fill="white"
-                                                                />
-                                                            </svg>
-                                                        </button>
                                                     </>
 
                                                 </div>
@@ -551,20 +542,34 @@ function PotongJadi() {
                                                     Job Order
                                                 </label>
                                                 <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                                    <select onChange={(e) => {
-                                                        let array = [...incoming?.inspeksi_potong_result]
-                                                        array[1].hasil_check = e.target.value
-                                                        setIncoming({ ...incoming, inspeksi_potong_result: array })
-                                                    }}>
-                                                        <option disabled selected> Select Result</option>
-                                                        <option value={'Panjang = 600 MM'}>
-                                                            Panjang = 600 MM
-                                                        </option>
-                                                        <option value={'Lebar = 400 MM'}>
-                                                            Lebar = 400 MM
-                                                        </option>
+                                                    <div className='flex flex-col  w-[60%]'>
+                                                        <label className='text-neutral-500 text-sm font-semibold '>
+                                                            Panjang
+                                                        </label>
+                                                        <input
+                                                            onChange={(e) => {
+                                                                let array = [...incoming?.inspeksi_potong_result]
+                                                                array[1].hasil_panjang = e.target.value
 
-                                                    </select>
+                                                                setIncoming({ ...incoming, inspeksi_potong_result: array })
+                                                            }}
+
+                                                            type='number' className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                        <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                            Lebar
+                                                        </label>
+                                                        <input type='number'
+
+                                                            onChange={(e) => {
+                                                                let array = [...incoming?.inspeksi_potong_result]
+                                                                array[1].hasil_lebar = e.target.value
+
+                                                                setIncoming({ ...incoming, inspeksi_potong_result: array })
+                                                            }}
+
+                                                            className='border-2 border-stroke w-[80%] rounded-sm' />
+
+                                                    </div>
                                                 </label>
                                                 <div className='flex flex-col gap-1  w-[50%] col-span-2'>
                                                     <div>
@@ -768,9 +773,15 @@ function PotongJadi() {
                                                 <label className='text-neutral-500 text-sm font-semibold col-span-2'>
                                                     Job Order
                                                 </label>
-                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                                    {incoming?.inspeksi_potong_result[1].hasil_check}
-                                                </label>
+                                                <div className='flex flex-col col-span-2'>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        {incoming?.inspeksi_potong_result[1].hasil_panjang} MM
+                                                    </label>
+                                                    <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                        {incoming?.inspeksi_potong_result[1].hasil_lebar} MM
+                                                    </label>
+                                                </div>
+
                                                 <div className='flex flex-col gap-1  w-[50%] col-span-2'>
                                                     {incoming?.inspeksi_potong_result[1].keterangan}
                                                 </div>
@@ -841,7 +852,7 @@ function PotongJadi() {
                                     <button onClick={() => {
 
                                         console.log(incoming)
-                                        sumbitChecksheet(incoming?.id)
+                                        sumbitChecksheet(incoming?.id, incoming?.waktu_mulai)
                                     }
                                     } className='bg-[#0065DE] px-4 py-2 rounded-sm text-center text-white text-xs font-bold'>
                                         SUBMIT CHECKSHEET

@@ -45,7 +45,7 @@ function ListJadiDaftarItoh() {
             });
 
             setIncoming(res.data.data);
-            console.log(res.data.data);
+
         } catch (error: any) {
             console.log(error.data.msg);
         }

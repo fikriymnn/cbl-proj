@@ -821,13 +821,7 @@ function IncomingInspection() {
                                                                     }}
 
                                                                     disabled className='border-2 border-stroke w-[80%] rounded-sm' />
-                                                                <button onClick={() => {
-                                                                    let array = [...incoming?.inspeksi_bahan_result]
-                                                                    array[1].hasil_rata_rata = hasilRata
 
-
-                                                                    setIncoming({ ...incoming, inspeksi_bahan_result: array })
-                                                                }}>Hitung</button>
                                                             </>
                                                         ) : (
                                                             <>
@@ -836,25 +830,25 @@ function IncomingInspection() {
                                                                         Kiri
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold '>
-                                                                        {incoming?.inspeksi_bahan_result[1].hasil_kiri}
+                                                                        {incoming?.inspeksi_bahan_result[1].hasil_kiri} CM
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                                         Tengah
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold '>
-                                                                        {incoming?.inspeksi_bahan_result[1].hasil_tengah}
+                                                                        {incoming?.inspeksi_bahan_result[1].hasil_tengah} CM
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                                         Kanan
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold '>
-                                                                        {incoming?.inspeksi_bahan_result[1].hasil_kanan}
+                                                                        {incoming?.inspeksi_bahan_result[1].hasil_kanan} CM
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                                         Rata-Rata
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold '>
-                                                                        {incoming?.inspeksi_bahan_result[1].hasil_rata_rata}
+                                                                        {incoming?.inspeksi_bahan_result[1].hasil_rata_rata} CM
                                                                     </label>
                                                                 </div>
 
@@ -1621,76 +1615,53 @@ function IncomingInspection() {
                                                     <div className='flex flex-col  w-[60%]'>
                                                         {!incoming?.inspeksi_bahan_result[5]?.send ? (
                                                             <>
-                                                                <label className='text-neutral-500 text-sm font-semibold'>
-
-                                                                    <select id="hasilSelect2" onChange={(e) => {
-                                                                        // Store selected value
-                                                                        let selectedValue = e.target.value;
-
-                                                                        // Get input text (optional)
-                                                                        const inputText = document.getElementById("inputText2") as HTMLInputElement;
-                                                                        let inputTextValue = "";
-                                                                        if (inputText) {
-                                                                            inputTextValue = inputText.value;
-                                                                        }
-
-                                                                        // Combine values (consider using a separator like a space)
-                                                                        let combinedValue = selectedValue;
-                                                                        if (inputTextValue) {
-                                                                            combinedValue += " = " + inputTextValue; // Add space as separator
-                                                                        }
-
-                                                                        // Update array with combined value
-                                                                        let array = [...incoming?.inspeksi_bahan_result];
-                                                                        array[5].hasil = combinedValue;
-                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array });
-
-
-                                                                    }}>
-                                                                        <option disabled selected>Select Result</option>
-                                                                        <option value="PANJANG">PANJANG</option>
-                                                                        <option value="LEBAR">LEBAR</option>
-                                                                    </select>
-                                                                    <label className="text-neutral-500 text-sm font-semibold pt-1">
-                                                                        Input (CM)
-                                                                    </label>
-                                                                    <input onChange={(e) => {
-                                                                        // Get input text (optional)
-                                                                        let inputText = e.target.value;
-                                                                        // Store selected value
-                                                                        const selectedValue = document.getElementById("hasilSelect2") as HTMLInputElement;;
-                                                                        let selectedTextValue = "";
-                                                                        if (selectedValue) {
-                                                                            selectedTextValue = selectedValue.value;
-                                                                        }
-
-
-
-                                                                        // Combine values (consider using a separator like a space)
-                                                                        let combinedValue = inputText;
-                                                                        if (selectedTextValue) {
-                                                                            combinedValue = selectedTextValue + " = " + combinedValue; // Add space as separator
-                                                                        }
-
-                                                                        // Update array with combined value
-                                                                        let array = [...incoming?.inspeksi_bahan_result];
-                                                                        array[5].hasil = combinedValue;
-                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array });
-
-
-                                                                    }} type="number" id="inputText2"
-                                                                        className="border-2 border-stroke w-[90%] rounded-sm" />
-
+                                                                <label className='text-neutral-500 text-sm font-semibold '>
+                                                                    Panjang
                                                                 </label>
+                                                                <input
+                                                                    onChange={(e) => {
+                                                                        let array = [...incoming?.inspeksi_bahan_result]
+                                                                        array[5].hasil_panjang = e.target.value
+
+                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                    }}
+
+                                                                    type='number' className='border-2 border-stroke w-[80%] rounded-sm' />
+                                                                <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                                    Lebar
+                                                                </label>
+                                                                <input type='number'
+
+                                                                    onChange={(e) => {
+                                                                        let array = [...incoming?.inspeksi_bahan_result]
+                                                                        array[5].hasil_lebar = e.target.value
+
+                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                    }}
+
+                                                                    className='border-2 border-stroke w-[80%] rounded-sm' />
+
+
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <div className='flex flex-col gap-1 font-semibold  text-sm'>
-                                                                    <p>
-                                                                        {incoming?.inspeksi_bahan_result[5]?.hasil}
-                                                                    </p>
+                                                                <div className='flex flex-col gap-1'>
+                                                                    <label className='text-neutral-500 text-sm font-semibold '>
+                                                                        Panjang
+                                                                    </label>
+                                                                    <label className='text-neutral-500 text-sm font-semibold '>
+                                                                        {incoming?.inspeksi_bahan_result[5].hasil_panjang} CM
+                                                                    </label>
+                                                                    <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                                        Lebar
+                                                                    </label>
+                                                                    <label className='text-neutral-500 text-sm font-semibold '>
+                                                                        {incoming?.inspeksi_bahan_result[5].hasil_lebar} CM
+                                                                    </label>
+
 
                                                                 </div>
+
 
                                                             </>
                                                         )

@@ -68,8 +68,8 @@ import Qualityinspection from './pages/QualityControl/QualityInspection';
 import IncomingInspection from './components/Tables/QualityControl/QualityInspection/Incoming/IncomingInspection';
 import IncomingIns from './pages/QualityControl/Incoming/Incomingins';
 import ProsesPotong from './pages/QualityControl/Prosespotong/Prosespotong';
-import PotongJadi from './components/Tables/QualityControl/QualityInspection/ProsesPotong/potongbahan';
-import PotongBahan from './components/Tables/QualityControl/QualityInspection/ProsesPotong/potongbahan';
+import PotongJadi from './components/Tables/QualityControl/QualityInspection/ProsesPotong/Bahan/potongbahan';
+import PotongBahan from './components/Tables/QualityControl/QualityInspection/ProsesPotong/Bahan/potongbahan';
 import PotongBahanPage from './pages/QualityControl/Prosespotong/potongBahanpage';
 import PotongJadiPage from './pages/QualityControl/Prosespotong/potongJadiPage';
 import ProsesCetak from './pages/QualityControl/ProsesCetak/ProsesCetak';
@@ -84,6 +84,11 @@ import ListBahan1 from './pages/QualityControl/Prosespotong/ListBahan';
 import ListBahan2 from './pages/QualityControl/Prosespotong/ListBahan2';
 import ListJadiItoh from './pages/QualityControl/Prosespotong/ListJadiItoh';
 import ListJadiPolar from './pages/QualityControl/Prosespotong/ListJadiPolar';
+import HistoryBahanItoh from './pages/QualityControl/Prosespotong/History/HistoryBahanItohpage';
+import HistoryBahanPolar from './pages/QualityControl/Prosespotong/History/HistoryBahanPolarPage';
+import HistoryJadiPolar from './components/Tables/QualityControl/QualityInspection/ProsesPotong/Jadi/HistoryJadiPolar';
+import HistoryJadiPolarPage from './pages/QualityControl/Prosespotong/History/HistoryJadiPolarPage';
+import HistoryJadiItohPage from './pages/QualityControl/Prosespotong/History/HistoryJadiItohPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -432,6 +437,50 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <HistoryIns />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/potong/potongbahan/historyitoh/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoryBahanItoh />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/potong/potongbahan/historypolar/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoryBahanPolar />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/potong/potongjadi/historypolar/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoryJadiPolarPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/potong/potongjadi/historyitoh/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoryJadiItohPage />
               </ProtectedRoute>
             </>
           }
