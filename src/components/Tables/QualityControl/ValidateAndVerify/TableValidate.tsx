@@ -43,7 +43,8 @@ const brandData: BRAND[] = [
 const TableValidasi = () => {
   const [page, setPage] = useState(1);
   const [ticketValidasi, setTicketValidasi] = useState<any>(null);
-  const [action,setAction] = useState(false);
+  const [note, setNote] = useState<any>('');
+  const [action, setAction] = useState(false);
 
   const handleClickDetail = (index: number) => {
     setShowDetail((prevState) => {
@@ -55,7 +56,7 @@ const TableValidasi = () => {
   const [showDetail, setShowDetail] = useState<boolean[]>(
     new Array(ticketValidasi != null && ticketValidasi.length).fill(false),
   );
- 
+
   useEffect(() => {
     getMTC();
   }, [page]);
@@ -82,9 +83,15 @@ const TableValidasi = () => {
   async function validasiTicket(id: number) {
     const url = `${import.meta.env.VITE_API_LINK}/ticket/validate/${id}`;
     try {
-      const res = await axios.get(url, {
-        withCredentials: true,
-      });
+      const res = await axios.put(
+        url,
+        {
+          note_qc: note,
+        },
+        {
+          withCredentials: true,
+        },
+      );
 
       alert('success');
 
@@ -97,11 +104,11 @@ const TableValidasi = () => {
   async function tolakTicket(id: number) {
     const url = `${import.meta.env.VITE_API_LINK}/ticket/tolak/${id}`;
     try {
-      const res = await axios.get(
+      const res = await axios.put(
         url,
-        // {
-        //   note_qc: '',
-        // },
+        {
+          note_qc: note,
+        },
         {
           withCredentials: true,
         },
@@ -119,10 +126,11 @@ const TableValidasi = () => {
       <div className="flex flex-col gap-2">
         <div className=" border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
           <div className="flex w-full  ">
-              <p className='text-slate-600  text-[14px] font-semibold  dark:text-white w-5 mx-3 '>No</p>
+            <p className="text-slate-600  text-[14px] font-semibold  dark:text-white w-5 mx-3 ">
+              No
+            </p>
             <div className="grid grid-cols-10  w-full dark:border-strokedark  ">
               <div className="flex w-full col-span-2 ">
-              
                 <p className="text-slate-600  text-[14px] font-semibold  dark:text-white  ">
                   Kode Tiket
                 </p>
@@ -150,11 +158,10 @@ const TableValidasi = () => {
               className="flex w-full  rounded-xl border  border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark "
             >
               <p className="text-neutral-500 text-sm font-light  dark:text-white mx-3 w-5 flex items-center">
-                    {index + 1}{' '}
-                  </p>
+                {index + 1}{' '}
+              </p>
               <div className="grid grid-cols-10 w-full items-center dark:border-strokedark ">
                 <div className="flex w-full justify-start col-span-2 gap-14 ">
-                  
                   <p className="text-neutral-500 text-sm font-light  dark:text-white">
                     {' '}
                     {data.kode_ticket}
@@ -176,81 +183,86 @@ const TableValidasi = () => {
                     {data.kode_lkh + ' - ' + data.nama_kendala}
                   </p>
                 </div>
+
                 <div>
-                  <button onClick={()=>handleClickDetail(index)} className='w-20 bg-blue-600 text-white text-sm py-1'>
+                  <button
+                    onClick={() => handleClickDetail(index)}
+                    className="w-20 bg-blue-600 text-white text-sm py-1"
+                  >
                     Aksi
                   </button>
                 </div>
-{showDetail[index] &&(
+                {showDetail[index] && (
+                  <>
+                    <div className="fixed z-50 inset-0 overflow-y-auto w-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
+                      <div className="flex flex-col gap-1 justify-center w-4/12 bg-white p-3 rounded-xl">
+                        <div className="w-full flex justify-between">
+                          <label
+                            htmlFor="namaPemeriksa"
+                            className="form-label block  text-black text-xs font-extrabold my-2 "
+                          >
+                            CATATAN
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleClickDetail(index);
+                            }}
+                            className="text-gray-400 focus:outline-none"
+                          >
+                            <svg
+                              width="22"
+                              height="22"
+                              viewBox="0 0 22 22"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <circle cx="11" cy="11" r="11" fill="#0065DE" />
+                              <rect
+                                x="6.03955"
+                                y="4.23242"
+                                width="17"
+                                height="3"
+                                rx="1.5"
+                                transform="rotate(42.8321 6.03955 4.23242)"
+                                fill="white"
+                              />
+                              <rect
+                                x="4.18213"
+                                y="16.0609"
+                                width="17"
+                                height="3"
+                                rx="1.5"
+                                transform="rotate(-45 4.18213 16.0609)"
+                                fill="white"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                        <textarea
+                          onChange={(e) => setNote(e.target.value)}
+                          className="w-full border border-neutral-600 h-56 p-2 rounded-sm"
+                          name=""
+                          id=""
+                        ></textarea>
 
-  <>
-  <div className='fixed z-50 inset-0 overflow-y-auto w-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center'>
-
-  <div className='flex flex-col gap-1 justify-center w-4/12 bg-white p-3 rounded-xl'>
-  <div className='w-full flex justify-between'>
-
-<label
-                htmlFor="namaPemeriksa"
-                className="form-label block  text-black text-xs font-extrabold my-2 "
-              >
-                CATATAN
-              </label>
-              <button
-            type="button"
-            onClick={() => {
-              handleClickDetail(index)
-            }}
-            className="text-gray-400 focus:outline-none"
-          >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 22 22"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="11" cy="11" r="11" fill="#0065DE" />
-              <rect
-                x="6.03955"
-                y="4.23242"
-                width="17"
-                height="3"
-                rx="1.5"
-                transform="rotate(42.8321 6.03955 4.23242)"
-                fill="white"
-              />
-              <rect
-                x="4.18213"
-                y="16.0609"
-                width="17"
-                height="3"
-                rx="1.5"
-                transform="rotate(-45 4.18213 16.0609)"
-                fill="white"
-              />
-            </svg>
-          </button>
-  </div>
-            <textarea className='w-full border border-neutral-600 h-56 p-2 rounded-sm'  name="" id=""></textarea>
-          
-  <button
-    onClick={() => validasiTicket(data.id)}
-    className="text-xs font-bold bg-blue-600 py-2 px-5 text-white  w-full rounded-md"
-  >
-    Validasi
-  </button>
-  <button
-    onClick={() => tolakTicket(data.id)}
-    className="text-xs font-bold bg-red-600 py-2 px-5 text-white  w-full rounded-md"
-  >
-    Tolak
-  </button>
-  </div>
-  </div>
-  
-  </>
-)}
-</div>
+                        <button
+                          onClick={() => validasiTicket(data.id)}
+                          className="text-xs font-bold bg-blue-600 py-2 px-5 text-white  w-full rounded-md"
+                        >
+                          Validasi
+                        </button>
+                        <button
+                          onClick={() => tolakTicket(data.id)}
+                          className="text-xs font-bold bg-red-600 py-2 px-5 text-white  w-full rounded-md"
+                        >
+                          Tolak
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           );
         })}

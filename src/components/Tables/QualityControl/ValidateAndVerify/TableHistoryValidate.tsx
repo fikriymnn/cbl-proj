@@ -14,16 +14,16 @@ import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination/Pagination';
 import calculateTime from '../../../../utils/calculateTime';
 
-const TableHistory = () => {
+const TableHistoryValidate = () => {
   const [page, setPage] = useState(1);
-  const [ticketProsesHistory, setTicketProsesHistory] = useState<any>(null);
+  const [ticket, setTicket] = useState<any>(null);
 
   useEffect(() => {
     getMTC();
   }, [page]);
 
   async function getMTC() {
-    const url = `${import.meta.env.VITE_API_LINK}/prosessMtcHistoryQc`;
+    const url = `${import.meta.env.VITE_API_LINK}/ticket`;
     try {
       const res = await axios.get(url, {
         params: {
@@ -33,7 +33,7 @@ const TableHistory = () => {
         withCredentials: true,
       });
 
-      setTicketProsesHistory(res.data);
+      setTicket(res.data);
 
       console.log(res.data);
     } catch (error: any) {
@@ -58,7 +58,7 @@ const TableHistory = () => {
             </div>
             <div className=" text-[14px] justify-start col-span-2 ">
               <p className="text-slate-600 font-semibold  dark:text-white">
-                Waktu Selesai
+                Status
               </p>
             </div>
             <div className=" text-[14px] justify-start col-span-2 ">
@@ -68,13 +68,10 @@ const TableHistory = () => {
               <p className="text-slate-600 font-semibold ">Kendala</p>
             </div>
             <div className=" text-[14px] justify-start ">
-              <p className="text-slate-600 font-semibold ">status</p>
-            </div>
-            <div className=" text-[14px] justify-start ">
               <p className="text-slate-600 font-semibold ">note</p>
             </div>
             <div className=" text-[14px] justify-start ">
-              <p className="text-slate-600 font-semibold ">Waktu Respon</p>
+              <p className="text-slate-600 font-semibold ">Waktu Respone</p>
             </div>
             {/* <div className=" text-[14px] justify-center ">
               <p className="text-slate-600 font-semibold ">Skor</p>
@@ -82,13 +79,10 @@ const TableHistory = () => {
           </div>
         </div>
       </div>
-      {ticketProsesHistory?.data.map((data: any, index: number) => {
+      {ticket?.data.map((data: any, index: number) => {
         const tglTicket = convertTimeStampToDate(data.createdAt);
-        const tglSelesaiTicket = convertTimeStampToDate(data.waktu_selesai_mtc);
-        const waktuRespon = calculateTime(
-          data.waktu_selesai_mtc,
-          data.waktu_selesai,
-        );
+        const waktuRespon = calculateTime(data.createdAt, data.waktu_respon_qc);
+
         return (
           <div
             key={index}
@@ -103,7 +97,7 @@ const TableHistory = () => {
               <div className="flex w-full justify-start col-span-2 gap-14">
                 <p className="text-neutral-500 text-sm font-light  dark:text-white">
                   {' '}
-                  {data.tiket.kode_ticket}
+                  {data.kode_ticket}
                 </p>
               </div>
               <div className="flex w-full  justify-start col-span-2">
@@ -113,22 +107,17 @@ const TableHistory = () => {
               </div>
               <div className="flex w-full  justify-start col-span-2">
                 <p className="text-neutral-500 text-sm font-light  dark:text-white">
-                  {tglSelesaiTicket}
+                  {data.status_qc}
                 </p>
               </div>
               <div className="flex w-full  justify-start col-span-2 ">
                 <p className="text-neutral-500 text-sm font-light ">
-                  {data.tiket.mesin}
+                  {data.mesin}
                 </p>
               </div>
               <div className="flex w-full  justify-start col-span-3">
                 <p className="text-neutral-500 text-sm font-light ">
-                  {data.tiket.kode_lkh + ' - ' + data.tiket.nama_kendala}
-                </p>
-              </div>
-              <div className="flex w-full  justify-start col-span-3">
-                <p className="text-neutral-500 text-sm font-light ">
-                  {data.status_qc}
+                  {data.kode_lkh + ' - ' + data.nama_kendala}
                 </p>
               </div>
               <div className="flex w-full  justify-start col-span-3">
@@ -146,12 +135,7 @@ const TableHistory = () => {
                   {data.skor_mtc}
                 </p>
               </div> */}
-              <button
-                // onClick={() => {
-                //   console.log(data);
-                // }}
-                className="text-xs font-bold bg-blue-700 py-2 px-5 text-white rounded-sm"
-              >
+              <button className="text-xs font-bold bg-blue-700 py-2 px-5 text-white rounded-sm">
                 Detail
               </button>
             </div>
@@ -161,7 +145,7 @@ const TableHistory = () => {
       <div className="w-full flex  mt-5 ">
         <Stack spacing={2}>
           <Pagination
-            count={ticketProsesHistory?.total_page}
+            count={ticket?.total_page}
             color="primary"
             onChange={(e, i) => {
               setPage(i);
@@ -174,4 +158,4 @@ const TableHistory = () => {
   );
 };
 
-export default TableHistory;
+export default TableHistoryValidate;
