@@ -782,7 +782,7 @@ function HistoriOS3() {
                         <div className="grid md:grid-cols-8 grid-cols-6 w-full  ">
                           <div className="flex flex-col md:gap-5 gap-1 ">
                             <div className="my-auto ">
-                              <p className="text-xs font-light">JUN24-0001</p>
+                              <p className="text-xs font-light"></p>
                             </div>
                           </div>
                           <div className="flex flex-col md:gap-5 gap-1 ">
@@ -856,6 +856,7 @@ function HistoriOS3() {
                             </div>
                             <div>
                               <button
+                              title='button'
                                 onClick={() => handleClickDetail(i)}
                                 className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
                               >
@@ -872,7 +873,7 @@ function HistoriOS3() {
                             <div className="flex px-5 py-2">
                               <div className="flex flex-col gap-2 w-2/12">
                                 <p className="text-xs font-bold">
-                                  Waktu Tiket Masuk
+                                  Waktu Temuan
                                 </p>
                               </div>
                               <div className="grid grid-cols-6 gap-3 w-10/12">
@@ -982,7 +983,7 @@ function HistoriOS3() {
                                             isOpen={showModalDetail[ii]}
                                             onClose={() => closeModalDetail(ii)}
                                             kendala={data.nama_kendala}
-                                            machineName={data.mesin}
+                                            machineName={data.nama_mesin}
                                             tgl={'12/12/24'}
                                             jam={'17.00'}
                                             namaPemeriksa={
