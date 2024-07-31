@@ -169,9 +169,8 @@ const ModalTambahUser = ({
                 setBagian(e.target.value);
                 changeTextColor();
               }}
-              className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                isOptionSelected ? 'text-black dark:text-white' : ''
-              }`}
+              className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
+                }`}
             >
               <option
                 value=""
@@ -188,6 +187,12 @@ const ModalTambahUser = ({
               >
                 Maintenance
               </option>
+              <option
+                value="quality control"
+                className="text-body dark:text-bodydark"
+              >
+                Quality Control
+              </option>
             </select>
             <label className="text-black text-xs font-bold pt-4">ROLE</label>
             <select
@@ -195,9 +200,8 @@ const ModalTambahUser = ({
                 setRole(e.target.value);
                 changeTextColor();
               }}
-              className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                isOptionSelected ? 'text-black dark:text-white' : ''
-              }`}
+              className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
+                }`}
             >
               <option
                 value=""
@@ -265,16 +269,15 @@ const ModalTambahUser = ({
               )}
             </div>
             <input
-              className={`... ${
-                !passwordMatch
-                  ? 'w-full h-10 self-stretch p-4 bg-white rounded-md  justify-start items-center gap-4 inline-flex border border-red-500'
-                  : 'w-full h-10 self-stretch p-4 bg-white rounded-md border border-stroke  justify-start items-center gap-4 inline-flex'
-              } ...`}
+              className={`... ${!passwordMatch
+                ? 'w-full h-10 self-stretch p-4 bg-white rounded-md  justify-start items-center gap-4 inline-flex border border-red-500'
+                : 'w-full h-10 self-stretch p-4 bg-white rounded-md border border-stroke  justify-start items-center gap-4 inline-flex'
+                } ...`}
               id="confirmoldpassword"
               placeholder="Masukkan Password Konfirmasi"
               type="password"
               onChange={(e) => setConfPassword1(e.target.value)}
-              //     className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
+            //     className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
             />
 
             <div className="pt-4">

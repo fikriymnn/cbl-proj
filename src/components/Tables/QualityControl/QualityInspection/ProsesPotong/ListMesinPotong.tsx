@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Button } from '@mui/material';
 
 
-function ProsesCetakMesin() {
+function ListMesinPotongBahan() {
     const [isMobile, setIsMobile] = useState(false);
     const kosong: any = []
     const today = new Date();
@@ -81,7 +81,7 @@ function ProsesCetakMesin() {
     //             }
     //         );
     //         console.log(res.data);
-    //         navigate(`/maintenance/mesin/pm_1_form/${id}`)
+    //         navigate(`/maintenance/inspection/pm_1_form/${id}`)
     //     } catch (error: any) {
     //         console.log(error);
     //     }
@@ -141,24 +141,16 @@ function ProsesCetakMesin() {
 
     const tanggal = convertDatetimeToDate(new Date());
 
-    const mesin = [
+    const inspection = [
         {
 
-            nama: 'R700',
-            no_job_order: '00-000A',
-            inspector: 'Iko Uwais'
+            nama: 'POLAR',
+
         },
         {
 
-            nama: 'SM74',
-            no_job_order: '00-000A',
-            inspector: 'Cris Pratt'
-        },
-        {
+            nama: 'ITOH',
 
-            nama: 'GTO',
-            no_job_order: '00-000A',
-            inspector: 'Zoe Saldana'
         },
     ];
 
@@ -169,57 +161,30 @@ function ProsesCetakMesin() {
                     <div className='min-w-[700px] bg-white rounded-xl'>
                         <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>{tanggal}</p>
                         <div className=' w-full h-full flex-col border-b-8 border-[#D8EAFF]'>
-                            <div className='grid grid-cols-8 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 '>
 
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    MESIN
-                                </label>
-
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    No. Job Order
-                                </label>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    Inspector
-                                </label>
-
-
-                            </div>
                             <div className='w-2 h-full '>
 
                             </div>
-                            {mesin.map((data: any, i: any) => (
+                            {inspection.map((data: any, i: any) => (
                                 <>
                                     <section className=' flex  justify-center  w-full h-[59px] border-b-8 border-[#D8EAFF] text-[14px]  text-black'>
-
                                         <div className={`w-2 h-full sticky left-0 z-20 bg-green-600  `}>
 
                                         </div>
 
                                         <div className=' w-full h-full flex flex-col justify-center relative'>
-                                            <div className='ps-7 w-full flex gap-2'>
+                                            <div className='ps-7 w-full flex'>
                                                 <div className='flex flex-col justify-center text-stone-500 text-sm font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
                                                     <p className=''>{data.nama}</p>
-
                                                 </div>
-                                                <p className=''>{data.no_job_order}</p>
-                                                <p className=''>{data.inspector}</p>
+
                                             </div>
                                         </div>
                                         <div className='justify-end pr-4'>
-                                            {data.nama == 'R700' ? (
+                                            {data.nama == 'POLAR' ? (
                                                 <>
-                                                    <Link to={``}>
+                                                    <Link to={`/qc/qualityinspection/potongbahan/listbahanpolar`}>
 
-                                                        <button
-                                                            className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
-                                                        >
-                                                            PILIH
-                                                        </button>
-                                                    </Link>
-                                                </>
-                                            ) : data.nama == 'SM74' ? (
-                                                <>
-                                                    <Link to={``}>
                                                         <button
                                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                         >
@@ -228,9 +193,10 @@ function ProsesCetakMesin() {
                                                         </button>
                                                     </Link>
                                                 </>
-                                            ) : data.nama == 'GTO' ? (
+                                            ) : data.nama == 'ITOH' ? (
                                                 <>
-                                                    <Link to={``}>
+                                                    <Link to={`/qc/qualityinspection/potongbahan/listbahanitoh`}>
+
                                                         <button
                                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                         >
@@ -257,4 +223,4 @@ function ProsesCetakMesin() {
     )
 }
 
-export default ProsesCetakMesin
+export default ListMesinPotongBahan

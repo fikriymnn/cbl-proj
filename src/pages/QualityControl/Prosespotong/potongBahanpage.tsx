@@ -1,4 +1,4 @@
-import PotongBahan from "../../../components/Tables/QualityControl/QualityInspection/ProsesPotong/potongbahan";
+import PotongBahan from "../../../components/Tables/QualityControl/QualityInspection/ProsesPotong/Bahan/potongbahan";
 
 import DefaultLayout from "../../../layout/DefaultLayout";
 
