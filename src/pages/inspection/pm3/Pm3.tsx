@@ -114,37 +114,30 @@ function Pm3() {
 
   return (
     <>
+      <main>
+        <div className="bg-white w-full mb-5 rounded-md p-3">
+          <MyCalendar data={pm3} />
+          {pm3.length == 0 ? (
+            <div
+              className={`cursor-pointer uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center `} // Dynamic class assignment
+              onClick={createPM3}
+            >
+              TAMBAH PM3
+            </div>
+          ) : null}
+        </div>
 
+        <div className="w-2 h-full "></div>
+        <div className="overflow-x-scroll">
+          <div className="min-w-[700px] bg-white rounded-xl">
+            <div className=" ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]">
+              <div className="w-2 h-full "></div>
+              <section className="grid md:grid-cols-4 grid-cols-3 w-full py-4  font-semibold text-[14px]">
+                <p className="">Nama Mesin</p>
 
-     
-        <main >
-          <div className='bg-white w-full mb-5 rounded-md p-3'>
-            <MyCalendar data={pm3}/>
-            
-          </div>
-          <div className='w-2 h-full '>
-
-          </div>
-          <div className='overflow-x-scroll'>
-
-          <div className='min-w-[700px] bg-white rounded-xl'>
-
-
-            <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
-              <div className='w-2 h-full '>
-
-              </div>
-              <section className='grid md:grid-cols-4 grid-cols-3 w-full py-4  font-semibold text-[14px]'>
-
-
-                <p className=''>Nama Mesin</p>
-
-
-                <p className='md:flex hidden '>Tanggal Permintaan</p>
+                <p className="md:flex hidden ">Tanggal Permintaan</p>
 
                 <p>Jadwal Diajukan</p>
-
-                
 
                 <div className="w-[125px]">{''}</div>
               </section>
@@ -158,16 +151,17 @@ function Pm3() {
                     className=" flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black"
                   >
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 ${data.mesin.bagian_mesin == 'printing'
-                        ? 'bg-green-600'
-                        : data.mesin.bagian_mesin == 'water base'
+                      className={`w-2 h-full sticky left-0 z-20 ${
+                        data.mesin.bagian_mesin == 'printing'
+                          ? 'bg-green-600'
+                          : data.mesin.bagian_mesin == 'water base'
                           ? 'bg-yellow-600'
                           : data.mesin.bagian_mesin == 'pond'
-                            ? 'bg-violet-900'
-                            : data.mesin.bagian_mesin == 'finishing'
-                              ? 'bg-red-900'
-                              : ''
-                        }`}
+                          ? 'bg-violet-900'
+                          : data.mesin.bagian_mesin == 'finishing'
+                          ? 'bg-red-900'
+                          : ''
+                      }`}
                     ></div>
 
                     <div className=" w-full h-full flex flex-col justify-center relative">
@@ -204,7 +198,7 @@ function Pm3() {
                           </p>
                         </div> */}
 
-                        <div className='flex justify-center'>
+                        <div className="flex justify-center">
                           <>
                             <div
                               className={`cursor-pointer uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center `} // Dynamic class assignment
@@ -328,8 +322,11 @@ function Pm3() {
                                       />
                                     </div>
                                     <div className="pt-5">
-                                      <button onClick={() => closeModalRequest()} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                       SIMPAN SEMENTARA
+                                      <button
+                                        onClick={() => closeModalRequest()}
+                                        className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
+                                      >
+                                        SIMPAN SEMENTARA
                                       </button>
                                     </div>
                                   </div>
@@ -363,10 +360,8 @@ function Pm3() {
               </div>
             </section>
           </div>
-          </div>
-        </main>
-     
-     
+        </div>
+      </main>
     </>
   );
 }

@@ -29,6 +29,7 @@ const TableHistoryValidate = () => {
         params: {
           page: page,
           limit: 10,
+          historiQc: true,
         },
         withCredentials: true,
       });

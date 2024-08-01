@@ -11,11 +11,14 @@ import BarChartVertical from '../UiElements/BarChartVertical';
 import axios from 'axios';
 
 function Dashboard() {
+  const [perbandinganOs2, setPerbandinganOs2] = useState();
+  const [perbandinganOs3, setPerbandinganOs3] = useState();
   const [defectOs2, setDefectOs2] = useState();
   const [QcProblemOs2, setQcProblemOs2] = useState();
   const [ProdProblemOs2, setProdProblemOs2] = useState();
   useEffect(() => {
     getMesinProblem();
+    getPerbandinganOs();
   }, []);
 
   async function getMesinProblem() {
@@ -28,11 +31,26 @@ function Dashboard() {
       setDefectOs2(res.data.defectOs2);
       setQcProblemOs2(res.data.qcProblemOs2);
       setProdProblemOs2(res.data.prodProblemMesinOs2);
+      //console.log(res.data);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
+
+  async function getPerbandinganOs() {
+    const url = `${import.meta.env.VITE_API_LINK}/dashboardMtc/perbandinganOs`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      setPerbandinganOs2(res.data.os2);
+      setPerbandinganOs2(res.data.os3);
       console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
+
   return (
     <DefaultLayout>
       <>
@@ -91,42 +109,46 @@ function Dashboard() {
                       </g>
                     </svg>
                   </span>
-
                 </div>
               </div>
-
             </div>
-            <div className='bg-white rounded-md shadow-md md:w-9/12 flex flex-col md:flex-row p-3 md:gap-10 gap-2'>
-              <div className='flex items-center justify-center '>
-
-                <p className='text-primary text-sm font-bold'>Filter Tanggal</p>
+            <div className="bg-white rounded-md shadow-md md:w-9/12 flex flex-col md:flex-row p-3 md:gap-10 gap-2">
+              <div className="flex items-center justify-center ">
+                <p className="text-primary text-sm font-bold">Filter Tanggal</p>
               </div>
-              <div className='flex md:justify-center items-center gap-2'>
-                <p className='text-sm text-primary font-medium md:w-3/12 w-2/12'>Dari:</p>
-                <div className='w-44 bg-[#D8EAFF]'>
-
-                  <LocalizationProvider dateAdapter={AdapterDayjs} >
-                    <DatePicker slotProps={{ textField: { fullWidth: true, size: 'small' } }} />
+              <div className="flex md:justify-center items-center gap-2">
+                <p className="text-sm text-primary font-medium md:w-3/12 w-2/12">
+                  Dari:
+                </p>
+                <div className="w-44 bg-[#D8EAFF]">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      slotProps={{
+                        textField: { fullWidth: true, size: 'small' },
+                      }}
+                    />
                   </LocalizationProvider>
                 </div>
               </div>
-              <div className='flex md:justify-center items-center gap-2'>
-                <p className='text-sm text-primary font-medium md:w-3/12 w-2/12'>Sampai:</p>
-                <div className='w-44 bg-[#D8EAFF]'>
-
-                  <LocalizationProvider dateAdapter={AdapterDayjs} >
-                    <DatePicker slotProps={{ textField: { fullWidth: true, size: 'small' } }} />
+              <div className="flex md:justify-center items-center gap-2">
+                <p className="text-sm text-primary font-medium md:w-3/12 w-2/12">
+                  Sampai:
+                </p>
+                <div className="w-44 bg-[#D8EAFF]">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      slotProps={{
+                        textField: { fullWidth: true, size: 'small' },
+                      }}
+                    />
                   </LocalizationProvider>
                 </div>
               </div>
-
             </div>
-
           </div>
-          <div className='bg-white flex md:flex-row flex-col gap-10    my-3 w-full'>
-            <div className='p-5'>
+          <div className="bg-white flex md:flex-row flex-col gap-10    my-3 w-full">
+            <div className="p-5">
               <div className="flex gap-3 p-3">
-
                 <img src={Production} alt="Logo" />
 
                 <p className="text-[14px] text-[#0065DE]">

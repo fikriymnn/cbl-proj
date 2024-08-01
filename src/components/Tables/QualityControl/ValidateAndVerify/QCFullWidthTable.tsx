@@ -128,7 +128,7 @@ export default function QCFullWidthTabs() {
           >
             <Tab label="Validasi" {...a11yProps(0)} className="" />
             <Tab label="Verifikasi" {...a11yProps(1)} />
-            <Tab label="History" {...a11yProps(2)} />
+            <Tab label="History Verifikasi" {...a11yProps(2)} />
             <Tab label="History Validasi" {...a11yProps(3)} />
           </Tabs>
         </ThemeProvider>

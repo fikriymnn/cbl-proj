@@ -89,6 +89,7 @@ import HistoryBahanPolar from './pages/QualityControl/Prosespotong/History/Histo
 import HistoryJadiPolar from './components/Tables/QualityControl/QualityInspection/ProsesPotong/Jadi/HistoryJadiPolar';
 import HistoryJadiPolarPage from './pages/QualityControl/Prosespotong/History/HistoryJadiPolarPage';
 import HistoryJadiItohPage from './pages/QualityControl/Prosespotong/History/HistoryJadiItohPage';
+import ProfilSetting from './pages/profilSetting';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
