@@ -46,6 +46,7 @@ function PotongBahan() {
                 withCredentials: true,
             });
 
+            console.log(res.data.data)
             setIncoming(res.data.data);
         } catch (error: any) {
             console.log(error.data.msg);
@@ -123,7 +124,11 @@ function PotongBahan() {
             alert('Task tidak bisa diberhentikan: Belum Start.');
             return; // Exit function if no start time
         }
-
+        if (merk == null || ctt == null) {
+            // Check if start time is available
+            alert('Data Tidak Lengkap');
+            return; // Exit function if no start time
+        }
         if (incoming?.inspeksi_potong_result[0].hasil_check == null ||
             incoming?.inspeksi_potong_result[0].keterangan == null ||
             incoming?.inspeksi_potong_result[1].hasil_check == null ||
@@ -133,6 +138,7 @@ function PotongBahan() {
             incoming?.inspeksi_potong_result[2].keterangan == null ||
             incoming?.inspeksi_potong_result[3].hasil_check == null ||
             incoming?.inspeksi_potong_result[3].keterangan == null
+
 
 
         ) {
@@ -158,7 +164,8 @@ function PotongBahan() {
             console.log(formattedTime);
             const res = await axios.put(url,
                 {
-
+                    catatan: ctt,
+                    merk: merk,
                     lama_pengerjaan: totalSecondsToSave,
                     hasil_check: incoming.inspeksi_potong_result
                 }
@@ -177,6 +184,10 @@ function PotongBahan() {
             console.log(error);
         }
     }
+
+    const [merk, setMerk] = useState<any>();
+    const [ctt, setCtt] = useState<any>();
+
     return (
         <>
 
@@ -243,9 +254,12 @@ function PotongBahan() {
                                 <label className='text-neutral-500 text-sm font-semibold'>
                                     Inspector
                                 </label>
+                                <label className='text-neutral-500 text-sm font-semibold'>
+                                    Merk
+                                </label>
 
                             </div>
-                            <div className='grid grid-rows-6  gap-1 col-span-2 justify-between px-10 py-4'>
+                            <div className='grid grid-rows-6  gap-1 col-span-2 justify-between px-2 py-4'>
                                 <label className='text-neutral-500 text-sm font-semibold'>
                                     : {incoming?.jam}
                                 </label>
@@ -255,6 +269,25 @@ function PotongBahan() {
                                 <label className='text-neutral-500 text-sm font-semibold'>
                                     : {incoming?.inspector}
                                 </label>
+                                <label className='text-neutral-500 text-sm font-semibold'>
+
+                                    {incoming?.status == 'incoming' ? (
+                                        <>
+                                            : <input
+                                                onChange={(e) => {
+                                                    setMerk(e.target.value)
+                                                }}
+                                                type='text' className='rounded-[3px] w-[50%] border border-zinc-300' />
+                                        </>
+                                    ) : (
+                                        <>
+                                            :{incoming?.merk}
+                                        </>
+                                    )
+                                    }
+
+                                </label>
+
                             </div>
                             <div className='flex flex-col w-full items-center gap-4 px-10 py-4 col-span-2  bg-[#F6FAFF]'>
                                 <div >
@@ -804,7 +837,7 @@ function PotongBahan() {
                                 </>
                             )}
 
-                        <div className='bg-white flex w-full justify-end px-4 py-4'>
+                        <div className='bg-white flex w-full justify-between px-4 py-4 items-center'>
                             {/* {!incoming?.inspeksi_bahan_result[0]?.send ? (
                                 <>
                                     <button onClick={() => {
@@ -820,6 +853,26 @@ function PotongBahan() {
                                     <>
                                     </>
                                 )} */}
+                            <label className='text-neutral-500 text-sm font-semibold'>
+                                Catatan
+                                {incoming?.status == 'incoming' ? (
+                                    <>
+                                        <textarea
+                                            onChange={(e) => {
+                                                setCtt(e.target.value)
+                                            }}
+                                            className="peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                        ></textarea>
+
+                                    </>
+                                ) : (
+                                    <>
+                                        :{incoming?.catatan}
+                                    </>
+                                )
+                                }
+
+                            </label>
                             {incoming?.status == 'incoming' ? (
                                 <>
                                     <button onClick={() => {
@@ -827,7 +880,7 @@ function PotongBahan() {
                                         console.log(incoming)
                                         sumbitChecksheet(incoming?.id, incoming?.waktu_mulai)
                                     }
-                                    } className='bg-[#0065DE] px-4 py-2 rounded-sm text-center text-white text-xs font-bold'>
+                                    } className='bg-[#0065DE] max-h-8 px-4 py-2 rounded-sm text-center text-white text-xs font-bold'>
                                         SUBMIT CHECKSHEET
                                     </button>
                                 </>
