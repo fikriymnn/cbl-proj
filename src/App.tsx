@@ -89,6 +89,8 @@ import HistoryBahanPolar from './pages/QualityControl/Prosespotong/History/Histo
 import HistoryJadiPolar from './components/Tables/QualityControl/QualityInspection/ProsesPotong/Jadi/HistoryJadiPolar';
 import HistoryJadiPolarPage from './pages/QualityControl/Prosespotong/History/HistoryJadiPolarPage';
 import HistoryJadiItohPage from './pages/QualityControl/Prosespotong/History/HistoryJadiItohPage';
+import JenisCetak from './pages/QualityControl/ProsesCetak/JenisCetak';
+import CetakAwal from './pages/QualityControl/ProsesCetak/CetakAwal';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -569,6 +571,28 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <ProsesCetak />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/cetak/jeniscetak"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JenisCetak />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/cetak/jeniscetak/checkawal"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CetakAwal />
               </ProtectedRoute>
             </>
           }
