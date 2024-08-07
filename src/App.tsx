@@ -91,6 +91,9 @@ import HistoryJadiPolarPage from './pages/QualityControl/Prosespotong/History/Hi
 import HistoryJadiItohPage from './pages/QualityControl/Prosespotong/History/HistoryJadiItohPage';
 import JenisCetak from './pages/QualityControl/ProsesCetak/JenisCetak';
 import CetakAwal from './pages/QualityControl/ProsesCetak/CetakAwal';
+import ProsesPond from './pages/QualityControl/ProsesPond/ProsesPond';
+import JenisPond from './pages/QualityControl/ProsesPond/JenisPond';
+import PondAwal from './pages/QualityControl/ProsesPond/PondAwal';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -575,6 +578,18 @@ function App() {
             </>
           }
         />
+
+        <Route
+          path="/qc/qualityinspection/pond"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesPond />
+              </ProtectedRoute>
+            </>
+          }
+        />
         <Route
           path="/qc/qualityinspection/cetak/jeniscetak"
           element={
@@ -587,12 +602,34 @@ function App() {
           }
         />
         <Route
+          path="/qc/qualityinspection/pond/jenispond"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JenisPond />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/qc/qualityinspection/cetak/jeniscetak/checkawal"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <CetakAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/pond/jenispond/checkawal"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PondAwal />
               </ProtectedRoute>
             </>
           }
