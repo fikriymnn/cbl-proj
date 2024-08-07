@@ -586,7 +586,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/cetak/jeniscetak"
+          path="/qc/qualityinspection/cetak/jeniscetak/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -597,7 +597,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/cetak/jeniscetak/checkawal"
+          path="/qc/qualityinspection/cetak/jeniscetak/checkawal/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
