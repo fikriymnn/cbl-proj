@@ -98,7 +98,7 @@ function AddStockService() {
     <DefaultLayout>
       <>
         <p className="font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]">
-          Maintenance &gt; Service &gt; Stock Master &gt; Add Item
+          Maintenance &gt; Service &gt; Lifespan &gt; Add Item
         </p>
         <div className="grid md:grid-cols-3 gap-5 p-3 bg-white text-black">
           <div className="mt-5 flex flex-col justify-center px-2">

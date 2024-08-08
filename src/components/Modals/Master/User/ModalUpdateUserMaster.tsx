@@ -301,6 +301,7 @@ const ModalEditUser = ({
         <div className="px-4 pb-4">
           <div className=" flex w-full pt-4 gap-5">
             <button
+            title='button'
               type="button"
               onClick={onClose}
               className="absolute top-auto right-auto bottom-3 left-auto transform translate-x-1/2 translate-y-1/2 text-gray-400 focus:outline-none"

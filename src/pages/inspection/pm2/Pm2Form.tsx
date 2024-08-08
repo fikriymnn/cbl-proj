@@ -180,11 +180,7 @@ function Pm2Form() {
     const [isLoading, setIsLoading] = useState(false)
 
     async function donePm2(id: any) {
-        if (!catatan
-            // || !userKA || !userLeader || !userSuper
-        ) {
-            alert('Data Tidak Lengkap');
-        }
+       
         const url = `${import.meta.env.VITE_API_LINK}/pm2/done/${id}`;
         try {
             setIsLoading(true);
@@ -1377,7 +1373,7 @@ function Pm2Form() {
                                         return (
                                             <>
 
-                                                <section className=" border-b-8 border-[#D8EAFF]">
+                                                <section className={data.hasil == 'warning'?"border-2 border-yellow-400 bg-[#FFF9E8] mb-2":data.hasil == 'jelek'?"border-2 border-red-400 bg-[#FFEFEF] mb-2":data.hasil == 'tidak terpasang'?"border-2 border-red-400 bg-[#FFEFEF] mb-2":" border-b-8 border-[#D8EAFF] mb-2"}>
                                                     <div className="flex p-4 border-b-2 border-[#6D6C6C] ">
                                                         <div className="flex w-full ">
                                                             <div className="flex w-4/12 flex-col">

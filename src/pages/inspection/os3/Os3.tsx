@@ -34,10 +34,25 @@ function TableOS3() {
   }, []);
 
   //const openModal1 = () => setShowModal1(true);
-
+  
   const openModal2 = () => setShowModal2(true);
   //const closeModal1 = () => setShowModal1(false);
+  function calculateResponTime(startDate: any, endDate: any) {
+    const createdAtDate = new Date(startDate);
+    const waktuResponDate = new Date(endDate);
+    const millisecondsDiff =
+      waktuResponDate.getTime() - createdAtDate.getTime();
 
+    const secondsDiff = millisecondsDiff / 1000;
+    const minutesDiff = Math.floor(secondsDiff / 60);
+    const hoursDiff = Math.floor(minutesDiff / 60);
+
+    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${
+      hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
+    } `;
+
+    return formattedDifference; // Example format (YYYY-MM-DD)
+  }
   const closeModal2 = () => setShowModal2(false);
   // const handleClick = (index: number) => {
   //   setShowTwoButtons((prevState) => {
@@ -804,6 +819,10 @@ function TableOS3() {
                   //     data.createdAt,
                   //     data.waktu_respon,
                   //   );
+                  const waktuRespon = calculateResponTime(
+                    data.createdAt,
+                    data.waktu_respon,
+                  );
                   return (
                     <>
                       <div className="my-2">
@@ -818,7 +837,7 @@ function TableOS3() {
                             <div className="flex flex-col md:gap-5 gap-1 ">
                               <div className="my-auto ">
                                 <p className="text-xs font-light">
-                                  JUN-24-0001
+                                  {data.kode_tiket}
                                 </p>
                               </div>
                             </div>
@@ -849,7 +868,13 @@ function TableOS3() {
                                   <img className="" src={X} alt="" />
                                 </div>
                                 <p className="text-xs  px-1 font-light  rounded-xl flex justify-center items-center">
-                                  {data.point_pm1.hasil}
+                                  {data.sumber == 'pm1'
+                                    ? data.point_pm1.hasil
+                                    : data.sumber == 'pm2'
+                                    ? data.point_pm2.hasil
+                                    : data.sumber == 'pm3'
+                                    ? data.point_pm3.hasil
+                                    : ''}
                                 </p>
                               </div>
                             </div>
@@ -896,7 +921,7 @@ function TableOS3() {
                               <div>
                                 <div>
                                   <button
-                                  title='button'
+                                    title="button"
                                     className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
                                     onClick={() => handleClick(i)}
                                   >
@@ -980,7 +1005,7 @@ function TableOS3() {
                               </div>
                               <div>
                                 <button
-                                title='button'
+                                  title="button"
                                   onClick={() => handleClickDetail(i)}
                                   className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
                                 >
@@ -991,187 +1016,202 @@ function TableOS3() {
                           </div>
                         </section>
 
-                        {data.proses_mtc_os3s.length > 0 && showDetail[i] && (
-                          <>
-                            <div className="w-full flex flex-col bg-[#E9F3FF]  rounded-lg">
-                              <div className="flex px-5 py-2">
-                                <div className="flex flex-col gap-2 w-2/12">
+                        {data.proses_mtc_os3s.length > 0
+                                    ?showDetail[i] && (
+                        <>
+                          <div className="w-full flex flex-col bg-[#E9F3FF]  rounded-lg">
+                            <div className="flex px-5 py-2">
+                              <div className="flex flex-col gap-2 w-2/12">
+                                <p className="text-xs font-bold">
+                                  Waktu Temuan
+                                </p>
+                              </div>
+                              <div className="grid grid-cols-6 gap-3 w-10/12">
+                                <div className="flex flex-col gap-2">
+                                  <h5 className="text-xs font-bold">
+                                    Pengerjaan Ke
+                                  </h5>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                  <p className="text-xs font-bold">Waktu</p>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                  <p className="text-xs font-bold">Eksekutor</p>
+                                </div>
+
+                                <div className="flex flex-col gap-2">
                                   <p className="text-xs font-bold">
-                                    Waktu Tiket Masuk
+                                    Progress Perbaikan
                                   </p>
                                 </div>
-                                <div className="grid grid-cols-6 gap-3 w-10/12">
-                                  <div className="flex flex-col gap-2">
-                                    <h5 className="text-xs font-bold">
-                                      Pengerjaan Ke
-                                    </h5>
-                                  </div>
-                                  <div className="flex flex-col gap-2">
-                                    <p className="text-xs font-bold">Waktu</p>
-                                  </div>
-                                  <div className="flex flex-col gap-2">
-                                    <p className="text-xs font-bold">
-                                      Eksekutor
-                                    </p>
-                                  </div>
-
-                                  <div className="flex flex-col gap-2">
-                                    <p className="text-xs font-bold">
-                                      Progress Perbaikan
-                                    </p>
-                                  </div>
-                                  <div className="flex flex-col gap-2">
-                                    <p className="text-xs font-bold">
-                                      Jenis Perbaikan
-                                    </p>
-                                  </div>
-                                  <div className=""></div>
+                                <div className="flex flex-col gap-2">
+                                  <p className="text-xs font-bold">
+                                    Jenis Perbaikan
+                                  </p>
                                 </div>
-                              </div>
-                              <div className="flex px-5 ">
-                                <div className="flex flex-col gap-2 w-2/12">
-                                  <div>
-                                    <p className="text-xs font-medium">
-                                      {dateMtc}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <p className="text-xs font-bold">
-                                      Waktu Respon
-                                    </p>
-                                    <p className="text-xs font-medium">
-                                      {/* {waktuRespon} */}
-                                    </p>
-                                  </div>
-                                </div>
-                                <div className="grid grid-cols-6 gap-3 w-10/12">
-                                  {data.proses_mtc_os3s.length > 0
-                                    ? data.proses_mtc_os3s.map(
-                                        (proses: any, ii: any) => {
-                                          const tglMulaiMtc =
-                                            convertDatetimeToDate(
-                                              proses.waktu_mulai_mtc,
-                                            );
-                                          return (
-                                            <>
-                                              <div className="flex flex-col gap-2">
-                                                <h5 className="text-xs font-medium">
-                                                  {ii + 1}
-                                                </h5>
-                                              </div>
-                                              <div className="flex flex-col gap-2">
-                                                <p className="text-xs font-medium">
-                                                  {tglMulaiMtc}
-                                                </p>
-                                              </div>
-                                              <div className="flex flex-col gap-2">
-                                                <p className="text-xs font-medium">
-                                                  {proses.user_eksekutor.nama}
-                                                </p>
-                                              </div>
-
-                                              <div className="flex flex-col gap-2">
-                                                <div className="flex">
-                                                  <p
-                                                    className={
-                                                      proses.skor_mtc === 100
-                                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                                        : proses.skor_mtc >=
-                                                            60 &&
-                                                          proses.skor_mtc < 100
-                                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
-                                                        : proses.skor_mtc >=
-                                                            40 &&
-                                                          proses.skor_mtc < 60
-                                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
-                                                        : proses.skor_mtc <
-                                                            40 &&
-                                                          proses.skor_mtc >= 0
-                                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                                        : ''
-                                                    }
-                                                  >
-                                                    {proses.skor_mtc}%
-                                                  </p>
-                                                </div>
-                                              </div>
-                                              <div className="flex flex-col gap-2">
-                                                <p className="text-xs font-medium">
-                                                  {proses.cara_perbaikan}
-                                                </p>
-                                              </div>
-                                              <div className="">
-                                                <button
-                                                  onClick={() =>
-                                                    openModalDetail(ii)
-                                                  }
-                                                  className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md"
-                                                >
-                                                  Detail
-                                                </button>
-                                              </div>
-                                              {showModalDetail[ii] && (
-                                                <ModalDetailOS3
-                                                  children={undefined}
-                                                  isOpen={showModalDetail[ii]}
-                                                  onClose={() =>
-                                                    closeModalDetail(ii)
-                                                  }
-                                                  kendala={data.nama_kendala}
-                                                  machineName={data.mesin}
-                                                  tgl={'12/12/24'}
-                                                  jam={'17.00'}
-                                                  namaPemeriksa={
-                                                    proses.user_eksekutor.nama
-                                                  }
-                                                  no={'1'}
-                                                  idTiket={data.id}
-                                                  kodeLkh={data.kode_lkh}
-                                                  analisisPenyebab={
-                                                    `${proses.kode_analisis_mtc}` +
-                                                    ' - ' +
-                                                    `${proses.nama_analisis_mtc}`
-                                                  }
-                                                  kebutuhanSparepart={
-                                                    'undefined'
-                                                  }
-                                                  tipeMaintenance={
-                                                    proses.cara_perbaikan
-                                                  }
-                                                  catatan={proses.note_mtc}
-                                                ></ModalDetailOS3>
-                                                // <ModalDetail
-                                                //     children={undefined}
-                                                //     isOpen={showModalDetail[ii]}
-                                                //     onClose={() => closeModalDetail(ii)}
-                                                //     kendala={data.nama_kendala}
-                                                //     machineName={data.mesin}
-                                                //     tgl={'12/12/24'}
-                                                //     jam={'17.00'}
-                                                //     namaPemeriksa={
-                                                //         proses.user_eksekutor.nama
-                                                //     }
-                                                //     no={'1'}
-                                                //     idTiket={data.id}
-                                                //     kodeLkh={data.kode_lkh}
-                                                //     analisisPenyebab={`${proses.kode_analisis_mtc}` + ' - ' + `${proses.nama_analisis_mtc}`}
-                                                //     kebutuhanSparepart={'undefined'}
-                                                //     tipeMaintenance={proses.cara_perbaikan}
-                                                //     catatan={
-                                                //         proses.note_mtc
-                                                //     }
-                                                // ></ModalDetail>
-                                              )}
-                                            </>
-                                          );
-                                        },
-                                      )
-                                    : null}
-                                </div>
+                                <div className=""></div>
                               </div>
                             </div>
-                          </>
-                        )}
+                            <div className="flex px-5 ">
+                              <div className="flex flex-col gap-2 w-2/12">
+                                <div>
+                                  <p className="text-xs font-medium">
+                                    {dateMtc}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs font-bold">
+                                    Waktu Respon
+                                  </p>
+                                  <p className="text-xs font-medium">
+                                    {waktuRespon}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-6 gap-3 w-10/12">
+                                {data.proses_mtc_os3s.map(
+                                  (proses: any, ii: any) => {
+                                    const tglMulaiMtc = convertDatetimeToDate(
+                                      proses.waktu_mulai_mtc,
+                                    );
+                                    return (
+                                      <>
+                                        <div className="flex flex-col gap-2">
+                                          <h5 className="text-xs font-medium">
+                                            {ii + 1}
+                                          </h5>
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                          <p className="text-xs font-medium">
+                                            {tglMulaiMtc}
+                                          </p>
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                          <p className="text-xs font-medium">
+                                            {proses.user_eksekutor.nama}
+                                          </p>
+                                        </div>
+
+                                        <div className="flex flex-col gap-2">
+                                          <div className="flex">
+                                            <p
+                                              className={
+                                                proses.skor_mtc === 100
+                                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
+                                                  : proses.skor_mtc >= 60 &&
+                                                    proses.skor_mtc < 100
+                                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                                  : proses.skor_mtc >= 40 &&
+                                                    proses.skor_mtc < 60
+                                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
+                                                  : proses.skor_mtc < 40 &&
+                                                    proses.skor_mtc >= 0
+                                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                                  : ''
+                                              }
+                                            >
+                                              {proses.skor_mtc}%
+                                            </p>
+                                          </div>
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                          <p className="text-xs font-medium">
+                                            {proses.cara_perbaikan}
+                                          </p>
+                                        </div>
+                                        <div className="">
+                                          <button
+                                            onClick={() => openModalDetail(ii)}
+                                            className="text-xs font-bold bg-blue-700 py-1 px-5 text-white rounded-md"
+                                          >
+                                            Detail
+                                          </button>
+                                        </div>
+                                        {showModalDetail[ii] && (
+                                          <ModalDetailOS3
+                                            children={undefined}
+                                            isOpen={showModalDetail[ii]}
+                                            onClose={() => closeModalDetail(ii)}
+                                            kendala={data.sumber == 'pm1'
+                                              ? data.point_pm1.inspection_point
+                                              : data.sumber == 'pm2'
+                                                ? data.point_pm2.inspection_point
+                                                : data.sumber == 'pm3'
+                                                  ? data.point_pm3.inspection_point
+                                                  : ''}
+                                            machineName={data.nama_mesin}
+                                            tgl={dateMtc}
+
+                                            namaPemeriksa={proses.user_eksekutor.nama}
+                                            no={'1'}
+                                            idTiket={data.id}
+                                            kodeLkh={data.kode_lkh}
+                                            analisisPenyebab={`${proses.kode_analisis_mtc}` +
+                                              ' - ' +
+                                              `${proses.nama_analisis_mtc}`}
+                                            kebutuhanSparepart={'undefined'}
+                                            tipeMaintenance={proses.cara_perbaikan}
+                                            catatan={data.sumber == 'pm1'
+                                              ? data.point_pm1.catatan
+                                              : data.sumber == 'pm2'
+                                              ? data.point_pm2.catatan
+                                              : data.sumber == 'pm3'
+                                              ? data.point_pm3.catatan
+                                              : ''}
+                                             inspection_point={data.sumber == 'pm1'
+                                              ? data.point_pm1.inspection_point
+                                              : data.sumber == 'pm2'
+                                                ? data.point_pm2.inspection_point
+                                                : data.sumber == 'pm3'
+                                                  ? data.point_pm3.inspection_point
+                                                  : ''}
+
+                                            acceptance_criteria={data.sumber == 'pm1'
+                                              ? data.point_pm1.inspection_task_pm1s[0].acceptance_criteria
+                                              : data.sumber == 'pm2'
+                                                ? data.point_pm2.inspection_task_pm2s[0].acceptance_criteria
+                                                : data.sumber == 'pm3'
+                                                  ? data.point_pm3.inspection_task_pm3s[0].acceptance_criteria
+                                                  : ''}
+                                            inspection_method={data.sumber == 'pm1'
+                                              ? data.point_pm1.inspection_task_pm1s[0].method
+                                              : data.sumber == 'pm2'
+                                                ? data.point_pm2.inspection_task_pm2s[0].method
+                                                : data.sumber == 'pm3'
+                                                  ? data.point_pm3.inspection_task_pm3s[0].method
+                                                  : ''}
+                                            tools={data.sumber == 'pm1'
+                                              ? data.point_pm1.inspection_task_pm1s[0].tools
+                                              : data.sumber == 'pm2'
+                                                ? data.point_pm2.inspection_task_pm2s[0].tools
+                                                : data.sumber == 'pm3'
+                                                  ? data.point_pm3.inspection_task_pm3s[0].tools
+                                                  : ''}
+                                            sumber={data.sumber}
+                                            indikator={data.sumber == 'pm1'
+                                              ? data.point_pm1.hasil
+                                              : data.sumber == 'pm2'
+                                                ? data.point_pm2.hasil
+                                                : data.sumber == 'pm3'
+                                                  ? data.point_pm3.hasil
+                                                  : ''} 
+                                            task_list={data.sumber == 'pm1'
+                                                    ? data.point_pm1.inspection_task_pm1s[0].task
+                                                    : data.sumber == 'pm2'
+                                                    ? data.point_pm2.inspection_task_pm2s[0].task
+                                                    : data.sumber == 'pm3'
+                                                    ? data.point_pm3.inspection_task_pm3s[0].task
+                                                    : ''}                                          ></ModalDetailOS3>
+                                        )}
+                                      </>
+                                    );
+                                  },
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </>
+                      ):""}
                       </div>
                     </>
                   );
@@ -1246,7 +1286,7 @@ function TableOS3() {
                               <div>
                                 <div>
                                   <button
-                                  title='button'
+                                    title="button"
                                     className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
                                     onClick={() => handleClick(i)}
                                   >
@@ -1330,7 +1370,7 @@ function TableOS3() {
                               </div>
                               <div>
                                 <button
-                                title='button'
+                                  title="button"
                                   onClick={() => handleClickDetail(i)}
                                   className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
                                 >

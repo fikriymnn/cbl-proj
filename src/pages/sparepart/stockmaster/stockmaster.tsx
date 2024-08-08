@@ -44,9 +44,6 @@ function Stockmaster() {
               >
                 ADD ITEM
               </Link>
-              <button className="px-3 py-2 bg-red-600 text-white font-semibold text-xs rounded-md">
-                EXPORT DATA
-              </button>
             </div>
           </div>
         </div>

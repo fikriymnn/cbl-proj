@@ -180,11 +180,7 @@ function Pm1Form() {
   const [isLoading, setIsLoading] = useState(false)
 
   async function donePm1(id: any) {
-    if (!catatan
-      // || !userKA || !userLeader || !userSuper
-    ) {
-      alert('Data Tidak Lengkap');
-    }
+    
     const url = `${import.meta.env.VITE_API_LINK}/pm1/done/${id}`;
     try {
       setIsLoading(true);
@@ -334,108 +330,7 @@ function Pm1Form() {
                   </p>
                 </div>
 
-                {/* <div className="flex flex-cols-3  md:gap-3 gap-1 ">
-                  <p className="md:text-[14px] text-[9px] font-semibold w-35">
-                    Leader
-                  </p>
-                  <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
-                  <p className="md:text-[14px] text-[9px] text-start font-semibold">
-                    {pm1 != null && pm1.id_leader != null ? (
-                      <p className="text-body dark:text-bodydark uppercase">
-                        {pm1.leader.nama}
-                      </p>
-                    ) : (
-                      <select
-                        className="uppercase"
-                        onChange={(e) => {
-                          setSelectionUserLeader(e.target.value);
-                        }}
-                      >
-                        <option selected disabled>
-                          Pilih Leader
-                        </option>
-                        {userLeader != null &&
-                          userLeader.map((leader: any, i: number) => (
-                            <option
-                              key={i}
-                              value={leader.id}
-                              className="text-body dark:text-bodydark uppercase"
-                            >
-                              {leader.nama}
-                            </option>
-                          ))}
-                      </select>
-                    )}
-                  </p>
-                </div>
-                <div className="flex flex-cols-3  md:gap-3 gap-1 ">
-                  <p className="md:text-[14px] text-[9px] font-semibold w-35">
-                    Supervisor
-                  </p>
-                  <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
-                  <p className="md:text-[14px] text-[9px] text-start font-semibold">
-                    {pm1 != null && pm1.id_supervisor != null ? (
-                      <p className="text-body dark:text-bodydark uppercase">
-                        {pm1.supervisor.nama}
-                      </p>
-                    ) : (
-                      <select
-                        className="uppercase"
-                        onChange={(e) => {
-                          setSelectionUserSuper(e.target.value);
-                        }}
-                      >
-                        <option selected disabled>
-                          Pilih Supervisor
-                        </option>
-                        {userSuper != null &&
-                          userSuper.map((Super: any, i: number) => (
-                            <option
-                              key={i}
-                              value={Super.id}
-                              className="text-body dark:text-bodydark uppercase"
-                            >
-                              {Super.nama}
-                            </option>
-                          ))}
-                      </select>
-                    )}
-                  </p>
-                </div>
-                <div className="flex flex-cols-3  md:gap-3 gap-1 ">
-                  <p className="md:text-[14px] text-[9px] font-semibold w-35">
-                    KA BAG
-                  </p>
-                  <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
-                  <p className="md:text-[14px] text-[9px] text-start font-semibold">
-                    {pm1 != null && pm1.id_ka_bag != null ? (
-                      <p className="text-body dark:text-bodydark uppercase">
-                        {pm1.ka_bag.nama}
-                      </p>
-                    ) : (
-                      <select
-                        className="uppercase"
-                        onChange={(e) => {
-                          setSelectionUserKA(e.target.value);
-                        }}
-                      >
-                        <option selected disabled>
-                          Pilih KA BAG
-                        </option>
-                        {userKA != null &&
-                          userKA.map((ka: any, i: number) => (
-                            <option
-                              key={i}
-                              value={ka.id}
-                              className="text-body dark:text-bodydark uppercase"
-                            >
-                              {ka.nama}
-                            </option>
-                          ))}
-                      </select>
-                    )} 
-                  </p>
-                </div>*/}
+              
               </div>
             </div>
             <div className='w-full pl-[20%]'>
@@ -622,7 +517,7 @@ function Pm1Form() {
                                           value="baik"
                                           className="text-body dark:text-bodydark"
                                         >
-                                          Good
+                                          Baik
                                         </option>
                                         <option
                                           value="warning"
@@ -634,13 +529,13 @@ function Pm1Form() {
                                           value="jelek"
                                           className="text-body dark:text-bodydark"
                                         >
-                                          Bad
+                                          Jelek
                                         </option>
                                         <option
                                           value="tidak terpasang"
                                           className="text-body dark:text-bodydark"
                                         >
-                                          Not Installed
+                                          Tidak Terpasang
                                         </option>
                                       </select>
 
@@ -795,7 +690,7 @@ function Pm1Form() {
                               <>
                                 <div className="p-4 flex flex-col ">
                                   <p className="md:text-[14px] text-[9px] font-semibold">
-                                    Result:s{hasil == 'bagus'? (<><img src={Logo} alt="aaa" /></>):""}
+                                    Result:{data.hasil}{data.hasil == 'bagus'? (<><img src={Logo} alt="aaa" /></>):""}
                                     <span className="absolute top-4">
                                       <div className='md:w-6 w-4'>
                                         {data.hasil == 'baik' ? <img src={Logo} alt="aaa" />
@@ -836,7 +731,7 @@ function Pm1Form() {
                                           value="baik"
                                           className="text-body dark:text-bodydark"
                                         >
-                                          <img src={Logo} alt="aaa" />Good
+                                          <img src={Logo} alt="aaa" />Baik
                                         </option>
                                        
                                         <option
@@ -851,14 +746,14 @@ function Pm1Form() {
                                           className="text-body dark:text-bodydark"
                                           onClick={()=>setHasil("jelek")}
                                         >
-                                          <img src={X} alt="cc" />Bad
+                                          <img src={X} alt="cc" />Jelek
                                         </option>
                                         <option
                                           value="tidak terpasang"
                                           className="text-body dark:text-bodydark"
                                           onClick={()=>setHasil("tidak terpasang")}
                                         >
-                                          <img src={Strip} alt="dd" />Not Installed
+                                          <img src={Strip} alt="dd" />Tidak Terpasang
                                         </option>
                                       </select>
 
@@ -1384,8 +1279,8 @@ function Pm1Form() {
                     return (
                       <>
 
-                        <section className=" border-b-8 border-[#D8EAFF]">
-                          <div className="flex p-4 border-b-2 border-[#6D6C6C] ">
+                        <section className={data.hasil == 'warning'?"border-2 border-yellow-400 bg-[#FFF9E8] mb-2":data.hasil == 'jelek'?"border-2 border-red-400 bg-[#FFEFEF] mb-2":data.hasil == 'tidak terpasang'?"border-2 border-red-400 bg-[#FFEFEF] mb-2":" border-b-8 border-[#D8EAFF] mb-2"}>
+                          <div className="flex p-4 border-b-2 border-[#6D6C6C] w-full">
                             <div className="flex w-full ">
                               <div className="flex w-4/12 flex-col">
                                 <p className="text-[11px] font-bold">
@@ -1581,7 +1476,7 @@ function Pm1Form() {
                                             value="baik"
                                             className="text-body dark:text-bodydark"
                                           >
-                                            Good
+                                            Baik
                                           </option>
                                           <option
                                             value="warning"
@@ -1593,13 +1488,13 @@ function Pm1Form() {
                                             value="jelek"
                                             className="text-body dark:text-bodydark"
                                           >
-                                            Bad
+                                            Jelek
                                           </option>
                                           <option
                                             value="tidak terpasang"
                                             className="text-body dark:text-bodydark"
                                           >
-                                            Not Installed
+                                            Tidak Terpasang
                                           </option>
                                         </select>
 
@@ -1686,7 +1581,7 @@ function Pm1Form() {
                                             value="baik"
                                             className="text-body dark:text-bodydark"
                                           >
-                                            Good
+                                            Baik
                                           </option>
                                           <option
                                             value="warning"
@@ -1698,13 +1593,13 @@ function Pm1Form() {
                                             value="jelek"
                                             className="text-body dark:text-bodydark"
                                           >
-                                            Bad
+                                            Jelek
                                           </option>
                                           <option
                                             value="tidak terpasang"
                                             className="text-body dark:text-bodydark"
                                           >
-                                            Not Installed
+                                            Tidak Terpasang
                                           </option>
                                         </select>
 
@@ -1860,77 +1755,77 @@ function Pm1Form() {
                     );
                   })}
 
+               
                 <section className=" border-b-8 border-[#D8EAFF] flex flex-col">
-                  <div>
-                    {pm1 != null && pm1.status != 'done' ? (
-                      <button
-                        onClick={openModalADD}
-                        className="py-2 px-20 mx-5 mt-5 bg-primary text-white rounded-md"
-                      >
-                        +
-                      </button>
-                    ) : null}
-                  </div>
-                  {showModalADD && (
-                    <ModalPM1TambahInspection
-                      children={undefined}
-                      onFinish={() => getPM1()}
-                      isOpen={showModalADD}
-                      onClose={closeModalADD}
-                      idTicket={pm1.id}
-                    />
-                  )}
+                <div>
+                  {pm1 != null && pm1.status != 'done' ? (
+                    <button
+                      onClick={openModalADD}
+                      className="py-2 px-20 mx-5 mt-5 bg-primary text-white rounded-md"
+                    >
+                      +
+                    </button>
+                  ) : null}
+                </div>
+                {showModalADD && (
+                  <ModalPM1TambahInspection
+                    children={undefined}
+                    onFinish={() => getPM1()}
+                    isOpen={showModalADD}
+                    onClose={closeModalADD}
+                    idTicket={pm1.id}
+                  />
+                )}
 
-                  <p className="text-[11px] font-semibold px-2 pt-4 pb-2">Catatan Keseluruhan:</p>
-                  {waktuSelesaiPm1 != '-' && (
-                    <>
-                      <textarea
-                        defaultValue={pm1 != null ? pm1.catatan : ''}
-                        disabled
-                        onChange={(e) => setCatatan(e.target.value)}
-                        className="border-2 border-[#D9D9D9] rounded-sm resize-none mx-4 px-4 "
-                      ></textarea>
+                <p className="text-sm font-semibold p-5">Catatan Keseluruhan:</p>
+                {waktuSelesaiPm1 != '-' && (
+                  <>
+                    <textarea
+                      defaultValue={pm1 != null ? pm1.catatan : ''}
+                      disabled
+                      onChange={(e) => setCatatan(e.target.value)}
+                      className="border-2 border-[#D9D9D9] rounded-sm resize-none mx-4 px-4"
+                    ></textarea>
 
-                    </>
-                  )}
-                  {waktuSelesaiPm1 == '-' && (
-                    <>
-                      <div className='px-2'>
-                        <textarea
-                          defaultValue={pm1 != null ? pm1.catatan : ''}
-                          onChange={(e) => setCatatan(e.target.value)}
-                          className="border-2 border-[#D9D9D9] rounded-sm resize-none p-2 w-full"
-                        ></textarea>
-                      </div>
+                  </>
+                )}
+                {waktuSelesaiPm1 == '-' && (
+                  <>
+                    <textarea
+                      defaultValue={pm1 != null ? pm1.catatan : ''}
+                      onChange={(e) => setCatatan(e.target.value)}
+                      className="peer h-full min-h-[100px] w-[96%] mx-5 mb-5 resize-none rounded-[7px] border-2 border-stroke bg-transparent px-3 py-2.5  font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                    ></textarea>
+                  </>
+                )}
 
-                    </>
-                  )}
+                <div className='flex flex-col px-4 py-4 md:text-[14px] text-[9px] font-semibold '>
+                  <p className='text-[17px]'>
+                    {'Total Waktu Pengerjaan : ' +
+                      ' ' +
+                      formatElapsedTime(totalWaktuTask) +
+                      ' ' +
+                      'Detik'}
+                  </p>
+                  <p className='text-[17px]'>{'Waktu Mulai PM1 : ' + waktuMulaiPm1}</p>
+                  <p className='text-[17px]'>{'Waktu Selesai PM1 : ' + waktuSelesaiPm1}</p>
+                </div>
 
-                  <div className='flex flex-col px-4 py-4 md:text-[14px] text-[9px] font-semibold '>
-                    <p className='text-[15px]'>
-                      {'Total Waktu Pengerjaan : ' +
-                        ' ' +
-                        formatElapsedTime(totalWaktuTask) +
-                        ' ' +
-                        'Detik'}
-                    </p>
-                    <p className='text-[15px]'>{'Waktu Mulai PM1 : ' + waktuMulaiPm1}</p>
-                    <p className='text-[15px]'>{'Waktu Selesai PM1 : ' + waktuSelesaiPm1}</p>
-                  </div>
+                <div className="flex w-full md:justify-end justify-start">
+                  {pm1 != null && pm1.status != 'done' ? (
+                    <button
+                      disabled={isLoading}
+                      onClick={() => donePm1(id)}
+                      className="py-2 px-10 mx-5 mt-5 bg-primary text-white rounded-md mb-5"
+                    >
+                      {isLoading ? 'Loading...' : 'SUBMIT INSPECTION'}
+                    </button>
+                  ) : null}
+                  {isLoading && <Loading />}
+                </div>
+              </section>
 
-                  <div className="flex w-full md:justify-end justify-start">
-                    {pm1 != null && pm1.status != 'done' ? (
-                      <button
-                        disabled={isLoading}
-                        onClick={() => donePm1(id)}
-                        className="py-2 px-10 mx-5 mt-5 bg-primary text-white rounded-md mb-5"
-                      >
-                        {isLoading ? 'Loading...' : 'SUBMIT INSPECTION'}
-                      </button>
-                    ) : null}
-                    {isLoading && <Loading />}
-                  </div>
-                </section>
+                 
               </div>
             </div>
           </div>

@@ -10,7 +10,7 @@ import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination';
 import convertTimeStampToDate from '../../../utils/convertDate';
 
-function Histori() {
+function HistoriPm3() {
   const [showModal2, setShowModal2] = useState(false);
   const [showModal4, setShowModal4] = useState(false);
 
@@ -21,19 +21,19 @@ function Histori() {
 
   const [page, setPage] = useState(1);
 
-  const [pm1, setPm1] = useState<any>();
+  const [pm3, setPm3] = useState<any>();
   const [masterMesin, setmasterMesin] = useState<any>();
   const [idMesin, setIdMesin] = useState<any>();
   const [dateFrom, setDateFrom] = useState<any>();
   const [dateTo, setDateTo] = useState<any>();
 
   useEffect(() => {
-    getPM1();
+    getPM3();
     getMasterMesin();
   }, [page]);
 
-  async function getPM1() {
-    const url = `${import.meta.env.VITE_API_LINK}/pm1`;
+  async function getPM3() {
+    const url = `${import.meta.env.VITE_API_LINK}/pm3`;
     try {
       const res = await axios.get(url, {
         params: {
@@ -47,7 +47,7 @@ function Histori() {
         withCredentials: true,
       });
 
-      setPm1(res.data);
+      setPm3(res.data);
       console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
@@ -165,7 +165,7 @@ function Histori() {
               <button
                 onClick={() => {
                   setPage(1);
-                  getPM1();
+                  getPM3();
                 }}
                 className="bg-primary text-white px-5 py-2 rounded-md my-auto "
               >
@@ -185,8 +185,8 @@ function Histori() {
               <div className="w-[125px]">{''}</div>
             </section>
           </div>
-          {pm1?.data.map((data: any, index: number) => {
-            const tgl = convertTimeStampToDate(data.tgl);
+          {pm3?.data.map((data: any, index: number) => {
+            const tgl = convertTimeStampToDate(data.tgl_approve_from);
             return (
               <>
                 <section
@@ -226,7 +226,7 @@ function Histori() {
                         <>
                           {data.waktu_selesai != null ? (
                             <Link
-                              to={`/maintenance/inspection/pm_1_form/${data.id}`}
+                              to={`/maintenance/inspection/pm_3_form/${data.id}`}
                               className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
                             >
                               DETAIL
@@ -253,7 +253,7 @@ function Histori() {
         <div className="w-full flex justify-end">
           <Stack spacing={2}>
             <Pagination
-              count={pm1?.total_page}
+              count={pm3?.total_page}
               color="primary"
               onChange={(e, i) => {
                 setPage(i);
@@ -267,4 +267,4 @@ function Histori() {
   );
 }
 
-export default Histori;
+export default HistoriPm3;

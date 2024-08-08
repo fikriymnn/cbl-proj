@@ -94,6 +94,7 @@ import CetakAwal from './pages/QualityControl/ProsesCetak/CetakAwal';
 import ProsesPond from './pages/QualityControl/ProsesPond/ProsesPond';
 import JenisPond from './pages/QualityControl/ProsesPond/JenisPond';
 import PondAwal from './pages/QualityControl/ProsesPond/PondAwal';
+import ProfilSetting from './pages/profilSetting';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -128,6 +129,15 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <ECommerce />
+            </>
+          }
+        />
+        <Route
+          path="/profil_setting"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProfilSetting />
             </>
           }
         />
@@ -591,7 +601,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/cetak/jeniscetak"
+          path="/qc/qualityinspection/cetak/jeniscetak/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -613,7 +623,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/cetak/jeniscetak/checkawal"
+          path="/qc/qualityinspection/cetak/jeniscetak/checkawal/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
