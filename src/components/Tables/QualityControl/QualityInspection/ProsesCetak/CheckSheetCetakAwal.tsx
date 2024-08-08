@@ -31,9 +31,8 @@ function CheckSheetCetakAwal() {
   }
 
   async function startTaskCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakAwalPoint/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakAwalPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -62,9 +61,8 @@ function CheckSheetCetakAwal() {
     layout_pisau: any,
     acc_warna_awal_jalan: any,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakAwalPoint/stop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakAwalPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -94,9 +92,8 @@ function CheckSheetCetakAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakAwalPoint/create`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakAwalPoint/create`;
     try {
       const res = await axios.post(
         url,
@@ -115,9 +112,8 @@ function CheckSheetCetakAwal() {
   }
 
   async function doneCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakAwal/done/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakAwal/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -399,16 +395,68 @@ function CheckSheetCetakAwal() {
                       </div>
                     </div>
                     {data.status == 'done' ? (
+
                       <div className="grid grid-cols-8 border-b-8 border-[#D8EAFF]">
-                        <div>{data.line_clearance}</div>
-                        <div>{data.design}</div>
-                        <div>{data.redaksi}</div>
-                        <div>{data.barcode}</div>
-                        <div>{data.jenis_bahan}</div>
-                        <div>{data.gramatur}</div>
-                        <div>{data.layout_pisau}</div>
-                        <div>{data.acc_warna_awal_jalan}</div>
+                        <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                          <>
+
+                            <label className="pl-2">{data.line_clearance}</label>
+
+                          </>
+                        </div>
+                        <div className="grid py-4 bg-white items-center justify-center">
+                          <>
+
+
+                            <label className="pl-2">{data.design}</label>
+
+                          </>
+                        </div>
+                        <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                          <>
+
+                            <label className="pl-2">{data.redaksi}</label>
+
+                          </>
+                        </div>
+                        <div className="grid py-4 bg-white items-center justify-center">
+                          <>
+
+                            <label className="pl-2">{data.barcode}</label>
+
+                          </>
+                        </div>
+                        <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                          <>
+
+                            <label className="pl-2">{data.jenis_bahan}</label>
+
+                          </>
+                        </div>
+                        <div className="grid py-4 bg-white items-center justify-center">
+                          <>
+
+                            <label className="pl-2">{data.gramatur}</label>
+
+                          </>
+                        </div>
+                        <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                          <>
+
+                            <label className="pl-2">{data.layout_pisau}</label>
+
+                          </>
+                        </div>
+                        <div className="grid py-4 bg-white items-center justify-center">
+                          <>
+
+                            <label className="pl-2">{data.acc_warna_awal_jalan}</label>
+
+                          </>
+                        </div>
                       </div>
+
+
                     ) : data.status == 'on progress' ? (
                       <div className="grid grid-cols-8 border-b-8 border-[#D8EAFF]">
                         <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
@@ -689,8 +737,9 @@ function CheckSheetCetakAwal() {
               ) : null}
             </div>
           </div>
-        </main>
-      )}
+        </main >
+      )
+      }
     </>
   );
 }
