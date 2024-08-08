@@ -3054,8 +3054,8 @@ function IncomingInspection() {
                                             )}
 
                                     </div>
-                                    <div>
-                                        <label className='text-neutral-500 text-sm font-semibold flex flex-col'>
+                                    <div className='flex w-[50%] flex-col'>
+                                        <label className='text-neutral-500 text-sm font-semibold flex flex-col w-full'>
                                             Catatan
                                             {incoming?.catatan == null ? (
                                                 <>
