@@ -60,8 +60,6 @@ function CheckSheetPondAwal() {
                                 </label>
 
 
-
-
                             </div>
 
                             <div className='grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4'>
