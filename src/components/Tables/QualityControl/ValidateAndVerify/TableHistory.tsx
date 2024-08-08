@@ -13,11 +13,18 @@ import convertTimeStampToDate from '../../../../utils/convertDate';
 import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination/Pagination';
 import calculateTime from '../../../../utils/calculateTime';
+import ModalDetailValidasi from '../../../Modals/ModalDetailValidasi';
 
 const TableHistory = () => {
   const [page, setPage] = useState(1);
   const [ticketProsesHistory, setTicketProsesHistory] = useState<any>(null);
-
+  const [showModalDetail,setShowModalDetail] = useState(null);
+  const handleClickDetail = (index: any) => {
+    setShowModalDetail((prevState: any) => {
+      return prevState === index ? null : index;
+    });
+  };
+  const closeModalDetail= () => setShowModalDetail(null);
   useEffect(() => {
     getMTC();
   }, [page]);
@@ -152,15 +159,19 @@ const TableHistory = () => {
                   {data.skor_mtc}
                 </p>
               </div> */}
-              <button
-                // onClick={() => {
-                //   console.log(data);
-                // }}
-                className="text-xs font-bold bg-blue-700 py-2 px-5 text-white rounded-sm"
-              >
-                Detail
-              </button>
+               <div className="flex w-full justify-end">
+                <button onClick={()=>handleClickDetail(index)} className="text-xs font-bold bg-blue-700 py-2 px-10 text-white rounded-sm">
+                  Detail
+                </button>
+              </div>
             </div>
+            {showModalDetail === index && (
+              <>
+              <ModalDetailValidasi status={data.status_qc} note={data.note_qc} nama_kendala={data.tiket.nama_kendala} nama_mesin=  {data.tiket.mesin} operator={data.tiket.operator}  isOpen={showModalDetail} onClose={closeModalDetail} key={index}>
+                <></>
+              </ModalDetailValidasi>
+              </>
+            )}
           </div>
         );
       })}

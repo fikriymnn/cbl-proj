@@ -128,8 +128,8 @@ export default function QCFullWidthTabs() {
           >
             <Tab label="Validasi" {...a11yProps(0)} className="" />
             <Tab label="Verifikasi" {...a11yProps(1)} />
-            <Tab label="History Verifikasi" {...a11yProps(2)} />
-            <Tab label="History Validasi" {...a11yProps(3)} />
+            <Tab label="History Validasi" {...a11yProps(2)} />
+            <Tab label="History Verifikasi" {...a11yProps(3)} />
           </Tabs>
         </ThemeProvider>
       </AppBar>
@@ -140,10 +140,10 @@ export default function QCFullWidthTabs() {
         <TableVerifikasi />
       </TabPanel>
       <TabPanel value={value} index={2} dir={theme.direction}>
-        <TableHistory />
+        <TableHistoryValidate />
       </TabPanel>
       <TabPanel value={value} index={3} dir={theme.direction}>
-        <TableHistoryValidate />
+        <TableHistory />
       </TabPanel>
     </Box>
   );
