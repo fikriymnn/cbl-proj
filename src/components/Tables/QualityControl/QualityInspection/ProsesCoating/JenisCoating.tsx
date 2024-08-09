@@ -5,7 +5,7 @@ import { Button } from '@mui/material';
 import JenisCetak from '../../../../../pages/QualityControl/ProsesCetak/JenisCetak';
 
 
-function JenisPondMesin() {
+function JenisCoatingMesin() {
     const [isMobile, setIsMobile] = useState(false);
     const kosong: any = []
     const today = new Date();
@@ -198,7 +198,7 @@ function JenisPondMesin() {
 
                                 <div className='justify-end flex pr-2 w-full '>
 
-                                    <Link to={`/qc/qualityinspection/cetak/jeniscetak`}>
+                                    <Link to={``}>
 
                                         <button
                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
@@ -223,4 +223,4 @@ function JenisPondMesin() {
     )
 }
 
-export default JenisPondMesin
+export default JenisCoatingMesin

@@ -95,6 +95,12 @@ import ProsesPond from './pages/QualityControl/ProsesPond/ProsesPond';
 import JenisPond from './pages/QualityControl/ProsesPond/JenisPond';
 import PondAwal from './pages/QualityControl/ProsesPond/PondAwal';
 import ProfilSetting from './pages/profilSetting';
+import ProsesCoating from './pages/QualityControl/ProsesCoating/ProsesCoating';
+import JenisCoating from './pages/QualityControl/ProsesCoating/JenisCoating';
+import CoatingAwal from './pages/QualityControl/ProsesCoating/CoatingAwal';
+import ProsesLem from './pages/QualityControl/ProsesLem/ProsesLem';
+import JenisLem from './pages/QualityControl/ProsesLem/JenisLem';
+import LemAwal from './pages/QualityControl/ProsesLem/LemAwal';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -601,6 +607,28 @@ function App() {
           }
         />
         <Route
+          path="/qc/qualityinspection/coating"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesCoating />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lem"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesLem />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/qc/qualityinspection/cetak/jeniscetak/:id"
           element={
             <>
@@ -623,6 +651,28 @@ function App() {
           }
         />
         <Route
+          path="/qc/qualityinspection/coating/jeniscoating"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JenisCoating />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lem/jenislem"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JenisLem />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/qc/qualityinspection/cetak/jeniscetak/checkawal/:id"
           element={
             <>
@@ -640,6 +690,28 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <PondAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/coating/jeniscoating/checkawal"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CoatingAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lem/jenislem/checkawal"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <LemAwal />
               </ProtectedRoute>
             </>
           }
