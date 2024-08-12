@@ -1,374 +1,341 @@
-import React, { useEffect, useState } from 'react'
-import DefaultLayout from '../../../layout/DefaultLayout'
-import ModalPopupBgn from '../../../components/Modals/ModalPopupBgn';
-import ModalPopupReq from '../../../components/Modals/ModalDetailPopupReq';
-import { Link } from 'react-router-dom';
-import ModalMtcDate from '../../../components/Modals/ModalMtcDate';
-const brandData = [
-    {
+import React, { useEffect, useState } from 'react';
+import DefaultLayout from '../../../layout/DefaultLayout';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { Button } from '@mui/material';
 
-        name: 'R700',
-        date: "",
-        machine: 'iCutter GT40 RTX4080 800cc pro max',
-        status: "pending",
-        schedule: "unscheduled",
-        action: 'request mtc',
-        executor: 'Saya ',
-        response_time: '3 minutes',
-        partOf: "printing",
+function Pm2() {
+  const [isMobile, setIsMobile] = useState(false);
+  const kosong: any = [];
+  const today = new Date();
+  const month = today.getMonth() + 1;
+  const year = today.getFullYear();
+  const date = today.getDate();
+  const currentDate = month + '/' + date + '/' + year;
+  const navigate = useNavigate();
+  const handleResize = () => {
+    setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
+  };
+  useEffect(() => {
+    handleResize();
 
+    // Event listener for window resize
+    window.addEventListener('resize', handleResize);
 
-    },
-    {
-
-        name: 'SM 74',
-        date: "schedule requested",
-        machine: 'iCutter GT40',
-        status: "pending",
-        schedule: "schedule requested",
-        action: 'detail',
-        partOf: "printing",
-
-    },
-    {
-
-        name: 'GTO',
-        date: "12/22/24 07:00AM",
-        machine: 'iCutter GT40',
-        status: "pending",
-        schedule: "schedule declined",
-        action: 'reschedule',
-        partOf: "printing"
-    },
-    {
-
-        name: 'ITOH',
-        date: "12/22/24 07:00AM",
-        machine: 'iCutter GT40',
-        status: "scheduled",
-        schedule: "10/04/24 to 12/04/24",
-        action: 'begin mtc',
-        partOf: "water base",
-
-    },
-    {
-
-        name: 'POLAR',
-        date: "12/22/24 07:00AM",
-        machine: 'iCutter GT40',
-        status: "on progress",
-        schedule: "12/04/24 to 24/04/24",
-        action: 'action',
-        partOf: "water base"
-    },
-    {
-
-        name: 'HOCK',
-        date: "12/22/24 07:00AM",
-        machine: 'iCutter GT40',
-        status: "pending verification",
-        schedule: "12/04/24 to 24/04/24",
-        action: 'detail',
-        partOf: "finishing",
-        inspector: 'Acep Wahyu',
-        leader: 'cecep wahyu',
-        supervisor: 'Supervisor',
-        KABagMTC: 'KABagMTC',
-    },
-    {
-
-        name: 'WB MANUAL',
-        date: "12/22/24 07:00AM",
-        machine: 'iCutter GT40',
-        status: "monitoring",
-        schedule: "12/04/24 to 24/04/24",
-        action: 'detail',
-        executor: 'Acep Kurna',
-        response_time: '31 minutes',
-        partOf: "water base",
-        inspector: 'Acep Wahyu',
-        leader: 'cecep wahyu',
-        supervisor: 'Supervisor',
-        KABagMTC: 'KABagMTC',
-    },
-
-];
-function Pm2
-    () {
-    const [isMobile, setIsMobile] = useState(false);
-
-    const handleResize = () => {
-        setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
+    // Cleanup on component unmount
+    return () => {
+      window.removeEventListener('resize', handleResize);
     };
-    useEffect(() => {
-        handleResize();
+  }, []);
 
-        // Event listener for window resize
-        window.addEventListener('resize', handleResize);
+  const [showModal4, setShowModal4] = useState(false);
 
-        // Cleanup on component unmount
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
+  const openModal4 = () => setShowModal4(true);
 
-    const [showModal2, setShowModal2] = useState(false);
-    const [showModal4, setShowModal4] = useState(false);
+  const [pm2, setPm2] = useState<any>();
 
-    const openModal2 = () => setShowModal2(true);
-    const closeModal2 = () => setShowModal2(false);
-    const openModal4 = () => setShowModal4(true);
-    const closeModal4 = () => setShowModal4(false);
+  useEffect(() => {
+    getPM2();
+    getMe();
+  }, []);
 
-    return (
-        <DefaultLayout>
-            <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>Maintenance &gt; Inspection &gt; PM 2</p>
-            {!isMobile && (
-                <main className='overflow-x-scroll '>
-                    <div className='min-w-[700px] w-full bg-white rounded-xl'>
+  async function getPM2() {
+    const url = `${import.meta.env.VITE_API_LINK}/pm2`;
+    try {
+      const res = await axios.get(url, {
+        params: {
+          tgl: new Date(),
+        },
+        withCredentials: true,
+      });
 
-                        <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>01 April 2024</p>
-                        <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
+      setPm2(res.data);
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
 
-                            <div className='w-2 h-full '>
+  const [me, setMe] = useState<any>();
 
-                            </div>
-                            <section className='grid grid-cols-6 w-full py-4  font-semibold text-[14px]'>
+  async function getMe() {
+    const url = `${import.meta.env.VITE_API_LINK}/me`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
 
+      setMe(res.data);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
 
-                                <p className=''>Nama Mesin</p>
+  async function inspectPM2(id: any) {
+    const url = `${import.meta.env.VITE_API_LINK}/pm2/response/${id}`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      console.log(res.data);
+      navigate(`/maintenance/inspection/pm_2_form/${id}`);
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
 
+  async function createPM2() {
+    const url = `${import.meta.env.VITE_API_LINK}/pm2/create`;
+    try {
+      const res = await axios.post(url, {
+        withCredentials: true,
+      });
 
-                                <p>Inspector</p>
+      getPM2();
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
 
+  const [showConfirm, setShowConfirm] = useState<any>([]);
 
-                                <p>Leader</p>
+  const openConfirm = (i: any) => {
+    const onchangeVal: any = [...showConfirm];
+    onchangeVal[i] = true;
+    setShowConfirm(onchangeVal);
+  };
 
+  const closeConfirm = (i: any) => {
+    const onchangeVal: any = [...showConfirm];
+    onchangeVal[i] = false;
+    setShowConfirm(onchangeVal);
+  };
+
+  function convertDatetimeToDate(datetime: any) {
+    const dateObject = new Date(datetime);
+    const day = dateObject.getDate().toString().padStart(2, '0'); // Ensure two-digit day
+    const month = (dateObject.getMonth() + 1).toString().padStart(2, '0'); // Adjust for zero-based month
+    const year = dateObject.getFullYear();
+    const hours = dateObject.getHours().toString().padStart(2, '0');
+    const minutes = dateObject.getMinutes().toString().padStart(2, '0');
+
+    return `${year}/${month}/${day} `; // Example format (YYYY-MM-DD)
+  }
+
+  const tanggal = convertDatetimeToDate(new Date());
+  return (
+    <DefaultLayout>
+      <p className="font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]">
+        Maintenance &gt; Inspection &gt; PM 2
+      </p>
+      {!isMobile && (
+        <main className="overflow-x-scroll">
+          <div className="min-w-[700px] bg-white rounded-xl">
+            <p className="text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
+              {tanggal}
+            </p>
+            {pm2?.length <= 0 ? (
+              <button
+                onClick={createPM2}
+                className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center }`} // Dynamic class assignment
+              >
+                TAMBAH PM2
+              </button>
+            ) : null}
+
+            <div className=" ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]">
+              <div className="w-2 h-full "></div>
+              <section className="grid grid-cols-6 w-full py-4  font-semibold text-[14px]">
+                <p className="">Nama Mesin</p>
+
+                <p>Inspector</p>
+
+                {/* <p>Leader</p>
 
                                 <p>Supervisor</p>
 
+                                <p>KA BAG MTC</p> */}
 
-                                <p>KA BAG MTC</p>
+                <div className="w-[125px]">{''}</div>
+              </section>
+            </div>
+            {pm2 != null &&
+              pm2.map((data: any, i: any) => (
+                <>
+                  <section
+                    key={i}
+                    className=" flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black"
+                  >
+                    <div
+                      className={`w-2 h-full sticky left-0 z-20 ${
+                        data.mesin.bagian_mesin == 'printing'
+                          ? 'bg-green-600'
+                          : data.mesin.bagian_mesin == 'water base'
+                          ? 'bg-yellow-600'
+                          : data.mesin.bagian_mesin == 'pond'
+                          ? 'bg-violet-900'
+                          : data.mesin.bagian_mesin == 'finishing'
+                          ? 'bg-red-900'
+                          : ''
+                      }`}
+                    ></div>
 
-
-                                <div className='w-[125px]'>{""}</div>
-
-
-
-                            </section>
+                    <div className=" w-full h-full flex flex-col justify-center relative">
+                      <div className="ps-7 w-full grid grid-cols-6">
+                        <div className="flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">
+                          <p className="">{data.mesin.nama_mesin}</p>
                         </div>
-                        {brandData.map((brand, key) => (
+
+                        <div className="flex flex-col justify-center ">
+                          <p className="">
+                            {data.inspector != null ? data.inspector.nama : '-'}
+                          </p>
+                        </div>
+                        <div className="flex flex-col justify-center">
+                          {/* <p className=''>{data.leader != null ? data.leader.nama : '-'}</p> */}
+                        </div>
+                        <div className="flex flex-col justify-center">
+                          {/* <p className=''>{data.supervisor != null ? data.supervisor.nama : '-'}</p> */}
+                        </div>
+                        <div className="flex flex-col justify-center">
+                          {/* <p className=''>{data.ka_bag != null ? data.ka_bag.nama : '-'}</p> */}
+                        </div>
+
+                        <div>
+                          {data.id_inspector == me?.id ? (
                             <>
-                                <section key={key} className=' flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black'>
-                                    <div className={`w-2 h-full sticky left-0 z-20 ${brand.partOf == 'printing' ? 'bg-green-600' : brand.partOf == 'water base' ? 'bg-yellow-600' : brand.partOf == 'pond' ? 'bg-violet-900' : brand.partOf == 'finishing' ? 'bg-red-900' : ''}`}>
-
-                                    </div>
-
-
-
-
-                                    <div className=' w-full h-full flex flex-col justify-center relative'>
-
-                                        <div className='ps-7 w-full grid grid-cols-6'>
-
-
-                                            <div className='flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
-                                                <p className=''>{brand.name}</p>
-                                            </div>
-
-                                            <div className='flex flex-col justify-center '>
-
-                                                <p className=''>{brand.inspector != null ? brand.inspector : "-"}</p>
-                                            </div>
-                                            <div className='flex flex-col justify-center'>
-
-                                                <p className=''>{brand.leader != null ? brand.leader : '-'}</p>
-                                            </div>
-                                            <div className='flex flex-col justify-center'>
-
-                                                <p className=''>{brand.supervisor != null ? brand.supervisor : '-'}</p>
-                                            </div>
-                                            <div className='flex flex-col justify-center'>
-
-                                                <p className=''>{brand.KABagMTC != null ? brand.KABagMTC : '-'}</p>
-                                            </div>
-
-
-                                            <div>
-                                                {brand.date == "" ?
-                                                    <>
-                                                        <button
-                                                            onClick={openModal2}
-                                                            className="md:w-40 w-25 text-xs font-bold bg-blue-700 py-2 text-white "
-                                                        >
-                                                            REQUEST DATE{' '}
-                                                        </button>
-                                                        {showModal2 && (
-                                                            <ModalMtcDate
-                                                                isOpen={showModal2}
-                                                                onClose={closeModal2}
-                                                                machineName={'GMC Printer 2'}
-                                                            >
-                                                                <p></p>
-                                                            </ModalMtcDate>
-                                                        )}
-
-                                                    </> :
-                                                    brand.date == 'schedule requested' ?
-                                                        <div className='md:w-40 w-25'>
-                                                            <div className='flex justify-center items-center w-full md:text-xs text-[10px] font-bold bg-red-200 text-red-600 md:py-2'>
-                                                                <div className='flex justify-center items-center mx-auto'>
-
-                                                                    SCHEDULE REQUESTED
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        :
-                                                        <>
-                                                            <Link to='/maintenance/inspection/pm_1_form'
-                                                                className={`uppercase md:w-40 w-25 p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'begin mtc' && ''
-                                                                    }`} // Dynamic class assignment
-                                                                onClick={openModal4}
-                                                            >
-                                                                INSPECT
-
-                                                            </Link>
-
-                                                        </>
-                                                }
-
-
-
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section>
+                              {data.status == 'done' ||
+                              data.status == 'on progres' ? (
+                                <Link
+                                  to={`/maintenance/inspection/pm_2_form/${data.id}`}
+                                  className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                >
+                                  INSPECT
+                                </Link>
+                              ) : (
+                                <button
+                                  onClick={() => inspectPM2(data.id)}
+                                  className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                >
+                                  INSPECT
+                                </button>
+                              )}
                             </>
-                        ))}
-
-
-
-
-
-
+                          ) : data.id_inspector == null ? (
+                            <>
+                              <button
+                                onClick={() => inspectPM2(data.id)}
+                                className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                              >
+                                INSPECT
+                              </button>
+                            </>
+                          ) : (
+                            <></>
+                          )}
+                        </div>
+                      </div>
                     </div>
+                  </section>
+                </>
+              ))}
+          </div>
+        </main>
+      )}
+      {isMobile && (
+        <main className="overflow-x-scroll">
+          <div className="w-full bg-white rounded-xl">
+            <p className="text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
+              {tanggal}
+            </p>
+            {pm2?.length <= 0 ? (
+              <button
+                onClick={createPM2}
+                className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center }`} // Dynamic class assignment
+              >
+                TAMBAH PM2
+              </button>
+            ) : null}
+            <div className=" ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]">
+              <div className="w-2 h-full "></div>
+              <section className="grid grid-cols-1 w-full py-4  font-semibold text-[14px]">
+                <p className="">Nama Mesin</p>
 
+                <div className="w-[125px]">{''}</div>
+              </section>
+            </div>
+            {pm2 != null &&
+              pm2.map((data: any, i: any) => (
+                <>
+                  <section
+                    key={i}
+                    className=" flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black"
+                  >
+                    <div
+                      className={`w-2 h-full sticky left-0 z-20 ${
+                        data.mesin.bagian_mesin == 'printing'
+                          ? 'bg-green-600'
+                          : data.mesin.bagian_mesin == 'water base'
+                          ? 'bg-yellow-600'
+                          : data.mesin.bagian_mesin == 'pond'
+                          ? 'bg-violet-900'
+                          : data.mesin.bagian_mesin == 'finishing'
+                          ? 'bg-red-900'
+                          : ''
+                      }`}
+                    ></div>
+                    <div className=" w-full h-full flex flex-col justify-center relative">
+                      <div className="ps-7 w-full grid grid-cols-2">
+                        <div className="flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">
+                          <p className="">{data.nama_mesin}</p>
+                        </div>
 
-                </main>
-            )}
-            {isMobile && (
-                <main className='overflow-x-scroll '>
-                    <div className='w-full  bg-white rounded-xl'>
-
-                        <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>01 April 2024</p>
-                        <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
-
-                            <div className='w-2 h-full '>
-
+                        <div className="flex justify-center">
+                          <>
+                            <div>
+                              {data.id_inspector == me?.id ? (
+                                <>
+                                  {data.status == 'done' ? (
+                                    <Link
+                                      to={`/maintenance/inspection/pm_2_form/${data.id}`}
+                                      className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                    >
+                                      INSPECT
+                                    </Link>
+                                  ) : (
+                                    <button
+                                      onClick={() => inspectPM2(data.id)}
+                                      className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                    >
+                                      INSPECT
+                                    </button>
+                                  )}
+                                </>
+                              ) : data.id_inspector == null ? (
+                                <>
+                                  <button
+                                    onClick={() => inspectPM2(data.id)}
+                                    className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                  >
+                                    INSPECT
+                                  </button>
+                                </>
+                              ) : (
+                                <></>
+                              )}
                             </div>
-                            <section className='grid grid-cols-1 w-full py-4  font-semibold text-[14px]'>
-
-
-                                <p className=''>Nama Mesin</p>
-
-
-
-
-
-                                <div className='w-[125px]'>{""}</div>
-
-
-
-                            </section>
+                          </>
                         </div>
-                        {brandData.map((brand, key) => (
-                            <>
-                                <section key={key} className=' flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black'>
-                                    <div className={`w-2 h-full sticky left-0 z-20 ${brand.partOf == 'printing' ? 'bg-green-600' : brand.partOf == 'water base' ? 'bg-yellow-600' : brand.partOf == 'pond' ? 'bg-violet-900' : brand.partOf == 'finishing' ? 'bg-red-900' : ''}`}>
-
-                                    </div>
-
-
-
-
-                                    <div className=' w-full h-full flex flex-col justify-center relative'>
-
-                                        <div className='ps-7 w-full grid grid-cols-2'>
-
-
-                                            <div className='flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
-                                                <p className=''>{brand.name}</p>
-                                            </div>
-
-
-                                            <div className='flex w-full justify-center'>
-                                                {brand.date == "" ?
-                                                    <>
-                                                        <button
-                                                            onClick={openModal2}
-                                                            className="md:w-40 w-25 text-xs font-bold bg-blue-700 py-2 text-white "
-                                                        >
-                                                            REQUEST DATE{' '}
-                                                        </button>
-                                                        {showModal2 && (
-                                                            <ModalMtcDate
-                                                                isOpen={showModal2}
-                                                                onClose={closeModal2}
-                                                                machineName={'GMC Printer 2'}
-                                                            >
-                                                                <p></p>
-                                                            </ModalMtcDate>
-                                                        )}
-
-                                                    </> :
-                                                    brand.date == 'schedule requested' ?
-                                                        <div className='md:w-40 w-25'>
-                                                            <div className='flex  w-full  '>
-                                                                <div className='flex w-full justify-center items-center '>
-                                                                    <p className=' text-[10px] font-bold bg-red-200 text-red-600 '>
-                                                                        SCHEDULE REQUESTED
-                                                                    </p>
-
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                        :
-                                                        <>
-                                                            <Link to='/maintenance/inspection/pm_1_form'
-                                                                className={`uppercase md:w-40 w-25 p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center ${brand.action !== 'begin mtc' && ''
-                                                                    }`} // Dynamic class assignment
-                                                                onClick={openModal4}
-                                                            >
-                                                                INSPECT
-
-                                                            </Link>
-
-                                                        </>
-                                                }
-
-
-
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                </section>
-                            </>
-                        ))}
-
-
-
-
-
-
+                      </div>
                     </div>
-
-
-                </main>
-            )}
-        </DefaultLayout>
-    )
+                  </section>
+                </>
+              ))}
+          </div>
+        </main>
+      )}
+    </DefaultLayout>
+  );
 }
 
-export default Pm2
+export default Pm2;

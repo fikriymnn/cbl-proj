@@ -47,9 +47,7 @@ const TablePM2 = () => {
                             id=""
                             className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
                         />
-                        <button className=" bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1">
-                            TAMBAH
-                        </button>
+                        
                     </div>
 
                     <div className="flex flex-col">

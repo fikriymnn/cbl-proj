@@ -13,7 +13,7 @@ import Machine from './pages/Maintenance/Machine';
 import Preparation from './pages/Maintenance/Preparation';
 import MAN from './pages/Maintenance/MAN';
 import Material from './pages/Maintenance/Material';
-import MaintenanceQC from './pages/QualityControl/maintenanceQC';
+import MaintenanceQC from './pages/QualityControl/validatenverify';
 import HistoryMtc from './pages/History/Maintenance';
 
 import MasterData from './pages/MasterData/Master';
@@ -62,6 +62,46 @@ import ProjectMtc from './components/Tables/Maintenance/projectMtc';
 
 import MonitoringService from './pages/sparepart/monitoringService/monitoringService';
 import AddStockService from './pages/sparepart/monitoringService/addStock';
+import TabsPm from './pages/inspection/pm3/TabsPm';
+import Pm3page from './pages/inspection/pm3/Pm3page';
+import Qualityinspection from './pages/QualityControl/QualityInspection';
+import IncomingInspection from './components/Tables/QualityControl/QualityInspection/Incoming/IncomingInspection';
+import IncomingIns from './pages/QualityControl/Incoming/Incomingins';
+import ProsesPotong from './pages/QualityControl/Prosespotong/Prosespotong';
+import PotongJadi from './components/Tables/QualityControl/QualityInspection/ProsesPotong/Bahan/potongbahan';
+import PotongBahan from './components/Tables/QualityControl/QualityInspection/ProsesPotong/Bahan/potongbahan';
+import PotongBahanPage from './pages/QualityControl/Prosespotong/potongBahanpage';
+import PotongJadiPage from './pages/QualityControl/Prosespotong/potongJadiPage';
+import ProsesCetak from './pages/QualityControl/ProsesCetak/ProsesCetak';
+import IncomingList from './pages/QualityControl/Incoming/DaftarIncoming';
+import MasterPM3 from './pages/MasterData/MasterPM3';
+import MasterPM3Check from './pages/MasterData/MasterPM3Check';
+import MasterPM3TambahInspection from './pages/MasterData/MasterPM3TambahInspection';
+import HistoryIns from './pages/QualityControl/Incoming/HistoryIns';
+import PotongBahan1 from './pages/QualityControl/Prosespotong/PotongBahan1';
+import PotongJadi1 from './pages/QualityControl/Prosespotong/PotongJadi1';
+import ListBahan1 from './pages/QualityControl/Prosespotong/ListBahan';
+import ListBahan2 from './pages/QualityControl/Prosespotong/ListBahan2';
+import ListJadiItoh from './pages/QualityControl/Prosespotong/ListJadiItoh';
+import ListJadiPolar from './pages/QualityControl/Prosespotong/ListJadiPolar';
+import HistoryBahanItoh from './pages/QualityControl/Prosespotong/History/HistoryBahanItohpage';
+import HistoryBahanPolar from './pages/QualityControl/Prosespotong/History/HistoryBahanPolarPage';
+import HistoryJadiPolar from './components/Tables/QualityControl/QualityInspection/ProsesPotong/Jadi/HistoryJadiPolar';
+import HistoryJadiPolarPage from './pages/QualityControl/Prosespotong/History/HistoryJadiPolarPage';
+import HistoryJadiItohPage from './pages/QualityControl/Prosespotong/History/HistoryJadiItohPage';
+import JenisCetak from './pages/QualityControl/ProsesCetak/JenisCetak';
+import CetakAwal from './pages/QualityControl/ProsesCetak/CetakAwal';
+import ProsesPond from './pages/QualityControl/ProsesPond/ProsesPond';
+import JenisPond from './pages/QualityControl/ProsesPond/JenisPond';
+import PondAwal from './pages/QualityControl/ProsesPond/PondAwal';
+import ProfilSetting from './pages/profilSetting';
+import ProsesCoating from './pages/QualityControl/ProsesCoating/ProsesCoating';
+import JenisCoating from './pages/QualityControl/ProsesCoating/JenisCoating';
+import CoatingAwal from './pages/QualityControl/ProsesCoating/CoatingAwal';
+import ProsesLem from './pages/QualityControl/ProsesLem/ProsesLem';
+import JenisLem from './pages/QualityControl/ProsesLem/JenisLem';
+import LemAwal from './pages/QualityControl/ProsesLem/LemAwal';
+import CetakPeriode from './pages/QualityControl/ProsesCetak/CetakPeriode';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -96,6 +136,15 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <ECommerce />
+            </>
+          }
+        />
+        <Route
+          path="/profil_setting"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProfilSetting />
             </>
           }
         />
@@ -173,7 +222,7 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/inspection/pm_2_form"
+          path="/maintenance/inspection/pm_2_form/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -209,7 +258,7 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/inspection/pm_3_form"
+          path="/maintenance/inspection/pm_3_form/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -276,7 +325,7 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <Pm3 />
+                <Pm3page />
               </ProtectedRoute>
             </>
           }
@@ -360,7 +409,7 @@ function App() {
         />
 
         <Route
-          path="/quality_control/mtc"
+          path="/qc/validatenverify"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -370,6 +419,338 @@ function App() {
             </>
           }
         />
+        <Route
+          path="/qc/qualityinspection"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <Qualityinspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/list"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingList />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/list/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingIns />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/history/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoryIns />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/potong/potongbahan/historyitoh/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoryBahanItoh />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/potong/potongbahan/historypolar/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoryBahanPolar />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/potong/potongjadi/historypolar/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoryJadiPolarPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/potong/potongjadi/historyitoh/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <HistoryJadiItohPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/potong"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesPotong />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/potongbahan"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongBahan1 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/potong/listjadiitoh"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ListJadiItoh />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/potong/listjadipolar"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ListJadiPolar />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/potongbahan/listbahanitoh"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ListBahan1 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/potongbahan/listbahanpolar"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ListBahan2 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/potongjadi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongJadi1 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/cetak"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesCetak />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/qc/qualityinspection/pond"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesPond />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/coating"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesCoating />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lem"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesLem />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/cetak/jeniscetak/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JenisCetak />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/pond/jenispond"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JenisPond />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/coating/jeniscoating"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JenisCoating />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lem/jenislem"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JenisLem />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/cetak/jeniscetak/checkawal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CetakAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/cetak/jeniscetak/checkperiode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CetakPeriode />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/pond/jenispond/checkawal"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PondAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/coating/jeniscoating/checkawal"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CoatingAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lem/jenislem/checkawal"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <LemAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/potong/potongbahan/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongBahanPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/potong/potongjadi/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongJadiPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
         <Route
           path="/history"
           element={
@@ -469,6 +850,17 @@ function App() {
             </>
           }
         />
+        <Route
+          path="/masterdata/masterpm3"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM3 />
+              </ProtectedRoute>
+            </>
+          }
+        />
 
         <Route
           path="/masterdata/masterpm1/pm1checklist/:id"
@@ -494,6 +886,17 @@ function App() {
           }
         />
         <Route
+          path="/masterdata/masterpm3/pm3checklist/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM3Check />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/masterdata/masterpm1/pm1checklist/addinspection/:id"
           element={
             <>
@@ -511,6 +914,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterPM2TambahInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/masterpm3/pm3checklist/addinspection/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterPM3TambahInspection />
               </ProtectedRoute>
             </>
           }

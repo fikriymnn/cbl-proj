@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import DefaultLayout from '../../../layout/DefaultLayout'
-import ModalPopupBgn from '../../../components/Modals/ModalPopupBgn';
-import ModalPopupReq from '../../../components/Modals/ModalDetailPopupReq';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
-import ModalPM1Confirm from '../../../components/Modals/ModalPM1Confirm';
+
 
 function Pm1() {
     const [isMobile, setIsMobile] = useState(false);
@@ -39,7 +37,9 @@ function Pm1() {
 
     useEffect(() => {
         getPM1();
+        getMe();
     }, []);
+
     async function getPM1() {
         const url = `${import.meta.env.VITE_API_LINK}/pm1`;
         try {
@@ -52,6 +52,21 @@ function Pm1() {
 
             setPm1(res.data);
             console.log(res.data);
+        } catch (error: any) {
+            console.log(error.data.msg);
+        }
+    }
+
+    const [me, setMe] = useState<any>();
+
+    async function getMe() {
+        const url = `${import.meta.env.VITE_API_LINK}/me`;
+        try {
+            const res = await axios.get(url, {
+                withCredentials: true,
+            });
+
+            setMe(res.data);
         } catch (error: any) {
             console.log(error.data.msg);
         }
@@ -82,7 +97,7 @@ function Pm1() {
                 withCredentials: true,
             });
 
-            alert("succes")
+
             getPM1()
         } catch (error: any) {
             console.log(error);
@@ -144,10 +159,6 @@ function Pm1() {
                                 </button> : null
                         }
 
-
-
-
-
                         <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
 
                             <div className='w-2 h-full '>
@@ -159,11 +170,11 @@ function Pm1() {
 
                                 <p>Inspector</p>
 
-                                <p>Leader</p>
+                                {/* <p>Leader</p>
 
                                 <p>Supervisor</p>
 
-                                <p>KA BAG MTC</p>
+                                <p>KA BAG MTC</p> */}
 
                                 <div className='w-[125px]'>{""}</div>
 
@@ -189,30 +200,57 @@ function Pm1() {
                                                 <div className='flex flex-col justify-center '>
 
                                                     <p className=''>{data.inspector != null ? data.inspector.nama : "-"}</p>
+
                                                 </div>
                                                 <div className='flex flex-col justify-center'>
 
-                                                    <p className=''>{data.leader != null ? data.leader.nama : '-'}</p>
+                                                    {/* <p className=''>{data.leader != null ? data.leader.nama : '-'}</p> */}
                                                 </div>
                                                 <div className='flex flex-col justify-center'>
 
-                                                    <p className=''>{data.supervisor != null ? data.supervisor.nama : '-'}</p>
+                                                    {/* <p className=''>{data.supervisor != null ? data.supervisor.nama : '-'}</p> */}
                                                 </div>
                                                 <div className='flex flex-col justify-center'>
 
-                                                    <p className=''>{data.ka_bag != null ? data.ka_bag.nama : '-'}</p>
+                                                    {/* <p className=''>{data.ka_bag != null ? data.ka_bag.nama : '-'}</p> */}
                                                 </div>
 
                                                 <div>
+                                                    {
+                                                        data.id_inspector == me?.id ? (
+                                                            <>
+                                                                {
+                                                                    data.status == "done" || data.status == "on progres"  ?
+                                                                        <Link to={`/maintenance/inspection/pm_1_form/${data.id}`}
+                                                                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                                        >
+                                                                            INSPECT
 
-                                                    <>
-                                                        <button onClick={() => inspectPM1(data.id)}
-                                                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
-                                                        >
-                                                            INSPECT
+                                                                        </Link> :
+                                                                        <button onClick={() => inspectPM1(data.id)}
+                                                                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                                        >
+                                                                            INSPECT
 
-                                                        </button>
-                                                    </>
+                                                                        </button>
+                                                                }
+                                                            </>
+                                                        ) :
+                                                            data.id_inspector == null ? (
+                                                                <>
+                                                                    <button onClick={() => inspectPM1(data.id)}
+                                                                        className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                                    >
+                                                                        INSPECT
+
+                                                                    </button>
+                                                                </>
+                                                            ) :
+                                                                (
+                                                                    <>
+
+                                                                    </>
+                                                                )}
 
 
                                                 </div>
@@ -230,12 +268,13 @@ function Pm1() {
 
                         <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>{tanggal}</p>
                         {
-                            <button onClick={createPM1}
-                                className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center }`} // Dynamic class assignment
-                            >
-                                TAMBAH PM1
-                            </button>
+                            pm1?.length <= 0 ?
+                                <button onClick={createPM1}
+                                    className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center }`} // Dynamic class assignment
+                                >
+                                    TAMBAH PM1
 
+                                </button> : null
                         }
                         <div className=' ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]'>
 
@@ -267,42 +306,25 @@ function Pm1() {
                                                 <div className='flex justify-center'>
                                                     <>
                                                         <div>
-                                                            {data.status == 'incoming' ? (
-                                                                <>
-                                                                    <button onClick={() => openConfirm(i)} className='uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center'>
-                                                                        INSPECT
-                                                                    </button>
-                                                                    {showConfirm[i] == true && (
-                                                                        <ModalPM1Confirm
 
-                                                                            isOpen={showConfirm[i]}
-                                                                            onClose={() => closeConfirm(i)}
-                                                                            id={undefined}
+                                                            <>
+                                                                {
+                                                                    data.status == "done" ?
+                                                                        <Link to={`/maintenance/inspection/pm_1_form/${data.id}`}
+                                                                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
                                                                         >
-                                                                            <button onClick={() => inspectPM1(data.id)}
-                                                                                className={`uppercase w-full py-2 rounded-md inline-flex  items-center text-sm  bg-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
-                                                                            >
-                                                                                INSPECT
+                                                                            INSPECT
 
-                                                                            </button>
-                                                                        </ModalPM1Confirm>
-                                                                    )
+                                                                        </Link> :
+                                                                        <button onClick={() => inspectPM1(data.id)}
+                                                                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                                        >
+                                                                            INSPECT
 
-                                                                    }
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <Link to={`/maintenance/inspection/pm_1_form/${data.id}`}
-                                                                        className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
-                                                                    >
-                                                                        INSPECT
+                                                                        </button>
+                                                                }
 
-                                                                    </Link>
-                                                                </>
-                                                            )
-                                                            }
-
-
+                                                            </>
 
 
                                                         </div>

@@ -13,7 +13,6 @@ const ModalEditMonitoring = ({ children, isOpen, onClose, idMonitoring, data, on
     const [jenis, setJenis] = useState(data.jenis)
     const [skor, setSkor] = useState(data.minimal_skor);
 
-
     async function submitEDitMonitoring(id: number) {
         const url = `${import.meta.env.VITE_API_LINK}/master/waktuMonitoring/${id}`;
 

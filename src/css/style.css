@@ -249,3 +249,8 @@ span.flatpickr-weekday,
   background-color: transparent;
   /* Set the background color of the scrollbar track to make it invisible */
 }
+.scroll-tapi-eweh::-webkit-scrollbar {
+  width: 1px;
+  height: 0px;
+  /* Set the width of the scrollbar */
+}

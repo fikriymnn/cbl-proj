@@ -25,6 +25,7 @@ const ModalStockCheck1 = ({
   kodeLkh,
   namaMesin,
   skor_mtc,
+  jenis_perbaikan,
 }: {
   children: any;
   isOpen: any;
@@ -41,6 +42,7 @@ const ModalStockCheck1 = ({
   kodeLkh: any;
   namaMesin: any;
   skor_mtc: any;
+  jenis_perbaikan: any;
 }) => {
   if (!isOpen) return null;
 
@@ -129,7 +131,6 @@ const ModalStockCheck1 = ({
     getKodeAnalisis();
     getSkorPerbaikan();
     getMasterMesin();
-    getMasterSparepart(mesinMsSparepart);
   }, []);
   async function getKodeAnalisis() {
     const url = `${import.meta.env.VITE_API_LINK}/master/kodeAnalisis`;
@@ -190,12 +191,12 @@ const ModalStockCheck1 = ({
     }
   }
 
-  async function getMasterSparepart(mesinName: any) {
+  async function getMasterSparepart(id_mesin: any) {
     const url = `${import.meta.env.VITE_API_LINK}/master/sparepart`;
     try {
       const res = await axios.get(url, {
         params: {
-          nama_mesin: mesinName,
+          id_mesin: id_mesin,
         },
         withCredentials: true,
       });
@@ -224,6 +225,7 @@ const ModalStockCheck1 = ({
             id_proses: idProses,
             kode_analisis_mtc: selectedKodeAnalisis.kode_analisis,
             nama_analisis_mtc: selectedKodeAnalisis.nama_analisis,
+            jenis_analisis_mtc: selectedKodeAnalisis.bagian_analisis,
             note_analisis: '',
             masalah_sparepart: kebutuhanSparepart,
             skor_mtc: selectedSkorPerbaikan.skor,
@@ -368,7 +370,7 @@ const ModalStockCheck1 = ({
           <button
             type="button"
             onClick={() => {
-              if (skor_mtc != 0) {
+              if (skor_mtc != 0 && jenis_perbaikan == null) {
                 deleteExit(idTiket, idProses);
               }
               onClose();
@@ -686,9 +688,7 @@ const ModalStockCheck1 = ({
                                     <div className="px-5 pb-4">
                                       <div className="relative flex w-full gap-10 justify-start pb-2 pt-3">
                                         <select
-                                          value={mesinMsSparepart}
                                           onChange={(e) => {
-                                            setMesin(e.target.value);
                                             getMasterSparepart(e.target.value);
                                             changeTextColor();
                                           }}
@@ -699,19 +699,19 @@ const ModalStockCheck1 = ({
                                           }`}
                                         >
                                           <option
-                                            value={mesinMsSparepart}
+                                            value=""
                                             selected
                                             disabled
                                             className="text-gray-800 text-xs font-light dark:text-bodydark"
                                           >
-                                            {mesinMsSparepart}
+                                            SELECT MESIN
                                           </option>
                                           {masterMesin != null &&
-                                            masterMesin.map(
+                                            masterMesin?.map(
                                               (data: any, i: number) => {
                                                 return (
                                                   <option
-                                                    value={data.nama_mesin}
+                                                    value={data.id}
                                                     className="text-gray-800 text-xs font-light dark:text-bodydark"
                                                   >
                                                     {data.nama_mesin}
@@ -773,7 +773,7 @@ const ModalStockCheck1 = ({
                                           </div>
                                         </div>
 
-                                        {masterSparepart.map(
+                                        {masterSparepart?.map(
                                           (
                                             SparepartMaster: any,
                                             ii: number,
@@ -990,15 +990,15 @@ const ModalStockCheck1 = ({
                                         }`}
                                       >
                                         <option
-                                          value={mesin}
+                                          value=""
                                           selected
                                           disabled
                                           className="text-gray-800 text-xs font-light dark:text-bodydark"
                                         >
-                                          {mesin}
+                                          SELECT MESIN
                                         </option>
                                         {masterMesin != null &&
-                                          masterMesin.map(
+                                          masterMesin?.map(
                                             (data: any, i: number) => {
                                               return (
                                                 <option
@@ -1473,7 +1473,7 @@ const ModalStockCheck1 = ({
           title="button"
           type="button"
           onClick={() => {
-            if (skor_mtc != 0) {
+            if (skor_mtc != 0 && jenis_perbaikan == null) {
               deleteExit(idTiket, idProses);
             }
             onClose();

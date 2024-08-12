@@ -2,9 +2,12 @@ import axios from 'axios';
 import { MasterMachine } from '../../../types/master';
 import { useEffect, useState } from 'react';
 import ModalEditSparepartMaster from '../../Modals/ModalEditSparepartMaster';
-import ModalTambahUser from '../../Modals/ModalTambahUser';
+import ModalTambahUser from '../../Modals/Master/User/ModalTambahUser';
+import ModalEditUser from '../../Modals/Master/User/ModalUpdateUserMaster';
+import ModalConfDelete from '../../Modals/Master/User/ModalConfDelete';
 
 const TableUser = () => {
+
     const [isMobile, setIsMobile] = useState(false);
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
@@ -26,6 +29,7 @@ const TableUser = () => {
 
         getuser();
     }, []);
+
     async function getuser() {
         const url = `${import.meta.env.VITE_API_LINK}/users`;
         try {
@@ -42,6 +46,7 @@ const TableUser = () => {
 
 
     const [showEdit, setShowEdit] = useState<any>([]);
+
     const openEdit = (i: any) => {
         const onchangeVal: any = [...showEdit];
         onchangeVal[i] = true;
@@ -54,14 +59,26 @@ const TableUser = () => {
 
         setShowEdit(onchangeVal);
     };
+
+    const [showDelete, setShowDelete] = useState<any>([]);
+
+    const openDelete = (i: any) => {
+        const onchangeVal: any = [...showDelete];
+        onchangeVal[i] = true;
+
+        setShowDelete(onchangeVal);
+    };
+    const closeDelete = (i: any) => {
+        const onchangeVal: any = [...showDelete];
+        onchangeVal[i] = false;
+
+        setShowDelete(onchangeVal);
+    };
+
     const [showModalTambah, setShowModalTambah] = useState(false);
 
     const openModalTambah = () => setShowModalTambah(true);
     const closeModalTambah = () => setShowModalTambah(false);
-
-
-
-
 
     return (
         <div className="rounded-xl border border-stroke bg-white pt-4 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
@@ -149,12 +166,36 @@ const TableUser = () => {
                                                 </div>
 
                                                 <div className="grid col-span-2 justify-end p-2.5 gap-2">
-                                                    <button className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                    <button
+                                                        onClick={() => openEdit(i)}
+                                                        className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                         EDIT
                                                     </button>
-                                                    <button className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                    {showEdit && (
+                                                        <ModalEditUser
+                                                            children={undefined}
+                                                            isOpen={showEdit[i]}
+                                                            onClose={() => closeEdit(i)}
+                                                            id={data.uuid}
+                                                            data={data}
+                                                            onFinish={getuser}
+                                                        />
+
+                                                    )}
+                                                    <button
+                                                        onClick={() => openDelete(i)}
+                                                        className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                         DELETE
                                                     </button>
+                                                    {showDelete[i] == true && (
+                                                        <ModalConfDelete
+                                                            children={undefined}
+                                                            isOpen={showDelete[i]}
+                                                            onClose={() => closeDelete(i)}
+                                                            idUser={data.uuid}
+                                                            onFinish={getuser}
+                                                        />
+                                                    )}
                                                 </div>
                                             </div>
 

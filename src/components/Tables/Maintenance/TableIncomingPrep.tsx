@@ -7,8 +7,8 @@ import { BRAND } from '../../../types/brand';
 import { useState } from 'react';
 import Modal from '../../../components/Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
-import ModalMtc6type from '../../Modals/Modal6type';
-import ModalMtc2 from '../../Modals/ModalMtcType2';
+
+
 import ModalMtcStockCheck2 from '../../Modals/ModalMtcStockCheck2';
 
 const brandData: BRAND[] = [
@@ -142,25 +142,6 @@ const TableIncomingPrep = () => {
                                         DO MAINTENANCE
                                     </button>
 
-                                    {showModal2 && (
-                                        <ModalMtc2
-                                            title="Select Maintenance Type"
-                                            isOpen={showModal2}
-                                            onClose={closeModal2}
-                                            machineName={'GMC Printer 2'}                    >
-                                            <div className="pt-5">
-
-                                                <button onClick={openModal3} className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                                    RIGHT AWAY MAINTENANCE
-                                                </button>
-                                            </div>
-                                            <div className="pt-2">
-                                                <button className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md">
-                                                    SCHEDULE MAINTENANCE
-                                                </button>
-                                            </div>
-                                        </ModalMtc2>
-                                    )}
                                     <button type="button" onClick={openModal1}
                                         className={`inline-flex rounded-[3px] my-auto px-2 text-sm font-bold text-[12px] bg-white border-[#0065DE] border text-primary justify-center items-center hover:bg-blue-400 `}
                                     >

@@ -46,9 +46,6 @@ function MonitoringSparepart() {
               >
                 ADD ITEM
               </Link>
-              <button className="px-3 py-2 bg-red-600 text-white font-semibold text-xs rounded-md">
-                EXPORT DATA
-              </button>
             </div>
           </div>
         </div>
@@ -62,7 +59,6 @@ function MonitoringSparepart() {
               </p>
               <p className="text-[10px] font-semibold w-[7%] ">Mesin</p>
               <p className="text-[10px] font-semibold w-[7%]">Posisi</p>
-              <p className="text-[10px] font-semibold w-[8%]">Tgl Datang</p>
               <p className="text-[10px] font-semibold w-[8%]">Tgl Pasang</p>
               <p className="text-[10px] font-semibold w-[8%]">Tgl Rusak</p>
               <p className="text-[10px] font-semibold w-[7%]">Umur A</p>
@@ -104,7 +100,6 @@ function MonitoringSparepart() {
                     {data.mesin.nama_mesin}
                   </p>
                   <p className="text-[10px]  w-[7%]">{data.posisi_part}</p>
-                  <p className="text-[10px]  w-[8%]">12 March 2024</p>
                   <p className="text-[10px]  w-[8%]">{tglPasang}</p>
                   <p className="text-[10px]  w-[8%]">{tglRusak}</p>
                   <p className="text-[10px]  w-[7%]">{data.umur_a}</p>

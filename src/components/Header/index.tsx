@@ -12,10 +12,10 @@ const Header = (props: {
   return (
     <header className="sticky top-0 z-50 flex w-full bg-[#D8EAFF]  dark:bg-boxdark dark:drop-shadow-none">
       <div className="flex flex-grow items-center justify-between px-4 py-1  md:px-6 2xl:px-11">
-
         <div className="flex items-center gap-2 sm:gap-4 lg:hidden">
           {/* <!-- Hamburger Toggle BTN --> */}
           <button
+            title="button"
             aria-controls="sidebar"
             onClick={(e) => {
               e.stopPropagation();
@@ -51,8 +51,6 @@ const Header = (props: {
             </span>
           </button>
           {/* <!-- Hamburger Toggle BTN --> */}
-
-
         </div>
 
         <div className="hidden sm:block">

@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import Modal from '../../../components/Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
 import Logo from '../../images/logo/logo-cbl 1.svg';
-import ModalPopupReq2 from '../../Modals/ModalPopupReq';
+
 import axios from 'axios';
 import ModalEditMesinMaster from '../../Modals/ModalEditMesinMaster';
 

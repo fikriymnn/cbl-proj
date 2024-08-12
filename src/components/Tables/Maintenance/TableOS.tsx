@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import Filter from '../../../images/icon/filter.svg';
 import Burger from '../../../images/icon/burger.svg';
 import Arrow from '../../../images/icon/arrowDown.svg';
-import ModalStockCheckPengganti from '../../Modals/ModalStockCheckPilihPengganti';
-import ModalPopupReq from '../../Modals/ModalDetailPopupReq';
-import ModalMtcDate from '../../Modals/ModalMtcDate';
+
 import ModalStockCheck1 from '../../Modals/ModalStockCheck1';
 import Polygon6 from '../../../images/icon/Polygon6.svg';
 import X from '../../../images/icon/x.svg';
@@ -793,7 +791,9 @@ function TableOS() {
 
                   const dateMtc = convertDatetimeToDate(data.createdAt);
                   const waktuRespon = calculateResponTime(
-                    data.createdAt,
+                    data.waktu_respon_qc == null
+                      ? data.createdAt
+                      : data.waktu_respon_qc,
                     data.waktu_respon,
                   );
                   return (
@@ -840,7 +840,10 @@ function TableOS() {
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
                                       : data.status_tiket == 'temporary'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                      : ''
+                                      : data.status_tiket == 'request to qc'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                      : data.status_tiket == 'qc rejected'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `: ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -858,8 +861,11 @@ function TableOS() {
                                       : data.status_tiket == 'monitoring'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
                                       : data.status_tiket == 'temporary'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
-                                      : ''
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#fff2b1bd] `
+                                      : data.status_tiket == 'request to qc'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#fcb911] bg-[#FFF2B1] `
+                                      : data.status_tiket == 'qc rejected'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `: ''
                                   }
                                 >
                                   {data.skor_mtc}%
@@ -876,7 +882,8 @@ function TableOS() {
                             <div className="flex gap-2 items-center md:mb-0 mb-2">
                               <div>
                                 <div>
-                                  {data.status_tiket == 'monitoring' ? (
+                                  {data.status_tiket == 'monitoring' ||
+                                  data.status_tiket == 'request to qc' ? (
                                     <button
                                       title="button"
                                       className="text-xs font-bold bg-blue-200 py-2 text-white rounded-md opacity-0"
@@ -912,9 +919,17 @@ function TableOS() {
                                             onClick={() => {
                                               if (data.status_tiket == 'open') {
                                                 openModal1(i);
+                                              } else if (
+                                                data.status_tiket ==
+                                                  'temporary' &&
+                                                data.proses_mtcs[lengthProses]
+                                                  .cara_perbaikan == null
+                                              ) {
+                                                openModal1(i);
+
+                                                // ini untuk fungsi rework
                                               } else {
                                                 reworkTiket(data.id, i);
-                                                // ini untuk fungsi rework
                                               }
                                             }}
                                             className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
@@ -954,6 +969,10 @@ function TableOS() {
                                             data.proses_mtcs[lengthProses]
                                               .skor_mtc
                                           }
+                                          jenis_perbaikan={
+                                            data.proses_mtcs[lengthProses]
+                                              .cara_perbaikan
+                                          }
                                         />
                                         // <ModalStockCheckPengganti children={undefined} isOpen={showModal1[i]} onClose={() => closeModal1(i)} kendala={"nu"} onFinish={"nu"} machineName={"nu"} tgl={"nu"} jam={"nu"} namaPemeriksa={"nu"} no={"nu"}>
 
@@ -983,14 +1002,6 @@ function TableOS() {
                                           </div>
                                         </ModalMtcLightHeavy>
                                       )}
-                                      {showModal4 && (
-                                        <ModalMtcDate
-                                          isOpen={showModal4}
-                                          onClose={closeModal4}
-                                          children={undefined}
-                                          machineName={undefined}
-                                        ></ModalMtcDate>
-                                      )}
                                       {showModal5 && (
                                         <ModalSPBService
                                           isOpen={showModal5}
@@ -999,6 +1010,7 @@ function TableOS() {
                                           idProses={
                                             data.proses_mtcs[lengthProses].id
                                           }
+                                          sumber={'Os2'}
                                           noSPB={'MT-0001'}
                                           tglSpb={'20 MEI 2024'}
                                           data={undefined}
@@ -1149,10 +1161,10 @@ function TableOS() {
                                                   proses.skor_mtc <= 100 &&
                                                   proses.skor_mtc >= 60
                                                     ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                                    : proses.skor_mtc >= 20 &&
+                                                    : proses.skor_mtc > 20 &&
                                                       proses.skor_mtc <= 59
                                                     ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                    : proses.skor_mtc < 20
+                                                    : proses.skor_mtc <= 20
                                                     ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
                                                     : ''
                                                 }
@@ -1282,7 +1294,9 @@ function TableOS() {
 
                 const dateMtc = convertDatetimeToDate(data.createdAt);
                 const waktuRespon = calculateResponTime(
-                  data.createdAt,
+                  data.waktu_respon_qc == null
+                    ? data.createdAt
+                    : data.waktu_respon_qc,
                   data.waktu_respon,
                 );
                 return (
@@ -1309,9 +1323,16 @@ function TableOS() {
                                     onClick={() => {
                                       if (data.status_tiket == 'open') {
                                         openModal1(i);
+                                      } else if (
+                                        data.status_tiket == 'temporary' &&
+                                        data.proses_mtcs[lengthProses]
+                                          .cara_perbaikan == null
+                                      ) {
+                                        openModal1(i);
+
+                                        // ini untuk fungsi rework
                                       } else {
                                         reworkTiket(data.id, i);
-                                        // ini untuk fungsi rework
                                       }
                                     }}
                                     className=" w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
@@ -1348,6 +1369,10 @@ function TableOS() {
                                   skor_mtc={
                                     data.proses_mtcs[lengthProses].skor_mtc
                                   }
+                                  jenis_perbaikan={
+                                    data.proses_mtcs[lengthProses]
+                                      .cara_perbaikan
+                                  }
                                 />
                               )}
                               {showModal2 && (
@@ -1374,22 +1399,15 @@ function TableOS() {
                                   </div>
                                 </ModalMtcLightHeavy>
                               )}
-                              {showModal4 && (
-                                <ModalMtcDate
-                                  isOpen={showModal4}
-                                  onClose={closeModal4}
-                                  children={undefined}
-                                  machineName={undefined}
-                                ></ModalMtcDate>
-                              )}
                               {showModal5 && (
                                 <ModalSPBService
                                   isOpen={showModal5}
                                   onClose={closeModal5}
                                   noSPB={'MT-0001'}
                                   tglSpb={'20 MEI 2024'}
+                                  sumber={'Os2'}
                                   data={undefined}
-                                  onFinish={undefined}
+                                  onFinish={getTiket}
                                   idProses={undefined}
                                 >
                                   <p></p>
@@ -1429,7 +1447,10 @@ function TableOS() {
                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
                               : data.status_tiket == 'temporary'
                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                              : ''
+                              : data.status_tiket == 'request to qc'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#fcb911] bg-[#FFF2B1] `
+                                      : data.status_tiket == 'qc rejected'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `: ''
                           }
                         >
                           {data.skor_mtc}%
@@ -1464,7 +1485,10 @@ function TableOS() {
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
                                       : data.status_tiket == 'temporary'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                      : ''
+                                      : data.status_tiket == 'request to qc'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#fcb911] bg-[#FFF2B1] `
+                                      : data.status_tiket == 'qc rejected'
+                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `: ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
