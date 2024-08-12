@@ -72,7 +72,12 @@ function JenisCetakMesin() {
                 <div className="flex  border-b-8 border-[#D8EAFF] gap-7 items-center">
                   <div className="flex items-center gap-7 w-full">
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-7 `}
+                      className={`w-2 h-full sticky left-0 z-20 ${
+                        cetakMesin?.data?.inspeksi_cetak_awal[0].status ==
+                        'incoming'
+                          ? 'bg-red-500'
+                          : 'bg-green-500'
+                      }  gap-8 py-7 `}
                     ></div>
 
                     <label className="text-neutral-500 text-sm font-semibold flex ">
@@ -98,7 +103,12 @@ function JenisCetakMesin() {
                 <div className="flex  border-b-8 border-[#D8EAFF] gap-7 items-center">
                   <div className="flex items-center gap-7 w-full">
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-7 `}
+                      className={`w-2 h-full sticky left-0 z-20 ${
+                        cetakMesin?.data?.inspeksi_cetak_periode[0].status ==
+                        'incoming'
+                          ? 'bg-red-500'
+                          : 'bg-green-500'
+                      }  gap-8 py-7 `}
                     ></div>
 
                     <label className="text-neutral-500 text-sm font-semibold flex ">
@@ -107,7 +117,9 @@ function JenisCetakMesin() {
                   </div>
 
                   <div className="justify-end flex pr-2 w-full ">
-                    <Link to={`/qc/qualityinspection/cetak/jeniscetak`}>
+                    <Link
+                      to={`/qc/qualityinspection/cetak/jeniscetak/checkperiode/${id}`}
+                    >
                       <button
                         className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                       >
