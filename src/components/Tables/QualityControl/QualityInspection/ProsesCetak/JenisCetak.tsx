@@ -68,50 +68,55 @@ function JenisCetakMesin() {
               </div>
               <div className="w-2 h-full "></div>
 
-              <div className="flex  border-b-8 border-[#D8EAFF] gap-7 items-center">
-                <div className="flex items-center gap-7 w-full">
-                  <div
-                    className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-7 `}
-                  ></div>
+              {cetakMesin?.data?.inspeksi_cetak_awal.length > 0 ? (
+                <div className="flex  border-b-8 border-[#D8EAFF] gap-7 items-center">
+                  <div className="flex items-center gap-7 w-full">
+                    <div
+                      className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-7 `}
+                    ></div>
 
-                  <label className="text-neutral-500 text-sm font-semibold flex ">
-                    PENGECEKAN AWAL
-                  </label>
-                </div>
+                    <label className="text-neutral-500 text-sm font-semibold flex ">
+                      PENGECEKAN AWAL
+                    </label>
+                  </div>
 
-                <div className="justify-end flex pr-2 w-full ">
-                  <Link
-                    to={`/qc/qualityinspection/cetak/jeniscetak/checkawal/${id}`}
-                  >
-                    <button
-                      className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                  <div className="justify-end flex pr-2 w-full ">
+                    <Link
+                      to={`/qc/qualityinspection/cetak/jeniscetak/checkawal/${id}`}
                     >
-                      PILIH
-                    </button>
-                  </Link>
+                      <button
+                        className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                      >
+                        PILIH
+                      </button>
+                    </Link>
+                  </div>
                 </div>
-              </div>
-              <div className="flex  border-b-8 border-[#D8EAFF] gap-7 items-center">
-                <div className="flex items-center gap-7 w-full">
-                  <div
-                    className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-7 `}
-                  ></div>
+              ) : null}
 
-                  <label className="text-neutral-500 text-sm font-semibold flex ">
-                    CEK PERIODE
-                  </label>
-                </div>
+              {cetakMesin?.data?.inspeksi_cetak_periode.length > 0 ? (
+                <div className="flex  border-b-8 border-[#D8EAFF] gap-7 items-center">
+                  <div className="flex items-center gap-7 w-full">
+                    <div
+                      className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-7 `}
+                    ></div>
 
-                <div className="justify-end flex pr-2 w-full ">
-                  <Link to={`/qc/qualityinspection/cetak/jeniscetak`}>
-                    <button
-                      className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
-                    >
-                      PILIH
-                    </button>
-                  </Link>
+                    <label className="text-neutral-500 text-sm font-semibold flex ">
+                      CEK PERIODE
+                    </label>
+                  </div>
+
+                  <div className="justify-end flex pr-2 w-full ">
+                    <Link to={`/qc/qualityinspection/cetak/jeniscetak`}>
+                      <button
+                        className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                      >
+                        PILIH
+                      </button>
+                    </Link>
+                  </div>
                 </div>
-              </div>
+              ) : null}
             </div>
           </div>
         </main>
