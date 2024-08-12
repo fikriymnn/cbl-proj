@@ -101,6 +101,7 @@ import CoatingAwal from './pages/QualityControl/ProsesCoating/CoatingAwal';
 import ProsesLem from './pages/QualityControl/ProsesLem/ProsesLem';
 import JenisLem from './pages/QualityControl/ProsesLem/JenisLem';
 import LemAwal from './pages/QualityControl/ProsesLem/LemAwal';
+import CetakPeriode from './pages/QualityControl/ProsesCetak/CetakPeriode';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -679,6 +680,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <CetakAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/cetak/jeniscetak/checkperiode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CetakPeriode />
               </ProtectedRoute>
             </>
           }
