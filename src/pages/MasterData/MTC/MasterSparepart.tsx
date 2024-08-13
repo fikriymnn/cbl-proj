@@ -1,6 +1,6 @@
 
-import TableSparepart from '../../components/Tables/MasterData/TableSparepart';
-import DefaultLayout from '../../layout/DefaultLayout';
+import TableSparepart from '../../../components/Tables/MasterData/TableSparepart';
+import DefaultLayout from '../../../layout/DefaultLayout';
 
 const MasterSparepart = () => {
 

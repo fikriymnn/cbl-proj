@@ -1,6 +1,6 @@
 
-import PM1Checklist from '../../components/Tables/MasterData/PM1/PM1Checklist';
-import DefaultLayout from '../../layout/DefaultLayout';
+import PM1Checklist from '../../../components/Tables/MasterData/PM1/PM1Checklist';
+import DefaultLayout from '../../../layout/DefaultLayout';
 
 const MasterPM1Check = () => {
 

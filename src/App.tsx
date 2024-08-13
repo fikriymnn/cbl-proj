@@ -16,7 +16,7 @@ import Material from './pages/Maintenance/Material';
 import MaintenanceQC from './pages/QualityControl/validatenverify';
 import HistoryMtc from './pages/History/Maintenance';
 
-import MasterData from './pages/MasterData/Master';
+import MasterData from './pages/MasterData/MTC/Master';
 
 import Dashboard from './pages/Maintenance/dashboard';
 import Pm1Form from './pages/inspection/pm1/Pm1Form';
@@ -28,21 +28,21 @@ import Pm3 from './pages/inspection/pm3/Pm3';
 import OS3 from './pages/inspection/os3/Os3';
 
 import KPI from './pages/Maintenance/KPI/KPI';
-import MasterSparepart from './pages/MasterData/MasterSparepart';
-import MasterAnalisis from './pages/MasterData/MasterAnalisis';
-import MasterPM1 from './pages/MasterData/MasterPM1';
-import MasterPM1Check from './pages/MasterData/MasterPM1Check';
-import MasterPM1TambahInspection from './pages/MasterData/MasterPM1TambahInspection';
+import MasterSparepart from './pages/MasterData/MTC/MasterSparepart';
+import MasterAnalisis from './pages/MasterData/MTC/MasterAnalisis';
+import MasterPM1 from './pages/MasterData/MTC/MasterPM1';
+import MasterPM1Check from './pages/MasterData/MTC/MasterPM1Check';
+import MasterPM1TambahInspection from './pages/MasterData/MTC/MasterPM1TambahInspection';
 import Preventive from './pages/inspection/os3/Preventive';
 import HistoriPage from './pages/inspection/histori/HistoriPage';
 import KPIForm from './pages/Maintenance/KPI/KPIForm';
 import KPIInput from './pages/Maintenance/KPI/KPIInput';
-import MasterPM2 from './pages/MasterData/MasterPM2';
+import MasterPM2 from './pages/MasterData/MTC/MasterPM2';
 import PM2Checklist from './components/Tables/MasterData/PM2/PM2Checklist';
-import MasterPM2Check from './pages/MasterData/MasterPM2Check';
-import MasterPM2TambahInspection from './pages/MasterData/MasterPM2TambahInspection';
-import MasterKPI from './pages/MasterData/MasterKPI';
-import MasterKPIForm from './pages/MasterData/MasterKPIForm';
+import MasterPM2Check from './pages/MasterData/MTC/MasterPM2Check';
+import MasterPM2TambahInspection from './pages/MasterData/MTC/MasterPM2TambahInspection';
+import MasterKPI from './pages/MasterData/MTC/MasterKPI';
+import MasterKPIForm from './pages/MasterData/MTC/MasterKPIForm';
 import Sparepart from './pages/sparepart/submitOpname';
 import MasterUsers from './pages/MasterData/MasterUsers';
 import MasterRole from './pages/MasterData/MasterRole';
@@ -50,7 +50,7 @@ import Adjustment from './pages/sparepart/adjustment';
 import HistoriOpname from './pages/sparepart/crumb/historiOpname';
 import CrumbSparepart from './pages/sparepart/crumb/header';
 import MainOpname from './pages/sparepart/crumb/main';
-import MasterMonitoring from './pages/MasterData/MasterMonitoring';
+import MasterMonitoring from './pages/MasterData/MTC/MasterMonitoring';
 import SpbService from './pages/Maintenance/SPB/spbService';
 
 import Stockmaster from './pages/sparepart/stockmaster/stockmaster';
@@ -74,9 +74,9 @@ import PotongBahanPage from './pages/QualityControl/Prosespotong/potongBahanpage
 import PotongJadiPage from './pages/QualityControl/Prosespotong/potongJadiPage';
 import ProsesCetak from './pages/QualityControl/ProsesCetak/ProsesCetak';
 import IncomingList from './pages/QualityControl/Incoming/DaftarIncoming';
-import MasterPM3 from './pages/MasterData/MasterPM3';
-import MasterPM3Check from './pages/MasterData/MasterPM3Check';
-import MasterPM3TambahInspection from './pages/MasterData/MasterPM3TambahInspection';
+import MasterPM3 from './pages/MasterData/MTC/MasterPM3';
+import MasterPM3Check from './pages/MasterData/MTC/MasterPM3Check';
+import MasterPM3TambahInspection from './pages/MasterData/MTC/MasterPM3TambahInspection';
 import HistoryIns from './pages/QualityControl/Incoming/HistoryIns';
 import PotongBahan1 from './pages/QualityControl/Prosespotong/PotongBahan1';
 import PotongJadi1 from './pages/QualityControl/Prosespotong/PotongJadi1';
@@ -102,6 +102,7 @@ import ProsesLem from './pages/QualityControl/ProsesLem/ProsesLem';
 import JenisLem from './pages/QualityControl/ProsesLem/JenisLem';
 import LemAwal from './pages/QualityControl/ProsesLem/LemAwal';
 import CetakPeriode from './pages/QualityControl/ProsesCetak/CetakPeriode';
+import MasterDefect from './pages/MasterData/QC/MasterDefect';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -762,6 +763,18 @@ function App() {
             </>
           }
         />
+        <Route
+          path="/masterdataqc/defect"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterDefect />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
         <Route
           path="/masterdata/machine"
           element={

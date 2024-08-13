@@ -1,7 +1,7 @@
 
 
-import PM2Checklist from '../../components/Tables/MasterData/PM2/PM2Checklist';
-import DefaultLayout from '../../layout/DefaultLayout';
+import PM2Checklist from '../../../components/Tables/MasterData/PM2/PM2Checklist';
+import DefaultLayout from '../../../layout/DefaultLayout';
 
 const MasterPM2Check = () => {
 
