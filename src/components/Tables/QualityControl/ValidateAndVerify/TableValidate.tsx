@@ -129,7 +129,7 @@ const TableValidasi = () => {
             <p className="text-slate-600  text-[14px] font-semibold  dark:text-white w-5 mx-3 ">
               No
             </p>
-            <div className="grid grid-cols-10  w-full dark:border-strokedark  ">
+            <div className="grid grid-cols-10 gap-5 w-full dark:border-strokedark  ">
               <div className="flex w-full col-span-2 ">
                 <p className="text-slate-600  text-[14px] font-semibold  dark:text-white  ">
                   Kode Tiket
@@ -160,9 +160,9 @@ const TableValidasi = () => {
               <p className="text-neutral-500 text-sm font-light  dark:text-white mx-3 w-5 flex items-center">
                 {index + 1}{' '}
               </p>
-              <div className="grid grid-cols-10 w-full items-center dark:border-strokedark ">
+              <div className="grid grid-cols-10 gap-5 w-full items-center dark:border-strokedark ">
                 <div className="flex w-full justify-start col-span-2 gap-14 ">
-                  <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                  <p className="text-neutral-500 text-sm font-light  dark:text-white break-all">
                     {' '}
                     {data.kode_ticket}
                   </p>

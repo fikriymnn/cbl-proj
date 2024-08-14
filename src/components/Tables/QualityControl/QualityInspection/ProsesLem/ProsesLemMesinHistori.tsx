@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
 
-function ProsesLemMesin() {
+function ProsesLemMesinHistory() {
   const [isMobile, setIsMobile] = useState(false);
   const kosong: any = [];
   const today = new Date();
@@ -38,7 +38,7 @@ function ProsesLemMesin() {
     try {
       const res = await axios.get(url, {
         params: {
-          status: 'incoming',
+          status: 'history',
         },
         withCredentials: true,
       });
@@ -152,4 +152,4 @@ function ProsesLemMesin() {
   );
 }
 
-export default ProsesLemMesin;
+export default ProsesLemMesinHistory;

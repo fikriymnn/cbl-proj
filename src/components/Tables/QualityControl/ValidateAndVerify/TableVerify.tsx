@@ -138,7 +138,7 @@ const TableVerifikasi = () => {
           </p>
         </div>
         <div className="flex flex-col w-full">
-          <div className="grid grid-cols-12 dark:border-strokedark  w-full">
+          <div className="grid grid-cols-12 gap-5 dark:border-strokedark  w-full">
             <div className="flex w-full justify-start col-span-2 ">
               <p className="text-slate-600  text-[14px] font-semibold  dark:text-white">
                 Kode Tiket
@@ -192,9 +192,9 @@ const TableVerifikasi = () => {
                 {index + 1}
               </p>
             </div>
-            <div className="grid grid-cols-12 w-full dark:border-strokedark items-center">
+            <div className="grid grid-cols-12 gap-5 w-full dark:border-strokedark items-center">
               <div className="flex w-full justify-start col-span-2 gap-8 ">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                <p className="text-neutral-500 text-sm font-light  dark:text-white break-all">
                   {' '}
                   {data.kode_ticket}
                 </p>

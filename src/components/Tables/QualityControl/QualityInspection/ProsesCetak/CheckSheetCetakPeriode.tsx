@@ -44,7 +44,17 @@ function CheckSheetCetakPeriode() {
       console.log(error.data.msg);
     }
   }
-
+  const [add, setAdd] = useState<any>();
+  const [showDetail, setShowDetail] = useState<boolean[]>(
+    new Array(add != null && add.length).fill(false),
+  );
+  const handleClickAdd = (index: number) => {
+    setShowDetail((prevState) => {
+      const updatedShowDetail = [...prevState]; // Create a copy
+      updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
+      return updatedShowDetail;
+    });
+  };
   async function startTaskCekPeriode(id: number) {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiCetakPeriodePoint/start/${id}`;
@@ -117,7 +127,12 @@ function CheckSheetCetakPeriode() {
     }
   }
 
-  async function tambahDefectPeriode(id: number, kode: any, masalah: any) {
+  async function tambahDefectPeriode(
+    id: number,
+    kode: any,
+    masalah: any,
+    index: number,
+  ) {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiCetakPeriodePoint/createDefect`;
     try {
@@ -138,6 +153,7 @@ function CheckSheetCetakPeriode() {
       setKode(null);
       setMasalah(null);
       getCetakMesinPeriode();
+      handleClickAdd(index);
     } catch (error: any) {
       console.log(error);
     }
@@ -366,14 +382,15 @@ function CheckSheetCetakPeriode() {
                               FORM FILLING GUIDE
                             </label>
                             <label className="text-black text-sm font-semibold flex gap-2">
-                              <img src={ok} className="w-5"></img>OK
+                              <img src={ok} alt="" className="w-5"></img>OK
                             </label>
                             <label className="text-black text-sm font-semibold flex gap-2">
-                              <img src={oktole} className="w-5"></img>OK
+                              <img src={oktole} alt="" className="w-5"></img>OK
                               (Toleransi)
                             </label>
                             <label className="text-black text-sm font-semibold flex gap-2">
-                              <img src={notok} className="w-5"></img>NOT OK
+                              <img src={notok} alt="" className="w-5"></img>NOT
+                              OK
                             </label>
                           </div>
 
@@ -589,21 +606,25 @@ function CheckSheetCetakPeriode() {
                       </div> */}
                       {data.status == 'on progress' ? (
                         <button
-                          onClick={openModal2}
+                          onClick={() => handleClickAdd(index)}
                           className="w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
                         >
                           Add
                         </button>
                       ) : null}
 
-                      {showModal2 == true && (
+                      {showDetail[index] == true && (
                         <>
                           <ModalAddPeriode
-                            isOpen={showModal2}
-                            onClose={() => closeModal2()}
+                            isOpen={showDetail[index]}
+                            onClose={() => handleClickAdd(index)}
                             judul={'ADD PROBLEM CODE'}
                           >
                             <div className="flex flex-col gap-2">
+                              <label className="text-black font-semibold text-sm pt-4 ">
+                                {data.id}{' '}
+                                <span className="text-red-600">*</span>
+                              </label>
                               <label className="text-black font-semibold text-sm pt-4 ">
                                 Kode <span className="text-red-600">*</span>
                               </label>
@@ -622,7 +643,12 @@ function CheckSheetCetakPeriode() {
                               ></input>
                               <button
                                 onClick={() => {
-                                  tambahDefectPeriode(data.id, kode, masalah),
+                                  tambahDefectPeriode(
+                                    data.id,
+                                    kode,
+                                    masalah,
+                                    index,
+                                  ),
                                     console.log(data.id);
                                 }}
                                 className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
