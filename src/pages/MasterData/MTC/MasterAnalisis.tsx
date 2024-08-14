@@ -1,6 +1,6 @@
 
-import TableAnalisis from '../../components/Tables/MasterData/TableAnalisis';
-import DefaultLayout from '../../layout/DefaultLayout';
+import TableAnalisis from '../../../components/Tables/MasterData/TableAnalisis';
+import DefaultLayout from '../../../layout/DefaultLayout';
 
 const MasterAnalisis = () => {
 

@@ -1,8 +1,8 @@
 
 import React from 'react';
-import TablePM2 from '../../components/Tables/MasterData/PM2/TablePM2';
-import DefaultLayout from '../../layout/DefaultLayout';
-import TablePM3 from '../../components/Tables/MasterData/PM3/TablePM3';
+import TablePM2 from '../../../components/Tables/MasterData/PM2/TablePM2';
+import DefaultLayout from '../../../layout/DefaultLayout';
+import TablePM3 from '../../../components/Tables/MasterData/PM3/TablePM3';
 
 const MasterPM3 = () => {
 

@@ -131,10 +131,11 @@ const PM2TambahInspection = () => {
         },
       );
 
-      alert(res.data.msg);
+      //alert(res.data.msg);
+      window.location.reload();
     } catch (error: any) {
       console.log(error);
-      //alert(error.data.msg);
+      alert(error.data.msg);
     }
   }
 
@@ -184,7 +185,7 @@ const PM2TambahInspection = () => {
                         <select
                           name="category"
                           onChange={(e) => handleChangePoint(e, i)}
-                          className='border-2 border-stroke rounded-md '
+                          className="border-2 border-stroke rounded-md "
                         >
                           <option selected disabled value={''}>
                             Select Category

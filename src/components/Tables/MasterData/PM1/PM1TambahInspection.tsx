@@ -136,11 +136,12 @@ const PM1TambahInspection = () => {
       );
 
       setIsLoading(false);
-      // alert(res.data.msg);
+      window.location.reload();
+      //alert(res.data.msg);
     } catch (error: any) {
       console.log(error);
       setIsLoading(false);
-      //alert(error.data.msg);
+      alert(error.data.msg);
     }
   }
 
@@ -188,11 +189,16 @@ const PM1TambahInspection = () => {
                         />
 
                         <select
-                        className='border-2 border-stroke rounded-md'
+                          className="border-2 border-stroke rounded-md"
                           name="category"
                           onChange={(e) => handleChangePoint(e, i)}
                         >
-                          <option className='text-sm ' selected disabled value={''}>
+                          <option
+                            className="text-sm "
+                            selected
+                            disabled
+                            value={''}
+                          >
                             Select Category
                           </option>
                           <option value={'machine'}>Machine</option>

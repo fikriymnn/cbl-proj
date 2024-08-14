@@ -237,31 +237,37 @@ function InspeksiQuality() {
                                                 </>
                                             ) : data.nama == 'PROSES COATING' ? (
                                                 <>
-                                                    <button
-                                                        className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
-                                                    >
-                                                        PILIH
-
-                                                    </button>
-                                                </>
-                                            ) : data.nama == 'PROSES POND' ? (
-                                                <>
-                                                    <button
-                                                        className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
-                                                    >
-                                                        PILIH
-
-                                                    </button>
-                                                </>
-                                            ) :
-                                                (
-                                                    <>
+                                                    <Link to={`/qc/qualityinspection/coating`}>
                                                         <button
                                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                         >
                                                             PILIH
 
                                                         </button>
+                                                    </Link>
+                                                </>
+                                            ) : data.nama == 'PROSES POND' ? (
+                                                <>
+                                                    <Link to={`/qc/qualityinspection/pond`}>
+                                                        <button
+                                                            className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                                                        >
+                                                            PILIH
+
+                                                        </button>
+                                                    </Link>
+                                                </>
+                                            ) :
+                                                (
+                                                    <>
+                                                        <Link to={`/qc/qualityinspection/lem`}>
+                                                            <button
+                                                                className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                                                            >
+                                                                PILIH
+
+                                                            </button>
+                                                        </Link>
                                                     </>
                                                 )
                                             }

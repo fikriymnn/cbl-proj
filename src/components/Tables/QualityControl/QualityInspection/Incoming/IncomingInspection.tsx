@@ -147,11 +147,11 @@ function IncomingInspection() {
     const [no_lot, setNo_lot] = useState<any>();
     const [hasil_rumus, setHasil_rumus] = useState<any>();
     const [verifikasi, setVerifikasi] = useState<any>();
-
+    const [ctt, setCtt] = useState<any>();
 
     async function sumbitChecksheet(id: number) {
 
-        if (no_lot == null || hasil_rumus == null || verifikasi == null) {
+        if (no_lot == null || hasil_rumus == null || verifikasi == null || ctt == null) {
             // Check if start time is available
             alert('Data Tidak Lengkap');
             return; // Exit function if no start time
@@ -162,7 +162,7 @@ function IncomingInspection() {
         try {
             const res = await axios.put(url,
                 {
-
+                    catatan: ctt,
                     no_lot: no_lot,
                     hasil_rumus: hasil_rumus,
                     verifikasi: verifikasi
@@ -3053,6 +3053,28 @@ function IncomingInspection() {
                                                 </>
                                             )}
 
+                                    </div>
+                                    <div className='flex w-[50%] flex-col'>
+                                        <label className='text-neutral-500 text-sm font-semibold flex flex-col w-full'>
+                                            Catatan
+                                            {incoming?.catatan == null ? (
+                                                <>
+                                                    <textarea
+                                                        onChange={(e) => {
+                                                            setCtt(e.target.value)
+                                                        }}
+                                                        className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                    ></textarea>
+
+                                                </>
+                                            ) : (
+                                                <>
+                                                    : {incoming?.catatan}
+                                                </>
+                                            )
+                                            }
+
+                                        </label>
                                     </div>
                                     <div>
                                         {incoming.status == 'incoming' ? (

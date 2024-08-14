@@ -1,9 +1,9 @@
 
 
 import React from 'react';
-import PM2Checklist from '../../components/Tables/MasterData/PM2/PM2Checklist';
-import DefaultLayout from '../../layout/DefaultLayout';
-import PM3Checklist from '../../components/Tables/MasterData/PM3/PM3Checklist';
+import PM2Checklist from '../../../components/Tables/MasterData/PM2/PM2Checklist';
+import DefaultLayout from '../../../layout/DefaultLayout';
+import PM3Checklist from '../../../components/Tables/MasterData/PM3/PM3Checklist';
 
 const MasterPM2Check = () => {
 

@@ -50,7 +50,7 @@ const PM1Checklist = () => {
     try {
       const res = await axios.get(url, {
         params: {
-          id_mesin: id_mesin,
+          id_mesin: id,
         },
         withCredentials: true,
       });
@@ -146,24 +146,18 @@ const PM1Checklist = () => {
                         {data.inspection_point}
                       </label>
                       <label className="text-neutral-500 text-sm font-semibold w-56">
-                      {data.category}
+                        {data.category}
                       </label>
                     </div>
                     <div className="flex w-full flex-row gap-4 pt-3 px-4">
                       <div className="flex w-[40px] justify-center">
-                        <label className="text-neutral-500 text-sm font-semibold">
-                          
-                        </label>
+                        <label className="text-neutral-500 text-sm font-semibold"></label>
                       </div>
                       <div className="flex w-10/12">
-                        <label className="text-neutral-500 text-sm font-semibold">
-                         
-                        </label>
+                        <label className="text-neutral-500 text-sm font-semibold"></label>
                       </div>
                       <div className="flex w-10/12">
-                        <label className="text-neutral-500 text-sm font-semibold">
-                          
-                        </label>
+                        <label className="text-neutral-500 text-sm font-semibold"></label>
                       </div>
                       <div className="flex flex-row gap-3">
                         <button
