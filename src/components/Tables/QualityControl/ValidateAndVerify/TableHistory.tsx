@@ -52,7 +52,7 @@ const TableHistory = () => {
       <div className="flex px-2 border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
         <p className="w-5 text-[14px] font-semibold mr-3">No</p>
         <div className="flex flex-col w-full">
-          <div className="grid grid-cols-12 w-full dark:border-strokedark  ">
+          <div className="grid grid-cols-12 gap-5 w-full dark:border-strokedark  ">
             <div className="flex w-full justify-start col-span-2">
               <p className="text-slate-600  text-[14px] font-semibold  dark:text-white">
                 Kode Tiket
@@ -77,7 +77,7 @@ const TableHistory = () => {
             <div className=" text-[14px] justify-start ">
               <p className="text-slate-600 font-semibold ">status</p>
             </div>
-            <div className=" text-[14px] justify-start ">
+            <div className=" text-[14px] justify-start mx-auto">
               <p className="text-slate-600 font-semibold ">Skor</p>
             </div>
             <div className=" text-[14px] justify-start col-span-2">
@@ -106,20 +106,20 @@ const TableHistory = () => {
                 {index + 1}{' '}
               </p>
             </div>
-            <div className="grid grid-cols-12 w-full items-center dark:border-strokedark">
+            <div className="grid grid-cols-12 gap-5 w-full items-center dark:border-strokedark">
               <div className="flex w-full justify-start col-span-2 gap-14">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                <p className="text-neutral-500 text-sm font-light  dark:text-white break-all">
                   {' '}
                   {data.tiket.kode_ticket}
                 </p>
               </div>
               <div className="flex w-full  justify-start ">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                <p className="text-neutral-500 text-sm font-light  dark:text-white break-all">
                   {tglTicket}
                 </p>
               </div>
               <div className="flex w-full  justify-start ">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                <p className="text-neutral-500 text-sm font-light  dark:text-white break-all">
                   {tglSelesaiTicket}
                 </p>
               </div>
@@ -145,7 +145,7 @@ const TableHistory = () => {
                 </p>
               </div>
               <div className="flex w-full  justify-start ">
-                <p className="text-neutral-500 text-sm font-light ">
+                <p className="text-neutral-500 text-sm font-light mx-auto">
                   {data.skor_mtc}
                 </p>
               </div>

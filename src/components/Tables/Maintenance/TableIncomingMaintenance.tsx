@@ -275,7 +275,7 @@ const TableIncomingMaintenance = () => {
                         </div>
 
                         <div className=" flex items-center w-2/12 justify-center border-b-[#D8EAFF] ">
-                          <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white">
+                          <p className="text-black text-center md:text-[12px] text-[10px] dark:text-white break-all">
                             {brand.kode_ticket}
                           </p>
                         </div>
