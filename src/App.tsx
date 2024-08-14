@@ -655,7 +655,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/coating/jeniscoating"
+          path="/qc/qualityinspection/coating/jeniscoating/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -743,7 +743,18 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/coating/jeniscoating/checkawal"
+          path="/qc/qualityinspection/coating/jeniscoating/checkawal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CoatingAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/coating/jeniscoating/checkperiode/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
