@@ -47,7 +47,7 @@ function a11yProps(index: number) {
     };
 }
 
-export default function TabPond() {
+export default function qTabPond() {
     const theme = createTheme({
         palette: {
             primary: {
