@@ -1,8 +1,8 @@
 
 import React from 'react';
-import PM2TambahInspection from '../../components/Tables/MasterData/PM2/PM2TambahInspection';
-import DefaultLayout from '../../layout/DefaultLayout';
-import PM3TambahInspection from '../../components/Tables/MasterData/PM3/PM3TambahInspection';
+import PM2TambahInspection from '../../../components/Tables/MasterData/PM2/PM2TambahInspection';
+import DefaultLayout from '../../../layout/DefaultLayout';
+import PM3TambahInspection from '../../../components/Tables/MasterData/PM3/PM3TambahInspection';
 
 const MasterPM3TambahInspection = () => {
 

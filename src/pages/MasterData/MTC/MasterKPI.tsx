@@ -1,5 +1,5 @@
 import React from 'react'
-import DefaultLayout from '../../layout/DefaultLayout'
+import DefaultLayout from '../../../layout/DefaultLayout'
 import { Link } from 'react-router-dom'
 
 function MasterKPI() {

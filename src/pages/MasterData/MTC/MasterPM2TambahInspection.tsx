@@ -1,6 +1,6 @@
 
-import PM2TambahInspection from '../../components/Tables/MasterData/PM2/PM2TambahInspection';
-import DefaultLayout from '../../layout/DefaultLayout';
+import PM2TambahInspection from '../../../components/Tables/MasterData/PM2/PM2TambahInspection';
+import DefaultLayout from '../../../layout/DefaultLayout';
 
 const MasterPM1TambahInspection = () => {
 

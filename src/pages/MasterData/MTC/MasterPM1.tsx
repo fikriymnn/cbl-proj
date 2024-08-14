@@ -1,6 +1,6 @@
 
-import TablePM1 from '../../components/Tables/MasterData/PM1/TablePM1';
-import DefaultLayout from '../../layout/DefaultLayout';
+import TablePM1 from '../../../components/Tables/MasterData/PM1/TablePM1';
+import DefaultLayout from '../../../layout/DefaultLayout';
 
 const MasterPM1 = () => {
 

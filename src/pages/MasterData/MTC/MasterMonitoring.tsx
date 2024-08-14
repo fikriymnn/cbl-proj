@@ -1,6 +1,6 @@
 
-import TableMonitoring from '../../components/Tables/MasterData/TableMonitoring';
-import DefaultLayout from '../../layout/DefaultLayout';
+import TableMonitoring from '../../../components/Tables/MasterData/TableMonitoring';
+import DefaultLayout from '../../../layout/DefaultLayout';
 
 const MasterMonitoring = () => {
 

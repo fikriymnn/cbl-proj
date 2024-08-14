@@ -1,7 +1,7 @@
 import React from 'react'
-import DefaultLayout from '../../layout/DefaultLayout'
-import Shortup from '../../images/icon/sort-up.svg'
-import Shortdown from '../../images/icon/sort-down.svg'
+import DefaultLayout from '../../../layout/DefaultLayout'
+import Shortup from '../../../images/icon/sort-up.svg'
+import Shortdown from '../../../images/icon/sort-down.svg'
 
 function MasterKPIForm() {
     return (
