@@ -53,7 +53,7 @@ const TableHistoryValidate = () => {
       <div className="flex px-2 border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
         <p className="w-5 text-[14px] font-semibold mr-3">No</p>
         <div className="flex flex-col w-full">
-          <div className="grid grid-cols-7 w-full dark:border-strokedark  ">
+          <div className="grid grid-cols-7 gap-5 w-full dark:border-strokedark  ">
             <div className="flex w-full justify-start ">
               <p className="text-slate-600  text-[14px] font-semibold  dark:text-white">
                 Kode Tiket
@@ -99,9 +99,9 @@ const TableHistoryValidate = () => {
                 {index + 1}{' '}
               </p>
             </div>
-            <div className="grid grid-cols-7 w-full items-center dark:border-strokedark">
+            <div className="grid grid-cols-7 gap-5 w-full items-center dark:border-strokedark">
               <div className="flex w-full justify-start  gap-14">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                <p className="text-neutral-500 break-all text-sm font-light  dark:text-white">
                   {' '}
                   {data.kode_ticket}
                 </p>

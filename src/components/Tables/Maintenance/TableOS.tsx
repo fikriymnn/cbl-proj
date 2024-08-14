@@ -807,9 +807,9 @@ function TableOS() {
                             {i + 1 + (page - 1) * 10}
                           </div>
                           <div className="grid md:grid-cols-8 grid-cols-7 w-full gap-5">
-                            <div className="flex flex-col md:gap-5 gap-1 ">
-                              <div className="my-auto ">
-                                <p className="text-xs font-light">
+                            <div className="flex flex-col md:gap-5 gap-1 w-full ">
+                              <div className="my-auto  ">
+                                <p className="text-xs font-light break-all">
                                   {data.kode_ticket}
                                 </p>
                               </div>

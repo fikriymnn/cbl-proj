@@ -281,10 +281,11 @@ function Pm1() {
                             <div className='w-2 h-full '>
 
                             </div>
-                            <section className='grid grid-cols-1 w-full py-4  font-semibold text-[14px]'>
+                            <section className='grid grid-cols-3 w-full py-4  font-semibold text-[14px]'>
 
 
                                 <p className=''>Nama Mesin</p>
+                                <p className=''>Inspektor</p>
 
                                 <div className='w-[125px]'>{""}</div>
 
@@ -297,19 +298,23 @@ function Pm1() {
                                         <div className={`w-2 h-full sticky left-0 z-20 ${data.mesin.bagian_mesin == 'printing' ? 'bg-green-600' : data.mesin.bagian_mesin == 'water base' ? 'bg-yellow-600' : data.mesin.bagian_mesin == 'pond' ? 'bg-violet-900' : data.mesin.bagian_mesin == 'finishing' ? 'bg-red-900' : ''}`}>
                                         </div>
                                         <div className=' w-full h-full flex flex-col justify-center relative'>
-                                            <div className='ps-7 w-full grid grid-cols-2'>
+                                            <div className='ps-7 w-full grid grid-cols-3'>
 
                                                 <div className='flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
                                                     <p className=''>{data.nama_mesin}</p>
                                                 </div>
+                                                <div className='flex flex-col justify-center sticky left-2 ps-3 md:ps-0 bg-white'>
+                                                <p className=''>{data.inspector != null ? data.inspector.nama : "-"}</p>
+                                                </div>
 
                                                 <div className='flex justify-center'>
                                                     <>
-                                                        <div>
-
+                                                    <div>
+                                                    {
+                                                        data.id_inspector == me?.id ? (
                                                             <>
                                                                 {
-                                                                    data.status == "done" ?
+                                                                    data.status == "done" || data.status == "on progres"  ?
                                                                         <Link to={`/maintenance/inspection/pm_1_form/${data.id}`}
                                                                             className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
                                                                         >
@@ -323,11 +328,26 @@ function Pm1() {
 
                                                                         </button>
                                                                 }
-
                                                             </>
+                                                        ) :
+                                                            data.id_inspector == null ? (
+                                                                <>
+                                                                    <button onClick={() => inspectPM1(data.id)}
+                                                                        className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                                    >
+                                                                        INSPECT
+
+                                                                    </button>
+                                                                </>
+                                                            ) :
+                                                                (
+                                                                    <>
+
+                                                                    </>
+                                                                )}
 
 
-                                                        </div>
+                                                </div>
                                                     </>
 
 

@@ -794,7 +794,7 @@ function HistoryOS2() {
                           <div className="grid  grid-cols-6 w-full  ">
                             <div className="flex flex-col md:gap-5 gap-1 ">
                               <div className="my-auto ">
-                                <p className="text-sm font-light">
+                                <p className="text-sm font-light break-all">
                                   {data.kode_ticket}
                                 </p>
                               </div>
@@ -852,6 +852,7 @@ function HistoryOS2() {
                               </div>
                               <div>
                                 <button
+                                title='button'
                                   onClick={() => handleClickDetail(i)}
                                   className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
                                 >
@@ -1092,6 +1093,7 @@ function HistoryOS2() {
                       <div className="flex gap-1">
                         <div>
                           <button
+                          title='button'
                             onClick={() => handleClick(i)}
                             className="text-xs px-1 py-2 font-bold bg-blue-700  text-white rounded-sm"
                           >
@@ -1136,16 +1138,13 @@ function HistoryOS2() {
                                   machineName={data.mesin}
                                   tgl={data.waktu_respon}
                                   jam={'19.09'}
-                                  namaPemeriksa={
-                                    data.proses_mtcs[lengthProses]
-                                      .user_eksekutor.nama
-                                  }
+                                  namaPemeriksa={data.proses_mtcs[lengthProses]
+                                    .user_eksekutor.nama}
                                   no={'109299'}
                                   idTiket={data.id}
                                   idProses={data.proses_mtcs[lengthProses].id}
                                   namaMesin={data.mesin}
-                                  skor_mtc={undefined}
-                                />
+                                  skor_mtc={undefined} jenis_perbaikan={undefined}                                />
                               )}
                               {showModal2 && (
                                 <ModalMtcDate
@@ -1163,6 +1162,7 @@ function HistoryOS2() {
                         </div>
 
                         <button
+                        title='button'
                           onClick={() => handleClickDetailMobile(i)}
                           className="text-xs h-6 font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-sm"
                         >

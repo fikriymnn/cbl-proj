@@ -258,8 +258,9 @@ function Pm2() {
             ) : null}
             <div className=" ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]">
               <div className="w-2 h-full "></div>
-              <section className="grid grid-cols-1 w-full py-4  font-semibold text-[14px]">
+              <section className="grid grid-cols-3 w-full py-4  font-semibold text-[14px]">
                 <p className="">Nama Mesin</p>
+                <p className="">Inspektor</p>
 
                 <div className="w-[125px]">{''}</div>
               </section>
@@ -285,9 +286,14 @@ function Pm2() {
                       }`}
                     ></div>
                     <div className=" w-full h-full flex flex-col justify-center relative">
-                      <div className="ps-7 w-full grid grid-cols-2">
+                      <div className="ps-7 w-full grid grid-cols-3">
                         <div className="flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">
                           <p className="">{data.nama_mesin}</p>
+                        </div>
+                        <div className="flex flex-col justify-center sticky left-2 ps-3 md:ps-0 bg-white">
+                        <p className="">
+                            {data.inspector != null ? data.inspector.nama : '-'}
+                          </p>
                         </div>
 
                         <div className="flex justify-center">
