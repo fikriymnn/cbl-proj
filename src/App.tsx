@@ -103,6 +103,7 @@ import JenisLem from './pages/QualityControl/ProsesLem/JenisLem';
 import LemAwal from './pages/QualityControl/ProsesLem/LemAwal';
 import CetakPeriode from './pages/QualityControl/ProsesCetak/CetakPeriode';
 import MasterDefect from './pages/MasterData/QC/MasterDefect';
+import LemPeriode from './pages/QualityControl/ProsesLem/LemPeriode';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -664,7 +665,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/lem/jenislem"
+          path="/qc/qualityinspection/lem/jenisLem/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -697,6 +698,17 @@ function App() {
           }
         />
         <Route
+          path="/qc/qualityinspection/lem/jenisLem/checkperiode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <LemPeriode />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/qc/qualityinspection/pond/jenispond/checkawal"
           element={
             <>
@@ -719,7 +731,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/lem/jenislem/checkawal"
+          path="/qc/qualityinspection/lem/jenislem/checkawal/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
