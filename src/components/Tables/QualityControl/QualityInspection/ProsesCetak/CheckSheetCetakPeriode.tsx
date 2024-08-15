@@ -349,16 +349,6 @@ function CheckSheetCetakPeriode() {
 
             {/* =============================chekcsheet========================= */}
 
-            <>
-              <div className="flex flex-col py-6 px-10 border-b-8 border-[#D8EAFF]">
-                <div className=" px-3   gap-2 flex w-full justify-between">
-                  <label className="text-neutral-500 text-sm font-semibold ">
-                    CEK PERIODE
-                  </label>
-                </div>
-              </div>
-            </>
-
             {cetakMesinPeriode?.inspeksi_cetak_periode[0].inspeksi_cetak_periode_point.map(
               (data: any, index: number) => {
                 const waktuSampling = convertDateToTime(data.waktu_mulai);
@@ -366,13 +356,13 @@ function CheckSheetCetakPeriode() {
                 return (
                   <>
                     <label
-                      className="text-blue-400 text-sm font-semibold"
+                      className="text-blue-400 text-sm font-semibold  w-full flex justify-end px-4 py-2"
                       onClick={() => handleClickGuide(index)}
                     >
                       FILLING GUIDE
                     </label>
                     {openGuide == index ? (
-                      <div className=" absolute right-6 rounded-md bg-[#F3F3F3] border-gray flex w-[96%] px-10 py-6 justify-between">
+                      <div className="z-50 absolute right-6 rounded-md bg-[#F3F3F3] border-gray flex w-[96%] px-10 py-6 justify-between">
                         <div className="grid grid-cols-2">
                           <div className="flex flex-col">
                             <label className="text-blue-600 text-sm font-semibold pb-6">
