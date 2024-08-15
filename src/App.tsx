@@ -105,6 +105,8 @@ import CetakPeriode from './pages/QualityControl/ProsesCetak/CetakPeriode';
 import MasterDefect from './pages/MasterData/QC/MasterDefect';
 import PondPeriode from './pages/QualityControl/ProsesPond/PondPeriode';
 import LemPeriode from './pages/QualityControl/ProsesLem/LemPeriode';
+import CheckSheetCoatingPeriode from './components/Tables/QualityControl/QualityInspection/ProsesCoating/CheckSheetCoatingPeriode';
+import CoatingPeriode from './pages/QualityControl/ProsesCoating/CoatingPeriode';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -661,6 +663,28 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <JenisCoating />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/coating/jeniscoating/checkawal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CoatingAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/coating/jeniscoating/checkperiode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CoatingPeriode />
               </ProtectedRoute>
             </>
           }
