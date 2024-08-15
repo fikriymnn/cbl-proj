@@ -563,7 +563,13 @@ function CheckSheetLemPeriode() {
                         {data.inspeksi_lem_periode_defect.map(
                           (data2: any, i: number) => {
                             return (
-                              <div className="flex flex-col w-[120px] justify-center py-4 bg-white items-center gap-2">
+                              <div
+                                className={`flex flex-col w-[120px] justify-center py-4  ${
+                                  (i + 1) % 2 === 0
+                                    ? ' bg-[#F3F3F3]'
+                                    : 'bg-white'
+                                } items-center gap-2`}
+                              >
                                 <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                   {data2.kode}
                                 </label>
@@ -575,7 +581,11 @@ function CheckSheetLemPeriode() {
                                     onChange={(e) =>
                                       handleChangePointDefect(e, index, i)
                                     }
-                                    className="w-[80%]                                                                                                                                "
+                                    className={`w-[80%]  ${
+                                      (i + 1) % 2 === 1
+                                        ? ' bg-[#F3F3F3]'
+                                        : 'bg-white'
+                                    } `}
                                   >
                                     <option value={''} disabled>
                                       SELECT VALUE
@@ -592,7 +602,11 @@ function CheckSheetLemPeriode() {
                                     onChange={(e) =>
                                       handleChangePointDefect(e, index, i)
                                     }
-                                    className="w-[80%] border rounded "
+                                    className={`w-[80%]  ${
+                                      (i + 1) % 2 === 1
+                                        ? ' bg-[#F3F3F3]'
+                                        : 'bg-white'
+                                    } `}
                                   >
                                     <option value={''} disabled selected>
                                       SELECT VALUE
