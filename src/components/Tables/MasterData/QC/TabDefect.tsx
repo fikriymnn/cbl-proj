@@ -9,6 +9,7 @@ import Box from '@mui/material/Box';
 import DefectCetak from './Defect/DefectCetak';
 import DefectPond from './Defect/DefectPond';
 import DefectLem from './Defect/DefectLem';
+import DefectCoating from './Defect/DefectCoating';
 
 
 
@@ -142,7 +143,7 @@ export default function TabDefect() {
                 <DefectCetak />
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
-
+                <DefectCoating />
             </TabPanel>
             <TabPanel value={value} index={2} dir={theme.direction}>
                 <DefectPond />
