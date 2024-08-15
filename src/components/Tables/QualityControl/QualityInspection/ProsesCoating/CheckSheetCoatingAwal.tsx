@@ -35,9 +35,8 @@ function CheckSheetCoatingAwal() {
   }
 
   async function startTaskCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCoatingResult/awal/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCoatingResult/awal/start/${id}`;
     try {
       const res = await axios.get(url, {
         withCredentials: true,
@@ -62,9 +61,8 @@ function CheckSheetCoatingAwal() {
     spot_uv: any,
     tes_cracking: any,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCoatingResult/awal/stop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCoatingResult/awal/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -95,9 +93,8 @@ function CheckSheetCoatingAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCoatingResult/awal/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCoatingResult/awal/${id}`;
     try {
       const res = await axios.post(
         url,
@@ -115,9 +112,8 @@ function CheckSheetCoatingAwal() {
   }
 
   async function doneCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCoating/awal/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCoating/awal/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -374,7 +370,7 @@ function CheckSheetCoatingAwal() {
                         </label>
                       </div>
 
-                      <div className="grid py-4 bg-white items-center">
+                      <div className="grid py-4 bg-[#f3f3f3] items-center">
                         <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                           TES CRACKING
                         </label>
@@ -390,32 +386,32 @@ function CheckSheetCoatingAwal() {
                           </>
                         </div>
 
-                        <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                        <div className="grid py-4 bg-white items-center justify-center">
                           <>
                             <label className="pl-2">{data.permukaan}</label>
                           </>
                         </div>
-                        <div className="grid py-4 bg-white items-center justify-center">
+                        <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                           <>
                             <label className="pl-2">{data.nilai_glossy}</label>
                           </>
                         </div>
-                        <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                        <div className="grid py-4 bg-white items-center justify-center">
                           <>
                             <label className="pl-2">{data.gramatur}</label>
                           </>
                         </div>
-                        <div className="grid py-4 bg-white items-center justify-center">
+                        <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                           <>
                             <label className="pl-2">{data.hasil_coating}</label>
                           </>
                         </div>
-                        <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                        <div className="grid py-4 bg-white items-center justify-center">
                           <>
                             <label className="pl-2">{data.spot_uv}</label>
                           </>
                         </div>
-                        <div className="grid py-4 bg-white items-center justify-center">
+                        <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                           <>
                             <label className="pl-2">{data.tes_cracking}</label>
                           </>
@@ -448,7 +444,7 @@ function CheckSheetCoatingAwal() {
                           </>
                         </div>
 
-                        <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                        <div className="grid py-4 bg-white items-center justify-center">
                           <>
                             <div>
                               <input
@@ -472,7 +468,7 @@ function CheckSheetCoatingAwal() {
                             </div>
                           </>
                         </div>
-                        <div className="grid py-4 bg-white items-center justify-center">
+                        <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                           <>
                             <div>
                               <input
@@ -496,7 +492,7 @@ function CheckSheetCoatingAwal() {
                             </div>
                           </>
                         </div>
-                        <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                        <div className="grid py-4 bg-white items-center justify-center">
                           <>
                             <div>
                               <input
@@ -520,30 +516,6 @@ function CheckSheetCoatingAwal() {
                             </div>
                           </>
                         </div>
-                        <div className="grid py-4 bg-white items-center justify-center">
-                          <>
-                            <div>
-                              <input
-                                type="radio"
-                                id="ok11"
-                                value="OK"
-                                name="hasil_coating"
-                                onChange={(e) => handleChangePoint(e, index)}
-                              />
-                              <label className="pl-2">OK</label>
-                            </div>
-                            <div>
-                              <input
-                                type="radio"
-                                id="ok12"
-                                value="NOT OK"
-                                name="hasil_coating"
-                                onChange={(e) => handleChangePoint(e, index)}
-                              />
-                              <label className="pl-2">Not OK</label>
-                            </div>
-                          </>
-                        </div>
                         <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                           <>
                             <div>
@@ -551,6 +523,30 @@ function CheckSheetCoatingAwal() {
                                 type="radio"
                                 id="ok11"
                                 value="OK"
+                                name="hasil_coating"
+                                onChange={(e) => handleChangePoint(e, index)}
+                              />
+                              <label className="pl-2">OK</label>
+                            </div>
+                            <div>
+                              <input
+                                type="radio"
+                                id="ok12"
+                                value="NOT OK"
+                                name="hasil_coating"
+                                onChange={(e) => handleChangePoint(e, index)}
+                              />
+                              <label className="pl-2">Not OK</label>
+                            </div>
+                          </>
+                        </div>
+                        <div className="grid py-4 bg-white items-center justify-center">
+                          <>
+                            <div>
+                              <input
+                                type="radio"
+                                id="ok11"
+                                value="OK"
                                 name="spot_uv"
                                 onChange={(e) => handleChangePoint(e, index)}
                               />
@@ -568,7 +564,7 @@ function CheckSheetCoatingAwal() {
                             </div>
                           </>
                         </div>
-                        <div className="grid py-4 bg-white items-center justify-center">
+                        <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                           <>
                             <div>
                               <input
@@ -648,7 +644,7 @@ function CheckSheetCoatingAwal() {
             )}
           </div>
           {coatingMesinAwal?.inspeksi_coating_sub_awal[0].status ==
-          'incoming' ? (
+            'incoming' ? (
             <button
               onClick={() =>
                 tambahTaskCekAwal(
@@ -674,7 +670,7 @@ function CheckSheetCoatingAwal() {
             </label>
             <div className="grid col-span-6 items-end justify-end">
               {coatingMesinAwal?.inspeksi_coating_sub_awal[0].status ==
-              'incoming' ? (
+                'incoming' ? (
                 <button
                   onClick={() =>
                     doneCekAwal(
