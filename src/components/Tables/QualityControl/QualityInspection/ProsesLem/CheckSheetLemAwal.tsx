@@ -354,32 +354,32 @@ function CheckSheetLemAwal() {
                       </div>
                     </div>
                     <div className="grid grid-cols-7 border-b-8 border-[#D8EAFF]">
-                      <div className="grid py-4 bg-[#f3f3f3] items-center">
+                      <div className="grid py-4 bg-white items-center">
                         <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                           LINE CLEARANCE
                         </label>
                       </div>
-                      <div className="grid py-4 bg-white items-center">
+                      <div className="grid py-4 bg-[#f3f3f3] items-center">
                         <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                           POSISI LEM
                         </label>
                       </div>
-                      <div className="grid py-4 bg-[#f3f3f3] items-center">
+                      <div className="grid py-4 bg-white items-center">
                         <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                           DAYA REKAT
                         </label>
                       </div>
-                      <div className="grid py-4 bg-white items-center">
+                      <div className="grid py-4 bg-[#f3f3f3] items-center">
                         <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                           POSISI LIPATAN
                         </label>
                       </div>
-                      <div className="grid py-4 bg-[#f3f3f3] items-center">
+                      <div className="grid py-4 bg-white items-center">
                         <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                           KUNCIAN LOCK BOTTOM
                         </label>
                       </div>
-                      <div className="grid py-4 bg-white items-center">
+                      <div className="grid py-4 bg-[#f3f3f3] items-center">
                         <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                           BENTUK JADI
                         </label>
@@ -393,7 +393,7 @@ function CheckSheetLemAwal() {
                     </div>
                     {data.status == 'done' ? (
                       <div className="grid grid-cols-7 border-b-8 border-[#D8EAFF]">
-                        <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                        <div className="grid py-4 bg-white items-center justify-center">
                           <>
                             <label className="pl-2">
                               {data.line_clearance}
@@ -438,7 +438,7 @@ function CheckSheetLemAwal() {
                       </div>
                     ) : data.status == 'on progress' ? (
                       <div className="grid grid-cols-7 border-b-8 border-[#D8EAFF]">
-                        <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                        <div className="grid py-4 bg-white items-center justify-center">
                           <>
                             <div>
                               <input

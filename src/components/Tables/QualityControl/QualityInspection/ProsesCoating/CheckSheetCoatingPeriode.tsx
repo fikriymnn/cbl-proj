@@ -26,7 +26,17 @@ function CheckSheetCoatingPeriode() {
       return prevState === index ? null : index;
     });
   };
-
+  const [add, setAdd] = useState<any>();
+  const [showDetail, setShowDetail] = useState<boolean[]>(
+    new Array(add != null && add.length).fill(false),
+  );
+  const handleClickAdd = (index: number) => {
+    setShowDetail((prevState) => {
+      const updatedShowDetail = [...prevState]; // Create a copy
+      updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
+      return updatedShowDetail;
+    });
+  };
   useEffect(() => {
     getCoatingMesinPeriode();
   }, []);
@@ -125,7 +135,12 @@ function CheckSheetCoatingPeriode() {
     }
   }
 
-  async function tambahDefectPeriode(id: number, kode: any, masalah: any) {
+  async function tambahDefectPeriode(
+    id: number,
+    kode: any,
+    masalah: any,
+    index: number,
+  ) {
     const url = `${
       import.meta.env.VITE_API_LINK
     }/qc/cs/inspeksiCoatingResult/periode/point/${id}`;
@@ -142,6 +157,7 @@ function CheckSheetCoatingPeriode() {
           withCredentials: true,
         },
       );
+      handleClickAdd(index);
       setShowModal2(false);
       setKode(null);
       setMasalah(null);
@@ -359,14 +375,15 @@ function CheckSheetCoatingPeriode() {
                               FORM FILLING GUIDE
                             </label>
                             <label className="text-black text-sm font-semibold flex gap-2">
-                              <img src={ok} className="w-5"></img>OK
+                              <img alt="" src={ok} className="w-5"></img>OK
                             </label>
                             <label className="text-black text-sm font-semibold flex gap-2">
-                              <img src={oktole} className="w-5"></img>OK
+                              <img alt="" src={oktole} className="w-5"></img>OK
                               (Toleransi)
                             </label>
                             <label className="text-black text-sm font-semibold flex gap-2">
-                              <img src={notok} className="w-5"></img>NOT OK
+                              <img alt="" src={notok} className="w-5"></img>NOT
+                              OK
                             </label>
                           </div>
 
@@ -657,7 +674,7 @@ function CheckSheetCoatingPeriode() {
                       {data.status == 'on progress' ? (
                         <div className="flex gap-2 pl-2 items-center">
                           <button
-                            onClick={openModal2}
+                            onClick={() => handleClickAdd(index)}
                             className=" h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
                           >
                             Add
@@ -665,11 +682,11 @@ function CheckSheetCoatingPeriode() {
                         </div>
                       ) : null}
 
-                      {showModal2 == true && (
+                      {showDetail[index] == true && (
                         <>
                           <ModalAddPeriode
-                            isOpen={showModal2}
-                            onClose={() => closeModal2()}
+                            isOpen={showDetail[index]}
+                            onClose={() => handleClickAdd(index)}
                             judul={'ADD PROBLEM CODE'}
                           >
                             <div className="flex flex-col gap-2">
@@ -691,7 +708,12 @@ function CheckSheetCoatingPeriode() {
                               ></input>
                               <button
                                 onClick={() => {
-                                  tambahDefectPeriode(data.id, kode, masalah),
+                                  tambahDefectPeriode(
+                                    data.id,
+                                    kode,
+                                    masalah,
+                                    index,
+                                  ),
                                     console.log(data.id);
                                 }}
                                 className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
