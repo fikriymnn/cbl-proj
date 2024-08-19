@@ -979,7 +979,16 @@ function HistoryIncoming() {
                             </div>
                         </>
                     </div >
+                    <div className='bg-white flex w-full justify-between px-4 py-4'>
 
+                        <div className='flex flex-col'>
+
+                            <label className='text-neutral-500 text-sm font-semibold flex flex-col w-full'>
+                                Catatan : {incoming?.catatan}
+                            </label>
+                        </div>
+
+                    </div>
                 </main >
             )
             }
