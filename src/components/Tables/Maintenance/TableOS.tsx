@@ -955,25 +955,16 @@ function TableOS() {
                                           machineName={data.mesin}
                                           tgl={data.waktu_respon}
                                           jam={'19.09'}
-                                          namaPemeriksa={
-                                            data.proses_mtcs[lengthProses]
-                                              .user_eksekutor.nama
-                                          }
+                                          namaPemeriksa={data.proses_mtcs[lengthProses]
+                                            .user_eksekutor.nama}
                                           no={'109299'}
                                           idTiket={data.id}
-                                          idProses={
-                                            data.proses_mtcs[lengthProses].id
-                                          }
+                                          idProses={data.proses_mtcs[lengthProses].id}
                                           namaMesin={data.mesin}
-                                          skor_mtc={
-                                            data.proses_mtcs[lengthProses]
-                                              .skor_mtc
-                                          }
-                                          jenis_perbaikan={
-                                            data.proses_mtcs[lengthProses]
-                                              .cara_perbaikan
-                                          }
-                                        />
+                                          skor_mtc={data.proses_mtcs[lengthProses]
+                                            .skor_mtc}
+                                          jenis_perbaikan={data.proses_mtcs[lengthProses]
+                                            .cara_perbaikan} unit={data.proses_mtcs[lengthProses].unit} bagian={data.proses_mtcs[lengthProses].bagian_mesin}                                        />
                                         // <ModalStockCheckPengganti children={undefined} isOpen={showModal1[i]} onClose={() => closeModal1(i)} kendala={"nu"} onFinish={"nu"} machineName={"nu"} tgl={"nu"} jam={"nu"} namaPemeriksa={"nu"} no={"nu"}>
 
                                         // </ModalStockCheckPengganti>
@@ -1358,22 +1349,15 @@ function TableOS() {
                                   machineName={data.mesin}
                                   tgl={data.waktu_respon}
                                   jam={'19.09'}
-                                  namaPemeriksa={
-                                    data.proses_mtcs[lengthProses]
-                                      .user_eksekutor.nama
-                                  }
+                                  namaPemeriksa={data.proses_mtcs[lengthProses]
+                                    .user_eksekutor.nama}
                                   no={'109299'}
                                   idTiket={data.id}
                                   idProses={data.proses_mtcs[lengthProses].id}
                                   namaMesin={data.mesin}
-                                  skor_mtc={
-                                    data.proses_mtcs[lengthProses].skor_mtc
-                                  }
-                                  jenis_perbaikan={
-                                    data.proses_mtcs[lengthProses]
-                                      .cara_perbaikan
-                                  }
-                                />
+                                  skor_mtc={data.proses_mtcs[lengthProses].skor_mtc}
+                                  jenis_perbaikan={data.proses_mtcs[lengthProses]
+                                    .cara_perbaikan} unit={data.proses_mtcs[lengthProses].unit} bagian={data.proses_mtcs[lengthProses].bagian_mesin}                                />
                               )}
                               {showModal2 && (
                                 <ModalMtcLightHeavy

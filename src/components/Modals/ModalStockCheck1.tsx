@@ -26,6 +26,7 @@ const ModalStockCheck1 = ({
   namaMesin,
   skor_mtc,
   jenis_perbaikan,
+  unit, bagian
 }: {
   children: any;
   isOpen: any;
@@ -43,6 +44,8 @@ const ModalStockCheck1 = ({
   namaMesin: any;
   skor_mtc: any;
   jenis_perbaikan: any;
+  unit:any,
+  bagian:any;
 }) => {
   if (!isOpen) return null;
 
@@ -470,6 +473,30 @@ const ModalStockCheck1 = ({
                 className="text-neutral-500 text-xl font-normal"
               >
                 {namaPemeriksa}
+              </span>
+              <label
+                htmlFor="unit"
+                className="form-label block  text-black text-xs font-extrabold mt-2"
+              >
+                UNIT
+              </label>
+              <span
+                id="unit"
+                className="text-neutral-500 text-xl font-normal"
+              >
+                {unit}
+              </span>
+              <label
+                htmlFor="bagian"
+                className="form-label block  text-black text-xs font-extrabold mt-2"
+              >
+                BAGIAN 
+              </label>
+              <span
+                id="unit"
+                className="text-neutral-500 text-xl font-normal"
+              >
+                {bagian}
               </span>
             </div>
           </div>

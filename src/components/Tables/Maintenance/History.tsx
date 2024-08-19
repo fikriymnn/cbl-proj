@@ -1144,7 +1144,8 @@ function HistoryOS2() {
                                   idTiket={data.id}
                                   idProses={data.proses_mtcs[lengthProses].id}
                                   namaMesin={data.mesin}
-                                  skor_mtc={undefined} jenis_perbaikan={undefined}                                />
+                                  skor_mtc={undefined} jenis_perbaikan={undefined} 
+                                  unit={data.proses_mtcs[lengthProses].unit} bagian={data.proses_mtcs[lengthProses].bagian_mesin}                               />
                               )}
                               {showModal2 && (
                                 <ModalMtcDate

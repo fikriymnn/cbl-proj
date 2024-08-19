@@ -988,6 +988,7 @@ function TableService() {
                                             data.proses_mtcs[lengthProses]
                                               .cara_perbaikan
                                           }
+                                          unit={data.proses_mtcs[lengthProses].unit} bagian={data.proses_mtcs[lengthProses].bagian_mesin}
                                         />
                                         // <ModalStockCheckPengganti children={undefined} isOpen={showModal1[i]} onClose={() => closeModal1(i)} kendala={"nu"} onFinish={"nu"} machineName={"nu"} tgl={"nu"} jam={"nu"} namaPemeriksa={"nu"} no={"nu"}>
 
@@ -1350,6 +1351,7 @@ function TableService() {
                                     data.proses_mtcs[lengthProses]
                                       .cara_perbaikan
                                   }
+                                  unit={data.proses_mtcs[lengthProses].unit} bagian={data.proses_mtcs[lengthProses].bagian_mesin}
                                 />
                               )}
                               {showModal2 && (
