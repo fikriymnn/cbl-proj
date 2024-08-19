@@ -47,7 +47,7 @@ function ListIncoming2() {
             setIncoming(res.data.data);
             console.log(res.data.data);
         } catch (error: any) {
-            console.log(error.data.msg);
+            console.log(error);
         }
     }
 
