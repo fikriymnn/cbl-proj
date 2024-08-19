@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
 
-function ProsesCoatingMesin() {
+function ProsesCoatingMesinHistory() {
   const [isMobile, setIsMobile] = useState(false);
   const kosong: any = [];
   const today = new Date();
@@ -27,7 +27,7 @@ function ProsesCoatingMesin() {
     };
   }, []);
 
-  const [coatingMesin, setCoatingMesin] = useState<any>();
+  const [CoatingMesin, setCoatingMesin] = useState<any>();
 
   useEffect(() => {
     getCoatingMesin();
@@ -38,7 +38,7 @@ function ProsesCoatingMesin() {
     try {
       const res = await axios.get(url, {
         params: {
-          status: 'incoming',
+          status: 'history',
         },
         withCredentials: true,
       });
@@ -46,9 +46,45 @@ function ProsesCoatingMesin() {
       setCoatingMesin(res.data);
       console.log(res.data);
     } catch (error: any) {
-      console.log(error.data.msg);
+      console.log(error);
     }
   }
+
+  // const [me, setMe] = useState<any>();
+
+  // async function getMe() {
+  //     const url = `${import.meta.env.VITE_API_LINK}/me`;
+  //     try {
+  //         const res = await axios.get(url, {
+  //             withCredentials: true,
+  //         });
+
+  //         setMe(res.data);
+  //     } catch (error: any) {
+  //         console.log(error.data.msg);
+  //     }
+  // }
+
+  const mesin = [
+    {
+      nama: 'R700',
+      no_job_order: '00-000A',
+      inspector: 'Iko Uwais',
+      nama_jo: 'Kemasan',
+    },
+    {
+      nama: 'SM74',
+      no_job_order: '00-000A',
+      inspector: 'Cris Pratt',
+      nama_jo: 'Kemasan',
+    },
+    {
+      nama: 'GTO',
+      no_job_order: '00-000A',
+      inspector: 'Zoe Saldana',
+      nama_jo: 'Kemasan',
+    },
+  ];
 
   return (
     <>
@@ -65,32 +101,37 @@ function ProsesCoatingMesin() {
                   No. Job Order
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                  Nama Produk
+                  Nama Job Order
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold col-span-2"></label>
+                <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                  Inspector
+                </label>
               </div>
               <div className="w-2 h-full "></div>
-              {coatingMesin != null &&
-                coatingMesin.data?.map((data: any, i: any) => (
-                  <>
-                    <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] gap-2 items-center ">
-                      <div className="flex w-full col-span-2 bg-red items-center">
-                        <div
-                          className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-6 `}
-                        ></div>
-                        <label className="text-neutral-500 text-sm font-semibold pl-10 ">
-                          {data.mesin}
-                        </label>
-                      </div>
+              {CoatingMesin?.data.map((data: any, i: any) => (
+                <>
+                  <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] gap-2 items-center">
+                    <div className="flex items-center gap-7 w-full col-span-2">
+                      <div
+                        className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-7 `}
+                      ></div>
 
-                      <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-6">
-                        {data.no_jo}
+                      <label className="text-neutral-500 text-sm font-semibold flex ">
+                        {data.mesin}
                       </label>
-                      <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
-                        {data.nama_produk}
-                      </label>
-                      <label className="text-neutral-500 text-sm font-semibold col-span-2"></label>
-                      <div className="justify-end flex pr-2 col-span-2">
+                    </div>
+
+                    <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-6">
+                      {data.no_jo}
+                    </label>
+                    <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
+                      {data.nama_produk}
+                    </label>
+                    <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                      {data.operator}
+                    </label>
+                    <div className="justify-end flex pr-2 col-span-2">
+                      <>
                         <Link
                           to={`/qc/qualityinspection/coating/jeniscoating/${data.id}`}
                         >
@@ -100,10 +141,11 @@ function ProsesCoatingMesin() {
                             PILIH
                           </button>
                         </Link>
-                      </div>
+                      </>
                     </div>
-                  </>
-                ))}
+                  </div>
+                </>
+              ))}
             </div>
           </div>
         </main>
@@ -112,4 +154,4 @@ function ProsesCoatingMesin() {
   );
 }
 
-export default ProsesCoatingMesin;
+export default ProsesCoatingMesinHistory;

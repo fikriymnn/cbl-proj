@@ -1,12 +1,151 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
+import convertDateToTime from '../../../../../utils/converDateToTime';
+import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
+import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 
 
 
 function CheckSheetPondAwal() {
+    const { id } = useParams();
     const [isMobile, setIsMobile] = useState(false);
 
+    const [pondMesinAwal, setPondMesinAwal] = useState<any>();
+
+    useEffect(() => {
+        getPondMesinAwal();
+    }, []);
+
+    async function getPondMesinAwal() {
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPond/${id}`;
+        try {
+            const res = await axios.get(url, {
+                withCredentials: true,
+            });
+
+            setPondMesinAwal(res.data.data);
+            console.log(res.data.data);
+        } catch (error: any) {
+            console.log(error.data.msg);
+        }
+    }
+    const handleChangePoint = (e: any, i: number) => {
+        const { name, value } = e.target;
+        const onchangeVal: any = pondMesinAwal;
+        onchangeVal.inspeksi_pond_awal[0].inspeksi_pond_awal_point[i][name] =
+            value;
+        setPondMesinAwal(onchangeVal);
+    };
+    async function startTaskCekAwal(id: number) {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/qc/cs/inspeksiPondAwalPoint/start/${id}`;
+        try {
+            const res = await axios.put(
+                url,
+                {},
+                {
+                    withCredentials: true,
+                },
+            );
+
+            getPondMesinAwal();
+        } catch (error: any) {
+            console.log(error);
+            alert(error.response.data.msg);
+        }
+    }
+
+    async function stopTaskCekAwal(
+        id: number,
+        startTime: any,
+        catatan: any,
+        line_clearance: any,
+        register: any,
+        ketajaman: any,
+        ukuran: any,
+        bentuk_jadi: any,
+        riil: any,
+        reforasi: any
+
+    ) {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/qc/cs/inspeksiPondAwalPoint/stop/${id}`;
+        try {
+            const elapsedSeconds = calculateElapsedTime(startTime, new Date());
+            console.log(elapsedSeconds);
+            const res = await axios.put(
+                url,
+                {
+                    catatan: catatan,
+                    lama_pengerjaan: elapsedSeconds,
+                    line_clearance: line_clearance,
+                    register: register,
+                    ketajaman: ketajaman,
+                    ukuran: ukuran,
+                    bentuk_jadi: bentuk_jadi,
+                    riil: riil,
+                    reforasi: reforasi,
+
+                },
+                {
+                    withCredentials: true,
+                },
+            );
+
+            getPondMesinAwal();
+        } catch (error: any) {
+            console.log(error.response.data.msg);
+        }
+    }
+
+    async function tambahTaskCekAwal(id: number) {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/qc/cs/inspeksiPondAwalPoint/create`;
+        try {
+            const res = await axios.post(
+                url,
+                {
+                    id_inspeksi_pond_awal: id,
+                },
+                {
+                    withCredentials: true,
+                },
+            );
+
+            getPondMesinAwal();
+        } catch (error: any) {
+            console.log(error.data.msg);
+        }
+    }
+
+    async function doneCekAwal(id: number) {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/qc/cs/inspeksiPondAwal/done/${id}`;
+        try {
+            const res = await axios.put(
+                url,
+                {
+                    id_inspeksi_pond_awal: id,
+                },
+                {
+                    withCredentials: true,
+                },
+            );
+
+            getPondMesinAwal();
+        } catch (error: any) {
+            console.log(error.data.msg);
+        }
+    }
+
+    const tanggal = convertTimeStampToDateOnly(pondMesinAwal?.tanggal);
+    const jam = convertDateToTime(pondMesinAwal?.tanggal);
+
+    const jumlahWaktuCheck = formatElapsedTime(
+        pondMesinAwal?.inspeksi_pond_awal[0].waktu_check,
+    );
 
     return (
         <>
@@ -28,7 +167,7 @@ function CheckSheetPondAwal() {
                                     Tanggal
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    Jumlah Druk
+                                    Jumlah Druk / Mata
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
                                     Ukuran Jadi
@@ -44,19 +183,19 @@ function CheckSheetPondAwal() {
                             </div>
                             <div className='grid grid-rows-6 gap-2 col-span-2  py-4'>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : Tanggal
+                                    : {tanggal}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : Jumlah Druk / Mata
+                                    : {pondMesinAwal?.jumlah_druk} / Isi :  {pondMesinAwal?.mata}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : 0 x 0 x 0
+                                    : {pondMesinAwal?.ukuran_jadi}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : Jenis Kertas
+                                    : {pondMesinAwal?.jenis_kertas}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : Jenis Gramatur
+                                    : {pondMesinAwal?.jenis_gramatur}
                                 </label>
 
 
@@ -84,19 +223,19 @@ function CheckSheetPondAwal() {
 
 
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : Jam
+                                    : {jam}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
 
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : No. JO / IO
+                                    : {pondMesinAwal?.no_jo} / {pondMesinAwal?.no_io}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : Nama Produk
+                                    : {pondMesinAwal?.nama_produk}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : Customer
+                                    : {pondMesinAwal?.customer}
                                 </label>
 
                             </div>
@@ -118,16 +257,16 @@ function CheckSheetPondAwal() {
                             </div>
                             <div className='grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4'>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : Jam
+                                    : {pondMesinAwal?.shift}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    :
+                                    :{pondMesinAwal?.mesin}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : No. JO / IO
+                                    : {pondMesinAwal?.operator}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-                                    : Nama Produk
+                                    : {pondMesinAwal?.status}
                                 </label>
 
 
@@ -136,278 +275,412 @@ function CheckSheetPondAwal() {
                         </div>
 
                         {/* =============================chekcsheet========================= */}
-                        <>
-                            <div className='flex flex-col py-6 px-10 border-b-8 border-[#D8EAFF]'>
-                                <div className=' px-3   gap-2'>
+                        {pondMesinAwal?.inspeksi_pond_awal[0].inspeksi_pond_awal_point.map(
+                            (data: any, index: number) => {
+                                const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
+                                return (
+                                    <>
+                                        <div className="flex flex-col py-6 px-10 border-b-8 border-[#D8EAFF]">
+                                            <div className=" px-3   gap-2">
+                                                <label className="text-neutral-500 text-sm font-semibold ">
+                                                    PENGECEKAN AWAL {index + 1}
+                                                </label>
+                                            </div>
+                                            <div className="grid grid-cols-8 px-3 pt-4  gap-2">
+                                                <div className="flex flex-col col-span-2">
+                                                    <label className="text-neutral-500 text-sm font-semibold ">
+                                                        Inspektor
+                                                    </label>
+                                                    <label className="text-neutral-500 text-sm font-semibold ">
+                                                        {data.inspektor?.nama}
+                                                    </label>
+                                                </div>
 
-                                    <label className='text-neutral-500 text-sm font-semibold '>
-                                        PENGECEKAN AWAL 1
-                                    </label>
+                                                <div className="flex flex-col col-span-2">
+                                                    <div>
+                                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                                            Time : {lamaPengerjaan}
+                                                        </p>
+                                                        <>
+                                                            {data.status == 'incoming' ? (
+                                                                <button
+                                                                    onClick={() => startTaskCekAwal(data.id)}
+                                                                    className="flex w-[50%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                                                >
+                                                                    <svg
+                                                                        width="14"
+                                                                        height="14"
+                                                                        viewBox="0 0 14 14"
+                                                                        fill="none"
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                    >
+                                                                        <path
+                                                                            d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                                                            fill="white"
+                                                                        />
+                                                                    </svg>
+                                                                </button>
+                                                            ) : null}
+                                                        </>
+                                                    </div>
+                                                </div>
 
-                                </div>
-                                <div className='grid grid-cols-8 px-3 pt-4  gap-2'>
-                                    <div className='flex flex-col col-span-2'>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            Inspektor
-                                        </label>
-                                        <label className='text-neutral-500 text-sm font-semibold '>
-                                            Christian Bale
-                                        </label>
-                                    </div>
+                                                <div className="flex flex-col col-span-2">
+                                                    <>
+                                                        <div className="flex flex-col ">
+                                                            <p className="md:text-[14px] text-[9px] font-semibold">
+                                                                Upload Foto (Optional):
+                                                            </p>
 
-                                    <div className='flex flex-col col-span-2'>
-
-                                        <div>
-
-                                            <p className="md:text-[14px] text-[9px] font-semibold">
-                                                Time : -
-
-                                            </p>
-                                            <>
-
-                                                <button
-
-                                                    className="flex w-[50%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
-                                                >
-                                                    <svg
-                                                        width="14"
-                                                        height="14"
-                                                        viewBox="0 0 14 14"
-                                                        fill="none"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                    >
-                                                        <path
-                                                            d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                                            fill="white"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                            </>
-
-                                        </div>
-
-                                    </div>
-
-                                    <div className='flex flex-col col-span-2'>
-
-                                        <>
-                                            <div className="flex flex-col ">
-                                                <p className="md:text-[14px] text-[9px] font-semibold">
-                                                    Upload Foto (Optional):
-                                                </p>
-
-
-                                                <div className="">
-                                                    <input
-                                                        disabled
-                                                        type="file"
-                                                        name=""
-                                                        id=""
-                                                        className="w-60"
-                                                    />
+                                                            <div className="">
+                                                                <input
+                                                                    disabled
+                                                                    type="file"
+                                                                    name=""
+                                                                    id=""
+                                                                    className="w-60"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </>
                                                 </div>
                                             </div>
-                                        </>
-                                    </div>
-
-                                </div>
-                            </div>
-                            <div className='grid grid-cols-7 border-b-8 border-[#D8EAFF]'>
-                                <div className='grid py-4 bg-[#f3f3f3] items-center'>
-                                    <label className='text-center text-[#6c6b6b] text-sm font-semibold'>
-                                        LINE CLEARANCE
-                                    </label>
-                                </div>
-                                <div className='grid py-4 bg-white items-center'>
-                                    <label className='text-center text-[#6c6b6b] text-sm font-semibold'>
-                                        REGISTER
-                                    </label>
-                                </div>
-                                <div className='grid py-4 bg-[#f3f3f3] items-center'>
-                                    <label className='text-center text-[#6c6b6b] text-sm font-semibold'>
-                                        KETAJAMAN
-                                    </label>
-                                </div>
-                                <div className='grid py-4 bg-white items-center'>
-                                    <label className='text-center text-[#6c6b6b] text-sm font-semibold'>
-                                        UKURAN
-                                    </label>
-                                </div>
-                                <div className='grid py-4 bg-[#f3f3f3] items-center'>
-                                    <label className='text-center text-[#6c6b6b] text-sm font-semibold'>
-                                        BENTUK JADI
-                                    </label>
-                                </div>
-                                <div className='grid py-4 bg-white items-center'>
-                                    <label className='text-center text-[#6c6b6b] text-sm font-semibold'>
-                                        RIIL
-                                    </label>
-                                </div>
-                                <div className='grid py-4 bg-[#f3f3f3] items-center'>
-                                    <label className='text-center text-[#6c6b6b] text-sm font-semibold'>
-                                        REFORMASI
-                                    </label>
-                                </div>
-
-                            </div>
-                            <div className='grid grid-cols-7 border-b-8 border-[#D8EAFF]'>
-                                <div className='grid py-4 bg-[#f3f3f3] items-center justify-center'>
-                                    <>
-                                        <div>
-                                            <input
-
-                                                type="radio" id="ok11" name="ok11" value="OK" />
-                                            <label className='pl-2'>OK</label>
                                         </div>
-                                        <div>
-                                            <input
+                                        <div className="grid grid-cols-7 border-b-8 border-[#D8EAFF]">
+                                            <div className="grid py-4 bg-[#f3f3f3] items-center">
+                                                <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                                    LINE CLEARANCE
+                                                </label>
+                                            </div>
+                                            <div className="grid py-4 bg-white items-center">
+                                                <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                                    REGISTER
+                                                </label>
+                                            </div>
+                                            <div className="grid py-4 bg-[#f3f3f3] items-center">
+                                                <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                                    KETAJAMAN
+                                                </label>
+                                            </div>
+                                            <div className="grid py-4 bg-white items-center">
+                                                <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                                    UKURAN
+                                                </label>
+                                            </div>
+                                            <div className="grid py-4 bg-[#f3f3f3] items-center">
+                                                <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                                    BENTUK JADI
+                                                </label>
+                                            </div>
+                                            <div className="grid py-4 bg-white items-center">
+                                                <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                                    RIIL
+                                                </label>
+                                            </div>
+                                            <div className="grid py-4 bg-[#f3f3f3] items-center">
+                                                <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                                    REFORASI
+                                                </label>
+                                            </div>
 
-                                                type="radio" id="ok12" name="ok11" value="Not OK" />
-                                            <label className='pl-2'>Not OK</label>
+                                        </div>
+                                        {data.status == 'done' ? (
+                                            <div className="grid grid-cols-7 border-b-8 border-[#D8EAFF]">
+                                                <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                                    <>
+                                                        <label className="pl-2">
+                                                            {data.line_clearance}
+                                                        </label>
+                                                    </>
+                                                </div>
+                                                <div className="grid py-4 bg-white items-center justify-center">
+                                                    <>
+                                                        <label className="pl-2">{data.register}</label>
+                                                    </>
+                                                </div>
+                                                <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                                    <>
+                                                        <label className="pl-2">{data.ketajaman}</label>
+                                                    </>
+                                                </div>
+                                                <div className="grid py-4 bg-white items-center justify-center">
+                                                    <>
+                                                        <label className="pl-2">{data.ukuran}</label>
+                                                    </>
+                                                </div>
+                                                <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                                    <>
+                                                        <label className="pl-2">{data.bentuk_jadi}</label>
+                                                    </>
+                                                </div>
+                                                <div className="grid py-4 bg-white items-center justify-center">
+                                                    <>
+                                                        <label className="pl-2">{data.riil}</label>
+                                                    </>
+                                                </div>
+                                                <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                                    <>
+                                                        <label className="pl-2">{data.reforasi}</label>
+                                                    </>
+                                                </div>
+
+                                            </div>
+                                        ) : data.status == 'on progress' ? (
+                                            <div className="grid grid-cols-7 border-b-8 border-[#D8EAFF]">
+                                                <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                                    <>
+                                                        <div>
+                                                            <input
+                                                                type="radio"
+                                                                id="ok11"
+                                                                value="OK"
+                                                                name="line_clearance"
+                                                                onChange={(e) => handleChangePoint(e, index)}
+                                                            />
+                                                            <label className="pl-2">OK</label>
+                                                        </div>
+                                                        <div>
+                                                            <input
+                                                                type="radio"
+                                                                id="ok12"
+                                                                value="NOT OK"
+                                                                name="line_clearance"
+                                                                onChange={(e) => handleChangePoint(e, index)}
+                                                            />
+                                                            <label className="pl-2">Not OK</label>
+                                                        </div>
+                                                    </>
+                                                </div>
+                                                <div className="grid py-4 bg-white items-center justify-center">
+                                                    <>
+                                                        <div>
+                                                            <input
+                                                                type="radio"
+                                                                id="ok11"
+                                                                value="OK"
+                                                                name="register"
+                                                                onChange={(e) => handleChangePoint(e, index)}
+                                                            />
+                                                            <label className="pl-2">OK</label>
+                                                        </div>
+                                                        <div>
+                                                            <input
+                                                                type="radio"
+                                                                id="ok12"
+                                                                value="NOT OK"
+                                                                name="register"
+                                                                onChange={(e) => handleChangePoint(e, index)}
+                                                            />
+                                                            <label className="pl-2">Not OK</label>
+                                                        </div>
+                                                    </>
+                                                </div>
+                                                <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                                    <>
+                                                        <div>
+                                                            <input
+                                                                type="radio"
+                                                                id="ok11"
+                                                                value="OK"
+                                                                name="ketajaman"
+                                                                onChange={(e) => handleChangePoint(e, index)}
+                                                            />
+                                                            <label className="pl-2">OK</label>
+                                                        </div>
+                                                        <div>
+                                                            <input
+                                                                type="radio"
+                                                                id="ok12"
+                                                                value="NOT OK"
+                                                                name="ketajaman"
+                                                                onChange={(e) => handleChangePoint(e, index)}
+                                                            />
+                                                            <label className="pl-2">Not OK</label>
+                                                        </div>
+                                                    </>
+                                                </div>
+                                                <div className="grid py-4 bg-white items-center justify-center">
+                                                    <>
+                                                        <div>
+                                                            <input
+                                                                type="radio"
+                                                                id="ok11"
+                                                                value="OK"
+                                                                name="ukuran"
+                                                                onChange={(e) => handleChangePoint(e, index)}
+                                                            />
+                                                            <label className="pl-2">OK</label>
+                                                        </div>
+                                                        <div>
+                                                            <input
+                                                                type="radio"
+                                                                id="ok12"
+                                                                value="NOT OK"
+                                                                name="ukuran"
+                                                                onChange={(e) => handleChangePoint(e, index)}
+                                                            />
+                                                            <label className="pl-2">Not OK</label>
+                                                        </div>
+                                                    </>
+                                                </div>
+                                                <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                                    <>
+                                                        <div>
+                                                            <input
+                                                                type="radio"
+                                                                id="ok11"
+                                                                value="OK"
+                                                                name="bentuk_jadi"
+                                                                onChange={(e) => handleChangePoint(e, index)}
+                                                            />
+                                                            <label className="pl-2">OK</label>
+                                                        </div>
+                                                        <div>
+                                                            <input
+                                                                type="radio"
+                                                                id="ok12"
+                                                                value="NOT OK"
+                                                                name="bentuk_jadi"
+                                                                onChange={(e) => handleChangePoint(e, index)}
+                                                            />
+                                                            <label className="pl-2">Not OK</label>
+                                                        </div>
+                                                    </>
+                                                </div>
+                                                <div className="grid py-4 bg-white items-center justify-center">
+                                                    <>
+                                                        <div>
+                                                            <input
+                                                                type="radio"
+                                                                id="ok11"
+                                                                value="OK"
+                                                                name="riil"
+                                                                onChange={(e) => handleChangePoint(e, index)}
+                                                            />
+                                                            <label className="pl-2">OK</label>
+                                                        </div>
+                                                        <div>
+                                                            <input
+                                                                type="radio"
+                                                                id="ok12"
+                                                                value="NOT OK"
+                                                                name="riil"
+                                                                onChange={(e) => handleChangePoint(e, index)}
+                                                            />
+                                                            <label className="pl-2">Not OK</label>
+                                                        </div>
+                                                    </>
+                                                </div>
+                                                <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                                    <>
+                                                        <div>
+                                                            <input
+                                                                type="radio"
+                                                                id="ok11"
+                                                                value="OK"
+                                                                name="reforasi"
+                                                                onChange={(e) => handleChangePoint(e, index)}
+                                                            />
+                                                            <label className="pl-2">OK</label>
+                                                        </div>
+                                                        <div>
+                                                            <input
+                                                                type="radio"
+                                                                id="ok12"
+                                                                value="NOT OK"
+                                                                name="reforasi"
+                                                                onChange={(e) => handleChangePoint(e, index)}
+                                                            />
+                                                            <label className="pl-2">Not OK</label>
+                                                        </div>
+                                                    </>
+                                                </div>
+                                            </div>
+                                        ) : null}
+                                        <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] px-4 py-4 gap-3">
+                                            <div className="grid col-span-8">
+                                                <label className=" text-[#6c6b6b] text-sm font-semibold">
+                                                    Catatan<span className="text-red-500">*</span> :
+                                                </label>
+                                                {data.status == 'on progress' ? (
+                                                    <textarea
+                                                        name="catatan"
+                                                        defaultValue={data.catatan}
+                                                        onChange={(e) => handleChangePoint(e, index)}
+                                                        className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                    ></textarea>
+                                                ) : data.status == 'done' ? (
+                                                    <textarea
+                                                        name="catatan"
+                                                        disabled
+                                                        defaultValue={data.catatan}
+                                                        onChange={(e) => handleChangePoint(e, index)}
+                                                        className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                    ></textarea>
+                                                ) : null}
+                                            </div>
+                                            <div className="grid col-span-2 items-end justify-center">
+                                                {data.status == 'on progress' ? (
+                                                    <button
+                                                        onClick={() => {
+                                                            stopTaskCekAwal(
+                                                                data.id,
+                                                                data.waktu_mulai,
+                                                                data.catatan,
+                                                                data.line_clearance,
+                                                                data.register,
+                                                                data.ketajaman,
+                                                                data.ukuran,
+                                                                data.bentuk_jadi,
+                                                                data.riil,
+                                                                data.reforasi,
+
+                                                            )
+
+                                                        }
+                                                        }
+                                                        className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                                                    >
+                                                        SIMPAN PERIODE
+                                                    </button>
+                                                ) : null}
+                                            </div>
                                         </div>
                                     </>
-                                </div>
-                                <div className='grid py-4 bg-white items-center justify-center'>
-                                    <>
-                                        <div>
-                                            <input
-
-                                                type="radio" id="ok11" name="ok11" value="OK" />
-                                            <label className='pl-2'>OK</label>
-                                        </div>
-                                        <div>
-                                            <input
-
-                                                type="radio" id="ok12" name="ok11" value="Not OK" />
-                                            <label className='pl-2'>Not OK</label>
-                                        </div>
-                                    </>
-                                </div>
-                                <div className='grid py-4 bg-[#f3f3f3] items-center justify-center'>
-                                    <>
-                                        <div>
-                                            <input
-
-                                                type="radio" id="ok11" name="ok11" value="OK" />
-                                            <label className='pl-2'>OK</label>
-                                        </div>
-                                        <div>
-                                            <input
-
-                                                type="radio" id="ok12" name="ok11" value="Not OK" />
-                                            <label className='pl-2'>Not OK</label>
-                                        </div>
-                                    </>
-                                </div>
-                                <div className='grid py-4 bg-white items-center justify-center'>
-                                    <>
-                                        <div>
-                                            <input
-
-                                                type="radio" id="ok11" name="ok11" value="OK" />
-                                            <label className='pl-2'>OK</label>
-                                        </div>
-                                        <div>
-                                            <input
-
-                                                type="radio" id="ok12" name="ok11" value="Not OK" />
-                                            <label className='pl-2'>Not OK</label>
-                                        </div>
-                                    </>
-                                </div>
-                                <div className='grid py-4 bg-[#f3f3f3] items-center justify-center'>
-                                    <>
-                                        <div>
-                                            <input
-
-                                                type="radio" id="ok11" name="ok11" value="OK" />
-                                            <label className='pl-2'>OK</label>
-                                        </div>
-                                        <div>
-                                            <input
-
-                                                type="radio" id="ok12" name="ok11" value="Not OK" />
-                                            <label className='pl-2'>Not OK</label>
-                                        </div>
-                                    </>
-                                </div>
-                                <div className='grid py-4 bg-white items-center justify-center'>
-                                    <>
-                                        <div>
-                                            <input
-
-                                                type="radio" id="ok11" name="ok11" value="OK" />
-                                            <label className='pl-2'>OK</label>
-                                        </div>
-                                        <div>
-                                            <input
-
-                                                type="radio" id="ok12" name="ok11" value="Not OK" />
-                                            <label className='pl-2'>Not OK</label>
-                                        </div>
-                                    </>
-                                </div>
-                                <div className='grid py-4 bg-[#f3f3f3] items-center justify-center'>
-                                    <>
-                                        <div>
-                                            <input
-
-                                                type="radio" id="ok11" name="ok11" value="OK" />
-                                            <label className='pl-2'>OK</label>
-                                        </div>
-                                        <div>
-                                            <input
-
-                                                type="radio" id="ok12" name="ok11" value="Not OK" />
-                                            <label className='pl-2'>Not OK</label>
-                                        </div>
-                                    </>
-                                </div>
-
-                            </div>
-                            <div className='grid grid-cols-10 border-b-8 border-[#D8EAFF] px-4 py-4 gap-3'>
-                                <div className='grid col-span-8'>
-                                    <label className=' text-[#6c6b6b] text-sm font-semibold'>
-                                        Catatan<span className='text-red-500'>*</span> :
-                                    </label>
-                                    <textarea
-
-                                        className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                    ></textarea>
-                                </div>
-                                <div className='grid col-span-2 items-end justify-center'>
-                                    <button
-
-                                        className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
-                                    >
-                                        SIMPAN PERIODE
-                                    </button>
-                                </div>
-                            </div>
-                        </>
+                                );
+                            },
+                        )}
                     </div>
-                    <button
+                    {pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ? (
+                        <button
+                            onClick={() =>
+                                tambahTaskCekAwal(pondMesinAwal?.inspeksi_pond_awal[0].id)
+                            }
+                            className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
+                        >
+                            + Periode Check
+                        </button>
+                    ) : null}
 
-                        className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
-                    >
-                        + Periode Check
-                    </button>
-
-                    <div className='grid grid-cols-10 border-b-8 items-center border-[#D8EAFF] px-4 py-4 gap-3 bg-white rounded-b-xl mt-2'>
-
-                        <label className=' text-[#6c6b6b] text-sm font-semibold col-span-2'>
-                            Jumlah Periode Check : 1
+                    <div className="grid grid-cols-10 border-b-8 items-center border-[#D8EAFF] px-4 py-4 gap-3 bg-white rounded-b-xl mt-2">
+                        <label className=" text-[#6c6b6b] text-sm font-semibold col-span-2">
+                            Jumlah Periode Check :{' '}
+                            {pondMesinAwal?.inspeksi_pond_awal[0].jumlah_periode}
                         </label>
-                        <label className=' text-[#6c6b6b] text-sm font-semibold col-span-2'>
-                            Waktu Check : 5 Menit
+                        <label className=" text-[#6c6b6b] text-sm font-semibold col-span-2">
+                            Waktu Check : {jumlahWaktuCheck}
                         </label>
-                        <div className='grid col-span-6 items-end justify-end'>
-                            <button
-
-                                className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
-                            >
-                                SIMPAN PERIODE
-                            </button>
+                        <div className="grid col-span-6 items-end justify-end">
+                            {pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ? (
+                                <button
+                                    onClick={() =>
+                                        doneCekAwal(pondMesinAwal?.inspeksi_pond_awal[0].id)
+                                    }
+                                    className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                                >
+                                    SIMPAN PERIODE
+                                </button>
+                            ) : null}
                         </div>
                     </div>
 

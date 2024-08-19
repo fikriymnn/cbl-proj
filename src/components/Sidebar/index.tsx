@@ -2185,7 +2185,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role, bagian }: SidebarProps) =>
                   }}
                 >
                   <img src={QC} alt="Logo" />
-                  Master Data Quality Control
+                  Master Data QC
                   <svg
                     className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
                       }`}

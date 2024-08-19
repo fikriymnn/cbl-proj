@@ -90,7 +90,8 @@ function CheckSheetCetakAwal() {
 
       getCetakMesinAwal();
     } catch (error: any) {
-      console.log(error.data.msg);
+      console.log(error.response.data.msg);
+      alert(error.response.data.msg);
     }
   }
 

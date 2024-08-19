@@ -103,6 +103,10 @@ import JenisLem from './pages/QualityControl/ProsesLem/JenisLem';
 import LemAwal from './pages/QualityControl/ProsesLem/LemAwal';
 import CetakPeriode from './pages/QualityControl/ProsesCetak/CetakPeriode';
 import MasterDefect from './pages/MasterData/QC/MasterDefect';
+import PondPeriode from './pages/QualityControl/ProsesPond/PondPeriode';
+import LemPeriode from './pages/QualityControl/ProsesLem/LemPeriode';
+import CheckSheetCoatingPeriode from './components/Tables/QualityControl/QualityInspection/ProsesCoating/CheckSheetCoatingPeriode';
+import CoatingPeriode from './pages/QualityControl/ProsesCoating/CoatingPeriode';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -642,7 +646,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/pond/jenispond"
+          path="/qc/qualityinspection/pond/jenispond/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -653,7 +657,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/coating/jeniscoating"
+          path="/qc/qualityinspection/coating/jeniscoating/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -664,7 +668,29 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/lem/jenislem"
+          path="/qc/qualityinspection/coating/jeniscoating/checkawal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CoatingAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/coating/jeniscoating/checkperiode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CoatingPeriode />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lem/jenisLem/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -697,7 +723,29 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/pond/jenispond/checkawal"
+          path="/qc/qualityinspection/lem/jenisLem/checkperiode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <LemPeriode />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lem/jenisLem/checkperiode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <LemPeriode />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/pond/jenispond/checkawal/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -708,7 +756,18 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/coating/jeniscoating/checkawal"
+          path="/qc/qualityinspection/pond/jenispond/checkperiode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PondPeriode />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/coating/jeniscoating/checkawal/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -719,7 +778,18 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/lem/jenislem/checkawal"
+          path="/qc/qualityinspection/coating/jeniscoating/checkperiode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CoatingAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lem/jenislem/checkawal/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
