@@ -182,6 +182,25 @@ function CheckSheetCetakPeriode() {
     }
   }
 
+  async function pendingCekPeriode(id: number) {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakPeriode/pending/${id}`;
+    try {
+      const res = await axios.put(
+        url,
+        {},
+        {
+          withCredentials: true,
+        },
+      );
+
+      getCetakMesinPeriode();
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
+
   const handleChangePoint = (e: any, i: number) => {
     const { name, value } = e.target;
     const onchangeVal: any = cetakMesinPeriode;
@@ -668,7 +687,8 @@ function CheckSheetCetakPeriode() {
               },
             )}
           </div>
-          {cetakMesinPeriode?.inspeksi_cetak_periode[0].status != 'done' ? (
+          {cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'incoming' ||
+          cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'pending' ? (
             <button
               onClick={() =>
                 tambahTaskCekPeriode(
@@ -693,7 +713,10 @@ function CheckSheetCetakPeriode() {
               <label className=" text-[#6c6b6b] text-sm font-semibold">
                 Catatan<span className="text-red-500">*</span> :
               </label>
-              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status != 'done' ? (
+              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+                'incoming' ||
+              cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+                'pending' ? (
                 <textarea
                   onChange={(e) => setCatatan(e.target.value)}
                   className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
@@ -709,7 +732,23 @@ function CheckSheetCetakPeriode() {
               )}
             </div>
             <div className="grid col-span-2 items-end justify-end">
-              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status != 'done' ? (
+              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+              'incoming' ? (
+                <button
+                  onClick={() =>
+                    pendingCekPeriode(
+                      cetakMesinPeriode?.inspeksi_cetak_periode[0].id,
+                    )
+                  }
+                  className=" w-full h-10 rounded-sm bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                >
+                  PENDING
+                </button>
+              ) : null}
+              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+                'incoming' ||
+              cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+                'pending' ? (
                 <button
                   onClick={() => {
                     doneCekPeriode(

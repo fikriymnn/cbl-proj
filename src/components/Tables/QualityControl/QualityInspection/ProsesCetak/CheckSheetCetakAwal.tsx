@@ -137,6 +137,25 @@ function CheckSheetCetakAwal() {
     }
   }
 
+  async function pendingCekAwal(id: number) {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwal/pending/${id}`;
+    try {
+      const res = await axios.put(
+        url,
+        {},
+        {
+          withCredentials: true,
+        },
+      );
+
+      getCetakMesinAwal();
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
+
   const handleChangePoint = (e: any, i: number) => {
     const { name, value } = e.target;
     const onchangeVal: any = cetakMesinAwal;
@@ -695,7 +714,8 @@ function CheckSheetCetakAwal() {
               },
             )}
           </div>
-          {cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming' ? (
+          {cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming' ||
+          cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' ? (
             <button
               onClick={() =>
                 tambahTaskCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0].id)
@@ -716,6 +736,17 @@ function CheckSheetCetakAwal() {
             </label>
             <div className="grid col-span-6 items-end justify-end">
               {cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming' ? (
+                <button
+                  onClick={() =>
+                    pendingCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0].id)
+                  }
+                  className=" w-full h-10 rounded-sm bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                >
+                  PENDING
+                </button>
+              ) : null}
+              {cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming' ||
+              cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' ? (
                 <button
                   onClick={() =>
                     doneCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0].id)
