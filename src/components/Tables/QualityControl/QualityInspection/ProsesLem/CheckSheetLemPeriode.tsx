@@ -10,11 +10,12 @@ import ok from '../../../../../images/icon/OKQC.svg';
 import oktole from '../../../../../images/icon/okToleransiQC.svg';
 import notok from '../../../../../images/icon/notOKQC.svg';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
+import Loading from '../../../../Loading';
 
 function CheckSheetLemPeriode() {
   const { id } = useParams();
   const [isMobile, setIsMobile] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
   const [cetakMesinPeriode, setCetakMesinPeriode] = useState<any>();
   const [catatan, setCatatan] = useState<any>();
   const [kode, setKode] = useState<any>();
@@ -56,9 +57,8 @@ function CheckSheetLemPeriode() {
   }
 
   async function startTaskCekPeriode(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiLemPeriodePoint/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiLemPeriodePoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -83,9 +83,8 @@ function CheckSheetLemPeriode() {
     jumlah_sampling: any,
     data_defect: any,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiLemPeriodePoint/stop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiLemPeriodePoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -110,10 +109,10 @@ function CheckSheetLemPeriode() {
   }
 
   async function tambahTaskCekPeriode(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiLemPeriodePoint/create`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiLemPeriodePoint/create`;
     try {
+      setIsLoading(true);
       const res = await axios.post(
         url,
         {
@@ -123,7 +122,7 @@ function CheckSheetLemPeriode() {
           withCredentials: true,
         },
       );
-
+      setIsLoading(false);
       getCetakMesinPeriode();
     } catch (error: any) {
       console.log(error.data.msg);
@@ -136,9 +135,8 @@ function CheckSheetLemPeriode() {
     masalah: any,
     index: number,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiLemPeriodePoint/createDefect`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiLemPeriodePoint/createDefect`;
     try {
       const res = await axios.post(
         url,
@@ -163,9 +161,8 @@ function CheckSheetLemPeriode() {
   }
 
   async function doneCekPeriode(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiLemPeriode/done/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiLemPeriode/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -360,7 +357,7 @@ function CheckSheetLemPeriode() {
                   return (
                     <>
                       <label
-                        className="text-blue-400 text-sm font-semibold mx-5 t-10"
+                        className="text-blue-400 text-sm font-semibold mx-5 pt-4 flex justify-end"
                         onClick={() => handleClickGuide(index)}
                       >
                         FILLING GUIDE
@@ -413,7 +410,7 @@ function CheckSheetLemPeriode() {
                         <></>
                       )}
                       <div className="flex mx-5 py-5 gap-7">
-                        <label className="text-sm font-semibold">1</label>
+                        <label className="text-sm font-semibold">{index + 1}</label>
                         <div className="flex flex-col gap-1">
                           <label className="text-sm font-semibold">
                             INSPEKTOR
@@ -559,16 +556,15 @@ function CheckSheetLemPeriode() {
                         </>
                       </div>
 
-                      <div className="flex overflow-x-scroll border-b-8 border-[#D8EAFF]">
+                      <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF] items-center">
                         {data.inspeksi_lem_periode_defect.map(
                           (data2: any, i: number) => {
                             return (
                               <div
-                                className={`flex flex-col w-[120px] justify-center py-4  ${
-                                  (i + 1) % 2 === 0
-                                    ? ' bg-[#F3F3F3]'
-                                    : 'bg-white'
-                                } items-center gap-2`}
+                                className={`flex flex-col min-w-[120px] justify-center py-4  ${(i + 1) % 2 === 0
+                                  ? ' bg-[#F3F3F3]'
+                                  : 'bg-white'
+                                  } items-center gap-2`}
                               >
                                 <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                   {data2.kode}
@@ -581,11 +577,10 @@ function CheckSheetLemPeriode() {
                                     onChange={(e) =>
                                       handleChangePointDefect(e, index, i)
                                     }
-                                    className={`w-[80%]  ${
-                                      (i + 1) % 2 === 1
-                                        ? ' bg-[#F3F3F3]'
-                                        : 'bg-white'
-                                    } `}
+                                    className={`w-[80%]  ${(i + 1) % 2 === 0
+                                      ? ' bg-[#F3F3F3]'
+                                      : 'bg-white'
+                                      } `}
                                   >
                                     <option value={''} disabled>
                                       SELECT VALUE
@@ -602,11 +597,10 @@ function CheckSheetLemPeriode() {
                                     onChange={(e) =>
                                       handleChangePointDefect(e, index, i)
                                     }
-                                    className={`w-[80%]  ${
-                                      (i + 1) % 2 === 1
-                                        ? ' bg-[#F3F3F3]'
-                                        : 'bg-white'
-                                    } `}
+                                    className={`w-[80%]  ${(i + 1) % 2 === 0
+                                      ? ' bg-[#F3F3F3]'
+                                      : 'bg-white'
+                                      } `}
                                   >
                                     <option value={''} disabled selected>
                                       SELECT VALUE
@@ -635,7 +629,7 @@ function CheckSheetLemPeriode() {
                           <>
                             <button
                               onClick={() => handleClickAdd(index)}
-                              className="w-[16%] my-auto h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
+                              className=" h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
                             >
                               Add
                             </button>
@@ -693,16 +687,20 @@ function CheckSheetLemPeriode() {
             </div>
           </div>
           {cetakMesinPeriode?.inspeksi_lem_periode[0].status != 'done' ? (
-            <button
-              onClick={() =>
-                tambahTaskCekPeriode(
-                  cetakMesinPeriode?.inspeksi_lem_periode[0].id,
-                )
-              }
-              className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
-            >
-              + Periode Check
-            </button>
+            <>
+              <button
+                disabled={isLoading}
+                onClick={() =>
+                  tambahTaskCekPeriode(
+                    cetakMesinPeriode?.inspeksi_lem_periode[0].id,
+                  )
+                }
+                className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
+              >
+                {isLoading ? 'Loading...' : '+ Periode Check'}
+              </button>
+              {isLoading && <Loading />}
+            </>
           ) : null}
 
           <div className="grid grid-cols-10 border-b-8 items-center border-[#D8EAFF] px-4 py-4 gap-3 bg-white rounded-b-xl mt-2">
