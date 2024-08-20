@@ -10,11 +10,13 @@ import ok from '../../../../../images/icon/OKQC.svg';
 import oktole from '../../../../../images/icon/okToleransiQC.svg';
 import notok from '../../../../../images/icon/notOKQC.svg';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
+import Loading from '../../../../Loading';
+
 
 function CheckSheetCetakPeriode() {
   const { id } = useParams();
   const [isMobile, setIsMobile] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
   const [cetakMesinPeriode, setCetakMesinPeriode] = useState<any>();
   const [catatan, setCatatan] = useState<any>();
   const [kode, setKode] = useState<any>();
@@ -56,9 +58,8 @@ function CheckSheetCetakPeriode() {
     });
   };
   async function startTaskCekPeriode(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriodePoint/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriodePoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -83,9 +84,8 @@ function CheckSheetCetakPeriode() {
     jumlah_sampling: any,
     data_defect: any,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriodePoint/stop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriodePoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -110,10 +110,10 @@ function CheckSheetCetakPeriode() {
   }
 
   async function tambahTaskCekPeriode(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriodePoint/create`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriodePoint/create`;
     try {
+      setIsLoading(true);
       const res = await axios.post(
         url,
         {
@@ -123,7 +123,7 @@ function CheckSheetCetakPeriode() {
           withCredentials: true,
         },
       );
-
+      setIsLoading(false);
       getCetakMesinPeriode();
     } catch (error: any) {
       console.log(error.data.msg);
@@ -136,9 +136,8 @@ function CheckSheetCetakPeriode() {
     masalah: any,
     index: number,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriodePoint/createDefect`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriodePoint/createDefect`;
     try {
       const res = await axios.post(
         url,
@@ -164,9 +163,8 @@ function CheckSheetCetakPeriode() {
   }
 
   async function doneCekPeriode(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriode/done/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriode/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -362,7 +360,7 @@ function CheckSheetCetakPeriode() {
                       FILLING GUIDE
                     </label>
                     {openGuide == index ? (
-                      <div className="z-50 absolute right-6 rounded-md bg-[#F3F3F3] border-gray flex w-[96%] px-10 py-6 justify-between">
+                      <div className="  rounded-md bg-[#F3F3F3] border-gray flex px-5 mx-5 py-6 justify-between">
                         <div className="grid grid-cols-2">
                           <div className="flex flex-col">
                             <label className="text-blue-600 text-sm font-semibold pb-6">
@@ -409,7 +407,7 @@ function CheckSheetCetakPeriode() {
                       <></>
                     )}
                     <div className="flex px-5 py-5 gap-7">
-                      <label className="text-sm font-semibold">1</label>
+                      <label className="text-sm font-semibold">{index + 1}</label>
                       <div className="flex flex-col gap-1">
                         <label className="text-sm font-semibold">
                           INSPEKTOR
@@ -549,11 +547,14 @@ function CheckSheetCetakPeriode() {
                       </>
                     </div>
 
-                    <div className="flex overflow-x-scroll border-b-8 border-[#D8EAFF]">
+                    <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF]">
                       {data.inspeksi_cetak_periode_defect.map(
                         (data2: any, i: number) => {
                           return (
-                            <div className="flex flex-col w-[120px] justify-center py-4 bg-white items-center gap-2">
+                            <div
+                              className={`flex flex-col min-w-[120px] justify-center py-4 ${(i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
+                                } items-center gap-2`}
+                            >
                               <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                 {data2.kode}
                               </label>
@@ -565,7 +566,10 @@ function CheckSheetCetakPeriode() {
                                   onChange={(e) =>
                                     handleChangePointDefect(e, index, i)
                                   }
-                                  className="w-[80%] bg-white "
+                                  className={`w-[80%]  ${(i + 1) % 2 === 0
+                                    ? ' bg-[#F3F3F3]'
+                                    : 'bg-white'
+                                    } `}
                                 >
                                   <option value={''} disabled>
                                     SELECT VALUE
@@ -582,7 +586,10 @@ function CheckSheetCetakPeriode() {
                                   onChange={(e) =>
                                     handleChangePointDefect(e, index, i)
                                   }
-                                  className="w-[80%] bg-white "
+                                  className={`w-[80%]  ${(i + 1) % 2 === 0
+                                    ? ' bg-[#F3F3F3]'
+                                    : 'bg-white'
+                                    } `}
                                 >
                                   <option value={''} disabled selected>
                                     SELECT VALUE
@@ -668,17 +675,22 @@ function CheckSheetCetakPeriode() {
               },
             )}
           </div>
-          {cetakMesinPeriode?.inspeksi_cetak_periode[0].status != 'done' ? (
-            <button
-              onClick={() =>
-                tambahTaskCekPeriode(
-                  cetakMesinPeriode?.inspeksi_cetak_periode[0].id,
-                )
-              }
-              className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
-            >
-              + Periode Check
-            </button>
+          {cetakMesinPeriode?.inspeksi_cetak_periode[0].status != 'history' ? (
+            <>
+
+              <button
+                disabled={isLoading}
+                onClick={() =>
+                  tambahTaskCekPeriode(
+                    cetakMesinPeriode?.inspeksi_cetak_periode[0].id,
+                  )
+                }
+                className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
+              >
+                {isLoading ? 'Loading...' : '+ Periode Check'}
+              </button>
+              {isLoading && <Loading />}
+            </>
           ) : null}
 
           <div className="grid grid-cols-10 border-b-8 items-center border-[#D8EAFF] px-4 py-4 gap-3 bg-white rounded-b-xl mt-2">
@@ -693,7 +705,7 @@ function CheckSheetCetakPeriode() {
               <label className=" text-[#6c6b6b] text-sm font-semibold">
                 Catatan<span className="text-red-500">*</span> :
               </label>
-              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status != 'done' ? (
+              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status != 'history' ? (
                 <textarea
                   onChange={(e) => setCatatan(e.target.value)}
                   className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
@@ -709,7 +721,7 @@ function CheckSheetCetakPeriode() {
               )}
             </div>
             <div className="grid col-span-2 items-end justify-end">
-              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status != 'done' ? (
+              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status != 'history' ? (
                 <button
                   onClick={() => {
                     doneCekPeriode(

@@ -5,11 +5,12 @@ import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../../utils/converDateToTime';
 import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
+import Loading from '../../../../Loading';
 
 function CheckSheetCetakAwal() {
   const { id } = useParams();
   const [isMobile, setIsMobile] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
   const [cetakMesinAwal, setCetakMesinAwal] = useState<any>();
 
   useEffect(() => {
@@ -31,9 +32,8 @@ function CheckSheetCetakAwal() {
   }
 
   async function startTaskCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakAwalPoint/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakAwalPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -63,9 +63,8 @@ function CheckSheetCetakAwal() {
     layout_pisau: any,
     acc_warna_awal_jalan: any,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakAwalPoint/stop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakAwalPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -96,10 +95,10 @@ function CheckSheetCetakAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakAwalPoint/create`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakAwalPoint/create`;
     try {
+      setIsLoading(true);
       const res = await axios.post(
         url,
         {
@@ -109,7 +108,7 @@ function CheckSheetCetakAwal() {
           withCredentials: true,
         },
       );
-
+      setIsLoading(false);
       getCetakMesinAwal();
     } catch (error: any) {
       console.log(error.data.msg);
@@ -117,9 +116,8 @@ function CheckSheetCetakAwal() {
   }
 
   async function doneCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakAwal/done/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakAwal/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -696,14 +694,19 @@ function CheckSheetCetakAwal() {
             )}
           </div>
           {cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming' ? (
-            <button
-              onClick={() =>
-                tambahTaskCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0].id)
-              }
-              className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
-            >
-              + Periode Check
-            </button>
+            <>
+
+              <button
+                disabled={isLoading}
+                onClick={() =>
+                  tambahTaskCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0].id)
+                }
+                className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
+              >
+                {isLoading ? 'Loading...' : '+ Periode Check'}
+              </button>
+              {isLoading && <Loading />}
+            </>
           ) : null}
 
           <div className="grid grid-cols-10 border-b-8 items-center border-[#D8EAFF] px-4 py-4 gap-3 bg-white rounded-b-xl mt-2">
@@ -727,8 +730,9 @@ function CheckSheetCetakAwal() {
               ) : null}
             </div>
           </div>
-        </main>
-      )}
+        </main >
+      )
+      }
     </>
   );
 }
