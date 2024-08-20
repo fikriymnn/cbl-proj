@@ -1205,7 +1205,8 @@ function TableOS() {
                                               tipeMaintenance={
                                                 proses.cara_perbaikan
                                               }
-                                              catatan={proses.note_mtc}
+                                             
+                                              catatan={proses.note_mtc} unit={proses.unit} bagian={proses.bagian_mesin}
                                             ></ModalDetail>
                                           )}
                                         </>
@@ -1586,23 +1587,16 @@ function TableOS() {
                                           machineName={data.mesin}
                                           tgl={waktumulaimtcDate}
                                           jam={waktumulaiJam}
-                                          namaPemeriksa={
-                                            proses.user_eksekutor.nama
-                                          }
+                                          namaPemeriksa={proses.user_eksekutor.nama}
                                           no={'1'}
                                           idTiket={data.id}
                                           kodeLkh={data.kode_lkh}
-                                          analisisPenyebab={
-                                            `${proses.kode_analisis_mtc}` +
+                                          analisisPenyebab={`${proses.kode_analisis_mtc}` +
                                             ' - ' +
-                                            `${proses.nama_analisis_mtc}`
-                                          }
+                                            `${proses.nama_analisis_mtc}`}
                                           kebutuhanSparepart={'undefined'}
-                                          tipeMaintenance={
-                                            proses.cara_perbaikan
-                                          }
-                                          catatan={proses.note_mtc}
-                                        ></ModalDetail>
+                                          tipeMaintenance={proses.cara_perbaikan}
+                                          catatan={proses.note_mtc} unit={proses.unit} bagian={proses.bagian_mesin}                                        ></ModalDetail>
                                       )}
                                     </div>
                                     <div className="flex flex-col">

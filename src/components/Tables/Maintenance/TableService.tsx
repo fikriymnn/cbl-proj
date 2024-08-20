@@ -1190,7 +1190,7 @@ function TableService() {
                                               tipeMaintenance={
                                                 proses.cara_perbaikan
                                               }
-                                              catatan={proses.note_mtc}
+                                              catatan={proses.note_mtc} unit={proses.unit} bagian={proses.bagian_mesin}
                                             ></ModalDetail>
                                           )}
                                         </>
@@ -1549,7 +1549,7 @@ function TableService() {
                                           tipeMaintenance={
                                             proses.cara_perbaikan
                                           }
-                                          catatan={proses.note_mtc}
+                                          catatan={proses.note_mtc} unit={proses.unit} bagian={proses.bagian_mesin}
                                         ></ModalDetail>
                                       )}
                                     </div>

@@ -282,6 +282,7 @@ const TableVerifikasi = () => {
                     }
                     durasiPerbaikan={waktuPengerjaan}
                     eksekutor={data.operator}
+                     unit={data.proses_mtcs[lengthProses].unit} bagian={data.proses_mtcs[lengthProses].bagian_mesin}
                   >
                     <div>
                       <label
