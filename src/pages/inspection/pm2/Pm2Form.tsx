@@ -9,7 +9,7 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 
 import Logo from '../../../images/icon/ceklis.svg';
-
+import Select from 'react-select';
 import None from '../../../images/icon/none.svg';
 import moment from 'moment';
 import Loading from '../../../components/Loading';
@@ -262,19 +262,14 @@ function Pm2Form() {
 
     const tiketMasuk = convertDatetimeToDate(pm2 != null && pm2.createdAt);
 
-    const [selectedOption, setSelectedOption] = useState<string>('');
+    const [selectedOption, setSelectedOption] = useState<any>(null);
     const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
 
     const changeTextColor = () => {
         setIsOptionSelected(true);
     };
 
-    const handleChangePoint = (e: any, i: number) => {
-        const { name, value } = e.target;
-        const onchangeVal: any = pm2;
-        onchangeVal.inspection_point_pm2s[i][name] = value;
-        setPm2(onchangeVal);
-    };
+    
 
     const totalWaktuTask = pm2 != null && pm2.inspection_point_pm2s != null ?
         pm2.inspection_point_pm2s.reduce(
@@ -288,7 +283,65 @@ function Pm2Form() {
         pm2 != null && pm2.waktu_selesai != null
             ? convertDatetimeToDate(pm2.waktu_selesai)
             : '-';
-
+            
+            const options = [
+                {
+                  value: "baik",
+                  text: 'Baik',
+                  
+                  icon: <svg width="20" height="20" viewBox="0 0 294 294" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="147" cy="147" r="147" fill="#00A3FF"/>
+                  <path d="M53.5 145.5L121 213L239 86" stroke="white" stroke-width="38"/>
+                  </svg>
+                  
+                },
+                {
+                  value: "warning",
+                  text: 'Warning',
+                  icon: <svg width="20" height="20" viewBox="0 0 294 294" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="147" cy="147" r="147" fill="#FFA800"/>
+                  <path d="M150 62L233.138 200.75H66.8616L150 62Z" fill="white"/>
+                  </svg>
+                  
+                },
+                {
+                  value: 'jelek',
+                  text: 'Jelek',
+                  icon: <svg width="20" height="20" viewBox="0 0 294 294" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="147" cy="147" r="147" fill="#FF0000"/>
+                  <path d="M74 75L147.25 147M220.5 219L147.25 147M147.25 147L220.5 75L74 219" stroke="white" stroke-width="38"/>
+                  </svg>
+                  
+                },
+                {
+                  value: 'tidak terpasang',
+                  text: 'Not Installed',
+                  icon: <svg width="20" height="20" viewBox="0 0 302 302" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <g filter="url(#filter0_d_626_2534)">
+                  <circle cx="151" cy="147" r="147" fill="#939393"/>
+                  <path d="M63 147H238" stroke="white" stroke-width="38"/>
+                  </g>
+                  
+                  </svg>
+                  
+                }
+              ];
+              const handleChange = (selectedOption: any) => {
+                setSelectedOption(selectedOption);
+            };
+            const handleChangePoint = (selectedOption: any, i: number) => {
+              const onchangeVal: any = pm2;
+              onchangeVal.inspection_point_pm2s[i]['hasil'] = selectedOption.value; // Assuming 'hasil' is the field you want to update
+              setPm2(onchangeVal);
+             
+              
+            };
+            const handleSubmit = () => {
+                // Perform the submit action here, e.g., send data to the server
+              
+                // Reset selectedOption to null or the default value after submission
+                setSelectedOption(null);
+              };
     return (
         <DefaultLayout>
             {!isMobile && (
@@ -524,7 +577,7 @@ function Pm2Form() {
 
                                     return (
                                         <>
-                                            <section className=" border-b-8 border-[#D8EAFF]">
+                                            <section className={data.hasil == 'warning'?"border-2 border-yellow-400 bg-[#FFF9E8]":data.hasil == 'jelek'?"border-2 border-red-400 bg-[#FFEFEF]":data.hasil == 'tidak terpasang'?"border-2 border-red-400 bg-[#FFEFEF]":" border-b-8 border-[#D8EAFF]"}>
                                                 <div className="flex p-4 border-b-2 border-[#6D6C6C] ">
                                                     <div className="w-1/12">
                                                         <p className="md:text-[14px] text-[9px] font-semibold">
@@ -805,72 +858,24 @@ function Pm2Form() {
                                                                     <div className=" flex mt-3 w-full">
                                                                         <div className="relative z-20   md:w-[200px] w-[150px] dark:bg-form-input">
 
-                                                                            <select
-                                                                                name="hasil"
-                                                                                defaultValue={data.hasil}
-                                                                                onChange={(e) => {
-                                                                                    handleChangePoint(e, i);
-
-                                                                                    console.log(pm2);
-                                                                                    changeTextColor();
-                                                                                }}
-                                                                                className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
-                                                                                    ? 'text-black dark:text-white'
-                                                                                    : ''
-                                                                                    }`}
-                                                                            >
-                                                                                <option
-                                                                                    value=""
-                                                                                    disabled
-                                                                                    selected
-                                                                                    className="text-body dark:text-bodydark "
-                                                                                >
-                                                                                    Select Result
-                                                                                </option>
-                                                                                <option
-                                                                                    value="baik"
-                                                                                    className="text-body dark:text-bodydark"
-                                                                                >
-                                                                                    <img src={Logo} alt="aaa" />Good
-                                                                                </option>
-                                                                                <option
-                                                                                    value="warning"
-                                                                                    className="text-body dark:text-bodydark"
-                                                                                >
-                                                                                    <img src={Polygon} alt="bb" /> Warning
-                                                                                </option>
-                                                                                <option
-                                                                                    value="jelek"
-                                                                                    className="text-body dark:text-bodydark"
-                                                                                >
-                                                                                    <img src={X} alt="cc" />Bad
-                                                                                </option>
-                                                                                <option
-                                                                                    value="tidak terpasang"
-                                                                                    className="text-body dark:text-bodydark"
-                                                                                >
-                                                                                    <img src={Strip} alt="dd" />Not Installed
-                                                                                </option>
-                                                                            </select>
-
-                                                                            <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
-                                                                                <svg
-                                                                                    width="24"
-                                                                                    height="24"
-                                                                                    viewBox="0 0 24 24"
-                                                                                    fill="none"
-                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                >
-                                                                                    <g opacity="0.8">
-                                                                                        <path
-                                                                                            fillRule="evenodd"
-                                                                                            clipRule="evenodd"
-                                                                                            d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                                                                            fill="#637381"
-                                                                                        ></path>
-                                                                                    </g>
-                                                                                </svg>
-                                                                            </span>
+                                                                        <Select
+                                    name='hasil'
+        placeholder="Select Option"
+        value={selectedOption}
+        options={options}
+        onChange={(selectedOption) => {
+          handleChangePoint(selectedOption, i);
+          console.log(pm2);
+          changeTextColor();
+          handleChange(selectedOption)
+        }}
+        formatOptionLabel={(e) => (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {e.icon}
+            <span style={{ marginLeft: 5 }}>{e.text}</span>
+          </div>
+        )}
+      />
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -969,6 +974,7 @@ function Pm2Form() {
                                                                                             data.catatan,
                                                                                             data.waktu_mulai,
                                                                                         );
+                                                                                        handleSubmit()
                                                                                     }
                                                                                 }}
                                                                                 className="flex w-full rounded-md bg-[#DE0000] justify-center items-center px-2  py-3 hover:cursor-pointer"
@@ -1447,6 +1453,7 @@ function Pm2Form() {
                                                                                                     data.catatan,
                                                                                                     data.waktu_mulai,
                                                                                                 );
+                                                                                                handleSubmit()
                                                                                             }
                                                                                         }}
                                                                                         className="flex w-full rounded-md bg-[#DE0000] justify-center items-center px-2  py-3 hover:cursor-pointer"
@@ -1549,7 +1556,7 @@ function Pm2Form() {
                                                                                     onChange={(e) => {
                                                                                         handleChangePoint(e, i);
 
-                                                                                        console.log(pm2);
+                                                                                        
                                                                                         changeTextColor();
                                                                                     }}
                                                                                     className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent px-8 py-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
@@ -1642,79 +1649,28 @@ function Pm2Form() {
                                                                         </p>
                                                                         <div className=" flex w-full">
                                                                             <div className="relative z-20 w-[130px] dark:bg-form-input">
-                                                                                <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                                                                    <div className=' w-4'>
-                                                                                        {data.hasil == 'baik' ? <img src={Logo} alt="" /> : data.hasil == 'catatan' ? <img src={Polygon} alt="" /> : data.hasil == 'warning' ? <img src={X} alt="" /> : data.hasil == 'tidak terpasang' ? <img src={Strip} alt="" /> : ""}
-                                                                                    </div>
-                                                                                </span>
+                                                                               
 
-                                                                                <select
-                                                                                    name="hasil"
-                                                                                    defaultValue={data.hasil}
+                                                                                <Select
+                                    name='hasil'
+        placeholder="Select Option"
+        value={selectedOption}
+        options={options}
+        onChange={(selectedOption) => {
+          handleChangePoint(selectedOption, i);
+          console.log(pm2);
+          changeTextColor();
+          handleChange(selectedOption)
+        }}
+        formatOptionLabel={(e) => (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            {e.icon}
+            <span className='text-xs' style={{ marginLeft: 5 }}>{e.text}</span>
+          </div>
+        )}
+      />
 
-                                                                                    onChange={(e) => {
-                                                                                        handleChangePoint(e, i);
-
-                                                                                        console.log(pm2);
-                                                                                        changeTextColor();
-                                                                                    }}
-                                                                                    className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent px-8 py-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
-                                                                                        ? 'text-black dark:text-white'
-                                                                                        : ''
-                                                                                        }`}
-                                                                                >
-                                                                                    <option
-                                                                                        value=""
-                                                                                        disabled
-                                                                                        selected
-                                                                                        className="text-body dark:text-bodydark "
-                                                                                    >
-                                                                                        Select Result
-                                                                                    </option>
-                                                                                    <option
-                                                                                        value="baik"
-                                                                                        className="text-body dark:text-bodydark"
-                                                                                    >
-                                                                                        Good
-                                                                                    </option>
-                                                                                    <option
-                                                                                        value="warning"
-                                                                                        className="text-body dark:text-bodydark"
-                                                                                    >
-                                                                                        Warning
-                                                                                    </option>
-                                                                                    <option
-                                                                                        value="jelek"
-                                                                                        className="text-body dark:text-bodydark"
-                                                                                    >
-                                                                                        Bad
-                                                                                    </option>
-                                                                                    <option
-                                                                                        value="tidak terpasang"
-                                                                                        className="text-body dark:text-bodydark"
-                                                                                    >
-                                                                                        Not Installed
-                                                                                    </option>
-                                                                                </select>
-
-                                                                                <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
-                                                                                    <svg
-                                                                                        width="24"
-                                                                                        height="24"
-                                                                                        viewBox="0 0 24 24"
-                                                                                        fill="none"
-                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                    >
-                                                                                        <g opacity="0.8">
-                                                                                            <path
-                                                                                                fillRule="evenodd"
-                                                                                                clipRule="evenodd"
-                                                                                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                                                                                fill="#637381"
-                                                                                            ></path>
-                                                                                        </g>
-                                                                                    </svg>
-                                                                                </span>
+                                                                                
 
                                                                             </div>
 
