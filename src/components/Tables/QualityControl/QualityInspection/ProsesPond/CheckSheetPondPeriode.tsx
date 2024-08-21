@@ -160,7 +160,23 @@ function CheckSheetPondPeriode() {
       console.log(error);
     }
   }
+  async function pendingCekPeriode(id: number) {
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondPeriode/pending/${id}`;
+    try {
+      const res = await axios.put(
+        url,
+        {},
+        {
+          withCredentials: true,
+        },
+      );
 
+      getPondMesinPeriode();
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
   async function doneCekPeriode(id: number) {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiPondPeriode/done/${id}`;
@@ -721,7 +737,18 @@ function CheckSheetPondPeriode() {
                 ></textarea>
               )}
             </div>
-            <div className="grid col-span-2 items-end justify-end">
+            <div className="grid col-span-2 items-end justify-end gap-2">
+
+              {pondMesinPeriode?.inspeksi_pond_periode[0].status == 'incoming' ? (
+                <button
+                  onClick={() =>
+                    pendingCekPeriode(pondMesinPeriode?.inspeksi_pond_periode[0].id)
+                  }
+                  className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                >
+                  PENDING
+                </button>
+              ) : null}
               {pondMesinPeriode?.inspeksi_pond_periode[0].status != 'done' ? (
                 <button
                   onClick={() => {

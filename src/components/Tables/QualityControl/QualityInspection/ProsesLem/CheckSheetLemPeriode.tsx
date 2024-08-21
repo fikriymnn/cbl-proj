@@ -55,7 +55,23 @@ function CheckSheetLemPeriode() {
       console.log(error.data.msg);
     }
   }
+  async function pendingCekPeriode(id: number) {
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiLemPeriode/pending/${id}`;
+    try {
+      const res = await axios.put(
+        url,
+        {},
+        {
+          withCredentials: true,
+        },
+      );
 
+      getCetakMesinPeriode();
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
   async function startTaskCekPeriode(id: number) {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiLemPeriodePoint/start/${id}`;
@@ -730,7 +746,18 @@ function CheckSheetLemPeriode() {
                 ></textarea>
               )}
             </div>
-            <div className="grid col-span-2 items-end justify-end">
+            <div className="grid col-span-2 items-end justify-end gap-2">
+              {cetakMesinPeriode?.inspeksi_lem_periode[0].status ==
+                'incoming' ? (
+                <button
+                  onClick={() =>
+                    pendingCekPeriode(cetakMesinPeriode?.inspeksi_lem_periode[0].id)
+                  }
+                  className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                >
+                  PENDING
+                </button>
+              ) : null}
               {cetakMesinPeriode?.inspeksi_lem_periode[0].status != 'done' ? (
                 <button
                   onClick={() => {
@@ -739,7 +766,7 @@ function CheckSheetLemPeriode() {
                     );
                     console.log(cetakMesinPeriode?.inspeksi_lem_periode[0]);
                   }}
-                  className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                  className=" w-full h-10 rounded-md bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                 >
                   SIMPAN PERIODE
                 </button>

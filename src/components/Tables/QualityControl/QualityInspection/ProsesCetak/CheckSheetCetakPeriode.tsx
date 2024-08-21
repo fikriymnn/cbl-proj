@@ -586,8 +586,8 @@ function CheckSheetCetakPeriode() {
                                     handleChangePointDefect(e, index, i)
                                   }
                                   className={`w-[80%]  ${(i + 1) % 2 === 0
-                                      ? ' bg-[#F3F3F3]'
-                                      : 'bg-white'
+                                    ? ' bg-[#F3F3F3]'
+                                    : 'bg-white'
                                     } `}
                                 >
                                   <option value={''} disabled>
@@ -606,8 +606,8 @@ function CheckSheetCetakPeriode() {
                                     handleChangePointDefect(e, index, i)
                                   }
                                   className={`w-[80%]  ${(i + 1) % 2 === 0
-                                      ? ' bg-[#F3F3F3]'
-                                      : 'bg-white'
+                                    ? ' bg-[#F3F3F3]'
+                                    : 'bg-white'
                                     } `}
                                 >
                                   <option value={''} disabled selected>
@@ -696,16 +696,21 @@ function CheckSheetCetakPeriode() {
           </div>
           {cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'incoming' ||
             cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'pending' ? (
-            <button
-              onClick={() =>
-                tambahTaskCekPeriode(
-                  cetakMesinPeriode?.inspeksi_cetak_periode[0].id,
-                )
-              }
-              className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
-            >
-              + Periode Check
-            </button>
+            <>
+
+              <button
+                disabled={isLoading}
+                onClick={() =>
+                  tambahTaskCekPeriode(
+                    cetakMesinPeriode?.inspeksi_cetak_periode[0].id,
+                  )
+                }
+                className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
+              >
+                {isLoading ? 'Loading...' : '+ Periode Check'}
+              </button>
+              {isLoading && <Loading />}
+            </>
           ) : null}
 
           <div className="grid grid-cols-10 border-b-8 items-center border-[#D8EAFF] px-4 py-4 gap-3 bg-white rounded-b-xl mt-2">
