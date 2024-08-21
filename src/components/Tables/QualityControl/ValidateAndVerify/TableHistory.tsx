@@ -167,7 +167,7 @@ const TableHistory = () => {
             </div>
             {showModalDetail === index && (
               <>
-              <ModalDetailValidasi status={data.status_qc} note={data.note_qc} nama_kendala={data.tiket.nama_kendala} nama_mesin=  {data.tiket.mesin} operator={data.tiket.operator}  isOpen={showModalDetail} onClose={closeModalDetail} key={index}>
+              <ModalDetailValidasi bagian={data.tiket.bagian_mesin} unit={data.tiket.unit} status={data.status_qc} note={data.note_qc} nama_kendala={data.tiket.nama_kendala} nama_mesin=  {data.tiket.mesin} operator={data.tiket.operator}  isOpen={showModalDetail} onClose={closeModalDetail} key={index}>
                 <></>
               </ModalDetailValidasi>
               </>
