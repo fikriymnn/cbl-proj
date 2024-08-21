@@ -512,8 +512,8 @@ function CheckSheetHasilRabut() {
                     },
                   )}
                 </div>
-                <div className="flex gap-10 p-5">
-                  <div className="w-3/12">
+                <div className=" gap-10 p-5">
+                  <div className="w-4/12">
                     <label className=" text-[#6c6b6b] text-sm font-semibold">
                       JUMLAH DEFECT YANG DITEMUKAN
                     </label>
@@ -525,33 +525,37 @@ function CheckSheetHasilRabut() {
                     />
                   </div>
 
-                  <div className="w-9/12">
+                  <div className="w-full mt-10">
                     {RabutMesin?.data?.status != 'history' ? (
                       <>
-                        <label className=" text-[#6c6b6b] text-sm font-semibold">
-                          Keterangan
-                        </label>
-                        <textarea
-                          onChange={(e) => setCatatan(e.target.value)}
-                          className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                        ></textarea>
+                        <div className="grid grid-cols-1">
+                          <label className=" text-[#6c6b6b] text-sm font-semibold">
+                            KETERANGAN
+                          </label>
+                          <textarea
+                            onChange={(e) => setCatatan(e.target.value)}
+                            className="border rounded h-44 w-12/12 resize-none"
+                          ></textarea>
+                        </div>
                       </>
                     ) : (
                       <>
-                        <label className=" text-[#6c6b6b] text-sm font-semibold">
-                          Keterangan
-                        </label>
-                        <textarea
-                          defaultValue={RabutMesin?.data.catatan}
-                          disabled
-                          className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                        ></textarea>
+                        <div className="grid grid-cols-1">
+                          <label className=" text-[#6c6b6b] text-sm font-semibold">
+                            KETERANGAN
+                          </label>
+                          <textarea
+                            defaultValue={RabutMesin?.data.catatan}
+                            disabled
+                            className="border rounded h-44 w-12/12 resize-none"
+                          ></textarea>
+                        </div>
                       </>
                     )}
                   </div>
                 </div>
                 <div className="flex justify-end p-5">
-                  <div className="grid col-span-6 gap-y-2 items-end justify-end">
+                  <div className="grid grid-cols-3 gap-2 items-end justify-end">
                     {RabutMesin?.data?.status == 'incoming' ? (
                       <button
                         onClick={() => pendingRabut(RabutMesin?.data.id)}
@@ -564,7 +568,7 @@ function CheckSheetHasilRabut() {
                     RabutMesin?.data?.status == 'pending' ? (
                       <button
                         onClick={() => doneRabut(RabutMesin?.data.id)}
-                        className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                        className=" col-span-2 w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                       >
                         SIMPAN PERIODE
                       </button>
