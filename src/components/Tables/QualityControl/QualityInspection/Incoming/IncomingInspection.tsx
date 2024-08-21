@@ -125,7 +125,7 @@ function IncomingInspection() {
             alert(error.response.data.msg);
         }
     }
-    async function sumbitPoint1(objek: any) {
+    async function sumbitPoint(objek: any) {
         const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${objek.id}`;
         try {
             const res = await axios.put(url,
@@ -137,7 +137,295 @@ function IncomingInspection() {
 
                     withCredentials: true,
                 });
+
             console.log(objek)
+            getInspection();
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+
+    const [hasil1, sethasil1] = useState<any>();
+    const [kh1, setkh1] = useState<any>();
+    async function submitPoint1(id: any) {
+        if (hasil1 == null ||
+            kh1 == null
+        ) {
+
+            alert('Point 1 Belum Terisi Semua');
+            return;
+        }
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${id}`;
+        try {
+            const res = await axios.put(url,
+                {
+                    hasil: hasil1,
+                    keterangan_hasil: kh1,
+                }
+                ,
+                {
+
+                    withCredentials: true,
+                });
+
+            console.log(res.data)
+            getInspection();
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+    const [hasilkiri, sethhasilkiri] = useState<any>();
+    const [hasiltengah, sethhasiltengah] = useState<any>();
+    const [hasilkanan, sethhasilkanan] = useState<any>();
+    const [kh2, setkh2] = useState<any>();
+    async function submitPoint2(id: any) {
+        if (hasilkiri == null ||
+            hasiltengah == null ||
+            hasilkanan == null ||
+            kh2 == null
+        ) {
+
+            alert('Point 2 Belum Terisi Semua');
+            return;
+        }
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${id}`;
+        try {
+            const res = await axios.put(url,
+                {
+                    hasil_kiri: hasilkiri,
+                    hasil_tengah: hasiltengah,
+                    hasil_kanan: hasilkanan,
+                    hasil_rata_rata: hasilRata,
+                    keterangan_hasil: kh2,
+                }
+                ,
+                {
+
+                    withCredentials: true,
+                });
+
+            console.log(res.data)
+            getInspection();
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+    const [hasilkiri3, sethhasilkiri3] = useState<any>();
+    const [hasiltengah3, sethhasiltengah3] = useState<any>();
+    const [hasilkanan3, sethhasilkanan3] = useState<any>();
+    const [kh3, setkh3] = useState<any>();
+    async function submitPoint3(id: any) {
+        if (hasilkiri3 == null ||
+            hasiltengah3 == null ||
+            hasilkanan3 == null ||
+            kh3 == null
+        ) {
+
+            alert('Point 3 Belum Terisi Semua');
+            return;
+        }
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${id}`;
+        try {
+            const res = await axios.put(url,
+                {
+                    hasil_kiri: hasilkiri3,
+                    hasil_tengah: hasiltengah3,
+                    hasil_kanan: hasilkanan3,
+
+                    keterangan_hasil: kh3,
+                }
+                ,
+                {
+
+                    withCredentials: true,
+                });
+
+            console.log(res.data)
+            getInspection();
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+
+    const [hasil4, sethHasil4] = useState<any>();
+    const [kh4, setkh4] = useState<any>();
+    async function submitPoint4(id: any) {
+        if (hasil4 == null ||
+            kh4 == null
+        ) {
+
+            alert('Point 4 Belum Terisi Semua');
+            return;
+        }
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${id}`;
+        try {
+            const res = await axios.put(url,
+                {
+                    hasil: hasil4,
+                    keterangan_hasil: kh4,
+                }
+                ,
+                {
+
+                    withCredentials: true,
+                });
+
+            console.log(res.data)
+            getInspection();
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+
+    const [hasil5, sethHasil5] = useState<any>();
+    const [kh5, setkh5] = useState<any>();
+    const [coating5, setCoating5] = useState<any>();
+    async function submitPoint5(id: any) {
+        if (hasil5 == null ||
+            kh5 == null ||
+            coating5 == null
+        ) {
+
+            alert('Point 5 Belum Terisi Semua');
+            return;
+        }
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${id}`;
+        try {
+            const res = await axios.put(url,
+                {
+                    hasil: hasil5,
+                    coating: coating5,
+                    keterangan_hasil: kh5,
+                }
+                ,
+                {
+
+                    withCredentials: true,
+                });
+
+            console.log(res.data)
+            getInspection();
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+    const [hasilPanjang6, sethhasilPanjang6] = useState<any>();
+    const [hasilLebar6, sethasilLebar6] = useState<any>();
+    const [kh6, setkh6] = useState<any>();
+
+    async function submitPoint6(id: any) {
+        if (hasilPanjang6 == null ||
+            hasilLebar6 == null ||
+            kh6 == null
+
+
+        ) {
+
+            alert('Point 6 Belum Terisi Semua');
+            return;
+        }
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${id}`;
+        try {
+            const res = await axios.put(url,
+                {
+                    hasil_panjang: hasilPanjang6,
+                    hasil_lebar: hasilLebar6,
+                    keterangan_hasil: kh6,
+                }
+                ,
+                {
+
+                    withCredentials: true,
+                });
+
+            console.log(res.data)
+            getInspection();
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+    const [hasil7, sethHasil7] = useState<any>();
+    const [kh7, setkh7] = useState<any>();
+    async function submitPoint7(id: any) {
+        if (hasil7 == null ||
+            kh7 == null
+        ) {
+
+            alert('Point 7 Belum Terisi Semua');
+            return;
+        }
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${id}`;
+        try {
+            const res = await axios.put(url,
+                {
+                    hasil: hasil7,
+                    keterangan_hasil: kh7,
+                }
+                ,
+                {
+
+                    withCredentials: true,
+                });
+
+            console.log(res.data)
+            getInspection();
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+    const [hasil8, sethHasil8] = useState<any>();
+    const [kh8, setkh8] = useState<any>();
+    async function submitPoint8(id: any) {
+        if (hasil8 == null ||
+            kh8 == null
+        ) {
+
+            alert('Point 8 Belum Terisi Semua');
+            return;
+        }
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${id}`;
+        try {
+            const res = await axios.put(url,
+                {
+                    hasil: hasil8,
+                    keterangan_hasil: kh8,
+                }
+                ,
+                {
+
+                    withCredentials: true,
+                });
+
+            console.log(res.data)
+            getInspection();
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+    const [hasil9, sethHasil9] = useState<any>();
+    const [kh9, setkh9] = useState<any>();
+    async function submitPoint9(id: any) {
+        if (hasil9 == null ||
+            kh9 == null
+        ) {
+
+            alert('Point 9 Belum Terisi Semua');
+            return;
+        }
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${id}`;
+        try {
+            const res = await axios.put(url,
+                {
+                    hasil: hasil9,
+                    keterangan_hasil: kh9,
+                }
+                ,
+                {
+
+                    withCredentials: true,
+                });
+
+            console.log(res.data)
             getInspection();
         } catch (error: any) {
             console.log(error);
@@ -160,12 +448,14 @@ function IncomingInspection() {
 
         const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahan/update/${id}`;
         try {
+
             const res = await axios.put(url,
                 {
                     catatan: ctt,
                     no_lot: no_lot,
                     hasil_rumus: hasil_rumus,
-                    verifikasi: verifikasi
+                    verifikasi: verifikasi,
+
                 }
                 ,
                 {
@@ -244,6 +534,7 @@ function IncomingInspection() {
     const ratarata = (kiri + kanan + tengah) / 3
 
     const hasilRata = ratarata.toFixed(2)
+
 
     return (
         <>
@@ -586,9 +877,10 @@ function IncomingInspection() {
                                                             {!incoming?.inspeksi_bahan_result[0]?.send ? (
                                                                 <>
                                                                     <select onChange={(e) => {
-                                                                        let array = [...incoming?.inspeksi_bahan_result]
-                                                                        array[0].hasil = e.target.value
-                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        // let array = [...incoming?.inspeksi_bahan_result]
+                                                                        // array[0].hasil = e.target.value
+                                                                        // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        sethasil1(e.target.value)
                                                                     }}>
                                                                         <option disabled selected> Select Result</option>
                                                                         <option value={'DUPLEX'}>
@@ -619,21 +911,26 @@ function IncomingInspection() {
                                                                     <div>
                                                                         <input
                                                                             onChange={(e) => {
-                                                                                let array = [...incoming?.inspeksi_bahan_result]
-                                                                                array[0].keterangan_hasil = e.target.value
-                                                                                setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                                // let array = [...incoming?.inspeksi_bahan_result]
+                                                                                // array[0].keterangan_hasil = e.target.value
+                                                                                // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                                setkh1(e.target.value)
+
+
                                                                             }}
-                                                                            type="radio" id="sesuai1" name="sesuai1" value="sesuai" />
+                                                                            type="radio" id="sspoint1" name="sspoint1" value="sesuai" />
                                                                         <label className='pl-2'>Sesuai</label>
                                                                     </div>
                                                                     <div>
                                                                         <input
                                                                             onChange={(e) => {
-                                                                                let array = [...incoming?.inspeksi_bahan_result]
-                                                                                array[0].keterangan_hasil = e.target.value
-                                                                                setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                                // let array = [...incoming?.inspeksi_bahan_result]
+                                                                                // array[0].keterangan_hasil = e.target.value
+                                                                                // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                                setkh1(e.target.value)
+
                                                                             }}
-                                                                            type="radio" id="sesuai2" name="sesuai1" value="tidak sesuai" />
+                                                                            type="radio" id="ssspoint1" name="sspoint1" value="tidak sesuai" />
                                                                         <label className='pl-2'>Tidak Sesuai</label>
                                                                     </div>
                                                                 </>
@@ -651,7 +948,7 @@ function IncomingInspection() {
                                                         </div>
                                                     </div>
                                                     <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                                        25
+                                                        {incoming?.inspeksi_bahan_result[0].bobot}
                                                     </label>
                                                 </div>
                                                 <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
@@ -704,8 +1001,11 @@ function IncomingInspection() {
                                                             <>
                                                                 <button
                                                                     onClick={(e) => {
+
                                                                         e.preventDefault()
-                                                                        sumbitPoint1(incoming?.inspeksi_bahan_result[0]);
+
+                                                                        submitPoint1(incoming?.inspeksi_bahan_result[0].id)
+                                                                        // sumbitPoint(incoming?.inspeksi_bahan_result[0]);
                                                                     }}
                                                                     className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
                                                                 >
@@ -767,12 +1067,12 @@ function IncomingInspection() {
                                                                 </label>
                                                                 <input
                                                                     onChange={(e) => {
-                                                                        let array = [...incoming?.inspeksi_bahan_result]
-                                                                        array[1].hasil_kiri = e.target.value
-                                                                        array[1].hasil_rata_rata = hasilRata
-
+                                                                        // let array = [...incoming?.inspeksi_bahan_result]
+                                                                        // array[1].hasil_kiri = e.target.value
+                                                                        // array[1].hasil_rata_rata = hasilRata
+                                                                        sethhasilkiri(e.target.value)
                                                                         setKiri(parseInt(e.target.value))
-                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        // setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                     }}
 
 
@@ -783,12 +1083,12 @@ function IncomingInspection() {
                                                                 <input type='number'
 
                                                                     onChange={(e) => {
-                                                                        let array = [...incoming?.inspeksi_bahan_result]
-                                                                        array[1].hasil_tengah = e.target.value
-                                                                        array[1].hasil_rata_rata = hasilRata
-
+                                                                        // let array = [...incoming?.inspeksi_bahan_result]
+                                                                        // array[1].hasil_tengah = e.target.value
+                                                                        // array[1].hasil_rata_rata = hasilRata
+                                                                        sethhasiltengah(e.target.value)
                                                                         setTengah(parseInt(e.target.value))
-                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        // setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                     }}
 
 
@@ -798,12 +1098,12 @@ function IncomingInspection() {
                                                                 </label>
                                                                 <input type='number'
                                                                     onChange={(e) => {
-                                                                        let array = [...incoming?.inspeksi_bahan_result]
-                                                                        array[1].hasil_kanan = e.target.value
-                                                                        array[1].hasil_rata_rata = hasilRata
-
+                                                                        // let array = [...incoming?.inspeksi_bahan_result]
+                                                                        // array[1].hasil_kanan = e.target.value
+                                                                        // array[1].hasil_rata_rata = hasilRata
+                                                                        sethhasilkanan(e.target.value)
                                                                         setKanan(parseInt(e.target.value))
-                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        // setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                                                     }}
 
                                                                     className='border-2 border-stroke w-[80%] rounded-sm' />
@@ -830,25 +1130,25 @@ function IncomingInspection() {
                                                                         Kiri
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold '>
-                                                                        {incoming?.inspeksi_bahan_result[1].hasil_kiri} CM
+                                                                        {incoming?.inspeksi_bahan_result[1].hasil_kiri} gr
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                                         Tengah
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold '>
-                                                                        {incoming?.inspeksi_bahan_result[1].hasil_tengah} CM
+                                                                        {incoming?.inspeksi_bahan_result[1].hasil_tengah} gr
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                                         Kanan
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold '>
-                                                                        {incoming?.inspeksi_bahan_result[1].hasil_kanan} CM
+                                                                        {incoming?.inspeksi_bahan_result[1].hasil_kanan} gr
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                                         Rata-Rata
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold '>
-                                                                        {incoming?.inspeksi_bahan_result[1].hasil_rata_rata} CM
+                                                                        {incoming?.inspeksi_bahan_result[1].hasil_rata_rata} gr
                                                                     </label>
                                                                 </div>
 
@@ -865,21 +1165,27 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[1].keterangan_hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[1].keterangan_hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            setkh2(e.target.value)
+
                                                                         }}
-                                                                        type="radio" id="sesuai1" name="sesuai1" value="sesuai" />
+                                                                        type="radio" id="sspoint2" name="sspoint2" value="sesuai" />
                                                                     <label className='pl-2'>Sesuai</label>
                                                                 </div>
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[1].keterangan_hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[1].keterangan_hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array }
+
+                                                                            // )
+                                                                            setkh2(e.target.value)
+
                                                                         }}
-                                                                        type="radio" id="sesuai2" name="sesuai1" value="tidak sesuai" />
+                                                                        type="radio" id="ssspoint2" name="sspoint2" value="tidak sesuai" />
                                                                     <label className='pl-2'>Tidak Sesuai</label>
                                                                 </div>
                                                             </>
@@ -895,7 +1201,7 @@ function IncomingInspection() {
                                                     </div>
                                                 </div>
                                                 <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                                    20
+                                                    {incoming?.inspeksi_bahan_result[1].bobot}
                                                 </label>
                                             </div>
                                             <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
@@ -952,7 +1258,8 @@ function IncomingInspection() {
                                                                 onClick={(e) => {
                                                                     e.preventDefault()
 
-                                                                    sumbitPoint1(incoming?.inspeksi_bahan_result[1]);
+                                                                    submitPoint2(incoming?.inspeksi_bahan_result[1].id)
+                                                                    // sumbitPoint(incoming?.inspeksi_bahan_result[1]);
                                                                 }}
                                                                 className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
                                                             >
@@ -1007,10 +1314,11 @@ function IncomingInspection() {
                                                                 </label>
                                                                 <input
                                                                     onChange={(e) => {
-                                                                        let array = [...incoming?.inspeksi_bahan_result]
-                                                                        array[2].hasil_kiri = e.target.value
+                                                                        // let array = [...incoming?.inspeksi_bahan_result]
+                                                                        // array[2].hasil_kiri = e.target.value
 
-                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        sethhasilkiri3(e.target.value)
                                                                     }}
 
                                                                     type='number' className='border-2 border-stroke w-[80%] rounded-sm' />
@@ -1020,10 +1328,11 @@ function IncomingInspection() {
                                                                 <input type='number'
 
                                                                     onChange={(e) => {
-                                                                        let array = [...incoming?.inspeksi_bahan_result]
-                                                                        array[2].hasil_tengah = e.target.value
+                                                                        // let array = [...incoming?.inspeksi_bahan_result]
+                                                                        // array[2].hasil_tengah = e.target.value
 
-                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        sethhasiltengah3(e.target.value)
                                                                     }}
 
                                                                     className='border-2 border-stroke w-[80%] rounded-sm' />
@@ -1032,10 +1341,11 @@ function IncomingInspection() {
                                                                 </label>
                                                                 <input type='number'
                                                                     onChange={(e) => {
-                                                                        let array = [...incoming?.inspeksi_bahan_result]
-                                                                        array[2].hasil_kanan = e.target.value
+                                                                        // let array = [...incoming?.inspeksi_bahan_result]
+                                                                        // array[2].hasil_kanan = e.target.value
 
-                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        sethhasilkanan3(e.target.value)
                                                                     }}
                                                                     className='border-2 border-stroke w-[80%] rounded-sm' />
 
@@ -1077,9 +1387,13 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[2].keterangan_hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[2].keterangan_hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            setkh3(e.target.value)
+
+
                                                                         }}
                                                                         type="radio" id="sesuai1" name="sesuai1" value="sesuai" />
                                                                     <label className='pl-2'>Sesuai</label>
@@ -1087,9 +1401,12 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[2].keterangan_hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[2].keterangan_hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            setkh3(e.target.value)
+
                                                                         }}
                                                                         type="radio" id="sesuai2" name="sesuai1" value="tidak sesuai" />
                                                                     <label className='pl-2'>Tidak Sesuai</label>
@@ -1110,7 +1427,7 @@ function IncomingInspection() {
 
                                                 </div>
                                                 <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                                    15
+                                                    {incoming?.inspeksi_bahan_result[2].bobot}
                                                 </label>
                                             </div>
                                             <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
@@ -1163,8 +1480,8 @@ function IncomingInspection() {
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.preventDefault()
-
-                                                                    sumbitPoint1(incoming?.inspeksi_bahan_result[2]);
+                                                                    submitPoint3(incoming?.inspeksi_bahan_result[2].id)
+                                                                    // sumbitPoint(incoming?.inspeksi_bahan_result[2]);
                                                                 }}
                                                                 className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
                                                             >
@@ -1215,9 +1532,10 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[3].hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[3].hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            sethHasil4(e.target.value)
                                                                         }}
                                                                         type="radio" id="panjang1" name="pp1" value="Panjang" />
                                                                     <label className='pl-2'>Panjang</label>
@@ -1225,9 +1543,10 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[3].hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[3].hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            sethHasil4(e.target.value)
                                                                         }}
                                                                         type="radio" id="panjang2" name="pp1" value="Pendek" />
                                                                     <label className='pl-2'>Pendek</label>
@@ -1248,21 +1567,25 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[3].keterangan_hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[3].keterangan_hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            setkh4(e.target.value)
                                                                         }}
-                                                                        type="radio" id="sesuai3" name="sesuai3" value="sesuai" />
+                                                                        type="radio" id="sspoint33" name="sspoint33" value="sesuai" />
                                                                     <label className='pl-2'>Sesuai</label>
                                                                 </div>
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[3].keterangan_hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[3].keterangan_hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            setkh4(e.target.value)
                                                                         }}
-                                                                        type="radio" id="sesuai4" name="sesuai3" value="tidak sesuai" />
+                                                                        type="radio" id="ssspoint3" name="sspoint33" value="tidak sesuai" />
                                                                     <label className='pl-2'>Tidak Sesuai</label>
                                                                 </div>
                                                             </>
@@ -1277,7 +1600,7 @@ function IncomingInspection() {
                                                     </div>
                                                 </div>
                                                 <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                                    10
+                                                    {incoming?.inspeksi_bahan_result[3].bobot}
                                                 </label>
                                             </div>
                                             <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
@@ -1330,8 +1653,8 @@ function IncomingInspection() {
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.preventDefault()
+                                                                    submitPoint4(incoming?.inspeksi_bahan_result[3].id)
 
-                                                                    sumbitPoint1(incoming?.inspeksi_bahan_result[3]);
                                                                 }}
                                                                 className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
                                                             >
@@ -1382,9 +1705,11 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[4].hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[4].hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            sethHasil5(e.target.value)
                                                                         }}
                                                                         type="radio" id="ok1" name="ok1" value="Ok" />
                                                                     <label className='pl-2'>Ok</label>
@@ -1392,9 +1717,10 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[4].hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[4].hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            sethHasil5(e.target.value)
                                                                         }}
                                                                         type="radio" id="ok12" name="ok1" value="Not Ok" />
                                                                     <label className='pl-2'>Not Ok</label>
@@ -1422,9 +1748,9 @@ function IncomingInspection() {
                                                                             inputText.hidden = false; // Enable input
                                                                         } else {
                                                                             // Update coating for other selections
-                                                                            array[4].coating = e.target.value;
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array });
-
+                                                                            // array[4].coating = e.target.value;
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array });
+                                                                            setCoating5(e.target.value)
                                                                             // Disable input if a non-"IVORY" value is selected
                                                                             const inputText = document.getElementById("inputText") as HTMLInputElement;
                                                                             inputText.hidden = true;
@@ -1440,9 +1766,11 @@ function IncomingInspection() {
 
                                                                     <input type="text" id="inputText"
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result];
-                                                                            array[4].coating = e.target.value;
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array });
+                                                                            // let array = [...incoming?.inspeksi_bahan_result];
+                                                                            // array[4].coating = e.target.value;
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array });
+
+                                                                            setCoating5(e.target.value)
                                                                         }}
                                                                         className="border-2 border-stroke w-full rounded-sm" />
 
@@ -1482,21 +1810,25 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[4].keterangan_hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[4].keterangan_hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            setkh5(e.target.value)
                                                                         }}
-                                                                        type="radio" id="ss23" name="ss22" value="sesuai" />
+                                                                        type="radio" id="sspoint5" name="sspoint5" value="sesuai" />
                                                                     <label className='pl-2'>Sesuai</label>
                                                                 </div>
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[4].keterangan_hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[4].keterangan_hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            setkh5(e.target.value)
                                                                         }}
-                                                                        type="radio" id="ss24" name="ss22" value="tidak sesuai" />
+                                                                        type="radio" id="ssspoint5" name="sspoint5" value="tidak sesuai" />
                                                                     <label className='pl-2'>Tidak Sesuai</label>
                                                                 </div>
                                                             </>
@@ -1511,7 +1843,7 @@ function IncomingInspection() {
                                                     </div>
                                                 </div>
                                                 <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                                    10
+                                                    {incoming?.inspeksi_bahan_result[4].bobot}
                                                 </label>
                                             </div>
                                             <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
@@ -1566,8 +1898,8 @@ function IncomingInspection() {
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.preventDefault()
-                                                                    console.log(incoming?.inspeksi_bahan_result[4])
-                                                                    sumbitPoint1(incoming?.inspeksi_bahan_result[4]);
+                                                                    submitPoint5(incoming?.inspeksi_bahan_result[4].id)
+                                                                    // sumbitPoint(incoming?.inspeksi_bahan_result[4]);
                                                                 }}
                                                                 className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
                                                             >
@@ -1620,10 +1952,12 @@ function IncomingInspection() {
                                                                 </label>
                                                                 <input
                                                                     onChange={(e) => {
-                                                                        let array = [...incoming?.inspeksi_bahan_result]
-                                                                        array[5].hasil_panjang = e.target.value
+                                                                        // let array = [...incoming?.inspeksi_bahan_result]
+                                                                        // array[5].hasil_panjang = e.target.value
 
-                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                        sethasilLebar6(e.target.value)
                                                                     }}
 
                                                                     type='number' className='border-2 border-stroke w-[80%] rounded-sm' />
@@ -1633,10 +1967,12 @@ function IncomingInspection() {
                                                                 <input type='number'
 
                                                                     onChange={(e) => {
-                                                                        let array = [...incoming?.inspeksi_bahan_result]
-                                                                        array[5].hasil_lebar = e.target.value
+                                                                        // let array = [...incoming?.inspeksi_bahan_result]
+                                                                        // array[5].hasil_lebar = e.target.value
 
-                                                                        setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                        // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                        sethhasilPanjang6(e.target.value)
                                                                     }}
 
                                                                     className='border-2 border-stroke w-[80%] rounded-sm' />
@@ -1674,21 +2010,25 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[5].keterangan_hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[5].keterangan_hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            setkh6(e.target.value)
                                                                         }}
-                                                                        type="radio" id="ss24" name="ss24" value="sesuai" />
+                                                                        type="radio" id="sspoint6" name="sspoint6" value="sesuai" />
                                                                     <label className='pl-2'>Sesuai</label>
                                                                 </div>
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[5].keterangan_hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[5].keterangan_hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            setkh6(e.target.value)
                                                                         }}
-                                                                        type="radio" id="ss25" name="ss24" value="tidak sesuai" />
+                                                                        type="radio" id="ssspoint6" name="sspoint6" value="tidak sesuai" />
                                                                     <label className='pl-2'>Tidak Sesuai</label>
                                                                 </div>
                                                             </>
@@ -1703,7 +2043,7 @@ function IncomingInspection() {
                                                     </div>
                                                 </div>
                                                 <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                                    5
+                                                    {incoming?.inspeksi_bahan_result[5].bobot}
                                                 </label>
                                             </div>
                                             <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
@@ -1759,7 +2099,8 @@ function IncomingInspection() {
                                                                 onClick={(e) => {
                                                                     e.preventDefault()
 
-                                                                    sumbitPoint1(incoming?.inspeksi_bahan_result[5]);
+                                                                    submitPoint6(incoming?.inspeksi_bahan_result[5].id)
+
                                                                 }}
                                                                 className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
                                                             >
@@ -1810,9 +2151,11 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[6].hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[6].hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            sethHasil7(e.target.value)
                                                                         }}
                                                                         type="radio" id="toleransi1" name="toleransi1" value="Toleransi" />
                                                                     <label className='pl-2'>Toleransi</label>
@@ -1820,9 +2163,11 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[6].hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[6].hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            sethHasil7(e.target.value)
                                                                         }}
                                                                         type="radio" id="toleransi2" name="toleransi1" value="Not Toleransi" />
                                                                     <label className='pl-2'>Not Toleransi</label>
@@ -1844,9 +2189,11 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[6].keterangan_hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[6].keterangan_hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            setkh7(e.target.value)
                                                                         }}
                                                                         type="radio" id="sspoint7" name="sspoint7" value="sesuai" />
                                                                     <label className='pl-2'>Sesuai</label>
@@ -1854,9 +2201,11 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[6].keterangan_hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[6].keterangan_hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            setkh7(e.target.value)
                                                                         }}
                                                                         type="radio" id="ssspoint7" name="sspoint7" value="tidak sesuai" />
                                                                     <label className='pl-2'>Tidak Sesuai</label>
@@ -1873,7 +2222,7 @@ function IncomingInspection() {
                                                     </div>
                                                 </div>
                                                 <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                                    5
+                                                    {incoming?.inspeksi_bahan_result[6].bobot}
                                                 </label>
                                             </div>
                                             <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
@@ -1928,8 +2277,8 @@ function IncomingInspection() {
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.preventDefault()
-
-                                                                    sumbitPoint1(incoming?.inspeksi_bahan_result[6]);
+                                                                    submitPoint7(incoming?.inspeksi_bahan_result[6].id);
+                                                                    // sumbitPoint(incoming?.inspeksi_bahan_result[6]);
                                                                 }}
                                                                 className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
                                                             >
@@ -1980,22 +2329,26 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[7].hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[7].hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            sethHasil8(e.target.value)
                                                                         }}
-                                                                        type="radio" id="okpoint8" name="okpoint8" value="sesuai" />
-                                                                    <label className='pl-2'>Sesuai</label>
+                                                                        type="radio" id="okpoint8" name="okpoint8" value="ok" />
+                                                                    <label className='pl-2'>Ok</label>
                                                                 </div>
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[7].hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[7].hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            sethHasil8(e.target.value)
                                                                         }}
-                                                                        type="radio" id="sokpoint8" name="okpoint8" value="tidak sesuai" />
-                                                                    <label className='pl-2'>Tidak Sesuai</label>
+                                                                        type="radio" id="sokpoint8" name="okpoint8" value="not ok" />
+                                                                    <label className='pl-2'>Not OK</label>
                                                                 </div>
                                                             </>
                                                         ) : (
@@ -2017,6 +2370,8 @@ function IncomingInspection() {
                                                                             let array = [...incoming?.inspeksi_bahan_result]
                                                                             array[7].keterangan_hasil = e.target.value
                                                                             setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            setkh8(e.target.value)
                                                                         }}
                                                                         type="radio" id="sspoint8" name="sspoint8" value="sesuai" />
                                                                     <label className='pl-2'>Sesuai</label>
@@ -2024,9 +2379,11 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[7].keterangan_hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[7].keterangan_hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            setkh8(e.target.value)
                                                                         }}
                                                                         type="radio" id="ssspoint8" name="sspoint8" value="tidak sesuai" />
                                                                     <label className='pl-2'>Tidak Sesuai</label>
@@ -2043,7 +2400,7 @@ function IncomingInspection() {
                                                     </div>
                                                 </div>
                                                 <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                                    5
+                                                    {incoming?.inspeksi_bahan_result[7].bobot}
                                                 </label>
                                             </div>
                                             <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
@@ -2099,7 +2456,8 @@ function IncomingInspection() {
                                                                 onClick={(e) => {
                                                                     e.preventDefault()
 
-                                                                    sumbitPoint1(incoming?.inspeksi_bahan_result[7]);
+                                                                    submitPoint8(incoming?.inspeksi_bahan_result[7].id);
+                                                                    // sumbitPoint(incoming?.inspeksi_bahan_result[7]);
                                                                 }}
                                                                 className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
                                                             >
@@ -2150,22 +2508,27 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[8].hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[8].hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            sethHasil9(e.target.value)
                                                                         }}
-                                                                        type="radio" id="okpoint9" name="okpoint9" value="sesuai" />
-                                                                    <label className='pl-2'>Sesuai</label>
+                                                                        type="radio" id="okpoint9" name="okpoint9" value="ok" />
+                                                                    <label className='pl-2'>OK</label>
                                                                 </div>
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[8].hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[8].hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+
+                                                                            sethHasil9(e.target.value)
                                                                         }}
-                                                                        type="radio" id="sokpoint9" name="okpoint9" value="tidak sesuai" />
-                                                                    <label className='pl-2'>Tidak Sesuai</label>
+                                                                        type="radio" id="sokpoint9" name="okpoint9" value="not ok" />
+                                                                    <label className='pl-2'>Not Ok</label>
                                                                 </div>
                                                             </>
                                                         ) : (
@@ -2184,9 +2547,11 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[8].keterangan_hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[8].keterangan_hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            setkh9(e.target.value)
                                                                         }}
                                                                         type="radio" id="sspoint9" name="sspoint9" value="sesuai" />
                                                                     <label className='pl-2'>Sesuai</label>
@@ -2194,9 +2559,11 @@ function IncomingInspection() {
                                                                 <div>
                                                                     <input
                                                                         onChange={(e) => {
-                                                                            let array = [...incoming?.inspeksi_bahan_result]
-                                                                            array[8].keterangan_hasil = e.target.value
-                                                                            setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                                                            // let array = [...incoming?.inspeksi_bahan_result]
+                                                                            // array[8].keterangan_hasil = e.target.value
+                                                                            // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+
+                                                                            setkh9(e.target.value)
                                                                         }}
                                                                         type="radio" id="ssspoint9" name="sspoint9" value="tidak sesuai" />
                                                                     <label className='pl-2'>Tidak Sesuai</label>
@@ -2213,7 +2580,7 @@ function IncomingInspection() {
                                                     </div>
                                                 </div>
                                                 <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
-                                                    5
+                                                    {incoming?.inspeksi_bahan_result[8].bobot}
                                                 </label>
                                             </div>
                                             <div className='grid grid-cols-10 bg-[#F5F5F5] px-10 py-4 border-b-8 border-[#D8EAFF]'>
@@ -2268,8 +2635,8 @@ function IncomingInspection() {
                                                             <button
                                                                 onClick={(e) => {
                                                                     e.preventDefault()
-
-                                                                    sumbitPoint1(incoming?.inspeksi_bahan_result[8]);
+                                                                    submitPoint9(incoming?.inspeksi_bahan_result[8].id);
+                                                                    // sumbitPoint(incoming?.inspeksi_bahan_result[8]);
                                                                 }}
                                                                 className="flex w-[30%] h-[50%] text-white font-semibold rounded-md bg-blue-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
                                                             >
@@ -2404,25 +2771,25 @@ function IncomingInspection() {
                                                             Kiri
                                                         </label>
                                                         <label className='text-neutral-500 text-sm font-semibold '>
-                                                            {incoming?.inspeksi_bahan_result[1].hasil_kiri}
+                                                            {incoming?.inspeksi_bahan_result[1].hasil_kiri} gr
                                                         </label>
                                                         <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                             Tengah
                                                         </label>
                                                         <label className='text-neutral-500 text-sm font-semibold '>
-                                                            {incoming?.inspeksi_bahan_result[1].hasil_tengah}
+                                                            {incoming?.inspeksi_bahan_result[1].hasil_tengah} gr
                                                         </label>
                                                         <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                             Kanan
                                                         </label>
                                                         <label className='text-neutral-500 text-sm font-semibold '>
-                                                            {incoming?.inspeksi_bahan_result[1].hasil_kanan}
+                                                            {incoming?.inspeksi_bahan_result[1].hasil_kanan} gr
                                                         </label>
                                                         <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                             Rata-Rata
                                                         </label>
                                                         <label className='text-neutral-500 text-sm font-semibold '>
-                                                            {incoming?.inspeksi_bahan_result[1].hasil_rata_rata}
+                                                            {incoming?.inspeksi_bahan_result[1].hasil_rata_rata} gr
                                                         </label>
                                                     </div>
 
@@ -3075,6 +3442,24 @@ function IncomingInspection() {
                                             }
 
                                         </label>
+                                    </div>
+                                    <div>
+                                        {incoming.status == 'incoming' ? (
+                                            <>
+                                                <label className='text-neutral-500 text-sm font-semibold flex flex-col w-full'>
+                                                    Total Skor : {incoming?.total_skor}
+                                                </label>
+                                            </>
+                                        ) :
+                                            (
+                                                <>
+                                                    <label className='text-neutral-500 text-sm font-semibold flex flex-col w-full'>
+                                                        Total Skor : {incoming?.total_skor}
+                                                    </label>
+                                                </>
+                                            )
+                                        }
+
                                     </div>
                                     <div>
                                         {incoming.status == 'incoming' ? (

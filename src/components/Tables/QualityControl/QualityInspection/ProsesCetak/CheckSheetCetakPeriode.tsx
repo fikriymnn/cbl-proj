@@ -10,11 +10,12 @@ import ok from '../../../../../images/icon/OKQC.svg';
 import oktole from '../../../../../images/icon/okToleransiQC.svg';
 import notok from '../../../../../images/icon/notOKQC.svg';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
+import Loading from '../../../../Loading';
 
 function CheckSheetCetakPeriode() {
   const { id } = useParams();
   const [isMobile, setIsMobile] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
   const [cetakMesinPeriode, setCetakMesinPeriode] = useState<any>();
   const [catatan, setCatatan] = useState<any>();
   const [kode, setKode] = useState<any>();
@@ -114,6 +115,7 @@ function CheckSheetCetakPeriode() {
       import.meta.env.VITE_API_LINK
     }/qc/cs/inspeksiCetakPeriodePoint/create`;
     try {
+      setIsLoading(true);
       const res = await axios.post(
         url,
         {
@@ -123,7 +125,7 @@ function CheckSheetCetakPeriode() {
           withCredentials: true,
         },
       );
-
+      setIsLoading(false);
       getCetakMesinPeriode();
     } catch (error: any) {
       console.log(error.data.msg);
@@ -381,7 +383,7 @@ function CheckSheetCetakPeriode() {
                       FILLING GUIDE
                     </label>
                     {openGuide == index ? (
-                      <div className="z-50 absolute right-6 rounded-md bg-[#F3F3F3] border-gray flex w-[96%] px-10 py-6 justify-between">
+                      <div className="  rounded-md bg-[#F3F3F3] border-gray flex px-5 mx-5 py-6 justify-between">
                         <div className="grid grid-cols-2">
                           <div className="flex flex-col">
                             <label className="text-blue-600 text-sm font-semibold pb-6">
@@ -428,7 +430,9 @@ function CheckSheetCetakPeriode() {
                       <></>
                     )}
                     <div className="flex px-5 py-5 gap-7">
-                      <label className="text-sm font-semibold">1</label>
+                      <label className="text-sm font-semibold">
+                        {index + 1}
+                      </label>
                       <div className="flex flex-col gap-1">
                         <label className="text-sm font-semibold">
                           INSPEKTOR
@@ -568,11 +572,15 @@ function CheckSheetCetakPeriode() {
                       </>
                     </div>
 
-                    <div className="flex overflow-x-scroll border-b-8 border-[#D8EAFF]">
+                    <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF]">
                       {data.inspeksi_cetak_periode_defect.map(
                         (data2: any, i: number) => {
                           return (
-                            <div className="flex flex-col w-[120px] justify-center py-4 bg-white items-center gap-2">
+                            <div
+                              className={`flex flex-col min-w-[120px] justify-center py-4 ${
+                                (i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
+                              } items-center gap-2`}
+                            >
                               <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                 {data2.kode}
                               </label>
@@ -584,7 +592,11 @@ function CheckSheetCetakPeriode() {
                                   onChange={(e) =>
                                     handleChangePointDefect(e, index, i)
                                   }
-                                  className="w-[80%] bg-white "
+                                  className={`w-[80%]  ${
+                                    (i + 1) % 2 === 0
+                                      ? ' bg-[#F3F3F3]'
+                                      : 'bg-white'
+                                  } `}
                                 >
                                   <option value={''} disabled>
                                     SELECT VALUE
@@ -601,7 +613,11 @@ function CheckSheetCetakPeriode() {
                                   onChange={(e) =>
                                     handleChangePointDefect(e, index, i)
                                   }
-                                  className="w-[80%] bg-white "
+                                  className={`w-[80%]  ${
+                                    (i + 1) % 2 === 0
+                                      ? ' bg-[#F3F3F3]'
+                                      : 'bg-white'
+                                  } `}
                                 >
                                   <option value={''} disabled selected>
                                     SELECT VALUE

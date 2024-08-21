@@ -197,6 +197,9 @@ function HistoryIncoming() {
                                 <p className={` uppercase font-semibold text-lg bg-[#F6FAFF] ${incoming?.verifikasi == 'Diterima' ? 'text-green-500' : 'text-red-500'}`}>
                                     {incoming?.verifikasi}
                                 </p>
+                                <p className={` uppercase font-semibold text-lg bg-[#F6FAFF]`}>
+                                    Total skor : {incoming?.total_skor}
+                                </p>
                                 <div className='text-sm gap-1 flex flex-col'>
                                     <p>
                                         Waktu Mulai :
@@ -362,25 +365,25 @@ function HistoryIncoming() {
                                                 Kiri
                                             </label>
                                             <label className='text-neutral-500 text-sm font-semibold '>
-                                                {incoming?.inspeksi_bahan_result[1].hasil_kiri}
+                                                {incoming?.inspeksi_bahan_result[1].hasil_kiri} gr
                                             </label>
                                             <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                 Tengah
                                             </label>
                                             <label className='text-neutral-500 text-sm font-semibold '>
-                                                {incoming?.inspeksi_bahan_result[1].hasil_tengah}
+                                                {incoming?.inspeksi_bahan_result[1].hasil_tengah} gr
                                             </label>
                                             <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                 Kanan
                                             </label>
                                             <label className='text-neutral-500 text-sm font-semibold '>
-                                                {incoming?.inspeksi_bahan_result[1].hasil_kanan}
+                                                {incoming?.inspeksi_bahan_result[1].hasil_kanan} gr
                                             </label>
                                             <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                 Rata-Rata
                                             </label>
                                             <label className='text-neutral-500 text-sm font-semibold '>
-                                                {incoming?.inspeksi_bahan_result[1].hasil_rata_rata}
+                                                {incoming?.inspeksi_bahan_result[1].hasil_rata_rata} gr
                                             </label>
                                         </div>
 
@@ -704,9 +707,11 @@ function HistoryIncoming() {
 
                                         <div className='flex flex-col gap-1 font-semibold text-sm'>
                                             <p>
-                                                {incoming?.inspeksi_bahan_result[5]?.hasil}
+                                                {incoming?.inspeksi_bahan_result[5]?.hasil_panjang} mm
                                             </p>
-
+                                            <p>
+                                                {incoming?.inspeksi_bahan_result[5]?.hasil_lebar} mm
+                                            </p>
                                         </div>
                                     </div>
                                     <div className='flex flex-col gap-1  w-[50%]'>
@@ -974,7 +979,16 @@ function HistoryIncoming() {
                             </div>
                         </>
                     </div >
+                    <div className='bg-white flex w-full justify-between px-4 py-4'>
 
+                        <div className='flex flex-col'>
+
+                            <label className='text-neutral-500 text-sm font-semibold flex flex-col w-full'>
+                                Catatan : {incoming?.catatan}
+                            </label>
+                        </div>
+
+                    </div>
                 </main >
             )
             }

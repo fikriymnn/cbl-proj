@@ -5,11 +5,12 @@ import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../../utils/converDateToTime';
 import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
+import Loading from '../../../../Loading';
 
 function CheckSheetCetakAwal() {
   const { id } = useParams();
   const [isMobile, setIsMobile] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
   const [cetakMesinAwal, setCetakMesinAwal] = useState<any>();
 
   useEffect(() => {
@@ -100,6 +101,7 @@ function CheckSheetCetakAwal() {
       import.meta.env.VITE_API_LINK
     }/qc/cs/inspeksiCetakAwalPoint/create`;
     try {
+      setIsLoading(true);
       const res = await axios.post(
         url,
         {
@@ -109,7 +111,7 @@ function CheckSheetCetakAwal() {
           withCredentials: true,
         },
       );
-
+      setIsLoading(false);
       getCetakMesinAwal();
     } catch (error: any) {
       console.log(error.data.msg);

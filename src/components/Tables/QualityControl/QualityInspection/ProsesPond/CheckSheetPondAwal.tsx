@@ -5,11 +5,13 @@ import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../../utils/converDateToTime';
 import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
-
+import Loading from '../../../../Loading';
 
 
 function CheckSheetPondAwal() {
     const { id } = useParams();
+
+    const [isLoading, setIsLoading] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
     const [pondMesinAwal, setPondMesinAwal] = useState<any>();
@@ -104,6 +106,7 @@ function CheckSheetPondAwal() {
         const url = `${import.meta.env.VITE_API_LINK
             }/qc/cs/inspeksiPondAwalPoint/create`;
         try {
+            setIsLoading(true);
             const res = await axios.post(
                 url,
                 {
@@ -113,7 +116,7 @@ function CheckSheetPondAwal() {
                     withCredentials: true,
                 },
             );
-
+            setIsLoading(false);
             getPondMesinAwal();
         } catch (error: any) {
             console.log(error.data.msg);
@@ -652,14 +655,20 @@ function CheckSheetPondAwal() {
                         )}
                     </div>
                     {pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ? (
-                        <button
-                            onClick={() =>
-                                tambahTaskCekAwal(pondMesinAwal?.inspeksi_pond_awal[0].id)
-                            }
-                            className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
-                        >
-                            + Periode Check
-                        </button>
+                        <>
+                            <button
+                                disabled={isLoading}
+                                onClick={() =>
+                                    tambahTaskCekAwal(pondMesinAwal?.inspeksi_pond_awal[0].id)
+                                }
+                                className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
+                            >
+                                {isLoading ? 'Loading...' : '+ Periode Check'}
+
+                            </button>
+                            {isLoading && <Loading />}
+                        </>
+
                     ) : null}
 
                     <div className="grid grid-cols-10 border-b-8 items-center border-[#D8EAFF] px-4 py-4 gap-3 bg-white rounded-b-xl mt-2">

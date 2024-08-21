@@ -5,11 +5,12 @@ import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../../utils/converDateToTime';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
+import Loading from '../../../../Loading';
 
 function CheckSheetCoatingAwal() {
   const { id } = useParams();
   const [isMobile, setIsMobile] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
   const [coatingMesinAwal, setCoatingMesinAwal] = useState<any>();
   const [jenisLem, setJenisLem] = useState<any>();
 
@@ -96,6 +97,7 @@ function CheckSheetCoatingAwal() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiCoatingResult/awal/${id}`;
     try {
+      setIsLoading(true);
       const res = await axios.post(
         url,
         {},
@@ -103,7 +105,7 @@ function CheckSheetCoatingAwal() {
           withCredentials: true,
         },
       );
-
+      setIsLoading(false);
       getCoatingMesinAwal();
     } catch (error: any) {
       console.log(error.data.msg);
@@ -645,16 +647,20 @@ function CheckSheetCoatingAwal() {
           </div>
           {coatingMesinAwal?.inspeksi_coating_sub_awal[0].status ==
             'incoming' ? (
-            <button
-              onClick={() =>
-                tambahTaskCekAwal(
-                  coatingMesinAwal?.inspeksi_coating_sub_awal[0].id,
-                )
-              }
-              className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
-            >
-              + Periode Check
-            </button>
+            <>
+              <button
+                disabled={isLoading}
+                onClick={() =>
+                  tambahTaskCekAwal(
+                    coatingMesinAwal?.inspeksi_coating_sub_awal[0].id,
+                  )
+                }
+                className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
+              >
+                {isLoading ? 'Loading...' : '+ Periode Check'}
+              </button>
+              {isLoading && <Loading />}
+            </>
           ) : null}
 
           <div className="grid grid-cols-10 border-b-8 items-center border-[#D8EAFF] px-4 py-4 gap-3 bg-white rounded-b-xl mt-2">
