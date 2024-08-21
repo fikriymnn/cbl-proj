@@ -142,7 +142,23 @@ function CheckSheetPondAwal() {
             console.log(error.data.msg);
         }
     }
+    async function pendingCekAwal(id: number) {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/qc/cs/inspeksiPondAwal/pending/${id}`;
+        try {
+            const res = await axios.put(
+                url,
+                {},
+                {
+                    withCredentials: true,
+                },
+            );
 
+            getPondMesinAwal();
+        } catch (error: any) {
+            console.log(error.data.msg);
+        }
+    }
     const tanggal = convertTimeStampToDateOnly(pondMesinAwal?.tanggal);
     const jam = convertDateToTime(pondMesinAwal?.tanggal);
 
@@ -679,7 +695,17 @@ function CheckSheetPondAwal() {
                         <label className=" text-[#6c6b6b] text-sm font-semibold col-span-2">
                             Waktu Check : {jumlahWaktuCheck}
                         </label>
-                        <div className="grid col-span-6 items-end justify-end">
+                        <div className="grid col-span-6 items-end justify-end gap-2">
+                            {pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ? (
+                                <button
+                                    onClick={() =>
+                                        pendingCekAwal(pondMesinAwal?.inspeksi_pond_awal[0].id)
+                                    }
+                                    className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                                >
+                                    PENDING
+                                </button>
+                            ) : null}
                             {pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ? (
                                 <button
                                     onClick={() =>

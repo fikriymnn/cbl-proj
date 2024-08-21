@@ -734,8 +734,19 @@ function CheckSheetCetakPeriode() {
                 ></textarea>
               )}
             </div>
-            <div className="grid col-span-2 items-end justify-end">
-              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status != 'done' ? (
+            <div className="grid col-span-2 items-end justify-end gap-2">
+              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'incoming' ? (
+                <button
+                  onClick={() =>
+                    pendingCekPeriode(cetakMesinPeriode?.inspeksi_cetak_periode[0].id)
+                  }
+                  className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                >
+                  PENDING
+                </button>
+              ) : null}
+              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'incoming' ||
+                cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'pending' ? (
                 <button
                   onClick={() => {
                     doneCekPeriode(
@@ -743,7 +754,7 @@ function CheckSheetCetakPeriode() {
                     );
                     console.log(cetakMesinPeriode?.inspeksi_cetak_periode[0]);
                   }}
-                  className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                  className=" w-full h-10 rounded-md bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                 >
                   SIMPAN PERIODE
                 </button>
