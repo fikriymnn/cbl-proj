@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import ProsesPondMesin from './ProsesPondMesin';
 import ProsesPondMesinHistory from './ProsesPondMesinHistory';
+import ProsesPondMesinPending from './ProsesPondMesinPending';
 
 
 
@@ -156,7 +157,8 @@ export default function qTabPond() {
                             className='bg-white text-[#00499F] font-semibold mb-2 flex w-full'
                         >
                             <Tab label="Ongoing JO" {...a11yProps(0)} />
-                            <Tab label="History" {...a11yProps(1)} />
+                            <Tab label="Pending" {...a11yProps(1)} />
+                            <Tab label="History" {...a11yProps(2)} />
                             <div className='flex w-full justify-end pr-4'>
                                 <p className='text-[#6D6C6C] text-sm font-semibold items-center flex '>{tanggal}</p>
                             </div>
@@ -168,6 +170,9 @@ export default function qTabPond() {
                     <ProsesPondMesin />
                 </TabPanel>
                 <TabPanel value={value} index={1} dir={theme.direction}>
+                    <ProsesPondMesinPending />
+                </TabPanel>
+                <TabPanel value={value} index={2} dir={theme.direction}>
                     <ProsesPondMesinHistory />
                 </TabPanel>
 
