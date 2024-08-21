@@ -1071,6 +1071,7 @@ const ModalStockCheckOs3 = ({
         </div>
 
         <button
+        title='title'
           type="button"
           onClick={onClose}
           className="absolute top-auto right-auto bottom-3 left-auto transform translate-x-1/2 translate-y-1/2 text-gray-400 focus:outline-none"

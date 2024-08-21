@@ -7,7 +7,8 @@ const ModalDetailValidasi = ({
   nama_kendala,
   nama_mesin,
   operator,
-  note, status
+  note, status,
+  unit, bagian
  
 }: {
   children: any;
@@ -17,7 +18,9 @@ const ModalDetailValidasi = ({
   nama_mesin:any,
   operator:any,
   note:any,
-  status:any
+  status:any,
+  unit:any,
+  bagian:any
   
 }) => {
   if (isOpen == null) return null;
@@ -83,6 +86,14 @@ const ModalDetailValidasi = ({
         <div>
           <p className="md:text-sm text-xs font-semibold">Status Qc</p>
           <p className="md:text-base text-xs">{status}</p>
+        </div>
+        <div>
+          <p className="md:text-sm text-xs font-semibold">Unit</p>
+          <p className="md:text-base text-xs">{unit}</p>
+        </div>
+        <div>
+          <p className="md:text-sm text-xs font-semibold">Bagian</p>
+          <p className="md:text-base text-xs">{bagian}</p>
         </div>
         {/* <div>
           <p className="md:text-sm text-xs font-semibold">Kode Part</p>

@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import CheckStockPengganti from "../Tables/Modals/SparepartPengganti";
 
-const ModalDetail = ({ children, isOpen, onClose, kendala, machineName, tgl, jam, namaPemeriksa, no, idTiket, kodeLkh, analisisPenyebab, kebutuhanSparepart, tipeMaintenance, catatan }:
+const ModalDetail = ({ children, isOpen, onClose, kendala, machineName, tgl, jam, namaPemeriksa, no, idTiket, kodeLkh, analisisPenyebab, kebutuhanSparepart, tipeMaintenance, catatan, unit, bagian }:
     {
         children: any, isOpen: any, onClose: any,
-        kendala: any, machineName: any, tgl: any, jam: any, namaPemeriksa: any, no: any, idTiket: any, kodeLkh: any, analisisPenyebab: any, kebutuhanSparepart: any, tipeMaintenance: any, catatan: any
+        kendala: any, machineName: any, tgl: any, jam: any, namaPemeriksa: any, no: any, idTiket: any, kodeLkh: any, analisisPenyebab: any, kebutuhanSparepart: any, tipeMaintenance: any, catatan: any, unit:any, bagian:any
     }) => {
     if (!isOpen) return null;
 
@@ -191,11 +191,39 @@ const ModalDetail = ({ children, isOpen, onClose, kendala, machineName, tgl, jam
 
 
                     </div>
+                    <div className="">
+
                     <div className="flex w-full pt-1">
                         <div className="flex lg:w-6/12 w-full">
                             {kebutuhanSparepart}
                         </div>
                     </div>
+                    <div className="flex w-full pt-2">
+                        <label className="form-label block  text-black text-xs font-extrabold mt-3">
+                            UNIT
+                        </label>
+
+
+                    </div>
+                    <div className="flex w-full pt-1">
+                        <div className="flex lg:w-6/12 w-full">
+                            {unit}
+                        </div>
+                    </div>
+                    <div className="flex w-full pt-2">
+                        <label className="form-label block  text-black text-xs font-extrabold mt-3">
+                            BAGIAN
+                        </label>
+
+
+                    </div>
+                    </div>
+                    <div className="flex w-full pt-1">
+                        <div className="flex lg:w-6/12 w-full">
+                            {bagian}
+                        </div>
+                    </div>
+
 
 
                     <div className="flex w-full pt-1">

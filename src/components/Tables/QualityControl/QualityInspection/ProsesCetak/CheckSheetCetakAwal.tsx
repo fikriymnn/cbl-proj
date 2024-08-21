@@ -760,9 +760,8 @@ function CheckSheetCetakAwal() {
               ) : null}
             </div>
           </div>
-        </main >
-      )
-      }
+        </main>
+      )}
     </>
   );
 }

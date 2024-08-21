@@ -21,6 +21,8 @@ const ModalVerifikasi = ({
   kode_analisis,
   durasiPerbaikan,
   eksekutor,
+  unit,
+  bagian
 }: {
   children: any;
   isOpen: any;
@@ -45,7 +47,8 @@ const ModalVerifikasi = ({
   kode_analisis:any
   durasiPerbaikan:any,
   eksekutor:any,
-
+unit:any,
+  bagian:any
 }) => {
   if (!isOpen) return null;
   const [isMobile, setIsMobile] = useState(false);
@@ -281,6 +284,30 @@ const ModalVerifikasi = ({
                 className="text-neutral-500 text-xl font-normal"
               >
                 {eksekutor}
+              </span>
+              <label
+                htmlFor="namaPemeriksa"
+                className="form-label block  text-black text-xs font-extrabold mt-2"
+              >
+                UNIT
+              </label>
+              <span
+                id="namaPemeriksa"
+                className="text-neutral-500 text-xl font-normal"
+              >
+                {unit}
+              </span>
+              <label
+                htmlFor="namaPemeriksa"
+                className="form-label block  text-black text-xs font-extrabold mt-2"
+              >
+                BAGIAN
+              </label>
+              <span
+                id="namaPemeriksa"
+                className="text-neutral-500 text-xl font-normal"
+              >
+                {bagian}
               </span>
             </div>
           </div>

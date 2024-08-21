@@ -12,7 +12,6 @@ import notok from '../../../../../images/icon/notOKQC.svg';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import Loading from '../../../../Loading';
 
-
 function CheckSheetCetakPeriode() {
   const { id } = useParams();
   const [isMobile, setIsMobile] = useState(false);
@@ -425,7 +424,9 @@ function CheckSheetCetakPeriode() {
                       <></>
                     )}
                     <div className="flex px-5 py-5 gap-7">
-                      <label className="text-sm font-semibold">{index + 1}</label>
+                      <label className="text-sm font-semibold">
+                        {index + 1}
+                      </label>
                       <div className="flex flex-col gap-1">
                         <label className="text-sm font-semibold">
                           INSPEKTOR
@@ -585,8 +586,8 @@ function CheckSheetCetakPeriode() {
                                     handleChangePointDefect(e, index, i)
                                   }
                                   className={`w-[80%]  ${(i + 1) % 2 === 0
-                                    ? ' bg-[#F3F3F3]'
-                                    : 'bg-white'
+                                      ? ' bg-[#F3F3F3]'
+                                      : 'bg-white'
                                     } `}
                                 >
                                   <option value={''} disabled>
@@ -605,8 +606,8 @@ function CheckSheetCetakPeriode() {
                                     handleChangePointDefect(e, index, i)
                                   }
                                   className={`w-[80%]  ${(i + 1) % 2 === 0
-                                    ? ' bg-[#F3F3F3]'
-                                    : 'bg-white'
+                                      ? ' bg-[#F3F3F3]'
+                                      : 'bg-white'
                                     } `}
                                 >
                                   <option value={''} disabled selected>
@@ -719,7 +720,10 @@ function CheckSheetCetakPeriode() {
               <label className=" text-[#6c6b6b] text-sm font-semibold">
                 Catatan<span className="text-red-500">*</span> :
               </label>
-              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status != 'done' ? (
+              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+                'incoming' ||
+                cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+                'pending' ? (
                 <textarea
                   onChange={(e) => setCatatan(e.target.value)}
                   className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
@@ -734,8 +738,9 @@ function CheckSheetCetakPeriode() {
                 ></textarea>
               )}
             </div>
-            <div className="grid col-span-2 items-end justify-end gap-2">
-              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'incoming' ? (
+            <div className="grid col-span-2 items-end justify-end">
+              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+                'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekPeriode(cetakMesinPeriode?.inspeksi_cetak_periode[0].id)
@@ -745,8 +750,10 @@ function CheckSheetCetakPeriode() {
                   PENDING
                 </button>
               ) : null}
-              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'incoming' ||
-                cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'pending' ? (
+              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+                'incoming' ||
+                cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+                'pending' ? (
                 <button
                   onClick={() => {
                     doneCekPeriode(
