@@ -140,9 +140,8 @@ function CheckSheetCetakAwal() {
   }
 
   async function pendingCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakAwal/pending/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakAwal/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -717,7 +716,7 @@ function CheckSheetCetakAwal() {
             )}
           </div>
           {cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming' ||
-          cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' ? (
+            cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' ? (
             <button
               onClick={() =>
                 tambahTaskCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0].id)
@@ -748,7 +747,7 @@ function CheckSheetCetakAwal() {
                 </button>
               ) : null}
               {cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming' ||
-              cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' ? (
+                cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' ? (
                 <button
                   onClick={() =>
                     doneCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0].id)
