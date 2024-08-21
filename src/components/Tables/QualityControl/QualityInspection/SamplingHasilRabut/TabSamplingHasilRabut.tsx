@@ -8,7 +8,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import ProsesCetakMesin from './ProsesSamplingRabut';
 import ProsesCetakMesinHistory from './ProsesSamplingRabutHistory';
-import ProsesCetakMesinPending from './ProsesCetakMesinPending';
+import ProsesRabutMesinPending from './ProsesRabutMesinPending';
 import ProsesHasilRabut from './ProsesSamplingRabut';
 import ProsesSamplingRabutHistory from './ProsesSamplingRabutHistory';
 
@@ -155,7 +155,7 @@ export default function TabSamplingHasilRabut() {
           <ProsesHasilRabut />
         </TabPanel>
         <TabPanel value={value} index={1} dir={theme.direction}>
-          <ProsesCetakMesinPending />
+          <ProsesRabutMesinPending />
         </TabPanel>
         <TabPanel value={value} index={2} dir={theme.direction}>
           <ProsesSamplingRabutHistory />

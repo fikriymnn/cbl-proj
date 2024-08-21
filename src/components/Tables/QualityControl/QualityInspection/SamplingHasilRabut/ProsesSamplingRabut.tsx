@@ -27,13 +27,13 @@ function ProsesHasilRabut() {
     };
   }, []);
 
-  const [cetakMesin, setCetakMesin] = useState<any>();
+  const [RabutMesin, setRabutMesin] = useState<any>();
 
   useEffect(() => {
-    getCetakMesin();
+    getRabutMesin();
   }, []);
 
-  async function getCetakMesin() {
+  async function getRabutMesin() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiRabut`;
     try {
       const res = await axios.get(url, {
@@ -43,48 +43,12 @@ function ProsesHasilRabut() {
         withCredentials: true,
       });
 
-      setCetakMesin(res.data);
+      setRabutMesin(res.data);
       console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
-
-  // const [me, setMe] = useState<any>();
-
-  // async function getMe() {
-  //     const url = `${import.meta.env.VITE_API_LINK}/me`;
-  //     try {
-  //         const res = await axios.get(url, {
-  //             withCredentials: true,
-  //         });
-
-  //         setMe(res.data);
-  //     } catch (error: any) {
-  //         console.log(error.data.msg);
-  //     }
-  // }
-
-  const mesin = [
-    {
-      nama: 'R700',
-      no_job_order: '00-000A',
-      inspector: 'Iko Uwais',
-      nama_jo: 'Kemasan',
-    },
-    {
-      nama: 'SM74',
-      no_job_order: '00-000A',
-      inspector: 'Cris Pratt',
-      nama_jo: 'Kemasan',
-    },
-    {
-      nama: 'GTO',
-      no_job_order: '00-000A',
-      inspector: 'Zoe Saldana',
-      nama_jo: 'Kemasan',
-    },
-  ];
 
   return (
     <>
@@ -108,7 +72,7 @@ function ProsesHasilRabut() {
                 </label>
               </div>
               <div className="w-2 h-full "></div>
-              {cetakMesin?.data.map((data: any, i: any) => (
+              {RabutMesin?.data.map((data: any, i: any) => (
                 <>
                   <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] gap-2 items-center">
                     <div

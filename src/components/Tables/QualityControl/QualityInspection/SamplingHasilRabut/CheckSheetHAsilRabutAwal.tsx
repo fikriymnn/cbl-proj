@@ -11,27 +11,28 @@ function CheckSheetHasilRabut() {
   const { id } = useParams();
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [cetakMesinAwal, setCetakMesinAwal] = useState<any>();
+  const [RabutMesin, setRabutMesin] = useState<any>();
+  const [Catatan, setCatatan] = useState<any>();
 
   useEffect(() => {
-    getCetakMesinAwal();
+    getRabutMesin();
   }, []);
 
-  async function getCetakMesinAwal() {
+  async function getRabutMesin() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiRabut/${id}`;
     try {
       const res = await axios.get(url, {
         withCredentials: true,
       });
 
-      setCetakMesinAwal(res.data.data);
-      console.log(res.data.data);
+      setRabutMesin(res.data);
+      console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
 
-  async function startTaskCekAwal(id: number) {
+  async function startTaskRabut(id: number) {
     const url = `${
       import.meta.env.VITE_API_LINK
     }/qc/cs/inspeksiRabutPoint/start/${id}`;
@@ -44,25 +45,19 @@ function CheckSheetHasilRabut() {
         },
       );
 
-      getCetakMesinAwal();
+      getRabutMesin();
     } catch (error: any) {
       console.log(error);
       alert(error.response.data.msg);
     }
   }
 
-  async function stopTaskCekAwal(
+  async function stopTaskRabut(
     id: number,
     startTime: any,
     catatan: any,
-    line_clearance: any,
-    design: any,
-    redaksi: any,
-    barcode: any,
-    jenis_bahan: any,
-    gramatur: any,
-    layout_pisau: any,
-    acc_warna_awal_jalan: any,
+    qty_pallet: any,
+    data_defect: any,
   ) {
     const url = `${
       import.meta.env.VITE_API_LINK
@@ -75,28 +70,22 @@ function CheckSheetHasilRabut() {
         {
           catatan: catatan,
           lama_pengerjaan: elapsedSeconds,
-          line_clearance: line_clearance,
-          design: design,
-          redaksi: redaksi,
-          barcode: barcode,
-          jenis_bahan: jenis_bahan,
-          gramatur: gramatur,
-          layout_pisau: layout_pisau,
-          acc_warna_awal_jalan: acc_warna_awal_jalan,
+          qty_pallet,
+          data_defect,
         },
         {
           withCredentials: true,
         },
       );
 
-      getCetakMesinAwal();
+      getRabutMesin();
     } catch (error: any) {
       console.log(error.response.data.msg);
       alert(error.response.data.msg);
     }
   }
 
-  async function tambahTaskCekAwal(id: number) {
+  async function tambahTaskRabut(id: number) {
     const url = `${
       import.meta.env.VITE_API_LINK
     }/qc/cs/inspeksiRabutPoint/create`;
@@ -105,43 +94,44 @@ function CheckSheetHasilRabut() {
       const res = await axios.post(
         url,
         {
-          id_inspeksi_rabut_point: id,
+          id_inspeksi_rabut: id,
         },
         {
           withCredentials: true,
         },
       );
       setIsLoading(false);
-      getCetakMesinAwal();
+      getRabutMesin();
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
 
-  async function doneCekAwal(id: number) {
+  async function doneRabut(id: number) {
     const url = `${
       import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiRabutPoint/done/${id}`;
+    }/qc/cs/inspeksiRabut/done/${id}`;
     try {
       const res = await axios.put(
         url,
         {
-          id_inspeksi_rabut_point: id,
+          catatan: Catatan,
         },
         {
           withCredentials: true,
         },
       );
 
-      getCetakMesinAwal();
+      getRabutMesin();
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
 
-  async function pendingCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiRabutPoint/pending/${id}`;
+  async function pendingRabut(id: number) {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiRabut/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -151,26 +141,32 @@ function CheckSheetHasilRabut() {
         },
       );
 
-      getCetakMesinAwal();
+      getRabutMesin();
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
 
-  const handleChangePoint = (e: any, i: number) => {
+  const handleChangePoint = (e: any, i: number, ii: number) => {
     const { name, value } = e.target;
-    const onchangeVal: any = cetakMesinAwal;
-    onchangeVal.inspeksi_rabut_point[0].inspeksi_rabut_defect[i][name] =
+    const onchangeVal: any = RabutMesin;
+    onchangeVal.data.inspeksi_rabut_point[i].inspeksi_rabut_defect[ii][name] =
       value;
-    setCetakMesinAwal(onchangeVal);
+    setRabutMesin(onchangeVal);
   };
 
-  const tanggal = convertTimeStampToDateOnly(cetakMesinAwal?.tanggal);
-  const jam = convertDateToTime(cetakMesinAwal?.tanggal);
+  const handleChangeRabutPoint = (e: any, i: number) => {
+    const { name, value } = e.target;
+    const onchangeVal: any = RabutMesin;
+    onchangeVal.data.inspeksi_rabut_point[i][name] = value;
+    setRabutMesin(onchangeVal);
+    console.log(onchangeVal);
+  };
 
-  const jumlahWaktuCheck = formatElapsedTime(
-    cetakMesinAwal?.inspeksi_rabut_point[0].waktu_check,
-  );
+  const tanggal = convertTimeStampToDateOnly(RabutMesin?.data?.tanggal);
+  const jam = convertDateToTime(RabutMesin?.data?.tanggal);
+
+  const jumlahWaktuCheck = formatElapsedTime(RabutMesin?.data?.waktu_check);
 
   return (
     <>
@@ -192,7 +188,7 @@ function CheckSheetHasilRabut() {
                   fill="#0065DE"
                 />
               </svg>{' '}
-             Sampling Hasil Rabut Checksheet
+              Sampling Hasil Rabut Checksheet
             </p>
 
             <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
@@ -206,7 +202,7 @@ function CheckSheetHasilRabut() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   No. IO
                 </label>
-                
+
                 <label className="text-neutral-500 text-sm font-semibold">
                   Nama Produk
                 </label>
@@ -219,21 +215,18 @@ function CheckSheetHasilRabut() {
                   : {tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.no_jo}
+                  : {RabutMesin?.data?.no_jo}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.no_jo}
-                </label>
-                
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.nama_produk}
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.customer}
+                  : {RabutMesin?.data?.no_jo}
                 </label>
 
-                
-                
+                <label className="text-neutral-500 text-sm font-semibold">
+                  : {RabutMesin?.data?.nama_produk}
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  : {RabutMesin?.data?.customer}
+                </label>
               </div>
 
               <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
@@ -241,16 +234,12 @@ function CheckSheetHasilRabut() {
                   Jam
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold"></label>
-                
-               
               </div>
               <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {jam}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold"></label>
-               
-                
               </div>
               <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
@@ -269,50 +258,65 @@ function CheckSheetHasilRabut() {
               </div>
               <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.shift}
+                  : {RabutMesin?.data?.shift}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.mesin}
+                  : {RabutMesin?.data?.mesin}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.operator}
+                  : {RabutMesin?.data?.operator}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.status}
+                  : {RabutMesin?.data?.status}
                 </label>
               </div>
             </div>
 
             {/* =============================chekcsheet========================= */}
-            {cetakMesinAwal?.inspeksi_rabut_point[0].inspeksi_rabut_defect.map(
+            {RabutMesin?.data?.inspeksi_rabut_point.map(
               (data: any, index: number) => {
                 const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
                 return (
                   <>
                     <div className="flex flex-col py-6 px-10 ">
                       <div className=" grid grid-cols-6 w-full  gap-2">
-                        <div className='w-11/12'>
-
-                        <label className="text-neutral-500 text-sm font-semibold w-10/12">
-                          QTY PALET KE {index + 1}
-                        </label>
+                        <div className="w-11/12">
+                          <label className="text-neutral-500 text-sm font-semibold w-10/12">
+                            QTY PALET KE {index + 1}
+                          </label>
                         </div>
                         <div>
-                        <label className="text-neutral-500 text-sm font-semibold ">
+                          <label className="text-neutral-500 text-sm font-semibold ">
                             PARAMETER
                           </label>
-                          <input type="text" className='px-1 border rounded border-strokedark w-10/12' />
+                          {data.status == 'done' ? (
+                            <input
+                              name="qty_pallet"
+                              defaultValue={data.qty_pallet}
+                              disabled
+                              onChange={(e) => handleChangeRabutPoint(e, index)}
+                              type="text"
+                              className="px-1 border rounded border-strokedark w-10/12"
+                            />
+                          ) : data.status == 'on progress' ? (
+                            <input
+                              name="qty_pallet"
+                              onChange={(e) => handleChangeRabutPoint(e, index)}
+                              type="text"
+                              className="px-1 border rounded border-strokedark w-10/12"
+                            />
+                          ) : null}
                         </div>
-                        <div className='flex flex-col'>
-                        <label className="text-neutral-500 text-sm font-semibold ">
+                        <div className="flex flex-col">
+                          <label className="text-neutral-500 text-sm font-semibold ">
                             INSPEKTOR
                           </label>
                           <label className="text-neutral-500 text-sm font-semibold ">
                             {data.inspektor?.nama}
                           </label>
                         </div>
-                        <div className='flex flex-col'>
-                        <label className="text-neutral-500 text-sm font-semibold ">
+                        <div className="flex flex-col">
+                          <label className="text-neutral-500 text-sm font-semibold ">
                             WAKTU
                           </label>
                           <label className="text-neutral-500 text-sm font-semibold ">
@@ -340,76 +344,103 @@ function CheckSheetHasilRabut() {
                         </div>
                         <div className="flex flex-col ">
                           <>
-                            <div className="flex flex-col ">
-                              <p className="md:text-[14px] text-[9px] font-semibold">
-                               Start and stop
-                              </p>
-
-                             
-                            </div>
+                            {data.status == 'incoming' ? (
+                              <>
+                                <p className="font-bold text-[#DE0000]">
+                                  Task Belum Dimulai
+                                </p>
+                                <button
+                                  onClick={() => {
+                                    startTaskRabut(data.id);
+                                  }}
+                                  className="flex w-full  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                >
+                                  <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 14 14"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                      fill="white"
+                                    />
+                                  </svg>
+                                </button>
+                              </>
+                            ) : data.status == 'on progress' ? (
+                              <>
+                                <p className="font-bold text-green-600">
+                                  Task Dimulai
+                                </p>
+                                <button
+                                  onClick={() => {
+                                    console.log(RabutMesin.data);
+                                    stopTaskRabut(
+                                      data.id,
+                                      data.waktu_mulai,
+                                      data.catatan,
+                                      data.qty_pallet,
+                                      data.inspeksi_rabut_defect,
+                                    );
+                                  }}
+                                  className="flex w-full  rounded-md bg-red-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                >
+                                  <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 14 14"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                      fill="white"
+                                    />
+                                  </svg>
+                                </button>
+                              </>
+                            ) : null}
                           </>
                         </div>
                       </div>
-                      
                     </div>
                     <div className="grid grid-cols-8">
-                      <div className="grid py-4 px-4 items-center">
-                        <label className=" text-[#6c6b6b] text-sm font-semibold">
-                          C1 - warna
-                        </label>
-                        <input type="text" className='px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid py-4 px-4 items-center">
-                        <label className=" text-[#6c6b6b] text-sm font-semibold">
-                          C1 - warna 
-                        </label>
-                        <input type="text" className='px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid py-4 px-4 items-center">
-                        <label className=" text-[#6c6b6b] text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid py-4 px-4 items-center">
-                        <label className=" text-[#6c6b6b] text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid py-4 px-4 items-center">
-                        <label className=" text-[#6c6b6b] text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid py-4 px-4 items-center">
-                        <label className=" text-[#6c6b6b] text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid py-4 px-4 items-center">
-                        <label className=" text-[#6c6b6b] text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid py-4 px-4 items-center">
-                        <label className=" text-[#6c6b6b] text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid py-4 px-4 items-center">
-                        <label className=" text-[#6c6b6b] text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      
+                      {data.inspeksi_rabut_defect.map(
+                        (data2: any, i: number) => {
+                          return (
+                            <div className="grid py-4 px-4 items-center">
+                              <label className=" text-[#6c6b6b] text-sm font-semibold">
+                                {data2.kode} - {data2.masalah}
+                              </label>
+                              {data.status == 'done' ? (
+                                <input
+                                  type="text"
+                                  name="hasil"
+                                  defaultValue={data2.hasil}
+                                  disabled
+                                  onChange={(e) =>
+                                    handleChangePoint(e, index, i)
+                                  }
+                                  className="px-1 border rounded border-strokedark w-full"
+                                />
+                              ) : data.status == 'on progress' ? (
+                                <input
+                                  type="text"
+                                  name="hasil"
+                                  onChange={(e) =>
+                                    handleChangePoint(e, index, i)
+                                  }
+                                  className="px-1 border rounded border-strokedark w-full"
+                                />
+                              ) : null}
+                            </div>
+                          );
+                        },
+                      )}
                     </div>
-                    
+
                     <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] px-4 py-4 gap-3">
                       <div className="grid col-span-8">
                         <label className=" text-[#6c6b6b] text-sm font-semibold">
@@ -419,7 +450,7 @@ function CheckSheetHasilRabut() {
                           <textarea
                             name="catatan"
                             defaultValue={data.catatan}
-                            onChange={(e) => handleChangePoint(e, index)}
+                            onChange={(e) => handleChangeRabutPoint(e, index)}
                             className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                           ></textarea>
                         ) : data.status == 'done' ? (
@@ -427,197 +458,122 @@ function CheckSheetHasilRabut() {
                             name="catatan"
                             disabled
                             defaultValue={data.catatan}
-                            onChange={(e) => handleChangePoint(e, index)}
+                            onChange={(e) => handleChangeRabutPoint(e, index)}
                             className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                           ></textarea>
                         ) : null}
                       </div>
-                      <div className="grid col-span-2 items-end justify-center">
-                        
-                      </div>
+                      <div className="grid col-span-2 items-end justify-center"></div>
                     </div>
                   </>
                 );
               },
             )}
           </div>
-          {cetakMesinAwal?.inspeksi_rabut_point[0].status == 'incoming' ||
-            cetakMesinAwal?.inspeksi_rabut_point[0].status == 'pending' ? (
+          {RabutMesin?.data?.status == 'incoming' ||
+          RabutMesin?.data?.status == 'pending' ? (
             <button
-              onClick={() =>
-                tambahTaskCekAwal(cetakMesinAwal?.inspeksi_rabut_point[0].id)
-              }
+              onClick={() => tambahTaskRabut(RabutMesin?.data.id)}
               className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 mb-2 hover:cursor-pointer"
             >
               + QTY PALET
             </button>
           ) : null}
-<div className='bg-white '>
-<p className='text-sm font-semibold px-5 pt-5'>SUB TOTAL</p>
-<div>
-  <div className='px-5'>
-    <p className='font-semibold text-sm mt-5 '>Parameter Qty Palet</p>
-    <input type="text" className='bg-[#e8e6e6] border rounded border-strokedark'/>
-  </div>
-  <div>
-  <div className="grid grid-cols-8 gap-4 py-4 p-5">
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1 - warna
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1 - warna 
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      
-                    </div>
-                    <div className="grid grid-cols-8 gap-4 py-4 px-5 ">
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1 - warna
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1 - warna 
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      <div className="grid  items-center">
-                        <label className=" text-[#6c6b6b]  text-sm font-semibold">
-                          C1
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6] px-1 border rounded border-strokedark w-full' />
-                      </div>
-                      
-                    </div>
-                    <div className='flex gap-10 p-5'>
+          <div className="bg-white ">
+            <p className="text-sm font-semibold px-5 pt-5">SUB TOTAL</p>
+            <div>
+              <div className="px-5">
+                <p className="font-semibold text-sm mt-5 ">
+                  Parameter Qty Palet
+                </p>
+                <input
+                  type="text"
+                  disabled
+                  defaultValue={RabutMesin?.sumQtyPallet}
+                  className="bg-[#e8e6e6] border rounded border-strokedark"
+                />
+              </div>
+              <div>
+                <div className="grid grid-cols-8 gap-4 py-4 p-5">
+                  {RabutMesin?.totalPointDefect.map(
+                    (data: any, index: number) => {
+                      return (
+                        <div className="grid  items-center">
+                          <label className=" text-[#6c6b6b]  text-sm font-semibold">
+                            {data.kode}
+                          </label>
+                          <input
+                            type="text"
+                            defaultValue={data.total_defect}
+                            className="bg-[#e8e6e6] px-1 border rounded border-strokedark w-full"
+                          />
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+                <div className="flex gap-10 p-5">
+                  <div className="w-3/12">
+                    <label className=" text-[#6c6b6b] text-sm font-semibold">
+                      JUMLAH DEFECT YANG DITEMUKAN
+                    </label>
+                    <input
+                      type="text"
+                      disabled
+                      defaultValue={RabutMesin?.totalDefect}
+                      className="bg-[#e8e6e6]  px-1 border rounded border-strokedark w-full"
+                    />
+                  </div>
 
-                    <div className='w-3/12' >
-                    <label className=" text-[#6c6b6b] text-sm font-semibold">
-                          JUMLAH DEFECT YANG DITEMUKAN
-                        </label>
-                        <input type="text" className='bg-[#e8e6e6]  px-1 border rounded border-strokedark w-full' />
-                    </div>
-                    <div className='w-9/12'>
-                    <label className=" text-[#6c6b6b] text-sm font-semibold">
+                  <div className="w-9/12">
+                    {RabutMesin?.data?.status != 'history' ? (
+                      <>
+                        <label className=" text-[#6c6b6b] text-sm font-semibold">
                           Keterangan
                         </label>
-                       <textarea name="" id="" className='w-full h-[70px] border rounded border-strokedark'></textarea>
-                    </div>
-                    </div>
-                    <div className='flex justify-end p-5'>
-                    <div className="grid col-span-6 gap-y-2 items-end justify-end">
-              {cetakMesinAwal?.inspeksi_rabut_point[0].status == 'incoming' ? (
-                <button
-                  onClick={() =>
-                    pendingCekAwal(cetakMesinAwal?.inspeksi_rabut_point[0].id)
-                  }
-                  className=" w-full h-10 rounded-sm bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
-                >
-                  PENDING
-                </button>
-              ) : null}
-              {cetakMesinAwal?.inspeksi_rabut_point[0].status == 'incoming' ||
-                cetakMesinAwal?.inspeksi_rabut_point[0].status == 'pending' ? (
-                <button
-                  onClick={() =>
-                    doneCekAwal(cetakMesinAwal?.inspeksi_rabut_point[0].id)
-                  }
-                  className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
-                >
-                  SIMPAN PERIODE
-                </button>
-              ) : null}
+                        <textarea
+                          onChange={(e) => setCatatan(e.target.value)}
+                          className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                        ></textarea>
+                      </>
+                    ) : (
+                      <>
+                        <label className=" text-[#6c6b6b] text-sm font-semibold">
+                          Keterangan
+                        </label>
+                        <textarea
+                          defaultValue={RabutMesin?.data.catatan}
+                          disabled
+                          className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                        ></textarea>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="flex justify-end p-5">
+                  <div className="grid col-span-6 gap-y-2 items-end justify-end">
+                    {RabutMesin?.data?.status == 'incoming' ? (
+                      <button
+                        onClick={() => pendingRabut(RabutMesin?.data.id)}
+                        className=" w-full h-10 rounded-sm bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                      >
+                        PENDING
+                      </button>
+                    ) : null}
+                    {RabutMesin?.data?.status == 'incoming' ||
+                    RabutMesin?.data?.status == 'pending' ? (
+                      <button
+                        onClick={() => doneRabut(RabutMesin?.data.id)}
+                        className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                      >
+                        SIMPAN PERIODE
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
             </div>
-                    </div>
-  </div>
-</div>
-</div>
-          
+          </div>
         </main>
       )}
     </>
