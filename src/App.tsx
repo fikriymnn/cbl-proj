@@ -107,6 +107,11 @@ import PondPeriode from './pages/QualityControl/ProsesPond/PondPeriode';
 import LemPeriode from './pages/QualityControl/ProsesLem/LemPeriode';
 import CheckSheetCoatingPeriode from './components/Tables/QualityControl/QualityInspection/ProsesCoating/CheckSheetCoatingPeriode';
 import CoatingPeriode from './pages/QualityControl/ProsesCoating/CoatingPeriode';
+import TabSamplingHasilRabut from './components/Tables/QualityControl/QualityInspection/SamplingHasilRabut/TabSamplingHasilRabut';
+import SamplingHasilRabut from './pages/QualityControl/SamplingRabut/SamplingHasilRabut';
+import CheckSheetHasilRabut from './components/Tables/QualityControl/QualityInspection/SamplingHasilRabut/CheckSheetHAsilRabutAwal';
+import RabutAwal from './pages/QualityControl/SamplingRabut/RabutAwal';
+
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -630,6 +635,29 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <ProsesLem />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/sampling_hasil_rabut"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <SamplingHasilRabut />
+              </ProtectedRoute>
+            </>
+          }
+        />
+       
+        <Route
+          path="/qc/qualityinspection/sampling/jenis_sampling/checkAwal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+               <RabutAwal/>
               </ProtectedRoute>
             </>
           }

@@ -6,7 +6,7 @@ import JenisCetak from '../../../../../pages/QualityControl/ProsesCetak/JenisCet
 import convertTimeStampToDate from '../../../../../utils/convertDate';
 import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 
-function JenisCetakMesin() {
+function JenisHasilRabut() {
   const { id } = useParams();
   const [isMobile, setIsMobile] = useState(false);
   const kosong: any = [];
@@ -137,4 +137,4 @@ function JenisCetakMesin() {
   );
 }
 
-export default JenisCetakMesin;
+export default JenisHasilRabut;
