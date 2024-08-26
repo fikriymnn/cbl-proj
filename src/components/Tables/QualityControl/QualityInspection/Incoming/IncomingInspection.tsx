@@ -1357,19 +1357,19 @@ function IncomingInspection() {
                                                                         Kiri
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold '>
-                                                                        {incoming?.inspeksi_bahan_result[2].hasil_kiri}
+                                                                        {incoming?.inspeksi_bahan_result[2].hasil_kiri} MM
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                                         Tengah
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold '>
-                                                                        {incoming?.inspeksi_bahan_result[2].hasil_tengah}
+                                                                        {incoming?.inspeksi_bahan_result[2].hasil_tengah} MM
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                                         Kanan
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold '>
-                                                                        {incoming?.inspeksi_bahan_result[2].hasil_kanan}
+                                                                        {incoming?.inspeksi_bahan_result[2].hasil_kanan} MM
                                                                     </label>
 
                                                                 </div>
@@ -1986,13 +1986,13 @@ function IncomingInspection() {
                                                                         Panjang
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold '>
-                                                                        {incoming?.inspeksi_bahan_result[5].hasil_panjang} CM
+                                                                        {incoming?.inspeksi_bahan_result[5].hasil_panjang} MM
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                                         Lebar
                                                                     </label>
                                                                     <label className='text-neutral-500 text-sm font-semibold '>
-                                                                        {incoming?.inspeksi_bahan_result[5].hasil_lebar} CM
+                                                                        {incoming?.inspeksi_bahan_result[5].hasil_lebar} MM
                                                                     </label>
 
 
@@ -2868,19 +2868,19 @@ function IncomingInspection() {
                                                             Kiri
                                                         </label>
                                                         <label className='text-neutral-500 text-sm font-semibold '>
-                                                            {incoming?.inspeksi_bahan_result[2].hasil_kiri}
+                                                            {incoming?.inspeksi_bahan_result[2].hasil_kiri} MM
                                                         </label>
                                                         <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                             Tengah
                                                         </label>
                                                         <label className='text-neutral-500 text-sm font-semibold '>
-                                                            {incoming?.inspeksi_bahan_result[2].hasil_tengah}
+                                                            {incoming?.inspeksi_bahan_result[2].hasil_tengah} MM
                                                         </label>
                                                         <label className='text-neutral-500 text-sm font-semibold pt-1'>
                                                             Kanan
                                                         </label>
                                                         <label className='text-neutral-500 text-sm font-semibold '>
-                                                            {incoming?.inspeksi_bahan_result[2].hasil_kanan}
+                                                            {incoming?.inspeksi_bahan_result[2].hasil_kanan} MM
                                                         </label>
 
                                                     </div>
@@ -3113,7 +3113,7 @@ function IncomingInspection() {
 
                                                     <div className='flex flex-col gap-1 font-semibold  text-sm'>
                                                         <p>
-                                                            {incoming?.inspeksi_bahan_result[5]?.hasil}
+                                                            {incoming?.inspeksi_bahan_result[5]?.hasil} MM
                                                         </p>
 
                                                     </div>
