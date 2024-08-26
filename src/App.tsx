@@ -111,6 +111,9 @@ import TabSamplingHasilRabut from './components/Tables/QualityControl/QualityIns
 import SamplingHasilRabut from './pages/QualityControl/SamplingRabut/SamplingHasilRabut';
 import CheckSheetHasilRabut from './components/Tables/QualityControl/QualityInspection/SamplingHasilRabut/CheckSheetHAsilRabutAwal';
 import RabutAwal from './pages/QualityControl/SamplingRabut/RabutAwal';
+import NcrMtc from './pages/Maintenance/NCR/Ncrmtc';
+import IncomingNCRQA from './pages/QualityControl/IncomingNCR/IncomingNCRQA';
+import IncomingNCRMR from './pages/MR/NCR/IncomingNCRMR';
 
 
 function App() {
@@ -396,6 +399,17 @@ function App() {
           }
         />
         <Route
+          path="/maintenance/ncr"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <NcrMtc />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/maintenance/MAN"
           element={
             <>
@@ -436,6 +450,28 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <Qualityinspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/ncr"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingNCRQA />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/mr/ncr"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingNCRMR />
               </ProtectedRoute>
             </>
           }
@@ -650,14 +686,14 @@ function App() {
             </>
           }
         />
-       
+
         <Route
           path="/qc/qualityinspection/sampling/jenis_sampling/checkAwal/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-               <RabutAwal/>
+                <RabutAwal />
               </ProtectedRoute>
             </>
           }
