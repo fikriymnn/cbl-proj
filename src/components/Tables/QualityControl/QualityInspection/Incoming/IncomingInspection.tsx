@@ -559,6 +559,9 @@ function IncomingInspection() {
                                     No. LOT
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
+                                    Jumlah Pallet
+                                </label>
+                                <label className='text-neutral-500 text-sm font-semibold'>
                                     No. Surat Jalan
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
@@ -593,6 +596,9 @@ function IncomingInspection() {
 
 
 
+                                </label>
+                                <label className='text-neutral-500 text-sm font-semibold'>
+                                    : {incoming?.jumlah_pallet}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
                                     : {incoming?.no_surat_jalan}
