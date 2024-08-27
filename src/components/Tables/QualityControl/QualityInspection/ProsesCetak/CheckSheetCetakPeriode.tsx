@@ -17,9 +17,13 @@ function CheckSheetCetakPeriode() {
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [cetakMesinPeriode, setCetakMesinPeriode] = useState<any>();
+  const [cetakMesinPeriodeDefect, setCetakMesinPeriodeDefect] = useState<any>();
   const [catatan, setCatatan] = useState<any>();
   const [kode, setKode] = useState<any>();
   const [masalah, setMasalah] = useState<any>();
+  const [kriteria, setKriteria] = useState<any>();
+  const [persenKriteria, setPersenKriteria] = useState<any>();
+  const [sumberMasalah, setSumberMasalah] = useState<any>();
 
   const [openGuide, setOpenGuide] = useState(null);
   const handleClickGuide = (index: any) => {
@@ -40,13 +44,18 @@ function CheckSheetCetakPeriode() {
       });
 
       setCetakMesinPeriode(res.data.data);
-      console.log(res.data.data);
+      setCetakMesinPeriodeDefect(res.data.defect);
+      console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
   const [add, setAdd] = useState<any>();
   const [showDetail, setShowDetail] = useState<boolean[]>(
+    new Array(add != null && add.length).fill(false),
+  );
+
+  const [showNotOk, setShowNotOk] = useState<boolean[]>(
     new Array(add != null && add.length).fill(false),
   );
   const handleClickAdd = (index: number) => {
@@ -56,9 +65,18 @@ function CheckSheetCetakPeriode() {
       return updatedShowDetail;
     });
   };
+
+  const handleClickNotOke = (index: number, isi: boolean) => {
+    setShowNotOk((prevState) => {
+      const updatedShowDetail = [...prevState]; // Create a copy
+      updatedShowDetail[index] = isi; // Toggle value
+      return updatedShowDetail;
+    });
+  };
   async function startTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakPeriodePoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakPeriodePoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -83,8 +101,9 @@ function CheckSheetCetakPeriode() {
     jumlah_sampling: any,
     data_defect: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakPeriodePoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakPeriodePoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -109,8 +128,9 @@ function CheckSheetCetakPeriode() {
   }
 
   async function tambahTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakPeriodePoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakPeriodePoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -125,26 +145,35 @@ function CheckSheetCetakPeriode() {
       setIsLoading(false);
       getCetakMesinPeriode();
     } catch (error: any) {
-      console.log(error.data.msg);
+      console.log(error);
     }
   }
 
   async function tambahDefectPeriode(
     id: number,
+    idCetak: any,
     kode: any,
     masalah: any,
+    kriteria: any,
+    persenKriteria: any,
+    sumberMasalah: any,
     index: number,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakPeriodePoint/createDefect`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakPeriodePoint/createDefect`;
     try {
       const res = await axios.post(
         url,
 
         {
           id_inspeksi_cetak_periode_point: id,
+          id_inspeksi_cetak: idCetak,
           kode: kode,
           masalah: masalah,
+          kriteria: kriteria,
+          persen_kriteria: persenKriteria,
+          sumber_masalah: sumberMasalah,
         },
 
         {
@@ -154,6 +183,9 @@ function CheckSheetCetakPeriode() {
       setShowModal2(false);
       setKode(null);
       setMasalah(null);
+      setKriteria(null);
+      setPersenKriteria(null);
+      setSumberMasalah(null);
       getCetakMesinPeriode();
       handleClickAdd(index);
     } catch (error: any) {
@@ -162,8 +194,9 @@ function CheckSheetCetakPeriode() {
   }
 
   async function doneCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakPeriode/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakPeriode/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -175,13 +208,14 @@ function CheckSheetCetakPeriode() {
 
       getCetakMesinPeriode();
     } catch (error: any) {
-      console.log(error.data.msg);
+      console.log(error);
     }
   }
 
   async function pendingCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakPeriode/pending/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakPeriode/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -260,6 +294,9 @@ function CheckSheetCetakPeriode() {
                   Jumlah Druk
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
+                  Jumlah Pcs
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
                   Jenis Kertas
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
@@ -275,6 +312,9 @@ function CheckSheetCetakPeriode() {
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {cetakMesinPeriode?.jumlah_druk}
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  : {cetakMesinPeriode?.jumlah_pcs}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {cetakMesinPeriode?.jenis_kertas}
@@ -544,6 +584,11 @@ function CheckSheetCetakPeriode() {
                                     data.jumlah_sampling,
                                     data.inspeksi_cetak_periode_defect,
                                   );
+                                  setShowNotOk(
+                                    new Array(add != null && add.length).fill(
+                                      false,
+                                    ),
+                                  );
                                 }}
                                 className="flex w-full  rounded-md bg-red-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
                               >
@@ -571,8 +616,9 @@ function CheckSheetCetakPeriode() {
                         (data2: any, i: number) => {
                           return (
                             <div
-                              className={`flex flex-col min-w-[120px] justify-center py-4 ${(i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
-                                } items-center gap-2`}
+                              className={`flex flex-col min-w-[120px] justify-center py-4 ${
+                                (i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
+                              } items-center gap-2`}
                             >
                               <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                 {data2.kode}
@@ -582,13 +628,14 @@ function CheckSheetCetakPeriode() {
                                   name="hasil"
                                   disabled
                                   defaultValue={data2.hasil}
-                                  onChange={(e) =>
-                                    handleChangePointDefect(e, index, i)
-                                  }
-                                  className={`w-[80%]  ${(i + 1) % 2 === 0
-                                    ? ' bg-[#F3F3F3]'
-                                    : 'bg-white'
-                                    } `}
+                                  onChange={(e) => {
+                                    handleChangePointDefect(e, index, i);
+                                  }}
+                                  className={`w-[80%]  ${
+                                    (i + 1) % 2 === 0
+                                      ? ' bg-[#F3F3F3]'
+                                      : 'bg-white'
+                                  } `}
                                 >
                                   <option value={''} disabled>
                                     SELECT VALUE
@@ -602,13 +649,19 @@ function CheckSheetCetakPeriode() {
                               ) : data.status == 'on progress' ? (
                                 <select
                                   name="hasil"
-                                  onChange={(e) =>
-                                    handleChangePointDefect(e, index, i)
-                                  }
-                                  className={`w-[80%]  ${(i + 1) % 2 === 0
-                                    ? ' bg-[#F3F3F3]'
-                                    : 'bg-white'
-                                    } `}
+                                  onChange={(e) => {
+                                    handleChangePointDefect(e, index, i);
+                                    if (e.target.value == 'not ok') {
+                                      handleClickNotOke(i, true);
+                                    } else {
+                                      handleClickNotOke(i, false);
+                                    }
+                                  }}
+                                  className={`w-[80%]  ${
+                                    (i + 1) % 2 === 0
+                                      ? ' bg-[#F3F3F3]'
+                                      : 'bg-white'
+                                  } `}
                                 >
                                   <option value={''} disabled selected>
                                     SELECT VALUE
@@ -619,6 +672,44 @@ function CheckSheetCetakPeriode() {
                                   </option>
                                   <option value={'not ok'}>NOT OK</option>
                                 </select>
+                              ) : null}
+
+                              {/* {data.status == 'done' &&
+                              data2.hasil == 'not ok' ? (
+                                <input
+                                  type="text"
+                                  name="jumlah_defect"
+                                  defaultValue={data2.jumlah_defect}
+                                  disabled
+                                  onChange={(e) =>
+                                    handleChangePointDefect(e, index, i)
+                                  }
+                                  className="text-sm font-semibold w-[90%] border-stroke border"
+                                ></input>
+                              ) : null} */}
+
+                              {showNotOk[i] == true &&
+                              data.status == 'on progress' ? (
+                                <input
+                                  type="text"
+                                  name="jumlah_defect"
+                                  onChange={(e) =>
+                                    handleChangePointDefect(e, index, i)
+                                  }
+                                  className="text-sm font-semibold w-[90%] border-stroke border"
+                                ></input>
+                              ) : data.status == 'done' &&
+                                data2.hasil == 'not ok' ? (
+                                <input
+                                  type="text"
+                                  name="jumlah_defect"
+                                  defaultValue={data2.jumlah_defect}
+                                  disabled
+                                  onChange={(e) =>
+                                    handleChangePointDefect(e, index, i)
+                                  }
+                                  className="text-sm font-semibold w-[90%] border-stroke border"
+                                ></input>
                               ) : null}
                             </div>
                           );
@@ -670,12 +761,114 @@ function CheckSheetCetakPeriode() {
                                 onChange={(e) => setMasalah(e.target.value)}
                                 className="text-sm font-semibold w-full h-10 border-stroke border mb-2"
                               ></input>
+                              <label className="text-black text-sm font-bold pt-4">
+                                Kriteria
+                              </label>
+                              <select
+                                onChange={(e) => {
+                                  setKriteria(e.target.value);
+                                }}
+                                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
+                  }`}
+                              >
+                                <option
+                                  value=""
+                                  disabled
+                                  selected
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Pilih kriteria
+                                </option>
+
+                                <option
+                                  value="critical"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Critical
+                                </option>
+                                <option
+                                  value="major"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Major
+                                </option>
+                                <option
+                                  value="minor"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Minor
+                                </option>
+                              </select>
+                              <label className="text-black text-sm font-bold pt-4">
+                                % Kriteria
+                              </label>
+                              <input
+                                onChange={(e) =>
+                                  setPersenKriteria(e.target.value)
+                                }
+                                type="text"
+                                className="w-full h-7 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
+                              />
+                              <label className="text-black text-sm font-bold pt-4">
+                                Sumber Masalah
+                              </label>
+                              <select
+                                onChange={(e) => {
+                                  setSumberMasalah(e.target.value);
+                                }}
+                                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
+                  }`}
+                              >
+                                <option
+                                  value=""
+                                  disabled
+                                  selected
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Pilih Sumber Masalah
+                                </option>
+
+                                <option
+                                  value="mesin"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Mesin
+                                </option>
+                                <option
+                                  value="man"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Man
+                                </option>
+                                <option
+                                  value="material"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Material
+                                </option>
+                                <option
+                                  value="persiapan"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Persiapan
+                                </option>
+                                <option
+                                  value="design"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Design
+                                </option>
+                              </select>
                               <button
                                 onClick={() => {
                                   tambahDefectPeriode(
                                     data.id,
+                                    cetakMesinPeriode?.id,
                                     kode,
                                     masalah,
+                                    kriteria,
+                                    persenKriteria,
+                                    sumberMasalah,
                                     index,
                                   ),
                                     console.log(data.id);
@@ -695,9 +888,8 @@ function CheckSheetCetakPeriode() {
             )}
           </div>
           {cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'incoming' ||
-            cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'pending' ? (
+          cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'pending' ? (
             <>
-
               <button
                 disabled={isLoading}
                 onClick={() =>
@@ -727,7 +919,7 @@ function CheckSheetCetakPeriode() {
               </label>
               {cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
                 'incoming' ||
-                cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+              cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
                 'pending' ? (
                 <textarea
                   onChange={(e) => setCatatan(e.target.value)}
@@ -745,10 +937,12 @@ function CheckSheetCetakPeriode() {
             </div>
             <div className="grid col-span-2 items-end justify-end">
               {cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
-                'incoming' ? (
+              'incoming' ? (
                 <button
                   onClick={() =>
-                    pendingCekPeriode(cetakMesinPeriode?.inspeksi_cetak_periode[0].id)
+                    pendingCekPeriode(
+                      cetakMesinPeriode?.inspeksi_cetak_periode[0].id,
+                    )
                   }
                   className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                 >
@@ -757,7 +951,7 @@ function CheckSheetCetakPeriode() {
               ) : null}
               {cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
                 'incoming' ||
-                cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+              cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
                 'pending' ? (
                 <button
                   onClick={() => {
@@ -771,8 +965,19 @@ function CheckSheetCetakPeriode() {
                   SIMPAN PERIODE
                 </button>
               ) : null}
+
               {/* ) : null} */}
             </div>
+            {cetakMesinPeriodeDefect?.map((data: any, index: number) => {
+              return (
+                <div className="">
+                  <label>kode: </label>
+                  <label>{data.kode}</label>
+                  <label>Total Defect: </label>
+                  <label>{data.total_defect}</label>
+                </div>
+              );
+            })}
           </div>
         </main>
       )}

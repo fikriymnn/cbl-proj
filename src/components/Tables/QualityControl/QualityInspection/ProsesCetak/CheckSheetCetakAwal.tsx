@@ -32,8 +32,9 @@ function CheckSheetCetakAwal() {
   }
 
   async function startTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwalPoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwalPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -63,8 +64,9 @@ function CheckSheetCetakAwal() {
     layout_pisau: any,
     acc_warna_awal_jalan: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwalPoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwalPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -95,8 +97,9 @@ function CheckSheetCetakAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwalPoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwalPoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -116,8 +119,9 @@ function CheckSheetCetakAwal() {
   }
 
   async function doneCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwal/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwal/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -136,8 +140,9 @@ function CheckSheetCetakAwal() {
   }
 
   async function pendingCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwal/pending/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwal/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -200,6 +205,9 @@ function CheckSheetCetakAwal() {
                   Jumlah Druk
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
+                  Jumlah Pcs
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
                   Jenis Kertas
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
@@ -215,6 +223,9 @@ function CheckSheetCetakAwal() {
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {cetakMesinAwal?.jumlah_druk}
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  : {cetakMesinAwal?.jumlah_pcs}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {cetakMesinAwal?.jenis_kertas}
@@ -712,12 +723,11 @@ function CheckSheetCetakAwal() {
             )}
           </div>
           {cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming' ||
-            cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' ? (
+          cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' ? (
             <>
               <button
                 disabled={isLoading}
                 onClick={() =>
-
                   tambahTaskCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0].id)
                 }
                 className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
@@ -748,7 +758,7 @@ function CheckSheetCetakAwal() {
                 </button>
               ) : null}
               {cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming' ||
-                cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' ? (
+              cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' ? (
                 <button
                   onClick={() =>
                     doneCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0].id)
