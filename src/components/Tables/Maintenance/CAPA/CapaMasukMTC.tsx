@@ -5,7 +5,7 @@ import Burger from '../../../../images/icon/burger.svg';
 import Filter from '../../../../images/icon/filter.svg';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 
-function OngoingNCRMR() {
+function CapaMasukMTC() {
     const tiket = [
         {
             name: 'EX000003',
@@ -61,9 +61,11 @@ function OngoingNCRMR() {
             <div className=' flex bg-white py-2 w-full mt-2 mb-2 px-5 text-sm font-semibold   border-b-1 border-[#D8EAFF]'>
                 <p className='w-20'>No</p>
                 <div className='grid grid-cols-12 w-full'>
-                    <div className='col-span-3'>No. NCR</div>
-                    <div className='col-span-2'>No. JO</div>
-                    <div className='col-span-3'>Sumber</div>
+                    <div className='col-span-2'>No. CAPA</div>
+                    <div className=''>No. JO</div>
+                    <div className=''>Sumber</div>
+                    <div className='col-span-2'>DEPARTEMEN</div>
+                    <div className='col-span-2'>BAG. BERMASALAH</div>
                     <div className='col-span-2'>Status</div>
                     <div className='col-span-2 flex w-full justify-end'>Action</div>
                 </div>
@@ -76,10 +78,13 @@ function OngoingNCRMR() {
                             <div className=' flex bg-white py-2 w-full mt-2 mb-2 px-5 text-sm font-semibold rounded-md  items-center'>
                                 <p className='w-20'>{i + 1}</p>
                                 <div className='grid grid-cols-12 w-full text-[#6c6b6b] text-sm font-light items-center'>
-                                    <div className='col-span-3'>001/NCR/08/2024</div>
-                                    <div className='col-span-2'>000/000/000A</div>
-                                    <div className='col-span-3'>MTC</div>
-                                    <div className='col-span-2 text-red-700 bg-yellow-300 rounded-full flex w-full items-center justify-center'>Menunggu Validasi QA</div>
+                                    <div className='col-span-2'>001/CAPA/08/2024</div>
+                                    <div className=''>000/000/000A</div>
+                                    <div className=''>MTC</div>
+                                    <div className='col-span-2'>PRODUKSI</div>
+                                    <div className='col-span-2'>MASALAH</div>
+
+                                    <div className='col-span-2 text-red-700 bg-yellow-300 rounded-full flex w-full items-center justify-center'>INCOMING</div>
                                     <div className='col-span-2 w-full flex justify-end'>
                                         <div className="flex gap-2 items-center justify-center ">
                                             <div>
@@ -154,39 +159,32 @@ function OngoingNCRMR() {
                                                                                 <p className='text-xl font-normal '>
                                                                                     20 MEI 2024, 14:00
                                                                                 </p>
-                                                                                <div className='flex justify-between'>
-                                                                                    <div className='flex flex-col'>
-                                                                                        <p className='text-sm font-semibold text-black pt-2'>
-                                                                                            NAMA PELAPOR
-                                                                                        </p>
-                                                                                        <p className='text-xl font-normal '>
-                                                                                            ACEP PIERE
-                                                                                        </p>
-                                                                                    </div>
-                                                                                    <div className='flex flex-col'>
-                                                                                        <p className='text-sm font-semibold text-black pt-2'>
-                                                                                            DEPARTEMEN PELAPOR
-                                                                                        </p>
-                                                                                        <p className='text-xl font-normal '>
-                                                                                            Maintenance
-                                                                                        </p>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div className=' flex justify-between w-full'>
-                                                                                    <div className='flex flex-col'>
-                                                                                        <p className='text-sm font-semibold text-black pt-2'>
-                                                                                            DEPARTEMEN TUJUAN
-                                                                                        </p>
-                                                                                        <p className='text-xl font-normal '>
-                                                                                            PRODUKSI
-                                                                                        </p>
-                                                                                    </div>
-                                                                                    <p className='text-sm font-semibold text-blue-500 pt-2'>
-                                                                                        UBAH DEPARTEMEN
-                                                                                    </p>
-                                                                                </div>
+                                                                                <p className='text-sm font-semibold text-black'>
+                                                                                    NAMA PELAPOR
+                                                                                </p>
+                                                                                <p className='text-xl font-normal '>
+                                                                                    ACEP PIERE
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className='grid grid-cols-2 w-full px-4 py-4'>
+                                                                            <div className='flex flex-col gap-1'>
+                                                                                <p className='text-sm font-semibold text-black'>
+                                                                                    CATATAN NCR QA
+                                                                                </p>
+                                                                                <p className='text-xl font-normal '>
+                                                                                    Isi catatan QA
+                                                                                </p>
+                                                                                <p className='text-sm font-semibold text-black pt-2'>
+                                                                                    CATATAN NCR MR
+                                                                                </p>
+                                                                                <p className='text-xl font-normal '>
+                                                                                    Isi catatan MR
+                                                                                </p>
+
 
                                                                             </div>
+
                                                                         </div>
                                                                         <div className='flex w-full px-4 py-4'>
                                                                             <div className='flex flex-col w-full'>
@@ -220,32 +218,47 @@ function OngoingNCRMR() {
                                                                                         </p>
                                                                                     </div>
                                                                                 </div>
+                                                                                <p className='text-sm font-semibold text-black pt-2'>
+                                                                                    ANALISIS PENYEBAB
+                                                                                </p>
+                                                                                <textarea
+
+                                                                                    className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                                                ></textarea>
+
+                                                                                <p className='text-sm font-semibold text-black pt-2'>
+                                                                                    TINDAKAN PERBAIKAN
+                                                                                </p>
+                                                                                <textarea
+
+                                                                                    className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                                                ></textarea>
+
+                                                                                <p className='text-sm font-semibold text-black pt-2'>
+                                                                                    PENCEGAHAN
+                                                                                </p>
+                                                                                <textarea
+
+                                                                                    className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                                                ></textarea>
+
+                                                                                <p className='text-sm font-semibold text-black pt-2'>
+                                                                                    PENCEGAHAN EFEKTIF DILAKUKAN
+                                                                                </p>
+                                                                                <textarea
+
+                                                                                    className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                                                ></textarea>
+
+                                                                                <p className='text-sm font-semibold text-black pt-2'>
+                                                                                    KETERANGAN KETIDAKSESUAIAN
+                                                                                </p>
+                                                                                <textarea
+
+                                                                                    className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                                                ></textarea>
                                                                                 <div className='flex flex-col w-full'>
-                                                                                    <p className='pt-4 text-sm font-semibold text-black '>
-                                                                                        CATATAN QA
-                                                                                    </p>
-                                                                                    <p className='text-xl font-normal '>
-                                                                                        Bagian ini berisi catatan QA
-                                                                                    </p>
-                                                                                    <p className='pt-4 text-sm font-semibold text-black '>
-                                                                                        CATATAN MR
-                                                                                    </p>
-                                                                                    <textarea
 
-                                                                                        className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                                                                    ></textarea>
-                                                                                    <div className='pt-4'>
-                                                                                        <input
-
-                                                                                            type="radio" id="sspoint1" name="sspoint1" value="sesuai" />
-                                                                                        <label className='pl-2 text-xl text-black   '>Sesuai</label>
-                                                                                    </div>
-                                                                                    <div>
-                                                                                        <input
-
-                                                                                            type="radio" id="ssspoint1" name="sspoint1" value="tidak sesuai" />
-                                                                                        <label className='pl-2 text-xl text-black'>Tidak Sesuai</label>
-                                                                                    </div>
                                                                                     <div className="pt-5">
                                                                                         <button
 
@@ -294,4 +307,4 @@ function OngoingNCRMR() {
     )
 }
 
-export default OngoingNCRMR
+export default CapaMasukMTC

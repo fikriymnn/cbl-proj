@@ -694,6 +694,41 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role, bagian }: SidebarProps) =>
                           }}
                         </SidebarLinkGroup>
                       </li>
+                      <li>
+                        <SidebarLinkGroup
+                          activeCondition={
+                            pathname === '/capa' || pathname.includes('capa')
+                          }
+                        >
+                          {(handleClick, open) => {
+                            return (
+                              <React.Fragment>
+                                <NavLink
+                                  to="/maintenance/capa"
+                                  className={({ isActive }) =>
+                                    `group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out ` +
+                                    (isActive &&
+                                      '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                  }
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    sidebarExpanded
+                                      ? handleClick()
+                                      : setSidebarExpanded(true);
+                                    navigate('/maintenance/capa');
+                                  }}
+                                >
+                                  <img src={Inspect} alt="Logo" />
+                                  CAPA
+
+                                </NavLink>
+
+                                {/* <!-- Dropdown Menu End --> */}
+                              </React.Fragment>
+                            );
+                          }}
+                        </SidebarLinkGroup>
+                      </li>
                     </ul>
                   </div>
                   {/* <!-- Dropdown Menu End --> */}
@@ -793,6 +828,25 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role, bagian }: SidebarProps) =>
                     </li>
                   </ul>
                 </div>
+                <div
+                  className={`translate transform overflow-hidden ${!open && 'hidden'
+                    }`}
+                >
+                  <ul className="mt-1 mb-5.5 flex flex-col gap-5 pl-6">
+                    <li>
+                      <NavLink
+                        to="/qc/capa"
+                        className={({ isActive }) =>
+                          'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                          (isActive &&
+                            '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                        }
+                      >
+                        CAPA
+                      </NavLink>
+                    </li>
+                  </ul>
+                </div>
                 {/* <!-- Dropdown Menu End --> */}
               </React.Fragment>
             );
@@ -849,6 +903,25 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen, role, bagian }: SidebarProps) =>
                         }
                       >
                         NCR
+                      </NavLink>
+                    </li>
+                  </ul>
+                </div>
+                <div
+                  className={`translate transform overflow-hidden ${!open && 'hidden'
+                    }`}
+                >
+                  <ul className="mt-1 mb-5.5 flex flex-col gap-5 pl-6">
+                    <li>
+                      <NavLink
+                        to="/mr/capa"
+                        className={({ isActive }) =>
+                          'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                          (isActive &&
+                            '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                        }
+                      >
+                        CAPA
                       </NavLink>
                     </li>
                   </ul>
