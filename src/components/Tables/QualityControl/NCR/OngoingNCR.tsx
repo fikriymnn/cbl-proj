@@ -4,6 +4,8 @@ import Arrow from '../../../../images/icon/arrowDown.svg';
 import Burger from '../../../../images/icon/burger.svg';
 import Filter from '../../../../images/icon/filter.svg';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
+import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
+import convertDateToTime from '../../../../utils/converDateToTime';
 
 function OngoingNCRQA() {
     const tiket = [
@@ -20,6 +22,49 @@ function OngoingNCRQA() {
 
         },
     ]
+
+    const [ncrQC, setNcrQC] = useState<any>();
+
+    useEffect(() => {
+        getNcrQC();
+    }, []);
+
+    async function getNcrQC() {
+        const url = `${import.meta.env.VITE_API_LINK}/ncr?status=menunggu validasi qa
+        `;
+        try {
+            const res = await axios.get(url, {
+                withCredentials: true,
+            });
+
+            setNcrQC(res.data.data);
+            console.log(res.data.data);
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+    const [ctt, setCtt] = useState<any>();
+    const [status, setStatus] = useState<any>();
+
+    async function submitNcr(id: any, index: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/ncr/validasiQa/${id}
+        `;
+        try {
+            const res = await axios.put(url, {
+                status: status,
+                catatan_qa: ctt,
+
+            }, {
+                withCredentials: true,
+            });
+            closeModal1(index);
+            getNcrQC();
+
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+
     const [openButton, setOpenButton] = useState(null);
     const handleClick = (i: any) => {
         setOpenButton((prevState: any) => {
@@ -41,6 +86,8 @@ function OngoingNCRQA() {
 
         setShowModal1(onchangeVal);
     };
+
+
     return (
 
         <>
@@ -68,17 +115,20 @@ function OngoingNCRQA() {
                 </div>
 
             </div>
-            {tiket.map(
+            {ncrQC?.map(
                 (data: any, i: number) => {
+                    const tanggal = convertTimeStampToDateOnly(data?.tanggal);
+                    const jam = convertDateToTime(data?.tanggal);
+
                     return (
                         <>
                             <div className=' flex bg-white py-2 w-full mt-2 mb-2 px-5 text-sm font-semibold rounded-md  items-center'>
                                 <p className='w-20'>{i + 1}</p>
                                 <div className='grid grid-cols-12 w-full text-[#6c6b6b] text-sm font-light items-center'>
-                                    <div className='col-span-3'>001/NCR/08/2024</div>
-                                    <div className='col-span-2'>000/000/000A</div>
-                                    <div className='col-span-3'>MTC</div>
-                                    <div className='col-span-2 text-red-700 bg-yellow-300 rounded-full flex w-full items-center justify-center'>Menunggu Validasi QA</div>
+                                    <div className='col-span-3'>{data?.no_ncr}</div>
+                                    <div className='col-span-2'>{data?.no_jo}</div>
+                                    <div className='col-span-3  uppercase'>{data?.pelapor?.bagian}</div>
+                                    <div className='col-span-2 text-red-700 bg-yellow-300 rounded-full flex w-full items-center justify-center  uppercase text-center'>{data?.status}</div>
                                     <div className='col-span-2 w-full flex justify-end'>
                                         <div className="flex gap-2 items-center justify-center ">
                                             <div>
@@ -127,22 +177,24 @@ function OngoingNCRQA() {
                                                                         <div className='grid grid-cols-2 w-full px-4 py-4'>
                                                                             <div className='flex flex-col gap-1'>
                                                                                 <p className='text-sm font-semibold text-black'>
-                                                                                    NO CAPA
+                                                                                    NO NCR
+
                                                                                 </p>
                                                                                 <p className='text-xl font-normal '>
-                                                                                    000A
+                                                                                    {data.ncr == null ? '-'
+                                                                                        : data?.no_ncr}
                                                                                 </p>
                                                                                 <p className='text-sm font-semibold text-black pt-2'>
                                                                                     NO JO/IO
                                                                                 </p>
                                                                                 <p className='text-xl font-normal '>
-                                                                                    000A/000B
+                                                                                    {data?.no_jo} / {data?.no_io}
                                                                                 </p>
                                                                                 <p className='text-sm font-semibold text-black pt-2'>
                                                                                     PRODUK
                                                                                 </p>
                                                                                 <p className='text-xl font-normal '>
-                                                                                    KEMASAN SIRUP
+                                                                                    {data.nama_produk == null ? '-' : data?.nama_produk}
                                                                                 </p>
 
                                                                             </div>
@@ -151,94 +203,115 @@ function OngoingNCRQA() {
                                                                                     WAKTU LAPOR
                                                                                 </p>
                                                                                 <p className='text-xl font-normal '>
-                                                                                    20 MEI 2024, 14:00
+                                                                                    {tanggal}, {jam}
                                                                                 </p>
                                                                                 <p className='text-sm font-semibold text-black pt-2'>
                                                                                     NAMA PELAPOR
                                                                                 </p>
-                                                                                <p className='text-xl font-normal '>
-                                                                                    ACEP PIERE
+                                                                                <p className='text-xl font-normal uppercase'>
+                                                                                    {data?.pelapor?.nama}
                                                                                 </p>
-                                                                                <div className=' flex justify-between w-full'>
-                                                                                    <div className='flex flex-col'>
-                                                                                        <p className='text-sm font-semibold text-black pt-2'>
-                                                                                            DEPARTEMEN TUJUAN
-                                                                                        </p>
-                                                                                        <p className='text-xl font-normal '>
-                                                                                            PRODUKSI
-                                                                                        </p>
-                                                                                    </div>
-                                                                                    <p className='text-sm font-semibold text-blue-500 pt-2'>
-                                                                                        UBAH DEPARTEMEN
-                                                                                    </p>
-                                                                                </div>
+
 
                                                                             </div>
                                                                         </div>
-                                                                        <div className='flex w-full px-4 py-4'>
-                                                                            <div className='flex flex-col w-full'>
-                                                                                <p className='text-sm font-semibold text-black pt-2'>
-                                                                                    LAPORAN
-                                                                                </p>
-                                                                                <div className='flex'>
-                                                                                    <div className='flex flex-col gap-1 w-[10%]'>
-                                                                                        <p className='text-sm font-semibold text-black pt-2'>
-                                                                                            NO
-                                                                                        </p>
-                                                                                        <p className='text-xl font-normal '>
-                                                                                            1
-                                                                                        </p>
-                                                                                    </div>
-                                                                                    <div className='flex flex-col  gap-1  w-[60%]'>
-                                                                                        <p className='text-sm font-semibold text-black pt-2'>
-                                                                                            KETIDAKSESUAIAN
-                                                                                        </p>
-                                                                                        <p className='text-xl font-normal '>
-                                                                                            Deskripsi ketidaksesuaian
-                                                                                        </p>
-                                                                                    </div>
-                                                                                    <div className='flex flex-col  gap-1  w-[30%] items-end'>
-                                                                                        <p className='text-sm font-semibold text-black pt-2'>
-                                                                                            GAMBAR
-                                                                                        </p>
-                                                                                        <p className='text-sm font-normal text-blue-500'>
-                                                                                            LIHAT GAMBAR
-                                                                                        </p>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div className='flex flex-col w-full'>
-                                                                                    <p className='text-sm font-semibold text-black pt-2'>
-                                                                                        CATATAN
-                                                                                    </p>
-                                                                                    <textarea
 
-                                                                                        className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                                                                    ></textarea>
-                                                                                    <div className='pt-4'>
-                                                                                        <input
+                                                                        {data.data_department.map((data2: any, ii: any) => {
+                                                                            return (
+                                                                                <>
+                                                                                    <div className='flex w-full px-4 py-4'>
+                                                                                        <div className='flex flex-col w-full'>
+                                                                                            <p className='text-sm font-semibold text-black pt-2'>
+                                                                                                LAPORAN
+                                                                                            </p>
+                                                                                            <div className=' flex justify-between w-full'>
+                                                                                                <div className='flex flex-col'>
+                                                                                                    <p className='text-sm font-semibold text-black pt-2'>
+                                                                                                        DEPARTEMEN TUJUAN
+                                                                                                    </p>
+                                                                                                    <p className='text-xl font-normal uppercase'>
+                                                                                                        {data2.department}
+                                                                                                    </p>
+                                                                                                </div>
+                                                                                                <p className='text-sm font-semibold text-blue-500 pt-2'>
+                                                                                                    UBAH DEPARTEMEN
+                                                                                                </p>
+                                                                                            </div>
+                                                                                            {data2.data_ketidaksesuaian.map((data3: any, iii: any) => {
+                                                                                                return (
+                                                                                                    <>
+                                                                                                        <div className='flex'>
 
-                                                                                            type="radio" id="sspoint1" name="sspoint1" value="sesuai" />
-                                                                                        <label className='pl-2 text-xl text-black   '>Sesuai</label>
+                                                                                                            <div className='flex flex-col  gap-1  w-[60%]'>
+                                                                                                                <p className='text-sm font-semibold text-black pt-2'>
+                                                                                                                    KETIDAKSESUAIAN  {iii + 1}
+                                                                                                                </p>
+                                                                                                                <p className='text-xl font-normal '>
+                                                                                                                    {data3?.ketidaksesuaian == null ? '-' :
+                                                                                                                        data3?.ketidaksesuaian}
+                                                                                                                </p>
+                                                                                                            </div>
+                                                                                                            <div className='flex flex-col  gap-1  w-[40%] items-end'>
+                                                                                                                <p className='text-sm font-semibold text-black pt-2'>
+                                                                                                                    GAMBAR
+                                                                                                                </p>
+                                                                                                                <p className='text-sm font-normal text-blue-500'>
+                                                                                                                    LIHAT GAMBAR
+                                                                                                                </p>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </>
+                                                                                                )
+                                                                                            })}
+
+
+
+                                                                                        </div>
+
                                                                                     </div>
-                                                                                    <div>
-                                                                                        <input
+                                                                                </>
+                                                                            )
+                                                                        })}
 
-                                                                                            type="radio" id="ssspoint1" name="sspoint1" value="tidak sesuai" />
-                                                                                        <label className='pl-2 text-xl text-black'>Tidak Sesuai</label>
-                                                                                    </div>
-                                                                                    <div className="pt-5">
-                                                                                        <button
+                                                                        <div className='flex flex-col w-full'>
+                                                                            <p className='text-sm font-semibold text-black pt-2'>
+                                                                                CATATAN
+                                                                            </p>
+                                                                            <textarea
+                                                                                onChange={(e) => setCtt(e.target.value)}
+                                                                                className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                                            ></textarea>
+                                                                            <div className='pt-4'>
+                                                                                <input
+                                                                                    onChange={(e) => {
 
-                                                                                            className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
-                                                                                        >
-                                                                                            SUBMIT
-                                                                                        </button>
-                                                                                    </div>
-
-                                                                                </div>
-
+                                                                                        setStatus(e.target.value)
+                                                                                    }}
+                                                                                    type="radio" id="sspoint1" name="sspoint1" value="sesuai" />
+                                                                                <label className='pl-2 text-xl text-black   '>Sesuai</label>
                                                                             </div>
+                                                                            <div>
+                                                                                <input
+                                                                                    onChange={(e) => {
 
+                                                                                        setStatus(e.target.value)
+                                                                                    }}
+                                                                                    type="radio" id="ssspoint1" name="sspoint1" value="tidak sesuai" />
+                                                                                <label className='pl-2 text-xl text-black'>Tidak Sesuai</label>
+                                                                            </div>
+                                                                            <div className="pt-5">
+                                                                                <button
+                                                                                    onClick={(e) => {
+                                                                                        e.preventDefault()
+                                                                                        // console.log(ctt, status)
+                                                                                        submitNcr(data?.id, i)
+
+                                                                                    }}
+                                                                                    className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
+                                                                                >
+                                                                                    SUBMIT
+                                                                                </button>
+                                                                            </div>
                                                                         </div>
 
                                                                     </>

@@ -28,7 +28,7 @@ function FormNcrMTC() {
     }, []);
 
     async function getCetakMesinAwal() {
-        const url = `${import.meta.env.VITE_API_LINK}/ncr/14
+        const url = `${import.meta.env.VITE_API_LINK}/ncr
         `;
         try {
             const res = await axios.get(url, {
@@ -71,6 +71,7 @@ function FormNcrMTC() {
             },
         ]);
     };
+
     //add Point Task
     const handleAddPointTask = (i: any) => {
         const onchangeVal = [...ncr];
