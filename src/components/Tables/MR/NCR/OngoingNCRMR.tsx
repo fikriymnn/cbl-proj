@@ -29,7 +29,7 @@ function OngoingNCRMR() {
     }, []);
 
     async function getNcrMR() {
-        const url = `${import.meta.env.VITE_API_LINK}/ncr?status=menunggu validasi mr
+        const url = `${import.meta.env.VITE_API_LINK}/ncr?bagian_tiket=incoming
         `;
         try {
             const res = await axios.get(url, {
@@ -129,19 +129,21 @@ function OngoingNCRMR() {
                                     <div className='col-span-2 w-full flex justify-end'>
                                         <div className="flex gap-2 items-center justify-center ">
                                             <div>
-
-                                                <button
-                                                    title="button"
-                                                    className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                                    onClick={() => handleClick(i)}
-                                                >
-                                                    <img
-                                                        src={Burger}
-                                                        alt=""
-                                                        className="mx-3"
-                                                    />
-                                                </button>
-
+                                                {data.status == 'menunggu validasi mr' ?
+                                                    <button
+                                                        title="button"
+                                                        className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
+                                                        onClick={() => handleClick(i)}
+                                                    >
+                                                        <img
+                                                            src={Burger}
+                                                            alt=""
+                                                            className="mx-3"
+                                                        />
+                                                    </button>
+                                                    : <>
+                                                    </>
+                                                }
                                                 {openButton == i ? (
                                                     <div className="absolute bg-white p-3 shadow-5 rounded-md">
                                                         {' '}

@@ -7,7 +7,7 @@ import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../utils/converDateToTime';
 
-function OngoingNCRQA() {
+function HistoryNCRQA() {
     const tiket = [
         {
             name: 'EX000003',
@@ -30,7 +30,7 @@ function OngoingNCRQA() {
     }, []);
 
     async function getNcrQC() {
-        const url = `${import.meta.env.VITE_API_LINK}/ncr?bagian_tiket=incoming
+        const url = `${import.meta.env.VITE_API_LINK}/ncr?bagian_tiket=history
         `;
         try {
             const res = await axios.get(url, {
@@ -353,4 +353,4 @@ function OngoingNCRQA() {
     )
 }
 
-export default OngoingNCRQA
+export default HistoryNCRQA

@@ -74,9 +74,8 @@ function CheckSheetCetakPeriode() {
     });
   };
   async function startTaskCekPeriode(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriodePoint/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriodePoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -101,9 +100,8 @@ function CheckSheetCetakPeriode() {
     jumlah_sampling: any,
     data_defect: any,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriodePoint/stop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriodePoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -128,9 +126,8 @@ function CheckSheetCetakPeriode() {
   }
 
   async function tambahTaskCekPeriode(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriodePoint/create`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriodePoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -159,9 +156,8 @@ function CheckSheetCetakPeriode() {
     sumberMasalah: any,
     index: number,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriodePoint/createDefect`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriodePoint/createDefect`;
     try {
       const res = await axios.post(
         url,
@@ -194,9 +190,8 @@ function CheckSheetCetakPeriode() {
   }
 
   async function doneCekPeriode(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriode/done/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriode/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -213,9 +208,8 @@ function CheckSheetCetakPeriode() {
   }
 
   async function pendingCekPeriode(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriode/pending/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriode/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -616,9 +610,8 @@ function CheckSheetCetakPeriode() {
                         (data2: any, i: number) => {
                           return (
                             <div
-                              className={`flex flex-col min-w-[120px] justify-center py-4 ${
-                                (i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
-                              } items-center gap-2`}
+                              className={`flex flex-col min-w-[120px] justify-center py-4 ${(i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
+                                } items-center gap-2`}
                             >
                               <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                 {data2.kode}
@@ -631,11 +624,10 @@ function CheckSheetCetakPeriode() {
                                   onChange={(e) => {
                                     handleChangePointDefect(e, index, i);
                                   }}
-                                  className={`w-[80%]  ${
-                                    (i + 1) % 2 === 0
-                                      ? ' bg-[#F3F3F3]'
-                                      : 'bg-white'
-                                  } `}
+                                  className={`w-[80%]  ${(i + 1) % 2 === 0
+                                    ? ' bg-[#F3F3F3]'
+                                    : 'bg-white'
+                                    } `}
                                 >
                                   <option value={''} disabled>
                                     SELECT VALUE
@@ -657,11 +649,10 @@ function CheckSheetCetakPeriode() {
                                       handleClickNotOke(i, false);
                                     }
                                   }}
-                                  className={`w-[80%]  ${
-                                    (i + 1) % 2 === 0
-                                      ? ' bg-[#F3F3F3]'
-                                      : 'bg-white'
-                                  } `}
+                                  className={`w-[80%]  ${(i + 1) % 2 === 0
+                                    ? ' bg-[#F3F3F3]'
+                                    : 'bg-white'
+                                    } `}
                                 >
                                   <option value={''} disabled selected>
                                     SELECT VALUE
@@ -689,7 +680,7 @@ function CheckSheetCetakPeriode() {
                               ) : null} */}
 
                               {showNotOk[i] == true &&
-                              data.status == 'on progress' ? (
+                                data.status == 'on progress' ? (
                                 <input
                                   type="text"
                                   name="jumlah_defect"
@@ -888,7 +879,7 @@ function CheckSheetCetakPeriode() {
             )}
           </div>
           {cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'incoming' ||
-          cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'pending' ? (
+            cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'pending' ? (
             <>
               <button
                 disabled={isLoading}
@@ -905,7 +896,7 @@ function CheckSheetCetakPeriode() {
             </>
           ) : null}
 
-          <div className="grid grid-cols-10 border-b-8 items-center border-[#D8EAFF] px-4 py-4 gap-3 bg-white rounded-b-xl mt-2">
+          <div className="grid grid-cols-10  items-center  px-4 py-4 gap-3 bg-white mt-2">
             {/* <label className=" text-[#6c6b6b] text-sm font-semibold col-span-2">
                             Jumlah Periode Check :{' '}
                             {cetakMesinPeriode?.inspeksi_cetak_awal[0].jumlah_periode}
@@ -919,7 +910,7 @@ function CheckSheetCetakPeriode() {
               </label>
               {cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
                 'incoming' ||
-              cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+                cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
                 'pending' ? (
                 <textarea
                   onChange={(e) => setCatatan(e.target.value)}
@@ -937,7 +928,7 @@ function CheckSheetCetakPeriode() {
             </div>
             <div className="grid col-span-2 items-end justify-end">
               {cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
-              'incoming' ? (
+                'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekPeriode(
@@ -951,7 +942,7 @@ function CheckSheetCetakPeriode() {
               ) : null}
               {cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
                 'incoming' ||
-              cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+                cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
                 'pending' ? (
                 <button
                   onClick={() => {
@@ -968,10 +959,14 @@ function CheckSheetCetakPeriode() {
 
               {/* ) : null} */}
             </div>
+
+
+          </div>
+          <div className="flex w-full min-w-[700px] border-b-8 items-center border-[#D8EAFF] px-4 py-4 gap-5 bg-white rounded-b-xl mt-2">
             {cetakMesinPeriodeDefect?.map((data: any, index: number) => {
               return (
-                <div className="">
-                  <label>kode: </label>
+                <div className="flex flex-col max-w-45 overflow-x-scroll">
+                  <label>Kode: </label>
                   <label>{data.kode}</label>
                   <label>Total Defect: </label>
                   <label>{data.total_defect}</label>

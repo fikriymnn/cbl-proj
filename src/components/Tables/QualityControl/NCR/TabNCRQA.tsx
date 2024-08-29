@@ -7,6 +7,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import OngoingNCRQA from './OngoingNCR';
+import HistoryNCRQA from './HistoryNCR';
 
 
 
@@ -141,7 +142,7 @@ export default function TabNcrQA() {
                 <OngoingNCRQA />
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
-
+                <HistoryNCRQA />
             </TabPanel>
 
 
