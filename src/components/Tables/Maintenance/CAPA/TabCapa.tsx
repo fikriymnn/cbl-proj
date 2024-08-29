@@ -6,8 +6,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import OngoingNCRQA from './OngoingNCR';
-import HistoryNCRQA from './HistoryNCR';
+import CapaMasukMTC from './CapaMasukMTC';
 
 
 
@@ -49,7 +48,7 @@ function a11yProps(index: number) {
     };
 }
 
-export default function TabNcrQA() {
+export default function TabCapaMTC() {
     const theme = createTheme({
         palette: {
             primary: {
@@ -130,8 +129,8 @@ export default function TabNcrQA() {
                         aria-label="full width tabs example"
                         className='bg-white text-[#00499F] font-semibold mb-2 '
                     >
-                        <Tab label="Ongoing" {...a11yProps(0)} className='' />
-                        <Tab label="History" {...a11yProps(1)} />
+                        <Tab label="INCOMING" {...a11yProps(0)} className='' />
+                        <Tab label="HISTORY" {...a11yProps(1)} />
 
 
 
@@ -139,10 +138,10 @@ export default function TabNcrQA() {
                 </ThemeProvider>
             </AppBar>
             <TabPanel value={value} index={0} dir={theme.direction}>
-                <OngoingNCRQA />
+                <CapaMasukMTC />
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
-                <HistoryNCRQA />
+
             </TabPanel>
 
 

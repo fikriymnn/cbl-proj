@@ -14,8 +14,8 @@ const ModalKosongan = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed z-50 inset-0 overflow-y-auto backdrop-blur-sm bg-white/10  md:p-8 flex justify-center items-center">
-            <div className="w-full max-w-4xl bg-white rounded-xl shadow-md">
+        <div className="fixed z-50 inset-0 h-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
+            <div className="w-full max-w-4xl bg-white rounded-xl shadow-md max-h-screen overflow-y-auto">
                 <div className="flex w-full items-center pt-4 px-2">
                     <svg
                         className="flex w-1/12"

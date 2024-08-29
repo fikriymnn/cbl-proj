@@ -114,6 +114,9 @@ import RabutAwal from './pages/QualityControl/SamplingRabut/RabutAwal';
 import NcrMtc from './pages/Maintenance/NCR/Ncrmtc';
 import IncomingNCRQA from './pages/QualityControl/IncomingNCR/IncomingNCRQA';
 import IncomingNCRMR from './pages/MR/NCR/IncomingNCRMR';
+import CapaMtc from './pages/Maintenance/Capa/CapaMtc';
+import QcCapa from './pages/QualityControl/Capa/QcCapa';
+import MrCapa from './pages/MR/Capa/MrCapa';
 
 
 function App() {
@@ -410,6 +413,17 @@ function App() {
           }
         />
         <Route
+          path="/maintenance/capa"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CapaMtc />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/maintenance/MAN"
           element={
             <>
@@ -466,12 +480,34 @@ function App() {
           }
         />
         <Route
+          path="/qc/capa"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <QcCapa />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/mr/ncr"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <IncomingNCRMR />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/mr/capa"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MrCapa />
               </ProtectedRoute>
             </>
           }
