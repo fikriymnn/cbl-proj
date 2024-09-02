@@ -747,7 +747,7 @@ function CheckSheetCetakAwal() {
               Waktu Check : {jumlahWaktuCheck}
             </label>
             <div className="grid col-span-6 items-end justify-end gap-2">
-              {cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming' ? (
+              {cetakMesinAwal?.status == 'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0].id)

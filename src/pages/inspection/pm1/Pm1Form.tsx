@@ -26,7 +26,7 @@ function Pm1Form() {
   const [selectionUserKA, setSelectionUserKA] = useState<any>();
   const [selectionUserSuper, setSelectionUserSuper] = useState<any>();
   const [selectionUserLeader, setSelectionUserLeader] = useState<any>();
-  const [hasil,setHasil] = useState<String>('');
+  const [hasil, setHasil] = useState<String>('');
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -44,7 +44,6 @@ function Pm1Form() {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
-
 
   const [catatan, setCatatan] = useState<any>();
   useEffect(() => {
@@ -67,7 +66,6 @@ function Pm1Form() {
     }
   }
 
-  
   async function getUserKA() {
     const url = `${import.meta.env.VITE_API_LINK}/users`;
     try {
@@ -126,7 +124,6 @@ function Pm1Form() {
         withCredentials: true,
       });
 
-
       getPM1();
     } catch (error: any) {
       console.log(error);
@@ -179,10 +176,9 @@ function Pm1Form() {
     }
   }
 
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
   async function donePm1(id: any) {
-    
     const url = `${import.meta.env.VITE_API_LINK}/pm1/done/${id}`;
     try {
       setIsLoading(true);
@@ -212,7 +208,7 @@ function Pm1Form() {
     const start = new Date(startTime);
     const diffInMs = stopTime.getTime() - start.getTime();
     // Convert milliseconds to your desired unit (minutes, hours)
-    const elapsedTime = Math.round(diffInMs / (1000));
+    const elapsedTime = Math.round(diffInMs / 1000);
     console.log(elapsedTime); // Example: minutes
     return elapsedTime;
   }
@@ -233,7 +229,8 @@ function Pm1Form() {
     if (hours > 0) {
       formattedTime += `${hours} Jam :`; // Add hours if present
     }
-    if (hours > 0 || minutes > 0) { // Only add minutes if hours are present or minutes are non-zero
+    if (hours > 0 || minutes > 0) {
+      // Only add minutes if hours are present or minutes are non-zero
       formattedTime += `${minutes.toString().padStart(2, '0')} Menit : `;
     }
     formattedTime += remainingSecondsAfterMinutes.toString().padStart(2, '0');
@@ -272,20 +269,24 @@ function Pm1Form() {
   };
   const handleChange = (selectedOption: any) => {
     setSelectedOption(selectedOption);
-};
-const handleChangePoint = (selectedOption: any, i: number) => {
-  const onchangeVal: any = pm1;
-  onchangeVal.inspection_point_pm1s[i]['hasil'] = selectedOption.value; // Assuming 'hasil' is the field you want to update
-  setPm1(onchangeVal);
- 
-  
-};
-const handleSubmit = () => {
-  // Perform the submit action here, e.g., send data to the server
+  };
+  const handleChangePointHasil = (selectedOption: any, i: number) => {
+    const onchangeVal: any = pm1;
+    onchangeVal.inspection_point_pm1s[i]['hasil'] = selectedOption.value; // Assuming 'hasil' is the field you want to update
+    setPm1(onchangeVal);
+  };
+  const handleChangePoint = (e: any, i: number) => {
+    const { name, value } = e.target;
+    const onchangeVal: any = pm1;
+    onchangeVal.inspection_point_pm1s[i][name] = value; // Assuming 'hasil' is the field you want to update
+    setPm1(onchangeVal);
+  };
+  const handleSubmit = () => {
+    // Perform the submit action here, e.g., send data to the server
 
-  // Reset selectedOption to null or the default value after submission
-  setSelectedOption(null);
-};
+    // Reset selectedOption to null or the default value after submission
+    setSelectedOption(null);
+  };
   const totalWaktuTask =
     pm1 != null &&
     pm1.inspection_point_pm1s.reduce(
@@ -298,52 +299,86 @@ const handleSubmit = () => {
     pm1 != null && pm1.waktu_selesai != null
       ? convertDatetimeToDate(pm1.waktu_selesai)
       : '-';
-      
 
-      // handle onChange event of the dropdown
-     
-      const options = [
-        {
-          value: "baik",
-          text: 'Baik',
-          
-          icon: <svg width="20" height="20" viewBox="0 0 294 294" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="147" cy="147" r="147" fill="#00A3FF"/>
-          <path d="M53.5 145.5L121 213L239 86" stroke="white" stroke-width="38"/>
-          </svg>
-          
-        },
-        {
-          value: "warning",
-          text: 'Warning',
-          icon: <svg width="20" height="20" viewBox="0 0 294 294" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="147" cy="147" r="147" fill="#FFA800"/>
-          <path d="M150 62L233.138 200.75H66.8616L150 62Z" fill="white"/>
-          </svg>
-          
-        },
-        {
-          value: 'jelek',
-          text: 'Jelek',
-          icon: <svg width="20" height="20" viewBox="0 0 294 294" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="147" cy="147" r="147" fill="#FF0000"/>
-          <path d="M74 75L147.25 147M220.5 219L147.25 147M147.25 147L220.5 75L74 219" stroke="white" stroke-width="38"/>
-          </svg>
-          
-        },
-        {
-          value: 'tidak terpasang',
-          text: 'Not Installed',
-          icon: <svg width="20" height="20" viewBox="0 0 302 302" fill="none" xmlns="http://www.w3.org/2000/svg">
+  // handle onChange event of the dropdown
+
+  const options = [
+    {
+      value: 'baik',
+      text: 'Baik',
+
+      icon: (
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 294 294"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle cx="147" cy="147" r="147" fill="#00A3FF" />
+          <path
+            d="M53.5 145.5L121 213L239 86"
+            stroke="white"
+            stroke-width="38"
+          />
+        </svg>
+      ),
+    },
+    {
+      value: 'warning',
+      text: 'Warning',
+      icon: (
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 294 294"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle cx="147" cy="147" r="147" fill="#FFA800" />
+          <path d="M150 62L233.138 200.75H66.8616L150 62Z" fill="white" />
+        </svg>
+      ),
+    },
+    {
+      value: 'jelek',
+      text: 'Jelek',
+      icon: (
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 294 294"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle cx="147" cy="147" r="147" fill="#FF0000" />
+          <path
+            d="M74 75L147.25 147M220.5 219L147.25 147M147.25 147L220.5 75L74 219"
+            stroke="white"
+            stroke-width="38"
+          />
+        </svg>
+      ),
+    },
+    {
+      value: 'tidak terpasang',
+      text: 'Not Installed',
+      icon: (
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 302 302"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <g filter="url(#filter0_d_626_2534)">
-          <circle cx="151" cy="147" r="147" fill="#939393"/>
-          <path d="M63 147H238" stroke="white" stroke-width="38"/>
+            <circle cx="151" cy="147" r="147" fill="#939393" />
+            <path d="M63 147H238" stroke="white" stroke-width="38" />
           </g>
-          
-          </svg>
-          
-        }
-      ];
+        </svg>
+      ),
+    },
+  ];
   return (
     <DefaultLayout>
       {!isMobile && (
@@ -384,14 +419,10 @@ const handleSubmit = () => {
                     {pm1 != null && tiketMasuk}
                   </p>
                 </div>
-
-              
               </div>
             </div>
-            <div className='w-full pl-[20%]'>
-
-            </div>
-            <div className='flex w-full flex-col justify-end '>
+            <div className="w-full pl-[20%]"></div>
+            <div className="flex w-full flex-col justify-end ">
               <p className="md:text-[14px] text-[9px] font-semibold">
                 Form filling Guide
               </p>
@@ -427,7 +458,6 @@ const handleSubmit = () => {
                   : Tidak Ada / Tidak Terpasang
                 </p>
               </div>
-
             </div>
           </section>
           <div className="overflow-x-scroll ">
@@ -449,14 +479,19 @@ const handleSubmit = () => {
                   <p className="md:text-[14px] text-[9px] font-semibold">
                     Inspection Method
                   </p>
-                  <p className="md:text-[14px] text-[9px] font-semibold">Tools</p>
+                  <p className="md:text-[14px] text-[9px] font-semibold">
+                    Tools
+                  </p>
                 </div>
               </section>
               {pm1 != null &&
                 pm1.inspection_point_pm1s.map((data: any, i: any) => {
                   function convertDatetimeToDate(datetime: any) {
                     const dateObject = new Date(datetime);
-                    const day = dateObject.getDate().toString().padStart(2, '0'); // Ensure two-digit day
+                    const day = dateObject
+                      .getDate()
+                      .toString()
+                      .padStart(2, '0'); // Ensure two-digit day
                     const month = (dateObject.getMonth() + 1)
                       .toString()
                       .padStart(2, '0'); // Adjust for zero-based month
@@ -478,7 +513,17 @@ const handleSubmit = () => {
 
                   return (
                     <>
-                      <section  className={data.hasil == 'warning'?"border-2 border-yellow-400 bg-[#FFF9E8]":data.hasil == 'jelek'?"border-2 border-red-400 bg-[#FFEFEF]":data.hasil == 'tidak terpasang'?"border-2 border-red-400 bg-[#FFEFEF]":" border-b-8 border-[#D8EAFF]"}>
+                      <section
+                        className={
+                          data.hasil == 'warning'
+                            ? 'border-2 border-yellow-400 bg-[#FFF9E8]'
+                            : data.hasil == 'jelek'
+                            ? 'border-2 border-red-400 bg-[#FFEFEF]'
+                            : data.hasil == 'tidak terpasang'
+                            ? 'border-2 border-red-400 bg-[#FFEFEF]'
+                            : ' border-b-8 border-[#D8EAFF]'
+                        }
+                      >
                         <div className="flex p-4 border-b-2 ">
                           <div className="w-1/12">
                             <p className="md:text-[14px] text-[9px] font-semibold">
@@ -495,8 +540,9 @@ const handleSubmit = () => {
                             <div className="grid grid-cols-4 max-h-[400px] min-h-[200px] w-10/12 gap-3 pl-3 ">
                               {data.inspection_task_pm1s.map(
                                 (task: any, ii: any) => {
-
-                                  const formattedTime = formatElapsedTime(data.lama_pengerjaan);
+                                  const formattedTime = formatElapsedTime(
+                                    data.lama_pengerjaan,
+                                  );
                                   return (
                                     <>
                                       <div className="flex flex-col gap-y-10">
@@ -526,8 +572,8 @@ const handleSubmit = () => {
                             </div>
                           </div>
                         </div>
-                        <div className='border-b px-5 h-8 my-auto font-semibold text-sm flex w-full items-center'>
-                          {"Category:"+" " + data.category }
+                        <div className="border-b px-5 h-8 my-auto font-semibold text-sm flex w-full items-center">
+                          {'Category:' + ' ' + data.category}
                         </div>
                         <div className="flex w-full">
                           {data.waktu_mulai == null &&
@@ -555,10 +601,11 @@ const handleSubmit = () => {
                                           console.log(pm1);
                                           changeTextColor();
                                         }}
-                                        className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
-                                          ? 'text-black dark:text-white'
-                                          : ''
-                                          }`}
+                                        className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${
+                                          isOptionSelected
+                                            ? 'text-black dark:text-white'
+                                            : ''
+                                        }`}
                                       >
                                         <option
                                           value=""
@@ -641,171 +688,9 @@ const handleSubmit = () => {
                                     <div className=" flex mt-3">
                                       <textarea
                                         disabled
-                                        onChange={(e) => handleChangePoint(e, i)}
-                                        name="catatan"
-                                        defaultValue={data.catatan}
-                                        id=""
-                                        rows={3}
-                                        cols={90}
-                                        className=" border-2 border-[#D9D9D9] rounded-sm resize-none p-2 w-full"
-                                      ></textarea>
-                                    </div>
-                                  </>
-                                </div>
-                                <div className="p-4 flex flex-col justify-start items-start w-2/12 gap-3">
-                                  <p className="md:text-[14px] text-[9px] font-semibold">
-                                    Time :
-                                    {
-                                      data.lama_pengerjaan != null
-                                        ? data.lama_pengerjaan
-                                        : ''}
-                                  </p>
-                                  {
-                                    data.waktu_mulai == null ? (
-                                      <>
-                                        <p className='font-bold text-[#DE0000]'>
-                                          Task Belum Dimulai
-                                        </p>
-                                        <button
-                                          onClick={() => {
-                                            if (data.waktu_mulai != null) {
-                                              // alert('sudah di mulai');
-                                            } else {
-                                              startTask(data.id);
-                                            }
-                                          }}
-                                          className="flex w-full rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
-                                        >
-                                          <svg
-                                            width="14"
-                                            height="14"
-                                            viewBox="0 0 14 14"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                          >
-                                            <path
-                                              d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                              fill="white"
-                                            />
-                                          </svg>
-                                        </button>
-                                      </>
-                                    ) : (
-                                      <></>
-                                    )
-                                  }
-                                  {data.waktu_mulai != null ? (
-                                    <>
-                                      <p className='font-bold text-green-500'>
-                                        Task Sudah Dimulai
-                                      </p>
-                                      <button
-                                        onClick={() => {
-                                          if (data.waktu_selesai != null) {
-                                            alert('sudah di kerjakan');
-                                          } else if (data.waktu_mulai == null) {
-                                            alert('belum mulai');
-                                          } else {
-                                            stopTask(
-                                              data.id,
-                                              data.hasil,
-                                              data.catatan,
-                                              data.waktu_mulai,
-                                            );
-                                          }
-                                        }}
-                                        className="flex w-full rounded-md bg-[#DE0000] justify-center items-center px-2  py-3 hover:cursor-pointer"
-                                      >
-                                        <svg
-                                          width="14"
-                                          height="12"
-                                          viewBox="0 0 14 12"
-                                          fill="none"
-                                          xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                          <rect
-                                            width="14"
-                                            height="12"
-                                            rx="3"
-                                            fill="white"
-                                          />
-                                        </svg>
-                                      </button>
-                                    </>
-                                  ) : (
-                                    <>
-                                    </>
-                                  )}
-
-                                </div>
-                              </>
-                            )}
-                          {data.waktu_selesai == null &&
-                            data.waktu_mulai != null && (
-                              <>
-                                <div className="p-4 flex flex-col ">
-                                  <p className="md:text-[14px] text-[9px] font-semibold">
-                                    Result:
-                                    <span className="absolute top-4">
-                                      <div className='md:w-6 w-4'>
-                                        {data.hasil == 'baik' ? <img src={Logo} alt="aaa" />
-                                          : data.hasil == 'catatan' ? <img src={Polygon} alt="bb" />
-                                            : data.hasil == 'jelek' ? <img src={X} alt="cc" />
-                                              : data.hasil == 'tidak terpasang' ? <img src={Strip} alt="dd" />
-                                                : ""}
-                                      </div>
-                                    </span>
-                                  </p>
-                                  <div className=" flex mt-3 w-full">
-                                    <div className="relative z-20   md:w-[200px] w-[150px] dark:bg-form-input">
-                                    <Select
-                                    name='hasil'
-        placeholder="Select Option"
-        value={selectedOption}
-        options={options}
-        onChange={(selectedOption) => {
-          handleChangePoint(selectedOption, i);
-          console.log(pm1);
-          changeTextColor();
-          handleChange(selectedOption)
-        }}
-        formatOptionLabel={(e) => (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            {e.icon}
-            <span style={{ marginLeft: 5 }}>{e.text}</span>
-          </div>
-        )}
-      />
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div className="p-4 flex flex-col ">
-                                  <p className="md:text-[14px] text-[9px] font-semibold">
-                                    Upload Foto:
-                                  </p>
-
-                                  <br />
-                                  <div className="">
-                                    <input
-
-                                      type="file"
-                                      name=""
-                                      id=""
-                                      className="w-60"
-                                    />
-                                  </div>
-                                </div>
-                                <div className="p-4 flex flex-col w-5/12">
-                                  <p className="md:text-[14px] text-[9px] font-semibold">
-                                    Catatan:
-                                  </p>
-
-                                  <>
-                                    <div className=" flex mt-3">
-                                      <textarea
-
-                                        onChange={(e) => handleChangePoint(e, i)}
+                                        onChange={(e) =>
+                                          handleChangePoint(e, i)
+                                        }
                                         name="catatan"
                                         defaultValue={data.catatan}
                                         id=""
@@ -825,7 +710,7 @@ const handleSubmit = () => {
                                   </p>
                                   {data.waktu_mulai == null ? (
                                     <>
-                                      <p className='font-bold text-[#DE0000]'>
+                                      <p className="font-bold text-[#DE0000]">
                                         Task Belum Dimulai
                                       </p>
                                       <button
@@ -854,11 +739,10 @@ const handleSubmit = () => {
                                     </>
                                   ) : (
                                     <></>
-                                  )
-                                  }
+                                  )}
                                   {data.waktu_mulai != null ? (
                                     <>
-                                      <p className='font-bold text-green-500'>
+                                      <p className="font-bold text-green-500">
                                         Task Sudah Dimulai
                                       </p>
                                       <button
@@ -874,7 +758,6 @@ const handleSubmit = () => {
                                               data.catatan,
                                               data.waktu_mulai,
                                             );
-                                           handleSubmit()
                                           }
                                         }}
                                         className="flex w-full rounded-md bg-[#DE0000] justify-center items-center px-2  py-3 hover:cursor-pointer"
@@ -896,17 +779,188 @@ const handleSubmit = () => {
                                       </button>
                                     </>
                                   ) : (
-                                    <>
-
-                                    </>
+                                    <></>
                                   )}
-
+                                </div>
+                              </>
+                            )}
+                          {data.waktu_selesai == null &&
+                            data.waktu_mulai != null && (
+                              <>
+                                <div className="p-4 flex flex-col ">
+                                  <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Result:
+                                    <span className="absolute top-4">
+                                      <div className="md:w-6 w-4">
+                                        {data.hasil == 'baik' ? (
+                                          <img src={Logo} alt="aaa" />
+                                        ) : data.hasil == 'catatan' ? (
+                                          <img src={Polygon} alt="bb" />
+                                        ) : data.hasil == 'jelek' ? (
+                                          <img src={X} alt="cc" />
+                                        ) : data.hasil == 'tidak terpasang' ? (
+                                          <img src={Strip} alt="dd" />
+                                        ) : (
+                                          ''
+                                        )}
+                                      </div>
+                                    </span>
+                                  </p>
+                                  <div className=" flex mt-3 w-full">
+                                    <div className="relative z-20   md:w-[200px] w-[150px] dark:bg-form-input">
+                                      <Select
+                                        name="hasil"
+                                        placeholder="Select Option"
+                                        value={selectedOption}
+                                        options={options}
+                                        onChange={(selectedOption) => {
+                                          handleChangePointHasil(
+                                            selectedOption,
+                                            i,
+                                          );
+                                          console.log(pm1);
+                                          changeTextColor();
+                                          handleChange(selectedOption);
+                                        }}
+                                        formatOptionLabel={(e) => (
+                                          <div
+                                            style={{
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                            }}
+                                          >
+                                            {e.icon}
+                                            <span style={{ marginLeft: 5 }}>
+                                              {e.text}
+                                            </span>
+                                          </div>
+                                        )}
+                                      />
+                                    </div>
+                                  </div>
                                 </div>
 
+                                <div className="p-4 flex flex-col ">
+                                  <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Upload Foto:
+                                  </p>
+
+                                  <br />
+                                  <div className="">
+                                    <input
+                                      type="file"
+                                      name=""
+                                      id=""
+                                      className="w-60"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="p-4 flex flex-col w-5/12">
+                                  <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Catatan:
+                                  </p>
+
+                                  <>
+                                    <div className=" flex mt-3">
+                                      <textarea
+                                        onChange={(e) => {
+                                          handleChangePoint(e, i);
+                                          console.log(pm1);
+                                        }}
+                                        name="catatan"
+                                        id=""
+                                        rows={3}
+                                        cols={90}
+                                        className=" border-2 border-[#D9D9D9] rounded-sm resize-none p-2 w-full"
+                                      ></textarea>
+                                    </div>
+                                  </>
+                                </div>
+                                <div className="p-4 flex flex-col justify-start items-start w-2/12 gap-3">
+                                  <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Time :
+                                    {data.lama_pengerjaan != null
+                                      ? data.lama_pengerjaan
+                                      : ''}
+                                  </p>
+                                  {data.waktu_mulai == null ? (
+                                    <>
+                                      <p className="font-bold text-[#DE0000]">
+                                        Task Belum Dimulai
+                                      </p>
+                                      <button
+                                        onClick={() => {
+                                          if (data.waktu_mulai != null) {
+                                            // alert('sudah di mulai');
+                                          } else {
+                                            startTask(data.id);
+                                          }
+                                        }}
+                                        className="flex w-full rounded-md bg-[#00B81D] justify-center items-center px-2 py-3 hover:cursor-pointer"
+                                      >
+                                        <svg
+                                          width="14"
+                                          height="14"
+                                          viewBox="0 0 14 14"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <path
+                                            d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                            fill="white"
+                                          />
+                                        </svg>
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <></>
+                                  )}
+                                  {data.waktu_mulai != null ? (
+                                    <>
+                                      <p className="font-bold text-green-500">
+                                        Task Sudah Dimulai
+                                      </p>
+                                      <button
+                                        onClick={() => {
+                                          if (data.waktu_selesai != null) {
+                                            alert('sudah di kerjakan');
+                                          } else if (data.waktu_mulai == null) {
+                                            alert('belum mulai');
+                                          } else {
+                                            stopTask(
+                                              data.id,
+                                              data.hasil,
+                                              data.catatan,
+                                              data.waktu_mulai,
+                                            );
+                                            handleSubmit();
+                                          }
+                                        }}
+                                        className="flex w-full rounded-md bg-[#DE0000] justify-center items-center px-2  py-3 hover:cursor-pointer"
+                                      >
+                                        <svg
+                                          width="14"
+                                          height="12"
+                                          viewBox="0 0 14 12"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <rect
+                                            width="14"
+                                            height="12"
+                                            rx="3"
+                                            fill="white"
+                                          />
+                                        </svg>
+                                      </button>
+                                    </>
+                                  ) : (
+                                    <></>
+                                  )}
+                                </div>
                               </>
                             )}
                           {data.waktu_selesai != null && (
-
                             <>
                               <div className="p-4 flex flex-col ">
                                 <p className="md:text-[14px] text-[9px] font-semibold">
@@ -957,13 +1011,11 @@ const handleSubmit = () => {
                               <div className="p-4 flex flex-col justify-start items-start w-2/12 gap-1">
                                 <p className="md:text-[14px] text-[9px] font-semibold">
                                   Waktu Pengerjaan :{''}
-
                                 </p>
-                                <p className='md:text-[12px] text-[9px] font-semibold'>
-                                  {
-                                    data.lama_pengerjaan != null
-                                      ? formatElapsedTime(data.lama_pengerjaan)
-                                      : ''}{' '}
+                                <p className="md:text-[12px] text-[9px] font-semibold">
+                                  {data.lama_pengerjaan != null
+                                    ? formatElapsedTime(data.lama_pengerjaan)
+                                    : ''}{' '}
                                   Detik
                                 </p>
                               </div>
@@ -971,7 +1023,6 @@ const handleSubmit = () => {
                           )}
                         </div>
                       </section>
-                      
                     </>
                   );
                 })}
@@ -997,7 +1048,9 @@ const handleSubmit = () => {
                   />
                 )}
 
-                <p className="text-sm font-semibold p-5">Catatan Keseluruhan:</p>
+                <p className="text-sm font-semibold p-5">
+                  Catatan Keseluruhan:
+                </p>
                 {waktuSelesaiPm1 != '-' && (
                   <>
                     <textarea
@@ -1006,7 +1059,6 @@ const handleSubmit = () => {
                       onChange={(e) => setCatatan(e.target.value)}
                       className="border-2 border-[#D9D9D9] rounded-sm resize-none mx-4 px-4"
                     ></textarea>
-
                   </>
                 )}
                 {waktuSelesaiPm1 == '-' && (
@@ -1019,16 +1071,20 @@ const handleSubmit = () => {
                   </>
                 )}
 
-                <div className='flex flex-col px-4 py-4 md:text-[14px] text-[9px] font-semibold '>
-                  <p className='text-[17px]'>
+                <div className="flex flex-col px-4 py-4 md:text-[14px] text-[9px] font-semibold ">
+                  <p className="text-[17px]">
                     {'Total Waktu Pengerjaan : ' +
                       ' ' +
                       formatElapsedTime(totalWaktuTask) +
                       ' ' +
                       'Detik'}
                   </p>
-                  <p className='text-[17px]'>{'Waktu Mulai PM1 : ' + waktuMulaiPm1}</p>
-                  <p className='text-[17px]'>{'Waktu Selesai PM1 : ' + waktuSelesaiPm1}</p>
+                  <p className="text-[17px]">
+                    {'Waktu Mulai PM1 : ' + waktuMulaiPm1}
+                  </p>
+                  <p className="text-[17px]">
+                    {'Waktu Selesai PM1 : ' + waktuSelesaiPm1}
+                  </p>
                 </div>
 
                 <div className="flex w-full md:justify-end justify-start">
@@ -1064,7 +1120,9 @@ const handleSubmit = () => {
                       {' '}
                       Nama Mesin{' '}
                     </p>
-                    <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
+                    <p className="md:text-[14px] text-[9px] font-semibold ">
+                      :
+                    </p>
                     <p className="md:text-[14px] text-[9px] font-semibold pl-3.5">
                       {pm1 != null && pm1.nama_mesin}
                     </p>
@@ -1074,7 +1132,9 @@ const handleSubmit = () => {
                       {' '}
                       Nomor Mesin{' '}
                     </p>
-                    <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
+                    <p className="md:text-[14px] text-[9px] font-semibold ">
+                      :
+                    </p>
                     <p className="md:text-[14px] text-[9px] font-semibold">
                       {pm1 != null && pm1.mesin.kode_mesin}
                     </p>
@@ -1084,7 +1144,9 @@ const handleSubmit = () => {
                     <p className="md:text-[14px] text-[9px] font-semibold ">
                       Tanggal
                     </p>
-                    <p className="md:text-[14px] text-[9px] font-semibold ">:</p>
+                    <p className="md:text-[14px] text-[9px] font-semibold ">
+                      :
+                    </p>
                     <p className="md:text-[14px] text-[9px] text-start font-semibold">
                       {pm1 != null && tiketMasuk}
                     </p>
@@ -1194,8 +1256,8 @@ const handleSubmit = () => {
                   </div> */}
                 </div>
               </div>
-              
-              <div className='flex flex-col w-full justify-start '>
+
+              <div className="flex flex-col w-full justify-start ">
                 <p className="md:text-[14px] text-[9px] font-semibold">
                   Form filling Guide
                 </p>
@@ -1204,9 +1266,7 @@ const handleSubmit = () => {
                     <div className="md:w-5 w-4 flex justify-center items-center">
                       <img className="" src={Ceklis} alt="" />
                     </div>
-                    <p className="text-[9px] font-semibold">
-                      : Kondisi Baik
-                    </p>
+                    <p className="text-[9px] font-semibold">: Kondisi Baik</p>
                   </div>
                   <div className="flex justify-start gap-1">
                     <div className="md:w-5 w-4 flex justify-center items-center">
@@ -1220,9 +1280,7 @@ const handleSubmit = () => {
                     <div className="md:w-5 w-4 flex justify-center items-center">
                       <img className="" src={X} alt="" />
                     </div>
-                    <p className=" text-[9px] font-semibold">
-                      : Jelek / Rusak
-                    </p>
+                    <p className=" text-[9px] font-semibold">: Jelek / Rusak</p>
                   </div>
                   <div className="flex justify-start md:gap-3 gap-1">
                     <div className="md:w-5 w-4 flex justify-center items-center">
@@ -1258,7 +1316,10 @@ const handleSubmit = () => {
                   pm1.inspection_point_pm1s.map((data: any, i: any) => {
                     function convertDatetimeToDate(datetime: any) {
                       const dateObject = new Date(datetime);
-                      const day = dateObject.getDate().toString().padStart(2, '0'); // Ensure two-digit day
+                      const day = dateObject
+                        .getDate()
+                        .toString()
+                        .padStart(2, '0'); // Ensure two-digit day
                       const month = (dateObject.getMonth() + 1)
                         .toString()
                         .padStart(2, '0'); // Adjust for zero-based month
@@ -1280,8 +1341,17 @@ const handleSubmit = () => {
 
                     return (
                       <>
-
-                        <section className={data.hasil == 'warning'?"border-2 border-yellow-400 bg-[#FFF9E8] mb-2":data.hasil == 'jelek'?"border-2 border-red-400 bg-[#FFEFEF] mb-2":data.hasil == 'tidak terpasang'?"border-2 border-red-400 bg-[#FFEFEF] mb-2":" border-b-8 border-[#D8EAFF] mb-2"}>
+                        <section
+                          className={
+                            data.hasil == 'warning'
+                              ? 'border-2 border-yellow-400 bg-[#FFF9E8] mb-2'
+                              : data.hasil == 'jelek'
+                              ? 'border-2 border-red-400 bg-[#FFEFEF] mb-2'
+                              : data.hasil == 'tidak terpasang'
+                              ? 'border-2 border-red-400 bg-[#FFEFEF] mb-2'
+                              : ' border-b-8 border-[#D8EAFF] mb-2'
+                          }
+                        >
                           <div className="flex p-4 border-b-2 border-[#6D6C6C] w-full">
                             <div className="flex w-full ">
                               <div className="flex w-4/12 flex-col">
@@ -1306,7 +1376,7 @@ const handleSubmit = () => {
                                     <>
                                       {data.waktu_mulai == null ? (
                                         <>
-                                          <p className='font-bold text-xs text-[#DE0000]'>
+                                          <p className="font-bold text-xs text-[#DE0000]">
                                             Task Belum Dimulai
                                           </p>
                                           <button
@@ -1335,18 +1405,19 @@ const handleSubmit = () => {
                                         </>
                                       ) : (
                                         <></>
-                                      )
-                                      }
+                                      )}
                                       {data.waktu_mulai != null ? (
                                         <>
-                                          <p className='font-bold text-xs text-green-500'>
+                                          <p className="font-bold text-xs text-green-500">
                                             Task Sudah Dimulai
                                           </p>
                                           <button
                                             onClick={() => {
                                               if (data.waktu_selesai != null) {
                                                 alert('sudah di kerjakan');
-                                              } else if (data.waktu_mulai == null) {
+                                              } else if (
+                                                data.waktu_mulai == null
+                                              ) {
                                                 alert('belum mulai');
                                               } else {
                                                 stopTask(
@@ -1355,7 +1426,7 @@ const handleSubmit = () => {
                                                   data.catatan,
                                                   data.waktu_mulai,
                                                 );
-                                                handleSubmit()
+                                                handleSubmit();
                                               }
                                             }}
                                             className="flex w-full rounded-md bg-[#DE0000] justify-center items-center px-2  py-3 hover:cursor-pointer"
@@ -1377,22 +1448,19 @@ const handleSubmit = () => {
                                           </button>
                                         </>
                                       ) : (
-                                        <>
-
-                                        </>
+                                        <></>
                                       )}
                                     </>
                                   )}
                                 </div>
                               </div>
-                              <div className='flex flex-col gap-3 w-full'>
+                              <div className="flex flex-col gap-3 w-full">
                                 {data.inspection_task_pm1s.map(
                                   (task: any, ii: any) => {
                                     return (
                                       <>
-                                        <div className='grid grid-cols-2 grid-rows-1 justify-start items-start border-stroke border-b-2'>
-
-                                          <div className='flex flex-col w-32'>
+                                        <div className="grid grid-cols-2 grid-rows-1 justify-start items-start border-stroke border-b-2">
+                                          <div className="flex flex-col w-32">
                                             <p className="text-[11px] font-bold">
                                               Task List{' '}
                                             </p>
@@ -1400,7 +1468,7 @@ const handleSubmit = () => {
                                               {task.task}
                                             </p>
                                           </div>
-                                          <div className='flex flex-col w-32 pl-2'>
+                                          <div className="flex flex-col w-32 pl-2">
                                             <p className="text-[11px] font-bold ">
                                               Inspection Method{' '}
                                             </p>
@@ -1408,7 +1476,7 @@ const handleSubmit = () => {
                                               {task.method}
                                             </p>
                                           </div>
-                                          <div className='flex flex-col w-32'>
+                                          <div className="flex flex-col w-32">
                                             <p className="text-[11px] font-bold">
                                               Acceptance Criteria{' '}
                                             </p>
@@ -1416,7 +1484,7 @@ const handleSubmit = () => {
                                               {task.acceptance_criteria}
                                             </p>
                                           </div>
-                                          <div className='flex flex-col w-32 pl-2'>
+                                          <div className="flex flex-col w-32 pl-2">
                                             <p className="text-[11px] font-bold">
                                               Tools{' '}
                                             </p>
@@ -1429,12 +1497,12 @@ const handleSubmit = () => {
                                     );
                                   },
                                 )}
-                              </div >
+                              </div>
                             </div>
                           </div>
-                          <div className='border-b px-5 h-8 my-auto font-semibold text-xs flex w-full items-center'>
-                          {"Category:"+" " + data.category }
-                        </div>
+                          <div className="border-b px-5 h-8 my-auto font-semibold text-xs flex w-full items-center">
+                            {'Category:' + ' ' + data.category}
+                          </div>
                           <div className="flex w-full">
                             {data.waktu_mulai == null &&
                               data.waktu_selesai == null && (
@@ -1446,9 +1514,22 @@ const handleSubmit = () => {
                                     <div className=" flex w-full">
                                       <div className="relative z-20 w-[130px] dark:bg-form-input">
                                         <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-
-                                          {data.hasil == 'baik' ? <img src={Ceklis} alt="" className='' /> : data.hasil == 'catatan' ? <img src={Polygon} alt="" /> : data.hasil == 'warning' ? <img src={X} alt="" /> : data.hasil == 'tidak terpasang' ? <img src={Strip} alt="" /> : ""}
-
+                                          {data.hasil == 'baik' ? (
+                                            <img
+                                              src={Ceklis}
+                                              alt=""
+                                              className=""
+                                            />
+                                          ) : data.hasil == 'catatan' ? (
+                                            <img src={Polygon} alt="" />
+                                          ) : data.hasil == 'warning' ? (
+                                            <img src={X} alt="" />
+                                          ) : data.hasil ==
+                                            'tidak terpasang' ? (
+                                            <img src={Strip} alt="" />
+                                          ) : (
+                                            ''
+                                          )}
                                         </span>
 
                                         <select
@@ -1461,12 +1542,12 @@ const handleSubmit = () => {
                                             console.log(pm1);
                                             changeTextColor();
                                           }}
-                                          className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent px-8 py-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
-                                            ? 'text-black dark:text-white'
-                                            : ''
-                                            }`}
+                                          className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent px-8 py-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${
+                                            isOptionSelected
+                                              ? 'text-black dark:text-white'
+                                              : ''
+                                          }`}
                                         >
-
                                           <option
                                             value=""
                                             disabled
@@ -1519,9 +1600,7 @@ const handleSubmit = () => {
                                             </g>
                                           </svg>
                                         </span>
-
                                       </div>
-
                                     </div>
                                   </div>
                                   <div className=" flex flex-col ">
@@ -1538,8 +1617,6 @@ const handleSubmit = () => {
                                       />
                                     </div>
                                   </div>
-
-
                                 </>
                               )}
                             {data.waktu_mulai != null &&
@@ -1551,27 +1628,38 @@ const handleSubmit = () => {
                                     </p>
                                     <div className=" flex w-full">
                                       <div className="relative z-20 w-[130px] dark:bg-form-input">
-                                      <Select
-                                    name='hasil'
-        placeholder="Select Option"
-        value={selectedOption}
-        options={options}
-        onChange={(selectedOption) => {
-          handleChangePoint(selectedOption, i);
-         
-          changeTextColor();
-          handleChange(selectedOption)
-        }}
-        formatOptionLabel={(e) => (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            {e.icon}
-            <span className='text-xs' style={{ marginLeft: 5 }}>{e.text}</span>
-          </div>
-        )}
-      />
+                                        <Select
+                                          name="hasil"
+                                          placeholder="Select Option"
+                                          value={selectedOption}
+                                          options={options}
+                                          onChange={(selectedOption) => {
+                                            handleChangePoint(
+                                              selectedOption,
+                                              i,
+                                            );
 
+                                            changeTextColor();
+                                            handleChange(selectedOption);
+                                          }}
+                                          formatOptionLabel={(e) => (
+                                            <div
+                                              style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                              }}
+                                            >
+                                              {e.icon}
+                                              <span
+                                                className="text-xs"
+                                                style={{ marginLeft: 5 }}
+                                              >
+                                                {e.text}
+                                              </span>
+                                            </div>
+                                          )}
+                                        />
                                       </div>
-
                                     </div>
                                   </div>
                                   <div className=" flex flex-col ">
@@ -1588,8 +1676,6 @@ const handleSubmit = () => {
                                       />
                                     </div>
                                   </div>
-
-
                                 </>
                               )}
                             {data.waktu_selesai != null && (
@@ -1602,7 +1688,6 @@ const handleSubmit = () => {
                                     <div className="relative z-20 w-[130px] dark:bg-form-input">
                                       {data.hasil}
                                     </div>
-
                                   </div>
                                 </div>
                                 <div className=" flex flex-col ">
@@ -1619,8 +1704,6 @@ const handleSubmit = () => {
                                     />
                                   </div>
                                 </div>
-
-
                               </>
                             )}
                           </div>
@@ -1636,7 +1719,9 @@ const handleSubmit = () => {
                                     <div className=" flex">
                                       <textarea
                                         disabled
-                                        onChange={(e) => handleChangePoint(e, i)}
+                                        onChange={(e) =>
+                                          handleChangePoint(e, i)
+                                        }
                                         name="catatan"
                                         defaultValue={data.catatan}
                                         id=""
@@ -1660,8 +1745,9 @@ const handleSubmit = () => {
                                   <>
                                     <div className=" flex">
                                       <textarea
-
-                                        onChange={(e) => handleChangePoint(e, i)}
+                                        onChange={(e) =>
+                                          handleChangePoint(e, i)
+                                        }
                                         name="catatan"
                                         defaultValue={data.catatan}
                                         id=""
@@ -1703,75 +1789,79 @@ const handleSubmit = () => {
                     );
                   })}
 
-               
                 <section className=" border-b-8 border-[#D8EAFF] flex flex-col">
-                <div>
-                  {pm1 != null && pm1.status != 'done' ? (
-                    <button
-                      onClick={openModalADD}
-                      className="py-2 px-20 mx-5 mt-5 bg-primary text-white rounded-md"
-                    >
-                      +
-                    </button>
-                  ) : null}
-                </div>
-                {showModalADD && (
-                  <ModalPM1TambahInspection
-                    children={undefined}
-                    onFinish={() => getPM1()}
-                    isOpen={showModalADD}
-                    onClose={closeModalADD}
-                    idTicket={pm1.id}
-                  />
-                )}
+                  <div>
+                    {pm1 != null && pm1.status != 'done' ? (
+                      <button
+                        onClick={openModalADD}
+                        className="py-2 px-20 mx-5 mt-5 bg-primary text-white rounded-md"
+                      >
+                        +
+                      </button>
+                    ) : null}
+                  </div>
+                  {showModalADD && (
+                    <ModalPM1TambahInspection
+                      children={undefined}
+                      onFinish={() => getPM1()}
+                      isOpen={showModalADD}
+                      onClose={closeModalADD}
+                      idTicket={pm1.id}
+                    />
+                  )}
 
-                <p className="text-sm font-semibold p-5">Catatan Keseluruhan:</p>
-                {waktuSelesaiPm1 != '-' && (
-                  <>
-                    <textarea
-                      defaultValue={pm1 != null ? pm1.catatan : ''}
-                      disabled
-                      onChange={(e) => setCatatan(e.target.value)}
-                      className="border-2 border-[#D9D9D9] rounded-sm resize-none mx-4 px-4"
-                    ></textarea>
-
-                  </>
-                )}
-                {waktuSelesaiPm1 == '-' && (
-                  <>
-                    <textarea
-                      defaultValue={pm1 != null ? pm1.catatan : ''}
-                      onChange={(e) => setCatatan(e.target.value)}
-                      className="peer h-full min-h-[100px] w-[96%] mx-5 mb-5 resize-none rounded-[7px] border-2 border-stroke bg-transparent px-3 py-2.5  font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                    ></textarea>
-                  </>
-                )}
-
-                <div className='flex flex-col px-4 py-4 md:text-[14px] text-[9px] font-semibold '>
-                  <p className='text-[17px]'>
-                    {'Total Waktu Pengerjaan : ' +
-                      ' ' +
-                      formatElapsedTime(totalWaktuTask) +
-                      ' ' +
-                      'Detik'}
+                  <p className="text-sm font-semibold p-5">
+                    Catatan Keseluruhan:
                   </p>
-                  <p className='text-[17px]'>{'Waktu Mulai PM1 : ' + waktuMulaiPm1}</p>
-                  <p className='text-[17px]'>{'Waktu Selesai PM1 : ' + waktuSelesaiPm1}</p>
-                </div>
+                  {waktuSelesaiPm1 != '-' && (
+                    <>
+                      <textarea
+                        defaultValue={pm1 != null ? pm1.catatan : ''}
+                        disabled
+                        onChange={(e) => setCatatan(e.target.value)}
+                        className="border-2 border-[#D9D9D9] rounded-sm resize-none mx-4 px-4"
+                      ></textarea>
+                    </>
+                  )}
+                  {waktuSelesaiPm1 == '-' && (
+                    <>
+                      <textarea
+                        defaultValue={pm1 != null ? pm1.catatan : ''}
+                        onChange={(e) => setCatatan(e.target.value)}
+                        className="peer h-full min-h-[100px] w-[96%] mx-5 mb-5 resize-none rounded-[7px] border-2 border-stroke bg-transparent px-3 py-2.5  font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                      ></textarea>
+                    </>
+                  )}
 
-                <div className="flex w-full md:justify-end justify-start">
-                  {pm1 != null && pm1.status != 'done' ? (
-                    <button
-                      disabled={isLoading}
-                      onClick={() => donePm1(id)}
-                      className="py-2 px-10 mx-5 mt-5 bg-primary text-white rounded-md mb-5"
-                    >
-                      {isLoading ? 'Loading...' : 'SUBMIT INSPECTION'}
-                    </button>
-                  ) : null}
-                  {isLoading && <Loading />}
-                </div>
-              </section>
+                  <div className="flex flex-col px-4 py-4 md:text-[14px] text-[9px] font-semibold ">
+                    <p className="text-[17px]">
+                      {'Total Waktu Pengerjaan : ' +
+                        ' ' +
+                        formatElapsedTime(totalWaktuTask) +
+                        ' ' +
+                        'Detik'}
+                    </p>
+                    <p className="text-[17px]">
+                      {'Waktu Mulai PM1 : ' + waktuMulaiPm1}
+                    </p>
+                    <p className="text-[17px]">
+                      {'Waktu Selesai PM1 : ' + waktuSelesaiPm1}
+                    </p>
+                  </div>
+
+                  <div className="flex w-full md:justify-end justify-start">
+                    {pm1 != null && pm1.status != 'done' ? (
+                      <button
+                        disabled={isLoading}
+                        onClick={() => donePm1(id)}
+                        className="py-2 px-10 mx-5 mt-5 bg-primary text-white rounded-md mb-5"
+                      >
+                        {isLoading ? 'Loading...' : 'SUBMIT INSPECTION'}
+                      </button>
+                    ) : null}
+                    {isLoading && <Loading />}
+                  </div>
+                </section>
               </div>
             </div>
           </div>

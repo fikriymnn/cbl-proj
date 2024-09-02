@@ -689,7 +689,7 @@ function CheckSheetPondAwal() {
               Waktu Check : {jumlahWaktuCheck}
             </label>
             <div className="grid col-span-6 items-end justify-end gap-2">
-              {pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ? (
+              {pondMesinAwal?.status == 'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekAwal(pondMesinAwal?.inspeksi_pond_awal[0].id)

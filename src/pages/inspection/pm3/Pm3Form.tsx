@@ -125,7 +125,6 @@ function Pm3Form() {
   const [isLoading, setIsLoading] = useState(false);
 
   async function donePm3(id: any) {
-    
     const url = `${import.meta.env.VITE_API_LINK}/pm3/done/${id}`;
     try {
       setIsLoading(true);
@@ -217,20 +216,24 @@ function Pm3Form() {
 
   const handleChange = (selectedOption: any) => {
     setSelectedOption(selectedOption);
-};
-const handleChangePoint = (selectedOption: any, i: number) => {
-  const onchangeVal: any = pm3;
-  onchangeVal.inspection_point_pm3s[i]['hasil'] = selectedOption.value; // Assuming 'hasil' is the field you want to update
-  setPm3(onchangeVal);
- 
-  
-};
-const handleSubmit = () => {
-  // Perform the submit action here, e.g., send data to the server
+  };
+  const handleChangePointHasil = (selectedOption: any, i: number) => {
+    const onchangeVal: any = pm3;
+    onchangeVal.inspection_point_pm3s[i]['hasil'] = selectedOption.value; // Assuming 'hasil' is the field you want to update
+    setPm3(onchangeVal);
+  };
+  const handleChangePoint = (e: any, i: number) => {
+    const { name, value } = e.target;
+    const onchangeVal: any = pm3;
+    onchangeVal.inspection_point_pm3s[i][name] = value; // Assuming 'hasil' is the field you want to update
+    setPm3(onchangeVal);
+  };
+  const handleSubmit = () => {
+    // Perform the submit action here, e.g., send data to the server
 
-  // Reset selectedOption to null or the default value after submission
-  setSelectedOption(null);
-};
+    // Reset selectedOption to null or the default value after submission
+    setSelectedOption(null);
+  };
 
   const totalWaktuTask =
     pm3 != null &&
@@ -244,48 +247,83 @@ const handleSubmit = () => {
     pm3 != null && pm3.waktu_selesai != null
       ? convertDatetimeToDate(pm3.waktu_selesai)
       : '-';
-      const options = [
-        {
-          value: "baik",
-          text: 'Baik',
-          
-          icon: <svg width="20" height="20" viewBox="0 0 294 294" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="147" cy="147" r="147" fill="#00A3FF"/>
-          <path d="M53.5 145.5L121 213L239 86" stroke="white" stroke-width="38"/>
-          </svg>
-          
-        },
-        {
-          value: "warning",
-          text: 'Warning',
-          icon: <svg width="20" height="20" viewBox="0 0 294 294" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="147" cy="147" r="147" fill="#FFA800"/>
-          <path d="M150 62L233.138 200.75H66.8616L150 62Z" fill="white"/>
-          </svg>
-          
-        },
-        {
-          value: 'jelek',
-          text: 'Jelek',
-          icon: <svg width="20" height="20" viewBox="0 0 294 294" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="147" cy="147" r="147" fill="#FF0000"/>
-          <path d="M74 75L147.25 147M220.5 219L147.25 147M147.25 147L220.5 75L74 219" stroke="white" stroke-width="38"/>
-          </svg>
-          
-        },
-        {
-          value: 'tidak terpasang',
-          text: 'Not Installed',
-          icon: <svg width="20" height="20" viewBox="0 0 302 302" fill="none" xmlns="http://www.w3.org/2000/svg">
+  const options = [
+    {
+      value: 'baik',
+      text: 'Baik',
+
+      icon: (
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 294 294"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle cx="147" cy="147" r="147" fill="#00A3FF" />
+          <path
+            d="M53.5 145.5L121 213L239 86"
+            stroke="white"
+            stroke-width="38"
+          />
+        </svg>
+      ),
+    },
+    {
+      value: 'warning',
+      text: 'Warning',
+      icon: (
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 294 294"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle cx="147" cy="147" r="147" fill="#FFA800" />
+          <path d="M150 62L233.138 200.75H66.8616L150 62Z" fill="white" />
+        </svg>
+      ),
+    },
+    {
+      value: 'jelek',
+      text: 'Jelek',
+      icon: (
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 294 294"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle cx="147" cy="147" r="147" fill="#FF0000" />
+          <path
+            d="M74 75L147.25 147M220.5 219L147.25 147M147.25 147L220.5 75L74 219"
+            stroke="white"
+            stroke-width="38"
+          />
+        </svg>
+      ),
+    },
+    {
+      value: 'tidak terpasang',
+      text: 'Not Installed',
+      icon: (
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 302 302"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
           <g filter="url(#filter0_d_626_2534)">
-          <circle cx="151" cy="147" r="147" fill="#939393"/>
-          <path d="M63 147H238" stroke="white" stroke-width="38"/>
+            <circle cx="151" cy="147" r="147" fill="#939393" />
+            <path d="M63 147H238" stroke="white" stroke-width="38" />
           </g>
-          
-          </svg>
-          
-        }
-      ];
+        </svg>
+      ),
+    },
+  ];
   return (
     <DefaultLayout>
       {!isMobile && (
@@ -546,9 +584,7 @@ const handleSubmit = () => {
                               <p className="md:text-[14px] text-[9px] font-semibold">
                                 {data.inspection_point}{' '}
                               </p>
-                              
-                             
-                            </div> 
+                            </div>
                             <div className="grid grid-cols-4 max-h-[400px] min-h-[200px] w-10/12 gap-3 pl-3 ">
                               {data.inspection_task_pm3s.map(
                                 (task: any, ii: any) => {
@@ -567,7 +603,7 @@ const handleSubmit = () => {
                                           {task.acceptance_criteria}
                                         </p>
                                       </div>
-                                     
+
                                       <div className="flex flex-col gap-y-10 pl-4">
                                         <p className="md:text-[14px] text-[9px] font-semibold h-10">
                                           {task.method}
@@ -585,8 +621,8 @@ const handleSubmit = () => {
                             </div>
                           </div>
                         </div>
-                        <div className='border-b px-5 h-8 my-auto font-semibold text-sm flex w-full items-center'>
-                          {"Category:"+" " + data.category }
+                        <div className="border-b px-5 h-8 my-auto font-semibold text-sm flex w-full items-center">
+                          {'Category:' + ' ' + data.category}
                         </div>
                         <div className="flex w-full">
                           {data.waktu_mulai == null &&
@@ -828,24 +864,37 @@ const handleSubmit = () => {
                                   </p>
                                   <div className=" flex mt-3 w-full">
                                     <div className="relative z-20   md:w-[200px] w-[150px] dark:bg-form-input">
-                                    <Select
-                                    name='hasil'
-        placeholder="Select Option"
-        value={selectedOption}
-        options={options}
-        onChange={(selectedOption) => {
-          handleChangePoint(selectedOption, i);
-         
-          changeTextColor();
-          handleChange(selectedOption)
-        }}
-        formatOptionLabel={(e) => (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            {e.icon}
-            <span className='' style={{ marginLeft: 5 }}>{e.text}</span>
-          </div>
-        )}
-      />
+                                      <Select
+                                        name="hasil"
+                                        placeholder="Select Option"
+                                        value={selectedOption}
+                                        options={options}
+                                        onChange={(selectedOption) => {
+                                          handleChangePointHasil(
+                                            selectedOption,
+                                            i,
+                                          );
+
+                                          changeTextColor();
+                                          handleChange(selectedOption);
+                                        }}
+                                        formatOptionLabel={(e) => (
+                                          <div
+                                            style={{
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                            }}
+                                          >
+                                            {e.icon}
+                                            <span
+                                              className=""
+                                              style={{ marginLeft: 5 }}
+                                            >
+                                              {e.text}
+                                            </span>
+                                          </div>
+                                        )}
+                                      />
                                     </div>
                                   </div>
                                 </div>
@@ -943,7 +992,7 @@ const handleSubmit = () => {
                                               data.catatan,
                                               data.waktu_mulai,
                                             );
-                                            handleSubmit()
+                                            handleSubmit();
                                           }
                                         }}
                                         className="flex w-full rounded-md bg-[#DE0000] justify-center items-center px-2  py-3 hover:cursor-pointer"
@@ -1350,7 +1399,17 @@ const handleSubmit = () => {
 
                     return (
                       <>
-                        <section className={data.hasil == 'warning'?"border-2 border-yellow-400 bg-[#FFF9E8] mb-2":data.hasil == 'jelek'?"border-2 border-red-400 bg-[#FFEFEF] mb-2":data.hasil == 'tidak terpasang'?"border-2 border-red-400 bg-[#FFEFEF] mb-2":" border-b-8 border-[#D8EAFF] mb-2"}>
+                        <section
+                          className={
+                            data.hasil == 'warning'
+                              ? 'border-2 border-yellow-400 bg-[#FFF9E8] mb-2'
+                              : data.hasil == 'jelek'
+                              ? 'border-2 border-red-400 bg-[#FFEFEF] mb-2'
+                              : data.hasil == 'tidak terpasang'
+                              ? 'border-2 border-red-400 bg-[#FFEFEF] mb-2'
+                              : ' border-b-8 border-[#D8EAFF] mb-2'
+                          }
+                        >
                           <div className="flex p-4 border-b-2 border-[#6D6C6C] ">
                             <div className="flex w-full ">
                               <div className="flex w-4/12 flex-col">
@@ -1425,7 +1484,7 @@ const handleSubmit = () => {
                                                   data.catatan,
                                                   data.waktu_mulai,
                                                 );
-                                                handleSubmit()
+                                                handleSubmit();
                                               }
                                             }}
                                             className="flex w-full rounded-md bg-[#DE0000] justify-center items-center px-2  py-3 hover:cursor-pointer"
@@ -1499,9 +1558,9 @@ const handleSubmit = () => {
                               </div>
                             </div>
                           </div>
-                          <div className='border-b px-5 h-8 my-auto font-semibold text-xs flex w-full items-center'>
-                          {"Category:"+" " + data.category }
-                        </div>
+                          <div className="border-b px-5 h-8 my-auto font-semibold text-xs flex w-full items-center">
+                            {'Category:' + ' ' + data.category}
+                          </div>
                           <div className="flex w-full">
                             {data.waktu_mulai == null &&
                               data.waktu_selesai == null && (
@@ -1645,23 +1704,36 @@ const handleSubmit = () => {
                                         </span>
 
                                         <Select
-                                    name='hasil'
-        placeholder="Select Option"
-        value={selectedOption}
-        options={options}
-        onChange={(selectedOption) => {
-          handleChangePoint(selectedOption, i);
-         
-          changeTextColor();
-          handleChange(selectedOption)
-        }}
-        formatOptionLabel={(e) => (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            {e.icon}
-            <span className='text-xs' style={{ marginLeft: 5 }}>{e.text}</span>
-          </div>
-        )}
-      />
+                                          name="hasil"
+                                          placeholder="Select Option"
+                                          value={selectedOption}
+                                          options={options}
+                                          onChange={(selectedOption) => {
+                                            handleChangePoint(
+                                              selectedOption,
+                                              i,
+                                            );
+
+                                            changeTextColor();
+                                            handleChange(selectedOption);
+                                          }}
+                                          formatOptionLabel={(e) => (
+                                            <div
+                                              style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                              }}
+                                            >
+                                              {e.icon}
+                                              <span
+                                                className="text-xs"
+                                                style={{ marginLeft: 5 }}
+                                              >
+                                                {e.text}
+                                              </span>
+                                            </div>
+                                          )}
+                                        />
                                       </div>
                                     </div>
                                   </div>

@@ -928,7 +928,7 @@ function CheckSheetLemPeriode() {
               )}
             </div>
             <div className="grid col-span-2 items-end justify-end gap-2">
-              {LemMesinPeriode?.inspeksi_lem_periode[0].status == 'incoming' ? (
+              {LemMesinPeriode?.status == 'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekPeriode(

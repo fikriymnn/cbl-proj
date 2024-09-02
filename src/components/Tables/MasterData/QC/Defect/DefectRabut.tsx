@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import Loading from '../../../../Loading';
 
-function DefectCoating() {
+function DefectRabut() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [addDefect, setDefect] = useState<any>();
@@ -12,7 +12,7 @@ function DefectCoating() {
   }, []);
 
   async function getDefect() {
-    const url = `${import.meta.env.VITE_API_LINK}/master/qc/cs/masalahCoating`;
+    const url = `${import.meta.env.VITE_API_LINK}/master/qc/cs/masalahRabut`;
     try {
       const res = await axios.get(url, {
         params: {
@@ -22,7 +22,6 @@ function DefectCoating() {
       });
 
       setDefect(res.data);
-
       console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
@@ -36,7 +35,7 @@ function DefectCoating() {
   const [sumberMasalah, setSumberMasalah] = useState<any>();
 
   async function tambahDefect() {
-    const url = `${import.meta.env.VITE_API_LINK}/master/qc/cs/masalahCoating`;
+    const url = `${import.meta.env.VITE_API_LINK}/master/qc/cs/masalahRabut`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -53,7 +52,6 @@ function DefectCoating() {
         },
       );
 
-      //window.location.reload();
       getDefect();
       setIsLoading(false);
       closeModalTambah();
@@ -70,7 +68,7 @@ function DefectCoating() {
   async function editDefect(id: any) {
     const url = `${
       import.meta.env.VITE_API_LINK
-    }/master/qc/cs/masalahCoating/${id}`;
+    }/master/qc/cs/masalahRabut/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.put(
@@ -101,7 +99,7 @@ function DefectCoating() {
   async function deleteDefect(id: any) {
     const url = `${
       import.meta.env.VITE_API_LINK
-    }/master/qc/cs/masalahCoating/${id}`;
+    }/master/qc/cs/masalahRabut/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.delete(
@@ -111,9 +109,8 @@ function DefectCoating() {
           withCredentials: true,
         },
       );
-
-      setIsLoading(false);
       getDefect();
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error);
     }
@@ -504,4 +501,4 @@ function DefectCoating() {
   );
 }
 
-export default DefectCoating;
+export default DefectRabut;

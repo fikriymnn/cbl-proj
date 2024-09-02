@@ -36,8 +36,9 @@ function CheckSheetCoatingAwal() {
   }
 
   async function startTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoatingResult/awal/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoatingResult/awal/start/${id}`;
     try {
       const res = await axios.get(url, {
         withCredentials: true,
@@ -62,8 +63,9 @@ function CheckSheetCoatingAwal() {
     spot_uv: any,
     tes_cracking: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoatingResult/awal/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoatingResult/awal/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -94,8 +96,9 @@ function CheckSheetCoatingAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoatingResult/awal/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoatingResult/awal/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -114,8 +117,9 @@ function CheckSheetCoatingAwal() {
   }
 
   async function doneCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoating/awal/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoating/awal/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -129,6 +133,25 @@ function CheckSheetCoatingAwal() {
     } catch (error: any) {
       console.log(error.response.data.msg);
       alert(error.response.data.msg);
+    }
+  }
+
+  async function pendingCekAwal(id: number) {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoating/pending/${id}`;
+    try {
+      const res = await axios.get(
+        url,
+
+        {
+          withCredentials: true,
+        },
+      );
+
+      getCoatingMesinAwal();
+    } catch (error: any) {
+      console.log(error.data.msg);
     }
   }
 
@@ -646,7 +669,7 @@ function CheckSheetCoatingAwal() {
             )}
           </div>
           {coatingMesinAwal?.inspeksi_coating_sub_awal[0].status ==
-            'incoming' ? (
+          'incoming' ? (
             <>
               <button
                 disabled={isLoading}
@@ -675,8 +698,16 @@ function CheckSheetCoatingAwal() {
               Waktu Check : {jumlahWaktuCheck}
             </label>
             <div className="grid col-span-6 items-end justify-end">
+              {coatingMesinAwal?.status == 'incoming' ? (
+                <button
+                  onClick={() => pendingCekAwal(coatingMesinAwal?.id)}
+                  className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                >
+                  PENDING
+                </button>
+              ) : null}
               {coatingMesinAwal?.inspeksi_coating_sub_awal[0].status ==
-                'incoming' ? (
+              'incoming' ? (
                 <button
                   onClick={() =>
                     doneCekAwal(

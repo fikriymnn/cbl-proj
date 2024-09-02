@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import ProsesCoatingMesin from './ProsesCoatingMesin';
 import ProsesCoatingMesinHistory from './ProsesCoatingMesinHistory';
+import ProsesCoatingMesinPending from './ProsesCoatingMesinPending';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -138,7 +139,8 @@ export default function TabCoating() {
               className="bg-white text-[#00499F] font-semibold mb-2 flex w-full"
             >
               <Tab label="Ongoing JO" {...a11yProps(0)} />
-              <Tab label="History" {...a11yProps(1)} />
+              <Tab label="Pending" {...a11yProps(1)} />
+              <Tab label="History" {...a11yProps(2)} />
               <div className="flex w-full justify-end pr-4">
                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                   {tanggal}
@@ -151,6 +153,9 @@ export default function TabCoating() {
           <ProsesCoatingMesin />
         </TabPanel>
         <TabPanel value={value} index={1} dir={theme.direction}>
+          <ProsesCoatingMesinPending />
+        </TabPanel>
+        <TabPanel value={value} index={2} dir={theme.direction}>
           <ProsesCoatingMesinHistory />
         </TabPanel>
       </Box>
