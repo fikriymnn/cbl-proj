@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import FormNcrMTC from './FormNcr';
 import NcrDibuatMTC from './NcrDibuat';
+import IncomingNCRMTC from './IncomingNCR';
 
 
 
@@ -129,8 +130,8 @@ export default function TabNcrMTC() {
                         aria-label="full width tabs example"
                         className='bg-white text-[#00499F] font-semibold mb-2 '
                     >
-                        <Tab label="LAPOR" {...a11yProps(0)} className='' />
-                        <Tab label="LAPORAN DIBUAT" {...a11yProps(1)} />
+                        <Tab label="Incoming" {...a11yProps(0)} className='' />
+                        <Tab label="LAPOR" {...a11yProps(1)} />
 
 
 
@@ -138,7 +139,7 @@ export default function TabNcrMTC() {
                 </ThemeProvider>
             </AppBar>
             <TabPanel value={value} index={0} dir={theme.direction}>
-                <FormNcrMTC />
+                <IncomingNCRMTC />
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
                 <NcrDibuatMTC />

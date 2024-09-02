@@ -42,6 +42,26 @@ function CapaMasukMR() {
         setShowModal1(onchangeVal);
     };
 
+    const [capacMr, setCapaMr] = useState<any>();
+
+    useEffect(() => {
+        getCapaMr();
+    }, []);
+
+    async function getCapaMr() {
+        const url = `${import.meta.env.VITE_API_LINK}/capa?bagian_tiket=incoming
+        `;
+        try {
+            const res = await axios.get(url, {
+                withCredentials: true,
+            });
+
+            setCapaMr(res.data.data);
+            console.log(res.data.data);
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
     return (
 
         <>
@@ -64,46 +84,50 @@ function CapaMasukMR() {
                     <div className='col-span-2'>No. CAPA</div>
                     <div className='col-span-2'>No. JO</div>
                     <div className='col-span-2'>Sumber</div>
-
+                    <div className='col-span-2'>Tujuan</div>
                     <div className='col-span-2'>Status</div>
-                    <div className='col-span-4 flex w-full justify-end'>Action</div>
+                    <div className='col-span-2 flex w-full justify-end'>Action</div>
                 </div>
 
             </div>
-            {tiket.map(
+            {capacMr?.map(
                 (data: any, i: number) => {
                     return (
                         <>
                             <div className=' flex bg-white py-2 w-full mt-2 mb-2 px-5 text-sm font-semibold rounded-md  items-center'>
                                 <p className='w-20'>{i + 1}</p>
                                 <div className='grid grid-cols-12 w-full text-[#6c6b6b] text-sm font-light items-center'>
-                                    <div className='col-span-2'>001/CAPA/08/2024</div>
-                                    <div className=''>000/000/000A</div>
-                                    <div className=''>MTC</div>
-                                    <div className='col-span-2'>PRODUKSI</div>
+                                    <div className='col-span-2'>{data?.no_capa}</div>
+                                    <div className='col-span-2'>{data?.no_jo}</div>
+                                    <div className='col-span-2 uppercase'>{data?.pelapor?.bagian}</div>
 
+                                    <div className='col-span-2 uppercase'>{data?.department}</div>
 
-                                    <div className='col-span-2 text-red-700 bg-yellow-300 rounded-full flex w-full items-center justify-center'>INCOMING</div>
-                                    <div className='col-span-4 w-full flex justify-end'>
+                                    <div className='col-span-2 text-red-700 bg-yellow-300 rounded-full flex w-full items-center justify-center'>{data?.status}</div>
+                                    <div className='col-span-2 w-full flex justify-end'>
                                         <div className="flex gap-2 items-center justify-center ">
                                             <div>
-
-                                                <button
-                                                    title="button"
-                                                    className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                                    onClick={() => handleClick(i)}
-                                                >
-                                                    <img
-                                                        src={Burger}
-                                                        alt=""
-                                                        className="mx-3"
-                                                    />
-                                                </button>
+                                                {data.status == 'menunggu verifikasi mr' ?
+                                                    <button
+                                                        title="button"
+                                                        className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
+                                                        onClick={() => handleClick(i)}
+                                                    >
+                                                        <img
+                                                            src={Burger}
+                                                            alt=""
+                                                            className="mx-3"
+                                                        />
+                                                    </button>
+                                                    : <>
+                                                    </>
+                                                }
 
                                                 {openButton == i ? (
                                                     <div className="absolute bg-white p-3 shadow-5 rounded-md">
                                                         {' '}
                                                         {/* Wrap buttons for styling */}
+
                                                         <div className="flex flex-col gap-1">
 
                                                             <button

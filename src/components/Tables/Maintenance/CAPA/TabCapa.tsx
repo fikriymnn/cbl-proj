@@ -130,7 +130,7 @@ export default function TabCapaMTC() {
                         className='bg-white text-[#00499F] font-semibold mb-2 '
                     >
                         <Tab label="INCOMING" {...a11yProps(0)} className='' />
-                        <Tab label="HISTORY" {...a11yProps(1)} />
+                        <Tab label="LAPOR" {...a11yProps(1)} />
 
 
 

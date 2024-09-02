@@ -215,7 +215,7 @@ function OngoingNCRMR() {
                                                                             </div>
                                                                         </div>
 
-                                                                        {data.data_department.map((data2: any, ii: any) => {
+                                                                        {data?.data_department?.map((data2: any, ii: any) => {
                                                                             return (
                                                                                 <>
                                                                                     <div className='flex w-full px-4 py-4'>
