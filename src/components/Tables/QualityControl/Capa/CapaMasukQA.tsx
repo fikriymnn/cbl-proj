@@ -4,6 +4,8 @@ import Arrow from '../../../../images/icon/arrowDown.svg';
 import Burger from '../../../../images/icon/burger.svg';
 import Filter from '../../../../images/icon/filter.svg';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
+import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
+import convertDateToTime from '../../../../utils/converDateToTime';
 
 function CapaMasukQA() {
     const tiket = [
@@ -62,6 +64,27 @@ function CapaMasukQA() {
             console.log(error);
         }
     }
+    const [ctt, setCtt] = useState<any>();
+    const [status, setStatus] = useState<any>();
+
+    async function submitCapa(id: any, index: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/capa/verifikasiQa/${id}
+        `;
+        try {
+            const res = await axios.put(url, {
+                status: status,
+                catatan_verifikasi_qa: ctt,
+
+            }, {
+                withCredentials: true,
+            });
+            closeModal1(index);
+            getCapaQC();
+
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
 
     return (
 
@@ -93,6 +116,8 @@ function CapaMasukQA() {
             </div>
             {capacQC?.map(
                 (data: any, i: number) => {
+                    const tanggal = convertTimeStampToDateOnly(data?.tanggal);
+                    const jam = convertDateToTime(data?.tanggal);
                     return (
                         <>
                             <div className=' flex bg-white py-2 w-full mt-2 mb-2 px-5 text-sm font-semibold rounded-md  items-center'>
@@ -158,19 +183,20 @@ function CapaMasukQA() {
                                                                                     NO CAPA
                                                                                 </p>
                                                                                 <p className='text-xl font-normal '>
-                                                                                    000A
+                                                                                    {data?.ncr == null ? '-'
+                                                                                        : data?.no_ncr}
                                                                                 </p>
                                                                                 <p className='text-sm font-semibold text-black pt-2'>
                                                                                     NO JO/IO
                                                                                 </p>
                                                                                 <p className='text-xl font-normal '>
-                                                                                    000A/000B
+                                                                                    {data?.no_jo} / {data?.no_io}
                                                                                 </p>
                                                                                 <p className='text-sm font-semibold text-black pt-2'>
                                                                                     PRODUK
                                                                                 </p>
                                                                                 <p className='text-xl font-normal '>
-                                                                                    KEMASAN SIRUP
+                                                                                    {data.nama_produk == null ? '-' : data?.nama_produk}
                                                                                 </p>
 
                                                                             </div>
@@ -179,13 +205,13 @@ function CapaMasukQA() {
                                                                                     WAKTU LAPOR
                                                                                 </p>
                                                                                 <p className='text-xl font-normal '>
-                                                                                    20 MEI 2024, 14:00
+                                                                                    {tanggal}, {jam}
                                                                                 </p>
                                                                                 <p className='text-sm font-semibold text-black'>
                                                                                     NAMA PELAPOR
                                                                                 </p>
                                                                                 <p className='text-xl font-normal '>
-                                                                                    ACEP PIERE
+                                                                                    {data?.pelapor?.nama}
                                                                                 </p>
                                                                             </div>
                                                                         </div>
@@ -195,126 +221,169 @@ function CapaMasukQA() {
                                                                                     CATATAN NCR QA
                                                                                 </p>
                                                                                 <p className='text-xl font-normal '>
-                                                                                    Isi catatan QA
+                                                                                    {data?.catatan_qa}
                                                                                 </p>
                                                                                 <p className='text-sm font-semibold text-black pt-2'>
                                                                                     CATATAN NCR MR
                                                                                 </p>
                                                                                 <p className='text-xl font-normal '>
-                                                                                    Isi catatan MR
+                                                                                    {data?.catatan_mr}
+                                                                                </p>
+
+
+                                                                            </div>
+                                                                            <div className='flex flex-col gap-1'>
+                                                                                <p className='text-sm font-semibold text-black'>
+                                                                                    CATATAN CAPA QA
+                                                                                </p>
+                                                                                <p className='text-xl font-normal '>
+                                                                                    {data?.catatan_verifikasi_qa == null ? '-' : data?.catatan_verifikasi_qa}
+                                                                                </p>
+                                                                                <p className='text-sm font-semibold text-black pt-2'>
+                                                                                    CATATAN CAPA MR
+                                                                                </p>
+                                                                                <p className='text-xl font-normal '>
+                                                                                    {data?.catatan_verifikasi_mr == null ? '-' : data?.catatan_verifikasi_mr}
                                                                                 </p>
 
 
                                                                             </div>
 
                                                                         </div>
-                                                                        <div className='flex w-full px-4 py-4'>
-                                                                            <div className='flex flex-col w-full'>
+                                                                        {data?.data_ketidaksesuaian?.map((data2: any, ii: any) => {
+                                                                            return (
+                                                                                <>
 
-                                                                                <p className='text-sm font-semibold text-black pt-2'>
-                                                                                    LAPORAN
-                                                                                </p>
-                                                                                <div className='flex'>
-                                                                                    <div className='flex flex-col gap-1 w-[10%]'>
-                                                                                        <p className='text-sm font-semibold text-black pt-2'>
-                                                                                            NO
-                                                                                        </p>
-                                                                                        <p className='text-xl font-normal '>
-                                                                                            1
-                                                                                        </p>
+                                                                                    <div className='flex w-full px-4 py-4'>
+                                                                                        <div className='flex flex-col w-full'>
+
+                                                                                            <p className='text-sm font-semibold text-black pt-2'>
+                                                                                                LAPORAN
+                                                                                            </p>
+                                                                                            <div className='flex'>
+                                                                                                <div className='flex flex-col gap-1 w-[10%]'>
+                                                                                                    <p className='text-sm font-semibold text-black pt-2'>
+                                                                                                        NO
+                                                                                                    </p>
+                                                                                                    <p className='text-xl font-normal '>
+                                                                                                        {ii + 1}
+                                                                                                    </p>
+                                                                                                </div>
+                                                                                                <div className='flex flex-col  gap-1  w-[60%]'>
+                                                                                                    <p className='text-sm font-semibold text-black pt-2'>
+                                                                                                        KETIDAKSESUAIAN
+                                                                                                    </p>
+                                                                                                    <p className='text-xl font-normal '>
+                                                                                                        {data2?.ketidaksesuaian}
+                                                                                                    </p>
+                                                                                                </div>
+                                                                                                <div className='flex flex-col  gap-1  w-[30%] items-end'>
+                                                                                                    <p className='text-sm font-semibold text-black pt-2'>
+                                                                                                        GAMBAR
+                                                                                                    </p>
+                                                                                                    <p className='text-sm font-normal text-blue-500'>
+                                                                                                        LIHAT GAMBAR
+                                                                                                    </p>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                            <p className='text-sm font-semibold text-black pt-2'>
+                                                                                                ANALISIS PENYEBAB
+                                                                                            </p>
+                                                                                            <textarea
+                                                                                                name='analisa_penyebab'
+                                                                                                readOnly
+                                                                                                defaultValue={data2?.analisa_penyebab}
+
+                                                                                                className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                                                            ></textarea>
+
+                                                                                            <p className='text-sm font-semibold text-black pt-2'>
+                                                                                                TINDAKAN PERBAIKAN
+                                                                                            </p>
+                                                                                            <textarea
+                                                                                                name='tindakan_perbaikan'
+                                                                                                readOnly
+                                                                                                defaultValue={data2?.tindakan_perbaikan}
+                                                                                                className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                                                            ></textarea>
+
+                                                                                            <p className='text-sm font-semibold text-black pt-2'>
+                                                                                                PENCEGAHAN
+                                                                                            </p>
+                                                                                            <textarea
+                                                                                                name='pencegahan'
+                                                                                                readOnly
+                                                                                                defaultValue={data2?.pencegahan}
+                                                                                                className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                                                            ></textarea>
+
+                                                                                            <p className='text-sm font-semibold text-black pt-2'>
+                                                                                                PENCEGAHAN EFEKTIF DILAKUKAN
+                                                                                            </p>
+                                                                                            <textarea
+                                                                                                name='pencegahan_efektif_dilakukan'
+                                                                                                readOnly
+                                                                                                defaultValue={data2?.pencegahan_efektif_dilakukan}
+                                                                                                className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                                                            ></textarea>
+
+                                                                                            <p className='text-sm font-semibold text-black pt-2'>
+                                                                                                KETERANGAN KETIDAKSESUAIAN
+                                                                                            </p>
+                                                                                            <textarea
+                                                                                                name='keterangan_ketidak_sesuaian'
+                                                                                                readOnly
+                                                                                                defaultValue={data2?.keterangan_ketidak_sesuaian}
+                                                                                                className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                                                            ></textarea>
+
+
+                                                                                        </div>
+
                                                                                     </div>
-                                                                                    <div className='flex flex-col  gap-1  w-[60%]'>
-                                                                                        <p className='text-sm font-semibold text-black pt-2'>
-                                                                                            KETIDAKSESUAIAN
-                                                                                        </p>
-                                                                                        <p className='text-xl font-normal '>
-                                                                                            Deskripsi ketidaksesuaian
-                                                                                        </p>
-                                                                                    </div>
-                                                                                    <div className='flex flex-col  gap-1  w-[30%] items-end'>
-                                                                                        <p className='text-sm font-semibold text-black pt-2'>
-                                                                                            GAMBAR
-                                                                                        </p>
-                                                                                        <p className='text-sm font-normal text-blue-500'>
-                                                                                            LIHAT GAMBAR
-                                                                                        </p>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <p className='text-sm font-semibold text-black pt-2'>
-                                                                                    ANALISIS PENYEBAB
-                                                                                </p>
-                                                                                <textarea
-                                                                                    readOnly
-                                                                                    className="peer bg-neutral-300 h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                                                                ></textarea>
+                                                                                </>
+                                                                            )
+                                                                        })
+                                                                        }
+                                                                        <p className='text-sm font-semibold text-black pt-4'>
+                                                                            Catatan
+                                                                        </p>
+                                                                        <textarea
 
-                                                                                <p className='text-sm font-semibold text-black pt-2'>
-                                                                                    TINDAKAN PERBAIKAN
-                                                                                </p>
-                                                                                <textarea
-                                                                                    readOnly
-                                                                                    className="peer bg-neutral-300 h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                                                                ></textarea>
+                                                                            onChange={(e) => setCtt(e.target.value)}
+                                                                            className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                                        ></textarea>
+                                                                        <div className='pt-4'>
+                                                                            <input
+                                                                                onChange={(e) => {
 
-                                                                                <p className='text-sm font-semibold text-black pt-2'>
-                                                                                    PENCEGAHAN
-                                                                                </p>
-                                                                                <textarea
-                                                                                    readOnly
-                                                                                    className="peer bg-neutral-300 h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                                                                ></textarea>
-
-                                                                                <p className='text-sm font-semibold text-black pt-2'>
-                                                                                    PENCEGAHAN EFEKTIF DILAKUKAN
-                                                                                </p>
-                                                                                <textarea
-                                                                                    readOnly
-                                                                                    className="peer bg-neutral-300 h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                                                                ></textarea>
-
-                                                                                <p className='text-sm font-semibold text-black pt-2'>
-                                                                                    KETERANGAN KETIDAKSESUAIAN
-                                                                                </p>
-                                                                                <textarea
-                                                                                    readOnly
-                                                                                    className="peer bg-neutral-300 h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                                                                ></textarea>
-                                                                                <div className='flex flex-col w-full'>
-                                                                                    <p className='text-sm font-semibold text-black pt-2'>
-                                                                                        CATATAN
-                                                                                    </p>
-                                                                                    <textarea
-
-                                                                                        className="peer  h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                                                                    ></textarea>
-
-                                                                                    <div className='pt-4'>
-                                                                                        <input
-
-                                                                                            type="radio" id="sspoint1" name="sspoint1" value="sesuai" />
-                                                                                        <label className='pl-2 text-xl text-black   '>Sesuai</label>
-                                                                                    </div>
-                                                                                    <div>
-                                                                                        <input
-
-                                                                                            type="radio" id="ssspoint1" name="sspoint1" value="tidak sesuai" />
-                                                                                        <label className='pl-2 text-xl text-black'>Tidak Sesuai</label>
-                                                                                    </div>
-                                                                                    <div className="pt-5">
-                                                                                        <button
-
-                                                                                            className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
-                                                                                        >
-                                                                                            SUBMIT
-                                                                                        </button>
-                                                                                    </div>
-
-                                                                                </div>
-
-                                                                            </div>
-
+                                                                                    setStatus(e.target.value)
+                                                                                }}
+                                                                                type="radio" id="sspoint1" name="sspoint1" value="sesuai" />
+                                                                            <label className='pl-2 text-xl text-black   '>Sesuai</label>
                                                                         </div>
+                                                                        <div>
+                                                                            <input
+                                                                                onChange={(e) => {
 
+                                                                                    setStatus(e.target.value)
+                                                                                }}
+                                                                                type="radio" id="ssspoint1" name="sspoint1" value="tidak sesuai" />
+                                                                            <label className='pl-2 text-xl text-black'>Tidak Sesuai</label>
+                                                                        </div>
+                                                                        <div className="pt-5">
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    e.preventDefault()
+                                                                                    // console.log(ctt, status)
+                                                                                    submitCapa(data?.id, i)
+
+                                                                                }}
+                                                                                className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
+                                                                            >
+                                                                                SUBMIT
+                                                                            </button>
+                                                                        </div>
                                                                     </>
                                                                 </ModalKosongan>
                                                             </>

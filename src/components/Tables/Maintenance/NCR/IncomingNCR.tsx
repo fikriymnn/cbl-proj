@@ -51,10 +51,11 @@ function IncomingNCRMTC() {
     }, []);
 
     async function getNcrQC() {
-        const url = `${import.meta.env.VITE_API_LINK}/capa?department=maintenance
+        const url = `${import.meta.env.VITE_API_LINK}/capa?department=maintenance&status=incoming
         `;
         try {
             const res = await axios.get(url, {
+
                 withCredentials: true,
             });
 
@@ -66,23 +67,23 @@ function IncomingNCRMTC() {
     }
 
 
-    const [capa, setCapa] = useState<any>();
+    // const [capa, setCapa] = useState<any>();
 
-    const handleChangePoint = (e: any, i: number) => {
+    const handleChangePoint = (e: any, i: number, ii: number) => {
         const { name, value } = e.target;
-        const onchangeVal: any = [...capa];
-        onchangeVal[i][name] = value;
-        setCapa(onchangeVal);
+        const onchangeVal: any = ncrQC;
+        onchangeVal[i].data_ketidaksesuaian[ii][name] = value;
+        setNcrQC(onchangeVal);
     };
 
-    async function submitCapa() {
-        const url = `${import.meta.env.VITE_API_LINK}/capa`;
+    async function submitCapa(id: any, data: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/capa/submit/${id}`;
         try {
             //setIsLoading(true);
             const res = await axios.post(
                 url,
                 {
-
+                    data_ketidaksesuaian: data
                 },
                 {
                     withCredentials: true,
@@ -98,6 +99,7 @@ function IncomingNCRMTC() {
             alert(error.data.msg);
         }
     }
+
 
     return (
 
@@ -145,22 +147,25 @@ function IncomingNCRMTC() {
                                     <div className='col-span-2'>{data?.kategori_laporan}</div>
 
 
-                                    <div className='col-span-2 text-red-700 bg-yellow-300 rounded-full flex w-full items-center justify-center'>{data?.status}</div>
+                                    <div className='col-span-2 text-red-700 bg-yellow-300 rounded-full flex w-full text-center justify-center uppercase'>{data?.status}</div>
                                     <div className='col-span-2 w-full flex justify-end'>
                                         <div className="flex gap-2 items-center justify-center ">
                                             <div>
-
-                                                <button
-                                                    title="button"
-                                                    className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                                    onClick={() => handleClick(i)}
-                                                >
-                                                    <img
-                                                        src={Burger}
-                                                        alt=""
-                                                        className="mx-3"
-                                                    />
-                                                </button>
+                                                {data.status == 'incoming' ?
+                                                    <button
+                                                        title="button"
+                                                        className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
+                                                        onClick={() => handleClick(i)}
+                                                    >
+                                                        <img
+                                                            src={Burger}
+                                                            alt=""
+                                                            className="mx-3"
+                                                        />
+                                                    </button>
+                                                    : <>
+                                                    </>
+                                                }
 
                                                 {openButton == i ? (
                                                     <div className="absolute bg-white p-3 shadow-5 rounded-md">
@@ -197,7 +202,7 @@ function IncomingNCRMTC() {
                                                                                     NO NCR
                                                                                 </p>
                                                                                 <p className='text-xl font-normal '>
-                                                                                    {data.ncr == null ? '-'
+                                                                                    {data?.ncr == null ? '-'
                                                                                         : data?.no_ncr}
                                                                                 </p>
                                                                                 <p className='text-sm font-semibold text-black pt-2'>
@@ -288,8 +293,11 @@ function IncomingNCRMTC() {
                                                                                                 ANALISIS PENYEBAB
                                                                                             </p>
                                                                                             <textarea
+                                                                                                name='analisa_penyebab'
+                                                                                                onChange={(e) => {
 
-                                                                                                onChange={(e) => handleChangePoint(e, ii)}
+                                                                                                    handleChangePoint(e, i, ii)
+                                                                                                }}
                                                                                                 className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                                                                             ></textarea>
 
@@ -297,8 +305,8 @@ function IncomingNCRMTC() {
                                                                                                 TINDAKAN PERBAIKAN
                                                                                             </p>
                                                                                             <textarea
-
-                                                                                                onChange={(e) => handleChangePoint(e, ii)}
+                                                                                                name='tindakan_perbaikan'
+                                                                                                onChange={(e) => handleChangePoint(e, i, ii)}
                                                                                                 className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                                                                             ></textarea>
 
@@ -306,8 +314,8 @@ function IncomingNCRMTC() {
                                                                                                 PENCEGAHAN
                                                                                             </p>
                                                                                             <textarea
-
-                                                                                                onChange={(e) => handleChangePoint(e, ii)}
+                                                                                                name='pencegahan'
+                                                                                                onChange={(e) => handleChangePoint(e, i, ii)}
                                                                                                 className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                                                                             ></textarea>
 
@@ -315,8 +323,8 @@ function IncomingNCRMTC() {
                                                                                                 PENCEGAHAN EFEKTIF DILAKUKAN
                                                                                             </p>
                                                                                             <textarea
-
-                                                                                                onChange={(e) => handleChangePoint(e, ii)}
+                                                                                                name='pencegahan_efektif_dilakukan'
+                                                                                                onChange={(e) => handleChangePoint(e, i, ii)}
                                                                                                 className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                                                                             ></textarea>
 
@@ -324,8 +332,8 @@ function IncomingNCRMTC() {
                                                                                                 KETERANGAN KETIDAKSESUAIAN
                                                                                             </p>
                                                                                             <textarea
-
-                                                                                                onChange={(e) => handleChangePoint(e, ii)}
+                                                                                                name='keterangan_ketidak_sesuaian'
+                                                                                                onChange={(e) => handleChangePoint(e, i, ii)}
                                                                                                 className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                                                                             ></textarea>
 
@@ -342,7 +350,10 @@ function IncomingNCRMTC() {
 
                                                                             <div className="pt-5">
                                                                                 <button
-
+                                                                                    onClick={() => {
+                                                                                        // console.log(data?.data_ketidaksesuaian)
+                                                                                        submitCapa(data?.id, data?.data_ketidaksesuaian)
+                                                                                    }}
                                                                                     className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
                                                                                 >
                                                                                     SUBMIT

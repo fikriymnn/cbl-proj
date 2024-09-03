@@ -689,6 +689,7 @@ function CheckSheetPondAwal() {
             </label>
             <div className="grid col-span-6 items-end justify-end gap-2">
               {!isOnprogres &&
+                pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' &&
                 pondMesinAwal?.status == 'incoming' ? (
                 <button
                   onClick={() =>

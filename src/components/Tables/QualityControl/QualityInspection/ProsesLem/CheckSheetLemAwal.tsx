@@ -725,6 +725,7 @@ function CheckSheetLemAwal() {
             </label>
             <div className="grid col-span-6 items-end justify-end gap-2">
               {!isOnprogres &&
+                cetakMesinAwal?.inspeksi_lem_awal[0].status == 'incoming' &&
                 cetakMesinAwal?.status == 'incoming' ? (
                 <button
                   onClick={() =>
