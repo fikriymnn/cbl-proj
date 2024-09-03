@@ -916,8 +916,7 @@ function CheckSheetPondPeriode() {
               )}
             </div>
             <div className="grid col-span-2 items-end justify-end gap-2">
-              {pondMesinPeriode?.inspeksi_pond_periode[0].status ==
-              'incoming' ? (
+              {pondMesinPeriode?.status == 'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekPeriode(

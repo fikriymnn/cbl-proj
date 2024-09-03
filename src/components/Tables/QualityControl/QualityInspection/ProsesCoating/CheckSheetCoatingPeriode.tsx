@@ -17,9 +17,15 @@ function CheckSheetCoatingPeriode() {
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [CoatingMesinPeriode, setCoatingMesinPeriode] = useState<any>();
+
+  const [coatingMesinPeriodeDefect, setCoatingMesinPeriodeDefect] =
+    useState<any>();
   const [catatan, setCatatan] = useState<any>();
   const [kode, setKode] = useState<any>();
   const [masalah, setMasalah] = useState<any>();
+  const [kriteria, setKriteria] = useState<any>();
+  const [persenKriteria, setPersenKriteria] = useState<any>();
+  const [sumberMasalah, setSumberMasalah] = useState<any>();
 
   const [openGuide, setOpenGuide] = useState(null);
   const handleClickGuide = (index: any) => {
@@ -31,10 +37,20 @@ function CheckSheetCoatingPeriode() {
   const [showDetail, setShowDetail] = useState<boolean[]>(
     new Array(add != null && add.length).fill(false),
   );
+  const [showNotOk, setShowNotOk] = useState<boolean[]>(
+    new Array(add != null && add.length).fill(false),
+  );
   const handleClickAdd = (index: number) => {
     setShowDetail((prevState) => {
       const updatedShowDetail = [...prevState]; // Create a copy
       updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
+      return updatedShowDetail;
+    });
+  };
+  const handleClickNotOke = (index: number, isi: boolean) => {
+    setShowNotOk((prevState) => {
+      const updatedShowDetail = [...prevState]; // Create a copy
+      updatedShowDetail[index] = isi; // Toggle value
       return updatedShowDetail;
     });
   };
@@ -51,15 +67,17 @@ function CheckSheetCoatingPeriode() {
       });
 
       setCoatingMesinPeriode(res.data.data);
-      console.log(res.data.data);
+      setCoatingMesinPeriodeDefect(res.data.defect);
+      console.log(res);
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
 
   async function startTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoatingResult/periode/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoatingResult/periode/start/${id}`;
     try {
       const res = await axios.get(
         url,
@@ -87,8 +105,9 @@ function CheckSheetCoatingPeriode() {
     nilai_glossy_kanan: any,
     data_defect: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoatingResult/periode/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoatingResult/periode/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -116,8 +135,9 @@ function CheckSheetCoatingPeriode() {
   }
 
   async function tambahTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoatingResult/periode/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoatingResult/periode/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -138,10 +158,14 @@ function CheckSheetCoatingPeriode() {
     id: number,
     kode: any,
     masalah: any,
+    kriteria: any,
+    persenKriteria: any,
+    sumberMasalah: any,
     index: number,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoatingResult/periode/point/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoatingResult/periode/point/${id}`;
     try {
       const res = await axios.post(
         url,
@@ -149,6 +173,9 @@ function CheckSheetCoatingPeriode() {
         {
           kode: kode,
           masalah: masalah,
+          kriteria: kriteria,
+          persen_kriteria: persenKriteria,
+          sumber_masalah: sumberMasalah,
         },
 
         {
@@ -166,12 +193,32 @@ function CheckSheetCoatingPeriode() {
   }
 
   async function doneCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoating/periode/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoating/periode/${id}`;
     try {
       const res = await axios.put(
         url,
         { catatan: catatan },
+        {
+          withCredentials: true,
+        },
+      );
+
+      getCoatingMesinPeriode();
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
+
+  async function pendingCekAwal(id: number) {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoating/pending/${id}`;
+    try {
+      const res = await axios.get(
+        url,
+
         {
           withCredentials: true,
         },
@@ -243,7 +290,9 @@ function CheckSheetCoatingPeriode() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   Jumlah Druk
                 </label>
-
+                <label className="text-neutral-500 text-sm font-semibold">
+                  Jumlah Pcs
+                </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   Jenis Kertas
                 </label>
@@ -261,7 +310,9 @@ function CheckSheetCoatingPeriode() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {CoatingMesinPeriode?.jumlah} / Mata
                 </label>
-
+                <label className="text-neutral-500 text-sm font-semibold">
+                  : {CoatingMesinPeriode?.jumlah_pcs}
+                </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {CoatingMesinPeriode?.jenis_kertas}
                 </label>
@@ -396,7 +447,9 @@ function CheckSheetCoatingPeriode() {
                       <></>
                     )}
                     <div className="flex px-5 py-5 gap-3">
-                      <label className="text-sm font-semibold">{index + 1}</label>
+                      <label className="text-sm font-semibold">
+                        {index + 1}
+                      </label>
                       <div className="flex flex-col justify-between">
                         <label className="text-sm font-semibold">
                           INSPEKTOR
@@ -533,12 +586,17 @@ function CheckSheetCoatingPeriode() {
                             Upload Foto (Optional):
                           </p>
                           <div className="">
-                            <input type="file" name="" id="" className="w-full" />
+                            <input
+                              type="file"
+                              name=""
+                              id=""
+                              className="w-full"
+                            />
                           </div>
                         </div>
                       </>
                       <>
-                        <div className='w-[30%]'>
+                        <div className="w-[30%]">
                           <p className="md:text-[14px] text-[9px] font-semibold">
                             Time : {lamaPengerjaan}
                           </p>
@@ -586,6 +644,11 @@ function CheckSheetCoatingPeriode() {
                                     data.nilai_glossy_kanan,
                                     data.inspeksi_coating_result_point_periode,
                                   );
+                                  setShowNotOk(
+                                    new Array(add != null && add.length).fill(
+                                      false,
+                                    ),
+                                  );
                                 }}
                                 className="flex w-full  rounded-md bg-red-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
                               >
@@ -613,8 +676,9 @@ function CheckSheetCoatingPeriode() {
                         (data2: any, i: number) => {
                           return (
                             <div
-                              className={`flex flex-col min-w-[120px] justify-center py-4 ${(i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
-                                } items-center gap-2`}
+                              className={`flex flex-col min-w-[120px] justify-center py-4 ${
+                                (i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
+                              } items-center gap-2`}
                             >
                               <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                 {data2.kode}
@@ -624,13 +688,19 @@ function CheckSheetCoatingPeriode() {
                                   name="hasil"
                                   disabled
                                   defaultValue={data2.hasil}
-                                  onChange={(e) =>
-                                    handleChangePointDefect(e, index, i)
-                                  }
-                                  className={`w-[80%]  ${(i + 1) % 2 === 0
-                                    ? ' bg-[#F3F3F3]'
-                                    : 'bg-white'
-                                    } `}
+                                  onChange={(e) => {
+                                    handleChangePointDefect(e, index, i);
+                                    if (e.target.value == 'not ok') {
+                                      handleClickNotOke(i, true);
+                                    } else {
+                                      handleClickNotOke(i, false);
+                                    }
+                                  }}
+                                  className={`w-[80%]  ${
+                                    (i + 1) % 2 === 0
+                                      ? ' bg-[#F3F3F3]'
+                                      : 'bg-white'
+                                  } `}
                                 >
                                   <option value={''} disabled>
                                     SELECT VALUE
@@ -644,11 +714,19 @@ function CheckSheetCoatingPeriode() {
                               ) : data.status == 'on progress' ? (
                                 <select
                                   name="hasil"
-                                  onChange={(e) =>
-                                    handleChangePointDefect(e, index, i)
-                                  }
-                                  className={`w-[80%]  ${(i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
-                                    } `}
+                                  onChange={(e) => {
+                                    handleChangePointDefect(e, index, i);
+                                    if (e.target.value == 'not ok') {
+                                      handleClickNotOke(i, true);
+                                    } else {
+                                      handleClickNotOke(i, false);
+                                    }
+                                  }}
+                                  className={`w-[80%]  ${
+                                    (i + 1) % 2 === 0
+                                      ? ' bg-[#F3F3F3]'
+                                      : 'bg-white'
+                                  } `}
                                 >
                                   <option value={''} disabled selected>
                                     SELECT VALUE
@@ -659,6 +737,29 @@ function CheckSheetCoatingPeriode() {
                                   </option>
                                   <option value={'not ok'}>NOT OK</option>
                                 </select>
+                              ) : null}
+                              {showNotOk[i] == true &&
+                              data.status == 'on progress' ? (
+                                <input
+                                  type="text"
+                                  name="jumlah_defect"
+                                  onChange={(e) =>
+                                    handleChangePointDefect(e, index, i)
+                                  }
+                                  className="text-sm font-semibold w-[90%] border-stroke border"
+                                ></input>
+                              ) : data.status == 'done' &&
+                                data2.hasil == 'not ok' ? (
+                                <input
+                                  type="text"
+                                  name="jumlah_defect"
+                                  defaultValue={data2.jumlah_defect}
+                                  disabled
+                                  onChange={(e) =>
+                                    handleChangePointDefect(e, index, i)
+                                  }
+                                  className="text-sm font-semibold w-[90%] border-stroke border"
+                                ></input>
                               ) : null}
                             </div>
                           );
@@ -706,6 +807,9 @@ function CheckSheetCoatingPeriode() {
                                     data.id,
                                     kode,
                                     masalah,
+                                    kriteria,
+                                    persenKriteria,
+                                    sumberMasalah,
                                     index,
                                   ),
                                     console.log(data.id);
@@ -752,9 +856,8 @@ function CheckSheetCoatingPeriode() {
             )}
           </div>
           {CoatingMesinPeriode?.inspeksi_coating_sub_periode[0].status !=
-            'history' ? (
+          'history' ? (
             <>
-
               <button
                 disabled={isLoading}
                 onClick={() => tambahTaskCekPeriode(CoatingMesinPeriode?.id)}
@@ -779,7 +882,7 @@ function CheckSheetCoatingPeriode() {
                 Catatan<span className="text-red-500">*</span> :
               </label>
               {CoatingMesinPeriode?.inspeksi_coating_sub_periode[0].status !=
-                'history' ? (
+              'history' ? (
                 <textarea
                   onChange={(e) => setCatatan(e.target.value)}
                   className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
@@ -795,8 +898,16 @@ function CheckSheetCoatingPeriode() {
               )}
             </div>
             <div className="grid col-span-2 items-end justify-end">
+              {CoatingMesinPeriode?.status == 'incoming' ? (
+                <button
+                  onClick={() => pendingCekAwal(CoatingMesinPeriode?.id)}
+                  className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                >
+                  PENDING
+                </button>
+              ) : null}
               {CoatingMesinPeriode?.inspeksi_coating_sub_periode[0].status !=
-                'history' ? (
+              'history' ? (
                 <button
                   onClick={() => {
                     doneCekPeriode(CoatingMesinPeriode?.id);
@@ -807,8 +918,21 @@ function CheckSheetCoatingPeriode() {
                   SIMPAN PERIODE
                 </button>
               ) : null}
+
               {/* ) : null} */}
             </div>
+          </div>
+          <div className="flex w-full min-w-[700px] border-b-8 items-center border-[#D8EAFF] px-4 py-4 gap-5 bg-white rounded-b-xl mt-2">
+            {coatingMesinPeriodeDefect?.map((data: any, index: number) => {
+              return (
+                <div className="flex flex-col max-w-45 overflow-x-scroll">
+                  <label>Kode: </label>
+                  <label>{data.kode}</label>
+                  <label>Total Defect: </label>
+                  <label>{data.total_defect}</label>
+                </div>
+              );
+            })}
           </div>
         </main>
       )}

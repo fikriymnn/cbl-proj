@@ -34,8 +34,9 @@ function CheckSheetLemAwal() {
   }
 
   async function startTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemAwalPoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemAwalPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -64,8 +65,9 @@ function CheckSheetLemAwal() {
     bentuk_jadi: any,
     kebersihan: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemAwalPoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemAwalPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -95,8 +97,9 @@ function CheckSheetLemAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemAwalPoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemAwalPoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -117,8 +120,9 @@ function CheckSheetLemAwal() {
   }
 
   async function pendingCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemAwal/pending/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemAwal/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -135,8 +139,9 @@ function CheckSheetLemAwal() {
   }
 
   async function doneCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemAwal/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemAwal/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -210,7 +215,7 @@ function CheckSheetLemAwal() {
                   : {tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.jumlah}
+                  : {cetakMesinAwal?.jumlah_pcs}
                 </label>
 
                 {cetakMesinAwal?.jenis_lem == null ? (
@@ -701,7 +706,7 @@ function CheckSheetLemAwal() {
               Waktu Check : {jumlahWaktuCheck}
             </label>
             <div className="grid col-span-6 items-end justify-end gap-2">
-              {cetakMesinAwal?.inspeksi_lem_awal[0].status == 'incoming' ? (
+              {cetakMesinAwal?.status == 'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekAwal(cetakMesinAwal?.inspeksi_lem_awal[0].id)

@@ -6,16 +6,26 @@ import convertDateToTime from '../../../../../utils/converDateToTime';
 import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import Loading from '../../../../Loading';
+import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 
 function CheckSheetHasilRabut() {
   const { id } = useParams();
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [RabutMesin, setRabutMesin] = useState<any>();
+  const [defectMaster, setDefectMaster] = useState<any>();
   const [Catatan, setCatatan] = useState<any>();
+  const [idDefect, setIdDefect] = useState<any>();
+
+  const [showModal2, setShowModal2] = useState(false);
+  const [add, setAdd] = useState<any>();
+  const [showDetail, setShowDetail] = useState<boolean[]>(
+    new Array(add != null && add.length).fill(false),
+  );
 
   useEffect(() => {
     getRabutMesin();
+    getMasterDefect();
   }, []);
 
   async function getRabutMesin() {
@@ -26,6 +36,22 @@ function CheckSheetHasilRabut() {
       });
 
       setRabutMesin(res.data);
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
+  async function getMasterDefect() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/qc/cs/masalahRabut`;
+    try {
+      const res = await axios.get(url, {
+        params: {
+          status: 'active',
+        },
+        withCredentials: true,
+      });
+
+      setDefectMaster(res.data);
       console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
@@ -146,6 +172,47 @@ function CheckSheetHasilRabut() {
       console.log(error.data.msg);
     }
   }
+
+  async function tambahDefectPeriode(
+    id: number,
+    idDefect: number,
+    idPoint: number,
+    index: number,
+  ) {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiRabutPoint/createDefect`;
+    try {
+      const res = await axios.post(
+        url,
+
+        {
+          id_inspeksi_rabut: id,
+          id_inspeksi_rabut_point: idPoint,
+          id_defect: idDefect,
+        },
+
+        {
+          withCredentials: true,
+        },
+      );
+
+      setShowModal2(false);
+      handleClickAdd(index);
+      setIdDefect(null);
+      getRabutMesin();
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
+
+  const handleClickAdd = (index: number) => {
+    setShowDetail((prevState) => {
+      const updatedShowDetail = [...prevState]; // Create a copy
+      updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
+      return updatedShowDetail;
+    });
+  };
 
   const handleChangePoint = (e: any, i: number, ii: number) => {
     const { name, value } = e.target;
@@ -439,7 +506,76 @@ function CheckSheetHasilRabut() {
                           );
                         },
                       )}
+                      {data.status == 'on progress' ? (
+                        <>
+                          <button
+                            onClick={() => handleClickAdd(index)}
+                            className=" h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
+                          >
+                            Add
+                          </button>
+                        </>
+                      ) : null}
                     </div>
+
+                    {showDetail[index] == true && (
+                      <>
+                        <ModalAddPeriode
+                          isOpen={showDetail[index]}
+                          onClose={() => handleClickAdd(index)}
+                          judul={'ADD PROBLEM CODE'}
+                        >
+                          <div className="flex flex-col gap-2">
+                            <label>{data.id}</label>
+                            <label className="text-black text-sm font-bold pt-4">
+                              Master Defect
+                            </label>
+                            <select
+                              onChange={(e) => {
+                                setIdDefect(e.target.value);
+                              }}
+                              className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
+                  }`}
+                            >
+                              <option
+                                value=""
+                                disabled
+                                selected
+                                className="text-body dark:text-bodydark"
+                              >
+                                Pilih Sumber Masalah
+                              </option>
+                              {defectMaster?.map(
+                                (dataMaster: any, indexMaster: number) => {
+                                  return (
+                                    <option
+                                      value={dataMaster.id}
+                                      className="text-body dark:text-bodydark"
+                                    >
+                                      {dataMaster.kode} + {dataMaster.masalah}
+                                    </option>
+                                  );
+                                },
+                              )}
+                            </select>
+                            <button
+                              onClick={() => {
+                                tambahDefectPeriode(
+                                  RabutMesin?.data?.id,
+                                  idDefect,
+                                  data.id,
+                                  index,
+                                ),
+                                  console.log(data.id);
+                              }}
+                              className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
+                            >
+                              TAMBAH MASALAH
+                            </button>
+                          </div>
+                        </ModalAddPeriode>
+                      </>
+                    )}
 
                     <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] px-4 py-4 gap-3">
                       <div className="grid col-span-8">
