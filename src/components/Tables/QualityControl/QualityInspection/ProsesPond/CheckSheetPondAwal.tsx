@@ -39,9 +39,8 @@ function CheckSheetPondAwal() {
     setPondMesinAwal(onchangeVal);
   };
   async function startTaskCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPondAwalPoint/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondAwalPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -70,9 +69,8 @@ function CheckSheetPondAwal() {
     riil: any,
     reforasi: any,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPondAwalPoint/stop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondAwalPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -101,9 +99,8 @@ function CheckSheetPondAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPondAwalPoint/create`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondAwalPoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -123,9 +120,8 @@ function CheckSheetPondAwal() {
   }
 
   async function doneCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPondAwal/done/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondAwal/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -143,9 +139,8 @@ function CheckSheetPondAwal() {
     }
   }
   async function pendingCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPondAwal/pending/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondAwal/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -166,6 +161,8 @@ function CheckSheetPondAwal() {
   const jumlahWaktuCheck = formatElapsedTime(
     pondMesinAwal?.inspeksi_pond_awal[0].waktu_check,
   );
+
+  const isOnprogres = pondMesinAwal?.inspeksi_pond_awal[0].inspeksi_pond_awal_point.some((data: { status: any; }) => data?.status === 'on progress')
 
   return (
     <>
@@ -665,7 +662,9 @@ function CheckSheetPondAwal() {
               },
             )}
           </div>
-          {pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ? (
+          {!isOnprogres &&
+            pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ||
+            pondMesinAwal?.inspeksi_pond_awal[0].status == 'pending' ? (
             <>
               <button
                 disabled={isLoading}
@@ -689,7 +688,8 @@ function CheckSheetPondAwal() {
               Waktu Check : {jumlahWaktuCheck}
             </label>
             <div className="grid col-span-6 items-end justify-end gap-2">
-              {pondMesinAwal?.status == 'incoming' ? (
+              {!isOnprogres &&
+                pondMesinAwal?.status == 'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekAwal(pondMesinAwal?.inspeksi_pond_awal[0].id)
@@ -699,7 +699,9 @@ function CheckSheetPondAwal() {
                   PENDING
                 </button>
               ) : null}
-              {pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ? (
+              {!isOnprogres &&
+                pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ||
+                pondMesinAwal?.inspeksi_pond_awal[0].status == 'pending' ? (
                 <button
                   onClick={() =>
                     doneCekAwal(pondMesinAwal?.inspeksi_pond_awal[0].id)
