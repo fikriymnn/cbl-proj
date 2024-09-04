@@ -186,8 +186,8 @@ function CapaMasukMR() {
                                                                                     NO CAPA
                                                                                 </p>
                                                                                 <p className='text-xl font-normal '>
-                                                                                    {data?.ncr == null ? '-'
-                                                                                        : data?.no_ncr}
+                                                                                    {data?.no_capa == null ? '-'
+                                                                                        : data?.no_capa}
                                                                                 </p>
                                                                                 <p className='text-sm font-semibold text-black pt-2'>
                                                                                     NO JO/IO

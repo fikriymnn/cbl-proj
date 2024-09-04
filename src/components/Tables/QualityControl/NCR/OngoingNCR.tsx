@@ -185,7 +185,7 @@ function OngoingNCRQA() {
 
                                                                                 </p>
                                                                                 <p className='text-xl font-normal '>
-                                                                                    {data.ncr == null ? '-'
+                                                                                    {data.no_ncr == null ? '-'
                                                                                         : data?.no_ncr}
                                                                                 </p>
                                                                                 <p className='text-sm font-semibold text-black pt-2'>
