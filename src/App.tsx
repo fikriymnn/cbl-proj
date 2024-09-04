@@ -117,6 +117,8 @@ import IncomingNCRMR from './pages/MR/NCR/IncomingNCRMR';
 import CapaMtc from './pages/Maintenance/Capa/CapaMtc';
 import QcCapa from './pages/QualityControl/Capa/QcCapa';
 import MrCapa from './pages/MR/Capa/MrCapa';
+import FinalInspection from './pages/QualityControl/FinalInspection/FinalInspection';
+import FinalAwal from './pages/QualityControl/FinalInspection/FinalAwal';
 
 
 function App() {
@@ -921,7 +923,28 @@ function App() {
             </>
           }
         />
-
+ <Route
+          path="/qc/qualityinspection/final_inspection"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <FinalInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+ <Route
+          path="qc/qualityinspection/final_inspection/checkAwal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <FinalAwal/>
+              </ProtectedRoute>
+            </>
+          }
+        />
         <Route
           path="/history"
           element={
