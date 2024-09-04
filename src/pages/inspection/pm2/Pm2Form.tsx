@@ -1734,7 +1734,7 @@ function Pm2Form() {
                                           value={selectedOption}
                                           options={options}
                                           onChange={(selectedOption) => {
-                                            handleChangePoint(
+                                            handleChangePointHasil(
                                               selectedOption,
                                               i,
                                             );
