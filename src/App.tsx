@@ -119,6 +119,9 @@ import QcCapa from './pages/QualityControl/Capa/QcCapa';
 import MrCapa from './pages/MR/Capa/MrCapa';
 import FinalInspection from './pages/QualityControl/FinalInspection/FinalInspection';
 import FinalAwal from './pages/QualityControl/FinalInspection/FinalAwal';
+import BarangRusakSebagian from './pages/QualityControl/BarangRusakSebagian/BarangRusakSebagian';
+import ChecksheetRusakSebagian from './components/Tables/QualityControl/QualityInspection/BarangRusakSebagian/CheckSheetRusakSebagian';
+import RusakSebagianAwal from './pages/QualityControl/BarangRusakSebagian/RusakSebagianAwal';
 
 
 function App() {
@@ -709,6 +712,28 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <ProsesLem />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/barang_rusak_sebagian"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <BarangRusakSebagian/>
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/barang_rusak_sebagian/checksheetAwal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <RusakSebagianAwal/>
               </ProtectedRoute>
             </>
           }
