@@ -6,6 +6,8 @@ import Filter from '../../../../images/icon/filter.svg';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../utils/converDateToTime';
+import Loading from '../../../Loading';
+
 
 function CapaMasukMR() {
     const tiket = [
@@ -22,6 +24,7 @@ function CapaMasukMR() {
 
         },
     ]
+    const [isLoading, setIsLoading] = useState(false);
     const [openButton, setOpenButton] = useState(null);
     const handleClick = (i: any) => {
         setOpenButton((prevState: any) => {
@@ -54,14 +57,16 @@ function CapaMasukMR() {
         const url = `${import.meta.env.VITE_API_LINK}/capa?bagian_tiket=incoming
         `;
         try {
+            setIsLoading(true);
             const res = await axios.get(url, {
                 withCredentials: true,
             });
-
+            setIsLoading(false);
             setCapaMr(res.data.data);
             console.log(res.data.data);
         } catch (error: any) {
             console.log(error);
+            setIsLoading(false);
         }
     }
 
@@ -376,6 +381,7 @@ function CapaMasukMR() {
                                                                         </div>
                                                                         <div className="pt-5">
                                                                             <button
+                                                                                disabled={isLoading}
                                                                                 onClick={(e) => {
                                                                                     e.preventDefault()
                                                                                     // console.log(ctt, status)
@@ -384,8 +390,9 @@ function CapaMasukMR() {
                                                                                 }}
                                                                                 className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
                                                                             >
-                                                                                SUBMIT
+                                                                                {isLoading ? 'Loading...' : 'SUBMIT'}
                                                                             </button>
+                                                                            {isLoading && <Loading />}
                                                                         </div>
                                                                     </>
                                                                 </ModalKosongan>

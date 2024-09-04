@@ -6,6 +6,7 @@ import Filter from '../../../../images/icon/filter.svg';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../utils/converDateToTime';
+import Loading from '../../../Loading';
 
 function CapaMasukMTC() {
     const tiket = [
@@ -22,6 +23,8 @@ function CapaMasukMTC() {
 
         },
     ]
+
+    const [isLoading, setIsLoading] = useState(false);
     const [openButton, setOpenButton] = useState(null);
     const handleClick = (i: any) => {
         setOpenButton((prevState: any) => {
@@ -76,7 +79,7 @@ function CapaMasukMTC() {
     async function submitCapa(id: any, data: any) {
         const url = `${import.meta.env.VITE_API_LINK}/capa/submit/${id}`;
         try {
-            //setIsLoading(true);
+            setIsLoading(true);
             const res = await axios.post(
                 url,
                 {
@@ -87,12 +90,12 @@ function CapaMasukMTC() {
                 },
             );
 
-            //setIsLoading(false);
+            setIsLoading(false);
             window.location.reload();
             //alert(res.data.msg);
         } catch (error: any) {
             console.log(error);
-            // setIsLoading(false);
+            setIsLoading(false);
             alert(error.data.msg);
         }
     }
@@ -377,6 +380,7 @@ function CapaMasukMTC() {
 
                                                                         <div className="pt-5">
                                                                             <button
+                                                                                disabled={isLoading}
                                                                                 onClick={(e) => {
                                                                                     e.preventDefault()
                                                                                     console.log(capa)
@@ -385,8 +389,9 @@ function CapaMasukMTC() {
                                                                                 }}
                                                                                 className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
                                                                             >
-                                                                                SUBMIT
+                                                                                {isLoading ? 'Loading...' : 'SUBMIT'}
                                                                             </button>
+                                                                            {isLoading && <Loading />}
                                                                         </div>
                                                                     </>
                                                                 </ModalKosongan>

@@ -6,6 +6,7 @@ import Filter from '../../../../images/icon/filter.svg';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../utils/converDateToTime';
+import Loading from '../../../Loading';
 
 function CapaMasukQA() {
     const tiket = [
@@ -28,7 +29,7 @@ function CapaMasukQA() {
             return prevState === i ? null : i;
         });
     };
-
+    const [isLoading, setIsLoading] = useState(false);
     const [showModal1, setShowModal1] = useState<any>([]);
     const openModal1 = (i: any) => {
         const onchangeVal: any = [...showModal1];
@@ -71,6 +72,7 @@ function CapaMasukQA() {
         const url = `${import.meta.env.VITE_API_LINK}/capa/verifikasiQa/${id}
         `;
         try {
+            setIsLoading(true);
             const res = await axios.put(url, {
                 status: status,
                 catatan_verifikasi_qa: ctt,
@@ -80,9 +82,10 @@ function CapaMasukQA() {
             });
             closeModal1(index);
             getCapaQC();
-
+            setIsLoading(false);
         } catch (error: any) {
             console.log(error);
+            setIsLoading(false);
         }
     }
 
@@ -373,6 +376,7 @@ function CapaMasukQA() {
                                                                         </div>
                                                                         <div className="pt-5">
                                                                             <button
+                                                                                disabled={isLoading}
                                                                                 onClick={(e) => {
                                                                                     e.preventDefault()
                                                                                     // console.log(ctt, status)
@@ -381,8 +385,9 @@ function CapaMasukQA() {
                                                                                 }}
                                                                                 className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
                                                                             >
-                                                                                SUBMIT
+                                                                                {isLoading ? 'Loading...' : 'SUBMIT'}
                                                                             </button>
+                                                                            {isLoading && <Loading />}
                                                                         </div>
                                                                     </>
                                                                 </ModalKosongan>
