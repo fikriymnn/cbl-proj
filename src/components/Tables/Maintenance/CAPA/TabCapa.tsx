@@ -7,6 +7,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import CapaMasukMTC from './CapaMasukMTC';
+import CapaHistoryMTC from './HistoryCapaMTC';
 
 
 
@@ -130,7 +131,7 @@ export default function TabCapaMTC() {
                         className='bg-white text-[#00499F] font-semibold mb-2 '
                     >
                         <Tab label="INCOMING" {...a11yProps(0)} className='' />
-                        <Tab label="LAPOR" {...a11yProps(1)} />
+                        <Tab label="HISTORY" {...a11yProps(1)} />
 
 
 
@@ -141,7 +142,7 @@ export default function TabCapaMTC() {
                 <CapaMasukMTC />
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
-
+                <CapaHistoryMTC />
             </TabPanel>
 
 

@@ -6,10 +6,8 @@ import Filter from '../../../../images/icon/filter.svg';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../utils/converDateToTime';
-import Loading from '../../../Loading';
 
-function OngoingNCRQA() {
-    const [isLoading, setIsLoading] = useState(false);
+function HistoryNCRMR() {
     const tiket = [
         {
             name: 'EX000003',
@@ -32,7 +30,7 @@ function OngoingNCRQA() {
     }, []);
 
     async function getNcrQC() {
-        const url = `${import.meta.env.VITE_API_LINK}/ncr?bagian_tiket=incoming
+        const url = `${import.meta.env.VITE_API_LINK}/ncr?bagian_tiket=history
         `;
         try {
             const res = await axios.get(url, {
@@ -52,7 +50,6 @@ function OngoingNCRQA() {
         const url = `${import.meta.env.VITE_API_LINK}/ncr/validasiQa/${id}
         `;
         try {
-            setIsLoading(true);
             const res = await axios.put(url, {
                 status: status,
                 catatan_qa: ctt,
@@ -62,10 +59,9 @@ function OngoingNCRQA() {
             });
             closeModal1(index);
             getNcrQC();
-            setIsLoading(false);
+
         } catch (error: any) {
             console.log(error);
-            setIsLoading(false);
         }
     }
 
@@ -189,7 +185,7 @@ function OngoingNCRQA() {
 
                                                                                 </p>
                                                                                 <p className='text-xl font-normal '>
-                                                                                    {data.no_ncr == null ? '-'
+                                                                                    {data.ncr == null ? '-'
                                                                                         : data?.no_ncr}
                                                                                 </p>
                                                                                 <p className='text-sm font-semibold text-black pt-2'>
@@ -309,7 +305,6 @@ function OngoingNCRQA() {
                                                                             </div>
                                                                             <div className="pt-5">
                                                                                 <button
-                                                                                    disabled={isLoading}
                                                                                     onClick={(e) => {
                                                                                         e.preventDefault()
                                                                                         // console.log(ctt, status)
@@ -318,7 +313,7 @@ function OngoingNCRQA() {
                                                                                     }}
                                                                                     className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
                                                                                 >
-                                                                                    {isLoading ? 'Loading...' : 'KIRIM LAPORAN'}KIRIM LAPORAN
+                                                                                    SUBMIT
                                                                                 </button>
                                                                             </div>
                                                                         </div>
@@ -358,4 +353,4 @@ function OngoingNCRQA() {
     )
 }
 
-export default OngoingNCRQA
+export default HistoryNCRMR

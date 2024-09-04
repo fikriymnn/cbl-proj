@@ -6,10 +6,8 @@ import Filter from '../../../../images/icon/filter.svg';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../utils/converDateToTime';
-import Loading from '../../../Loading';
 
-function IncomingNCRMTC() {
-
+function CapaHistoryMTC() {
     const tiket = [
         {
             name: 'EX000003',
@@ -24,10 +22,7 @@ function IncomingNCRMTC() {
 
         },
     ]
-
-    const [isLoading, setIsLoading] = useState(false);
     const [openButton, setOpenButton] = useState(null);
-
     const handleClick = (i: any) => {
         setOpenButton((prevState: any) => {
             return prevState === i ? null : i;
@@ -49,14 +44,14 @@ function IncomingNCRMTC() {
         setShowModal1(onchangeVal);
     };
 
+    const [capa, setCapa] = useState<any>();
 
-    const [ncrQC, setNcrQC] = useState<any>();
     useEffect(() => {
-        getNcrQC();
+        getCapa();
     }, []);
 
-    async function getNcrQC() {
-        const url = `${import.meta.env.VITE_API_LINK}/capa?department=maintenance&status=incoming
+    async function getCapa() {
+        const url = `${import.meta.env.VITE_API_LINK}/capa?department=maintenance&bagian_tiket=history
         `;
         try {
             const res = await axios.get(url, {
@@ -64,26 +59,24 @@ function IncomingNCRMTC() {
                 withCredentials: true,
             });
 
-            setNcrQC(res.data.data);
+            setCapa(res.data.data);
             console.log(res.data.data);
         } catch (error: any) {
             console.log(error);
         }
     }
 
-    // const [capa, setCapa] = useState<any>();
-
     const handleChangePoint = (e: any, i: number, ii: number) => {
         const { name, value } = e.target;
-        const onchangeVal: any = ncrQC;
+        const onchangeVal: any = capa;
         onchangeVal[i].data_ketidaksesuaian[ii][name] = value;
-        setNcrQC(onchangeVal);
+        setCapa(onchangeVal);
     };
 
     async function submitCapa(id: any, data: any) {
         const url = `${import.meta.env.VITE_API_LINK}/capa/submit/${id}`;
         try {
-            setIsLoading(true);
+            //setIsLoading(true);
             const res = await axios.post(
                 url,
                 {
@@ -94,16 +87,15 @@ function IncomingNCRMTC() {
                 },
             );
 
-            setIsLoading(false);
+            //setIsLoading(false);
             window.location.reload();
             //alert(res.data.msg);
         } catch (error: any) {
             console.log(error);
-            setIsLoading(false);
+            // setIsLoading(false);
             alert(error.data.msg);
         }
     }
-
 
     return (
 
@@ -134,16 +126,14 @@ function IncomingNCRMTC() {
                 </div>
 
             </div>
-            {ncrQC?.map(
+            {capa?.map(
                 (data: any, i: number) => {
                     const tanggal = convertTimeStampToDateOnly(data?.tanggal);
                     const jam = convertDateToTime(data?.tanggal);
-
                     return (
                         <>
                             <div className=' flex bg-white py-2 w-full mt-2 mb-2 px-5 text-sm font-semibold rounded-md  items-center'>
                                 <p className='w-20'>{i + 1}</p>
-
                                 <div className='grid grid-cols-12 w-full text-[#6c6b6b] text-sm font-light items-center'>
                                     <div className='col-span-2'>{data?.no_capa}</div>
                                     <div className='col-span-2'>{data?.no_jo}</div>
@@ -156,7 +146,8 @@ function IncomingNCRMTC() {
                                     <div className='col-span-2 w-full flex justify-end'>
                                         <div className="flex gap-2 items-center justify-center ">
                                             <div>
-                                                {data.status == 'incoming' ?
+                                                {data.status == 'di tolak qa' ||
+                                                    data.status == 'di tolak mr' ?
                                                     <button
                                                         title="button"
                                                         className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
@@ -171,7 +162,6 @@ function IncomingNCRMTC() {
                                                     : <>
                                                     </>
                                                 }
-
                                                 {openButton == i ? (
                                                     <div className="absolute bg-white p-3 shadow-5 rounded-md">
                                                         {' '}
@@ -198,13 +188,13 @@ function IncomingNCRMTC() {
 
                                                                     isOpen={showModal1[i]}
                                                                     onClose={() => closeModal1(i)}
-                                                                    judul={'Form Respon NCR'} >
+                                                                    judul={'Form Respon Capa'} >
                                                                     <>
 
                                                                         <div className='grid grid-cols-2 w-full px-4 py-4'>
                                                                             <div className='flex flex-col gap-1'>
                                                                                 <p className='text-sm font-semibold text-black'>
-                                                                                    NO NCR
+                                                                                    NO CAPA
                                                                                 </p>
                                                                                 <p className='text-xl font-normal '>
                                                                                     {data?.ncr == null ? '-'
@@ -256,6 +246,22 @@ function IncomingNCRMTC() {
 
 
                                                                             </div>
+                                                                            <div className='flex flex-col gap-1'>
+                                                                                <p className='text-sm font-semibold text-black'>
+                                                                                    CATATAN CAPA QA
+                                                                                </p>
+                                                                                <p className='text-xl font-normal '>
+                                                                                    {data?.catatan_verifikasi_qa == null ? '-' : data?.catatan_verifikasi_qa}
+                                                                                </p>
+                                                                                <p className='text-sm font-semibold text-black pt-2'>
+                                                                                    CATATAN CAPA MR
+                                                                                </p>
+                                                                                <p className='text-xl font-normal '>
+                                                                                    {data?.catatan_verifikasi_mr == null ? '-' : data?.catatan_verifikasi_mr}
+                                                                                </p>
+
+
+                                                                            </div>
 
                                                                         </div>
                                                                         {data?.data_ketidaksesuaian?.map((data2: any, ii: any) => {
@@ -303,6 +309,8 @@ function IncomingNCRMTC() {
 
                                                                                                     handleChangePoint(e, i, ii)
                                                                                                 }}
+                                                                                                defaultValue={data2?.analisa_penyebab}
+
                                                                                                 className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                                                                             ></textarea>
 
@@ -311,7 +319,11 @@ function IncomingNCRMTC() {
                                                                                             </p>
                                                                                             <textarea
                                                                                                 name='tindakan_perbaikan'
-                                                                                                onChange={(e) => handleChangePoint(e, i, ii)}
+                                                                                                onChange={(e) => {
+
+                                                                                                    handleChangePoint(e, i, ii)
+                                                                                                }}
+                                                                                                defaultValue={data2?.tindakan_perbaikan}
                                                                                                 className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                                                                             ></textarea>
 
@@ -320,7 +332,11 @@ function IncomingNCRMTC() {
                                                                                             </p>
                                                                                             <textarea
                                                                                                 name='pencegahan'
-                                                                                                onChange={(e) => handleChangePoint(e, i, ii)}
+                                                                                                onChange={(e) => {
+
+                                                                                                    handleChangePoint(e, i, ii)
+                                                                                                }}
+                                                                                                defaultValue={data2?.pencegahan}
                                                                                                 className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                                                                             ></textarea>
 
@@ -329,7 +345,11 @@ function IncomingNCRMTC() {
                                                                                             </p>
                                                                                             <textarea
                                                                                                 name='pencegahan_efektif_dilakukan'
-                                                                                                onChange={(e) => handleChangePoint(e, i, ii)}
+                                                                                                onChange={(e) => {
+
+                                                                                                    handleChangePoint(e, i, ii)
+                                                                                                }}
+                                                                                                defaultValue={data2?.pencegahan_efektif_dilakukan}
                                                                                                 className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                                                                             ></textarea>
 
@@ -338,7 +358,11 @@ function IncomingNCRMTC() {
                                                                                             </p>
                                                                                             <textarea
                                                                                                 name='keterangan_ketidak_sesuaian'
-                                                                                                onChange={(e) => handleChangePoint(e, i, ii)}
+                                                                                                onChange={(e) => {
+
+                                                                                                    handleChangePoint(e, i, ii)
+                                                                                                }}
+                                                                                                defaultValue={data2?.keterangan_ketidak_sesuaian}
                                                                                                 className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                                                                             ></textarea>
 
@@ -351,22 +375,18 @@ function IncomingNCRMTC() {
                                                                         })
                                                                         }
 
-                                                                        <div className='flex flex-col w-full'>
+                                                                        <div className="pt-5">
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    e.preventDefault()
+                                                                                    console.log(capa)
+                                                                                    submitCapa(data?.id, data?.data_ketidaksesuaian)
 
-                                                                            <div className="pt-5">
-                                                                                <button
-                                                                                    disabled={isLoading}
-                                                                                    onClick={() => {
-                                                                                        // console.log(data?.data_ketidaksesuaian)
-                                                                                        submitCapa(data?.id, data?.data_ketidaksesuaian)
-                                                                                    }}
-                                                                                    className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
-                                                                                >
-                                                                                    {isLoading ? 'Loading...' : 'SUBMIT'}
-                                                                                </button>
-                                                                                {isLoading && <Loading />}
-                                                                            </div>
-
+                                                                                }}
+                                                                                className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
+                                                                            >
+                                                                                SUBMIT
+                                                                            </button>
                                                                         </div>
                                                                     </>
                                                                 </ModalKosongan>
@@ -401,4 +421,4 @@ function IncomingNCRMTC() {
     )
 }
 
-export default IncomingNCRMTC
+export default CapaHistoryMTC
