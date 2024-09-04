@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
 
-function ProsesFinalInspectionHistory() {
+function ProsesFinalInspectionhistory() {
   const [isMobile, setIsMobile] = useState(false);
   const kosong: any = [];
   const today = new Date();
@@ -27,26 +27,27 @@ function ProsesFinalInspectionHistory() {
     };
   }, []);
 
-  const [RabutMesin, setRabutMesin] = useState<any>();
+  const [FinalInspection, setFinalInspection] = useState<any>();
 
   useEffect(() => {
-    getRabutMesin();
+    getFinalInspection();
   }, []);
 
-  async function getRabutMesin() {
-    const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiRabut`;
+  async function getFinalInspection() {
+    const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiFinal`;
     try {
       const res = await axios.get(url, {
         params: {
-          status: 'history',
+          bagian_tiket: 'history',
         },
+
         withCredentials: true,
       });
 
-      setRabutMesin(res.data);
+      setFinalInspection(res.data);
       console.log(res.data);
     } catch (error: any) {
-      console.log(error.data.msg);
+      console.log(error);
     }
   }
 
@@ -57,14 +58,10 @@ function ProsesFinalInspectionHistory() {
           <div className="min-w-[700px] bg-white rounded-xl">
             <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
               <div className="grid grid-cols-10 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-                <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                  MESIN
-                </label>
-
-                <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                <label className="text-neutral-500 text-sm font-semibold col-span-3">
                   No. Job Order
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                <label className="text-neutral-500 text-sm font-semibold col-span-3">
                   Nama Job Order
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold col-span-2">
@@ -72,25 +69,23 @@ function ProsesFinalInspectionHistory() {
                 </label>
               </div>
               <div className="w-2 h-full "></div>
-              {RabutMesin?.data.map((data: any, i: any) => (
+              {FinalInspection?.data.map((data: any, i: any) => (
                 <>
                   <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] gap-2 items-center">
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-4 col-span-2 `}
+                      className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-4 col-span-3 `}
                     >
-                      <label className="text-neutral-500 text-sm font-semibold pl-10">
-                        {data.mesin}
+                      {' '}
+                      <label className="text-neutral-500 text-sm font-semibold col-span-3 pl-6">
+                        {data.no_jo}
                       </label>
                     </div>
 
-                    <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-6">
-                      {data.no_jo}
-                    </label>
-                    <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
+                    <label className="text-neutral-500 text-sm font-semibold col-span-3 pl-3">
                       {data.nama_produk}
                     </label>
                     <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                      {data.operator}
+                      {data.data_inspector?.nama}
                     </label>
                     <div className="justify-end flex pr-2 col-span-2">
                       <>
@@ -116,4 +111,4 @@ function ProsesFinalInspectionHistory() {
   );
 }
 
-export default ProsesFinalInspectionHistory;
+export default ProsesFinalInspectionhistory;
