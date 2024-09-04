@@ -318,9 +318,11 @@ function OngoingNCRQA() {
                                                                                     }}
                                                                                     className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
                                                                                 >
-                                                                                    {isLoading ? 'Loading...' : 'KIRIM LAPORAN'}KIRIM LAPORAN
+                                                                                    {isLoading ? 'Loading...' : 'KIRIM LAPORAN'}
                                                                                 </button>
+
                                                                             </div>
+                                                                            {isLoading && <Loading />}
                                                                         </div>
 
                                                                     </>
