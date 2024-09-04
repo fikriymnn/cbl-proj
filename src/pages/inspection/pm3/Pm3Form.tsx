@@ -1709,7 +1709,7 @@ function Pm3Form() {
                                           value={selectedOption}
                                           options={options}
                                           onChange={(selectedOption) => {
-                                            handleChangePoint(
+                                            handleChangePointHasil(
                                               selectedOption,
                                               i,
                                             );

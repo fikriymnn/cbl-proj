@@ -119,7 +119,7 @@ import QcCapa from './pages/QualityControl/Capa/QcCapa';
 import MrCapa from './pages/MR/Capa/MrCapa';
 import FinalInspection from './pages/QualityControl/FinalInspection/FinalInspection';
 import FinalAwal from './pages/QualityControl/FinalInspection/FinalAwal';
-
+import MasterFinalInspection from './pages/MasterData/QC/MasterFinalInspection';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -923,7 +923,7 @@ function App() {
             </>
           }
         />
- <Route
+        <Route
           path="/qc/qualityinspection/final_inspection"
           element={
             <>
@@ -934,13 +934,13 @@ function App() {
             </>
           }
         />
- <Route
+        <Route
           path="qc/qualityinspection/final_inspection/checkAwal/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <FinalAwal/>
+                <FinalAwal />
               </ProtectedRoute>
             </>
           }
@@ -963,6 +963,18 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterDefect />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/masterdataqc/finalinspection"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterFinalInspection />
               </ProtectedRoute>
             </>
           }
