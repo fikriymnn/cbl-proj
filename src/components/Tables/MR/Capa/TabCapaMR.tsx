@@ -7,6 +7,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import CapaMasukMR from './CapaMasukMR';
+import HistoryCapaInternalMR from './HistoryInternalCapaMR';
 
 
 
@@ -130,7 +131,8 @@ export default function TabCapaMR() {
                     >
                         <Tab label="Internal" {...a11yProps(0)} className='' />
                         <Tab label="External" {...a11yProps(1)} />
-                        <Tab label="Audit" {...a11yProps(1)} />
+                        <Tab label="Audit" {...a11yProps(2)} />
+                        <Tab label="History Internal" {...a11yProps(3)} />
 
 
 
@@ -145,6 +147,9 @@ export default function TabCapaMR() {
             </TabPanel>
             <TabPanel value={value} index={2} dir={theme.direction}>
 
+            </TabPanel>
+            <TabPanel value={value} index={3} dir={theme.direction}>
+                <HistoryCapaInternalMR />
             </TabPanel>
 
         </Box>

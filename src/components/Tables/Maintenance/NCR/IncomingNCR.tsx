@@ -6,8 +6,10 @@ import Filter from '../../../../images/icon/filter.svg';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../utils/converDateToTime';
+import Loading from '../../../Loading';
 
 function IncomingNCRMTC() {
+
     const tiket = [
         {
             name: 'EX000003',
@@ -22,7 +24,10 @@ function IncomingNCRMTC() {
 
         },
     ]
+
+    const [isLoading, setIsLoading] = useState(false);
     const [openButton, setOpenButton] = useState(null);
+
     const handleClick = (i: any) => {
         setOpenButton((prevState: any) => {
             return prevState === i ? null : i;
@@ -44,8 +49,8 @@ function IncomingNCRMTC() {
         setShowModal1(onchangeVal);
     };
 
-    const [ncrQC, setNcrQC] = useState<any>();
 
+    const [ncrQC, setNcrQC] = useState<any>();
     useEffect(() => {
         getNcrQC();
     }, []);
@@ -66,7 +71,6 @@ function IncomingNCRMTC() {
         }
     }
 
-
     // const [capa, setCapa] = useState<any>();
 
     const handleChangePoint = (e: any, i: number, ii: number) => {
@@ -79,7 +83,7 @@ function IncomingNCRMTC() {
     async function submitCapa(id: any, data: any) {
         const url = `${import.meta.env.VITE_API_LINK}/capa/submit/${id}`;
         try {
-            //setIsLoading(true);
+            setIsLoading(true);
             const res = await axios.post(
                 url,
                 {
@@ -90,12 +94,12 @@ function IncomingNCRMTC() {
                 },
             );
 
-            //setIsLoading(false);
+            setIsLoading(false);
             window.location.reload();
             //alert(res.data.msg);
         } catch (error: any) {
             console.log(error);
-            // setIsLoading(false);
+            setIsLoading(false);
             alert(error.data.msg);
         }
     }
@@ -139,6 +143,7 @@ function IncomingNCRMTC() {
                         <>
                             <div className=' flex bg-white py-2 w-full mt-2 mb-2 px-5 text-sm font-semibold rounded-md  items-center'>
                                 <p className='w-20'>{i + 1}</p>
+
                                 <div className='grid grid-cols-12 w-full text-[#6c6b6b] text-sm font-light items-center'>
                                     <div className='col-span-2'>{data?.no_capa}</div>
                                     <div className='col-span-2'>{data?.no_jo}</div>
@@ -350,14 +355,16 @@ function IncomingNCRMTC() {
 
                                                                             <div className="pt-5">
                                                                                 <button
+                                                                                    disabled={isLoading}
                                                                                     onClick={() => {
                                                                                         // console.log(data?.data_ketidaksesuaian)
                                                                                         submitCapa(data?.id, data?.data_ketidaksesuaian)
                                                                                     }}
                                                                                     className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
                                                                                 >
-                                                                                    SUBMIT
+                                                                                    {isLoading ? 'Loading...' : 'SUBMIT'}
                                                                                 </button>
+                                                                                {isLoading && <Loading />}
                                                                             </div>
 
                                                                         </div>

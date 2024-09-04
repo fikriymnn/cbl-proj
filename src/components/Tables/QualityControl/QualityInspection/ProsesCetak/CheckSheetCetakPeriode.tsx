@@ -878,6 +878,59 @@ function CheckSheetCetakPeriode() {
                 );
               },
             )}
+
+            <div className="flex flex-col  bg-[#f3f3f3] w-[200px] px-2 py-2">
+              <div className='flex w-full justify-center'>
+                <p className='text-black text-sm font-semibold'>
+                  C1.1
+                </p>
+              </div>
+              <div className='flex flex-col w-full'>
+                <div className='flex gap-1 w-full'>
+                  <input
+                    type="radio"
+                    id="ok11"
+                    value="ok"
+                    name="line_clearance"
+
+                  />
+                  <img src={ok} className='w-4' />
+                  <label className="">OK</label>
+                </div>
+                <div className='flex gap-1 w-full'>
+                  <input
+                    type="radio"
+                    id="ok12"
+                    value="ok (toleransi)"
+                    name="line_clearance"
+
+                  />
+                  <img src={oktole} className='w-4' />
+                  <label className="">OK (Toleransi)</label>
+                </div>
+                <div className='flex gap-1 w-full'>
+                  <input
+                    type="radio"
+                    id="ok12"
+                    value="not ok"
+                    name="line_clearance"
+
+                  />
+                  <img src={notok} className='w-4' />
+                  <label className="">Not OK</label>
+                </div>
+                <div className='flex gap-1 w-full'>
+                  <input
+                    type="radio"
+                    id="ok12"
+                    value="-"
+                    name="line_clearance"
+
+                  />
+                  <label className="">-</label>
+                </div>
+              </div>
+            </div>
           </div>
           {!isOnprogres &&
             cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'incoming' ||

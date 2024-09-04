@@ -6,8 +6,10 @@ import Filter from '../../../../images/icon/filter.svg';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../utils/converDateToTime';
+import Loading from '../../../Loading';
 
 function OngoingNCRMR() {
+    const [isLoading, setIsLoading] = useState(false);
     const tiket = [
         {
             name: 'EX000003',
@@ -49,6 +51,7 @@ function OngoingNCRMR() {
         const url = `${import.meta.env.VITE_API_LINK}/ncr/validasiMr/${id}
         `;
         try {
+            setIsLoading(true);
             const res = await axios.put(url, {
                 status: status,
                 catatan_mr: ctt,
@@ -58,9 +61,10 @@ function OngoingNCRMR() {
             });
             closeModal1(index);
             getNcrMR();
-
+            setIsLoading(false);
         } catch (error: any) {
             console.log(error);
+            setIsLoading(false);
         }
     }
     const [openButton, setOpenButton] = useState(null);
@@ -307,6 +311,7 @@ function OngoingNCRMR() {
                                                                             </div>
                                                                             <div className="pt-5">
                                                                                 <button
+                                                                                    disabled={isLoading}
                                                                                     onClick={(e) => {
                                                                                         e.preventDefault()
                                                                                         // console.log(ctt, status)
@@ -315,8 +320,9 @@ function OngoingNCRMR() {
                                                                                     }}
                                                                                     className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
                                                                                 >
-                                                                                    SUBMIT
+                                                                                    {isLoading ? 'Loading...' : 'SUBMIT'}
                                                                                 </button>
+                                                                                {isLoading && <Loading />}
                                                                             </div>
                                                                         </div>
 

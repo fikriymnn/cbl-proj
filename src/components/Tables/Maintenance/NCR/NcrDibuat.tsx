@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import Arrow from '../../../../images/icon/arrowDown.svg';
 import Filter from '../../../../images/icon/filter.svg';
 import ModalNCR4xl from '../../../Modals/Qc/NCR/ModalNCR4xl';
+import Loading from '../../../Loading';
 
 function NcrDibuatMTC() {
 
@@ -101,7 +102,7 @@ function NcrDibuatMTC() {
     async function submitNCR() {
         const url = `${import.meta.env.VITE_API_LINK}/ncr`;
         try {
-            //setIsLoading(true);
+            setIsLoading(true);
             const res = await axios.post(
                 url,
                 {
@@ -116,15 +117,16 @@ function NcrDibuatMTC() {
                 },
             );
 
-            //setIsLoading(false);
+            setIsLoading(false);
             window.location.reload();
             //alert(res.data.msg);
         } catch (error: any) {
             console.log(error);
-            // setIsLoading(false);
+            setIsLoading(false);
             alert(error.data.msg);
         }
     }
+    const [isLoading, setIsLoading] = useState(false);
 
     const [produk, setProduk] = useState<any>();
     const [noJO, setNoJO] = useState<any>();
@@ -224,8 +226,20 @@ function NcrDibuatMTC() {
                                                                     Pilih Kategori
                                                                 </option>
 
-                                                                <option value="General" className="text-[#646464] text-xs dark:text-bodydark">
-                                                                    General
+                                                                <option value="man" className="text-[#646464] text-xs dark:text-bodydark">
+                                                                    Man
+                                                                </option>
+                                                                <option value="material" className="text-[#646464] text-xs dark:text-bodydark">
+                                                                    Material
+                                                                </option>
+                                                                <option value="persiapan" className="text-[#646464] text-xs dark:text-bodydark">
+                                                                    Persiapan
+                                                                </option>
+                                                                <option value="system" className="text-[#646464] text-xs dark:text-bodydark">
+                                                                    System
+                                                                </option>
+                                                                <option value="sop" className="text-[#646464] text-xs dark:text-bodydark">
+                                                                    SOP
                                                                 </option>
 
                                                             </select>
@@ -256,27 +270,7 @@ function NcrDibuatMTC() {
 
                                                 </div>
 
-                                                <div className='grid grid-cols-12  pt-2 gap-2'>
-                                                    <div className='w-full col-span-6 gap-3'>
-                                                        <div className='flex flex-col gap-1'>
-                                                            <p className='font-bold'>
-                                                                WAKTU
-                                                            </p>
-                                                            <input type="text" placeholder='ISI' disabled className='bg-[#64646424] rounded-md h-7 pl-4' ></input>
-                                                        </div>
 
-
-                                                    </div>
-                                                    <div className='w-full col-span-6 gap-3'>
-                                                        <div className='flex flex-col gap-1'>
-                                                            <p className='font-bold'>
-                                                                PELAPOR
-                                                            </p>
-                                                            <input type="text" placeholder='ISI' disabled className='bg-[#64646424] rounded-md h-7 pl-4' ></input>
-                                                        </div>
-
-                                                    </div>
-                                                </div>
                                                 <div className=' flex flex-col w-full gap-1'>
                                                     <div className='flex flex-col w-full'>
                                                         <p className='font-bold'>
@@ -440,12 +434,13 @@ function NcrDibuatMTC() {
                                                                 +
                                                             </button>
                                                             <button
+                                                                disabled={isLoading}
                                                                 onClick={() => { submitNCR() }}
                                                                 className=" w-full h-10 rounded-md mt-2 bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
                                                             >
-                                                                KIRIM LAPORAN
+                                                                {isLoading ? 'Loading...' : 'KIRIM LAPORAN'}
                                                             </button>
-
+                                                            {isLoading && <Loading />}
 
                                                         </>
                                                     );
