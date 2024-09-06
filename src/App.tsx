@@ -716,6 +716,28 @@ function App() {
           }
         />
         <Route
+          path="/qc/qualityinspection/barang_rusak_sebagian"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <BarangRusakSebagian />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/barang_rusak_sebagian/checksheetAwal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <RusakSebagianAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/qc/qualityinspection/sampling_hasil_rabut"
           element={
             <>
