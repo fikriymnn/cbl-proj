@@ -715,7 +715,7 @@ function App() {
             </>
           }
         />
-        <Route
+        {/* <Route
           path="/qc/qualityinspection/barang_rusak_sebagian"
           element={
             <>
@@ -736,7 +736,7 @@ function App() {
               </ProtectedRoute>
             </>
           }
-        />
+        /> */}
         <Route
           path="/qc/qualityinspection/sampling_hasil_rabut"
           element={
