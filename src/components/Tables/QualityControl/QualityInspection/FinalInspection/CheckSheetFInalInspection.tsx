@@ -13,7 +13,10 @@ function ChecksheetFinalInspection() {
   const [isLoading, setIsLoading] = useState(false);
   const [FinalInspection, setFinalInspection] = useState<any>();
   const [Catatan, setCatatan] = useState<any>();
-
+  const [jumlahPacking, setJumlahPacking] = useState<any>();
+  const [noPallet, setnoPallet] = useState<any>();
+  const [noPacking, setnoPacking] = useState<any>();
+  const [status, setStatus] = useState<any>();
   useEffect(() => {
     getFinalInspection();
   }, []);
@@ -25,97 +28,26 @@ function ChecksheetFinalInspection() {
         withCredentials: true,
       });
 
-      setFinalInspection(res.data);
+      setFinalInspection(res.data.data);
       console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
 
-  async function startTaskFinal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiFinalPoint/start/${id}`;
-    try {
-      const res = await axios.put(
-        url,
-        {},
-        {
-          withCredentials: true,
-        },
-      );
-
-      getFinalInspection();
-    } catch (error: any) {
-      console.log(error);
-      alert(error.response.data.msg);
-    }
-  }
-
-  async function stopTaskRabut(
-    id: number,
-    startTime: any,
-    catatan: any,
-    qty_pallet: any,
-    data_defect: any,
-  ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiFinalPoint/stop/${id}`;
-    try {
-      const elapsedSeconds = calculateElapsedTime(startTime, new Date());
-      console.log(elapsedSeconds);
-      const res = await axios.put(
-        url,
-        {
-          catatan: catatan,
-          lama_pengerjaan: elapsedSeconds,
-          qty_pallet,
-          data_defect,
-        },
-        {
-          withCredentials: true,
-        },
-      );
-
-      getFinalInspection();
-    } catch (error: any) {
-      console.log(error.response.data.msg);
-      alert(error.response.data.msg);
-    }
-  }
-
-  async function tambahTaskRabut(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiFinalPoint/create`;
-    try {
-      setIsLoading(true);
-      const res = await axios.post(
-        url,
-        {
-          id_inspeksi_rabut: id,
-        },
-        {
-          withCredentials: true,
-        },
-      );
-      setIsLoading(false);
-      getFinalInspection();
-    } catch (error: any) {
-      console.log(error.data.msg);
-    }
-  }
-
-  async function doneRabut(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiFinal/done/${id}`;
+  async function doneFinal(id: number) {
+    const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiFinal/${id}`;
     try {
       const res = await axios.put(
         url,
         {
           catatan: Catatan,
+          no_pallet: noPallet,
+          no_packing: noPacking,
+          jumlah_packing: jumlahPacking,
+          status: status,
+          inspeksi_final_point: FinalInspection?.inspeksi_final_point,
+          inspeksi_final_sub: FinalInspection?.inspeksi_final_sub,
         },
         {
           withCredentials: true,
@@ -128,45 +60,29 @@ function ChecksheetFinalInspection() {
     }
   }
 
-  async function pendingRabut(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiFinal/pending/${id}`;
-    try {
-      const res = await axios.put(
-        url,
-        {},
-        {
-          withCredentials: true,
-        },
-      );
-
-      getFinalInspection();
-    } catch (error: any) {
-      console.log(error.data.msg);
-    }
-  }
-
-  const handleChangePoint = (e: any, i: number, ii: number) => {
+  const handleChangePoint = (e: any, i: number) => {
     const { name, value } = e.target;
     const onchangeVal: any = FinalInspection;
-    onchangeVal.data.inspeksi_rabut_point[i].inspeksi_rabut_defect[ii][name] =
-      value;
+    onchangeVal.inspeksi_final_point[i][name] = value;
+    setFinalInspection(onchangeVal);
+  };
+  const handleChangePointHasil = (e: any, i: number) => {
+    const { name, value } = e.target;
+    const onchangeVal: any = FinalInspection;
+    onchangeVal.inspeksi_final_point[i]['hasil'] = value;
     setFinalInspection(onchangeVal);
   };
 
-  const handleChangeRabutPoint = (e: any, i: number) => {
+  const handleChangeSubPoint = (e: any, i: number) => {
     const { name, value } = e.target;
     const onchangeVal: any = FinalInspection;
-    onchangeVal.data.inspeksi_rabut_point[i][name] = value;
+    onchangeVal.inspeksi_final_sub[i][name] = value;
     setFinalInspection(onchangeVal);
     console.log(onchangeVal);
   };
 
-  const tanggal = convertTimeStampToDateOnly(FinalInspection?.data?.tanggal);
-  const jam = convertDateToTime(FinalInspection?.data?.tanggal);
-
-  const jumlahWaktuCheck = formatElapsedTime(FinalInspection?.data?.waktu_check);
+  const tanggal = convertTimeStampToDateOnly(FinalInspection?.createdAt);
+  const jam = convertDateToTime(FinalInspection?.createdAt);
 
   return (
     <>
@@ -218,20 +134,20 @@ function ChecksheetFinalInspection() {
                   : {tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {FinalInspection?.data?.no_jo}
+                  : {FinalInspection?.no_jo}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {FinalInspection?.data?.no_jo}
+                  : {FinalInspection?.no_jo}
                 </label>
 
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {FinalInspection?.data?.nama_produk}
+                  : {FinalInspection?.nama_produk}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {FinalInspection?.data?.customer}
+                  : {FinalInspection?.customer}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {FinalInspection?.data?.qty}
+                  : {FinalInspection?.quantity}
                 </label>
               </div>
 
@@ -251,224 +167,365 @@ function ChecksheetFinalInspection() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   Inspector
                 </label>
-
-                
               </div>
               <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
-               
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {FinalInspection?.data?.inspector}
+                  : {FinalInspection?.data_inspector?.nama}
                 </label>
               </div>
             </div>
 
             {/* =============================chekcsheet========================= */}
-            
           </div>
-         
-          <div className='grid w-full grid-cols-2 gap-2'>
-          <div className="bg-white ">
-            <p className="text-sm text-blue-700 font-semibold px-5 pt-5">Standar Pemeriksaan</p>
-            <div className=''>
-              <div className="px-5">
-                <p className="font-semibold text-sm mt-5 ">
-                √N + 1 = Jumlah Packing yang akan dicek
-                </p>
-                <p className="font-semibold text-sm mt-5 ">
-                (N Jumlah packing dalam 1 palet)
-                </p>
-                <p className="font-semibold text-sm mt-5 ">
-                JUMLAH PACKING yang diambil 1 palet (pack) :
-                </p>
-                <input
-                  type="text"
-                  
-                 
-                  className=" border rounded border-strokedark mb-4"
-                />
+
+          <div className="grid w-full grid-cols-2 gap-2">
+            <div className="bg-white ">
+              <p className="text-sm text-blue-700 font-semibold px-5 pt-5">
+                Standar Pemeriksaan
+              </p>
+              <div className="">
+                <div className="px-5">
+                  <p className="font-semibold text-sm mt-5 ">
+                    √N + 1 = Jumlah Packing yang akan dicek
+                  </p>
+                  <p className="font-semibold text-sm mt-5 ">
+                    (N Jumlah packing dalam 1 palet)
+                  </p>
+                  <p className="font-semibold text-sm mt-5 ">
+                    JUMLAH PACKING yang diambil 1 palet (pack) :
+                  </p>
+                  {FinalInspection?.status == 'incoming' ? (
+                    <input
+                      type="text"
+                      onChange={(e) => {
+                        setJumlahPacking(e.target.value);
+                      }}
+                      className=" border rounded border-strokedark mb-4"
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      disabled
+                      defaultValue={FinalInspection?.jumlah_packing}
+                      onChange={(e) => {
+                        setJumlahPacking(e.target.value);
+                      }}
+                      className=" border rounded border-strokedark mb-4"
+                    />
+                  )}
+                </div>
               </div>
-             
+            </div>
+            <div className="bg-white ">
+              <p className="text-sm text-blue-700 font-semibold px-5 pt-5">
+                Standar Pemeriksaan
+              </p>
+              <div>
+                <div className="px-5 flex gap-5 items-center justify-between mt-5">
+                  <p className="font-semibold text-sm  ">
+                    No Pallet yang di Cek :
+                  </p>
+
+                  {FinalInspection?.status == 'incoming' ? (
+                    <input
+                      type="text"
+                      onChange={(e) => {
+                        setnoPallet(e.target.value);
+                      }}
+                      className=" border rounded border-strokedark"
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      disabled
+                      defaultValue={FinalInspection?.no_pallet}
+                      onChange={(e) => {
+                        setnoPallet(e.target.value);
+                      }}
+                      className=" border rounded border-strokedark"
+                    />
+                  )}
+                </div>
+                <div className="px-5 flex gap-5 items-center justify-between mt-5">
+                  <p className="font-semibold text-sm  ">
+                    No Packing yang diperiksa :
+                  </p>
+
+                  {FinalInspection?.status == 'incoming' ? (
+                    <input
+                      type="text"
+                      onChange={(e) => {
+                        setnoPacking(e.target.value);
+                      }}
+                      className=" border rounded border-strokedark"
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      disabled
+                      defaultValue={FinalInspection?.no_packing}
+                      onChange={(e) => {
+                        setnoPacking(e.target.value);
+                      }}
+                      className=" border rounded border-strokedark"
+                    />
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-          <div className="bg-white ">
-            <p className="text-sm text-blue-700 font-semibold px-5 pt-5">Standar Pemeriksaan</p>
+          <div className="bg-white mt-2 w-full grid grid-cols-4 text-blue-600 text-sm font-semibold ">
             <div>
-              <div className="px-5 flex gap-5 items-center justify-between mt-5">
-                <p className="font-semibold text-sm  ">
-                No Pallet yang di Cek :
-                </p>
-                
-                <input
-                  type="text"
-                  
-                 
-                  className=" border rounded border-strokedark"
-                />
+              <p className="text-center">QTY PCS/PALLET</p>
+            </div>
+            <div>
+              <p className="text-center">JUMLAH YANG DIPERIKSA</p>
+            </div>
+            <div className="flex flex-col justify-center">
+              <p className="text-center">TINGKAT PENERIMAAN KUALITAS</p>
+              <div className="grid grid-cols-2 justify-center w-full">
+                <p className="text-center">LULUS</p>
+                <p className="text-center">TOLAK</p>
               </div>
-              <div className="px-5 flex gap-5 items-center justify-between mt-5">
-                <p className="font-semibold text-sm  ">
-                No Packing yang diperiksa :
-                </p>
-                
-                <input
-                  type="text"
-                  
-                 
-                  className=" border rounded border-strokedark"
-                />
-              </div>
-             
+            </div>
+            <div>
+              <p className="text-center">REJECT YANG DITEMUKAN</p>
             </div>
           </div>
+          {FinalInspection?.inspeksi_final_sub.map(
+            (dataSub: any, indexSub: number) => {
+              return (
+                <div className="bg-white mt-2  text-sm font-semibold ">
+                  <div className="w-full grid grid-cols-4 py-2 ">
+                    <div className="mb-2">
+                      <p className="text-center">{dataSub.quantity}</p>
+                    </div>
+                    <div className="mb-2">
+                      <p className="text-center">{dataSub.jumlah}</p>
+                    </div>
+                    <div className="flex flex-col justify-center mb-2">
+                      <div className="grid grid-cols-2 justify-center w-full mb-2">
+                        <p className="text-center">{dataSub.kualitas_lulus}</p>
+                        <p className="text-center">{dataSub.kualitas_tolak}</p>
+                      </div>
+                    </div>
+                    <div className="flex justify-center w-full mb-2">
+                      {FinalInspection?.status == 'incoming' ? (
+                        <input
+                          type="text"
+                          name="reject"
+                          onChange={(e) => {
+                            handleChangeSubPoint(e, indexSub);
+                          }}
+                          className=" border rounded border-strokedark"
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          name="reject"
+                          disabled
+                          defaultValue={dataSub.reject}
+                          onChange={(e) => {
+                            handleChangeSubPoint(e, indexSub);
+                          }}
+                          className=" border rounded border-strokedark"
+                        />
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            },
+          )}
 
-          </div>
-          <div className='bg-white mt-2 w-full grid grid-cols-4 text-blue-600 text-sm font-semibold '>
-<div >
-  <p className='text-center'>QTY PCS/PALLET</p>
-</div>
-<div>
-  <p className='text-center'>JUMLAH YANG DIPERIKSA</p>
-</div>
-<div className='flex flex-col justify-center'>
-  <p className='text-center'>TINGKAT PENERIMAAN KUALITAS</p>
-  <div className='grid grid-cols-2 justify-center w-full'>
-    <p className='text-center'>LULUS</p>
-    <p className='text-center'>TOLAK</p>
-  </div>
-</div>
-<div>
-  <p className='text-center'>REJECT YANG DITEMUKAN</p>
-</div>
-          </div>
-          <div className='bg-white mt-2  text-sm font-semibold '>
-            <div className='w-full grid grid-cols-4 py-2 '>
-
-<div className='mb-2'>
-  <p className='text-center'>3201 Pcs S/D 10.000 Pcs</p>
-</div>
-<div className='mb-2'>
-  <p className='text-center'>200 pcs</p>
-</div>
-<div className='flex flex-col justify-center mb-2'>
-
-  <div className='grid grid-cols-2 justify-center w-full mb-2'>
-    <p className='text-center'>10</p>
-    <p className='text-center'>11</p>
-  </div>
-</div>
-<div className='flex justify-center w-full mb-2'>
-<input
-                  type="text"
-                  
-                 
-                  className=" border rounded border-strokedark"
-                />
-</div>
+          <div className="bg-white mt-2 w-full grid grid-cols-11 p-2 text-sm font-semibold ">
+            <div>
+              <p className="text-center">NO</p>
             </div>
-
+            <div className="col-span-2">
+              <p className="text-center">POINT CHECK</p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-center">STANDAR</p>
+            </div>
+            <div className="flex flex-col justify-center col-span-2">
+              <p className="text-center">CARA PERIKSA</p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-center">HASIL</p>
+            </div>
+            <div className="col-span-2">
+              <p className="text-center">QTY REJECT</p>
+            </div>
           </div>
-          <div className='bg-white mt-2 w-full grid grid-cols-11 p-2 text-sm font-semibold '>
-<div >
-  <p className='text-center'>NO</p>
-</div>
-<div  className='col-span-2'>
-  <p className='text-center'>POINT CHECK</p>
-</div>
-<div className='col-span-2'>
-  <p className='text-center'>STANDAR</p>
-</div>
-<div className='flex flex-col justify-center col-span-2'>
-  <p className='text-center'>CARA PERIKSA</p>
- 
-</div>
-<div className='col-span-2'>
-  <p className='text-center'>HASIL</p>
-</div>
-<div className='col-span-2'>
-  <p className='text-center'>QTY REJECT</p>
-</div>
-          </div>
-          <div className='bg-white mt-2 w-full grid grid-cols-11 p-2 text-sm font-semibold '>
-<div >
-  <p className='text-center'>1</p>
-</div>
-<div  className='col-span-2'>
-  <p className='text-center'>Warna</p>
-</div>
-<div className='col-span-2'>
-  <p className='text-center'>Standar Warna</p>
-</div>
-<div className='flex flex-col justify-center col-span-2'>
-  <p className='text-center'>Visual</p>
- 
-</div>
-<div className='col-span-2 flex flex-col items-center'>
-  <div>
+          {FinalInspection?.inspeksi_final_point.map(
+            (dataPoint: any, indexPoint: number) => {
+              return (
+                <div className="bg-white mt-2 w-full grid grid-cols-11 p-2 text-sm font-semibold ">
+                  <div>
+                    <p className="text-center">{indexPoint + 1}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-center">{dataPoint.point}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-center">{dataPoint.standar}</p>
+                  </div>
+                  <div className="flex flex-col justify-center col-span-2">
+                    <p className="text-center">{dataPoint.cara_periksa}</p>
+                  </div>
+                  <div className="col-span-2 flex flex-col items-center">
+                    <div>
+                      {FinalInspection?.status == 'incoming' ? (
+                        <>
+                          <div>
+                            <input
+                              type="radio"
+                              id="sesuai"
+                              value="sesuai"
+                              name={`hasil` + indexPoint}
+                              onChange={(e) => {
+                                handleChangePointHasil(e, indexPoint);
+                              }}
+                            />
+                            <label className="pl-2">SESUAI</label>
+                          </div>
+                          <div>
+                            <input
+                              type="radio"
+                              id="tidak sesuai"
+                              value="tidak sesuai"
+                              name={`hasil` + indexPoint}
+                              onChange={(e) => {
+                                handleChangePointHasil(e, indexPoint);
+                              }}
+                            />
+                            <label className="pl-2">TIDAK SESUAI</label>
+                          </div>
+                        </>
+                      ) : (
+                        <input
+                          type="text"
+                          disabled
+                          defaultValue={dataPoint.hasil}
+                          name={`hasil`}
+                          onChange={(e) => {
+                            handleChangePoint(e, indexPoint);
+                          }}
+                        />
+                      )}
+                    </div>
+                  </div>
+                  <div className="col-span-2 flex items-center">
+                    {FinalInspection?.status == 'incoming' ? (
+                      <input
+                        type="text"
+                        name="qty"
+                        onChange={(e) => {
+                          handleChangePoint(e, indexPoint);
+                        }}
+                        className=" border rounded border-strokedark"
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        name="qty"
+                        disabled
+                        defaultValue={dataPoint.qty}
+                        onChange={(e) => {
+                          handleChangePoint(e, indexPoint);
+                        }}
+                        className=" border rounded border-strokedark"
+                      />
+                    )}
+                  </div>
+                </div>
+              );
+            },
+          )}
 
-<div>
-                              <input
-                                type="radio"
-                                id="SESUAI"
-                                value="SESUAI"
-                                name="register"
-                              
-                              />
-                              <label className="pl-2">SESUAI</label>
-                            </div>
-<div>
-                              <input
-                                type="radio"
-                                id="TIDAK SESUAI"
-                                value="TIDAK SESUAI"
-                                name="register"
-                              
-                              />
-                              <label className="pl-2">TIDAK SESUAI</label>
-                            </div>
-  </div>
-</div>
-<div className='col-span-2 flex items-center'>
-<input
-                  type="text"
-                  
-                 
-                  className=" border rounded border-strokedark"
-                />
-</div>
+          <div className="bg-white mt-2 w-full grid grid-cols-12 gap-5 p-2 text-sm font-semibold ">
+            <div className="col-span-6">
+              <p className="">Catatan *:</p>
+              {FinalInspection?.status == 'incoming' ? (
+                <textarea
+                  name=""
+                  id=""
+                  onChange={(e) => {
+                    setCatatan(e.target.value);
+                  }}
+                  rows={4}
+                  className="w-full border rounded px-2"
+                ></textarea>
+              ) : (
+                <textarea
+                  name=""
+                  id=""
+                  disabled
+                  defaultValue={FinalInspection?.catatan}
+                  onChange={(e) => {
+                    setCatatan(e.target.value);
+                  }}
+                  rows={4}
+                  className="w-full border rounded px-2"
+                ></textarea>
+              )}
+            </div>
+            {FinalInspection?.status == 'incoming' ? (
+              <div className="col-span-3 flex flex-col justify-end">
+                <div>
+                  <input
+                    type="radio"
+                    id="bisa kirim"
+                    value="bisa kirim"
+                    name="status"
+                    onChange={(e) => {
+                      setStatus(e.target.value);
+                    }}
+                  />
+                  <label className="pl-2">BISA KIRIM</label>
+                </div>
+                <div>
+                  <input
+                    type="radio"
+                    id="tidak bisa di kirim"
+                    value="tidak bisa di kirim"
+                    name="status"
+                    onChange={(e) => {
+                      setStatus(e.target.value);
+                    }}
+                  />
+                  <label className="pl-2">TIDAK BISA KIRIM</label>
+                </div>
+              </div>
+            ) : (
+              <div className="col-span-3 flex flex-col justify-end">
+                <div>
+                  <input
+                    type="text"
+                    disabled
+                    defaultValue={FinalInspection?.status}
+                    name="status"
+                    onChange={(e) => {
+                      setStatus(e.target.value);
+                    }}
+                  />
+                </div>
+              </div>
+            )}
 
-          </div>
-          <div className='bg-white mt-2 w-full grid grid-cols-12 gap-5 p-2 text-sm font-semibold '>
-<div className='col-span-6'>
-  <p className=''>Catatan *:</p>
-  <textarea name="" id="" rows={4} className='w-full border rounded px-2' ></textarea>
-</div>
-<div className='col-span-3 flex flex-col justify-end'>
-
-<div>
-                              <input
-                                type="radio"
-                                id="SESUAI"
-                                value="SESUAI"
-                                name="register"
-                              
-                              />
-                              <label className="pl-2">BISA KIRIM</label>
-                            </div>
-<div>
-                              <input
-                                type="radio"
-                                id="TIDAK BISA KIRIM"
-                                value="TIDAK BISA KIRIM"
-                                name="register"
-                              
-                              />
-                              <label className="pl-2">TIDAK BISA KIRIM</label>
-                            </div>
-  </div>
-  <div className='col-span-3 flex flex-col justify-end'>
-
-  <button className='px-2 py-2 bg-green-700 w-full  text-white'>SUBMIT CHECKSHEET</button>
-  </div>
+            <div className="col-span-3 flex flex-col justify-end">
+              {FinalInspection?.status == 'incoming' ? (
+                <button
+                  onClick={() => {
+                    doneFinal(FinalInspection?.id);
+                  }}
+                  className="px-2 py-2 bg-green-700 w-full  text-white"
+                >
+                  SUBMIT CHECKSHEET
+                </button>
+              ) : null}
+            </div>
           </div>
         </main>
       )}
