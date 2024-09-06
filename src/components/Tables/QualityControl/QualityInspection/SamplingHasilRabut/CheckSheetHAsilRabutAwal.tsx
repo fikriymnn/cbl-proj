@@ -59,9 +59,8 @@ function CheckSheetHasilRabut() {
   }
 
   async function startTaskRabut(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiRabutPoint/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiRabutPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -85,9 +84,8 @@ function CheckSheetHasilRabut() {
     qty_pallet: any,
     data_defect: any,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiRabutPoint/stop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiRabutPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -112,9 +110,8 @@ function CheckSheetHasilRabut() {
   }
 
   async function tambahTaskRabut(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiRabutPoint/create`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiRabutPoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -134,9 +131,8 @@ function CheckSheetHasilRabut() {
   }
 
   async function doneRabut(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiRabut/done/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiRabut/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -154,24 +150,24 @@ function CheckSheetHasilRabut() {
     }
   }
 
-  async function pendingRabut(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiRabut/pending/${id}`;
-    try {
-      const res = await axios.put(
-        url,
-        {},
-        {
-          withCredentials: true,
-        },
-      );
+  // async function pendingRabut(id: number) {
+  //   const url = `${
+  //     import.meta.env.VITE_API_LINK
+  //   }/qc/cs/inspeksiRabut/pending/${id}`;
+  //   try {
+  //     const res = await axios.put(
+  //       url,
+  //       {},
+  //       {
+  //         withCredentials: true,
+  //       },
+  //     );
 
-      getRabutMesin();
-    } catch (error: any) {
-      console.log(error.data.msg);
-    }
-  }
+  //     getRabutMesin();
+  //   } catch (error: any) {
+  //     console.log(error.data.msg);
+  //   }
+  // }
 
   async function tambahDefectPeriode(
     id: number,
@@ -179,9 +175,8 @@ function CheckSheetHasilRabut() {
     idPoint: number,
     index: number,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiRabutPoint/createDefect`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiRabutPoint/createDefect`;
     try {
       const res = await axios.post(
         url,
@@ -607,7 +602,7 @@ function CheckSheetHasilRabut() {
             )}
           </div>
           {RabutMesin?.data?.status == 'incoming' ||
-          RabutMesin?.data?.status == 'pending' ? (
+            RabutMesin?.data?.status == 'pending' ? (
             <button
               onClick={() => tambahTaskRabut(RabutMesin?.data.id)}
               className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 mb-2 hover:cursor-pointer"
@@ -692,16 +687,16 @@ function CheckSheetHasilRabut() {
                 </div>
                 <div className="flex justify-end p-5">
                   <div className="grid grid-cols-3 gap-2 items-end justify-end">
-                    {RabutMesin?.data?.status == 'incoming' ? (
+                    {/* {RabutMesin?.data?.status == 'incoming' ? (
                       <button
                         onClick={() => pendingRabut(RabutMesin?.data.id)}
                         className=" w-full h-10 rounded-sm bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                       >
                         PENDING
                       </button>
-                    ) : null}
+                    ) : null} */}
                     {RabutMesin?.data?.status == 'incoming' ||
-                    RabutMesin?.data?.status == 'pending' ? (
+                      RabutMesin?.data?.status == 'pending' ? (
                       <button
                         onClick={() => doneRabut(RabutMesin?.data.id)}
                         className=" col-span-2 w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
