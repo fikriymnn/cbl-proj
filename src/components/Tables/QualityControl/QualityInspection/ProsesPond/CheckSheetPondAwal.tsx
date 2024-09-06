@@ -39,8 +39,9 @@ function CheckSheetPondAwal() {
     setPondMesinAwal(onchangeVal);
   };
   async function startTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondAwalPoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondAwalPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -69,8 +70,9 @@ function CheckSheetPondAwal() {
     riil: any,
     reforasi: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondAwalPoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondAwalPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -99,8 +101,9 @@ function CheckSheetPondAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondAwalPoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondAwalPoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -120,8 +123,9 @@ function CheckSheetPondAwal() {
   }
 
   async function doneCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondAwal/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondAwal/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -139,8 +143,9 @@ function CheckSheetPondAwal() {
     }
   }
   async function pendingCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondAwal/pending/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondAwal/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -162,7 +167,10 @@ function CheckSheetPondAwal() {
     pondMesinAwal?.inspeksi_pond_awal[0].waktu_check,
   );
 
-  const isOnprogres = pondMesinAwal?.inspeksi_pond_awal[0].inspeksi_pond_awal_point.some((data: { status: any; }) => data?.status === 'on progress')
+  const isOnprogres =
+    pondMesinAwal?.inspeksi_pond_awal[0].inspeksi_pond_awal_point.some(
+      (data: { status: any }) => data?.status === 'on progress',
+    );
 
   return (
     <>
@@ -318,7 +326,8 @@ function CheckSheetPondAwal() {
                               Time : {lamaPengerjaan}
                             </p>
                             <>
-                              {data.status == 'incoming' ? (
+                              {data.status == 'incoming' &&
+                              pondMesinAwal?.status == 'incoming' ? (
                                 <button
                                   onClick={() => startTaskCekAwal(data.id)}
                                   className="flex w-[50%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
@@ -439,7 +448,8 @@ function CheckSheetPondAwal() {
                           </>
                         </div>
                       </div>
-                    ) : data.status == 'on progress' ? (
+                    ) : data.status == 'on progress' &&
+                      pondMesinAwal?.status == 'incoming' ? (
                       <div className="grid grid-cols-7 border-b-8 border-[#D8EAFF]">
                         <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                           <>
@@ -616,7 +626,8 @@ function CheckSheetPondAwal() {
                         <label className=" text-[#6c6b6b] text-sm font-semibold">
                           Catatan<span className="text-red-500">*</span> :
                         </label>
-                        {data.status == 'on progress' ? (
+                        {data.status == 'on progress' &&
+                        pondMesinAwal?.status == 'incoming' ? (
                           <textarea
                             name="catatan"
                             defaultValue={data.catatan}
@@ -634,7 +645,8 @@ function CheckSheetPondAwal() {
                         ) : null}
                       </div>
                       <div className="grid col-span-2 items-end justify-center">
-                        {data.status == 'on progress' ? (
+                        {data.status == 'on progress' &&
+                        pondMesinAwal?.status == 'incoming' ? (
                           <button
                             onClick={() => {
                               stopTaskCekAwal(
@@ -662,9 +674,11 @@ function CheckSheetPondAwal() {
               },
             )}
           </div>
-          {!isOnprogres &&
-            pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ||
-            pondMesinAwal?.inspeksi_pond_awal[0].status == 'pending' ? (
+          {(!isOnprogres &&
+            pondMesinAwal?.status == 'incoming' &&
+            pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming') ||
+          (pondMesinAwal?.inspeksi_pond_awal[0].status == 'pending' &&
+            pondMesinAwal?.status == 'incoming') ? (
             <>
               <button
                 disabled={isLoading}
@@ -689,8 +703,8 @@ function CheckSheetPondAwal() {
             </label>
             <div className="grid col-span-6 items-end justify-end gap-2">
               {!isOnprogres &&
-                pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' &&
-                pondMesinAwal?.status == 'incoming' ? (
+              pondMesinAwal?.status == 'incoming' &&
+              pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekAwal(pondMesinAwal?.inspeksi_pond_awal[0].id)
@@ -700,9 +714,10 @@ function CheckSheetPondAwal() {
                   PENDING
                 </button>
               ) : null}
-              {!isOnprogres &&
-                pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ||
-                pondMesinAwal?.inspeksi_pond_awal[0].status == 'pending' ? (
+              {(!isOnprogres &&
+                pondMesinAwal?.status == 'incoming' &&
+                pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming') ||
+              pondMesinAwal?.inspeksi_pond_awal[0].status == 'pending' ? (
                 <button
                   onClick={() =>
                     doneCekAwal(pondMesinAwal?.inspeksi_pond_awal[0].id)
