@@ -518,10 +518,10 @@ function Pm1Form() {
                           data.hasil == 'warning'
                             ? 'border-2 border-yellow-400 bg-[#FFF9E8]'
                             : data.hasil == 'jelek'
-                            ? 'border-2 border-red-400 bg-[#FFEFEF]'
-                            : data.hasil == 'tidak terpasang'
-                            ? 'border-2 border-red-400 bg-[#FFEFEF]'
-                            : ' border-b-8 border-[#D8EAFF]'
+                              ? 'border-2 border-red-400 bg-[#FFEFEF]'
+                              : data.hasil == 'tidak terpasang'
+                                ? 'border-2 border-red-400 bg-[#FFEFEF]'
+                                : ' border-b-8 border-[#D8EAFF]'
                         }
                       >
                         <div className="flex p-4 border-b-2 ">
@@ -601,11 +601,10 @@ function Pm1Form() {
                                           console.log(pm1);
                                           changeTextColor();
                                         }}
-                                        className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${
-                                          isOptionSelected
+                                        className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent py-3 px-12 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
                                             ? 'text-black dark:text-white'
                                             : ''
-                                        }`}
+                                          }`}
                                       >
                                         <option
                                           value=""
@@ -1346,10 +1345,10 @@ function Pm1Form() {
                             data.hasil == 'warning'
                               ? 'border-2 border-yellow-400 bg-[#FFF9E8] mb-2'
                               : data.hasil == 'jelek'
-                              ? 'border-2 border-red-400 bg-[#FFEFEF] mb-2'
-                              : data.hasil == 'tidak terpasang'
-                              ? 'border-2 border-red-400 bg-[#FFEFEF] mb-2'
-                              : ' border-b-8 border-[#D8EAFF] mb-2'
+                                ? 'border-2 border-red-400 bg-[#FFEFEF] mb-2'
+                                : data.hasil == 'tidak terpasang'
+                                  ? 'border-2 border-red-400 bg-[#FFEFEF] mb-2'
+                                  : ' border-b-8 border-[#D8EAFF] mb-2'
                           }
                         >
                           <div className="flex p-4 border-b-2 border-[#6D6C6C] w-full">
@@ -1542,11 +1541,10 @@ function Pm1Form() {
                                             console.log(pm1);
                                             changeTextColor();
                                           }}
-                                          className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent px-8 py-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${
-                                            isOptionSelected
+                                          className={`relative z-20 w-full appearance-none rounded-[10px]  border-2 border-[#D9D9D9] bg-transparent px-8 py-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input md:text-base text-sm ${isOptionSelected
                                               ? 'text-black dark:text-white'
                                               : ''
-                                          }`}
+                                            }`}
                                         >
                                           <option
                                             value=""
