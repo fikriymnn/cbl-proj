@@ -120,6 +120,8 @@ import MrCapa from './pages/MR/Capa/MrCapa';
 import FinalInspection from './pages/QualityControl/FinalInspection/FinalInspection';
 import FinalAwal from './pages/QualityControl/FinalInspection/FinalAwal';
 import MasterFinalInspection from './pages/MasterData/QC/MasterFinalInspection';
+import BarangRusak from './pages/QualityControl/BarangRusak/BarangRusak';
+import BarangRSChecksheet from './pages/QualityControl/BarangRusak/BarangRSChecksheet';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -713,6 +715,28 @@ function App() {
             </>
           }
         />
+        {/* <Route
+          path="/qc/qualityinspection/barang_rusak_sebagian"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <BarangRusakSebagian />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/barang_rusak_sebagian/checksheetAwal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <RusakSebagianAwal />
+              </ProtectedRoute>
+            </>
+          }
+        /> */}
         <Route
           path="/qc/qualityinspection/sampling_hasil_rabut"
           element={
@@ -941,6 +965,28 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <FinalAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/barangrs"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <BarangRusak />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/barangrs/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <BarangRSChecksheet />
               </ProtectedRoute>
             </>
           }
