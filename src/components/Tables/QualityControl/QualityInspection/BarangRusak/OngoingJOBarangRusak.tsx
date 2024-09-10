@@ -34,11 +34,11 @@ function OngoingJOBarangRS() {
     }, []);
 
     async function getCetakMesin() {
-        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiCetak`;
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBarangrusak`;
         try {
             const res = await axios.get(url, {
                 params: {
-                    status: 'history',
+                    status: 'incoming',
                 },
                 withCredentials: true,
             });
@@ -86,6 +86,7 @@ function OngoingJOBarangRS() {
         },
     ];
 
+
     return (
         <>
             {!isMobile && (
@@ -93,9 +94,7 @@ function OngoingJOBarangRS() {
                     <div className="min-w-[700px] bg-white rounded-xl">
                         <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
                             <div className="grid grid-cols-10 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-                                <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                    MESIN
-                                </label>
+
 
                                 <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                     No. Job Order
@@ -114,18 +113,16 @@ function OngoingJOBarangRS() {
                                         <div
                                             className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-4 col-span-2 `}
                                         >
-                                            <label className="text-neutral-500 text-sm font-semibold pl-10">
-                                                {data.mesin}
+                                            <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-10">
+                                                {data.no_jo}
                                             </label>
                                         </div>
 
+
                                         <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-6">
-                                            {data.no_jo}
-                                        </label>
-                                        <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
                                             {data.nama_produk}
                                         </label>
-                                        <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                        <label className="text-neutral-500 text-sm font-semibold col-span-4">
                                             {data.operator}
                                         </label>
                                         <div className="justify-end flex pr-2 col-span-2">

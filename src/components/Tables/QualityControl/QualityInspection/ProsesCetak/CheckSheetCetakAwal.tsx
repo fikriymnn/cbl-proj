@@ -337,7 +337,8 @@ function CheckSheetCetakAwal() {
                               Time : {lamaPengerjaan}
                             </p>
                             <>
-                              {data.status == 'incoming' ? (
+                              {data.status == 'incoming' &&
+                                cetakMesinAwal?.status == 'incoming' ? (
                                 <button
                                   onClick={() => startTaskCekAwal(data.id)}
                                   className="flex w-[50%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
@@ -470,7 +471,8 @@ function CheckSheetCetakAwal() {
                           </>
                         </div>
                       </div>
-                    ) : data.status == 'on progress' ? (
+                    ) : data.status == 'on progress' &&
+                      cetakMesinAwal?.status == 'incoming' ? (
                       <div className="grid grid-cols-8 border-b-8 border-[#D8EAFF]">
                         <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                           <>
@@ -671,7 +673,8 @@ function CheckSheetCetakAwal() {
                         <label className=" text-[#6c6b6b] text-sm font-semibold">
                           Catatan<span className="text-red-500">*</span> :
                         </label>
-                        {data.status == 'on progress' ? (
+                        {data.status == 'on progress' &&
+                          cetakMesinAwal?.status == 'incoming' ? (
                           <textarea
                             name="catatan"
                             defaultValue={data.catatan}
@@ -689,7 +692,8 @@ function CheckSheetCetakAwal() {
                         ) : null}
                       </div>
                       <div className="grid col-span-2 items-end justify-center">
-                        {data.status == 'on progress' ? (
+                        {data.status == 'on progress' &&
+                          cetakMesinAwal?.status == 'incoming' ? (
                           <button
                             onClick={() =>
                               stopTaskCekAwal(
@@ -718,9 +722,11 @@ function CheckSheetCetakAwal() {
               },
             )}
           </div>
-          {!isOnprogres &&
-            cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming' ||
-            cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' ? (
+          {(!isOnprogres &&
+            cetakMesinAwal?.status == 'incoming' &&
+            cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming') ||
+            (cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' &&
+              cetakMesinAwal?.status == 'incoming') ? (
             <>
               <button
                 disabled={isLoading}
@@ -756,8 +762,9 @@ function CheckSheetCetakAwal() {
                   PENDING
                 </button>
               ) : null}
-              {!isOnprogres &&
-                cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming' ||
+              {(!isOnprogres &&
+                cetakMesinAwal?.status == 'incoming' &&
+                cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming') ||
                 cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' ? (
                 <button
                   onClick={() =>

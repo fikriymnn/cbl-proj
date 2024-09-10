@@ -6,6 +6,7 @@ import convertDateToTime from '../../../../../utils/converDateToTime';
 import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import Loading from '../../../../Loading';
+import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 
 function CheckSheetBarangRS() {
     const { id } = useParams();
@@ -15,10 +16,11 @@ function CheckSheetBarangRS() {
 
     useEffect(() => {
         getCetakMesinAwal();
+        getMasterDefect()
     }, []);
 
     async function getCetakMesinAwal() {
-        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiCetak/${id}`;
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBarangrusak/${id}`;
         try {
             const res = await axios.get(url, {
                 withCredentials: true,
@@ -33,7 +35,7 @@ function CheckSheetBarangRS() {
 
     async function startTaskCekAwal(id: number) {
         const url = `${import.meta.env.VITE_API_LINK
-            }/qc/cs/inspeksiCetakAwalPoint/start/${id}`;
+            }/qc/cs/inspeksiBarangrusak/start/${id}`;
         try {
             const res = await axios.put(
                 url,
@@ -49,60 +51,43 @@ function CheckSheetBarangRS() {
             alert(error.response.data.msg);
         }
     }
+    const [defectMaster, setDefectMaster] = useState<any>();
+    const [idDefect, setIdDefect] = useState<any>();
+    const [showModal1, setShowModal1] = useState(false);
 
-    async function stopTaskCekAwal(
-        id: number,
-        startTime: any,
-        catatan: any,
-        line_clearance: any,
-        design: any,
-        redaksi: any,
-        barcode: any,
-        jenis_bahan: any,
-        gramatur: any,
-        layout_pisau: any,
-        acc_warna_awal_jalan: any,
-    ) {
-        const url = `${import.meta.env.VITE_API_LINK
-            }/qc/cs/inspeksiCetakAwalPoint/stop/${id}`;
+    const openModal1 = () => setShowModal1(true);
+    const closeModal1 = () => setShowModal1(false);
+
+    async function getMasterDefect() {
+        const url = `${import.meta.env.VITE_API_LINK}/master/qc/cs/masalahBarangrusak`;
         try {
-            const elapsedSeconds = calculateElapsedTime(startTime, new Date());
-            console.log(elapsedSeconds);
-            const res = await axios.put(
-                url,
-                {
-                    catatan: catatan,
-                    lama_pengerjaan: elapsedSeconds,
-                    line_clearance: line_clearance,
-                    design: design,
-                    redaksi: redaksi,
-                    barcode: barcode,
-                    jenis_bahan: jenis_bahan,
-                    gramatur: gramatur,
-                    layout_pisau: layout_pisau,
-                    acc_warna_awal_jalan: acc_warna_awal_jalan,
+            const res = await axios.get(url, {
+                params: {
+                    status: 'active',
                 },
-                {
-                    withCredentials: true,
-                },
-            );
+                withCredentials: true,
+            });
 
-            getCetakMesinAwal();
+            setDefectMaster(res.data);
+            console.log(res.data);
         } catch (error: any) {
-            console.log(error.response.data.msg);
-            alert(error.response.data.msg);
+            console.log(error);
         }
     }
 
-    async function tambahTaskCekAwal(id: number) {
+    const [kode, setKode] = useState<any>();
+    const [masalah, setMasalah] = useState<any>();
+
+    async function tambahDefect(id: number) {
         const url = `${import.meta.env.VITE_API_LINK
-            }/qc/cs/inspeksiCetakAwalPoint/create`;
+            }/qc/cs/inspeksiBarangRusak/createDefect/${id}`;
         try {
             setIsLoading(true);
             const res = await axios.post(
                 url,
                 {
-                    id_inspeksi_cetak_awal: id,
+                    kode: kode,
+                    masalah: masalah,
                 },
                 {
                     withCredentials: true,
@@ -111,64 +96,58 @@ function CheckSheetBarangRS() {
             setIsLoading(false);
             getCetakMesinAwal();
         } catch (error: any) {
-            console.log(error.data.msg);
-        }
-    }
-
-    async function doneCekAwal(id: number) {
-        const url = `${import.meta.env.VITE_API_LINK
-            }/qc/cs/inspeksiCetakAwal/done/${id}`;
-        try {
-            const res = await axios.put(
-                url,
-                {
-                    id_inspeksi_cetak_awal: id,
-                },
-                {
-                    withCredentials: true,
-                },
-            );
-
-            getCetakMesinAwal();
-        } catch (error: any) {
-            console.log(error.data.msg);
-        }
-    }
-
-    async function pendingCekAwal(id: number) {
-        const url = `${import.meta.env.VITE_API_LINK
-            }/qc/cs/inspeksiCetakAwal/pending/${id}`;
-        try {
-            const res = await axios.put(
-                url,
-                {},
-                {
-                    withCredentials: true,
-                },
-            );
-
-            getCetakMesinAwal();
-        } catch (error: any) {
-            console.log(error.data.msg);
+            setIsLoading(false);
+            console.log(error);
         }
     }
 
     const handleChangePoint = (e: any, i: number) => {
+
         const { name, value } = e.target;
         const onchangeVal: any = cetakMesinAwal;
-        onchangeVal.inspeksi_cetak_awal[0].inspeksi_cetak_awal_point[i][name] =
-            value;
+        onchangeVal.inspeksi_barang_rusak_defect[i][name] = value; // Assuming 'hasil' is the field you want to update
         setCetakMesinAwal(onchangeVal);
+        console.log(cetakMesinAwal)
     };
 
+
+    async function simpanDefect(id: number, catatan: any, setting_awal: any, druk_awal: any) {
+
+
+        const url = `${import.meta.env.VITE_API_LINK
+            }/qc/cs/inspeksiBarangRusak/save/${id}`;
+        try {
+            // setIsLoading(true);
+            const res = await axios.put(
+                url,
+                {
+                    catatan: catatan,
+                    setting_awal: setting_awal,
+                    druk_awal: druk_awal,
+                    file: ''
+                },
+                {
+                    withCredentials: true,
+                },
+            );
+            // setIsLoading(false);
+            getCetakMesinAwal();
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
     const tanggal = convertTimeStampToDateOnly(cetakMesinAwal?.tanggal);
     const jam = convertDateToTime(cetakMesinAwal?.tanggal);
 
-    const jumlahWaktuCheck = formatElapsedTime(
-        cetakMesinAwal?.inspeksi_cetak_awal[0].waktu_check,
-    );
-    const isOnprogres = cetakMesinAwal?.inspeksi_cetak_awal[0].inspeksi_cetak_awal_point.some((data: { status: any; }) => data?.status === 'on progress')
+    // const jumlahWaktuCheck = formatElapsedTime(
+    //     cetakMesinAwal?.inspeksi_cetak_awal[0].waktu_check,
+    // );
+    // const isOnprogres = cetakMesinAwal?.inspeksi_cetak_awal[0].inspeksi_cetak_awal_point.some((data: { status: any; }) => data?.status === 'on progress')
+    const [kiri, setKiri] = useState<any>(0);
+    const [kanan, setKanan] = useState<any>(0);
+    const ratarata = kiri + kanan;
 
+    const hasilRata = ratarata.toFixed(2);
     return (
         <>
             {!isMobile && (
@@ -217,16 +196,16 @@ function CheckSheetBarangRS() {
                                         : {tanggal}
                                     </label>
                                     <label className="text-neutral-500 text-sm font-semibold">
-                                        : {cetakMesinAwal?.jumlah_druk}
+                                        : {cetakMesinAwal?.no_jo}
                                     </label>
                                     <label className="text-neutral-500 text-sm font-semibold">
-                                        : {cetakMesinAwal?.jumlah_pcs}
+                                        : {cetakMesinAwal?.no_io}
                                     </label>
                                     <label className="text-neutral-500 text-sm font-semibold">
-                                        : {cetakMesinAwal?.jenis_kertas}
+                                        : {cetakMesinAwal?.nama_produk}
                                     </label>
                                     <label className="text-neutral-500 text-sm font-semibold">
-                                        : {cetakMesinAwal?.jenis_gramatur}
+                                        : {cetakMesinAwal?.customer}
                                     </label>
 
 
@@ -252,10 +231,10 @@ function CheckSheetBarangRS() {
                                     </label>
 
                                     <label className="text-neutral-500 text-sm font-semibold">
-                                        : {cetakMesinAwal?.no_jo}
+                                        : {cetakMesinAwal?.qty_rusak}
                                     </label>
                                     <label className="text-neutral-500 text-sm font-semibold">
-                                        : {cetakMesinAwal?.nama_produk}
+                                        : {cetakMesinAwal?.waktu_sortir}
                                     </label>
 
                                 </div>
@@ -269,7 +248,7 @@ function CheckSheetBarangRS() {
                                 </div>
                                 <div className="flex flex-col">
                                     <label className="text-neutral-500 text-sm font-semibold">
-                                        : {cetakMesinAwal?.shift}
+                                        : {cetakMesinAwal?.inspector}
                                     </label>
 
                                 </div>
@@ -279,128 +258,241 @@ function CheckSheetBarangRS() {
                                     Time :
                                 </p>
                                 <>
-                                    {/* {data.status == 'incoming' ? ( */}
-                                    <button
-                                        // onClick={() => startTaskCekAwal(data.id)}
-                                        className="flex w-[60%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
-                                    >
-                                        <svg
-                                            width="14"
-                                            height="14"
-                                            viewBox="0 0 14 14"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
+                                    {cetakMesinAwal?.status == 'incoming' ? (
+                                        <button
+                                            onClick={() => startTaskCekAwal(cetakMesinAwal?.id)}
+                                            className="flex w-[60%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
                                         >
-                                            <path
-                                                d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                                fill="white"
-                                            />
-                                        </svg>
-                                    </button>
-                                    {/* ) : null} */}
+                                            <svg
+                                                width="14"
+                                                height="14"
+                                                viewBox="0 0 14 14"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                                    fill="white"
+                                                />
+                                            </svg>
+                                        </button>
+                                    ) : null}
                                 </>
                             </div>
 
                         </div>
-                        <div className=' border-b-8 border-[#D8EAFF] px-6 py-6'>
-                            <div className="grid grid-cols-12  ">
-                                <div className='flex flex-col col-span-5'>
-                                    <p className='text-blue-500 text-sm font-semibold'>
-                                        KODE MASALAH
-                                    </p>
-                                    <p className='text-neutral-500 text-sm font-semibold'>
-                                        C1.1
-                                    </p>
-                                </div>
-                                <div className='flex flex-col col-span-4'>
-                                    <p className='text-blue-500 text-sm font-semibold'>
-                                        JENIS DEFECT YANG DITEMUKAN
-                                    </p>
-                                    <p className='text-neutral-500 text-sm font-semibold'>
-                                        Warna (Mesin Cetak)
-                                    </p>
-                                </div>
-                                <div className='flex flex-col col-span-3'>
-                                    <>
-                                        <label className="form-label block  text-black text-xs font-extrabold ">
-                                            UPLOAD FOTO
-                                        </label>
+                        {cetakMesinAwal?.inspeksi_barang_rusak_defect?.map((data: any, i: number) => {
 
-                                        <div className="flex  w-full mt-2 rounded-md border border-stroke px-2 py-2">
-                                            <label
-                                                htmlFor="formFile"
-                                                className="flex items-center px-8 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
-                                            >
-                                                Pilih File
-                                                <input
-                                                    type="file"
-                                                    id="formFile"
-                                                    accept="image/*"
-                                                    className="hidden"
-                                                />
-                                            </label>
+                            return (
+                                <>
+                                    <div className=' border-b-8 border-[#D8EAFF] px-6 py-6'>
+                                        <div className="grid grid-cols-12  ">
+                                            <div className='flex flex-col col-span-5'>
+                                                <p className='text-blue-500 text-sm font-semibold'>
+                                                    KODE MASALAH
+                                                </p>
+                                                <p className='text-neutral-500 text-sm font-semibold'>
+                                                    {data?.kode}
+                                                </p>
+                                            </div>
+                                            <div className='flex flex-col col-span-4'>
+                                                <p className='text-blue-500 text-sm font-semibold'>
+                                                    JENIS DEFECT YANG DITEMUKAN
+                                                </p>
+                                                <p className='text-neutral-500 text-sm font-semibold'>
+                                                    {data?.masalah}
+                                                </p>
+                                            </div>
+                                            <div className='flex flex-col col-span-3'>
+                                                <>
+                                                    <label className="form-label block  text-black text-xs font-extrabold ">
+                                                        UPLOAD FOTO
+                                                    </label>
 
-                                            <span id="formFile" className="ml-2 text-sm"></span>
+                                                    <div className="flex  w-full mt-2 rounded-md border border-stroke px-2 py-2">
+                                                        <label
+                                                            htmlFor="formFile"
+                                                            className="flex items-center px-8 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
+                                                        >
+                                                            Pilih File
+                                                            <input
+                                                                name="foto"
+                                                                onChange={(e) => handleChangePoint(e, i)}
+                                                                type="file"
+                                                                id="formFile"
+                                                                accept="image/*"
+                                                                className="hidden"
+                                                            />
+                                                        </label>
+
+                                                        <span id="formFile" className="ml-2 text-sm"></span>
+                                                    </div>
+                                                </>
+
+                                            </div>
                                         </div>
-                                    </>
+                                        <p className='text-blue-500 text-sm font-semibold'>
+                                            QUANTITY TEMUAN
+                                        </p>
+                                        <div className="grid grid-cols-12  pt-2 gap-6">
+                                            <div className='flex flex-col col-span-2 gap-1'>
+                                                <p className='text-neutral-500 text-sm font-semibold'>
+                                                    SETTING AWAL
+                                                </p>
+                                                <input
+                                                    name="setting_awal"
+                                                    onChange={(e) => {
+                                                        handleChangePoint(e, i)
+                                                        setKiri(e.target.value)
+                                                    }}
+                                                    type="number" className="w-full h-6 bg-white  rounded-sm  border-2 border-stroke">
+                                                </input>
+                                            </div>
+                                            <div className='flex flex-col col-span-2 gap-1'>
+                                                <p className='text-neutral-500 text-sm font-semibold'>
+                                                    DRUK AWAL
+                                                </p>
+                                                <input
+                                                    name="druk_awal"
+                                                    onChange={(e) => {
+                                                        handleChangePoint(e, i)
+                                                        setKanan(e.target.value)
+                                                    }}
+                                                    type="number" className="w-full h-6 bg-white  rounded-sm  border-2 border-stroke">
+                                                </input>
+                                            </div>
+                                            <div className='flex flex-col col-span-2 gap-1'>
+                                                <p className='text-neutral-500 text-sm font-semibold'>
+                                                    SUB TOTAL
+                                                </p>
+                                                <input
 
-                                </div>
-                            </div>
-                            <p className='text-blue-500 text-sm font-semibold'>
-                                QUANTITY TEMUAN
-                            </p>
-                            <div className="grid grid-cols-12  pt-2 gap-6">
-                                <div className='flex flex-col col-span-2 gap-1'>
-                                    <p className='text-neutral-500 text-sm font-semibold'>
-                                        SETTING AWAL
-                                    </p>
-                                    <input type="text" className="w-full h-6 bg-white  rounded-sm  border-2 border-stroke">
-                                    </input>
-                                </div>
-                                <div className='flex flex-col col-span-2 gap-1'>
-                                    <p className='text-neutral-500 text-sm font-semibold'>
-                                        DRUK AWAL
-                                    </p>
-                                    <input type="text" className="w-full h-6 bg-white  rounded-sm  border-2 border-stroke">
-                                    </input>
-                                </div>
-                                <div className='flex flex-col col-span-2 gap-1'>
-                                    <p className='text-neutral-500 text-sm font-semibold'>
-                                        SUB TOTAL
-                                    </p>
-                                    <input type="text" disabled className="w-full h-6 bg-neutral-300  rounded-sm  border-2 border-stroke">
-                                    </input>
-                                </div>
-                                <div className='flex flex-col col-span-6 gap-1'>
-                                    <p className='text-neutral-500 text-sm font-semibold'>
-                                        CATATAN <span className='text-red-500'>*</span> :
-                                    </p>
-                                    <input type="text" className="w-full h-6 bg-white  rounded-sm  border-2 border-stroke">
-                                    </input>
-                                </div>
-                            </div>
-                        </div>
+                                                    value={hasilRata}
+                                                    onChange={(e) => handleChangePoint(e, i)}
+                                                    type="text" disabled className="w-full h-6 bg-neutral-300  rounded-sm  border-2 border-stroke">
+                                                </input>
+                                            </div>
+                                            <div className='flex flex-col col-span-4 gap-1'>
+                                                <p className='text-neutral-500 text-sm font-semibold'>
+                                                    CATATAN <span className='text-red-500'>*</span> :
+                                                </p>
+                                                <input
+                                                    name="catatan"
+                                                    onChange={(e) => handleChangePoint(e, i)}
+                                                    type="text" className="w-full h-6 bg-white  rounded-sm  border-2 border-stroke">
+                                                </input>
+                                            </div>
+                                            <div className='col-span-2 flex items-end'>
+                                                <button
+                                                    disabled={isLoading}
+                                                    onClick={() => simpanDefect(data?.id, data?.catatan, data?.setting_awal, data?.druk_awal)}
+                                                    className="bg-blue-600 rounded-md w-full h-7 text-white font-semibold text-sm"
+                                                >
+
+                                                    {isLoading ? 'Loading...' : 'SIMPAN'}
+                                                </button>
+                                                {isLoading && <Loading />}
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </>
+                            )
+                        }
+                        )
+                        }
+
 
 
                     </div>
 
 
-                    {!isOnprogres &&
-                        cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming' ||
-                        cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' ? (
+                    {cetakMesinAwal?.status == 'incoming' ? (
                         <>
                             <button
-                                disabled={isLoading}
-                                onClick={() =>
-                                    tambahTaskCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0].id)
+                                // disabled={isLoading}
+                                onClick={
+                                    openModal1
+
                                 }
                                 className=" w-[13%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
                             >
-                                {isLoading ? 'Loading...' : '+ Jenis Defect'}
+                                {/* {isLoading ? 'Loading...' : ' */}
+                                + Defect
+                                {/* '} */}
                             </button>
-                            {isLoading && <Loading />}
+                            {/* {isLoading && <Loading />} */}
+                            {showModal1 && (
+                                <ModalAddPeriode
+                                    isOpen={showModal1}
+                                    onClose={closeModal1}
+                                    judul={"TAMBAH KODE MASALAH"}>
+                                    <>
+                                        <div className="flex flex-col gap-2">
+                                            <label className="text-black text-sm font-bold pt-4">
+                                                Master Defect
+                                            </label>
+                                            <select
+                                                onChange={(e) => {
+                                                    const selectedDefect = defectMaster?.find(
+                                                        (defect: any) =>
+                                                            //console.log(defect.id)
+                                                            defect.id == e.target.value
+                                                    );
+                                                    if (selectedDefect) {
+                                                        setKode(selectedDefect.kode);
+                                                        setMasalah(selectedDefect.masalah);
+                                                    }
+                                                    console.log(selectedDefect)
+                                                }}
+                                                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
+                  }`}
+                                            >
+                                                <option
+                                                    value=""
+                                                    disabled
+                                                    selected
+                                                    className="text-body dark:text-bodydark"
+                                                >
+                                                    Pilih Kode Defect
+                                                </option>
+                                                {defectMaster?.map(
+                                                    (dataMaster: any, indexMaster: number) => {
+
+                                                        return (
+                                                            <option
+
+                                                                value={dataMaster.id}
+                                                                className="text-body dark:text-bodydark"
+                                                            >
+                                                                {dataMaster.kode} + {dataMaster.masalah}
+                                                            </option>
+                                                        );
+                                                    },
+                                                )}
+                                            </select>
+                                            <button
+                                                onClick={() => {
+                                                    tambahDefect(
+
+                                                        cetakMesinAwal?.id
+
+                                                    )
+                                                    console.log(cetakMesinAwal?.id,
+                                                        kode, masalah)
+
+                                                }}
+                                                className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
+                                            >
+                                                TAMBAH MASALAH
+                                            </button>
+                                        </div>
+                                    </>
+                                </ModalAddPeriode>
+                            )}
                         </>
                     ) : null}
+
                     <div className=' border-b-8 items-center border-[#D8EAFF] px-4 py-4 gap-3 bg-white rounded-b-xl mt-2'>
                         <div className='flex w-[80%] gap-4'>
                             <div className='flex flex-col'>
@@ -460,6 +552,8 @@ function CheckSheetBarangRS() {
                             </div>
                         </div>
                     </div>
+
+
                 </main>
             )}
         </>
