@@ -137,7 +137,7 @@ function ChecksheetFinalInspection() {
                   : {FinalInspection?.no_jo}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {FinalInspection?.no_jo}
+                  : {FinalInspection?.no_io}
                 </label>
 
                 <label className="text-neutral-500 text-sm font-semibold">
