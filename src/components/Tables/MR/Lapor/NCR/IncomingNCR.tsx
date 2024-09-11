@@ -1,14 +1,14 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
-import Arrow from '../../../../images/icon/arrowDown.svg';
-import Burger from '../../../../images/icon/burger.svg';
-import Filter from '../../../../images/icon/filter.svg';
-import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
-import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
-import convertDateToTime from '../../../../utils/converDateToTime';
-import Loading from '../../../Loading';
+import Arrow from '../../../../../images/icon/arrowDown.svg';
+import Burger from '../../../../../images/icon/burger.svg';
+import Filter from '../../../../../images/icon/filter.svg';
+import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
+import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
+import convertDateToTime from '../../../../../utils/converDateToTime';
+import Loading from '../../../../Loading';
 
-function IncomingNCRMTC() {
+function IncomingNCRLaporMR() {
 
     const tiket = [
         {
@@ -56,7 +56,7 @@ function IncomingNCRMTC() {
     }, []);
 
     async function getNcrQC() {
-        const url = `${import.meta.env.VITE_API_LINK}/capa?department=maintenance&status=incoming
+        const url = `${import.meta.env.VITE_API_LINK}/capa?department=mr&status=incoming
         `;
         try {
             const res = await axios.get(url, {
@@ -401,4 +401,4 @@ function IncomingNCRMTC() {
     )
 }
 
-export default IncomingNCRMTC
+export default IncomingNCRLaporMR

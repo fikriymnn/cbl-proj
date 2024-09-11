@@ -122,6 +122,10 @@ import FinalAwal from './pages/QualityControl/FinalInspection/FinalAwal';
 import MasterFinalInspection from './pages/MasterData/QC/MasterFinalInspection';
 import BarangRusak from './pages/QualityControl/BarangRusak/BarangRusak';
 import BarangRSChecksheet from './pages/QualityControl/BarangRusak/BarangRSChecksheet';
+import NcrLaporQC from './pages/QualityControl/Lapor/NCR/NcrLaporQC';
+import CapaLaporQC from './pages/QualityControl/Lapor/Capa/CapaLaporQC';
+import NcrLaporMR from './pages/MR/Lapor/NCR/NcrLaporQC';
+
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -406,7 +410,7 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/ncr"
+          path="/maintenance/lapor/ncr"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -417,7 +421,7 @@ function App() {
           }
         />
         <Route
-          path="/maintenance/capa"
+          path="/maintenance/lapor/capa"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -473,7 +477,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/ncr"
+          path="/qc/qms/ncr"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -484,7 +488,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/capa"
+          path="/qc/qms/capa"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -495,7 +499,29 @@ function App() {
           }
         />
         <Route
-          path="/mr/ncr"
+          path="/qc/lapor/ncr"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <NcrLaporQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/lapor/capa"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CapaLaporQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/mr/qms/ncr"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -506,12 +532,34 @@ function App() {
           }
         />
         <Route
-          path="/mr/capa"
+          path="/mr/qms/capa"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MrCapa />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/mr/lapor/ncr"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <NcrLaporMR />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/mr/lapor/capa"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CapaLaporQC />
               </ProtectedRoute>
             </>
           }

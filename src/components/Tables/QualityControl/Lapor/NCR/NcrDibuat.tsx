@@ -1,11 +1,11 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react'
-import Arrow from '../../../../images/icon/arrowDown.svg';
-import Filter from '../../../../images/icon/filter.svg';
-import ModalNCR4xl from '../../../Modals/Qc/NCR/ModalNCR4xl';
-import Loading from '../../../Loading';
+import Arrow from '../../../../../images/icon/arrowDown.svg';
+import Filter from '../../../../../images/icon/filter.svg';
+import ModalNCR4xl from '../../../../Modals/Qc/NCR/ModalNCR4xl';
+import Loading from '../../../../Loading';
 
-function NcrDibuatMTC() {
+function NcrDibuatQC() {
 
     const [isMobile, setIsMobile] = useState(false);
     const handleResize = () => {
@@ -219,12 +219,7 @@ function NcrDibuatMTC() {
                                                             </span>
 
                                                             <select
-
-                                                                onChange={(e) => {
-
-                                                                    setKategori(e.target.value)
-
-                                                                }}
+                                                                onChange={(e) => setKategori(e.target.value)}
                                                                 className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                                             >
@@ -276,6 +271,7 @@ function NcrDibuatMTC() {
 
                                                 </div>
 
+
                                                 {kategori === 'material' || kategori === 'persiapan' ? (
                                                     <>
                                                         <div className=' flex flex-col w-full gap-1'>
@@ -308,7 +304,6 @@ function NcrDibuatMTC() {
 
                                                     </>
                                                 )}
-
                                             </div>
 
                                             <div className='flex flex-col'>
@@ -538,4 +533,4 @@ function NcrDibuatMTC() {
     )
 }
 
-export default NcrDibuatMTC
+export default NcrDibuatQC

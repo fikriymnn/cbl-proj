@@ -330,7 +330,7 @@ function CapaMasukQA() {
                                                                                                 className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                                                                             ></textarea>
 
-                                                                                            <p className='text-sm font-semibold text-black pt-2'>
+                                                                                            {/* <p className='text-sm font-semibold text-black pt-2'>
                                                                                                 KETERANGAN KETIDAKSESUAIAN
                                                                                             </p>
                                                                                             <textarea
@@ -338,7 +338,7 @@ function CapaMasukQA() {
                                                                                                 readOnly
                                                                                                 defaultValue={data2?.keterangan_ketidak_sesuaian}
                                                                                                 className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                                                                            ></textarea>
+                                                                                            ></textarea> */}
 
 
                                                                                         </div>
