@@ -54,9 +54,17 @@ function ChecksheetFinalInspection() {
         },
       );
 
+      if (status == 'bisa kirim') {
+        const respon = await axios.post(
+          `https://erp.cbloffset.com/api/approve-final-inspection?no_jo=${FinalInspection?.no_jo}`,
+          {},
+        );
+        console.log(respon);
+      }
+
       getFinalInspection();
     } catch (error: any) {
-      console.log(error.data.msg);
+      console.log(error);
     }
   }
 
@@ -526,6 +534,14 @@ function ChecksheetFinalInspection() {
                 </button>
               ) : null}
             </div>
+            <button
+              onClick={() => {
+                doneFinal(FinalInspection?.id);
+              }}
+              className="px-2 py-2 bg-green-700 w-full  text-white"
+            >
+              SUBMIT CHECKSHEET
+            </button>
           </div>
         </main>
       )}
