@@ -455,6 +455,13 @@ function IncomingInspection() {
           withCredentials: true,
         },
       );
+      if (verifikasi == 'Diterima') {
+        const respon = await axios.post(
+          `https://erp.cbloffset.com/api/approve-incoming-bahan/${incoming?.no_surat_jalan}`,
+          {},
+        );
+        console.log(respon);
+      }
       alert('Data Berhasil Di-Update');
       console.log('succes');
       getInspection();
