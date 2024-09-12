@@ -125,6 +125,7 @@ import BarangRSChecksheet from './pages/QualityControl/BarangRusak/BarangRSCheck
 import NcrLaporQC from './pages/QualityControl/Lapor/NCR/NcrLaporQC';
 import CapaLaporQC from './pages/QualityControl/Lapor/Capa/CapaLaporQC';
 import NcrLaporMR from './pages/MR/Lapor/NCR/NcrLaporQC';
+import CapaLaporMR from './pages/MR/Lapor/Capa/CapaLaporQC';
 
 
 function App() {
@@ -559,7 +560,7 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <CapaLaporQC />
+                <CapaLaporMR />
               </ProtectedRoute>
             </>
           }

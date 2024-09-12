@@ -8,7 +8,7 @@ import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../../utils/converDateToTime';
 import Loading from '../../../../Loading';
 
-function CapaLaporMasukQC() {
+function CapaLaporMasukMR() {
     const tiket = [
         {
             name: 'EX000003',
@@ -426,4 +426,4 @@ function CapaLaporMasukQC() {
     )
 }
 
-export default CapaLaporMasukQC
+export default CapaLaporMasukMR

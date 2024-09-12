@@ -7,7 +7,7 @@ import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../../utils/converDateToTime';
 
-function CapaLaporHistoryQC() {
+function CapaLaporHistoryMR() {
     const tiket = [
         {
             name: 'EX000003',
@@ -421,4 +421,4 @@ function CapaLaporHistoryQC() {
     )
 }
 
-export default CapaLaporHistoryQC
+export default CapaLaporHistoryMR

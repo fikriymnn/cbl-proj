@@ -10,6 +10,8 @@ import CapaMasukMTC from './CapaMasukMTC';
 import CapaHistoryMTC from './HistoryCapaMTC';
 import CapaLaporHistoryQC from './HistoryCapaMTC';
 import CapaLaporMasukQC from './CapaMasukMTC';
+import CapaLaporMasukMR from './CapaMasukMTC';
+import CapaLaporHistoryMR from './HistoryCapaMTC';
 
 
 
@@ -51,7 +53,7 @@ function a11yProps(index: number) {
     };
 }
 
-export default function TabCapaLaporQC() {
+export default function TabCapaLaporMR() {
     const theme = createTheme({
         palette: {
             primary: {
@@ -141,10 +143,10 @@ export default function TabCapaLaporQC() {
                 </ThemeProvider>
             </AppBar>
             <TabPanel value={value} index={0} dir={theme.direction}>
-                <CapaLaporMasukQC />
+                <CapaLaporMasukMR />
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
-                <CapaLaporHistoryQC />
+                <CapaLaporHistoryMR />
             </TabPanel>
 
 

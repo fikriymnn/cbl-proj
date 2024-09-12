@@ -54,7 +54,7 @@ function CapaLaporMasukQC() {
     }, []);
 
     async function getCapa() {
-        const url = `${import.meta.env.VITE_API_LINK}/capa?department=mr&bagian_tiket=incoming
+        const url = `${import.meta.env.VITE_API_LINK}/capa?department=qc&statusNotEqual=incoming&bagian_tiket=incoming
         `;
         try {
             const res = await axios.get(url, {
