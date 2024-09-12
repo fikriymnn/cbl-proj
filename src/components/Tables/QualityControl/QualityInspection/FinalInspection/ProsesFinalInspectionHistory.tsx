@@ -73,10 +73,12 @@ function ProsesFinalInspectionhistory() {
                 <>
                   <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] gap-2 items-center">
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-4 col-span-3 `}
+                      className={`w-full h-full sticky left-0 z-20  gap-8 col-span-2 flex items-center`}
                     >
-                      {' '}
-                      <label className="text-neutral-500 text-sm font-semibold col-span-3 pl-6">
+                      <div
+                        className={`w-2 h-full sticky left-0 z-20 bg-green-600  `}
+                      ></div>
+                      <label className="text-neutral-500 text-sm font-semibold ">
                         {data.no_jo}
                       </label>
                     </div>

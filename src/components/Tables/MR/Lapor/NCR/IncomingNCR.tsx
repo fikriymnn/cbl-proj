@@ -100,7 +100,7 @@ function IncomingNCRLaporMR() {
         } catch (error: any) {
             console.log(error);
             setIsLoading(false);
-            alert(error.data.msg);
+            alert(error);
         }
     }
 

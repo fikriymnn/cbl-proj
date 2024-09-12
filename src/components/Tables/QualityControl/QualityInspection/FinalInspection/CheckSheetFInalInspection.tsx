@@ -534,14 +534,7 @@ function ChecksheetFinalInspection() {
                 </button>
               ) : null}
             </div>
-            <button
-              onClick={() => {
-                doneFinal(FinalInspection?.id);
-              }}
-              className="px-2 py-2 bg-green-700 w-full  text-white"
-            >
-              SUBMIT CHECKSHEET
-            </button>
+
           </div>
         </main>
       )}
