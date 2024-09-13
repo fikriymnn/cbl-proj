@@ -136,30 +136,41 @@ function ChecksheetFinalInspection() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   Qty
                 </label>
-              </div>
-              <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
+                  Qty PACKING
+                </label>
+              </div>
+              <div className="grid grid-rows-6 gap-2 col-span-4  py-4">
+                <label className="text-neutral-500 text-sm font-semibold line-clamp-1">
                   : {tanggal}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label className="text-neutral-500 text-sm font-semibold line-clamp-1">
                   : {FinalInspection?.no_jo}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label className="text-neutral-500 text-sm font-semibold line-clamp-1">
                   : {FinalInspection?.no_io}
                 </label>
 
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label className="text-neutral-500 text-sm font-semibold line-clamp-1">
                   : {FinalInspection?.nama_produk}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label className="text-neutral-500 text-sm font-semibold line-clamp-1">
                   : {FinalInspection?.customer}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label className="text-neutral-500 text-sm font-semibold line-clamp-1">
                   : {FinalInspection?.quantity}
                 </label>
+                <label className="text-neutral-500 text-sm font-semibold line-clamp-1">
+                  : <input
+                    type="text"
+
+                    className=" border rounded border-strokedark w-[30%]"
+                  />
+                </label>
+
               </div>
 
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
+              <div className="grid grid-rows-6  gap-2  justify-between px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   Jam
                 </label>
@@ -171,7 +182,7 @@ function ChecksheetFinalInspection() {
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold"></label>
               </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
+              <div className="grid grid-rows-6  gap-2  justify-between px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   Inspector
                 </label>
@@ -197,30 +208,32 @@ function ChecksheetFinalInspection() {
                     √N + 1 = Jumlah Packing yang akan dicek
                   </p>
                   <p className="font-semibold text-sm mt-5 ">
-                    (N Jumlah packing dalam 1 palet)
+                    (N Jumlah packing)
                   </p>
                   <p className="font-semibold text-sm mt-5 ">
-                    JUMLAH PACKING yang diambil 1 palet (pack) :
+                    JUMLAH PACKING yang diambil  :
+
+                    {FinalInspection?.status == 'incoming' ? (
+                      <input
+                        type="text"
+                        onChange={(e) => {
+                          setJumlahPacking(e.target.value);
+                        }}
+                        className=" border rounded border-strokedark mb-4"
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        disabled
+                        defaultValue={FinalInspection?.jumlah_packing}
+                        onChange={(e) => {
+                          setJumlahPacking(e.target.value);
+                        }}
+                        className=" border rounded border-strokedark mb-4"
+                      />
+                    )}
                   </p>
-                  {FinalInspection?.status == 'incoming' ? (
-                    <input
-                      type="text"
-                      onChange={(e) => {
-                        setJumlahPacking(e.target.value);
-                      }}
-                      className=" border rounded border-strokedark mb-4"
-                    />
-                  ) : (
-                    <input
-                      type="text"
-                      disabled
-                      defaultValue={FinalInspection?.jumlah_packing}
-                      onChange={(e) => {
-                        setJumlahPacking(e.target.value);
-                      }}
-                      className=" border rounded border-strokedark mb-4"
-                    />
-                  )}
+
                 </div>
               </div>
             </div>
@@ -229,7 +242,7 @@ function ChecksheetFinalInspection() {
                 Standar Pemeriksaan
               </p>
               <div>
-                <div className="px-5 flex gap-5 items-center justify-between mt-5">
+                {/* <div className="px-5 flex gap-5 items-center justify-between mt-5">
                   <p className="font-semibold text-sm  ">
                     No Pallet yang di Cek :
                   </p>
@@ -253,7 +266,7 @@ function ChecksheetFinalInspection() {
                       className=" border rounded border-strokedark"
                     />
                   )}
-                </div>
+                </div> */}
                 <div className="px-5 flex gap-5 items-center justify-between mt-5">
                   <p className="font-semibold text-sm  ">
                     No Packing yang diperiksa :
@@ -284,7 +297,7 @@ function ChecksheetFinalInspection() {
           </div>
           <div className="bg-white mt-2 w-full grid grid-cols-4 text-blue-600 text-sm font-semibold ">
             <div>
-              <p className="text-center">QTY PCS/PALLET</p>
+              <p className="text-center">QTY PCS</p>
             </div>
             <div>
               <p className="text-center">JUMLAH YANG DIPERIKSA</p>

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
+import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
+import convertDateToTime from '../../../../../utils/converDateToTime';
 
 function ProsesFinalInspection() {
   const [isMobile, setIsMobile] = useState(false);
@@ -57,54 +59,87 @@ function ProsesFinalInspection() {
         <main className="overflow-x-scroll">
           <div className="min-w-[700px] bg-white rounded-xl">
             <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
-              <div className="grid grid-cols-10 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-                <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                  No. Job Order
+              <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] py-4 gap-2 items-center">
+                <div
+                  className={`w-full h-full sticky left-0 z-20  gap-8 col-span-1 flex items-center`}
+                >
+                  <div
+                    className={`w-2 h-full sticky left-0 z-20   `}
+                  ></div>
+                  <label className="text-neutral-500 text-sm font-semibold ">
+                    NO
+                  </label>
+                </div>
+                <label className="text-neutral-500 text-sm font-semibold line-clamp-1">
+                  No. JO
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold col-span-3">
-                  Nama Job Order
+                <label className="text-neutral-500 text-sm font-semibold col-span-3 line-clamp-1">
+                  Customer
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                <label className="text-neutral-500 text-sm font-semibold col-span-3 pl-3 line-clamp-1 w-full">
+                  Nama Produk
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold col-span-1">
                   Inspector
                 </label>
+                <label className="text-neutral-500 text-sm font-semibold col-span-1">
+                  Tanggal
+                </label>
+                <div className="justify-end flex pr-2 col-span-2">
+                  <>
+
+                  </>
+                </div>
               </div>
               <div className="w-2 h-full "></div>
-              {FinalInspection?.data.map((data: any, i: any) => (
-                <>
-                  <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] gap-2 items-center">
-                    <div
-                      className={`w-full h-full sticky left-0 z-20  gap-8 col-span-2 flex items-center`}
-                    >
+              {FinalInspection?.data.map((data: any, i: number) => {
+                const tglTicket = convertTimeStampToDateOnly(data.createdAt);
+                return (
+
+                  <>
+                    <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center">
                       <div
-                        className={`w-2 h-full sticky left-0 z-20 bg-green-600  `}
-                      ></div>
-                      <label className="text-neutral-500 text-sm font-semibold ">
+                        className={`w-full h-full sticky left-0 z-20  gap-8 col-span-1 flex items-center`}
+                      >
+                        <div
+                          className={`w-2 h-full sticky left-0 z-20 bg-green-600  `}
+                        ></div>
+                        <label className="text-neutral-500 text-sm font-semibold ">
+                          {i + 1}
+                        </label>
+                      </div>
+                      <label className="text-neutral-500 text-sm font-semibold line-clamp-1">
                         {data.no_jo}
                       </label>
-                    </div>
-
-                    <label className="text-neutral-500 text-sm font-semibold col-span-3 pl-3 line-clamp-1 w-full">
-                      {data.nama_produk}
-                    </label>
-                    <label className="text-neutral-500 text-sm font-semibold col-span-3">
-                      {data.data_inspector?.nama}
-                    </label>
-                    <div className="justify-end flex pr-2 col-span-2">
-                      <>
-                        <Link
-                          to={`/qc/qualityinspection/final_inspection/checkAwal/${data.id}`}
-                        >
-                          <button
-                            className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                      <label className="text-neutral-500 text-sm font-semibold col-span-3 line-clamp-1">
+                        {data.customer}
+                      </label>
+                      <label className="text-neutral-500 text-sm font-semibold col-span-3 pl-3 line-clamp-1 w-full">
+                        {data.nama_produk}
+                      </label>
+                      <label className="text-neutral-500 text-sm font-semibold col-span-1">
+                        {data.data_inspector?.nama}
+                      </label>
+                      <label className="text-neutral-500 text-sm font-semibold col-span-1">
+                        {tglTicket}
+                      </label>
+                      <div className="justify-end flex pr-2 col-span-2">
+                        <>
+                          <Link
+                            to={`/qc/qualityinspection/final_inspection/checkAwal/${data.id}`}
                           >
-                            PILIH
-                          </button>
-                        </Link>
-                      </>
+                            <button
+                              className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                            >
+                              PILIH
+                            </button>
+                          </Link>
+                        </>
+                      </div>
                     </div>
-                  </div>
-                </>
-              ))}
+                  </>
+                );
+              })}
             </div>
           </div>
         </main>
