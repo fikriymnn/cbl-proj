@@ -126,6 +126,9 @@ import NcrLaporQC from './pages/QualityControl/Lapor/NCR/NcrLaporQC';
 import CapaLaporQC from './pages/QualityControl/Lapor/Capa/CapaLaporQC';
 import NcrLaporMR from './pages/MR/Lapor/NCR/NcrLaporQC';
 import CapaLaporMR from './pages/MR/Lapor/Capa/CapaLaporQC';
+import ProsesPotongFIX from './pages/QualityControl/ProsesPotongFix/ProsesPotongFix';
+import PotongBahanCheck from './pages/QualityControl/ProsesPotongFix/PotongBahan';
+import PotongJadiCheck from './pages/QualityControl/ProsesPotongFix/PotongJadi';
 
 
 function App() {
@@ -638,6 +641,39 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <HistoryJadiItohPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/prosespotong"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesPotongFIX />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/prosespotong/bahan/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongBahanCheck />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/prosespotong/jadi/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongJadiCheck />
               </ProtectedRoute>
             </>
           }
