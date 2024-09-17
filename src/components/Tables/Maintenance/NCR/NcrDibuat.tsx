@@ -347,6 +347,12 @@ function NcrDibuatMTC() {
                                                     + DEPARTEMENT
                                                 </button>
                                                 {ncr.map((data: any, i: number) => {
+
+                                                    const formattedOptions = department?.map((item: any) => ({
+                                                        value: item.id, // Handle potential variations in "value" property
+                                                        label: item.name, // Handle potential variations in "label" property
+                                                    }));
+
                                                     return (
                                                         <>
 
@@ -371,56 +377,36 @@ function NcrDibuatMTC() {
 
                                                                         </div>
 
-                                                                        <div className="relative w-full z-20 h-7 bg-white dark:bg-form-input  pt-1 ">
-                                                                            <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                                                                <svg
-                                                                                    width="20"
-                                                                                    height="20"
-                                                                                    viewBox="0 0 20 20"
-                                                                                    fill="none"
-                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                >
+                                                                        <div className="relative w-full z-20 bg-white dark:bg-form-input  pt-1 ">
 
-                                                                                </svg>
-                                                                            </span>
 
                                                                             <select
+
+                                                                                // options={formattedOptions}
                                                                                 name="department"
-                                                                                onChange={(e) => handleChangePoint(e, i)}
-                                                                                className={`relative z-20 w-full bg-white border border-stroke appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  }`}>
-                                                                                <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                                                                    Pilih Departemen
-                                                                                </option>
+                                                                                onChange={(e) => {
 
-                                                                                <option value="maintenance" className="text-[#646464] text-xs dark:text-bodydark">
-                                                                                    Maintenance
-                                                                                </option>
-                                                                                <option value="qc" className="text-[#646464] text-xs dark:text-bodydark">
-                                                                                    Quality Control
-                                                                                </option>
-                                                                                <option value="mr" className="text-[#646464] text-xs dark:text-bodydark">
-                                                                                    MR
-                                                                                </option>
-                                                                            </select>
+                                                                                    handleChangePoint(e, i)
+                                                                                }}
+                                                                                className={`relative z-20 w-full appearance-none rounded-md border border-stroke bg-transparent py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white
+                                                                                    }`}
+                                                                            >
+                                                                                {department?.map((data: any, i: number) => {
 
-                                                                            <span className="absolute top-[18px] right-4 z-30 -translate-y-1/2">
-                                                                                <svg
-                                                                                    width="24"
-                                                                                    height="24"
-                                                                                    viewBox="0 0 24 24"
-                                                                                    fill="none"
-                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                >
-                                                                                    <g opacity="0.8">
-                                                                                        <path
-                                                                                            fillRule="evenodd"
-                                                                                            clipRule="evenodd"
-                                                                                            d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                                                                            fill="#637381"
-                                                                                        ></path>
-                                                                                    </g>
-                                                                                </svg>
-                                                                            </span>
+                                                                                    return (
+                                                                                        <option
+                                                                                            value={data.name}
+                                                                                            className="text-gray-800 text-xs font-light dark:text-bodydark"
+                                                                                        >
+                                                                                            {data.name}
+                                                                                        </option>
+                                                                                    )
+                                                                                }
+                                                                                )}
+
+                                                                            </select >
+
+
 
                                                                         </div>
 
