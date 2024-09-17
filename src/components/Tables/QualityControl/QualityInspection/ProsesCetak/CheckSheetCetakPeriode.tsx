@@ -810,7 +810,7 @@ function CheckSheetCetakPeriode() {
                           <p className="md:text-[14px] text-[9px] font-semibold">
                             Time : {lamaPengerjaan}
                           </p>
-                          {data.status == 'incoming' ? (
+                          {data.status == 'incoming' && cetakMesinPeriode?.status == 'incoming' ? (
                             <>
                               <p className="font-bold text-[#DE0000]">
                                 Task Belum Dimulai
@@ -1204,9 +1204,11 @@ function CheckSheetCetakPeriode() {
               </div>
             </div>
           </div>
-          {!isOnprogres &&
-            cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'incoming' ||
-            cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'pending' ? (
+          {(!isOnprogres &&
+            cetakMesinPeriode?.status == 'incoming' &&
+            cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status == 'incoming') ||
+            (cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status == 'pending' &&
+              cetakMesinPeriode?.status == 'incoming') ? (
             <>
               <button
                 disabled={isLoading}
@@ -1235,10 +1237,10 @@ function CheckSheetCetakPeriode() {
               <label className=" text-[#6c6b6b] text-sm font-semibold">
                 Catatan<span className="text-red-500">*</span> :
               </label>
-              {cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
-                'incoming' ||
-                cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
-                'pending' ? (
+              {(!isOnprogres &&
+                cetakMesinPeriode?.status == 'incoming' &&
+                cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status == 'incoming') ||
+                cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status == 'pending' ? (
                 <textarea
                   onChange={(e) => setCatatan(e.target.value)}
                   className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
@@ -1267,11 +1269,10 @@ function CheckSheetCetakPeriode() {
                   PENDING
                 </button>
               ) : null}
-              {!isOnprogres &&
-                cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
-                'incoming' ||
-                cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
-                'pending' ? (
+              {(!isOnprogres &&
+                cetakMesinPeriode?.status == 'incoming' &&
+                cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status == 'incoming') ||
+                cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status == 'pending' ? (
                 <button
                   onClick={() => {
                     doneCekPeriode(

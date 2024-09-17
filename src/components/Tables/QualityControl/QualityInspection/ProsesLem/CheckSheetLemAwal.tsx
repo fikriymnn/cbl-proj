@@ -229,67 +229,49 @@ function CheckSheetLemAwal() {
                       judul={'History Pengisian'}
                     >
                       <>
+
                         <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
-                          <div className="flex flex-col gap-2 col-span-2 pl-6 py-4 ">
+                          <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">
                             <label className="text-neutral-500 text-sm font-semibold">
                               Tanggal
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              Jumlah Druk
+                              Jumlah
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              Jumlah Pcs
-                            </label>
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              Jenis Kertas
-                            </label>
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              Jenis Gramatur
-                            </label>
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              Warna
+                              Jenis Lem
                             </label>
                           </div>
-                          <div className="flex flex-col gap-2 col-span-2  py-4">
+                          <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {tanggalHistory}
-                            </label>
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              : {cetakMesinAwalHistory?.jumlah_druk}
+                              : {tanggal}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {cetakMesinAwalHistory?.jumlah_pcs}
                             </label>
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              : {cetakMesinAwalHistory?.jenis_kertas}
-                            </label>
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              : {cetakMesinAwalHistory?.jenis_gramatur}
-                            </label>
 
-                            <div className="grid grid-cols-2">
-                              <label className="text-neutral-500 text-sm font-semibold flex">
-                                Depan
-                              </label>
-                              <label className="text-neutral-500 text-sm font-semibold">
-                                : {cetakMesinAwalHistory?.warna_depan}
-                              </label>
+
+                            <div className="flex gap-1 font-semibold">
+                              :
+                              <input
+                                type="text"
+                                disabled
+                                defaultValue={cetakMesinAwalHistory?.jenis_lem}
+                                onChange={(e) => {
+                                  setJenisLem(e.target.value)
+
+                                }}
+                              />
                             </div>
-                            <div className="grid grid-cols-2">
-                              <label className="text-neutral-500 text-sm font-semibold flex">
-                                Belakang
-                              </label>
-                              <label className="text-neutral-500 text-sm font-semibold">
-                                : {cetakMesinAwalHistory?.warna_belakang}
-                              </label>
-                            </div>
+
                           </div>
 
-                          <div className="flex flex-col  gap-2 col-span-2 justify-between px-10 py-4">
+                          <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
                             <label className="text-neutral-500 text-sm font-semibold">
                               Jam
                             </label>
 
+                            <label className="text-neutral-500 text-sm font-semibold"></label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               No. JO / IO
                             </label>
@@ -300,11 +282,12 @@ function CheckSheetLemAwal() {
                               Customer
                             </label>
                           </div>
-                          <div className="flex flex-col  gap-2 col-span-2 justify-between px-2 py-4">
+                          <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {jamHistory}
+                              : {jam}
                             </label>
 
+                            <label className="text-neutral-500 text-sm font-semibold"></label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {cetakMesinAwalHistory?.no_jo}
                             </label>
@@ -315,7 +298,7 @@ function CheckSheetLemAwal() {
                               : {cetakMesinAwalHistory?.customer}
                             </label>
                           </div>
-                          <div className="flex flex-col  gap-2 col-span-2 justify-between px-10 py-4">
+                          <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
                             <label className="text-neutral-500 text-sm font-semibold">
                               Shift
                             </label>
@@ -330,7 +313,7 @@ function CheckSheetLemAwal() {
                               Status
                             </label>
                           </div>
-                          <div className="flex flex-col  gap-2 col-span-2 justify-between px-2 py-4">
+                          <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {cetakMesinAwalHistory?.shift}
                             </label>
@@ -378,92 +361,86 @@ function CheckSheetLemAwal() {
 
                                   </div>
                                 </div>
-                                <div className="grid grid-cols-8 border-b-8 border-[#D8EAFF]">
-                                  <div className="grid py-4 bg-[#f3f3f3] items-center">
+                                <div className="grid grid-cols-7 border-b-8 border-[#D8EAFF]">
+                                  <div className="grid py-4 bg-white items-center">
                                     <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                       LINE CLEARANCE
                                     </label>
                                   </div>
+                                  <div className="grid py-4 bg-[#f3f3f3] items-center">
+                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                      POSISI LEM
+                                    </label>
+                                  </div>
                                   <div className="grid py-4 bg-white items-center">
                                     <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                      DESIGN
+                                      DAYA REKAT
                                     </label>
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center">
                                     <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                      REDAKSI
+                                      POSISI LIPATAN
                                     </label>
                                   </div>
                                   <div className="grid py-4 bg-white items-center">
                                     <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                      BARCODE
+                                      KUNCIAN LOCK BOTTOM
                                     </label>
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center">
                                     <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                      JENIS BAHAN
+                                      BENTUK JADI
                                     </label>
                                   </div>
+
                                   <div className="grid py-4 bg-white items-center">
                                     <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                      GRAMATUR
-                                    </label>
-                                  </div>
-                                  <div className="grid py-4 bg-[#f3f3f3] items-center">
-                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                      LAYOUT PISAU
-                                    </label>
-                                  </div>
-                                  <div className="grid py-4 bg-white items-center">
-                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                      ACC WARNA AWAL JALAN
+                                      KEBERSIHAN
                                     </label>
                                   </div>
                                 </div>
 
-                                <div className="grid grid-cols-8 border-b-8 border-[#D8EAFF]">
-                                  <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                <div className="grid grid-cols-7 border-b-8 border-[#D8EAFF]">
+                                  <div className="grid py-4 bg-white items-center justify-center">
                                     <>
                                       <label className="pl-2">
                                         {data.line_clearance}
                                       </label>
                                     </>
                                   </div>
-                                  <div className="grid py-4 bg-white items-center justify-center">
-                                    <>
-                                      <label className="pl-2">{data.design}</label>
-                                    </>
-                                  </div>
+
                                   <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.redaksi}</label>
+                                      <label className="pl-2">{data.posisi_lem}</label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-white items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.barcode}</label>
+                                      <label className="pl-2">{data.daya_rekat}</label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.jenis_bahan}</label>
-                                    </>
-                                  </div>
-                                  <div className="grid py-4 bg-white items-center justify-center">
-                                    <>
-                                      <label className="pl-2">{data.gramatur}</label>
-                                    </>
-                                  </div>
-                                  <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
-                                    <>
-                                      <label className="pl-2">{data.layout_pisau}</label>
+                                      <label className="pl-2">
+                                        {data.posisi_lipatan}
+                                      </label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-white items-center justify-center">
                                     <>
                                       <label className="pl-2">
-                                        {data.acc_warna_awal_jalan}
+                                        {data.kuncian_lock_bottom}
                                       </label>
+                                    </>
+                                  </div>
+                                  <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                    <>
+                                      <label className="pl-2">{data.bentuk_jadi}</label>
+                                    </>
+                                  </div>
+                                  <div className="grid py-4 bg-white items-center justify-center">
+                                    <>
+                                      <label className="pl-2">{data.kebersihan}</label>
                                     </>
                                   </div>
                                 </div>

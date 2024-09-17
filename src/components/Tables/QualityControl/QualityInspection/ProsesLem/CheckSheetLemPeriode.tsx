@@ -548,7 +548,7 @@ function CheckSheetLemPeriode() {
                             <p className="md:text-[14px] text-[9px] font-semibold">
                               Time : {lamaPengerjaan}
                             </p>
-                            {data.status == 'incoming' ? (
+                            {data.status == 'incoming' && LemMesinPeriode?.status == 'incoming' ? (
                               <>
                                 <p className="font-bold text-[#DE0000]">
                                   Task Belum Dimulai
@@ -876,9 +876,11 @@ function CheckSheetLemPeriode() {
               )}
             </div>
           </div>
-          {!isOnprogres &&
-            LemMesinPeriode?.inspeksi_lem_periode[0].status == 'incoming' ||
-            LemMesinPeriode?.inspeksi_lem_periode[0].status == 'pending' ? (
+          {(!isOnprogres &&
+            LemMesinPeriode?.status == 'incoming' &&
+            LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'incoming') ||
+            (LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' &&
+              LemMesinPeriode?.status == 'incoming') ? (
             <>
               <button
                 disabled={isLoading}
@@ -907,10 +909,10 @@ function CheckSheetLemPeriode() {
               <label className=" text-[#6c6b6b] text-sm font-semibold">
                 Catatan<span className="text-red-500">*</span> :
               </label>
-              {LemMesinPeriode?.inspeksi_lem_periode[0].status ==
-                'incoming' ||
-                LemMesinPeriode?.inspeksi_lem_periode[0].status ==
-                'pending' ? (
+              {(!isOnprogres &&
+                LemMesinPeriode?.status == 'incoming' &&
+                LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'incoming') ||
+                LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' ? (
                 <textarea
                   onChange={(e) => setCatatan(e.target.value)}
                   className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
@@ -939,11 +941,10 @@ function CheckSheetLemPeriode() {
                   PENDING
                 </button>
               ) : null}
-              {!isOnprogres &&
-                LemMesinPeriode?.inspeksi_lem_periode[0].status ==
-                'incoming' ||
-                LemMesinPeriode?.inspeksi_lem_periode[0].status ==
-                'pending' ? (
+              {(!isOnprogres &&
+                LemMesinPeriode?.status == 'incoming' &&
+                LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'incoming') ||
+                LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' ? (
                 <button
                   onClick={() => {
                     doneCekPeriode(LemMesinPeriode?.inspeksi_lem_periode[0].id);
