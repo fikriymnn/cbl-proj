@@ -6,6 +6,7 @@ import convertDateToTime from '../../../../../utils/converDateToTime';
 import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import Loading from '../../../../Loading';
+import formatInteger from '../../../../../utils/formaterInteger';
 
 function ChecksheetFinalInspection() {
   const { id } = useParams();
@@ -13,6 +14,7 @@ function ChecksheetFinalInspection() {
   const [isLoading, setIsLoading] = useState(false);
   const [FinalInspection, setFinalInspection] = useState<any>();
   const [Catatan, setCatatan] = useState<any>();
+  const [qtyPacking, setQtyPacking] = useState<any>();
   const [jumlahPacking, setJumlahPacking] = useState<any>();
   const [noPallet, setnoPallet] = useState<any>();
   const [noPacking, setnoPacking] = useState<any>();
@@ -44,6 +46,7 @@ function ChecksheetFinalInspection() {
           catatan: Catatan,
           no_pallet: noPallet,
           no_packing: noPacking,
+          qty_packing: qtyPacking,
           jumlah_packing: jumlahPacking,
           status: status,
           inspeksi_final_point: FinalInspection?.inspeksi_final_point,
@@ -65,6 +68,7 @@ function ChecksheetFinalInspection() {
       getFinalInspection();
     } catch (error: any) {
       console.log(error);
+      alert(error.response.data.msg);
     }
   }
 
@@ -158,16 +162,45 @@ function ChecksheetFinalInspection() {
                   : {FinalInspection?.customer}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold line-clamp-1">
-                  : {FinalInspection?.quantity}
+                  : {formatInteger(parseInt(FinalInspection?.quantity))}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold line-clamp-1">
-                  : <input
-                    type="text"
-
-                    className=" border rounded border-strokedark w-[30%]"
-                  />
+                  :{' '}
+                  {FinalInspection?.status == 'incoming' ? (
+                    <input
+                      onChange={(e) => {
+                        setQtyPacking(e.target.value);
+                        const qtyPacking = parseInt(e.target.value);
+                        //menghitung akar dari qty_packing
+                        const qtyQuadrat = Math.sqrt(qtyPacking);
+                        //membulatkan hasil dari akar
+                        const qtyQuadratFix = Math.round(qtyQuadrat);
+                        //penghitungan terakhir rumus
+                        const JumlahPacking = qtyQuadratFix + 1;
+                        setJumlahPacking(JumlahPacking);
+                      }}
+                      type="text"
+                      className=" border rounded border-strokedark w-[30%]"
+                    />
+                  ) : (
+                    <input
+                      onChange={(e) => {
+                        setQtyPacking(e.target.value);
+                        const qtyPacking = parseInt(e.target.value);
+                        //menghitung akar dari qty_packing
+                        const qtyQuadrat = Math.sqrt(qtyPacking);
+                        //membulatkan hasil dari akar
+                        const qtyQuadratFix = Math.round(qtyQuadrat);
+                        //penghitungan terakhir rumus
+                        const JumlahPacking = qtyQuadratFix + 1;
+                        setJumlahPacking(JumlahPacking);
+                      }}
+                      type="text"
+                      defaultValue={FinalInspection?.qty_packing}
+                      className=" border rounded border-strokedark w-[30%]"
+                    />
+                  )}
                 </label>
-
               </div>
 
               <div className="grid grid-rows-6  gap-2  justify-between px-10 py-4">
@@ -211,11 +244,12 @@ function ChecksheetFinalInspection() {
                     (N Jumlah packing)
                   </p>
                   <p className="font-semibold text-sm mt-5 ">
-                    JUMLAH PACKING yang diambil  :
-
+                    JUMLAH PACKING yang diambil :
                     {FinalInspection?.status == 'incoming' ? (
                       <input
                         type="text"
+                        disabled
+                        value={jumlahPacking}
                         onChange={(e) => {
                           setJumlahPacking(e.target.value);
                         }}
@@ -233,7 +267,6 @@ function ChecksheetFinalInspection() {
                       />
                     )}
                   </p>
-
                 </div>
               </div>
             </div>
@@ -315,11 +348,13 @@ function ChecksheetFinalInspection() {
           </div>
           {FinalInspection?.inspeksi_final_sub.map(
             (dataSub: any, indexSub: number) => {
+              const qtyAwal = formatInteger(dataSub?.quantity_awal);
+              const qtyAkhir = formatInteger(dataSub?.quantity_awal);
               return (
                 <div className="bg-white mt-2  text-sm font-semibold ">
                   <div className="w-full grid grid-cols-4 py-2 ">
                     <div className="mb-2">
-                      <p className="text-center">{dataSub.quantity}</p>
+                      <p className="text-center">{`${qtyAwal} Pcs S/D ${qtyAkhir} Pcs`}</p>
                     </div>
                     <div className="mb-2">
                       <p className="text-center">{dataSub.jumlah}</p>
@@ -547,7 +582,6 @@ function ChecksheetFinalInspection() {
                 </button>
               ) : null}
             </div>
-
           </div>
         </main>
       )}

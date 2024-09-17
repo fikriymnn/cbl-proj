@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import Loading from '../../../../Loading';
+import formatInteger from '../../../../../utils/formaterInteger';
 
 function PointSubFinal() {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +27,8 @@ function PointSubFinal() {
     }
   }
 
-  const [qty, setQty] = useState<any>();
+  const [qtyAwal, setQtyAwal] = useState<any>();
+  const [qtyAkhir, setQtyAkhir] = useState<any>();
   const [jumlah, setJumlah] = useState<any>();
   const [kualitasLulus, setKualitasLulus] = useState<any>();
   const [kualitasTolak, setKualitasTolak] = useState<any>();
@@ -38,7 +40,8 @@ function PointSubFinal() {
       const res = await axios.post(
         url,
         {
-          quantity: qty,
+          quantity_awal: qtyAwal,
+          quantity_akhir: qtyAkhir,
           jumlah: jumlah,
           kualitas_lulus: kualitasLulus,
           kualitas_tolak: kualitasTolak,
@@ -52,7 +55,8 @@ function PointSubFinal() {
       getPointSubFinal();
       setIsLoading(false);
       closeModalTambah();
-      setQty(null);
+      setQtyAwal(null);
+      setQtyAkhir(null);
       setJumlah(null);
       setKualitasLulus(null);
       setKualitasTolak(null);
@@ -70,7 +74,8 @@ function PointSubFinal() {
       const res = await axios.put(
         url,
         {
-          quantity: qty,
+          quantity_awal: qtyAwal,
+          quantity_akhir: qtyAkhir,
           jumlah: jumlah,
           kualitas_lulus: kualitasLulus,
           kualitas_tolak: kualitasTolak,
@@ -83,7 +88,8 @@ function PointSubFinal() {
       getPointSubFinal();
       setIsLoading(false);
       closeModalTambah();
-      setQty(null);
+      setQtyAwal(null);
+      setQtyAkhir(null);
       setJumlah(null);
       setKualitasLulus(null);
       setKualitasTolak(null);
@@ -151,8 +157,9 @@ function PointSubFinal() {
       <div className=" flex bg-white py-2 w-full mt-2 mb-2 px-5 text-sm font-semibold rounded-m">
         <p className="w-20">No</p>
         <div className="grid grid-cols-12 w-full">
-          <div className="col-span-3">Qty Pcs/Pallet</div>
-          <div className="col-span-3">jumlah Diperiksa</div>
+          <div className="col-span-2">Qty Awal Pcs</div>
+          <div className="col-span-2">Qty Akhir Pcs</div>
+          <div className="col-span-2">jumlah Diperiksa</div>
           <div className="col-span-2">Kualitas Lulus</div>
           <div className="col-span-2">Kualitas Tolak</div>
           <div className="col-span-2 flex gap-3 justify-end">
@@ -170,10 +177,18 @@ function PointSubFinal() {
               >
                 <div className="px-2 flex flex-col">
                   <label className="text-black text-sm font-bold pt-4">
-                    Qty Pcs/Pallet
+                    Qty Awal Pcs
                   </label>
                   <input
-                    onChange={(e) => setQty(e.target.value)}
+                    onChange={(e) => setQtyAwal(e.target.value)}
+                    type="text"
+                    className="w-full h-7 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
+                  />
+                  <label className="text-black text-sm font-bold pt-4">
+                    Qty Akhir Pcs
+                  </label>
+                  <input
+                    onChange={(e) => setQtyAkhir(e.target.value)}
                     type="text"
                     className="w-full h-7 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
                   />
@@ -220,13 +235,17 @@ function PointSubFinal() {
       </div>
       {masterPointSubFinal != null &&
         masterPointSubFinal?.map((data: any, i: number) => {
+          const qtyAwal = formatInteger(data?.quantity_awal);
+          const qtyAkhir = formatInteger(data?.quantity_akhir);
+          const jumlahDiperiksa = formatInteger(data?.jumlah);
           return (
             <>
               <div className=" flex bg-white py-2 w-full mb-1 px-5 text-sm font-medium border-b-3 border-[#D8EAFF]">
                 <p className="w-20">{i + 1}</p>
                 <div className="grid grid-cols-12 w-full">
-                  <div className="col-span-3">{data?.quantity}</div>
-                  <div className="col-span-3">{data?.jumlah}</div>
+                  <div className="col-span-2">{qtyAwal}</div>
+                  <div className="col-span-2">{qtyAkhir}</div>
+                  <div className="col-span-2">{jumlahDiperiksa}</div>
                   <div className="col-span-2">{data.kualitas_lulus}</div>
                   <div className="col-span-2">{data.kualitas_tolak}</div>
                   <div className="col-span-2 flex gap-3 justify-end">
@@ -244,11 +263,20 @@ function PointSubFinal() {
                       >
                         <div className="px-2 flex flex-col">
                           <label className="text-black text-sm font-bold pt-4">
-                            Qty Pcs/Pallet
+                            Qty Awal Pcs
                           </label>
                           <input
-                            defaultValue={data?.quantity}
-                            onChange={(e) => setQty(e.target.value)}
+                            defaultValue={data?.quantity_awal}
+                            onChange={(e) => setQtyAwal(e.target.value)}
+                            type="text"
+                            className="w-full h-7 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
+                          />
+                          <label className="text-black text-sm font-bold pt-4">
+                            Qty Akhir Pcs
+                          </label>
+                          <input
+                            defaultValue={data?.quantity_awal}
+                            onChange={(e) => setQtyAkhir(e.target.value)}
                             type="text"
                             className="w-full h-7 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
                           />
