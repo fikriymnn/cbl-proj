@@ -364,7 +364,7 @@ function CheckSheetPondAwal() {
 
                                   </div>
                                 </div>
-                                <div className="grid grid-cols-8 border-b-8 border-[#D8EAFF]">
+                                <div className="grid grid-cols-7 border-b-8 border-[#D8EAFF]">
                                   <div className="grid py-4 bg-[#f3f3f3] items-center">
                                     <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                       LINE CLEARANCE
@@ -372,42 +372,37 @@ function CheckSheetPondAwal() {
                                   </div>
                                   <div className="grid py-4 bg-white items-center">
                                     <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                      DESIGN
+                                      REGISTER
                                     </label>
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center">
                                     <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                      REDAKSI
+                                      KETAJAMAN
                                     </label>
                                   </div>
                                   <div className="grid py-4 bg-white items-center">
                                     <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                      BARCODE
+                                      UKURAN
                                     </label>
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center">
                                     <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                      JENIS BAHAN
+                                      BENTUK JADI
                                     </label>
                                   </div>
                                   <div className="grid py-4 bg-white items-center">
                                     <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                      GRAMATUR
+                                      RIIL
                                     </label>
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center">
                                     <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                      LAYOUT PISAU
-                                    </label>
-                                  </div>
-                                  <div className="grid py-4 bg-white items-center">
-                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                      ACC WARNA AWAL JALAN
+                                      REFORASI
                                     </label>
                                   </div>
                                 </div>
 
-                                <div className="grid grid-cols-8 border-b-8 border-[#D8EAFF]">
+                                <div className="grid grid-cols-7 border-b-8 border-[#D8EAFF]">
                                   <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                                     <>
                                       <label className="pl-2">
@@ -417,39 +412,32 @@ function CheckSheetPondAwal() {
                                   </div>
                                   <div className="grid py-4 bg-white items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.design}</label>
+                                      <label className="pl-2">{data.register}</label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.redaksi}</label>
+                                      <label className="pl-2">{data.ketajaman}</label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-white items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.barcode}</label>
+                                      <label className="pl-2">{data.ukuran}</label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.jenis_bahan}</label>
+                                      <label className="pl-2">{data.bentuk_jadi}</label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-white items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.gramatur}</label>
+                                      <label className="pl-2">{data.riil}</label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.layout_pisau}</label>
-                                    </>
-                                  </div>
-                                  <div className="grid py-4 bg-white items-center justify-center">
-                                    <>
-                                      <label className="pl-2">
-                                        {data.acc_warna_awal_jalan}
-                                      </label>
+                                      <label className="pl-2">{data.reforasi}</label>
                                     </>
                                   </div>
                                 </div>

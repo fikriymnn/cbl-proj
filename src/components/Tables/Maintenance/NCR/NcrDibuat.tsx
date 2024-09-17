@@ -4,6 +4,7 @@ import Arrow from '../../../../images/icon/arrowDown.svg';
 import Filter from '../../../../images/icon/filter.svg';
 import ModalNCR4xl from '../../../Modals/Qc/NCR/ModalNCR4xl';
 import Loading from '../../../Loading';
+import Select from 'react-select'
 
 function NcrDibuatMTC() {
 
@@ -12,8 +13,7 @@ function NcrDibuatMTC() {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
     };
     useEffect(() => {
-        console.log(namaPelapor)
-        console.log(departmentPelapor)
+        getDepartment()
         getMe()
         handleResize();
 
@@ -164,6 +164,7 @@ function NcrDibuatMTC() {
     const [idpelapor, setidpelapor] = useState<any>();
     const [namaPelapor, setnamaPelapor] = useState<any>();
     const [departmentPelapor, setdepartmentPelapor] = useState<any>();
+
     async function getMe() {
         const url = `${import.meta.env.VITE_API_LINK}/me`;
         try {
@@ -178,6 +179,22 @@ function NcrDibuatMTC() {
             getNcrID(res.data.id);
         } catch (error: any) {
             console.log(error.data.msg);
+        }
+    }
+
+    const [department, setDepartment] = useState<any>();
+
+    async function getDepartment() {
+        const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-departmen`;
+        try {
+            const res = await axios.get(url, {
+
+            });
+
+            console.log(res.data)
+            setDepartment(res.data)
+        } catch (error: any) {
+            console.log(error);
         }
     }
 
