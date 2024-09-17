@@ -122,6 +122,8 @@ import FinalAwal from './pages/QualityControl/FinalInspection/FinalAwal';
 import BarangRusakSebagian from './pages/QualityControl/BarangRusakSebagian/BarangRusakSebagian';
 import ChecksheetRusakSebagian from './components/Tables/QualityControl/QualityInspection/BarangRusakSebagian/CheckSheetRusakSebagian';
 import RusakSebagianAwal from './pages/QualityControl/BarangRusakSebagian/RusakSebagianAwal';
+import IncomingOutsourcing from './pages/QualityControl/incomingOutsourcing/IncomingOutsourcing';
+import OutsourcingAwal from './pages/QualityControl/incomingOutsourcing/outsourcingAwal';
 
 
 function App() {
@@ -734,6 +736,28 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <RusakSebagianAwal/>
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/incoming_outsourcing"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingOutsourcing />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/incoming_outsourcing/checkAwal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OutsourcingAwal />
               </ProtectedRoute>
             </>
           }

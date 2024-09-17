@@ -187,6 +187,11 @@ function InspeksiQuality() {
             nama: 'BARANG RUSAK SEBAGIAN',
 
         },
+        {
+
+            nama: 'INCOMING OUTSOURCING',
+
+        },
     ];
 
     return (
@@ -203,7 +208,7 @@ function InspeksiQuality() {
                             {inspection.map((data: any, i: any) => (
                                 <>
                                     <section className=' flex  justify-center  w-full h-[59px] border-b-8 border-[#D8EAFF] text-[14px]  text-black'>
-                                        <div className={`w-2 h-full sticky left-0 z-20 ${data.nama == 'INCOMING BAHAN' ? 'bg-green-600' : data.nama == 'PROSES POTONG' ? 'bg-green-600' : data.nama == 'PROSES CETAK' ? 'bg-[#DE8500]' : data.nama == 'PROSES COATING' ? 'bg-[#DE8500]' : data.nama == 'PROSES POND' ? 'bg-[#DE8500]' : data.nama == 'PROSES COATING' ? 'bg-[#DE8500]' : data.nama == 'PROSES LEM' ? 'bg-[#DE8500]' :data.nama == 'SAMPLING HASIL RABUT' ? 'bg-[#DE8500]' :data.nama == 'FINAL INSPECTION' ? 'bg-[#DE8500]': data.nama == 'BARANG RUSAK SEBAGIAN' ? 'bg-[#DE8500]' : ''}`}>
+                                        <div className={`w-2 h-full sticky left-0 z-20 ${data.nama == 'INCOMING BAHAN' ? 'bg-green-600' : data.nama == 'PROSES POTONG' ? 'bg-green-600' : data.nama == 'PROSES CETAK' ? 'bg-[#DE8500]' : data.nama == 'PROSES COATING' ? 'bg-[#DE8500]' : data.nama == 'PROSES POND' ? 'bg-[#DE8500]' : data.nama == 'PROSES COATING' ? 'bg-[#DE8500]' : data.nama == 'PROSES LEM' ? 'bg-[#DE8500]' :data.nama == 'SAMPLING HASIL RABUT' ? 'bg-[#DE8500]' :data.nama == 'FINAL INSPECTION' ? 'bg-[#DE8500]': data.nama == 'BARANG RUSAK SEBAGIAN' ? 'bg-[#DE8500]' : data.nama == 'INCOMING OUTSOURCING' ? 'bg-[#DE8500]' : ''}`}>
 
                                         </div>
 
@@ -311,6 +316,18 @@ function InspeksiQuality() {
                                                 ): data.nama == 'BARANG RUSAK SEBAGIAN'? (
                                                     <>
                                                     <Link to={`/qc/qualityinspection/barang_rusak_sebagian`}>
+                                                            <button
+                                                                className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                                                            >
+                                                                PILIH
+
+                                                            </button>
+                                                        </Link>
+                                                    </>
+                                               
+                                                ): data.nama == 'INCOMING OUTSOURCING'? (
+                                                    <>
+                                                    <Link to={`/qc/qualityinspection/incoming_outsourcing`}>
                                                             <button
                                                                 className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                             >
