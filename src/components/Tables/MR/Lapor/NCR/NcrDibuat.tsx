@@ -106,6 +106,9 @@ function NcrDibuatLaporMR() {
             const res = await axios.post(
                 url,
                 {
+                    nama_pelapor: namaPelapor,
+                    id_pelapor: idpelapor,
+                    department_pelapor: departmentPelapor,
                     no_jo: noJO,
                     kategori_laporan: kategori,
                     no_io: noIO,
@@ -156,6 +159,9 @@ function NcrDibuatLaporMR() {
     }
 
     const [me, setMe] = useState<any>();
+    const [idpelapor, setidpelapor] = useState<any>();
+    const [namaPelapor, setnamaPelapor] = useState<any>();
+    const [departmentPelapor, setdepartmentPelapor] = useState<any>();
     async function getMe() {
         const url = `${import.meta.env.VITE_API_LINK}/me`;
         try {
@@ -164,6 +170,9 @@ function NcrDibuatLaporMR() {
             });
 
             setMe(res.data);
+            setnamaPelapor(res.data.nama)
+            setidpelapor(res.data.id)
+            setdepartmentPelapor(res.data.bagian)
             getNcrID(res.data.id);
         } catch (error: any) {
             console.log(error.data.msg);

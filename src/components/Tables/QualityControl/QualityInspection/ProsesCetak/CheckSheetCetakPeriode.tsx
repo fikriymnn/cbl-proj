@@ -261,7 +261,7 @@ function CheckSheetCetakPeriode() {
   const openModal2 = () => setShowModal2(true);
   const closeModal2 = () => setShowModal2(false);
 
-  const isOnprogres = cetakMesinPeriode?.inspeksi_cetak_periode[0].inspeksi_cetak_periode_point.some((data: { status: any; }) => data?.status === 'on progress')
+  const isOnprogres = cetakMesinPeriode?.inspeksi_cetak_periode[0]?.inspeksi_cetak_periode_point?.some((data: { status: any; }) => data?.status === 'on progress')
   const [showHistory, setShowHistory] = useState(false);
   const openModalHistory = () => setShowHistory(true);
   const closeModalHistory = () => setShowHistory(false);
@@ -422,7 +422,7 @@ function CheckSheetCetakPeriode() {
                           </div>
                         </div>
 
-                        {cetakMesinPeriodeHistory?.inspeksi_cetak_periode[0].inspeksi_cetak_periode_point.map(
+                        {cetakMesinPeriodeHistory?.inspeksi_cetak_periode[0]?.inspeksi_cetak_periode_point?.map(
                           (data: any, index: number) => {
                             const waktuSampling = convertDateToTime(data.waktu_mulai);
                             const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
@@ -671,7 +671,7 @@ function CheckSheetCetakPeriode() {
 
             {/* =============================chekcsheet========================= */}
 
-            {cetakMesinPeriode?.inspeksi_cetak_periode[0].inspeksi_cetak_periode_point.map(
+            {cetakMesinPeriode?.inspeksi_cetak_periode[0]?.inspeksi_cetak_periode_point?.map(
               (data: any, index: number) => {
                 const waktuSampling = convertDateToTime(data.waktu_mulai);
                 const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);

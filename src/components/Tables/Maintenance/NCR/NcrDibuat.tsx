@@ -12,7 +12,8 @@ function NcrDibuatMTC() {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
     };
     useEffect(() => {
-
+        console.log(namaPelapor)
+        console.log(departmentPelapor)
         getMe()
         handleResize();
 
@@ -106,6 +107,9 @@ function NcrDibuatMTC() {
             const res = await axios.post(
                 url,
                 {
+                    nama_pelapor: namaPelapor,
+                    id_pelapor: idpelapor,
+                    department_pelapor: departmentPelapor,
                     no_jo: noJO,
                     kategori_laporan: kategori,
                     no_io: noIO,
@@ -155,7 +159,11 @@ function NcrDibuatMTC() {
         }
     }
 
+
     const [me, setMe] = useState<any>();
+    const [idpelapor, setidpelapor] = useState<any>();
+    const [namaPelapor, setnamaPelapor] = useState<any>();
+    const [departmentPelapor, setdepartmentPelapor] = useState<any>();
     async function getMe() {
         const url = `${import.meta.env.VITE_API_LINK}/me`;
         try {
@@ -164,6 +172,9 @@ function NcrDibuatMTC() {
             });
 
             setMe(res.data);
+            setnamaPelapor(res.data.nama)
+            setidpelapor(res.data.id)
+            setdepartmentPelapor(res.data.bagian)
             getNcrID(res.data.id);
         } catch (error: any) {
             console.log(error.data.msg);
@@ -455,7 +466,7 @@ function NcrDibuatMTC() {
                                                             )}
                                                             <button
                                                                 onClick={() => handleAddPointTask(i)}
-                                                                className=" w-[45%] h-8 mt-2 rounded-md bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
+                                                                className=" w-[45%] h-8 mt-2 rounded-md bg-blue-600 text-white text-sm font-bold justify-center items-center px-1 py-2 hover:cursor-pointer"
                                                             >
                                                                 + KETIDAKSESUAIAN
                                                             </button>
