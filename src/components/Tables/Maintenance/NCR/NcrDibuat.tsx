@@ -14,6 +14,7 @@ function NcrDibuatMTC() {
     };
     useEffect(() => {
         getDepartment()
+        getjoReal()
         getMe()
         handleResize();
 
@@ -31,6 +32,7 @@ function NcrDibuatMTC() {
 
     const [ncr, setNcr] = useState([
         {
+            id_department: 0,
             department: '',
             ketidaksesuaian: [
                 {
@@ -47,6 +49,7 @@ function NcrDibuatMTC() {
         setNcr([
             ...ncr,
             {
+                id_department: 0,
                 department: '',
                 ketidaksesuaian: [
                     {
@@ -197,6 +200,21 @@ function NcrDibuatMTC() {
             console.log(error);
         }
     }
+    const [joReal, setjoReal] = useState<any>();
+
+    async function getjoReal() {
+        const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-jo-realtime `;
+        try {
+            const res = await axios.get(url, {
+
+            });
+
+            console.log(res.data)
+            setjoReal(res.data.data)
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
 
     return (
 
@@ -311,22 +329,47 @@ function NcrDibuatMTC() {
                                                                 <p className='font-bold'>
                                                                     No. JO
                                                                 </p>
-                                                                <input
-                                                                    onChange={(e) => setNoJO(e.target.value)}
-                                                                    type="text" placeholder='Nomor JO' className='bg-white border border-stroke rounded-md h-7 pl-4' ></input>
+                                                                <select
+
+                                                                    // options={formattedOptions}
+                                                                    name="noJO"
+                                                                    onChange={(e) => {
+
+                                                                        setNoJO(e.target.value)
+                                                                    }}
+                                                                    className={`relative z-20 w-full appearance-none rounded-md border border-stroke bg-transparent py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white}`}
+                                                                >
+                                                                    {joReal?.map((data: any, i: number) => {
+
+                                                                        return (
+                                                                            <option
+                                                                                value={data.e_no_jo}
+                                                                                className="text-gray-800 text-xs font-light dark:text-bodydark"
+                                                                            >
+                                                                                {data.e_no_jo}
+                                                                            </option>
+                                                                        )
+                                                                    }
+                                                                    )}
+
+                                                                </select >
                                                                 <p className='font-bold pt-2'>
                                                                     No. Io
                                                                 </p>
                                                                 <input
                                                                     onChange={(e) => setNoIO(e.target.value)}
-                                                                    type="text" placeholder='Nomor IO' className='bg-white border border-stroke rounded-md h-7 pl-4' ></input>
+                                                                    type="text" placeholder='Nomor IO' className='bg-white border border-stroke rounded-md h-7 pl-4' >
+
+                                                                </input>
 
                                                                 <p className='font-bold pt-2'>
                                                                     PRODUK
                                                                 </p>
                                                                 <input
                                                                     onChange={(e) => setProduk(e.target.value)}
-                                                                    type="text" placeholder='Nama Produk' className='bg-white border border-stroke rounded-md h-7 pl-4' ></input>
+                                                                    type="text" placeholder='Nama Produk' className='bg-white border border-stroke rounded-md h-7 pl-4' >
+
+                                                                </input>
                                                             </div>
 
                                                         </div>

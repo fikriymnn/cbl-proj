@@ -12,7 +12,8 @@ function NcrDibuatLaporMR() {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
     };
     useEffect(() => {
-
+        getDepartment()
+        getjoReal();
         getMe()
         handleResize();
 
@@ -30,6 +31,7 @@ function NcrDibuatLaporMR() {
 
     const [ncr, setNcr] = useState([
         {
+            id_department: 0,
             department: '',
             ketidaksesuaian: [
                 {
@@ -46,6 +48,7 @@ function NcrDibuatLaporMR() {
         setNcr([
             ...ncr,
             {
+                id_department: 0,
                 department: '',
                 ketidaksesuaian: [
                     {
@@ -178,6 +181,36 @@ function NcrDibuatLaporMR() {
             console.log(error.data.msg);
         }
     }
+    const [department, setDepartment] = useState<any>();
+
+    async function getDepartment() {
+        const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-departmen`;
+        try {
+            const res = await axios.get(url, {
+
+            });
+
+            console.log(res.data)
+            setDepartment(res.data)
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+    const [joReal, setjoReal] = useState<any>();
+
+    async function getjoReal() {
+        const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-jo-realtime `;
+        try {
+            const res = await axios.get(url, {
+
+            });
+
+            console.log(res.data)
+            setjoReal(res.data.data)
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
 
     return (
 
@@ -288,9 +321,30 @@ function NcrDibuatLaporMR() {
                                                                 <p className='font-bold'>
                                                                     No. JO
                                                                 </p>
-                                                                <input
-                                                                    onChange={(e) => setNoJO(e.target.value)}
-                                                                    type="text" placeholder='Nomor JO' className='bg-white border border-stroke rounded-md h-7 pl-4' ></input>
+                                                                <select
+
+                                                                    // options={formattedOptions}
+                                                                    name="noJO"
+                                                                    onChange={(e) => {
+
+                                                                        setNoJO(e.target.value)
+                                                                    }}
+                                                                    className={`relative z-20 w-full appearance-none rounded-md border border-stroke bg-transparent py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white}`}
+                                                                >
+                                                                    {joReal?.map((data: any, i: number) => {
+
+                                                                        return (
+                                                                            <option
+                                                                                value={data.e_no_jo}
+                                                                                className="text-gray-800 text-xs font-light dark:text-bodydark"
+                                                                            >
+                                                                                {data.e_no_jo}
+                                                                            </option>
+                                                                        )
+                                                                    }
+                                                                    )}
+
+                                                                </select >
                                                                 <p className='font-bold pt-2'>
                                                                     No. Io
                                                                 </p>
@@ -361,23 +415,30 @@ function NcrDibuatLaporMR() {
                                                                             </span>
 
                                                                             <select
-                                                                                name="department"
-                                                                                onChange={(e) => handleChangePoint(e, i)}
-                                                                                className={`relative z-20 w-full bg-white border border-stroke appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  }`}>
-                                                                                <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                                                                    Pilih Departemen
-                                                                                </option>
 
-                                                                                <option value="maintenance" className="text-[#646464] text-xs dark:text-bodydark">
-                                                                                    Maintenance
-                                                                                </option>
-                                                                                <option value="qc" className="text-[#646464] text-xs dark:text-bodydark">
-                                                                                    Quality Control
-                                                                                </option>
-                                                                                <option value="mr" className="text-[#646464] text-xs dark:text-bodydark">
-                                                                                    MR
-                                                                                </option>
-                                                                            </select>
+                                                                                // options={formattedOptions}
+                                                                                name="department"
+                                                                                onChange={(e) => {
+
+                                                                                    handleChangePoint(e, i)
+                                                                                }}
+                                                                                className={`relative z-20 w-full appearance-none rounded-md border border-stroke bg-transparent py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white
+    }`}
+                                                                            >
+                                                                                {department?.map((data: any, i: number) => {
+
+                                                                                    return (
+                                                                                        <option
+                                                                                            value={data.name}
+                                                                                            className="text-gray-800 text-xs font-light dark:text-bodydark"
+                                                                                        >
+                                                                                            {data.name}
+                                                                                        </option>
+                                                                                    )
+                                                                                }
+                                                                                )}
+
+                                                                            </select >
 
                                                                             <span className="absolute top-[18px] right-4 z-30 -translate-y-1/2">
                                                                                 <svg
