@@ -35,6 +35,9 @@ function CheckSheetCetakPeriode() {
       department: '',
     },
   ]);
+
+  const [masterKodeCetak, setMasterKodeCetak] = useState<any>();
+  const [masterKodeCetak2, setMasterKodeCetak2] = useState<any>();
   const [openGuide, setOpenGuide] = useState(null);
   const handleClickGuide = (index: any) => {
     setOpenGuide((prevState: any) => {
@@ -45,7 +48,27 @@ function CheckSheetCetakPeriode() {
   useEffect(() => {
     getCetakMesinPeriode();
     getDepartment();
+    getMasterKode();
   }, []);
+
+  async function getMasterKode() {
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=3`;
+    const url2 = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=4`;
+    try {
+      const res = await axios.get(url);
+      const res2 = await axios.get(url);
+
+      setMasterKodeCetak(res);
+      setMasterKodeCetak2(res2);
+      console.log(res);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
 
   async function getDepartment() {
     const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-departmen`;
@@ -162,6 +185,8 @@ function CheckSheetCetakPeriode() {
         url,
         {
           id_inspeksi_cetak_periode: id,
+          masterKodeCetak: masterKodeCetak,
+          masterKodeCetak2: masterKodeCetak2,
         },
         {
           withCredentials: true,
@@ -239,6 +264,7 @@ function CheckSheetCetakPeriode() {
       );
 
       getCetakMesinPeriode();
+      console.log(res);
     } catch (error: any) {
       console.log(error);
     }
@@ -274,18 +300,24 @@ function CheckSheetCetakPeriode() {
     ]);
   };
 
-  //change value point pm1
+  //change value point
   const handleChangePointDepatment = (e: any, i: number) => {
     const { name, value } = e.target;
     const filteredData = DataDepartment.find(
       (item: any) => item.id == value,
       // item.id.includes(parseInt(value));
     );
-    console.log(filteredData);
+
     const onchangeVal: any = [...Department];
     onchangeVal[i]['id'] = filteredData.id;
     onchangeVal[i]['department'] = filteredData.name;
     setDepartment(onchangeVal);
+  };
+
+  const handleDeletePointDepartment = (i: number) => {
+    const deleteVal: any = [...Department];
+    deleteVal.splice(i, 1);
+    setDepartment(deleteVal);
   };
 
   const handleChangePoint = (e: any, i: number) => {
@@ -1157,31 +1189,31 @@ function CheckSheetCetakPeriode() {
                                 </option>
 
                                 <option
-                                  value="mesin"
+                                  value="Mesin"
                                   className="text-body dark:text-bodydark"
                                 >
                                   Mesin
                                 </option>
                                 <option
-                                  value="man"
+                                  value="Man"
                                   className="text-body dark:text-bodydark"
                                 >
                                   Man
                                 </option>
                                 <option
-                                  value="material"
+                                  value="Material"
                                   className="text-body dark:text-bodydark"
                                 >
                                   Material
                                 </option>
                                 <option
-                                  value="persiapan"
+                                  value="Persiapan"
                                   className="text-body dark:text-bodydark"
                                 >
                                   Persiapan
                                 </option>
                                 <option
-                                  value="design"
+                                  value="Design"
                                   className="text-body dark:text-bodydark"
                                 >
                                   Design
@@ -1191,42 +1223,62 @@ function CheckSheetCetakPeriode() {
                               <label className="text-black text-sm font-bold pt-4">
                                 Tujuan Department
                               </label>
-                              {Department?.map((dt: any, indx) => {
+                              {Department?.map((dt: any, indx: number) => {
                                 return (
-                                  <select
-                                    onChange={(e) => {
-                                      handleChangePointDepatment(e, index);
-                                    }}
-                                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
+                                  <>
+                                    <select
+                                      onChange={(e) => {
+                                        handleChangePointDepatment(e, indx);
+                                      }}
+                                      defaultValue={dt.department}
+                                      className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
                   }`}
-                                  >
-                                    <option
-                                      value=""
-                                      disabled
-                                      selected
-                                      className="text-body dark:text-bodydark"
                                     >
-                                      Pilih Tujuan Department
-                                    </option>
+                                      <option
+                                        value=""
+                                        disabled
+                                        selected
+                                        className="text-body dark:text-bodydark"
+                                      >
+                                        Pilih Tujuan Department
+                                      </option>
 
-                                    {DataDepartment?.map(
-                                      (
-                                        dataDef: any,
-                                        indexDepartment: number,
-                                      ) => {
-                                        return (
-                                          <option
-                                            value={dataDef.id}
-                                            className="text-body dark:text-bodydark"
-                                          >
-                                            {dataDef.name}
-                                          </option>
-                                        );
-                                      },
-                                    )}
-                                  </select>
+                                      {DataDepartment?.map(
+                                        (
+                                          dataDef: any,
+                                          indexDepartment: number,
+                                        ) => {
+                                          return (
+                                            <option
+                                              value={dataDef.id}
+                                              className="text-body dark:text-bodydark"
+                                            >
+                                              {dataDef.name}
+                                            </option>
+                                          );
+                                        },
+                                      )}
+                                    </select>
+                                    <button
+                                      onClick={() => {
+                                        handleDeletePointDepartment(indx);
+                                      }}
+                                      className="bg-red-600 rounded-md w-22 h-10 text-white font-semibold text-sm"
+                                    >
+                                      X
+                                    </button>
+                                  </>
                                 );
                               })}
+
+                              <button
+                                onClick={() => {
+                                  handleAddPointDepartment();
+                                }}
+                                className="bg-green-600 rounded-md w-22 h-10 text-white font-semibold text-sm"
+                              >
+                                TAMBAH DEPARTMENT
+                              </button>
 
                               <button
                                 onClick={() => {
@@ -1239,8 +1291,8 @@ function CheckSheetCetakPeriode() {
                                     persenKriteria,
                                     sumberMasalah,
                                     index,
-                                  ),
-                                    console.log(data.id);
+                                  );
+                                  // console.log(Department);
                                 }}
                                 className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
                               >

@@ -15,10 +15,32 @@ function CheckSheetCetakAwal() {
   const [isLoading, setIsLoading] = useState(false);
   const [cetakMesinAwal, setCetakMesinAwal] = useState<any>();
   const [cetakMesinAwalHistory, setCetakMesinAwalHistory] = useState<any>();
+  const [masterKodeCetak, setMasterKodeCetak] = useState<any>();
+  const [masterKodeCetak2, setMasterKodeCetak2] = useState<any>();
 
   useEffect(() => {
     getCetakMesinAwal();
+    getMasterKode();
   }, []);
+
+  async function getMasterKode() {
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=3`;
+    const url2 = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=4`;
+    try {
+      const res = await axios.get(url);
+      const res2 = await axios.get(url);
+
+      setMasterKodeCetak(res);
+      setMasterKodeCetak2(res2);
+      console.log(res);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
 
   async function getCetakMesinAwal() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiCetak/${id}`;
@@ -131,6 +153,8 @@ function CheckSheetCetakAwal() {
         url,
         {
           id_inspeksi_cetak_awal: id,
+          masterKodeCetak: masterKodeCetak,
+          masterKodeCetak2: masterKodeCetak2,
         },
         {
           withCredentials: true,
