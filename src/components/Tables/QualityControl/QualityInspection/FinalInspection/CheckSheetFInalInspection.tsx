@@ -349,7 +349,7 @@ function ChecksheetFinalInspection() {
           {FinalInspection?.inspeksi_final_sub.map(
             (dataSub: any, indexSub: number) => {
               const qtyAwal = formatInteger(dataSub?.quantity_awal);
-              const qtyAkhir = formatInteger(dataSub?.quantity_awal);
+              const qtyAkhir = formatInteger(dataSub?.quantity_akhir);
               return (
                 <div className="bg-white mt-2  text-sm font-semibold ">
                   <div className="w-full grid grid-cols-4 py-2 ">

@@ -28,7 +28,7 @@ function CheckSheetCetakAwal() {
       });
 
       setCetakMesinAwal(res.data.data);
-      setCetakMesinAwalHistory(res.data.history)
+      setCetakMesinAwalHistory(res.data.history);
       console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
@@ -36,8 +36,9 @@ function CheckSheetCetakAwal() {
   }
 
   async function startTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwalPoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwalPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -67,8 +68,9 @@ function CheckSheetCetakAwal() {
     layout_pisau: any,
     acc_warna_awal_jalan: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwalPoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwalPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -99,8 +101,9 @@ function CheckSheetCetakAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwalPoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwalPoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -120,8 +123,9 @@ function CheckSheetCetakAwal() {
   }
 
   async function doneCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwal/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwal/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -135,13 +139,14 @@ function CheckSheetCetakAwal() {
 
       getCetakMesinAwal();
     } catch (error: any) {
-      console.log(error.data.msg);
+      console.log(error);
     }
   }
 
   async function pendingCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwal/pending/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwal/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -168,13 +173,18 @@ function CheckSheetCetakAwal() {
   const tanggal = convertTimeStampToDateOnly(cetakMesinAwal?.tanggal);
   const jam = convertDateToTime(cetakMesinAwal?.tanggal);
 
-  const tanggalHistory = convertTimeStampToDateOnly(cetakMesinAwalHistory?.tanggal);
+  const tanggalHistory = convertTimeStampToDateOnly(
+    cetakMesinAwalHistory?.tanggal,
+  );
   const jamHistory = convertDateToTime(cetakMesinAwalHistory?.tanggal);
 
   const jumlahWaktuCheck = formatElapsedTime(
     cetakMesinAwal?.inspeksi_cetak_awal[0]?.waktu_check,
   );
-  const isOnprogres = cetakMesinAwal?.inspeksi_cetak_awal[0]?.inspeksi_cetak_awal_point?.some((data: { status: any; }) => data?.status === 'on progress')
+  const isOnprogres =
+    cetakMesinAwal?.inspeksi_cetak_awal[0]?.inspeksi_cetak_awal_point?.some(
+      (data: { status: any }) => data?.status === 'on progress',
+    );
 
   const [showHistory, setShowHistory] = useState(false);
   const openModalHistory = () => setShowHistory(true);
@@ -185,7 +195,7 @@ function CheckSheetCetakAwal() {
         <main className="overflow-x-hidden">
           <div className="min-w-[700px] bg-white rounded-xl">
             <div className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12 justify-between">
-              <div className='flex'>
+              <div className="flex">
                 <svg
                   width="24"
                   height="24"
@@ -202,8 +212,7 @@ function CheckSheetCetakAwal() {
                 </svg>{' '}
                 Printing Checksheet
               </div>
-              <div className='text-[14px] font-semibold '>
-
+              <div className="text-[14px] font-semibold ">
                 <button
                   onClick={() => openModalHistory()}
                   className="  rounded-sm  text-sm text-blue-500 font-bold justify-center items-center px-4  hover:cursor-pointer"
@@ -336,7 +345,9 @@ function CheckSheetCetakAwal() {
                         </div>
                         {cetakMesinAwalHistory?.inspeksi_cetak_awal[0]?.inspeksi_cetak_awal_point?.map(
                           (data: any, index: number) => {
-                            const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
+                            const lamaPengerjaan = formatElapsedTime(
+                              data.lama_pengerjaan,
+                            );
                             return (
                               <>
                                 <div className="flex flex-col py-6 px-10 border-b-8 border-[#D8EAFF]">
@@ -360,11 +371,8 @@ function CheckSheetCetakAwal() {
                                         <p className="md:text-[14px] text-[9px] font-semibold">
                                           Time : {lamaPengerjaan}
                                         </p>
-
                                       </div>
                                     </div>
-
-
                                   </div>
                                 </div>
                                 <div className="grid grid-cols-8 border-b-8 border-[#D8EAFF]">
@@ -420,32 +428,44 @@ function CheckSheetCetakAwal() {
                                   </div>
                                   <div className="grid py-4 bg-white items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.design}</label>
+                                      <label className="pl-2">
+                                        {data.design}
+                                      </label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.redaksi}</label>
+                                      <label className="pl-2">
+                                        {data.redaksi}
+                                      </label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-white items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.barcode}</label>
+                                      <label className="pl-2">
+                                        {data.barcode}
+                                      </label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.jenis_bahan}</label>
+                                      <label className="pl-2">
+                                        {data.jenis_bahan}
+                                      </label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-white items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.gramatur}</label>
+                                      <label className="pl-2">
+                                        {data.gramatur}
+                                      </label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.layout_pisau}</label>
+                                      <label className="pl-2">
+                                        {data.layout_pisau}
+                                      </label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-white items-center justify-center">
@@ -456,7 +476,6 @@ function CheckSheetCetakAwal() {
                                     </>
                                   </div>
                                 </div>
-
                               </>
                             );
                           },
@@ -465,9 +484,7 @@ function CheckSheetCetakAwal() {
                     </ModalKosongan>
                   </>
                 )}
-
               </div>
-
             </div>
 
             <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
@@ -616,7 +633,7 @@ function CheckSheetCetakAwal() {
                             </p>
                             <>
                               {data.status == 'incoming' &&
-                                cetakMesinAwal?.status == 'incoming' ? (
+                              cetakMesinAwal?.status == 'incoming' ? (
                                 <button
                                   onClick={() => startTaskCekAwal(data.id)}
                                   className="flex w-[50%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
@@ -952,7 +969,7 @@ function CheckSheetCetakAwal() {
                           Catatan<span className="text-red-500">*</span> :
                         </label>
                         {data.status == 'on progress' &&
-                          cetakMesinAwal?.status == 'incoming' ? (
+                        cetakMesinAwal?.status == 'incoming' ? (
                           <textarea
                             name="catatan"
                             defaultValue={data.catatan}
@@ -971,7 +988,7 @@ function CheckSheetCetakAwal() {
                       </div>
                       <div className="grid col-span-2 items-end justify-center">
                         {data.status == 'on progress' &&
-                          cetakMesinAwal?.status == 'incoming' ? (
+                        cetakMesinAwal?.status == 'incoming' ? (
                           <button
                             onClick={() =>
                               stopTaskCekAwal(
@@ -1003,8 +1020,8 @@ function CheckSheetCetakAwal() {
           {(!isOnprogres &&
             cetakMesinAwal?.status == 'incoming' &&
             cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'incoming') ||
-            (cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'pending' &&
-              cetakMesinAwal?.status == 'incoming') ? (
+          (cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'pending' &&
+            cetakMesinAwal?.status == 'incoming') ? (
             <>
               <button
                 disabled={isLoading}
@@ -1029,8 +1046,8 @@ function CheckSheetCetakAwal() {
             </label>
             <div className="grid col-span-6 items-end justify-end gap-2">
               {!isOnprogres &&
-                cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'incoming' &&
-                cetakMesinAwal?.status == 'incoming' ? (
+              cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'incoming' &&
+              cetakMesinAwal?.status == 'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0]?.id)
@@ -1043,7 +1060,7 @@ function CheckSheetCetakAwal() {
               {(!isOnprogres &&
                 cetakMesinAwal?.status == 'incoming' &&
                 cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'incoming') ||
-                cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'pending' ? (
+              cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'pending' ? (
                 <button
                   onClick={() =>
                     doneCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0]?.id)
