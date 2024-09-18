@@ -123,7 +123,11 @@ import BarangRusakSebagian from './pages/QualityControl/BarangRusakSebagian/Bara
 import ChecksheetRusakSebagian from './components/Tables/QualityControl/QualityInspection/BarangRusakSebagian/CheckSheetRusakSebagian';
 import RusakSebagianAwal from './pages/QualityControl/BarangRusakSebagian/RusakSebagianAwal';
 import IncomingOutsourcing from './pages/QualityControl/incomingOutsourcing/IncomingOutsourcing';
-import OutsourcingAwal from './pages/QualityControl/incomingOutsourcing/outsourcingAwal';
+import OutsourcingAwal from './pages/QualityControl/incomingOutsourcingBarangJadi/outsourcingBarangJadiAwal';
+import IncomingOutsourcingBarangJadi from './pages/QualityControl/incomingOutsourcingBarangJadi/IncomingOutsourcingBarangJadi';
+import OutsourcingAwalBarangJadi from './pages/QualityControl/incomingOutsourcingBarangJadi/outsourcingBarangJadiAwal';
+import OutsourcingBarangJadiAwal from './pages/QualityControl/incomingOutsourcingBarangJadi/outsourcingBarangJadiAwal';
+import IncomingOutsourcingAwal from './pages/QualityControl/incomingOutsourcing/IncomingOutsourcingAwal';
 
 
 function App() {
@@ -752,12 +756,34 @@ function App() {
           }
         />
         <Route
+          path="/qc/qualityinspection/incoming_outsourcing_barang_jadi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingOutsourcingBarangJadi />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/qc/qualityinspection/incoming_outsourcing/checkAwal/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <OutsourcingAwal />
+                <IncomingOutsourcingAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/incoming_outsourcing_barang_jadi/checkAwal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OutsourcingBarangJadiAwal />
               </ProtectedRoute>
             </>
           }

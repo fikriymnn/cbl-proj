@@ -7,7 +7,7 @@ import DefaultLayout from "../../../layout/DefaultLayout";
 
 
 
-const OutsourcingAwal = () => {
+const IncomingOutsourcingAwal = () => {
 
     return (
         <DefaultLayout>
@@ -20,4 +20,4 @@ const OutsourcingAwal = () => {
     );
 };
 
-export default OutsourcingAwal;
+export default IncomingOutsourcingAwal;
