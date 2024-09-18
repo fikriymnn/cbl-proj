@@ -52,12 +52,10 @@ function CheckSheetCetakPeriode() {
   }, []);
 
   async function getMasterKode() {
-    const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/list-kendala?criteria=true&proses=3`;
-    const url2 = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/list-kendala?criteria=true&proses=4`;
+    const url = `${import.meta.env.VITE_API_LINK_P1
+      }/api/list-kendala?criteria=true&proses=3`;
+    const url2 = `${import.meta.env.VITE_API_LINK_P1
+      }/api/list-kendala?criteria=true&proses=4`;
     try {
       const res = await axios.get(url);
       const res2 = await axios.get(url);
@@ -105,6 +103,9 @@ function CheckSheetCetakPeriode() {
   const [showNotOk, setShowNotOk] = useState<boolean[]>(
     new Array(add != null && add.length).fill(false),
   );
+
+
+
   const handleClickAdd = (index: number) => {
     setShowDetail((prevState) => {
       const updatedShowDetail = [...prevState]; // Create a copy
@@ -122,9 +123,8 @@ function CheckSheetCetakPeriode() {
   };
 
   async function startTaskCekPeriode(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriodePoint/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriodePoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -149,9 +149,8 @@ function CheckSheetCetakPeriode() {
     jumlah_sampling: any,
     data_defect: any,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriodePoint/stop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriodePoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -176,9 +175,8 @@ function CheckSheetCetakPeriode() {
   }
 
   async function tambahTaskCekPeriode(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriodePoint/create`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriodePoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -209,9 +207,8 @@ function CheckSheetCetakPeriode() {
     sumberMasalah: any,
     index: number,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriodePoint/createDefect`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriodePoint/createDefect`;
     try {
       const res = await axios.post(
         url,
@@ -251,9 +248,8 @@ function CheckSheetCetakPeriode() {
   }
 
   async function doneCekPeriode(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriode/done/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriode/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -271,9 +267,8 @@ function CheckSheetCetakPeriode() {
   }
 
   async function pendingCekPeriode(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCetakPeriode/pending/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCetakPeriode/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -334,6 +329,14 @@ function CheckSheetCetakPeriode() {
     const onchangeVal: any = cetakMesinPeriode;
     onchangeVal.inspeksi_cetak_periode[0].inspeksi_cetak_periode_point[
       i
+    ].inspeksi_cetak_periode_defect[ii]['hasil'] = value;
+    setCetakMesinPeriode(onchangeVal);
+  };
+  const handleChangePointHasil = (e: any, i: number, ii: number) => {
+    const { name, value } = e.target;
+    const onchangeVal: any = cetakMesinPeriode;
+    onchangeVal.inspeksi_cetak_periode[0].inspeksi_cetak_periode_point[
+      i
     ].inspeksi_cetak_periode_defect[ii][name] = value;
     setCetakMesinPeriode(onchangeVal);
   };
@@ -360,6 +363,7 @@ function CheckSheetCetakPeriode() {
     cetakMesinPeriode?.inspeksi_cetak_periode[0]?.inspeksi_cetak_periode_point?.some(
       (data: { status: any }) => data?.status === 'on progress',
     );
+
   const [showHistory, setShowHistory] = useState(false);
   const openModalHistory = () => setShowHistory(true);
   const closeModalHistory = () => setShowHistory(false);
@@ -594,11 +598,10 @@ function CheckSheetCetakPeriode() {
                                       (data2: any, i: number) => {
                                         return (
                                           <div
-                                            className={`flex flex-col min-w-[120px] justify-center py-4 ${
-                                              (i + 1) % 2 === 0
-                                                ? ' bg-[#F3F3F3]'
-                                                : 'bg-white'
-                                            } items-center gap-2`}
+                                            className={`flex flex-col min-w-[120px] justify-center py-4 ${(i + 1) % 2 === 0
+                                              ? ' bg-[#F3F3F3]'
+                                              : 'bg-white'
+                                              } items-center gap-2`}
                                           >
                                             <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                               {data2.kode}
@@ -903,7 +906,7 @@ function CheckSheetCetakPeriode() {
                             Time : {lamaPengerjaan}
                           </p>
                           {data.status == 'incoming' &&
-                          cetakMesinPeriode?.status == 'incoming' ? (
+                            cetakMesinPeriode?.status == 'incoming' ? (
                             <>
                               <p className="font-bold text-[#DE0000]">
                                 Task Belum Dimulai
@@ -971,67 +974,153 @@ function CheckSheetCetakPeriode() {
                       </>
                     </div>
 
-                    <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF]">
+                    <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF] gap-1 rounded-sm">
                       {data.inspeksi_cetak_periode_defect.map(
                         (data2: any, i: number) => {
+
                           return (
                             <div
-                              className={`flex flex-col min-w-[120px] justify-center py-4 ${
-                                (i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
-                              } items-center gap-2`}
+                              className={`flex flex-col min-w-[200px] justify-center py-4 ${(i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
+                                } items-center gap-2 
+                                 ${data2.hasil == 'ok' ? 'bg-blue-300' :
+                                  data2.hasil == 'ok (toleransi)' ? 'bg-yellow-300' :
+                                    data2.hasil == 'not ok' ? 'bg-red-300' :
+
+                                      'bg-white'}`}
                             >
                               <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                 {data2.kode}
                               </label>
                               {data.status == 'done' ? (
-                                <select
-                                  name="hasil"
-                                  disabled
-                                  defaultValue={data2.hasil}
-                                  onChange={(e) => {
-                                    handleChangePointDefect(e, index, i);
-                                  }}
-                                  className={`w-[80%]  ${
-                                    (i + 1) % 2 === 0
-                                      ? ' bg-[#F3F3F3]'
-                                      : 'bg-white'
-                                  } `}
+                                <p
+
+                                  className={`w-[80%] text-center uppercase font-semibold  
+                                    } `}
                                 >
-                                  <option value={''} disabled>
-                                    SELECT VALUE
-                                  </option>
-                                  <option value={'ok'}>OK</option>
-                                  <option value={'ok (toleransi)'}>
-                                    OK (Toleransi)
-                                  </option>
-                                  <option value={'not ok'}>NOT OK</option>
-                                </select>
+                                  {data2.hasil}
+                                </p>
                               ) : data.status == 'on progress' ? (
-                                <select
-                                  name="hasil"
-                                  onChange={(e) => {
-                                    handleChangePointDefect(e, index, i);
-                                    if (e.target.value == 'not ok') {
-                                      handleClickNotOke(i, true);
-                                    } else {
-                                      handleClickNotOke(i, false);
-                                    }
-                                  }}
-                                  className={`w-[80%]  ${
-                                    (i + 1) % 2 === 0
+                                <>
+
+                                  {/* <select
+                                    name="hasil"
+                                    onChange={(e) => {
+                                      handleChangePointDefect(e, index, i);
+                                      if (e.target.value == 'not ok') {
+                                        handleClickNotOke(i, true);
+                                      } else {
+                                        handleClickNotOke(i, false);
+                                      }
+                                    }}
+                                    className={`w-[80%]  ${(i + 1) % 2 === 0
                                       ? ' bg-[#F3F3F3]'
                                       : 'bg-white'
-                                  } `}
-                                >
-                                  <option value={''} disabled selected>
-                                    SELECT VALUE
-                                  </option>
-                                  <option value={'ok'}>OK</option>
-                                  <option value={'ok (toleransi)'}>
-                                    OK (Toleransi)
-                                  </option>
-                                  <option value={'not ok'}>NOT OK</option>
-                                </select>
+                                      } `}
+                                  >
+                                    <option value={''} disabled selected>
+                                      SELECT VALUE
+                                    </option>
+                                    <option value={'ok'}>OK</option>
+                                    <option value={'ok (toleransi)'}>
+                                      OK (Toleransi)
+                                    </option>
+                                    <option value={'not ok'}>NOT OK</option>
+                                  </select> */}
+                                  <div className="flex flex-col  w-full px-2 py-2">
+                                    <div className={`flex flex-col w-full`}>
+                                      <div className="flex gap-1 w-full">
+                                        <input
+                                          onChange={(e) => {
+                                            handleChangePointDefect(e, index, i);
+
+                                            if (e.target.value == 'not ok') {
+                                              handleClickNotOke(i, true);
+
+                                            } else {
+                                              handleClickNotOke(i, false);
+                                            }
+
+                                          }}
+                                          className={`  ${(i + 1) % 2 === 0
+                                            ? ' bg-[#F3F3F3]'
+                                            : 'bg-white'
+                                            } `}
+                                          type="radio"
+                                          id="ok11"
+                                          value="ok"
+                                          name={`hasil ${i}`}
+                                        />
+                                        <img src={ok} alt="" className="w-4" />
+                                        <label className="">OK</label>
+                                      </div>
+                                      <div className="flex gap-1 w-full">
+                                        <input
+                                          onChange={(e) => {
+                                            handleChangePointDefect(e, index, i);
+                                            if (e.target.value == 'not ok') {
+                                              handleClickNotOke(i, true);
+                                            } else {
+                                              handleClickNotOke(i, false);
+                                            }
+                                          }}
+                                          className={`  ${(i + 1) % 2 === 0
+                                            ? ' bg-[#F3F3F3]'
+                                            : 'bg-white'
+                                            } `}
+                                          type="radio"
+                                          id="ok12"
+                                          value="ok (toleransi)"
+                                          name={`hasil ${i}`}
+                                        />
+                                        <img src={oktole} alt="" className="w-4" />
+                                        <label className="">OK (Toleransi)</label>
+                                      </div>
+                                      <div className="flex gap-1 w-full">
+                                        <input
+                                          onChange={(e) => {
+                                            handleChangePointDefect(e, index, i);
+                                            if (e.target.value == 'not ok') {
+                                              handleClickNotOke(i, true);
+                                            } else {
+                                              handleClickNotOke(i, false);
+                                            }
+                                          }}
+                                          className={`  ${(i + 1) % 2 === 0
+                                            ? ' bg-[#F3F3F3]'
+                                            : 'bg-white'
+                                            } `}
+                                          type="radio"
+                                          id="ok12"
+                                          value="not ok"
+                                          name={`hasil ${i}`}
+                                        />
+                                        <img src={notok} alt="" className="w-4" />
+                                        <label className="">Not OK</label>
+                                      </div>
+                                      <div className="flex gap-1 w-full">
+                                        <input
+                                          onChange={(e) => {
+                                            handleChangePointDefect(e, index, i);
+                                            if (e.target.value == 'not ok') {
+                                              handleClickNotOke(i, true);
+                                            } else {
+                                              handleClickNotOke(i, false);
+                                            }
+                                          }}
+                                          className={`  ${(i + 1) % 2 === 0
+                                            ? ' bg-[#F3F3F3]'
+                                            : 'bg-white'
+                                            } `}
+                                          type="radio"
+                                          id="ok12"
+                                          value="-"
+                                          name={`hasil ${i}`}
+                                        />
+                                        <label className="">-</label>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </>
                               ) : null}
 
                               {/* {data.status == 'done' &&
@@ -1049,12 +1138,12 @@ function CheckSheetCetakPeriode() {
                               ) : null} */}
 
                               {showNotOk[i] == true &&
-                              data.status == 'on progress' ? (
+                                data.status == 'on progress' ? (
                                 <input
                                   type="text"
                                   name="jumlah_defect"
                                   onChange={(e) =>
-                                    handleChangePointDefect(e, index, i)
+                                    handleChangePointHasil(e, index, i)
                                   }
                                   className="text-sm font-semibold w-[90%] border-stroke border"
                                 ></input>
@@ -1066,7 +1155,7 @@ function CheckSheetCetakPeriode() {
                                   defaultValue={data2.jumlah_defect}
                                   disabled
                                   onChange={(e) =>
-                                    handleChangePointDefect(e, index, i)
+                                    handleChangePointHasil(e, index, i)
                                   }
                                   className="text-sm font-semibold w-[90%] border-stroke border"
                                 ></input>
@@ -1308,59 +1397,14 @@ function CheckSheetCetakPeriode() {
               },
             )}
 
-            <div className="flex flex-col  bg-[#f3f3f3] w-[200px] px-2 py-2">
-              <div className="flex w-full justify-center">
-                <p className="text-black text-sm font-semibold">C1.1</p>
-              </div>
-              <div className="flex flex-col w-full">
-                <div className="flex gap-1 w-full">
-                  <input
-                    type="radio"
-                    id="ok11"
-                    value="ok"
-                    name="line_clearance"
-                  />
-                  <img src={ok} alt="" className="w-4" />
-                  <label className="">OK</label>
-                </div>
-                <div className="flex gap-1 w-full">
-                  <input
-                    type="radio"
-                    id="ok12"
-                    value="ok (toleransi)"
-                    name="line_clearance"
-                  />
-                  <img src={oktole} alt="" className="w-4" />
-                  <label className="">OK (Toleransi)</label>
-                </div>
-                <div className="flex gap-1 w-full">
-                  <input
-                    type="radio"
-                    id="ok12"
-                    value="not ok"
-                    name="line_clearance"
-                  />
-                  <img src={notok} alt="" className="w-4" />
-                  <label className="">Not OK</label>
-                </div>
-                <div className="flex gap-1 w-full">
-                  <input
-                    type="radio"
-                    id="ok12"
-                    value="-"
-                    name="line_clearance"
-                  />
-                  <label className="">-</label>
-                </div>
-              </div>
-            </div>
+
           </div>
           {(!isOnprogres &&
             cetakMesinPeriode?.status == 'incoming' &&
             cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status ==
-              'incoming') ||
-          (cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status == 'pending' &&
-            cetakMesinPeriode?.status == 'incoming') ? (
+            'incoming') ||
+            (cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status == 'pending' &&
+              cetakMesinPeriode?.status == 'incoming') ? (
             <>
               <button
                 disabled={isLoading}
@@ -1392,8 +1436,8 @@ function CheckSheetCetakPeriode() {
               {(!isOnprogres &&
                 cetakMesinPeriode?.status == 'incoming' &&
                 cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status ==
-                  'incoming') ||
-              cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status ==
+                'incoming') ||
+                cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status ==
                 'pending' ? (
                 <textarea
                   onChange={(e) => setCatatan(e.target.value)}
@@ -1425,8 +1469,8 @@ function CheckSheetCetakPeriode() {
               {(!isOnprogres &&
                 cetakMesinPeriode?.status == 'incoming' &&
                 cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status ==
-                  'incoming') ||
-              cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status ==
+                'incoming') ||
+                cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status ==
                 'pending' ? (
                 <button
                   onClick={() => {

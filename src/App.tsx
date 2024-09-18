@@ -129,6 +129,13 @@ import CapaLaporMR from './pages/MR/Lapor/Capa/CapaLaporQC';
 import ProsesPotongFIX from './pages/QualityControl/ProsesPotongFix/ProsesPotongFix';
 import PotongBahanCheck from './pages/QualityControl/ProsesPotongFix/PotongBahan';
 import PotongJadiCheck from './pages/QualityControl/ProsesPotongFix/PotongJadi';
+import IncomingOutsourcing from './pages/QualityControl/incomingOutsourcing/IncomingOutsourcing';
+import OutsourcingAwal from './pages/QualityControl/incomingOutsourcing/outsourcingAwal';
+import ProsesPraplate from './pages/QualityControl/ProsesPraplate/ProsesPraplate';
+import ChecksheetPraplate from './components/Tables/QualityControl/QualityInspection/ProsesPraplate/ChekcsheetPraplate';
+import ChecksheetPralatePage from './pages/QualityControl/ProsesPraplate/ChecksheetPraplate';
+import ProsesLipat from './pages/QualityControl/ProsesLipat/ProsesLipat';
+import ChecksheetLipatPage from './pages/QualityControl/ProsesLipat/ChecksheetLipat';
 
 
 function App() {
@@ -790,6 +797,50 @@ function App() {
           }
         />
         <Route
+          path="/qc/qualityinspection/praplate"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesPraplate />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/praplate/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ChecksheetPralatePage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lipat"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesLipat />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lipat/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ChecksheetLipatPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/qc/qualityinspection/lem"
           element={
             <>
@@ -800,28 +851,29 @@ function App() {
             </>
           }
         />
-        {/* <Route
-          path="/qc/qualityinspection/barang_rusak_sebagian"
+
+        <Route
+          path="/qc/qualityinspection/incoming_outsourcing"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <BarangRusakSebagian />
+                <IncomingOutsourcing />
               </ProtectedRoute>
             </>
           }
         />
         <Route
-          path="/qc/qualityinspection/barang_rusak_sebagian/checksheetAwal/:id"
+          path="/qc/qualityinspection/incoming_outsourcing/checkAwal/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <RusakSebagianAwal />
+                <OutsourcingAwal />
               </ProtectedRoute>
             </>
           }
-        /> */}
+        />
         <Route
           path="/qc/qualityinspection/sampling_hasil_rabut"
           element={
