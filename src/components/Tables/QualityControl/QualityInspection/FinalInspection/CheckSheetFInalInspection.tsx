@@ -33,7 +33,7 @@ function ChecksheetFinalInspection() {
       setFinalInspection(res.data.data);
       console.log(res.data);
     } catch (error: any) {
-      console.log(error.data.msg);
+      console.log(error);
     }
   }
 

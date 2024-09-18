@@ -4,6 +4,7 @@ import Arrow from '../../../../images/icon/arrowDown.svg';
 import Filter from '../../../../images/icon/filter.svg';
 import ModalNCR4xl from '../../../Modals/Qc/NCR/ModalNCR4xl';
 import Loading from '../../../Loading';
+import Select from 'react-select'
 
 function NcrDibuatMTC() {
 
@@ -12,7 +13,8 @@ function NcrDibuatMTC() {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
     };
     useEffect(() => {
-
+        getDepartment()
+        getjoReal()
         getMe()
         handleResize();
 
@@ -30,6 +32,7 @@ function NcrDibuatMTC() {
 
     const [ncr, setNcr] = useState([
         {
+            id_department: 0,
             department: '',
             ketidaksesuaian: [
                 {
@@ -46,6 +49,7 @@ function NcrDibuatMTC() {
         setNcr([
             ...ncr,
             {
+                id_department: 0,
                 department: '',
                 ketidaksesuaian: [
                     {
@@ -106,6 +110,9 @@ function NcrDibuatMTC() {
             const res = await axios.post(
                 url,
                 {
+                    nama_pelapor: namaPelapor,
+                    id_pelapor: idpelapor,
+                    department_pelapor: departmentPelapor,
                     no_jo: noJO,
                     kategori_laporan: kategori,
                     no_io: noIO,
@@ -155,7 +162,12 @@ function NcrDibuatMTC() {
         }
     }
 
+
     const [me, setMe] = useState<any>();
+    const [idpelapor, setidpelapor] = useState<any>();
+    const [namaPelapor, setnamaPelapor] = useState<any>();
+    const [departmentPelapor, setdepartmentPelapor] = useState<any>();
+
     async function getMe() {
         const url = `${import.meta.env.VITE_API_LINK}/me`;
         try {
@@ -164,9 +176,43 @@ function NcrDibuatMTC() {
             });
 
             setMe(res.data);
+            setnamaPelapor(res.data.nama)
+            setidpelapor(res.data.id)
+            setdepartmentPelapor(res.data.bagian)
             getNcrID(res.data.id);
         } catch (error: any) {
             console.log(error.data.msg);
+        }
+    }
+
+    const [department, setDepartment] = useState<any>();
+
+    async function getDepartment() {
+        const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-departmen`;
+        try {
+            const res = await axios.get(url, {
+
+            });
+
+            console.log(res.data)
+            setDepartment(res.data)
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+    const [joReal, setjoReal] = useState<any>();
+
+    async function getjoReal() {
+        const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-jo-realtime `;
+        try {
+            const res = await axios.get(url, {
+
+            });
+
+            console.log(res.data)
+            setjoReal(res.data.data)
+        } catch (error: any) {
+            console.log(error);
         }
     }
 
@@ -283,22 +329,47 @@ function NcrDibuatMTC() {
                                                                 <p className='font-bold'>
                                                                     No. JO
                                                                 </p>
-                                                                <input
-                                                                    onChange={(e) => setNoJO(e.target.value)}
-                                                                    type="text" placeholder='Nomor JO' className='bg-white border border-stroke rounded-md h-7 pl-4' ></input>
+                                                                <select
+
+                                                                    // options={formattedOptions}
+                                                                    name="noJO"
+                                                                    onChange={(e) => {
+
+                                                                        setNoJO(e.target.value)
+                                                                    }}
+                                                                    className={`relative z-20 w-full appearance-none rounded-md border border-stroke bg-transparent py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white}`}
+                                                                >
+                                                                    {joReal?.map((data: any, i: number) => {
+
+                                                                        return (
+                                                                            <option
+                                                                                value={data.e_no_jo}
+                                                                                className="text-gray-800 text-xs font-light dark:text-bodydark"
+                                                                            >
+                                                                                {data.e_no_jo}
+                                                                            </option>
+                                                                        )
+                                                                    }
+                                                                    )}
+
+                                                                </select >
                                                                 <p className='font-bold pt-2'>
                                                                     No. Io
                                                                 </p>
                                                                 <input
                                                                     onChange={(e) => setNoIO(e.target.value)}
-                                                                    type="text" placeholder='Nomor IO' className='bg-white border border-stroke rounded-md h-7 pl-4' ></input>
+                                                                    type="text" placeholder='Nomor IO' className='bg-white border border-stroke rounded-md h-7 pl-4' >
+
+                                                                </input>
 
                                                                 <p className='font-bold pt-2'>
                                                                     PRODUK
                                                                 </p>
                                                                 <input
                                                                     onChange={(e) => setProduk(e.target.value)}
-                                                                    type="text" placeholder='Nama Produk' className='bg-white border border-stroke rounded-md h-7 pl-4' ></input>
+                                                                    type="text" placeholder='Nama Produk' className='bg-white border border-stroke rounded-md h-7 pl-4' >
+
+                                                                </input>
                                                             </div>
 
                                                         </div>
@@ -319,6 +390,12 @@ function NcrDibuatMTC() {
                                                     + DEPARTEMENT
                                                 </button>
                                                 {ncr.map((data: any, i: number) => {
+
+                                                    const formattedOptions = department?.map((item: any) => ({
+                                                        value: item.id, // Handle potential variations in "value" property
+                                                        label: item.name, // Handle potential variations in "label" property
+                                                    }));
+
                                                     return (
                                                         <>
 
@@ -343,56 +420,36 @@ function NcrDibuatMTC() {
 
                                                                         </div>
 
-                                                                        <div className="relative w-full z-20 h-7 bg-white dark:bg-form-input  pt-1 ">
-                                                                            <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                                                                <svg
-                                                                                    width="20"
-                                                                                    height="20"
-                                                                                    viewBox="0 0 20 20"
-                                                                                    fill="none"
-                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                >
+                                                                        <div className="relative w-full z-20 bg-white dark:bg-form-input  pt-1 ">
 
-                                                                                </svg>
-                                                                            </span>
 
                                                                             <select
+
+                                                                                // options={formattedOptions}
                                                                                 name="department"
-                                                                                onChange={(e) => handleChangePoint(e, i)}
-                                                                                className={`relative z-20 w-full bg-white border border-stroke appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  }`}>
-                                                                                <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                                                                    Pilih Departemen
-                                                                                </option>
+                                                                                onChange={(e) => {
 
-                                                                                <option value="maintenance" className="text-[#646464] text-xs dark:text-bodydark">
-                                                                                    Maintenance
-                                                                                </option>
-                                                                                <option value="qc" className="text-[#646464] text-xs dark:text-bodydark">
-                                                                                    Quality Control
-                                                                                </option>
-                                                                                <option value="mr" className="text-[#646464] text-xs dark:text-bodydark">
-                                                                                    MR
-                                                                                </option>
-                                                                            </select>
+                                                                                    handleChangePoint(e, i)
+                                                                                }}
+                                                                                className={`relative z-20 w-full appearance-none rounded-md border border-stroke bg-transparent py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white
+                                                                                    }`}
+                                                                            >
+                                                                                {department?.map((data: any, i: number) => {
 
-                                                                            <span className="absolute top-[18px] right-4 z-30 -translate-y-1/2">
-                                                                                <svg
-                                                                                    width="24"
-                                                                                    height="24"
-                                                                                    viewBox="0 0 24 24"
-                                                                                    fill="none"
-                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                >
-                                                                                    <g opacity="0.8">
-                                                                                        <path
-                                                                                            fillRule="evenodd"
-                                                                                            clipRule="evenodd"
-                                                                                            d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                                                                            fill="#637381"
-                                                                                        ></path>
-                                                                                    </g>
-                                                                                </svg>
-                                                                            </span>
+                                                                                    return (
+                                                                                        <option
+                                                                                            value={data.name}
+                                                                                            className="text-gray-800 text-xs font-light dark:text-bodydark"
+                                                                                        >
+                                                                                            {data.name}
+                                                                                        </option>
+                                                                                    )
+                                                                                }
+                                                                                )}
+
+                                                                            </select >
+
+
 
                                                                         </div>
 
@@ -455,7 +512,7 @@ function NcrDibuatMTC() {
                                                             )}
                                                             <button
                                                                 onClick={() => handleAddPointTask(i)}
-                                                                className=" w-[45%] h-8 mt-2 rounded-md bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
+                                                                className=" w-[45%] h-8 mt-2 rounded-md bg-blue-600 text-white text-sm font-bold justify-center items-center px-1 py-2 hover:cursor-pointer"
                                                             >
                                                                 + KETIDAKSESUAIAN
                                                             </button>

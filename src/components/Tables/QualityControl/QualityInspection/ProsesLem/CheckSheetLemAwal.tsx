@@ -6,6 +6,7 @@ import convertDateToTime from '../../../../../utils/converDateToTime';
 import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import Loading from '../../../../Loading';
+import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 
 function CheckSheetLemAwal() {
   const { id } = useParams();
@@ -14,7 +15,7 @@ function CheckSheetLemAwal() {
 
   const [cetakMesinAwal, setCetakMesinAwal] = useState<any>();
   const [jenisLem, setJenisLem] = useState<any>();
-
+  const [cetakMesinAwalHistory, setCetakMesinAwalHistory] = useState<any>();
 
   const [array, setArray] = useState<any>();
 
@@ -30,6 +31,7 @@ function CheckSheetLemAwal() {
       });
       setArray
       setCetakMesinAwal(res.data.data);
+      setCetakMesinAwalHistory(res.data.history)
       console.log(res.data.data);
     } catch (error: any) {
       console.log(error.data.msg);
@@ -175,35 +177,286 @@ function CheckSheetLemAwal() {
   const tanggal = convertTimeStampToDateOnly(cetakMesinAwal?.tanggal);
   const jam = convertDateToTime(cetakMesinAwal?.tanggal);
 
+  const tanggalHistory = convertTimeStampToDateOnly(cetakMesinAwalHistory?.tanggal);
+  const jamHistory = convertDateToTime(cetakMesinAwalHistory?.tanggal);
+
   const jumlahWaktuCheck = formatElapsedTime(
     cetakMesinAwal?.inspeksi_lem_awal[0].waktu_check,
   );
 
 
   const isOnprogres = cetakMesinAwal?.inspeksi_lem_awal[0].inspeksi_lem_awal_point.some((data: { status: any; }) => data?.status === 'on progress')
+  const [showHistory, setShowHistory] = useState(false);
+  const openModalHistory = () => setShowHistory(true);
+  const closeModalHistory = () => setShowHistory(false);
 
   return (
     <>
       {!isMobile && (
         <main className="overflow-x-hidden">
           <div className="min-w-[700px] bg-white rounded-xl">
-            <p className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z"
-                  fill="#0065DE"
-                />
-              </svg>{' '}
-              Printing Checksheet
-            </p>
+            <div className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12 justify-between">
+              <div className='flex'>
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z"
+                    fill="#0065DE"
+                  />
+                </svg>{' '}
+                Checksheet
+              </div>
+              <div className='text-[14px] font-semibold '>
+
+                <button
+                  onClick={() => openModalHistory()}
+                  className="  rounded-sm  text-sm text-blue-500 font-bold justify-center items-center px-4  hover:cursor-pointer"
+                >
+                  HISTORY PENGISIAN
+                </button>
+                {showHistory == true && (
+                  <>
+                    <ModalKosongan
+                      isOpen={showHistory}
+                      onClose={() => closeModalHistory()}
+                      judul={'History Pengisian'}
+                    >
+                      <>
+
+                        <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
+                          <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Tanggal
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jumlah
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jenis Lem
+                            </label>
+                          </div>
+                          <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {tanggal}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {cetakMesinAwalHistory?.jumlah_pcs}
+                            </label>
+
+
+                            <div className="flex gap-1 font-semibold">
+                              :
+                              <input
+                                type="text"
+                                disabled
+                                defaultValue={cetakMesinAwalHistory?.jenis_lem}
+                                onChange={(e) => {
+                                  setJenisLem(e.target.value)
+
+                                }}
+                              />
+                            </div>
+
+                          </div>
+
+                          <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jam
+                            </label>
+
+                            <label className="text-neutral-500 text-sm font-semibold"></label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              No. JO / IO
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Nama Produk
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Customer
+                            </label>
+                          </div>
+                          <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {jam}
+                            </label>
+
+                            <label className="text-neutral-500 text-sm font-semibold"></label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {cetakMesinAwalHistory?.no_jo}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {cetakMesinAwalHistory?.nama_produk}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {cetakMesinAwalHistory?.customer}
+                            </label>
+                          </div>
+                          <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Shift
+                            </label>
+
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Mesin
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Operator
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Status
+                            </label>
+                          </div>
+                          <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {cetakMesinAwalHistory?.shift}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {cetakMesinAwalHistory?.mesin}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {cetakMesinAwalHistory?.operator}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {cetakMesinAwalHistory?.status}
+                            </label>
+                          </div>
+                        </div>
+                        {cetakMesinAwalHistory?.inspeksi_lem_awal[0]?.inspeksi_lem_awal_point?.map(
+                          (data: any, index: number) => {
+                            const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
+                            return (
+                              <>
+                                <div className="flex flex-col py-6 px-10 border-b-8 border-[#D8EAFF]">
+                                  <div className=" px-3   gap-2">
+                                    <label className="text-neutral-500 text-sm font-semibold ">
+                                      PENGECEKAN AWAL {index + 1}
+                                    </label>
+                                  </div>
+                                  <div className="grid grid-cols-8 px-3 pt-4  gap-2">
+                                    <div className="flex flex-col col-span-2">
+                                      <label className="text-neutral-500 text-sm font-semibold ">
+                                        Inspektor
+                                      </label>
+                                      <label className="text-neutral-500 text-sm font-semibold ">
+                                        {data.inspektor?.nama}
+                                      </label>
+                                    </div>
+
+                                    <div className="flex flex-col col-span-2">
+                                      <div>
+                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                          Time : {lamaPengerjaan}
+                                        </p>
+
+                                      </div>
+                                    </div>
+
+
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-7 border-b-8 border-[#D8EAFF]">
+                                  <div className="grid py-4 bg-white items-center">
+                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                      LINE CLEARANCE
+                                    </label>
+                                  </div>
+                                  <div className="grid py-4 bg-[#f3f3f3] items-center">
+                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                      POSISI LEM
+                                    </label>
+                                  </div>
+                                  <div className="grid py-4 bg-white items-center">
+                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                      DAYA REKAT
+                                    </label>
+                                  </div>
+                                  <div className="grid py-4 bg-[#f3f3f3] items-center">
+                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                      POSISI LIPATAN
+                                    </label>
+                                  </div>
+                                  <div className="grid py-4 bg-white items-center">
+                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                      KUNCIAN LOCK BOTTOM
+                                    </label>
+                                  </div>
+                                  <div className="grid py-4 bg-[#f3f3f3] items-center">
+                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                      BENTUK JADI
+                                    </label>
+                                  </div>
+
+                                  <div className="grid py-4 bg-white items-center">
+                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                      KEBERSIHAN
+                                    </label>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-7 border-b-8 border-[#D8EAFF]">
+                                  <div className="grid py-4 bg-white items-center justify-center">
+                                    <>
+                                      <label className="pl-2">
+                                        {data.line_clearance}
+                                      </label>
+                                    </>
+                                  </div>
+
+                                  <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                    <>
+                                      <label className="pl-2">{data.posisi_lem}</label>
+                                    </>
+                                  </div>
+                                  <div className="grid py-4 bg-white items-center justify-center">
+                                    <>
+                                      <label className="pl-2">{data.daya_rekat}</label>
+                                    </>
+                                  </div>
+                                  <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                    <>
+                                      <label className="pl-2">
+                                        {data.posisi_lipatan}
+                                      </label>
+                                    </>
+                                  </div>
+                                  <div className="grid py-4 bg-white items-center justify-center">
+                                    <>
+                                      <label className="pl-2">
+                                        {data.kuncian_lock_bottom}
+                                      </label>
+                                    </>
+                                  </div>
+                                  <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                    <>
+                                      <label className="pl-2">{data.bentuk_jadi}</label>
+                                    </>
+                                  </div>
+                                  <div className="grid py-4 bg-white items-center justify-center">
+                                    <>
+                                      <label className="pl-2">{data.kebersihan}</label>
+                                    </>
+                                  </div>
+                                </div>
+
+                              </>
+                            );
+                          },
+                        )}
+                      </>
+                    </ModalKosongan>
+                  </>
+                )}
+
+              </div>
+
+            </div>
 
             <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
               <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">

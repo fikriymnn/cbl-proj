@@ -11,6 +11,7 @@ import oktole from '../../../../../images/icon/okToleransiQC.svg';
 import notok from '../../../../../images/icon/notOKQC.svg';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import Loading from '../../../../Loading';
+import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 
 function CheckSheetLemPeriode() {
   const { id } = useParams();
@@ -26,6 +27,7 @@ function CheckSheetLemPeriode() {
   const [sumberMasalah, setSumberMasalah] = useState<any>();
   const [jenisLem, setJenisLem] = useState<any>();
   const [openGuide, setOpenGuide] = useState(null);
+  const [LemMesinPeriodeHistory, setLemMesinPeriodeHistory] = useState<any>();
   const handleClickGuide = (index: any) => {
     setOpenGuide((prevState: any) => {
       return prevState === index ? null : index;
@@ -66,7 +68,8 @@ function CheckSheetLemPeriode() {
 
       setLemMesinPeriode(res.data.data);
       setLemMesinPeriodeDefect(res.data.defect);
-      console.log(res.data.data);
+      setLemMesinPeriodeHistory(res.data.history)
+      console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
     }
@@ -243,6 +246,9 @@ function CheckSheetLemPeriode() {
   const tanggal = convertTimeStampToDateOnly(LemMesinPeriode?.tanggal);
   const jam = convertDateToTime(LemMesinPeriode?.tanggal);
 
+  const tanggalHistory = convertTimeStampToDateOnly(LemMesinPeriodeHistory?.tanggal);
+  const jamHistory = convertDateToTime(LemMesinPeriodeHistory?.tanggal);
+
   const jumlahWaktuCheck = formatElapsedTime(
     LemMesinPeriode?.inspeksi_lem_awal[0].waktu_check,
   );
@@ -255,28 +261,283 @@ function CheckSheetLemPeriode() {
 
 
   const isOnprogres = LemMesinPeriode?.inspeksi_lem_periode[0].inspeksi_lem_periode_point.some((data: { status: any; }) => data?.status === 'on progress')
+  const [showHistory, setShowHistory] = useState(false);
+  const openModalHistory = () => setShowHistory(true);
+  const closeModalHistory = () => setShowHistory(false);
+
   return (
     <>
       {!isMobile && (
         <main className="overflow-x-hidden">
           <div className="min-w-[700px] bg-white rounded-xl">
-            <p className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z"
-                  fill="#0065DE"
-                />
-              </svg>{' '}
-              Printing Checksheet
-            </p>
+            <div className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12 justify-between">
+              <div className='flex'>
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z"
+                    fill="#0065DE"
+                  />
+                </svg>{' '}
+                Printing Checksheet
+              </div>
+              <div className='text-[14px] font-semibold '>
+
+                <button
+                  onClick={() => openModalHistory()}
+                  className="  rounded-sm  text-sm text-blue-500 font-bold justify-center items-center px-4  hover:cursor-pointer"
+                >
+                  HISTORY PENGISIAN
+                </button>
+                {showHistory == true && (
+                  <>
+                    <ModalKosongan
+                      isOpen={showHistory}
+                      onClose={() => closeModalHistory()}
+                      judul={'History Pengisian'}
+                    >
+                      <>
+                        <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
+                          <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Tanggal
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jumlah
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jumlah Pcs
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jenis Lem
+                            </label>
+                          </div>
+                          <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {tanggalHistory}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {LemMesinPeriodeHistory?.jumlah}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {LemMesinPeriodeHistory?.jumlah_pcs}
+                            </label>
+
+
+                            <div className="flex gap-1 font-semibold">
+                              :{' '}
+                              <input
+                                type="text"
+                                disabled
+                                defaultValue={LemMesinPeriodeHistory.jenis_lem}
+                                onChange={(e) => setJenisLem(e.target.value)}
+                              />
+                            </div>
+
+                          </div>
+
+                          <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jam
+                            </label>
+
+                            <label className="text-neutral-500 text-sm font-semibold"></label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              No. JO / IO
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Nama Produk
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Customer
+                            </label>
+                          </div>
+                          <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {jamHistory}
+                            </label>
+
+                            <label className="text-neutral-500 text-sm font-semibold"></label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {LemMesinPeriodeHistory?.no_jo}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {LemMesinPeriodeHistory?.nama_produk}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {LemMesinPeriodeHistory?.customer}
+                            </label>
+                          </div>
+                          <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Shift
+                            </label>
+
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Mesin
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Operator
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Status
+                            </label>
+                          </div>
+                          <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {LemMesinPeriodeHistory?.shift}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {LemMesinPeriodeHistory?.mesin}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {LemMesinPeriodeHistory?.operator}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {LemMesinPeriodeHistory?.status}
+                            </label>
+                          </div>
+                        </div>
+
+                        {LemMesinPeriodeHistory?.inspeksi_lem_periode[0]?.inspeksi_lem_periode_point?.map(
+                          (data: any, index: number) => {
+                            const waktuSampling = convertDateToTime(data.waktu_mulai);
+                            const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
+                            return (
+                              <>
+
+                                <div className='border-b-8 border-[#D8EAFF]'>
+
+
+                                  <div className="flex px-5 py-5 gap-7">
+                                    <label className="text-sm font-semibold">
+                                      {index + 1}
+                                    </label>
+                                    <div className="flex flex-col gap-1">
+                                      <label className="text-sm font-semibold">
+                                        INSPEKTOR
+                                      </label>
+                                      <label className="text-sm font-semibold">
+                                        {data.inspektor?.nama}
+                                      </label>
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                      <label className="text-sm font-semibold">
+                                        WAKTU SAMPLING
+                                      </label>
+                                      <label className="text-sm font-semibold">
+                                        {waktuSampling}
+                                      </label>
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                      <label className="text-sm font-semibold">
+                                        NUMERATOR<span className="text-red-600">*</span>
+                                      </label>
+
+                                      <input
+                                        type="text"
+                                        disabled
+                                        defaultValue={data.numerator}
+                                        name="numerator"
+
+                                        className="text-sm font-semibold w-[90%] border-stroke border"
+                                      ></input>
+
+                                    </div>
+
+                                    <div className="flex flex-col gap-1">
+                                      <label className="text-sm font-semibold">
+                                        JUMLAH SAMPLING<span className="text-red-600">*</span>
+                                      </label>
+
+                                      <input
+                                        type="text"
+                                        defaultValue={data.jumlah_sampling}
+                                        disabled
+                                        name="jumlah_sampling"
+
+                                        className="text-sm font-semibold w-[90%] border-stroke border"
+                                      ></input>
+
+                                    </div>
+
+                                    <>
+                                      <div>
+                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                          Lama Pengerjaan :
+                                        </p>
+                                        {lamaPengerjaan}
+                                      </div>
+                                    </>
+                                  </div>
+                                  <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF]">
+                                    {data.inspeksi_lem_periode_defect?.map(
+                                      (data2: any, i: number) => {
+                                        return (
+                                          <div
+                                            className={`flex flex-col min-w-[120px] justify-center py-4 ${(i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
+                                              } items-center gap-2`}
+                                          >
+                                            <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                              {data2.kode}
+                                            </label>
+
+
+                                            <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                              {data2.hasil}
+                                            </label>
+
+                                            <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                              {data2.jumlah_defect}
+                                            </label>
+
+                                          </div>
+                                        );
+                                      },
+                                    )}
+
+
+                                  </div>
+
+                                  <div>
+
+                                  </div>
+                                </div>
+
+                              </>
+                            );
+                          },
+                        )}
+                        <div className="flex w-full min-w-[700px]  items-center  px-4 py-4 gap-5 bg-white  mt-2">
+                          {lemMesinPeriodeDefect?.map((data: any, index: number) => {
+                            return (
+                              <div className="flex flex-col max-w-45 overflow-x-scroll">
+                                <label>Kode: </label>
+                                <label>{data.kode}</label>
+                                <label>Total Defect: </label>
+                                <label>{data.total_defect}</label>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+                    </ModalKosongan>
+                  </>
+                )}
+
+              </div>
+
+            </div>
+
+
+
 
             <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
               <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">
@@ -401,7 +662,7 @@ function CheckSheetLemPeriode() {
               </div>
             </>
             <div className="">
-              {LemMesinPeriode?.inspeksi_lem_periode[0].inspeksi_lem_periode_point.map(
+              {LemMesinPeriode?.inspeksi_lem_periode[0]?.inspeksi_lem_periode_point?.map(
                 (data: any, index: number) => {
                   const waktuSampling = convertDateToTime(data.waktu_mulai);
                   const lamaPengerjaan = formatElapsedTime(
@@ -548,7 +809,7 @@ function CheckSheetLemPeriode() {
                             <p className="md:text-[14px] text-[9px] font-semibold">
                               Time : {lamaPengerjaan}
                             </p>
-                            {data.status == 'incoming' ? (
+                            {data.status == 'incoming' && LemMesinPeriode?.status == 'incoming' ? (
                               <>
                                 <p className="font-bold text-[#DE0000]">
                                   Task Belum Dimulai
@@ -617,7 +878,7 @@ function CheckSheetLemPeriode() {
                       </div>
 
                       <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF] items-center">
-                        {data.inspeksi_lem_periode_defect.map(
+                        {data.inspeksi_lem_periode_defect?.map(
                           (data2: any, i: number) => {
                             return (
                               <div
@@ -876,9 +1137,11 @@ function CheckSheetLemPeriode() {
               )}
             </div>
           </div>
-          {!isOnprogres &&
-            LemMesinPeriode?.inspeksi_lem_periode[0].status == 'incoming' ||
-            LemMesinPeriode?.inspeksi_lem_periode[0].status == 'pending' ? (
+          {(!isOnprogres &&
+            LemMesinPeriode?.status == 'incoming' &&
+            LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'incoming') ||
+            (LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' &&
+              LemMesinPeriode?.status == 'incoming') ? (
             <>
               <button
                 disabled={isLoading}
@@ -907,10 +1170,10 @@ function CheckSheetLemPeriode() {
               <label className=" text-[#6c6b6b] text-sm font-semibold">
                 Catatan<span className="text-red-500">*</span> :
               </label>
-              {LemMesinPeriode?.inspeksi_lem_periode[0].status ==
-                'incoming' ||
-                LemMesinPeriode?.inspeksi_lem_periode[0].status ==
-                'pending' ? (
+              {(!isOnprogres &&
+                LemMesinPeriode?.status == 'incoming' &&
+                LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'incoming') ||
+                LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' ? (
                 <textarea
                   onChange={(e) => setCatatan(e.target.value)}
                   className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
@@ -939,11 +1202,10 @@ function CheckSheetLemPeriode() {
                   PENDING
                 </button>
               ) : null}
-              {!isOnprogres &&
-                LemMesinPeriode?.inspeksi_lem_periode[0].status ==
-                'incoming' ||
-                LemMesinPeriode?.inspeksi_lem_periode[0].status ==
-                'pending' ? (
+              {(!isOnprogres &&
+                LemMesinPeriode?.status == 'incoming' &&
+                LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'incoming') ||
+                LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' ? (
                 <button
                   onClick={() => {
                     doneCekPeriode(LemMesinPeriode?.inspeksi_lem_periode[0].id);

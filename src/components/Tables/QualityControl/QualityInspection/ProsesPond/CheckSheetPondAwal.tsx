@@ -6,6 +6,7 @@ import convertDateToTime from '../../../../../utils/converDateToTime';
 import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import Loading from '../../../../Loading';
+import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 
 function CheckSheetPondAwal() {
   const { id } = useParams();
@@ -14,6 +15,7 @@ function CheckSheetPondAwal() {
   const [isMobile, setIsMobile] = useState(false);
 
   const [pondMesinAwal, setPondMesinAwal] = useState<any>();
+  const [pondMesinAwalHistory, setpondMesinAwalHistory] = useState<any>();
 
   useEffect(() => {
     getPondMesinAwal();
@@ -27,6 +29,7 @@ function CheckSheetPondAwal() {
       });
 
       setPondMesinAwal(res.data.data);
+      setpondMesinAwalHistory(res.data.history)
       console.log(res.data.data);
     } catch (error: any) {
       console.log(error.data.msg);
@@ -39,9 +42,8 @@ function CheckSheetPondAwal() {
     setPondMesinAwal(onchangeVal);
   };
   async function startTaskCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPondAwalPoint/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondAwalPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -70,9 +72,8 @@ function CheckSheetPondAwal() {
     riil: any,
     reforasi: any,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPondAwalPoint/stop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondAwalPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -101,9 +102,8 @@ function CheckSheetPondAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPondAwalPoint/create`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondAwalPoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -123,9 +123,8 @@ function CheckSheetPondAwal() {
   }
 
   async function doneCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPondAwal/done/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondAwal/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -143,9 +142,8 @@ function CheckSheetPondAwal() {
     }
   }
   async function pendingCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPondAwal/pending/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondAwal/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -163,6 +161,9 @@ function CheckSheetPondAwal() {
   const tanggal = convertTimeStampToDateOnly(pondMesinAwal?.tanggal);
   const jam = convertDateToTime(pondMesinAwal?.tanggal);
 
+  const tanggalHistory = convertTimeStampToDateOnly(pondMesinAwalHistory?.tanggal);
+  const jamHistory = convertDateToTime(pondMesinAwalHistory?.tanggal);
+
   const jumlahWaktuCheck = formatElapsedTime(
     pondMesinAwal?.inspeksi_pond_awal[0].waktu_check,
   );
@@ -172,28 +173,288 @@ function CheckSheetPondAwal() {
       (data: { status: any }) => data?.status === 'on progress',
     );
 
+  const [showHistory, setShowHistory] = useState(false);
+  const openModalHistory = () => setShowHistory(true);
+  const closeModalHistory = () => setShowHistory(false);
   return (
     <>
       {!isMobile && (
         <main className="overflow-x-hidden">
           <div className="min-w-[700px] bg-white rounded-xl">
-            <p className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z"
-                  fill="#0065DE"
-                />
-              </svg>{' '}
-              Printing Checksheet
-            </p>
+            <div className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12 justify-between">
+              <div className='flex'>
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z"
+                    fill="#0065DE"
+                  />
+                </svg>{' '}
+                Ponding Checksheet
+              </div>
+              <div className='text-[14px] font-semibold '>
+
+                <button
+                  onClick={() => openModalHistory()}
+                  className="  rounded-sm  text-sm text-blue-500 font-bold justify-center items-center px-4  hover:cursor-pointer"
+                >
+                  HISTORY PENGISIAN
+                </button>
+                {showHistory == true && (
+                  <>
+                    <ModalKosongan
+                      isOpen={showHistory}
+                      onClose={() => closeModalHistory()}
+                      judul={'History Pengisian'}
+                    >
+                      <>
+                        <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
+                          <div className="flex flex-col gap-2 col-span-2 pl-6 py-4 ">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Tanggal
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jumlah Druk
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jumlah Pcs
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jenis Kertas
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jenis Gramatur
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Warna
+                            </label>
+                          </div>
+                          <div className="flex flex-col gap-2 col-span-2  py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {tanggalHistory}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {pondMesinAwalHistory?.jumlah_druk}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {pondMesinAwalHistory?.jumlah_pcs}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {pondMesinAwalHistory?.jenis_kertas}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {pondMesinAwalHistory?.jenis_gramatur}
+                            </label>
+
+                            <div className="grid grid-cols-2">
+                              <label className="text-neutral-500 text-sm font-semibold flex">
+                                Depan
+                              </label>
+                              <label className="text-neutral-500 text-sm font-semibold">
+                                : {pondMesinAwalHistory?.warna_depan}
+                              </label>
+                            </div>
+                            <div className="grid grid-cols-2">
+                              <label className="text-neutral-500 text-sm font-semibold flex">
+                                Belakang
+                              </label>
+                              <label className="text-neutral-500 text-sm font-semibold">
+                                : {pondMesinAwalHistory?.warna_belakang}
+                              </label>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col  gap-2 col-span-2 justify-between px-10 py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jam
+                            </label>
+
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              No. JO / IO
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Nama Produk
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Customer
+                            </label>
+                          </div>
+                          <div className="flex flex-col  gap-2 col-span-2 justify-between px-2 py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {jamHistory}
+                            </label>
+
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {pondMesinAwalHistory?.no_jo}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {pondMesinAwalHistory?.nama_produk}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {pondMesinAwalHistory?.customer}
+                            </label>
+                          </div>
+                          <div className="flex flex-col  gap-2 col-span-2 justify-between px-10 py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Shift
+                            </label>
+
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Mesin
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Operator
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Status
+                            </label>
+                          </div>
+                          <div className="flex flex-col  gap-2 col-span-2 justify-between px-2 py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {pondMesinAwalHistory?.shift}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {pondMesinAwalHistory?.mesin}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {pondMesinAwalHistory?.operator}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {pondMesinAwalHistory?.status}
+                            </label>
+                          </div>
+                        </div>
+                        {pondMesinAwalHistory?.inspeksi_pond_awal[0]?.inspeksi_pond_awal_point?.map(
+                          (data: any, index: number) => {
+                            const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
+                            return (
+                              <>
+                                <div className="flex flex-col py-6 px-10 border-b-8 border-[#D8EAFF]">
+                                  <div className=" px-3   gap-2">
+                                    <label className="text-neutral-500 text-sm font-semibold ">
+                                      PENGECEKAN AWAL {index + 1}
+                                    </label>
+                                  </div>
+                                  <div className="grid grid-cols-8 px-3 pt-4  gap-2">
+                                    <div className="flex flex-col col-span-2">
+                                      <label className="text-neutral-500 text-sm font-semibold ">
+                                        Inspektor
+                                      </label>
+                                      <label className="text-neutral-500 text-sm font-semibold ">
+                                        {data.inspektor?.nama}
+                                      </label>
+                                    </div>
+
+                                    <div className="flex flex-col col-span-2">
+                                      <div>
+                                        <p className="md:text-[14px] text-[9px] font-semibold">
+                                          Time : {lamaPengerjaan}
+                                        </p>
+
+                                      </div>
+                                    </div>
+
+
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-7 border-b-8 border-[#D8EAFF]">
+                                  <div className="grid py-4 bg-[#f3f3f3] items-center">
+                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                      LINE CLEARANCE
+                                    </label>
+                                  </div>
+                                  <div className="grid py-4 bg-white items-center">
+                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                      REGISTER
+                                    </label>
+                                  </div>
+                                  <div className="grid py-4 bg-[#f3f3f3] items-center">
+                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                      KETAJAMAN
+                                    </label>
+                                  </div>
+                                  <div className="grid py-4 bg-white items-center">
+                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                      UKURAN
+                                    </label>
+                                  </div>
+                                  <div className="grid py-4 bg-[#f3f3f3] items-center">
+                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                      BENTUK JADI
+                                    </label>
+                                  </div>
+                                  <div className="grid py-4 bg-white items-center">
+                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                      RIIL
+                                    </label>
+                                  </div>
+                                  <div className="grid py-4 bg-[#f3f3f3] items-center">
+                                    <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                      REFORASI
+                                    </label>
+                                  </div>
+                                </div>
+
+                                <div className="grid grid-cols-7 border-b-8 border-[#D8EAFF]">
+                                  <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                    <>
+                                      <label className="pl-2">
+                                        {data.line_clearance}
+                                      </label>
+                                    </>
+                                  </div>
+                                  <div className="grid py-4 bg-white items-center justify-center">
+                                    <>
+                                      <label className="pl-2">{data.register}</label>
+                                    </>
+                                  </div>
+                                  <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                    <>
+                                      <label className="pl-2">{data.ketajaman}</label>
+                                    </>
+                                  </div>
+                                  <div className="grid py-4 bg-white items-center justify-center">
+                                    <>
+                                      <label className="pl-2">{data.ukuran}</label>
+                                    </>
+                                  </div>
+                                  <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                    <>
+                                      <label className="pl-2">{data.bentuk_jadi}</label>
+                                    </>
+                                  </div>
+                                  <div className="grid py-4 bg-white items-center justify-center">
+                                    <>
+                                      <label className="pl-2">{data.riil}</label>
+                                    </>
+                                  </div>
+                                  <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
+                                    <>
+                                      <label className="pl-2">{data.reforasi}</label>
+                                    </>
+                                  </div>
+                                </div>
+
+                              </>
+                            );
+                          },
+                        )}
+                      </>
+                    </ModalKosongan>
+                  </>
+                )}
+
+              </div>
+
+            </div>
+
 
             <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
               <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">
@@ -327,7 +588,7 @@ function CheckSheetPondAwal() {
                             </p>
                             <>
                               {data.status == 'incoming' &&
-                              pondMesinAwal?.status == 'incoming' ? (
+                                pondMesinAwal?.status == 'incoming' ? (
                                 <button
                                   onClick={() => startTaskCekAwal(data.id)}
                                   className="flex w-[50%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
@@ -627,7 +888,7 @@ function CheckSheetPondAwal() {
                           Catatan<span className="text-red-500">*</span> :
                         </label>
                         {data.status == 'on progress' &&
-                        pondMesinAwal?.status == 'incoming' ? (
+                          pondMesinAwal?.status == 'incoming' ? (
                           <textarea
                             name="catatan"
                             defaultValue={data.catatan}
@@ -646,7 +907,7 @@ function CheckSheetPondAwal() {
                       </div>
                       <div className="grid col-span-2 items-end justify-center">
                         {data.status == 'on progress' &&
-                        pondMesinAwal?.status == 'incoming' ? (
+                          pondMesinAwal?.status == 'incoming' ? (
                           <button
                             onClick={() => {
                               stopTaskCekAwal(
@@ -677,8 +938,8 @@ function CheckSheetPondAwal() {
           {(!isOnprogres &&
             pondMesinAwal?.status == 'incoming' &&
             pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming') ||
-          (pondMesinAwal?.inspeksi_pond_awal[0].status == 'pending' &&
-            pondMesinAwal?.status == 'incoming') ? (
+            (pondMesinAwal?.inspeksi_pond_awal[0].status == 'pending' &&
+              pondMesinAwal?.status == 'incoming') ? (
             <>
               <button
                 disabled={isLoading}
@@ -703,8 +964,8 @@ function CheckSheetPondAwal() {
             </label>
             <div className="grid col-span-6 items-end justify-end gap-2">
               {!isOnprogres &&
-              pondMesinAwal?.status == 'incoming' &&
-              pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ? (
+                pondMesinAwal?.status == 'incoming' &&
+                pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekAwal(pondMesinAwal?.inspeksi_pond_awal[0].id)
@@ -717,7 +978,7 @@ function CheckSheetPondAwal() {
               {(!isOnprogres &&
                 pondMesinAwal?.status == 'incoming' &&
                 pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming') ||
-              pondMesinAwal?.inspeksi_pond_awal[0].status == 'pending' ? (
+                pondMesinAwal?.inspeksi_pond_awal[0].status == 'pending' ? (
                 <button
                   onClick={() =>
                     doneCekAwal(pondMesinAwal?.inspeksi_pond_awal[0].id)
