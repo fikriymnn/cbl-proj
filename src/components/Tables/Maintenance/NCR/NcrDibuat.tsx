@@ -61,16 +61,18 @@ function NcrDibuatMTC() {
             },
         ]);
     };
-    interface DepartmentOption {
-        id: number;
-        name: string;
-    }
-
-    interface NCR {
-        id_department: number;
-        department: string;
-
-    }
+    const handleChangePointDepatment = (e: any, i: number) => {
+        const { name, value } = e.target;
+        const filteredData = department.find(
+            (item: any) => item.id == value,
+            // item.id.includes(parseInt(value));
+        );
+        console.log(filteredData);
+        const onchangeVal: any = [...ncr];
+        onchangeVal[i]['id_department'] = filteredData?.id_department;
+        onchangeVal[i]['department'] = filteredData?.department;
+        setNcr(onchangeVal);
+    };
 
 
     //add Point Task
@@ -442,8 +444,8 @@ function NcrDibuatMTC() {
                                                                                 onChange={(e) => {
 
                                                                                     {
-                                                                                        handleChangePoint(e, i)
-                                                                                        console.log([e.target.value])
+                                                                                        handleChangePointDepatment(e, i)
+
                                                                                     }
                                                                                 }}
                                                                                 className={`relative z-20 w-full appearance-none rounded-md border border-stroke bg-transparent py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white
