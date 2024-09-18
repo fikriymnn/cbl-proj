@@ -27,7 +27,14 @@ function CheckSheetPondPeriode() {
   const [sumberMasalah, setSumberMasalah] = useState<any>();
 
   const [pondMesinPeriodeHistory, setpondMesinPeriodeHistory] = useState<any>();
+  const [DataDepartment, setDataDepartment] = useState<any>();
 
+  const [Department, setDepartment] = useState([
+    {
+      id: 0,
+      department: '',
+    },
+  ]);
   const [openGuide, setOpenGuide] = useState(null);
   const handleClickGuide = (index: any) => {
     setOpenGuide((prevState: any) => {
@@ -57,7 +64,20 @@ function CheckSheetPondPeriode() {
   };
   useEffect(() => {
     getPondMesinPeriode();
+    getDepartment();
   }, []);
+
+  async function getDepartment() {
+    const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-departmen`;
+    try {
+      const res = await axios.get(url, {});
+
+      console.log(res.data);
+      setDataDepartment(res.data);
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
 
   async function getPondMesinPeriode() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPond/${id}`;
@@ -68,7 +88,7 @@ function CheckSheetPondPeriode() {
 
       setPondMesinPeriode(res.data.data);
       setPondMesinPeriodeDefect(res.data.defect);
-      setpondMesinPeriodeHistory(res.data.history)
+      setpondMesinPeriodeHistory(res.data.history);
       console.log(res.data.data);
     } catch (error: any) {
       console.log(error.data.msg);
@@ -76,8 +96,9 @@ function CheckSheetPondPeriode() {
   }
 
   async function startTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondPeriodePoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondPeriodePoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -102,8 +123,9 @@ function CheckSheetPondPeriode() {
     jumlah_sampling: any,
     data_defect: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondPeriodePoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondPeriodePoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -128,8 +150,9 @@ function CheckSheetPondPeriode() {
   }
 
   async function tambahTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondPeriodePoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondPeriodePoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -158,8 +181,9 @@ function CheckSheetPondPeriode() {
     sumberMasalah: any,
     index: number,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondPeriodePoint/createDefect`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondPeriodePoint/createDefect`;
     try {
       const res = await axios.post(
         url,
@@ -172,6 +196,7 @@ function CheckSheetPondPeriode() {
           kriteria: kriteria,
           persen_kriteria: persenKriteria,
           sumber_masalah: sumberMasalah,
+          department: Department,
         },
 
         {
@@ -185,14 +210,21 @@ function CheckSheetPondPeriode() {
       setKriteria(null);
       setPersenKriteria(null);
       setSumberMasalah(null);
+      setDepartment([
+        {
+          id: 0,
+          department: '',
+        },
+      ]);
       getPondMesinPeriode();
     } catch (error: any) {
       console.log(error);
     }
   }
   async function pendingCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondPeriode/pending/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondPeriode/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -208,8 +240,9 @@ function CheckSheetPondPeriode() {
     }
   }
   async function doneCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondPeriode/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondPeriode/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -224,6 +257,37 @@ function CheckSheetPondPeriode() {
       console.log(error);
     }
   }
+
+  //add Point
+  const handleAddPointDepartment = () => {
+    setDepartment([
+      ...Department,
+      {
+        id: 0,
+        department: '',
+      },
+    ]);
+  };
+
+  //change value point
+  const handleChangePointDepatment = (e: any, i: number) => {
+    const { name, value } = e.target;
+    const filteredData = DataDepartment.find(
+      (item: any) => item.id == value,
+      // item.id.includes(parseInt(value));
+    );
+
+    const onchangeVal: any = [...Department];
+    onchangeVal[i]['id'] = filteredData.id;
+    onchangeVal[i]['department'] = filteredData.name;
+    setDepartment(onchangeVal);
+  };
+
+  const handleDeletePointDepartment = (i: number) => {
+    const deleteVal: any = [...Department];
+    deleteVal.splice(i, 1);
+    setDepartment(deleteVal);
+  };
 
   const handleChangePoint = (e: any, i: number) => {
     const { name, value } = e.target;
@@ -245,9 +309,10 @@ function CheckSheetPondPeriode() {
   const tanggal = convertTimeStampToDateOnly(pondMesinPeriode?.tanggal);
   const jam = convertDateToTime(pondMesinPeriode?.tanggal);
 
-  const tanggalHistory = convertTimeStampToDateOnly(pondMesinPeriodeHistory?.tanggal);
+  const tanggalHistory = convertTimeStampToDateOnly(
+    pondMesinPeriodeHistory?.tanggal,
+  );
   const jamHistory = convertDateToTime(pondMesinPeriodeHistory?.tanggal);
-
 
   const jumlahWaktuCheck = formatElapsedTime(
     pondMesinPeriode?.inspeksi_pond_awal[0].waktu_check,
@@ -258,7 +323,10 @@ function CheckSheetPondPeriode() {
   const [showModal2, setShowModal2] = useState(false);
   const openModal2 = () => setShowModal2(true);
   const closeModal2 = () => setShowModal2(false);
-  const isOnprogres = pondMesinPeriode?.inspeksi_pond_periode[0].inspeksi_pond_periode_point.some((data: { status: any; }) => data?.status === 'on progress')
+  const isOnprogres =
+    pondMesinPeriode?.inspeksi_pond_periode[0].inspeksi_pond_periode_point.some(
+      (data: { status: any }) => data?.status === 'on progress',
+    );
 
   const [showHistory, setShowHistory] = useState(false);
   const openModalHistory = () => setShowHistory(true);
@@ -270,7 +338,7 @@ function CheckSheetPondPeriode() {
         <main className="overflow-x-hidden">
           <div className="min-w-[700px] bg-white rounded-xl">
             <div className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12 justify-between">
-              <div className='flex'>
+              <div className="flex">
                 <svg
                   width="24"
                   height="24"
@@ -287,8 +355,7 @@ function CheckSheetPondPeriode() {
                 </svg>{' '}
                 Ponding Checksheet
               </div>
-              <div className='text-[14px] font-semibold '>
-
+              <div className="text-[14px] font-semibold ">
                 <button
                   onClick={() => openModalHistory()}
                   className="  rounded-sm  text-sm text-blue-500 font-bold justify-center items-center px-4  hover:cursor-pointer"
@@ -367,7 +434,8 @@ function CheckSheetPondPeriode() {
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold"></label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {pondMesinPeriodeHistory?.no_jo} / {pondMesinPeriodeHistory?.no_io}
+                              : {pondMesinPeriodeHistory?.no_jo} /{' '}
+                              {pondMesinPeriodeHistory?.no_io}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {pondMesinPeriodeHistory?.nama_produk}
@@ -408,14 +476,15 @@ function CheckSheetPondPeriode() {
                         </div>
                         {pondMesinPeriodeHistory?.inspeksi_pond_periode[0]?.inspeksi_pond_periode_point?.map(
                           (data: any, index: number) => {
-                            const waktuSampling = convertDateToTime(data.waktu_mulai);
-                            const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
+                            const waktuSampling = convertDateToTime(
+                              data.waktu_mulai,
+                            );
+                            const lamaPengerjaan = formatElapsedTime(
+                              data.lama_pengerjaan,
+                            );
                             return (
                               <>
-
-                                <div className='border-b-8 border-[#D8EAFF]'>
-
-
+                                <div className="border-b-8 border-[#D8EAFF]">
                                   <div className="flex px-5 py-5 gap-7">
                                     <label className="text-sm font-semibold">
                                       {index + 1}
@@ -438,7 +507,8 @@ function CheckSheetPondPeriode() {
                                     </div>
                                     <div className="flex flex-col gap-1">
                                       <label className="text-sm font-semibold">
-                                        NUMERATOR<span className="text-red-600">*</span>
+                                        NUMERATOR
+                                        <span className="text-red-600">*</span>
                                       </label>
 
                                       <input
@@ -446,15 +516,14 @@ function CheckSheetPondPeriode() {
                                         disabled
                                         defaultValue={data.numerator}
                                         name="numerator"
-
                                         className="text-sm font-semibold w-[90%] border-stroke border"
                                       ></input>
-
                                     </div>
 
                                     <div className="flex flex-col gap-1">
                                       <label className="text-sm font-semibold">
-                                        JUMLAH SAMPLING<span className="text-red-600">*</span>
+                                        JUMLAH SAMPLING
+                                        <span className="text-red-600">*</span>
                                       </label>
 
                                       <input
@@ -462,10 +531,8 @@ function CheckSheetPondPeriode() {
                                         defaultValue={data.jumlah_sampling}
                                         disabled
                                         name="jumlah_sampling"
-
                                         className="text-sm font-semibold w-[90%] border-stroke border"
                                       ></input>
-
                                     </div>
 
                                     <>
@@ -482,13 +549,15 @@ function CheckSheetPondPeriode() {
                                       (data2: any, i: number) => {
                                         return (
                                           <div
-                                            className={`flex flex-col min-w-[120px] justify-center py-4 ${(i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
-                                              } items-center gap-2`}
+                                            className={`flex flex-col min-w-[120px] justify-center py-4 ${
+                                              (i + 1) % 2 === 0
+                                                ? ' bg-[#F3F3F3]'
+                                                : 'bg-white'
+                                            } items-center gap-2`}
                                           >
                                             <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                               {data2.kode}
                                             </label>
-
 
                                             <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                               {data2.hasil}
@@ -497,43 +566,37 @@ function CheckSheetPondPeriode() {
                                             <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                               {data2.jumlah_defect}
                                             </label>
-
                                           </div>
                                         );
                                       },
                                     )}
-
-
                                   </div>
 
-                                  <div>
-
-                                  </div>
+                                  <div></div>
                                 </div>
-
                               </>
                             );
                           },
                         )}
                         <div className="flex w-full min-w-[700px]  items-center  px-4 py-4 gap-5 bg-white  mt-2">
-                          {pondMesinPeriodeDefect?.map((data: any, index: number) => {
-                            return (
-                              <div className="flex flex-col max-w-45 overflow-x-scroll">
-                                <label>Kode: </label>
-                                <label>{data.kode}</label>
-                                <label>Total Defect: </label>
-                                <label>{data.total_defect}</label>
-                              </div>
-                            );
-                          })}
+                          {pondMesinPeriodeDefect?.map(
+                            (data: any, index: number) => {
+                              return (
+                                <div className="flex flex-col max-w-45 overflow-x-scroll">
+                                  <label>Kode: </label>
+                                  <label>{data.kode}</label>
+                                  <label>Total Defect: </label>
+                                  <label>{data.total_defect}</label>
+                                </div>
+                              );
+                            },
+                          )}
                         </div>
                       </>
                     </ModalKosongan>
                   </>
                 )}
-
               </div>
-
             </div>
 
             <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
@@ -854,8 +917,9 @@ function CheckSheetPondPeriode() {
                         (data2: any, i: number) => {
                           return (
                             <div
-                              className={`flex flex-col min-w-[120px] justify-center py-4  ${(i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
-                                } items-center gap-2`}
+                              className={`flex flex-col min-w-[120px] justify-center py-4  ${
+                                (i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
+                              } items-center gap-2`}
                             >
                               <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                 {data2.kode}
@@ -868,10 +932,11 @@ function CheckSheetPondPeriode() {
                                   onChange={(e) => {
                                     handleChangePointDefect(e, index, i);
                                   }}
-                                  className={`w-[80%]  ${(i + 1) % 2 === 0
-                                    ? ' bg-[#F3F3F3]'
-                                    : 'bg-white'
-                                    } `}
+                                  className={`w-[80%]  ${
+                                    (i + 1) % 2 === 0
+                                      ? ' bg-[#F3F3F3]'
+                                      : 'bg-white'
+                                  } `}
                                 >
                                   <option value={''} disabled>
                                     SELECT VALUE
@@ -893,10 +958,11 @@ function CheckSheetPondPeriode() {
                                       handleClickNotOke(i, false);
                                     }
                                   }}
-                                  className={`w-[80%]  ${(i + 1) % 2 === 0
-                                    ? ' bg-[#F3F3F3]'
-                                    : 'bg-white'
-                                    } `}
+                                  className={`w-[80%]  ${
+                                    (i + 1) % 2 === 0
+                                      ? ' bg-[#F3F3F3]'
+                                      : 'bg-white'
+                                  } `}
                                 >
                                   <option value={''} disabled selected>
                                     SELECT VALUE
@@ -909,7 +975,7 @@ function CheckSheetPondPeriode() {
                                 </select>
                               ) : null}
                               {showNotOk[i] == true &&
-                                data.status == 'on progress' ? (
+                              data.status == 'on progress' ? (
                                 <input
                                   type="text"
                                   name="jumlah_defect"
@@ -1039,36 +1105,96 @@ function CheckSheetPondPeriode() {
                                 </option>
 
                                 <option
-                                  value="mesin"
+                                  value="Mesin"
                                   className="text-body dark:text-bodydark"
                                 >
                                   Mesin
                                 </option>
                                 <option
-                                  value="man"
+                                  value="Man"
                                   className="text-body dark:text-bodydark"
                                 >
                                   Man
                                 </option>
                                 <option
-                                  value="material"
+                                  value="Material"
                                   className="text-body dark:text-bodydark"
                                 >
                                   Material
                                 </option>
                                 <option
-                                  value="persiapan"
+                                  value="Persiapan"
                                   className="text-body dark:text-bodydark"
                                 >
                                   Persiapan
                                 </option>
                                 <option
-                                  value="design"
+                                  value="Design"
                                   className="text-body dark:text-bodydark"
                                 >
                                   Design
                                 </option>
                               </select>
+
+                              <label className="text-black text-sm font-bold pt-4">
+                                Tujuan Department
+                              </label>
+                              {Department?.map((dt: any, indx: number) => {
+                                return (
+                                  <>
+                                    <select
+                                      onChange={(e) => {
+                                        handleChangePointDepatment(e, indx);
+                                      }}
+                                      defaultValue={dt.department}
+                                      className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
+                  }`}
+                                    >
+                                      <option
+                                        value=""
+                                        disabled
+                                        selected
+                                        className="text-body dark:text-bodydark"
+                                      >
+                                        Pilih Tujuan Department
+                                      </option>
+
+                                      {DataDepartment?.map(
+                                        (
+                                          dataDef: any,
+                                          indexDepartment: number,
+                                        ) => {
+                                          return (
+                                            <option
+                                              value={dataDef.id}
+                                              className="text-body dark:text-bodydark"
+                                            >
+                                              {dataDef.name}
+                                            </option>
+                                          );
+                                        },
+                                      )}
+                                    </select>
+                                    <button
+                                      onClick={() => {
+                                        handleDeletePointDepartment(indx);
+                                      }}
+                                      className="bg-red-600 rounded-md w-22 h-10 text-white font-semibold text-sm"
+                                    >
+                                      X
+                                    </button>
+                                  </>
+                                );
+                              })}
+
+                              <button
+                                onClick={() => {
+                                  handleAddPointDepartment();
+                                }}
+                                className="bg-green-600 rounded-md w-22 h-10 text-white font-semibold text-sm"
+                              >
+                                TAMBAH DEPARTMENT
+                              </button>
                               <button
                                 onClick={() => {
                                   tambahDefectPeriode(
@@ -1124,9 +1250,9 @@ function CheckSheetPondPeriode() {
               },
             )}
           </div>
-          {!isOnprogres &&
-            pondMesinPeriode?.inspeksi_pond_periode[0].status == 'incoming' ||
-            pondMesinPeriode?.inspeksi_pond_periode[0].status == 'pending' ? (
+          {(!isOnprogres &&
+            pondMesinPeriode?.inspeksi_pond_periode[0].status == 'incoming') ||
+          pondMesinPeriode?.inspeksi_pond_periode[0].status == 'pending' ? (
             <>
               <button
                 disabled={isLoading}
@@ -1171,8 +1297,7 @@ function CheckSheetPondPeriode() {
               )}
             </div>
             <div className="grid col-span-2 items-end justify-end gap-2">
-              {!isOnprogres &&
-                pondMesinPeriode?.status == 'incoming' ? (
+              {!isOnprogres && pondMesinPeriode?.status == 'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekPeriode(
@@ -1184,11 +1309,10 @@ function CheckSheetPondPeriode() {
                   PENDING
                 </button>
               ) : null}
-              {!isOnprogres &&
+              {(!isOnprogres &&
                 pondMesinPeriode?.inspeksi_pond_periode[0].status ==
-                'incoming' ||
-                pondMesinPeriode?.inspeksi_pond_periode[0].status ==
-                'pending' ? (
+                  'incoming') ||
+              pondMesinPeriode?.inspeksi_pond_periode[0].status == 'pending' ? (
                 <button
                   onClick={() => {
                     doneCekPeriode(

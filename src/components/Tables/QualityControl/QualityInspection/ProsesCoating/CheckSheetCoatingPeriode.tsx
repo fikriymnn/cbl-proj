@@ -26,6 +26,14 @@ function CheckSheetCoatingPeriode() {
   const [kriteria, setKriteria] = useState<any>();
   const [persenKriteria, setPersenKriteria] = useState<any>();
   const [sumberMasalah, setSumberMasalah] = useState<any>();
+  const [DataDepartment, setDataDepartment] = useState<any>();
+
+  const [Department, setDepartment] = useState([
+    {
+      id: 0,
+      department: '',
+    },
+  ]);
 
   const [openGuide, setOpenGuide] = useState(null);
   const handleClickGuide = (index: any) => {
@@ -56,8 +64,20 @@ function CheckSheetCoatingPeriode() {
   };
   useEffect(() => {
     getCoatingMesinPeriode();
+    getDepartment();
   }, []);
 
+  async function getDepartment() {
+    const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-departmen`;
+    try {
+      const res = await axios.get(url, {});
+
+      console.log(res.data);
+      setDataDepartment(res.data);
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
   async function getCoatingMesinPeriode() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiCoating/${id}`;
     try {
@@ -176,6 +196,7 @@ function CheckSheetCoatingPeriode() {
           kriteria: kriteria,
           persen_kriteria: persenKriteria,
           sumber_masalah: sumberMasalah,
+          department: Department,
         },
 
         {
@@ -186,6 +207,12 @@ function CheckSheetCoatingPeriode() {
       setShowModal2(false);
       setKode(null);
       setMasalah(null);
+      setDepartment([
+        {
+          id: 0,
+          department: '',
+        },
+      ]);
       getCoatingMesinPeriode();
     } catch (error: any) {
       console.log(error);
@@ -229,6 +256,37 @@ function CheckSheetCoatingPeriode() {
       console.log(error.data.msg);
     }
   }
+
+  //add Point
+  const handleAddPointDepartment = () => {
+    setDepartment([
+      ...Department,
+      {
+        id: 0,
+        department: '',
+      },
+    ]);
+  };
+
+  //change value point
+  const handleChangePointDepatment = (e: any, i: number) => {
+    const { name, value } = e.target;
+    const filteredData = DataDepartment.find(
+      (item: any) => item.id == value,
+      // item.id.includes(parseInt(value));
+    );
+
+    const onchangeVal: any = [...Department];
+    onchangeVal[i]['id'] = filteredData.id;
+    onchangeVal[i]['department'] = filteredData.name;
+    setDepartment(onchangeVal);
+  };
+
+  const handleDeletePointDepartment = (i: number) => {
+    const deleteVal: any = [...Department];
+    deleteVal.splice(i, 1);
+    setDepartment(deleteVal);
+  };
 
   const handleChangePoint = (e: any, i: number) => {
     const { name, value } = e.target;
@@ -801,6 +859,163 @@ function CheckSheetCoatingPeriode() {
                                 onChange={(e) => setMasalah(e.target.value)}
                                 className="text-sm font-semibold w-full h-10 border-stroke border mb-2"
                               ></input>
+                              <label className="text-black text-sm font-bold pt-4">
+                                Kriteria
+                              </label>
+                              <select
+                                onChange={(e) => {
+                                  setKriteria(e.target.value);
+                                }}
+                                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
+                  }`}
+                              >
+                                <option
+                                  value=""
+                                  disabled
+                                  selected
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Pilih kriteria
+                                </option>
+
+                                <option
+                                  value="critical"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Critical
+                                </option>
+                                <option
+                                  value="major"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Major
+                                </option>
+                                <option
+                                  value="minor"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Minor
+                                </option>
+                              </select>
+                              <label className="text-black text-sm font-bold pt-4">
+                                % Kriteria
+                              </label>
+                              <input
+                                onChange={(e) =>
+                                  setPersenKriteria(e.target.value)
+                                }
+                                type="text"
+                                className="w-full h-7 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
+                              />
+                              <label className="text-black text-sm font-bold pt-4">
+                                Sumber Masalah
+                              </label>
+                              <select
+                                onChange={(e) => {
+                                  setSumberMasalah(e.target.value);
+                                }}
+                                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
+                  }`}
+                              >
+                                <option
+                                  value=""
+                                  disabled
+                                  selected
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Pilih Sumber Masalah
+                                </option>
+
+                                <option
+                                  value="Mesin"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Mesin
+                                </option>
+                                <option
+                                  value="Man"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Man
+                                </option>
+                                <option
+                                  value="Material"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Material
+                                </option>
+                                <option
+                                  value="Persiapan"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Persiapan
+                                </option>
+                                <option
+                                  value="Design"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  Design
+                                </option>
+                              </select>
+
+                              <label className="text-black text-sm font-bold pt-4">
+                                Tujuan Department
+                              </label>
+                              {Department?.map((dt: any, indx: number) => {
+                                return (
+                                  <>
+                                    <select
+                                      onChange={(e) => {
+                                        handleChangePointDepatment(e, indx);
+                                      }}
+                                      defaultValue={dt.department}
+                                      className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
+                  }`}
+                                    >
+                                      <option
+                                        value=""
+                                        disabled
+                                        selected
+                                        className="text-body dark:text-bodydark"
+                                      >
+                                        Pilih Tujuan Department
+                                      </option>
+
+                                      {DataDepartment?.map(
+                                        (
+                                          dataDef: any,
+                                          indexDepartment: number,
+                                        ) => {
+                                          return (
+                                            <option
+                                              value={dataDef.id}
+                                              className="text-body dark:text-bodydark"
+                                            >
+                                              {dataDef.name}
+                                            </option>
+                                          );
+                                        },
+                                      )}
+                                    </select>
+                                    <button
+                                      onClick={() => {
+                                        handleDeletePointDepartment(indx);
+                                      }}
+                                      className="bg-red-600 rounded-md w-22 h-10 text-white font-semibold text-sm"
+                                    >
+                                      X
+                                    </button>
+                                  </>
+                                );
+                              })}
+                              <button
+                                onClick={() => {
+                                  handleAddPointDepartment();
+                                }}
+                                className="bg-green-600 rounded-md w-22 h-10 text-white font-semibold text-sm"
+                              >
+                                TAMBAH DEPARTMENT
+                              </button>
                               <button
                                 onClick={() => {
                                   tambahDefectPeriode(

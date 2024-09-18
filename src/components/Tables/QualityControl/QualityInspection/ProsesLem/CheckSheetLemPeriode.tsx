@@ -28,6 +28,14 @@ function CheckSheetLemPeriode() {
   const [jenisLem, setJenisLem] = useState<any>();
   const [openGuide, setOpenGuide] = useState(null);
   const [LemMesinPeriodeHistory, setLemMesinPeriodeHistory] = useState<any>();
+  const [DataDepartment, setDataDepartment] = useState<any>();
+
+  const [Department, setDepartment] = useState([
+    {
+      id: 0,
+      department: '',
+    },
+  ]);
   const handleClickGuide = (index: any) => {
     setOpenGuide((prevState: any) => {
       return prevState === index ? null : index;
@@ -57,7 +65,20 @@ function CheckSheetLemPeriode() {
   };
   useEffect(() => {
     getLemMesinPeriode();
+    getDepartment();
   }, []);
+
+  async function getDepartment() {
+    const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-departmen`;
+    try {
+      const res = await axios.get(url, {});
+
+      console.log(res.data);
+      setDataDepartment(res.data);
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
 
   async function getLemMesinPeriode() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiLem/${id}`;
@@ -68,15 +89,16 @@ function CheckSheetLemPeriode() {
 
       setLemMesinPeriode(res.data.data);
       setLemMesinPeriodeDefect(res.data.defect);
-      setLemMesinPeriodeHistory(res.data.history)
+      setLemMesinPeriodeHistory(res.data.history);
       console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
   async function pendingCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriode/pending/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriode/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -92,8 +114,9 @@ function CheckSheetLemPeriode() {
     }
   }
   async function startTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriodePoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriodePoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -118,8 +141,9 @@ function CheckSheetLemPeriode() {
     jumlah_sampling: any,
     data_defect: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriodePoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriodePoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -144,8 +168,9 @@ function CheckSheetLemPeriode() {
   }
 
   async function tambahTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriodePoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriodePoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -174,8 +199,9 @@ function CheckSheetLemPeriode() {
     sumberMasalah: any,
     index: number,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriodePoint/createDefect`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriodePoint/createDefect`;
     try {
       const res = await axios.post(
         url,
@@ -188,6 +214,7 @@ function CheckSheetLemPeriode() {
           kriteria: kriteria,
           persen_kriteria: persenKriteria,
           sumber_masalah: sumberMasalah,
+          department: Department,
         },
 
         {
@@ -202,6 +229,12 @@ function CheckSheetLemPeriode() {
       setKriteria(null);
       setPersenKriteria(null);
       setSumberMasalah(null);
+      setDepartment([
+        {
+          id: 0,
+          department: '',
+        },
+      ]);
       getLemMesinPeriode();
     } catch (error: any) {
       console.log(error);
@@ -209,8 +242,9 @@ function CheckSheetLemPeriode() {
   }
 
   async function doneCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriode/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriode/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -222,9 +256,39 @@ function CheckSheetLemPeriode() {
 
       getLemMesinPeriode();
     } catch (error: any) {
-      console.log(error.data.msg);
+      console.log(error);
     }
   }
+  //add Point
+  const handleAddPointDepartment = () => {
+    setDepartment([
+      ...Department,
+      {
+        id: 0,
+        department: '',
+      },
+    ]);
+  };
+
+  //change value point
+  const handleChangePointDepatment = (e: any, i: number) => {
+    const { name, value } = e.target;
+    const filteredData = DataDepartment.find(
+      (item: any) => item.id == value,
+      // item.id.includes(parseInt(value));
+    );
+
+    const onchangeVal: any = [...Department];
+    onchangeVal[i]['id'] = filteredData.id;
+    onchangeVal[i]['department'] = filteredData.name;
+    setDepartment(onchangeVal);
+  };
+
+  const handleDeletePointDepartment = (i: number) => {
+    const deleteVal: any = [...Department];
+    deleteVal.splice(i, 1);
+    setDepartment(deleteVal);
+  };
 
   const handleChangePoint = (e: any, i: number) => {
     const { name, value } = e.target;
@@ -246,7 +310,9 @@ function CheckSheetLemPeriode() {
   const tanggal = convertTimeStampToDateOnly(LemMesinPeriode?.tanggal);
   const jam = convertDateToTime(LemMesinPeriode?.tanggal);
 
-  const tanggalHistory = convertTimeStampToDateOnly(LemMesinPeriodeHistory?.tanggal);
+  const tanggalHistory = convertTimeStampToDateOnly(
+    LemMesinPeriodeHistory?.tanggal,
+  );
   const jamHistory = convertDateToTime(LemMesinPeriodeHistory?.tanggal);
 
   const jumlahWaktuCheck = formatElapsedTime(
@@ -259,8 +325,10 @@ function CheckSheetLemPeriode() {
   const openModal2 = () => setShowModal2(true);
   const closeModal2 = () => setShowModal2(false);
 
-
-  const isOnprogres = LemMesinPeriode?.inspeksi_lem_periode[0].inspeksi_lem_periode_point.some((data: { status: any; }) => data?.status === 'on progress')
+  const isOnprogres =
+    LemMesinPeriode?.inspeksi_lem_periode[0].inspeksi_lem_periode_point.some(
+      (data: { status: any }) => data?.status === 'on progress',
+    );
   const [showHistory, setShowHistory] = useState(false);
   const openModalHistory = () => setShowHistory(true);
   const closeModalHistory = () => setShowHistory(false);
@@ -271,7 +339,7 @@ function CheckSheetLemPeriode() {
         <main className="overflow-x-hidden">
           <div className="min-w-[700px] bg-white rounded-xl">
             <div className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12 justify-between">
-              <div className='flex'>
+              <div className="flex">
                 <svg
                   width="24"
                   height="24"
@@ -288,8 +356,7 @@ function CheckSheetLemPeriode() {
                 </svg>{' '}
                 Printing Checksheet
               </div>
-              <div className='text-[14px] font-semibold '>
-
+              <div className="text-[14px] font-semibold ">
                 <button
                   onClick={() => openModalHistory()}
                   className="  rounded-sm  text-sm text-blue-500 font-bold justify-center items-center px-4  hover:cursor-pointer"
@@ -330,7 +397,6 @@ function CheckSheetLemPeriode() {
                               : {LemMesinPeriodeHistory?.jumlah_pcs}
                             </label>
 
-
                             <div className="flex gap-1 font-semibold">
                               :{' '}
                               <input
@@ -340,7 +406,6 @@ function CheckSheetLemPeriode() {
                                 onChange={(e) => setJenisLem(e.target.value)}
                               />
                             </div>
-
                           </div>
 
                           <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
@@ -408,14 +473,15 @@ function CheckSheetLemPeriode() {
 
                         {LemMesinPeriodeHistory?.inspeksi_lem_periode[0]?.inspeksi_lem_periode_point?.map(
                           (data: any, index: number) => {
-                            const waktuSampling = convertDateToTime(data.waktu_mulai);
-                            const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
+                            const waktuSampling = convertDateToTime(
+                              data.waktu_mulai,
+                            );
+                            const lamaPengerjaan = formatElapsedTime(
+                              data.lama_pengerjaan,
+                            );
                             return (
                               <>
-
-                                <div className='border-b-8 border-[#D8EAFF]'>
-
-
+                                <div className="border-b-8 border-[#D8EAFF]">
                                   <div className="flex px-5 py-5 gap-7">
                                     <label className="text-sm font-semibold">
                                       {index + 1}
@@ -438,7 +504,8 @@ function CheckSheetLemPeriode() {
                                     </div>
                                     <div className="flex flex-col gap-1">
                                       <label className="text-sm font-semibold">
-                                        NUMERATOR<span className="text-red-600">*</span>
+                                        NUMERATOR
+                                        <span className="text-red-600">*</span>
                                       </label>
 
                                       <input
@@ -446,15 +513,14 @@ function CheckSheetLemPeriode() {
                                         disabled
                                         defaultValue={data.numerator}
                                         name="numerator"
-
                                         className="text-sm font-semibold w-[90%] border-stroke border"
                                       ></input>
-
                                     </div>
 
                                     <div className="flex flex-col gap-1">
                                       <label className="text-sm font-semibold">
-                                        JUMLAH SAMPLING<span className="text-red-600">*</span>
+                                        JUMLAH SAMPLING
+                                        <span className="text-red-600">*</span>
                                       </label>
 
                                       <input
@@ -462,10 +528,8 @@ function CheckSheetLemPeriode() {
                                         defaultValue={data.jumlah_sampling}
                                         disabled
                                         name="jumlah_sampling"
-
                                         className="text-sm font-semibold w-[90%] border-stroke border"
                                       ></input>
-
                                     </div>
 
                                     <>
@@ -482,13 +546,15 @@ function CheckSheetLemPeriode() {
                                       (data2: any, i: number) => {
                                         return (
                                           <div
-                                            className={`flex flex-col min-w-[120px] justify-center py-4 ${(i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
-                                              } items-center gap-2`}
+                                            className={`flex flex-col min-w-[120px] justify-center py-4 ${
+                                              (i + 1) % 2 === 0
+                                                ? ' bg-[#F3F3F3]'
+                                                : 'bg-white'
+                                            } items-center gap-2`}
                                           >
                                             <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                               {data2.kode}
                                             </label>
-
 
                                             <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                               {data2.hasil}
@@ -497,47 +563,38 @@ function CheckSheetLemPeriode() {
                                             <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                               {data2.jumlah_defect}
                                             </label>
-
                                           </div>
                                         );
                                       },
                                     )}
-
-
                                   </div>
 
-                                  <div>
-
-                                  </div>
+                                  <div></div>
                                 </div>
-
                               </>
                             );
                           },
                         )}
                         <div className="flex w-full min-w-[700px]  items-center  px-4 py-4 gap-5 bg-white  mt-2">
-                          {lemMesinPeriodeDefect?.map((data: any, index: number) => {
-                            return (
-                              <div className="flex flex-col max-w-45 overflow-x-scroll">
-                                <label>Kode: </label>
-                                <label>{data.kode}</label>
-                                <label>Total Defect: </label>
-                                <label>{data.total_defect}</label>
-                              </div>
-                            );
-                          })}
+                          {lemMesinPeriodeDefect?.map(
+                            (data: any, index: number) => {
+                              return (
+                                <div className="flex flex-col max-w-45 overflow-x-scroll">
+                                  <label>Kode: </label>
+                                  <label>{data.kode}</label>
+                                  <label>Total Defect: </label>
+                                  <label>{data.total_defect}</label>
+                                </div>
+                              );
+                            },
+                          )}
                         </div>
                       </>
                     </ModalKosongan>
                   </>
                 )}
-
               </div>
-
             </div>
-
-
-
 
             <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
               <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">
@@ -809,7 +866,8 @@ function CheckSheetLemPeriode() {
                             <p className="md:text-[14px] text-[9px] font-semibold">
                               Time : {lamaPengerjaan}
                             </p>
-                            {data.status == 'incoming' && LemMesinPeriode?.status == 'incoming' ? (
+                            {data.status == 'incoming' &&
+                            LemMesinPeriode?.status == 'incoming' ? (
                               <>
                                 <p className="font-bold text-[#DE0000]">
                                   Task Belum Dimulai
@@ -882,10 +940,11 @@ function CheckSheetLemPeriode() {
                           (data2: any, i: number) => {
                             return (
                               <div
-                                className={`flex flex-col min-w-[120px] justify-center py-4  ${(i + 1) % 2 === 0
-                                  ? ' bg-[#F3F3F3]'
-                                  : 'bg-white'
-                                  } items-center gap-2`}
+                                className={`flex flex-col min-w-[120px] justify-center py-4  ${
+                                  (i + 1) % 2 === 0
+                                    ? ' bg-[#F3F3F3]'
+                                    : 'bg-white'
+                                } items-center gap-2`}
                               >
                                 <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                   {data2.kode}
@@ -898,10 +957,11 @@ function CheckSheetLemPeriode() {
                                     onChange={(e) =>
                                       handleChangePointDefect(e, index, i)
                                     }
-                                    className={`w-[80%]  ${(i + 1) % 2 === 0
-                                      ? ' bg-[#F3F3F3]'
-                                      : 'bg-white'
-                                      } `}
+                                    className={`w-[80%]  ${
+                                      (i + 1) % 2 === 0
+                                        ? ' bg-[#F3F3F3]'
+                                        : 'bg-white'
+                                    } `}
                                   >
                                     <option value={''} disabled>
                                       SELECT VALUE
@@ -923,10 +983,11 @@ function CheckSheetLemPeriode() {
                                         handleClickNotOke(i, false);
                                       }
                                     }}
-                                    className={`w-[80%]  ${(i + 1) % 2 === 0
-                                      ? ' bg-[#F3F3F3]'
-                                      : 'bg-white'
-                                      } `}
+                                    className={`w-[80%]  ${
+                                      (i + 1) % 2 === 0
+                                        ? ' bg-[#F3F3F3]'
+                                        : 'bg-white'
+                                    } `}
                                   >
                                     <option value={''} disabled selected>
                                       SELECT VALUE
@@ -939,7 +1000,7 @@ function CheckSheetLemPeriode() {
                                   </select>
                                 ) : null}
                                 {showNotOk[i] == true &&
-                                  data.status == 'on progress' ? (
+                                data.status == 'on progress' ? (
                                   <input
                                     type="text"
                                     name="jumlah_defect"
@@ -1078,36 +1139,96 @@ function CheckSheetLemPeriode() {
                                   </option>
 
                                   <option
-                                    value="mesin"
+                                    value="Mesin"
                                     className="text-body dark:text-bodydark"
                                   >
                                     Mesin
                                   </option>
                                   <option
-                                    value="man"
+                                    value="Man"
                                     className="text-body dark:text-bodydark"
                                   >
                                     Man
                                   </option>
                                   <option
-                                    value="material"
+                                    value="Material"
                                     className="text-body dark:text-bodydark"
                                   >
                                     Material
                                   </option>
                                   <option
-                                    value="persiapan"
+                                    value="Persiapan"
                                     className="text-body dark:text-bodydark"
                                   >
                                     Persiapan
                                   </option>
                                   <option
-                                    value="design"
+                                    value="Design"
                                     className="text-body dark:text-bodydark"
                                   >
                                     Design
                                   </option>
                                 </select>
+
+                                <label className="text-black text-sm font-bold pt-4">
+                                  Tujuan Department
+                                </label>
+                                {Department?.map((dt: any, indx: number) => {
+                                  return (
+                                    <>
+                                      <select
+                                        onChange={(e) => {
+                                          handleChangePointDepatment(e, indx);
+                                        }}
+                                        defaultValue={dt.department}
+                                        className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
+                  }`}
+                                      >
+                                        <option
+                                          value=""
+                                          disabled
+                                          selected
+                                          className="text-body dark:text-bodydark"
+                                        >
+                                          Pilih Tujuan Department
+                                        </option>
+
+                                        {DataDepartment?.map(
+                                          (
+                                            dataDef: any,
+                                            indexDepartment: number,
+                                          ) => {
+                                            return (
+                                              <option
+                                                value={dataDef.id}
+                                                className="text-body dark:text-bodydark"
+                                              >
+                                                {dataDef.name}
+                                              </option>
+                                            );
+                                          },
+                                        )}
+                                      </select>
+                                      <button
+                                        onClick={() => {
+                                          handleDeletePointDepartment(indx);
+                                        }}
+                                        className="bg-red-600 rounded-md w-22 h-10 text-white font-semibold text-sm"
+                                      >
+                                        X
+                                      </button>
+                                    </>
+                                  );
+                                })}
+
+                                <button
+                                  onClick={() => {
+                                    handleAddPointDepartment();
+                                  }}
+                                  className="bg-green-600 rounded-md w-22 h-10 text-white font-semibold text-sm"
+                                >
+                                  TAMBAH DEPARTMENT
+                                </button>
                                 <button
                                   onClick={() => {
                                     tambahDefectPeriode(
@@ -1140,8 +1261,8 @@ function CheckSheetLemPeriode() {
           {(!isOnprogres &&
             LemMesinPeriode?.status == 'incoming' &&
             LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'incoming') ||
-            (LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' &&
-              LemMesinPeriode?.status == 'incoming') ? (
+          (LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' &&
+            LemMesinPeriode?.status == 'incoming') ? (
             <>
               <button
                 disabled={isLoading}
@@ -1172,8 +1293,9 @@ function CheckSheetLemPeriode() {
               </label>
               {(!isOnprogres &&
                 LemMesinPeriode?.status == 'incoming' &&
-                LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'incoming') ||
-                LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' ? (
+                LemMesinPeriode?.inspeksi_lem_periode[0]?.status ==
+                  'incoming') ||
+              LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' ? (
                 <textarea
                   onChange={(e) => setCatatan(e.target.value)}
                   className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
@@ -1189,8 +1311,7 @@ function CheckSheetLemPeriode() {
               )}
             </div>
             <div className="grid col-span-2 items-end justify-end gap-2">
-              {!isOnprogres &&
-                LemMesinPeriode?.status == 'incoming' ? (
+              {!isOnprogres && LemMesinPeriode?.status == 'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekPeriode(
@@ -1204,8 +1325,9 @@ function CheckSheetLemPeriode() {
               ) : null}
               {(!isOnprogres &&
                 LemMesinPeriode?.status == 'incoming' &&
-                LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'incoming') ||
-                LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' ? (
+                LemMesinPeriode?.inspeksi_lem_periode[0]?.status ==
+                  'incoming') ||
+              LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' ? (
                 <button
                   onClick={() => {
                     doneCekPeriode(LemMesinPeriode?.inspeksi_lem_periode[0].id);
