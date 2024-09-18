@@ -44,8 +44,9 @@ const Sidebar = ({
           <li>
             <NavLink
               to="/dashboard"
-              className={`group relative flex items-center text-white mb-4 gap-5 rounded-sm py-3 px-4 font-medium  duration-300 ease-in-out  ${pathname.includes('/dashboard') && '!bg-white text-primary '
-                }`}
+              className={`group relative flex items-center text-white mb-4 gap-5 rounded-sm py-3 px-4 font-medium  duration-300 ease-in-out  ${
+                pathname.includes('/dashboard') && '!bg-white text-primary '
+              }`}
             >
               <svg
                 className="fill-current"
@@ -99,8 +100,9 @@ const Sidebar = ({
                     </svg>
                     Maintenance
                     <svg
-                      className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                        }`}
+                      className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                        open && 'rotate-90'
+                      }`}
                       width="7"
                       height="8"
                       viewBox="0 0 7 8"
@@ -115,8 +117,9 @@ const Sidebar = ({
                   </NavLink>
                   {/* <!-- Dropdown Menu Start --> */}
                   <div
-                    className={`translate transform overflow-hidden ${!open && 'hidden'
-                      }`}
+                    className={`translate transform overflow-hidden ${
+                      !open && 'hidden'
+                    }`}
                   >
                     <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-3">
                       <li>
@@ -175,12 +178,13 @@ const Sidebar = ({
                               <React.Fragment>
                                 <NavLink
                                   to="#"
-                                  className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${(pathname === '/maintenance/inspection' ||
-                                    pathname.includes(
-                                      '/maintenance/inspection',
-                                    )) &&
+                                  className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${
+                                    (pathname === '/maintenance/inspection' ||
+                                      pathname.includes(
+                                        '/maintenance/inspection',
+                                      )) &&
                                     ' dark:bg-meta-4'
-                                    }`}
+                                  }`}
                                   onClick={(e) => {
                                     e.preventDefault();
                                     sidebarExpanded
@@ -191,8 +195,9 @@ const Sidebar = ({
                                   <img src={Inspect} alt="Logo" />
                                   Preventive (PM)
                                   <svg
-                                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                      }`}
+                                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                      open && 'rotate-90'
+                                    }`}
                                     width="7"
                                     height="8"
                                     viewBox="0 0 7 8"
@@ -207,8 +212,9 @@ const Sidebar = ({
                                 </NavLink>
                                 {/* <!-- Dropdown Menu Start --> */}
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                     <li>
@@ -226,8 +232,9 @@ const Sidebar = ({
                                   </ul>
                                 </div>
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                     <li>
@@ -245,8 +252,9 @@ const Sidebar = ({
                                   </ul>
                                 </div>
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                     <li>
@@ -264,8 +272,9 @@ const Sidebar = ({
                                   </ul>
                                 </div>
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                     <li>
@@ -283,8 +292,9 @@ const Sidebar = ({
                                   </ul>
                                 </div>
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                     <li>
@@ -360,8 +370,9 @@ const Sidebar = ({
                                   <img src={Inspect} alt="Logo" />
                                   KPI
                                   <svg
-                                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                      }`}
+                                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                      open && 'rotate-90'
+                                    }`}
                                     width="7"
                                     height="8"
                                     viewBox="0 0 7 8"
@@ -377,8 +388,9 @@ const Sidebar = ({
                                 {/* <!-- Dropdown Menu Start --> */}
 
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                     <li>
@@ -427,8 +439,9 @@ const Sidebar = ({
                                   <img src={Inspect} alt="Logo" />
                                   Sparepart
                                   <svg
-                                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                      }`}
+                                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                      open && 'rotate-90'
+                                    }`}
                                     width="7"
                                     height="8"
                                     viewBox="0 0 7 8"
@@ -444,15 +457,16 @@ const Sidebar = ({
                                 {/* <!-- Dropdown Menu Start --> */}
 
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5  md:pl-5 pl-6 py-3">
                                     <li>
                                       <SidebarLinkGroup
                                         activeCondition={
                                           pathname ===
-                                          '/maintenance/sparepart' ||
+                                            '/maintenance/sparepart' ||
                                           pathname.includes('maintenance')
                                         }
                                       >
@@ -475,8 +489,9 @@ const Sidebar = ({
                                                 <img src={Inspect} alt="Logo" />
                                                 Stock Opname
                                                 <svg
-                                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                                    }`}
+                                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                                    open && 'rotate-90'
+                                                  }`}
                                                   width="7"
                                                   height="8"
                                                   viewBox="0 0 7 8"
@@ -492,8 +507,9 @@ const Sidebar = ({
                                               {/* <!-- Dropdown Menu Start --> */}
 
                                               <div
-                                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                                  }`}
+                                                className={`translate transform overflow-hidden ${
+                                                  !open && 'hidden'
+                                                }`}
                                               >
                                                 <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                                   <li>
@@ -513,8 +529,9 @@ const Sidebar = ({
                                                 </ul>
                                               </div>
                                               <div
-                                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                                  }`}
+                                                className={`translate transform overflow-hidden ${
+                                                  !open && 'hidden'
+                                                }`}
                                               >
                                                 <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                                   <li>
@@ -534,8 +551,9 @@ const Sidebar = ({
                                                 </ul>
                                               </div>
                                               <div
-                                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                                  }`}
+                                                className={`translate transform overflow-hidden ${
+                                                  !open && 'hidden'
+                                                }`}
                                               >
                                                 <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                                   <li>
@@ -562,8 +580,9 @@ const Sidebar = ({
                                     </li>
                                   </ul>
                                   <div
-                                    className={`translate transform overflow-hidden ${!open && 'hidden'
-                                      }`}
+                                    className={`translate transform overflow-hidden ${
+                                      !open && 'hidden'
+                                    }`}
                                   >
                                     <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                       <li>
@@ -581,8 +600,9 @@ const Sidebar = ({
                                     </ul>
                                   </div>
                                   <div
-                                    className={`translate transform overflow-hidden ${!open && 'hidden'
-                                      }`}
+                                    className={`translate transform overflow-hidden ${
+                                      !open && 'hidden'
+                                    }`}
                                   >
                                     <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                       <li>
@@ -600,8 +620,9 @@ const Sidebar = ({
                                     </ul>
                                   </div>
                                   <div
-                                    className={`translate transform overflow-hidden ${!open && 'hidden'
-                                      }`}
+                                    className={`translate transform overflow-hidden ${
+                                      !open && 'hidden'
+                                    }`}
                                   >
                                     <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                       <li>
@@ -667,8 +688,7 @@ const Sidebar = ({
                       <li>
                         <SidebarLinkGroup
                           activeCondition={
-                            pathname === '/lapor' ||
-                            pathname.includes('lapor')
+                            pathname === '/lapor' || pathname.includes('lapor')
                           }
                         >
                           {(handleClick, open) => {
@@ -676,12 +696,13 @@ const Sidebar = ({
                               <React.Fragment>
                                 <NavLink
                                   to="#"
-                                  className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${(pathname === '/maintenance/lapor' ||
-                                    pathname.includes(
-                                      '/maintenance/lapor',
-                                    )) &&
+                                  className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${
+                                    (pathname === '/maintenance/lapor' ||
+                                      pathname.includes(
+                                        '/maintenance/lapor',
+                                      )) &&
                                     ' dark:bg-meta-4'
-                                    }`}
+                                  }`}
                                   onClick={(e) => {
                                     e.preventDefault();
                                     sidebarExpanded
@@ -692,8 +713,9 @@ const Sidebar = ({
                                   <img src={Inspect} alt="Logo" />
                                   LAPOR
                                   <svg
-                                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                      }`}
+                                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                      open && 'rotate-90'
+                                    }`}
                                     width="7"
                                     height="8"
                                     viewBox="0 0 7 8"
@@ -708,8 +730,9 @@ const Sidebar = ({
                                 </NavLink>
                                 {/* <!-- Dropdown Menu Start --> */}
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                     <li>
@@ -727,8 +750,9 @@ const Sidebar = ({
                                   </ul>
                                 </div>
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                     <li>
@@ -746,7 +770,6 @@ const Sidebar = ({
                                   </ul>
                                 </div>
 
-
                                 {/* <!-- Dropdown Menu End --> */}
                               </React.Fragment>
                             );
@@ -762,9 +785,7 @@ const Sidebar = ({
           </SidebarLinkGroup>
         </>
         <SidebarLinkGroup
-          activeCondition={
-            pathname === '/qc' || pathname.includes('qc')
-          }
+          activeCondition={pathname === '/qc' || pathname.includes('qc')}
         >
           {(handleClick, open) => {
             return (
@@ -779,17 +800,15 @@ const Sidebar = ({
                   onClick={(e) => {
                     e.preventDefault();
 
-                    sidebarExpanded
-                      ? handleClick()
-                      : setSidebarExpanded(true);
-
+                    sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                   }}
                 >
                   <img src={QC} alt="Logo" />
                   Quality Control
                   <svg
-                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                      }`}
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                      open && 'rotate-90'
+                    }`}
                     width="7"
                     height="8"
                     viewBox="0 0 7 8"
@@ -804,8 +823,9 @@ const Sidebar = ({
                 </NavLink>
                 {/* <!-- Dropdown Menu Start --> */}
                 <div
-                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                    }`}
+                  className={`translate transform overflow-hidden ${
+                    !open && 'hidden'
+                  }`}
                 >
                   <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-3">
                     <li>
@@ -830,10 +850,7 @@ const Sidebar = ({
                               d="M15.5 16.5C15.7652 16.5 16.0196 16.3946 16.2071 16.2071C16.3946 16.0196 16.5 15.7652 16.5 15.5V14H17.25C17.4489 14 17.6397 13.921 17.7803 13.7803C17.921 13.6397 18 13.4489 18 13.25C18 13.0511 17.921 12.8603 17.7803 12.7197C17.6397 12.579 17.4489 12.5 17.25 12.5H16.5V11.5H17.25C17.4489 11.5 17.6397 11.421 17.7803 11.2803C17.921 11.1397 18 10.9489 18 10.75C18 10.5511 17.921 10.3603 17.7803 10.2197C17.6397 10.079 17.4489 10 17.25 10H16.5V8.5C16.5 8.23478 16.3946 7.98043 16.2071 7.79289C16.0196 7.60536 15.7652 7.5 15.5 7.5H14V6.75C14 6.55109 13.921 6.36032 13.7803 6.21967C13.6397 6.07902 13.4489 6 13.25 6C13.0511 6 12.8603 6.07902 12.7197 6.21967C12.579 6.36032 12.5 6.55109 12.5 6.75V7.5H11.5V6.75C11.5 6.55109 11.421 6.36032 11.2803 6.21967C11.1397 6.07902 10.9489 6 10.75 6C10.5511 6 10.3603 6.07902 10.2197 6.21967C10.079 6.36032 10 6.55109 10 6.75V7.5H8.5C8.23478 7.5 7.98043 7.60536 7.79289 7.79289C7.60536 7.98043 7.5 8.23478 7.5 8.5V10H6.75C6.55109 10 6.36032 10.079 6.21967 10.2197C6.07902 10.3603 6 10.5511 6 10.75C6 10.9489 6.07902 11.1397 6.21967 11.2803C6.36032 11.421 6.55109 11.5 6.75 11.5H7.5V12.5H6.75C6.55109 12.5 6.36032 12.579 6.21967 12.7197C6.07902 12.8603 6 13.0511 6 13.25C6 13.4489 6.07902 13.6397 6.21967 13.7803C6.36032 13.921 6.55109 14 6.75 14H7.5V15.5C7.5 15.7652 7.60536 16.0196 7.79289 16.2071C7.98043 16.3946 8.23478 16.5 8.5 16.5H10V17.25C10 17.4489 10.079 17.6397 10.2197 17.7803C10.3603 17.921 10.5511 18 10.75 18C10.9489 18 11.1397 17.921 11.2803 17.7803C11.421 17.6397 11.5 17.4489 11.5 17.25V16.5H12.5V17.25C12.5 17.4489 12.579 17.6397 12.7197 17.7803C12.8603 17.921 13.0511 18 13.25 18C13.4489 18 13.6397 17.921 13.7803 17.7803C13.921 17.6397 14 17.4489 14 17.25V16.5H15.5ZM9 9H15V15H9V9Z"
                               fill=""
                             />
-                            <path
-                              d="M13.5 10.5H10.5V13.5H13.5V10.5Z"
-                              fill=""
-                            />
+                            <path d="M13.5 10.5H10.5V13.5H13.5V10.5Z" fill="" />
                             <path
                               d="M22.8 9.34999L20.5 7.44999V3.74999C20.4984 3.65411 20.4693 3.56071 20.4161 3.48093C20.3629 3.40114 20.2879 3.33833 20.2 3.29999L15.25 1.04999H15.05L14.75 1.14999L14.5 1.29999V4.29999C14.5 4.4989 14.579 4.68967 14.7197 4.83032C14.8603 4.97097 15.0511 5.04999 15.25 5.04999C15.4489 5.04999 15.6397 4.97097 15.7803 4.83032C15.921 4.68967 16 4.4989 16 4.29999V3.59999L18.5 4.74999V8.44999L19.25 9.04999L21 10.45V13.55L19.25 14.95L18.5 15.55V19.25L16 20.4V19.75C16 19.5511 15.921 19.3603 15.7803 19.2197C15.6397 19.079 15.4489 19 15.25 19C15.0511 19 14.8603 19.079 14.7197 19.2197C14.579 19.3603 14.5 19.5511 14.5 19.75V22.75L14.75 22.9L15.05 23H15.25L20.2 20.75C20.2879 20.7116 20.3629 20.6488 20.4161 20.5691C20.4693 20.4893 20.4984 20.3959 20.5 20.3V16.55L22.8 14.65C22.8653 14.6065 22.9181 14.5468 22.9532 14.4766C22.9883 14.4064 23.0044 14.3283 23 14.25V9.74999C23.0103 9.67098 22.9968 9.59069 22.9611 9.51943C22.9255 9.44816 22.8694 9.38916 22.8 9.34999Z"
                               fill=""
@@ -874,10 +891,7 @@ const Sidebar = ({
                               d="M15.5 16.5C15.7652 16.5 16.0196 16.3946 16.2071 16.2071C16.3946 16.0196 16.5 15.7652 16.5 15.5V14H17.25C17.4489 14 17.6397 13.921 17.7803 13.7803C17.921 13.6397 18 13.4489 18 13.25C18 13.0511 17.921 12.8603 17.7803 12.7197C17.6397 12.579 17.4489 12.5 17.25 12.5H16.5V11.5H17.25C17.4489 11.5 17.6397 11.421 17.7803 11.2803C17.921 11.1397 18 10.9489 18 10.75C18 10.5511 17.921 10.3603 17.7803 10.2197C17.6397 10.079 17.4489 10 17.25 10H16.5V8.5C16.5 8.23478 16.3946 7.98043 16.2071 7.79289C16.0196 7.60536 15.7652 7.5 15.5 7.5H14V6.75C14 6.55109 13.921 6.36032 13.7803 6.21967C13.6397 6.07902 13.4489 6 13.25 6C13.0511 6 12.8603 6.07902 12.7197 6.21967C12.579 6.36032 12.5 6.55109 12.5 6.75V7.5H11.5V6.75C11.5 6.55109 11.421 6.36032 11.2803 6.21967C11.1397 6.07902 10.9489 6 10.75 6C10.5511 6 10.3603 6.07902 10.2197 6.21967C10.079 6.36032 10 6.55109 10 6.75V7.5H8.5C8.23478 7.5 7.98043 7.60536 7.79289 7.79289C7.60536 7.98043 7.5 8.23478 7.5 8.5V10H6.75C6.55109 10 6.36032 10.079 6.21967 10.2197C6.07902 10.3603 6 10.5511 6 10.75C6 10.9489 6.07902 11.1397 6.21967 11.2803C6.36032 11.421 6.55109 11.5 6.75 11.5H7.5V12.5H6.75C6.55109 12.5 6.36032 12.579 6.21967 12.7197C6.07902 12.8603 6 13.0511 6 13.25C6 13.4489 6.07902 13.6397 6.21967 13.7803C6.36032 13.921 6.55109 14 6.75 14H7.5V15.5C7.5 15.7652 7.60536 16.0196 7.79289 16.2071C7.98043 16.3946 8.23478 16.5 8.5 16.5H10V17.25C10 17.4489 10.079 17.6397 10.2197 17.7803C10.3603 17.921 10.5511 18 10.75 18C10.9489 18 11.1397 17.921 11.2803 17.7803C11.421 17.6397 11.5 17.4489 11.5 17.25V16.5H12.5V17.25C12.5 17.4489 12.579 17.6397 12.7197 17.7803C12.8603 17.921 13.0511 18 13.25 18C13.4489 18 13.6397 17.921 13.7803 17.7803C13.921 17.6397 14 17.4489 14 17.25V16.5H15.5ZM9 9H15V15H9V9Z"
                               fill=""
                             />
-                            <path
-                              d="M13.5 10.5H10.5V13.5H13.5V10.5Z"
-                              fill=""
-                            />
+                            <path d="M13.5 10.5H10.5V13.5H13.5V10.5Z" fill="" />
                             <path
                               d="M22.8 9.34999L20.5 7.44999V3.74999C20.4984 3.65411 20.4693 3.56071 20.4161 3.48093C20.3629 3.40114 20.2879 3.33833 20.2 3.29999L15.25 1.04999H15.05L14.75 1.14999L14.5 1.29999V4.29999C14.5 4.4989 14.579 4.68967 14.7197 4.83032C14.8603 4.97097 15.0511 5.04999 15.25 5.04999C15.4489 5.04999 15.6397 4.97097 15.7803 4.83032C15.921 4.68967 16 4.4989 16 4.29999V3.59999L18.5 4.74999V8.44999L19.25 9.04999L21 10.45V13.55L19.25 14.95L18.5 15.55V19.25L16 20.4V19.75C16 19.5511 15.921 19.3603 15.7803 19.2197C15.6397 19.079 15.4489 19 15.25 19C15.0511 19 14.8603 19.079 14.7197 19.2197C14.579 19.3603 14.5 19.5511 14.5 19.75V22.75L14.75 22.9L15.05 23H15.25L20.2 20.75C20.2879 20.7116 20.3629 20.6488 20.4161 20.5691C20.4693 20.4893 20.4984 20.3959 20.5 20.3V16.55L22.8 14.65C22.8653 14.6065 22.9181 14.5468 22.9532 14.4766C22.9883 14.4064 23.0044 14.3283 23 14.25V9.74999C23.0103 9.67098 22.9968 9.59069 22.9611 9.51943C22.9255 9.44816 22.8694 9.38916 22.8 9.34999Z"
                               fill=""
@@ -899,8 +913,7 @@ const Sidebar = ({
                     <li>
                       <SidebarLinkGroup
                         activeCondition={
-                          pathname === '/qms' ||
-                          pathname.includes('qms')
+                          pathname === '/qms' || pathname.includes('qms')
                         }
                       >
                         {(handleClick, open) => {
@@ -908,12 +921,11 @@ const Sidebar = ({
                             <React.Fragment>
                               <NavLink
                                 to="#"
-                                className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${(pathname === '/qc/qms' ||
-                                  pathname.includes(
-                                    '/qc/qms',
-                                  )) &&
+                                className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${
+                                  (pathname === '/qc/qms' ||
+                                    pathname.includes('/qc/qms')) &&
                                   ' dark:bg-meta-4'
-                                  }`}
+                                }`}
                                 onClick={(e) => {
                                   e.preventDefault();
                                   sidebarExpanded
@@ -924,8 +936,9 @@ const Sidebar = ({
                                 <img src={Inspect} alt="Logo" />
                                 QMS
                                 <svg
-                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                    }`}
+                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                    open && 'rotate-90'
+                                  }`}
                                   width="7"
                                   height="8"
                                   viewBox="0 0 7 8"
@@ -940,8 +953,9 @@ const Sidebar = ({
                               </NavLink>
                               {/* <!-- Dropdown Menu Start --> */}
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                   <li>
@@ -959,8 +973,9 @@ const Sidebar = ({
                                 </ul>
                               </div>
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                   <li>
@@ -978,7 +993,6 @@ const Sidebar = ({
                                 </ul>
                               </div>
 
-
                               {/* <!-- Dropdown Menu End --> */}
                             </React.Fragment>
                           );
@@ -988,8 +1002,7 @@ const Sidebar = ({
                     <li>
                       <SidebarLinkGroup
                         activeCondition={
-                          pathname === '/lapor' ||
-                          pathname.includes('lapor')
+                          pathname === '/lapor' || pathname.includes('lapor')
                         }
                       >
                         {(handleClick, open) => {
@@ -997,12 +1010,11 @@ const Sidebar = ({
                             <React.Fragment>
                               <NavLink
                                 to="#"
-                                className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${(pathname === '/qc/lapor' ||
-                                  pathname.includes(
-                                    '/qc/lapor',
-                                  )) &&
+                                className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${
+                                  (pathname === '/qc/lapor' ||
+                                    pathname.includes('/qc/lapor')) &&
                                   ' dark:bg-meta-4'
-                                  }`}
+                                }`}
                                 onClick={(e) => {
                                   e.preventDefault();
                                   sidebarExpanded
@@ -1013,8 +1025,9 @@ const Sidebar = ({
                                 <img src={Inspect} alt="Logo" />
                                 LAPOR
                                 <svg
-                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                    }`}
+                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                    open && 'rotate-90'
+                                  }`}
                                   width="7"
                                   height="8"
                                   viewBox="0 0 7 8"
@@ -1029,8 +1042,9 @@ const Sidebar = ({
                               </NavLink>
                               {/* <!-- Dropdown Menu Start --> */}
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                   <li>
@@ -1048,8 +1062,9 @@ const Sidebar = ({
                                 </ul>
                               </div>
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                   <li>
@@ -1067,7 +1082,6 @@ const Sidebar = ({
                                 </ul>
                               </div>
 
-
                               {/* <!-- Dropdown Menu End --> */}
                             </React.Fragment>
                           );
@@ -1083,9 +1097,7 @@ const Sidebar = ({
         </SidebarLinkGroup>
 
         <SidebarLinkGroup
-          activeCondition={
-            pathname === '/mr' || pathname.includes('mr')
-          }
+          activeCondition={pathname === '/mr' || pathname.includes('mr')}
         >
           {(handleClick, open) => {
             return (
@@ -1100,17 +1112,15 @@ const Sidebar = ({
                   onClick={(e) => {
                     e.preventDefault();
 
-                    sidebarExpanded
-                      ? handleClick()
-                      : setSidebarExpanded(true);
-
+                    sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                   }}
                 >
                   <img src={QC} alt="Logo" />
                   MR
                   <svg
-                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                      }`}
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                      open && 'rotate-90'
+                    }`}
                     width="7"
                     height="8"
                     viewBox="0 0 7 8"
@@ -1125,17 +1135,15 @@ const Sidebar = ({
                 </NavLink>
                 {/* <!-- Dropdown Menu Start --> */}
                 <div
-                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                    }`}
+                  className={`translate transform overflow-hidden ${
+                    !open && 'hidden'
+                  }`}
                 >
                   <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-3">
-
-
                     <li>
                       <SidebarLinkGroup
                         activeCondition={
-                          pathname === '/qms' ||
-                          pathname.includes('qms')
+                          pathname === '/qms' || pathname.includes('qms')
                         }
                       >
                         {(handleClick, open) => {
@@ -1143,12 +1151,11 @@ const Sidebar = ({
                             <React.Fragment>
                               <NavLink
                                 to="#"
-                                className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${(pathname === '/mr/qms' ||
-                                  pathname.includes(
-                                    '/mr/qms',
-                                  )) &&
+                                className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${
+                                  (pathname === '/mr/qms' ||
+                                    pathname.includes('/mr/qms')) &&
                                   ' dark:bg-meta-4'
-                                  }`}
+                                }`}
                                 onClick={(e) => {
                                   e.preventDefault();
                                   sidebarExpanded
@@ -1159,8 +1166,9 @@ const Sidebar = ({
                                 <img src={Inspect} alt="Logo" />
                                 QMS
                                 <svg
-                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                    }`}
+                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                    open && 'rotate-90'
+                                  }`}
                                   width="7"
                                   height="8"
                                   viewBox="0 0 7 8"
@@ -1175,8 +1183,9 @@ const Sidebar = ({
                               </NavLink>
                               {/* <!-- Dropdown Menu Start --> */}
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                   <li>
@@ -1194,8 +1203,9 @@ const Sidebar = ({
                                 </ul>
                               </div>
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                   <li>
@@ -1213,7 +1223,6 @@ const Sidebar = ({
                                 </ul>
                               </div>
 
-
                               {/* <!-- Dropdown Menu End --> */}
                             </React.Fragment>
                           );
@@ -1223,8 +1232,7 @@ const Sidebar = ({
                     <li>
                       <SidebarLinkGroup
                         activeCondition={
-                          pathname === '/lapor' ||
-                          pathname.includes('lapor')
+                          pathname === '/lapor' || pathname.includes('lapor')
                         }
                       >
                         {(handleClick, open) => {
@@ -1232,12 +1240,11 @@ const Sidebar = ({
                             <React.Fragment>
                               <NavLink
                                 to="#"
-                                className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${(pathname === '/mr/lapor' ||
-                                  pathname.includes(
-                                    '/mr/lapor',
-                                  )) &&
+                                className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${
+                                  (pathname === '/mr/lapor' ||
+                                    pathname.includes('/mr/lapor')) &&
                                   ' dark:bg-meta-4'
-                                  }`}
+                                }`}
                                 onClick={(e) => {
                                   e.preventDefault();
                                   sidebarExpanded
@@ -1248,8 +1255,9 @@ const Sidebar = ({
                                 <img src={Inspect} alt="Logo" />
                                 LAPOR
                                 <svg
-                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                    }`}
+                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                    open && 'rotate-90'
+                                  }`}
                                   width="7"
                                   height="8"
                                   viewBox="0 0 7 8"
@@ -1264,8 +1272,9 @@ const Sidebar = ({
                               </NavLink>
                               {/* <!-- Dropdown Menu Start --> */}
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                   <li>
@@ -1283,8 +1292,9 @@ const Sidebar = ({
                                 </ul>
                               </div>
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                   <li>
@@ -1301,7 +1311,6 @@ const Sidebar = ({
                                   </li>
                                 </ul>
                               </div>
-
 
                               {/* <!-- Dropdown Menu End --> */}
                             </React.Fragment>
@@ -1327,10 +1336,11 @@ const Sidebar = ({
                 <React.Fragment>
                   <NavLink
                     to="#"
-                    className={`group relative flex items-center gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/masterdata' ||
-                      pathname.includes('masterdata')) &&
+                    className={`group relative flex items-center gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                      (pathname === '/masterdata' ||
+                        pathname.includes('masterdata')) &&
                       ' dark:bg-meta-4'
-                      }`}
+                    }`}
                     onClick={(e) => {
                       e.preventDefault();
                       sidebarExpanded
@@ -1341,8 +1351,9 @@ const Sidebar = ({
                     <img src={Master} alt="Logo" />
                     Master Data
                     <svg
-                      className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                        }`}
+                      className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                        open && 'rotate-90'
+                      }`}
                       width="7"
                       height="8"
                       viewBox="0 0 7 8"
@@ -1357,8 +1368,9 @@ const Sidebar = ({
                   </NavLink>
                   {/* <!-- Dropdown Menu Start --> */}
                   <div
-                    className={`translate transform overflow-hidden ${!open && 'hidden'
-                      }`}
+                    className={`translate transform overflow-hidden ${
+                      !open && 'hidden'
+                    }`}
                   >
                     <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-6">
                       <li>
@@ -1517,9 +1529,10 @@ const Sidebar = ({
               <React.Fragment>
                 <NavLink
                   to="#"
-                  className={`group relative flex items-center mb-5 gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/qc' || pathname.includes('qc')) &&
+                  className={`group relative flex items-center mb-5 gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                    (pathname === '/qc' || pathname.includes('qc')) &&
                     ' dark:bg-meta-4'
-                    }`}
+                  }`}
                   onClick={(e) => {
                     e.preventDefault();
                     sidebarExpanded ? handleClick() : setSidebarExpanded(true);
@@ -1528,8 +1541,9 @@ const Sidebar = ({
                   <img src={Master} alt="Logo" />
                   Master Data QC
                   <svg
-                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                      }`}
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                      open && 'rotate-90'
+                    }`}
                     width="7"
                     height="8"
                     viewBox="0 0 7 8"
@@ -1544,8 +1558,9 @@ const Sidebar = ({
                 </NavLink>
                 {/* <!-- Dropdown Menu Start --> */}
                 <div
-                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                    }`}
+                  className={`translate transform overflow-hidden ${
+                    !open && 'hidden'
+                  }`}
                 >
                   <ul className="mt-1 mb-5.5 flex flex-col gap-5 pl-6">
                     <li>
@@ -1563,8 +1578,9 @@ const Sidebar = ({
                   </ul>
                 </div>
                 <div
-                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                    }`}
+                  className={`translate transform overflow-hidden ${
+                    !open && 'hidden'
+                  }`}
                 >
                   <ul className="mt-1 mb-5.5 flex flex-col gap-5 pl-6">
                     <li>
@@ -1577,6 +1593,26 @@ const Sidebar = ({
                         }
                       >
                         Final Inspection
+                      </NavLink>
+                    </li>
+                  </ul>
+                </div>
+                <div
+                  className={`translate transform overflow-hidden ${
+                    !open && 'hidden'
+                  }`}
+                >
+                  <ul className="mt-1 mb-5.5 flex flex-col gap-5 pl-6">
+                    <li>
+                      <NavLink
+                        to="/masterdataqc/outsourcing_bj"
+                        className={({ isActive }) =>
+                          'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                          (isActive &&
+                            '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                        }
+                      >
+                        Outsourcing Barang Jadi
                       </NavLink>
                     </li>
                   </ul>
@@ -1630,8 +1666,9 @@ const Sidebar = ({
                     </svg>
                     Maintenance
                     <svg
-                      className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                        }`}
+                      className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                        open && 'rotate-90'
+                      }`}
                       width="7"
                       height="8"
                       viewBox="0 0 7 8"
@@ -1646,8 +1683,9 @@ const Sidebar = ({
                   </NavLink>
                   {/* <!-- Dropdown Menu Start --> */}
                   <div
-                    className={`translate transform overflow-hidden ${!open && 'hidden'
-                      }`}
+                    className={`translate transform overflow-hidden ${
+                      !open && 'hidden'
+                    }`}
                   >
                     <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-3">
                       <li>
@@ -1706,12 +1744,13 @@ const Sidebar = ({
                               <React.Fragment>
                                 <NavLink
                                   to="#"
-                                  className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${(pathname === '/maintenance/inspection' ||
-                                    pathname.includes(
-                                      '/maintenance/inspection',
-                                    )) &&
+                                  className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${
+                                    (pathname === '/maintenance/inspection' ||
+                                      pathname.includes(
+                                        '/maintenance/inspection',
+                                      )) &&
                                     ' dark:bg-meta-4'
-                                    }`}
+                                  }`}
                                   onClick={(e) => {
                                     e.preventDefault();
                                     sidebarExpanded
@@ -1722,8 +1761,9 @@ const Sidebar = ({
                                   <img src={Inspect} alt="Logo" />
                                   Preventive (PM)
                                   <svg
-                                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                      }`}
+                                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                      open && 'rotate-90'
+                                    }`}
                                     width="7"
                                     height="8"
                                     viewBox="0 0 7 8"
@@ -1738,8 +1778,9 @@ const Sidebar = ({
                                 </NavLink>
                                 {/* <!-- Dropdown Menu Start --> */}
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                     <li>
@@ -1757,8 +1798,9 @@ const Sidebar = ({
                                   </ul>
                                 </div>
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                     <li>
@@ -1776,8 +1818,9 @@ const Sidebar = ({
                                   </ul>
                                 </div>
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                     <li>
@@ -1795,8 +1838,9 @@ const Sidebar = ({
                                   </ul>
                                 </div>
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                     <li>
@@ -1814,8 +1858,9 @@ const Sidebar = ({
                                   </ul>
                                 </div>
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                     <li>
@@ -1891,8 +1936,9 @@ const Sidebar = ({
                                   <img src={Inspect} alt="Logo" />
                                   KPI
                                   <svg
-                                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                      }`}
+                                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                      open && 'rotate-90'
+                                    }`}
                                     width="7"
                                     height="8"
                                     viewBox="0 0 7 8"
@@ -1908,8 +1954,9 @@ const Sidebar = ({
                                 {/* <!-- Dropdown Menu Start --> */}
 
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                     <li>
@@ -1958,8 +2005,9 @@ const Sidebar = ({
                                   <img src={Inspect} alt="Logo" />
                                   Sparepart
                                   <svg
-                                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                      }`}
+                                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                      open && 'rotate-90'
+                                    }`}
                                     width="7"
                                     height="8"
                                     viewBox="0 0 7 8"
@@ -1975,15 +2023,16 @@ const Sidebar = ({
                                 {/* <!-- Dropdown Menu Start --> */}
 
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5  md:pl-5 pl-6 py-3">
                                     <li>
                                       <SidebarLinkGroup
                                         activeCondition={
                                           pathname ===
-                                          '/maintenance/sparepart' ||
+                                            '/maintenance/sparepart' ||
                                           pathname.includes('maintenance')
                                         }
                                       >
@@ -2006,8 +2055,9 @@ const Sidebar = ({
                                                 <img src={Inspect} alt="Logo" />
                                                 Stock Opname
                                                 <svg
-                                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                                    }`}
+                                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                                    open && 'rotate-90'
+                                                  }`}
                                                   width="7"
                                                   height="8"
                                                   viewBox="0 0 7 8"
@@ -2023,8 +2073,9 @@ const Sidebar = ({
                                               {/* <!-- Dropdown Menu Start --> */}
 
                                               <div
-                                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                                  }`}
+                                                className={`translate transform overflow-hidden ${
+                                                  !open && 'hidden'
+                                                }`}
                                               >
                                                 <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                                   <li>
@@ -2044,8 +2095,9 @@ const Sidebar = ({
                                                 </ul>
                                               </div>
                                               <div
-                                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                                  }`}
+                                                className={`translate transform overflow-hidden ${
+                                                  !open && 'hidden'
+                                                }`}
                                               >
                                                 <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                                   <li>
@@ -2065,8 +2117,9 @@ const Sidebar = ({
                                                 </ul>
                                               </div>
                                               <div
-                                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                                  }`}
+                                                className={`translate transform overflow-hidden ${
+                                                  !open && 'hidden'
+                                                }`}
                                               >
                                                 <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                                   <li>
@@ -2093,8 +2146,9 @@ const Sidebar = ({
                                     </li>
                                   </ul>
                                   <div
-                                    className={`translate transform overflow-hidden ${!open && 'hidden'
-                                      }`}
+                                    className={`translate transform overflow-hidden ${
+                                      !open && 'hidden'
+                                    }`}
                                   >
                                     <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                       <li>
@@ -2112,8 +2166,9 @@ const Sidebar = ({
                                     </ul>
                                   </div>
                                   <div
-                                    className={`translate transform overflow-hidden ${!open && 'hidden'
-                                      }`}
+                                    className={`translate transform overflow-hidden ${
+                                      !open && 'hidden'
+                                    }`}
                                   >
                                     <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                       <li>
@@ -2131,8 +2186,9 @@ const Sidebar = ({
                                     </ul>
                                   </div>
                                   <div
-                                    className={`translate transform overflow-hidden ${!open && 'hidden'
-                                      }`}
+                                    className={`translate transform overflow-hidden ${
+                                      !open && 'hidden'
+                                    }`}
                                   >
                                     <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                       <li>
@@ -2198,8 +2254,7 @@ const Sidebar = ({
                       <li>
                         <SidebarLinkGroup
                           activeCondition={
-                            pathname === '/lapor' ||
-                            pathname.includes('lapor')
+                            pathname === '/lapor' || pathname.includes('lapor')
                           }
                         >
                           {(handleClick, open) => {
@@ -2207,12 +2262,13 @@ const Sidebar = ({
                               <React.Fragment>
                                 <NavLink
                                   to="#"
-                                  className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${(pathname === '/maintenance/lapor' ||
-                                    pathname.includes(
-                                      '/maintenance/lapor',
-                                    )) &&
+                                  className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${
+                                    (pathname === '/maintenance/lapor' ||
+                                      pathname.includes(
+                                        '/maintenance/lapor',
+                                      )) &&
                                     ' dark:bg-meta-4'
-                                    }`}
+                                  }`}
                                   onClick={(e) => {
                                     e.preventDefault();
                                     sidebarExpanded
@@ -2223,8 +2279,9 @@ const Sidebar = ({
                                   <img src={Inspect} alt="Logo" />
                                   LAPOR
                                   <svg
-                                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                      }`}
+                                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                      open && 'rotate-90'
+                                    }`}
                                     width="7"
                                     height="8"
                                     viewBox="0 0 7 8"
@@ -2239,8 +2296,9 @@ const Sidebar = ({
                                 </NavLink>
                                 {/* <!-- Dropdown Menu Start --> */}
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                     <li>
@@ -2258,8 +2316,9 @@ const Sidebar = ({
                                   </ul>
                                 </div>
                                 <div
-                                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                                    }`}
+                                  className={`translate transform overflow-hidden ${
+                                    !open && 'hidden'
+                                  }`}
                                 >
                                   <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                     <li>
@@ -2276,7 +2335,6 @@ const Sidebar = ({
                                     </li>
                                   </ul>
                                 </div>
-
 
                                 {/* <!-- Dropdown Menu End --> */}
                               </React.Fragment>
@@ -2302,10 +2360,11 @@ const Sidebar = ({
                   <React.Fragment>
                     <NavLink
                       to="#"
-                      className={`group relative flex items-center gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/masterdata' ||
-                        pathname.includes('masterdata')) &&
+                      className={`group relative flex items-center gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                        (pathname === '/masterdata' ||
+                          pathname.includes('masterdata')) &&
                         ' dark:bg-meta-4'
-                        }`}
+                      }`}
                       onClick={(e) => {
                         e.preventDefault();
                         sidebarExpanded
@@ -2316,8 +2375,9 @@ const Sidebar = ({
                       <img src={Master} alt="Logo" />
                       Master Data
                       <svg
-                        className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                          }`}
+                        className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                          open && 'rotate-90'
+                        }`}
                         width="7"
                         height="8"
                         viewBox="0 0 7 8"
@@ -2332,8 +2392,9 @@ const Sidebar = ({
                     </NavLink>
                     {/* <!-- Dropdown Menu Start --> */}
                     <div
-                      className={`translate transform overflow-hidden ${!open && 'hidden'
-                        }`}
+                      className={`translate transform overflow-hidden ${
+                        !open && 'hidden'
+                      }`}
                     >
                       <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-6">
                         <li>
@@ -2492,8 +2553,9 @@ const Sidebar = ({
         <li>
           <NavLink
             to="/dashboard"
-            className={`group relative flex items-center text-white mb-4 gap-5 rounded-sm py-3 px-4 font-medium  duration-300 ease-in-out  ${pathname.includes('/dashboard') && '!bg-white text-primary '
-              }`}
+            className={`group relative flex items-center text-white mb-4 gap-5 rounded-sm py-3 px-4 font-medium  duration-300 ease-in-out  ${
+              pathname.includes('/dashboard') && '!bg-white text-primary '
+            }`}
           >
             <svg
               className="fill-current"
@@ -2545,8 +2607,9 @@ const Sidebar = ({
                   </svg>
                   Maintenance
                   <svg
-                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                      }`}
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                      open && 'rotate-90'
+                    }`}
                     width="7"
                     height="8"
                     viewBox="0 0 7 8"
@@ -2561,8 +2624,9 @@ const Sidebar = ({
                 </NavLink>
                 {/* <!-- Dropdown Menu Start --> */}
                 <div
-                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                    }`}
+                  className={`translate transform overflow-hidden ${
+                    !open && 'hidden'
+                  }`}
                 >
                   <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-3">
                     <li>
@@ -2618,12 +2682,13 @@ const Sidebar = ({
                             <React.Fragment>
                               <NavLink
                                 to="#"
-                                className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${(pathname === '/maintenance/inspection' ||
-                                  pathname.includes(
-                                    '/maintenance/inspection',
-                                  )) &&
+                                className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${
+                                  (pathname === '/maintenance/inspection' ||
+                                    pathname.includes(
+                                      '/maintenance/inspection',
+                                    )) &&
                                   ' dark:bg-meta-4'
-                                  }`}
+                                }`}
                                 onClick={(e) => {
                                   e.preventDefault();
                                   sidebarExpanded
@@ -2634,8 +2699,9 @@ const Sidebar = ({
                                 <img src={Inspect} alt="Logo" />
                                 Preventive (PM)
                                 <svg
-                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                    }`}
+                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                    open && 'rotate-90'
+                                  }`}
                                   width="7"
                                   height="8"
                                   viewBox="0 0 7 8"
@@ -2650,8 +2716,9 @@ const Sidebar = ({
                               </NavLink>
                               {/* <!-- Dropdown Menu Start --> */}
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                   <li>
@@ -2669,8 +2736,9 @@ const Sidebar = ({
                                 </ul>
                               </div>
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                   <li>
@@ -2688,8 +2756,9 @@ const Sidebar = ({
                                 </ul>
                               </div>
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                   <li>
@@ -2707,8 +2776,9 @@ const Sidebar = ({
                                 </ul>
                               </div>
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                   <li>
@@ -2726,8 +2796,9 @@ const Sidebar = ({
                                 </ul>
                               </div>
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                   <li>
@@ -2764,9 +2835,7 @@ const Sidebar = ({
     return (
       <>
         <SidebarLinkGroup
-          activeCondition={
-            pathname === '/qc' || pathname.includes('qc')
-          }
+          activeCondition={pathname === '/qc' || pathname.includes('qc')}
         >
           {(handleClick, open) => {
             return (
@@ -2781,17 +2850,15 @@ const Sidebar = ({
                   onClick={(e) => {
                     e.preventDefault();
 
-                    sidebarExpanded
-                      ? handleClick()
-                      : setSidebarExpanded(true);
-
+                    sidebarExpanded ? handleClick() : setSidebarExpanded(true);
                   }}
                 >
                   <img src={QC} alt="Logo" />
                   Quality Control
                   <svg
-                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                      }`}
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                      open && 'rotate-90'
+                    }`}
                     width="7"
                     height="8"
                     viewBox="0 0 7 8"
@@ -2806,8 +2873,9 @@ const Sidebar = ({
                 </NavLink>
                 {/* <!-- Dropdown Menu Start --> */}
                 <div
-                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                    }`}
+                  className={`translate transform overflow-hidden ${
+                    !open && 'hidden'
+                  }`}
                 >
                   <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-3">
                     <li>
@@ -2832,10 +2900,7 @@ const Sidebar = ({
                               d="M15.5 16.5C15.7652 16.5 16.0196 16.3946 16.2071 16.2071C16.3946 16.0196 16.5 15.7652 16.5 15.5V14H17.25C17.4489 14 17.6397 13.921 17.7803 13.7803C17.921 13.6397 18 13.4489 18 13.25C18 13.0511 17.921 12.8603 17.7803 12.7197C17.6397 12.579 17.4489 12.5 17.25 12.5H16.5V11.5H17.25C17.4489 11.5 17.6397 11.421 17.7803 11.2803C17.921 11.1397 18 10.9489 18 10.75C18 10.5511 17.921 10.3603 17.7803 10.2197C17.6397 10.079 17.4489 10 17.25 10H16.5V8.5C16.5 8.23478 16.3946 7.98043 16.2071 7.79289C16.0196 7.60536 15.7652 7.5 15.5 7.5H14V6.75C14 6.55109 13.921 6.36032 13.7803 6.21967C13.6397 6.07902 13.4489 6 13.25 6C13.0511 6 12.8603 6.07902 12.7197 6.21967C12.579 6.36032 12.5 6.55109 12.5 6.75V7.5H11.5V6.75C11.5 6.55109 11.421 6.36032 11.2803 6.21967C11.1397 6.07902 10.9489 6 10.75 6C10.5511 6 10.3603 6.07902 10.2197 6.21967C10.079 6.36032 10 6.55109 10 6.75V7.5H8.5C8.23478 7.5 7.98043 7.60536 7.79289 7.79289C7.60536 7.98043 7.5 8.23478 7.5 8.5V10H6.75C6.55109 10 6.36032 10.079 6.21967 10.2197C6.07902 10.3603 6 10.5511 6 10.75C6 10.9489 6.07902 11.1397 6.21967 11.2803C6.36032 11.421 6.55109 11.5 6.75 11.5H7.5V12.5H6.75C6.55109 12.5 6.36032 12.579 6.21967 12.7197C6.07902 12.8603 6 13.0511 6 13.25C6 13.4489 6.07902 13.6397 6.21967 13.7803C6.36032 13.921 6.55109 14 6.75 14H7.5V15.5C7.5 15.7652 7.60536 16.0196 7.79289 16.2071C7.98043 16.3946 8.23478 16.5 8.5 16.5H10V17.25C10 17.4489 10.079 17.6397 10.2197 17.7803C10.3603 17.921 10.5511 18 10.75 18C10.9489 18 11.1397 17.921 11.2803 17.7803C11.421 17.6397 11.5 17.4489 11.5 17.25V16.5H12.5V17.25C12.5 17.4489 12.579 17.6397 12.7197 17.7803C12.8603 17.921 13.0511 18 13.25 18C13.4489 18 13.6397 17.921 13.7803 17.7803C13.921 17.6397 14 17.4489 14 17.25V16.5H15.5ZM9 9H15V15H9V9Z"
                               fill=""
                             />
-                            <path
-                              d="M13.5 10.5H10.5V13.5H13.5V10.5Z"
-                              fill=""
-                            />
+                            <path d="M13.5 10.5H10.5V13.5H13.5V10.5Z" fill="" />
                             <path
                               d="M22.8 9.34999L20.5 7.44999V3.74999C20.4984 3.65411 20.4693 3.56071 20.4161 3.48093C20.3629 3.40114 20.2879 3.33833 20.2 3.29999L15.25 1.04999H15.05L14.75 1.14999L14.5 1.29999V4.29999C14.5 4.4989 14.579 4.68967 14.7197 4.83032C14.8603 4.97097 15.0511 5.04999 15.25 5.04999C15.4489 5.04999 15.6397 4.97097 15.7803 4.83032C15.921 4.68967 16 4.4989 16 4.29999V3.59999L18.5 4.74999V8.44999L19.25 9.04999L21 10.45V13.55L19.25 14.95L18.5 15.55V19.25L16 20.4V19.75C16 19.5511 15.921 19.3603 15.7803 19.2197C15.6397 19.079 15.4489 19 15.25 19C15.0511 19 14.8603 19.079 14.7197 19.2197C14.579 19.3603 14.5 19.5511 14.5 19.75V22.75L14.75 22.9L15.05 23H15.25L20.2 20.75C20.2879 20.7116 20.3629 20.6488 20.4161 20.5691C20.4693 20.4893 20.4984 20.3959 20.5 20.3V16.55L22.8 14.65C22.8653 14.6065 22.9181 14.5468 22.9532 14.4766C22.9883 14.4064 23.0044 14.3283 23 14.25V9.74999C23.0103 9.67098 22.9968 9.59069 22.9611 9.51943C22.9255 9.44816 22.8694 9.38916 22.8 9.34999Z"
                               fill=""
@@ -2876,10 +2941,7 @@ const Sidebar = ({
                               d="M15.5 16.5C15.7652 16.5 16.0196 16.3946 16.2071 16.2071C16.3946 16.0196 16.5 15.7652 16.5 15.5V14H17.25C17.4489 14 17.6397 13.921 17.7803 13.7803C17.921 13.6397 18 13.4489 18 13.25C18 13.0511 17.921 12.8603 17.7803 12.7197C17.6397 12.579 17.4489 12.5 17.25 12.5H16.5V11.5H17.25C17.4489 11.5 17.6397 11.421 17.7803 11.2803C17.921 11.1397 18 10.9489 18 10.75C18 10.5511 17.921 10.3603 17.7803 10.2197C17.6397 10.079 17.4489 10 17.25 10H16.5V8.5C16.5 8.23478 16.3946 7.98043 16.2071 7.79289C16.0196 7.60536 15.7652 7.5 15.5 7.5H14V6.75C14 6.55109 13.921 6.36032 13.7803 6.21967C13.6397 6.07902 13.4489 6 13.25 6C13.0511 6 12.8603 6.07902 12.7197 6.21967C12.579 6.36032 12.5 6.55109 12.5 6.75V7.5H11.5V6.75C11.5 6.55109 11.421 6.36032 11.2803 6.21967C11.1397 6.07902 10.9489 6 10.75 6C10.5511 6 10.3603 6.07902 10.2197 6.21967C10.079 6.36032 10 6.55109 10 6.75V7.5H8.5C8.23478 7.5 7.98043 7.60536 7.79289 7.79289C7.60536 7.98043 7.5 8.23478 7.5 8.5V10H6.75C6.55109 10 6.36032 10.079 6.21967 10.2197C6.07902 10.3603 6 10.5511 6 10.75C6 10.9489 6.07902 11.1397 6.21967 11.2803C6.36032 11.421 6.55109 11.5 6.75 11.5H7.5V12.5H6.75C6.55109 12.5 6.36032 12.579 6.21967 12.7197C6.07902 12.8603 6 13.0511 6 13.25C6 13.4489 6.07902 13.6397 6.21967 13.7803C6.36032 13.921 6.55109 14 6.75 14H7.5V15.5C7.5 15.7652 7.60536 16.0196 7.79289 16.2071C7.98043 16.3946 8.23478 16.5 8.5 16.5H10V17.25C10 17.4489 10.079 17.6397 10.2197 17.7803C10.3603 17.921 10.5511 18 10.75 18C10.9489 18 11.1397 17.921 11.2803 17.7803C11.421 17.6397 11.5 17.4489 11.5 17.25V16.5H12.5V17.25C12.5 17.4489 12.579 17.6397 12.7197 17.7803C12.8603 17.921 13.0511 18 13.25 18C13.4489 18 13.6397 17.921 13.7803 17.7803C13.921 17.6397 14 17.4489 14 17.25V16.5H15.5ZM9 9H15V15H9V9Z"
                               fill=""
                             />
-                            <path
-                              d="M13.5 10.5H10.5V13.5H13.5V10.5Z"
-                              fill=""
-                            />
+                            <path d="M13.5 10.5H10.5V13.5H13.5V10.5Z" fill="" />
                             <path
                               d="M22.8 9.34999L20.5 7.44999V3.74999C20.4984 3.65411 20.4693 3.56071 20.4161 3.48093C20.3629 3.40114 20.2879 3.33833 20.2 3.29999L15.25 1.04999H15.05L14.75 1.14999L14.5 1.29999V4.29999C14.5 4.4989 14.579 4.68967 14.7197 4.83032C14.8603 4.97097 15.0511 5.04999 15.25 5.04999C15.4489 5.04999 15.6397 4.97097 15.7803 4.83032C15.921 4.68967 16 4.4989 16 4.29999V3.59999L18.5 4.74999V8.44999L19.25 9.04999L21 10.45V13.55L19.25 14.95L18.5 15.55V19.25L16 20.4V19.75C16 19.5511 15.921 19.3603 15.7803 19.2197C15.6397 19.079 15.4489 19 15.25 19C15.0511 19 14.8603 19.079 14.7197 19.2197C14.579 19.3603 14.5 19.5511 14.5 19.75V22.75L14.75 22.9L15.05 23H15.25L20.2 20.75C20.2879 20.7116 20.3629 20.6488 20.4161 20.5691C20.4693 20.4893 20.4984 20.3959 20.5 20.3V16.55L22.8 14.65C22.8653 14.6065 22.9181 14.5468 22.9532 14.4766C22.9883 14.4064 23.0044 14.3283 23 14.25V9.74999C23.0103 9.67098 22.9968 9.59069 22.9611 9.51943C22.9255 9.44816 22.8694 9.38916 22.8 9.34999Z"
                               fill=""
@@ -2901,8 +2963,7 @@ const Sidebar = ({
                     <li>
                       <SidebarLinkGroup
                         activeCondition={
-                          pathname === '/qms' ||
-                          pathname.includes('qms')
+                          pathname === '/qms' || pathname.includes('qms')
                         }
                       >
                         {(handleClick, open) => {
@@ -2910,12 +2971,11 @@ const Sidebar = ({
                             <React.Fragment>
                               <NavLink
                                 to="#"
-                                className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${(pathname === '/qc/qms' ||
-                                  pathname.includes(
-                                    '/qc/qms',
-                                  )) &&
+                                className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${
+                                  (pathname === '/qc/qms' ||
+                                    pathname.includes('/qc/qms')) &&
                                   ' dark:bg-meta-4'
-                                  }`}
+                                }`}
                                 onClick={(e) => {
                                   e.preventDefault();
                                   sidebarExpanded
@@ -2926,8 +2986,9 @@ const Sidebar = ({
                                 <img src={Inspect} alt="Logo" />
                                 QMS
                                 <svg
-                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                    }`}
+                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                    open && 'rotate-90'
+                                  }`}
                                   width="7"
                                   height="8"
                                   viewBox="0 0 7 8"
@@ -2942,8 +3003,9 @@ const Sidebar = ({
                               </NavLink>
                               {/* <!-- Dropdown Menu Start --> */}
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                   <li>
@@ -2961,8 +3023,9 @@ const Sidebar = ({
                                 </ul>
                               </div>
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                   <li>
@@ -2980,7 +3043,6 @@ const Sidebar = ({
                                 </ul>
                               </div>
 
-
                               {/* <!-- Dropdown Menu End --> */}
                             </React.Fragment>
                           );
@@ -2990,8 +3052,7 @@ const Sidebar = ({
                     <li>
                       <SidebarLinkGroup
                         activeCondition={
-                          pathname === '/lapor' ||
-                          pathname.includes('lapor')
+                          pathname === '/lapor' || pathname.includes('lapor')
                         }
                       >
                         {(handleClick, open) => {
@@ -2999,12 +3060,11 @@ const Sidebar = ({
                             <React.Fragment>
                               <NavLink
                                 to="#"
-                                className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${(pathname === '/qc/lapor' ||
-                                  pathname.includes(
-                                    '/qc/lapor',
-                                  )) &&
+                                className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${
+                                  (pathname === '/qc/lapor' ||
+                                    pathname.includes('/qc/lapor')) &&
                                   ' dark:bg-meta-4'
-                                  }`}
+                                }`}
                                 onClick={(e) => {
                                   e.preventDefault();
                                   sidebarExpanded
@@ -3015,8 +3075,9 @@ const Sidebar = ({
                                 <img src={Inspect} alt="Logo" />
                                 LAPOR
                                 <svg
-                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                                    }`}
+                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                                    open && 'rotate-90'
+                                  }`}
                                   width="7"
                                   height="8"
                                   viewBox="0 0 7 8"
@@ -3031,8 +3092,9 @@ const Sidebar = ({
                               </NavLink>
                               {/* <!-- Dropdown Menu Start --> */}
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                   <li>
@@ -3050,8 +3112,9 @@ const Sidebar = ({
                                 </ul>
                               </div>
                               <div
-                                className={`translate transform overflow-hidden ${!open && 'hidden'
-                                  }`}
+                                className={`translate transform overflow-hidden ${
+                                  !open && 'hidden'
+                                }`}
                               >
                                 <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
                                   <li>
@@ -3068,7 +3131,6 @@ const Sidebar = ({
                                   </li>
                                 </ul>
                               </div>
-
 
                               {/* <!-- Dropdown Menu End --> */}
                             </React.Fragment>
@@ -3093,9 +3155,10 @@ const Sidebar = ({
               <React.Fragment>
                 <NavLink
                   to="#"
-                  className={`group relative flex items-center mb-5 gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/qc' || pathname.includes('qc')) &&
+                  className={`group relative flex items-center mb-5 gap-5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${
+                    (pathname === '/qc' || pathname.includes('qc')) &&
                     ' dark:bg-meta-4'
-                    }`}
+                  }`}
                   onClick={(e) => {
                     e.preventDefault();
                     sidebarExpanded ? handleClick() : setSidebarExpanded(true);
@@ -3104,8 +3167,9 @@ const Sidebar = ({
                   <img src={Master} alt="Logo" />
                   Master Data QC
                   <svg
-                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
-                      }`}
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
+                      open && 'rotate-90'
+                    }`}
                     width="7"
                     height="8"
                     viewBox="0 0 7 8"
@@ -3120,8 +3184,9 @@ const Sidebar = ({
                 </NavLink>
                 {/* <!-- Dropdown Menu Start --> */}
                 <div
-                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                    }`}
+                  className={`translate transform overflow-hidden ${
+                    !open && 'hidden'
+                  }`}
                 >
                   <ul className="mt-1 mb-5.5 flex flex-col gap-5 pl-6">
                     <li>
@@ -3139,8 +3204,9 @@ const Sidebar = ({
                   </ul>
                 </div>
                 <div
-                  className={`translate transform overflow-hidden ${!open && 'hidden'
-                    }`}
+                  className={`translate transform overflow-hidden ${
+                    !open && 'hidden'
+                  }`}
                 >
                   <ul className="mt-1 mb-5.5 flex flex-col gap-5 pl-6">
                     <li>
@@ -3204,8 +3270,9 @@ const Sidebar = ({
   return (
     <aside
       ref={sidebar}
-      className={`absolute left-0 top-0 z-40 xl:z-40 flex h-screen  flex-col overflow-y-hidden w-[270px] bg-gradient-to-b from-[#016AE6] to-[#014BA2] duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+      className={`absolute left-0 top-0 z-40 xl:z-40 flex h-screen  flex-col overflow-y-hidden w-[270px] bg-gradient-to-b from-[#016AE6] to-[#014BA2] duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}
     >
       {/* <!-- SIDEBAR HEADER --> */}
       <div className="flex items-center md:justify-center  gap-2 px-6 py-5.5 lg:py-6.5">

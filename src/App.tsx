@@ -109,8 +109,10 @@ import CheckSheetCoatingPeriode from './components/Tables/QualityControl/Quality
 import CoatingPeriode from './pages/QualityControl/ProsesCoating/CoatingPeriode';
 import TabSamplingHasilRabut from './components/Tables/QualityControl/QualityInspection/SamplingHasilRabut/TabSamplingHasilRabut';
 import SamplingHasilRabut from './pages/QualityControl/SamplingRabut/SamplingHasilRabut';
+import AmparHasilLem from './pages/QualityControl/AmparHasilLem/AmparHasilLem';
 import CheckSheetHasilRabut from './components/Tables/QualityControl/QualityInspection/SamplingHasilRabut/CheckSheetHAsilRabutAwal';
 import RabutAwal from './pages/QualityControl/SamplingRabut/RabutAwal';
+import AmparLemAwal from './pages/QualityControl/AmparHasilLem/AmparLemAwal';
 import NcrMtc from './pages/Maintenance/NCR/Ncrmtc';
 import IncomingNCRQA from './pages/QualityControl/IncomingNCR/IncomingNCRQA';
 import IncomingNCRMR from './pages/MR/NCR/IncomingNCRMR';
@@ -119,7 +121,10 @@ import QcCapa from './pages/QualityControl/Capa/QcCapa';
 import MrCapa from './pages/MR/Capa/MrCapa';
 import FinalInspection from './pages/QualityControl/FinalInspection/FinalInspection';
 import FinalAwal from './pages/QualityControl/FinalInspection/FinalAwal';
+import OutsourcingBJ from './pages/QualityControl/OutsourcingBJ/OutsourcingBJ';
+import OutsourcingBJAwal from './pages/QualityControl/OutsourcingBJ/OutsourcingBJAwal';
 import MasterFinalInspection from './pages/MasterData/QC/MasterFinalInspection';
+import MasterOutsourcingBJ from './pages/MasterData/QC/MasterOutsourcingBJ';
 import BarangRusak from './pages/QualityControl/BarangRusak/BarangRusak';
 import BarangRSChecksheet from './pages/QualityControl/BarangRusak/BarangRSChecksheet';
 import NcrLaporQC from './pages/QualityControl/Lapor/NCR/NcrLaporQC';
@@ -136,7 +141,6 @@ import ChecksheetPraplate from './components/Tables/QualityControl/QualityInspec
 import ChecksheetPralatePage from './pages/QualityControl/ProsesPraplate/ChecksheetPraplate';
 import ProsesLipat from './pages/QualityControl/ProsesLipat/ProsesLipat';
 import ChecksheetLipatPage from './pages/QualityControl/ProsesLipat/ChecksheetLipat';
-
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -897,6 +901,30 @@ function App() {
             </>
           }
         />
+
+        <Route
+          path="/qc/qualityinspection/ampar_hasil_lem"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <AmparHasilLem />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/qc/qualityinspection/ampar/checkAwal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <AmparLemAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
         <Route
           path="/qc/qualityinspection/cetak/jeniscetak/:id"
           element={
@@ -1107,6 +1135,28 @@ function App() {
           }
         />
         <Route
+          path="/qc/qualityinspection/outsourcing_barang_jadi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OutsourcingBJ />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="qc/qualityinspection/outsourcing_barang_jadi/checkAwal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OutsourcingBJAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/qc/qualityinspection/barangrs"
           element={
             <>
@@ -1158,6 +1208,18 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterFinalInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/masterdataqc/outsourcing_bj"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterOutsourcingBJ />
               </ProtectedRoute>
             </>
           }
