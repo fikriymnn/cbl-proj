@@ -74,8 +74,9 @@ function CheckSheetCetakPeriode() {
     });
   };
   async function startTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakPeriodePoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakPeriodePoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -100,8 +101,9 @@ function CheckSheetCetakPeriode() {
     jumlah_sampling: any,
     data_defect: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakPeriodePoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakPeriodePoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -126,8 +128,9 @@ function CheckSheetCetakPeriode() {
   }
 
   async function tambahTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakPeriodePoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakPeriodePoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -156,8 +159,9 @@ function CheckSheetCetakPeriode() {
     sumberMasalah: any,
     index: number,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakPeriodePoint/createDefect`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakPeriodePoint/createDefect`;
     try {
       const res = await axios.post(
         url,
@@ -190,8 +194,9 @@ function CheckSheetCetakPeriode() {
   }
 
   async function doneCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakPeriode/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakPeriode/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -208,8 +213,9 @@ function CheckSheetCetakPeriode() {
   }
 
   async function pendingCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakPeriode/pending/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakPeriode/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -256,7 +262,10 @@ function CheckSheetCetakPeriode() {
   const openModal2 = () => setShowModal2(true);
   const closeModal2 = () => setShowModal2(false);
 
-  const isOnprogres = cetakMesinPeriode?.inspeksi_cetak_periode[0].inspeksi_cetak_periode_point.some((data: { status: any; }) => data?.status === 'on progress')
+  const isOnprogres =
+    cetakMesinPeriode?.inspeksi_cetak_periode[0].inspeksi_cetak_periode_point.some(
+      (data: { status: any }) => data?.status === 'on progress',
+    );
   return (
     <>
       {!isMobile && (
@@ -611,8 +620,9 @@ function CheckSheetCetakPeriode() {
                         (data2: any, i: number) => {
                           return (
                             <div
-                              className={`flex flex-col min-w-[120px] justify-center py-4 ${(i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
-                                } items-center gap-2`}
+                              className={`flex flex-col min-w-[120px] justify-center py-4 ${
+                                (i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
+                              } items-center gap-2`}
                             >
                               <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                 {data2.kode}
@@ -625,10 +635,11 @@ function CheckSheetCetakPeriode() {
                                   onChange={(e) => {
                                     handleChangePointDefect(e, index, i);
                                   }}
-                                  className={`w-[80%]  ${(i + 1) % 2 === 0
-                                    ? ' bg-[#F3F3F3]'
-                                    : 'bg-white'
-                                    } `}
+                                  className={`w-[80%]  ${
+                                    (i + 1) % 2 === 0
+                                      ? ' bg-[#F3F3F3]'
+                                      : 'bg-white'
+                                  } `}
                                 >
                                   <option value={''} disabled>
                                     SELECT VALUE
@@ -650,10 +661,11 @@ function CheckSheetCetakPeriode() {
                                       handleClickNotOke(i, false);
                                     }
                                   }}
-                                  className={`w-[80%]  ${(i + 1) % 2 === 0
-                                    ? ' bg-[#F3F3F3]'
-                                    : 'bg-white'
-                                    } `}
+                                  className={`w-[80%]  ${
+                                    (i + 1) % 2 === 0
+                                      ? ' bg-[#F3F3F3]'
+                                      : 'bg-white'
+                                  } `}
                                 >
                                   <option value={''} disabled selected>
                                     SELECT VALUE
@@ -681,7 +693,7 @@ function CheckSheetCetakPeriode() {
                               ) : null} */}
 
                               {showNotOk[i] == true &&
-                                data.status == 'on progress' ? (
+                              data.status == 'on progress' ? (
                                 <input
                                   type="text"
                                   name="jumlah_defect"
@@ -880,61 +892,56 @@ function CheckSheetCetakPeriode() {
             )}
 
             <div className="flex flex-col  bg-[#f3f3f3] w-[200px] px-2 py-2">
-              <div className='flex w-full justify-center'>
-                <p className='text-black text-sm font-semibold'>
-                  C1.1
-                </p>
+              <div className="flex w-full justify-center">
+                <p className="text-black text-sm font-semibold">C1.1</p>
               </div>
-              <div className='flex flex-col w-full'>
-                <div className='flex gap-1 w-full'>
+              <div className="flex flex-col w-full">
+                <div className="flex gap-1 w-full">
                   <input
                     type="radio"
                     id="ok11"
                     value="ok"
                     name="line_clearance"
-
                   />
-                  <img src={ok} className='w-4' />
+                  <img src={ok} className="w-4" />
                   <label className="">OK</label>
                 </div>
-                <div className='flex gap-1 w-full'>
+                <div className="flex gap-1 w-full">
                   <input
                     type="radio"
                     id="ok12"
                     value="ok (toleransi)"
                     name="line_clearance"
-
                   />
-                  <img src={oktole} className='w-4' />
+                  <img src={oktole} className="w-4" />
                   <label className="">OK (Toleransi)</label>
                 </div>
-                <div className='flex gap-1 w-full'>
+                <div className="flex gap-1 w-full">
                   <input
                     type="radio"
                     id="ok12"
                     value="not ok"
                     name="line_clearance"
-
                   />
-                  <img src={notok} className='w-4' />
+                  <img src={notok} className="w-4" />
                   <label className="">Not OK</label>
                 </div>
-                <div className='flex gap-1 w-full'>
+                <div className="flex gap-1 w-full">
                   <input
                     type="radio"
                     id="ok12"
                     value="-"
                     name="line_clearance"
-
                   />
                   <label className="">-</label>
                 </div>
               </div>
             </div>
           </div>
-          {!isOnprogres &&
-            cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'incoming' ||
-            cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'pending' ? (
+          {(!isOnprogres &&
+            cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+              'incoming') ||
+          cetakMesinPeriode?.inspeksi_cetak_periode[0].status == 'pending' ? (
             <>
               <button
                 disabled={isLoading}
@@ -965,7 +972,7 @@ function CheckSheetCetakPeriode() {
               </label>
               {cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
                 'incoming' ||
-                cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+              cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
                 'pending' ? (
                 <textarea
                   onChange={(e) => setCatatan(e.target.value)}
@@ -982,8 +989,7 @@ function CheckSheetCetakPeriode() {
               )}
             </div>
             <div className="grid col-span-2 items-end justify-end">
-              {!isOnprogres &&
-                cetakMesinPeriode?.status == 'incoming' ? (
+              {!isOnprogres && cetakMesinPeriode?.status == 'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekPeriode(
@@ -995,10 +1001,10 @@ function CheckSheetCetakPeriode() {
                   PENDING
                 </button>
               ) : null}
-              {!isOnprogres &&
+              {(!isOnprogres &&
                 cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
-                'incoming' ||
-                cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
+                  'incoming') ||
+              cetakMesinPeriode?.inspeksi_cetak_periode[0].status ==
                 'pending' ? (
                 <button
                   onClick={() => {
