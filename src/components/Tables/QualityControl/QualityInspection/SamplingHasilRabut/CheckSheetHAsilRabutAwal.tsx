@@ -42,15 +42,11 @@ function CheckSheetHasilRabut() {
     }
   }
   async function getMasterDefect() {
-    const url = `${import.meta.env.VITE_API_LINK}/master/qc/cs/masalahRabut`;
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=7`;
     try {
-      const res = await axios.get(url, {
-        params: {
-          status: 'active',
-        },
-        withCredentials: true,
-      });
-
+      const res = await axios.get(url);
       setDefectMaster(res.data);
       console.log(res.data);
     } catch (error: any) {
@@ -59,8 +55,9 @@ function CheckSheetHasilRabut() {
   }
 
   async function startTaskRabut(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiRabutPoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiRabutPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -84,8 +81,9 @@ function CheckSheetHasilRabut() {
     qty_pallet: any,
     data_defect: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiRabutPoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiRabutPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -110,8 +108,9 @@ function CheckSheetHasilRabut() {
   }
 
   async function tambahTaskRabut(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiRabutPoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiRabutPoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -131,8 +130,9 @@ function CheckSheetHasilRabut() {
   }
 
   async function doneRabut(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiRabut/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiRabut/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -175,8 +175,9 @@ function CheckSheetHasilRabut() {
     idPoint: number,
     index: number,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiRabutPoint/createDefect`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiRabutPoint/createDefect`;
     try {
       const res = await axios.post(
         url,
@@ -184,7 +185,7 @@ function CheckSheetHasilRabut() {
         {
           id_inspeksi_rabut: id,
           id_inspeksi_rabut_point: idPoint,
-          id_defect: idDefect,
+          MasterDefect: idDefect,
         },
 
         {
@@ -527,7 +528,12 @@ function CheckSheetHasilRabut() {
                             </label>
                             <select
                               onChange={(e) => {
-                                setIdDefect(e.target.value);
+                                const selectedDefect = defectMaster?.find(
+                                  (defect: any) =>
+                                    //console.log(defect.id)
+                                    defect.i_id == e.target.value,
+                                );
+                                setIdDefect(selectedDefect);
                               }}
                               className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
                   }`}
@@ -544,11 +550,11 @@ function CheckSheetHasilRabut() {
                                 (dataMaster: any, indexMaster: number) => {
                                   return (
                                     <option
-                                      value={dataMaster.id}
+                                      value={dataMaster.i_id}
                                       className="text-body dark:text-bodydark"
                                     >
-                                      {dataMaster.kode} + {dataMaster.masalah}
-
+                                      {dataMaster.e_kode_produksi} -{' '}
+                                      {dataMaster.nama_kendala}
                                     </option>
                                   );
                                 },
@@ -603,7 +609,7 @@ function CheckSheetHasilRabut() {
             )}
           </div>
           {RabutMesin?.data?.status == 'incoming' ||
-            RabutMesin?.data?.status == 'pending' ? (
+          RabutMesin?.data?.status == 'pending' ? (
             <button
               onClick={() => tambahTaskRabut(RabutMesin?.data.id)}
               className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 mb-2 hover:cursor-pointer"
@@ -697,7 +703,7 @@ function CheckSheetHasilRabut() {
                       </button>
                     ) : null} */}
                     {RabutMesin?.data?.status == 'incoming' ||
-                      RabutMesin?.data?.status == 'pending' ? (
+                    RabutMesin?.data?.status == 'pending' ? (
                       <button
                         onClick={() => doneRabut(RabutMesin?.data.id)}
                         className=" col-span-2 w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
