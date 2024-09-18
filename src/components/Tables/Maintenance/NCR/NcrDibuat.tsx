@@ -69,8 +69,8 @@ function NcrDibuatMTC() {
         );
         console.log(filteredData);
         const onchangeVal: any = [...ncr];
-        onchangeVal[i]['id_department'] = filteredData?.id_department;
-        onchangeVal[i]['department'] = filteredData?.department;
+        onchangeVal[i]['id_department'] = filteredData?.id;
+        onchangeVal[i]['department'] = filteredData?.name;
         setNcr(onchangeVal);
     };
 
