@@ -61,6 +61,17 @@ function NcrDibuatMTC() {
             },
         ]);
     };
+    interface DepartmentOption {
+        id: number;
+        name: string;
+    }
+
+    interface NCR {
+        id_department: number;
+        department: string;
+
+    }
+
 
     //add Point Task
     const handleAddPointTask = (i: any) => {
@@ -79,6 +90,7 @@ function NcrDibuatMTC() {
         const onchangeVal: any = [...ncr];
         onchangeVal[i][name] = value;
         setNcr(onchangeVal);
+
     };
 
     //change value point Task pm1
@@ -429,7 +441,10 @@ function NcrDibuatMTC() {
                                                                                 name="department"
                                                                                 onChange={(e) => {
 
-                                                                                    handleChangePoint(e, i)
+                                                                                    {
+                                                                                        handleChangePoint(e, i)
+                                                                                        console.log([e.target.value])
+                                                                                    }
                                                                                 }}
                                                                                 className={`relative z-20 w-full appearance-none rounded-md border border-stroke bg-transparent py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:text-white
                                                                                     }`}
@@ -438,7 +453,7 @@ function NcrDibuatMTC() {
 
                                                                                     return (
                                                                                         <option
-                                                                                            value={data.name}
+                                                                                            value={data.id}
                                                                                             className="text-gray-800 text-xs font-light dark:text-bodydark"
                                                                                         >
                                                                                             {data.name}
