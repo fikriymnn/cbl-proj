@@ -33,9 +33,8 @@ function ChecksheetRusakSebagian() {
   }
 
   async function startTaskFinal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiFinalPoint/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiFinalPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -59,9 +58,8 @@ function ChecksheetRusakSebagian() {
     qty_pallet: any,
     data_defect: any,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiFinalPoint/stop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiFinalPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -86,9 +84,8 @@ function ChecksheetRusakSebagian() {
   }
 
   async function tambahTaskRabut(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiFinalPoint/create`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiFinalPoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -108,9 +105,8 @@ function ChecksheetRusakSebagian() {
   }
 
   async function doneRabut(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiFinal/done/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiFinal/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -129,9 +125,8 @@ function ChecksheetRusakSebagian() {
   }
 
   async function pendingRabut(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiFinal/pending/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiFinal/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -188,7 +183,7 @@ function ChecksheetRusakSebagian() {
                   fill="#0065DE"
                 />
               </svg>{' '}
-             Barang Rusak Sebagian Checksheet
+              Barang Rusak Sebagian Checksheet
             </p>
 
             <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
@@ -199,26 +194,26 @@ function ChecksheetRusakSebagian() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   No. JO
                 </label>
-               
+
 
                 <label className="text-neutral-500 text-sm font-semibold">
                   Nama Produk
                 </label>
-                
+
                 <label className="text-neutral-500 text-sm font-semibold">
-                Jumlah Druk
+                  Jumlah Druk
                 </label>
 
                 <label className="text-neutral-500 text-sm font-semibold">
                   Outsourcing
                 </label>
-               
+
               </div>
               <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {tanggal}
                 </label>
-               
+
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {FinalInspection?.data?.no_jo}
                 </label>
@@ -230,16 +225,16 @@ function ChecksheetRusakSebagian() {
                   : {FinalInspection?.data?.jumlah_druk}
                 </label>
                 <input type="text" name="" className='border' id="" />
-                
+
               </div>
 
               <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   Jenis
                 </label>
-               <label htmlFor=""></label>
+                <label htmlFor=""></label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                 Waktu Sortir
+                  Waktu Sortir
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold"></label>
               </div>
@@ -248,22 +243,22 @@ function ChecksheetRusakSebagian() {
                   dropdown
                 </label>
                 <div className='flex flex-col'>
-            <div className='flex gap-2'>
+                  <div className='flex gap-2'>
 
-            <input type="radio" name="ss" id="ss" />
-            <label  className='mr-2' htmlFor="ss">Sesuai</label>
-            </div>
-            <div className='flex gap-2'>
+                    <input type="radio" name="ss" id="ss" />
+                    <label className='mr-2' htmlFor="ss">Sesuai</label>
+                  </div>
+                  <div className='flex gap-2'>
 
-            <input type="radio" name="ss" id="ss1" />
-            <label className='mr-2' htmlFor="ss1">Tidak Sesuai</label>
-            </div>
-          </div>
-         
+                    <input type="radio" name="ss" id="ss1" />
+                    <label className='mr-2' htmlFor="ss1">Tidak Sesuai</label>
+                  </div>
+                </div>
+
                 <label className="text-neutral-500 text-sm font-semibold">
-                : dropdown
+                  : dropdown
                 </label>
-               
+
                 <label className="text-neutral-500 text-sm font-semibold"></label>
               </div>
               <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
@@ -271,10 +266,10 @@ function ChecksheetRusakSebagian() {
                   Inspector
                 </label>
 
-                
+
               </div>
               <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
-               
+
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {FinalInspection?.data?.inspector}
                 </label>
@@ -282,110 +277,110 @@ function ChecksheetRusakSebagian() {
             </div>
 
             {/* =============================chekcsheet========================= */}
-            
+
           </div>
-         <div className='bg-white mb-2text-sm flex font-semibold px-5 py-2 mb-2'>
-          <p className='w-20'>No</p>
-          <div className='grid grid-cols-5 w-full'>
+          <div className='bg-white mb-2text-sm flex font-semibold px-5 py-2 mb-2'>
+            <p className='w-20'>No</p>
+            <div className='grid grid-cols-5 w-full'>
 
-          <p>Point Check</p>
-          <p>Standar</p>
-          <p>Hasil Point</p>
-          </div>
-         </div>
-         <div className='bg-white mb-2text-sm flex font-semibold px-5 py-2 mb-2'>
-          <p className='w-20 my-auto'>1</p>
-          <div className='grid grid-cols-5 items-center w-full'>
-
-          <p>Warna</p>
-          <p className=''>Color Tolerance</p>
-          <div className='flex flex-col'>
-            <div className='flex gap-2'>
-
-            <input type="radio" name="ss" id="ss" />
-            <label  className='mr-2' htmlFor="ss">Sesuai</label>
-            </div>
-            <div className='flex gap-2'>
-
-            <input type="radio" name="ss" id="ss1" />
-            <label className='mr-2' htmlFor="ss1">Tidak Sesuai</label>
+              <p>Point Check</p>
+              <p>Standar</p>
+              <p>Hasil Point</p>
             </div>
           </div>
-          <div>
-            <input type="file" name="" id="" />
-          </div>
-          </div>
-         </div>
-         <div className='bg-white mb-2text-sm flex font-semibold px-5 py-2 mb-2'>
-          <p className='w-20 my-auto'>2</p>
-          <div className='grid grid-cols-5 items-center w-full'>
+          <div className='bg-white mb-2text-sm flex font-semibold px-5 py-2 mb-2'>
+            <p className='w-20 my-auto'>1</p>
+            <div className='grid grid-cols-5 items-center w-full'>
 
-          <p>Warna</p>
-          <p className=''>Color Tolerance</p>
-          <div className='flex flex-col'>
-            <div className='flex gap-2'>
+              <p>Warna</p>
+              <p className=''>Color Tolerance</p>
+              <div className='flex flex-col'>
+                <div className='flex gap-2'>
 
-            <input type="radio" name="ss" id="ss" />
-            <label  className='mr-2' htmlFor="ss">Sesuai</label>
-            </div>
-            <div className='flex gap-2'>
+                  <input type="radio" name="ss" id="ss" />
+                  <label className='mr-2' htmlFor="ss">Sesuai</label>
+                </div>
+                <div className='flex gap-2'>
 
-            <input type="radio" name="ss" id="ss1" />
-            <label className='mr-2' htmlFor="ss1">Tidak Sesuai</label>
-            </div>
-          </div>
-          <div>
-            <input type="file" name="" id="" />
-          </div>
-          </div>
-         </div>
-         <div className='bg-white mb-2text-sm flex font-semibold px-5 py-2 mb-2'>
-          <p className='w-20 my-auto'>3</p>
-          <div className='grid grid-cols-5 items-center w-full'>
-
-          <p>Warna</p>
-          <p className=''>Color Tolerance</p>
-          <div className='flex flex-col'>
-            <div className='flex gap-2'>
-
-            <input type="radio" name="ss" id="ss" />
-            <label  className='mr-2' htmlFor="ss">Sesuai</label>
-            </div>
-            <div className='flex gap-2'>
-
-            <input type="radio" name="ss" id="ss1" />
-            <label className='mr-2' htmlFor="ss1">Tidak Sesuai</label>
+                  <input type="radio" name="ss" id="ss1" />
+                  <label className='mr-2' htmlFor="ss1">Tidak Sesuai</label>
+                </div>
+              </div>
+              <div>
+                <input type="file" name="" id="" />
+              </div>
             </div>
           </div>
-          <div>
-            <input type="file" name="" id="" />
-          </div>
-          </div>
-         </div>
-         <div className='bg-white mb-2text-sm flex font-semibold px-5 py-2 mb-2'>
-         
-          <div className='grid grid-cols-5 gap-5 items-center w-full'>
-<div className='col-span-3'>
-  <p>catatan*:</p>
-  <textarea name="" id="" className='w-full border'></textarea>
-</div>
-<div className='flex flex-col'>
-            <div className='flex gap-2'>
+          <div className='bg-white mb-2text-sm flex font-semibold px-5 py-2 mb-2'>
+            <p className='w-20 my-auto'>2</p>
+            <div className='grid grid-cols-5 items-center w-full'>
 
-            <input type="radio" name="ss" id="ss" />
-            <label  className='mr-2' htmlFor="ss">DITERIMA</label>
+              <p>Warna</p>
+              <p className=''>Color Tolerance</p>
+              <div className='flex flex-col'>
+                <div className='flex gap-2'>
+
+                  <input type="radio" name="ss" id="ss" />
+                  <label className='mr-2' htmlFor="ss">Sesuai</label>
+                </div>
+                <div className='flex gap-2'>
+
+                  <input type="radio" name="ss" id="ss1" />
+                  <label className='mr-2' htmlFor="ss1">Tidak Sesuai</label>
+                </div>
+              </div>
+              <div>
+                <input type="file" name="" id="" />
+              </div>
             </div>
-            <div className='flex gap-2'>
+          </div>
+          <div className='bg-white mb-2text-sm flex font-semibold px-5 py-2 mb-2'>
+            <p className='w-20 my-auto'>3</p>
+            <div className='grid grid-cols-5 items-center w-full'>
 
-            <input type="radio" name="ss" id="ss1" />
-            <label className='mr-2' htmlFor="ss1">DITOLAK</label>
+              <p>Warna</p>
+              <p className=''>Color Tolerance</p>
+              <div className='flex flex-col'>
+                <div className='flex gap-2'>
+
+                  <input type="radio" name="ss" id="ss" />
+                  <label className='mr-2' htmlFor="ss">Sesuai</label>
+                </div>
+                <div className='flex gap-2'>
+
+                  <input type="radio" name="ss" id="ss1" />
+                  <label className='mr-2' htmlFor="ss1">Tidak Sesuai</label>
+                </div>
+              </div>
+              <div>
+                <input type="file" name="" id="" />
+              </div>
             </div>
           </div>
-          <button className='text-sm text-white bg-green-600 py-2'>SUBMIT CHECKSHEET</button>
+          <div className='bg-white mb-2text-sm flex font-semibold px-5 py-2 mb-2'>
 
-         </div>
-         </div>
-         
+            <div className='grid grid-cols-5 gap-5 items-center w-full'>
+              <div className='col-span-3'>
+                <p>catatan*:</p>
+                <textarea name="" id="" className='w-full border'></textarea>
+              </div>
+              <div className='flex flex-col'>
+                <div className='flex gap-2'>
+
+                  <input type="radio" name="ss" id="ss" />
+                  <label className='mr-2' htmlFor="ss">DITERIMA</label>
+                </div>
+                <div className='flex gap-2'>
+
+                  <input type="radio" name="ss" id="ss1" />
+                  <label className='mr-2' htmlFor="ss1">DITOLAK</label>
+                </div>
+              </div>
+              <button className='text-sm text-white bg-green-600 py-2'>SUBMIT CHECKSHEET</button>
+
+            </div>
+          </div>
+
         </main>
       )}
     </>

@@ -57,11 +57,8 @@ function ProsesHasilRabut() {
           <div className="min-w-[700px] bg-white rounded-xl">
             <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
               <div className="grid grid-cols-10 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-                <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                  MESIN
-                </label>
 
-                <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                <label className="text-neutral-500 text-sm font-semibold col-span-4">
                   No. Job Order
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold col-span-2">
@@ -76,16 +73,14 @@ function ProsesHasilRabut() {
                 <>
                   <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] gap-2 items-center">
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-4 col-span-2 `}
+                      className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-4 col-span-4 `}
                     >
-                      <label className="text-neutral-500 text-sm font-semibold pl-10">
-                        {data.mesin}
+                      <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-6">
+                        {data.no_jo}
                       </label>
                     </div>
 
-                    <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-6">
-                      {data.no_jo}
-                    </label>
+
                     <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
                       {data.nama_produk}
                     </label>

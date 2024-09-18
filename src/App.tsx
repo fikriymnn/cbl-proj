@@ -131,6 +131,11 @@ import PotongBahanCheck from './pages/QualityControl/ProsesPotongFix/PotongBahan
 import PotongJadiCheck from './pages/QualityControl/ProsesPotongFix/PotongJadi';
 import IncomingOutsourcing from './pages/QualityControl/incomingOutsourcing/IncomingOutsourcing';
 import OutsourcingAwal from './pages/QualityControl/incomingOutsourcing/outsourcingAwal';
+import ProsesPraplate from './pages/QualityControl/ProsesPraplate/ProsesPraplate';
+import ChecksheetPraplate from './components/Tables/QualityControl/QualityInspection/ProsesPraplate/ChekcsheetPraplate';
+import ChecksheetPralatePage from './pages/QualityControl/ProsesPraplate/ChecksheetPraplate';
+import ProsesLipat from './pages/QualityControl/ProsesLipat/ProsesLipat';
+import ChecksheetLipatPage from './pages/QualityControl/ProsesLipat/ChecksheetLipat';
 
 
 function App() {
@@ -787,6 +792,50 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <ProsesCoating />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/praplate"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesPraplate />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/praplate/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ChecksheetPralatePage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lipat"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesLipat />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lipat/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ChecksheetLipatPage />
               </ProtectedRoute>
             </>
           }

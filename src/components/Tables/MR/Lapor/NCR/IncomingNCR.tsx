@@ -56,7 +56,7 @@ function IncomingNCRLaporMR() {
     }, []);
 
     async function getNcrQC() {
-        const url = `${import.meta.env.VITE_API_LINK}/capa?department=mr&status=incoming
+        const url = `${import.meta.env.VITE_API_LINK}/capa?id=29&status=incoming
         `;
         try {
             const res = await axios.get(url, {
