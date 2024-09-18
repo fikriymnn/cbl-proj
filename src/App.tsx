@@ -129,6 +129,8 @@ import CapaLaporMR from './pages/MR/Lapor/Capa/CapaLaporQC';
 import ProsesPotongFIX from './pages/QualityControl/ProsesPotongFix/ProsesPotongFix';
 import PotongBahanCheck from './pages/QualityControl/ProsesPotongFix/PotongBahan';
 import PotongJadiCheck from './pages/QualityControl/ProsesPotongFix/PotongJadi';
+import IncomingOutsourcing from './pages/QualityControl/incomingOutsourcing/IncomingOutsourcing';
+import OutsourcingAwal from './pages/QualityControl/incomingOutsourcing/outsourcingAwal';
 
 
 function App() {
@@ -821,7 +823,29 @@ function App() {
               </ProtectedRoute>
             </>
           }
-        /> */}
+        />
+        <Route
+          path="/qc/qualityinspection/incoming_outsourcing"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingOutsourcing />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/incoming_outsourcing/checkAwal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OutsourcingAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
         <Route
           path="/qc/qualityinspection/sampling_hasil_rabut"
           element={
