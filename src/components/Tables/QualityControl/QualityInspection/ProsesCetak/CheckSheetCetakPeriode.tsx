@@ -27,6 +27,14 @@ function CheckSheetCetakPeriode() {
   const [sumberMasalah, setSumberMasalah] = useState<any>();
   const [cetakMesinPeriodeHistory, setCetakMesinPeriodeHistory] =
     useState<any>();
+  const [DataDepartment, setDataDepartment] = useState<any>();
+
+  const [Department, setDepartment] = useState([
+    {
+      id: 0,
+      department: '',
+    },
+  ]);
   const [openGuide, setOpenGuide] = useState(null);
   const handleClickGuide = (index: any) => {
     setOpenGuide((prevState: any) => {
@@ -36,7 +44,20 @@ function CheckSheetCetakPeriode() {
 
   useEffect(() => {
     getCetakMesinPeriode();
+    getDepartment();
   }, []);
+
+  async function getDepartment() {
+    const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-departmen`;
+    try {
+      const res = await axios.get(url, {});
+
+      console.log(res.data);
+      setDataDepartment(res.data);
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
 
   async function getCetakMesinPeriode() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiCetak/${id}`;
@@ -76,6 +97,7 @@ function CheckSheetCetakPeriode() {
       return updatedShowDetail;
     });
   };
+
   async function startTaskCekPeriode(id: number) {
     const url = `${
       import.meta.env.VITE_API_LINK
@@ -177,6 +199,7 @@ function CheckSheetCetakPeriode() {
           kriteria: kriteria,
           persen_kriteria: persenKriteria,
           sumber_masalah: sumberMasalah,
+          department: Department,
         },
 
         {
@@ -189,6 +212,12 @@ function CheckSheetCetakPeriode() {
       setKriteria(null);
       setPersenKriteria(null);
       setSumberMasalah(null);
+      setDepartment([
+        {
+          id: 0,
+          department: '',
+        },
+      ]);
       getCetakMesinPeriode();
       handleClickAdd(index);
     } catch (error: any) {
@@ -233,6 +262,31 @@ function CheckSheetCetakPeriode() {
       console.log(error.data.msg);
     }
   }
+
+  //add Point
+  const handleAddPointDepartment = () => {
+    setDepartment([
+      ...Department,
+      {
+        id: 0,
+        department: '',
+      },
+    ]);
+  };
+
+  //change value point pm1
+  const handleChangePointDepatment = (e: any, i: number) => {
+    const { name, value } = e.target;
+    const filteredData = DataDepartment.find(
+      (item: any) => item.id == value,
+      // item.id.includes(parseInt(value));
+    );
+    console.log(filteredData);
+    const onchangeVal: any = [...Department];
+    onchangeVal[i]['id'] = filteredData.id;
+    onchangeVal[i]['department'] = filteredData.name;
+    setDepartment(onchangeVal);
+  };
 
   const handleChangePoint = (e: any, i: number) => {
     const { name, value } = e.target;
@@ -1133,6 +1187,47 @@ function CheckSheetCetakPeriode() {
                                   Design
                                 </option>
                               </select>
+
+                              <label className="text-black text-sm font-bold pt-4">
+                                Tujuan Department
+                              </label>
+                              {Department?.map((dt: any, indx) => {
+                                return (
+                                  <select
+                                    onChange={(e) => {
+                                      handleChangePointDepatment(e, index);
+                                    }}
+                                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
+                  }`}
+                                  >
+                                    <option
+                                      value=""
+                                      disabled
+                                      selected
+                                      className="text-body dark:text-bodydark"
+                                    >
+                                      Pilih Tujuan Department
+                                    </option>
+
+                                    {DataDepartment?.map(
+                                      (
+                                        dataDef: any,
+                                        indexDepartment: number,
+                                      ) => {
+                                        return (
+                                          <option
+                                            value={dataDef.id}
+                                            className="text-body dark:text-bodydark"
+                                          >
+                                            {dataDef.name}
+                                          </option>
+                                        );
+                                      },
+                                    )}
+                                  </select>
+                                );
+                              })}
+
                               <button
                                 onClick={() => {
                                   tambahDefectPeriode(
@@ -1173,7 +1268,7 @@ function CheckSheetCetakPeriode() {
                     value="ok"
                     name="line_clearance"
                   />
-                  <img src={ok} className="w-4" />
+                  <img src={ok} alt="" className="w-4" />
                   <label className="">OK</label>
                 </div>
                 <div className="flex gap-1 w-full">
@@ -1183,7 +1278,7 @@ function CheckSheetCetakPeriode() {
                     value="ok (toleransi)"
                     name="line_clearance"
                   />
-                  <img src={oktole} className="w-4" />
+                  <img src={oktole} alt="" className="w-4" />
                   <label className="">OK (Toleransi)</label>
                 </div>
                 <div className="flex gap-1 w-full">
@@ -1193,7 +1288,7 @@ function CheckSheetCetakPeriode() {
                     value="not ok"
                     name="line_clearance"
                   />
-                  <img src={notok} className="w-4" />
+                  <img src={notok} alt="" className="w-4" />
                   <label className="">Not OK</label>
                 </div>
                 <div className="flex gap-1 w-full">
