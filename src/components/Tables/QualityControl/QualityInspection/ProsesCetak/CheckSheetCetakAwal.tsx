@@ -32,8 +32,9 @@ function CheckSheetCetakAwal() {
   }
 
   async function startTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwalPoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwalPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -63,8 +64,9 @@ function CheckSheetCetakAwal() {
     layout_pisau: any,
     acc_warna_awal_jalan: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwalPoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwalPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -95,8 +97,9 @@ function CheckSheetCetakAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwalPoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwalPoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -116,8 +119,9 @@ function CheckSheetCetakAwal() {
   }
 
   async function doneCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwal/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwal/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -131,13 +135,14 @@ function CheckSheetCetakAwal() {
 
       getCetakMesinAwal();
     } catch (error: any) {
-      console.log(error.data.msg);
+      console.log(error);
     }
   }
 
   async function pendingCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwal/pending/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwal/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -167,7 +172,10 @@ function CheckSheetCetakAwal() {
   const jumlahWaktuCheck = formatElapsedTime(
     cetakMesinAwal?.inspeksi_cetak_awal[0].waktu_check,
   );
-  const isOnprogres = cetakMesinAwal?.inspeksi_cetak_awal[0].inspeksi_cetak_awal_point.some((data: { status: any; }) => data?.status === 'on progress')
+  const isOnprogres =
+    cetakMesinAwal?.inspeksi_cetak_awal[0].inspeksi_cetak_awal_point.some(
+      (data: { status: any }) => data?.status === 'on progress',
+    );
 
   return (
     <>
@@ -338,7 +346,7 @@ function CheckSheetCetakAwal() {
                             </p>
                             <>
                               {data.status == 'incoming' &&
-                                cetakMesinAwal?.status == 'incoming' ? (
+                              cetakMesinAwal?.status == 'incoming' ? (
                                 <button
                                   onClick={() => startTaskCekAwal(data.id)}
                                   className="flex w-[50%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
@@ -674,7 +682,7 @@ function CheckSheetCetakAwal() {
                           Catatan<span className="text-red-500">*</span> :
                         </label>
                         {data.status == 'on progress' &&
-                          cetakMesinAwal?.status == 'incoming' ? (
+                        cetakMesinAwal?.status == 'incoming' ? (
                           <textarea
                             name="catatan"
                             defaultValue={data.catatan}
@@ -693,7 +701,7 @@ function CheckSheetCetakAwal() {
                       </div>
                       <div className="grid col-span-2 items-end justify-center">
                         {data.status == 'on progress' &&
-                          cetakMesinAwal?.status == 'incoming' ? (
+                        cetakMesinAwal?.status == 'incoming' ? (
                           <button
                             onClick={() =>
                               stopTaskCekAwal(
@@ -725,8 +733,8 @@ function CheckSheetCetakAwal() {
           {(!isOnprogres &&
             cetakMesinAwal?.status == 'incoming' &&
             cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming') ||
-            (cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' &&
-              cetakMesinAwal?.status == 'incoming') ? (
+          (cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' &&
+            cetakMesinAwal?.status == 'incoming') ? (
             <>
               <button
                 disabled={isLoading}
@@ -751,8 +759,8 @@ function CheckSheetCetakAwal() {
             </label>
             <div className="grid col-span-6 items-end justify-end gap-2">
               {!isOnprogres &&
-                cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming' &&
-                cetakMesinAwal?.status == 'incoming' ? (
+              cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming' &&
+              cetakMesinAwal?.status == 'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0].id)
@@ -765,7 +773,7 @@ function CheckSheetCetakAwal() {
               {(!isOnprogres &&
                 cetakMesinAwal?.status == 'incoming' &&
                 cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'incoming') ||
-                cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' ? (
+              cetakMesinAwal?.inspeksi_cetak_awal[0].status == 'pending' ? (
                 <button
                   onClick={() =>
                     doneCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0].id)
