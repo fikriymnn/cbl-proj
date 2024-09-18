@@ -319,9 +319,9 @@ function CheckSheetCoatingPeriode() {
   const handleChangePointHasil = (e: any, i: number, ii: number) => {
     const { name, value } = e.target;
     const onchangeVal: any = CoatingMesinPeriode;
-    onchangeVal.inspeksi_cetak_periode[0].inspeksi_cetak_periode_point[
+    onchangeVal.inspeksi_coating_result_periode[
       i
-    ].inspeksi_cetak_periode_defect[ii][name] = value;
+    ].inspeksi_coating_result_point_periode[ii][name] = value;
     setCoatingMesinPeriode(onchangeVal);
   };
   const tanggal = convertTimeStampToDateOnly(CoatingMesinPeriode?.tanggal);
@@ -749,7 +749,7 @@ function CheckSheetCoatingPeriode() {
                       </>
                     </div>
 
-                    <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF] items-center">
+                    <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF]  gap-1 rounded-sm">
                       {data?.inspeksi_coating_result_point_periode?.map(
                         (data2: any, i: number) => {
                           return (
