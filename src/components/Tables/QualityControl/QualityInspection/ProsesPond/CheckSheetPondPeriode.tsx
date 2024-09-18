@@ -35,6 +35,7 @@ function CheckSheetPondPeriode() {
       department: '',
     },
   ]);
+  const [masterKode, setMasterKode] = useState<any>();
   const [openGuide, setOpenGuide] = useState(null);
   const handleClickGuide = (index: any) => {
     setOpenGuide((prevState: any) => {
@@ -65,7 +66,24 @@ function CheckSheetPondPeriode() {
   useEffect(() => {
     getPondMesinPeriode();
     getDepartment();
+    getMasterKode();
   }, []);
+
+  async function getMasterKode() {
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=7`;
+
+    try {
+      const res = await axios.get(url);
+
+      setMasterKode(res);
+
+      console.log(res);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
 
   async function getDepartment() {
     const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-departmen`;
@@ -159,6 +177,7 @@ function CheckSheetPondPeriode() {
         url,
         {
           id_inspeksi_pond_periode: id,
+          masterKodePond: masterKode,
         },
         {
           withCredentials: true,

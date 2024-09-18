@@ -36,6 +36,7 @@ function CheckSheetLemPeriode() {
       department: '',
     },
   ]);
+  const [masterKode, setMasterKode] = useState<any>();
   const handleClickGuide = (index: any) => {
     setOpenGuide((prevState: any) => {
       return prevState === index ? null : index;
@@ -66,7 +67,24 @@ function CheckSheetLemPeriode() {
   useEffect(() => {
     getLemMesinPeriode();
     getDepartment();
+    getMasterKode();
   }, []);
+
+  async function getMasterKode() {
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=11`;
+
+    try {
+      const res = await axios.get(url);
+
+      setMasterKode(res);
+
+      console.log(res);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
 
   async function getDepartment() {
     const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-departmen`;
@@ -177,6 +195,7 @@ function CheckSheetLemPeriode() {
         url,
         {
           id_inspeksi_lem_periode: id,
+          masterKodeLem: masterKode,
         },
         {
           withCredentials: true,

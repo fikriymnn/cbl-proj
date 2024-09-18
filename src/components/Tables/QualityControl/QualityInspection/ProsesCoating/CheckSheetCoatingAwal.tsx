@@ -13,10 +13,28 @@ function CheckSheetCoatingAwal() {
   const [isLoading, setIsLoading] = useState(false);
   const [coatingMesinAwal, setCoatingMesinAwal] = useState<any>();
   const [jenisLem, setJenisLem] = useState<any>();
+  const [masterKode, setMasterKode] = useState<any>();
 
   useEffect(() => {
     getCoatingMesinAwal();
+    getMasterKode();
   }, []);
+
+  async function getMasterKode() {
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=5`;
+
+    try {
+      const res = await axios.get(url);
+
+      setMasterKode(res);
+
+      console.log(res);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
 
   async function getCoatingMesinAwal() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiCoating/${id}`;
@@ -123,7 +141,9 @@ function CheckSheetCoatingAwal() {
     try {
       const res = await axios.put(
         url,
-        {},
+        {
+          masterMasalah: masterKode,
+        },
         {
           withCredentials: true,
         },

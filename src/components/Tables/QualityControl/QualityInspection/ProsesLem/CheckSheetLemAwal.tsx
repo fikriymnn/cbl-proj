@@ -16,12 +16,30 @@ function CheckSheetLemAwal() {
   const [cetakMesinAwal, setCetakMesinAwal] = useState<any>();
   const [jenisLem, setJenisLem] = useState<any>();
   const [cetakMesinAwalHistory, setCetakMesinAwalHistory] = useState<any>();
+  const [masterKode, setMasterKode] = useState<any>();
 
   const [array, setArray] = useState<any>();
 
   useEffect(() => {
     getCetakMesinAwal();
+    getMasterKode();
   }, []);
+
+  async function getMasterKode() {
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=11`;
+
+    try {
+      const res = await axios.get(url);
+
+      setMasterKode(res);
+
+      console.log(res);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
 
   async function getCetakMesinAwal() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiLem/${id}`;
@@ -29,9 +47,9 @@ function CheckSheetLemAwal() {
       const res = await axios.get(url, {
         withCredentials: true,
       });
-      setArray
+      setArray;
       setCetakMesinAwal(res.data.data);
-      setCetakMesinAwalHistory(res.data.history)
+      setCetakMesinAwalHistory(res.data.history);
       console.log(res.data.data);
     } catch (error: any) {
       console.log(error.data.msg);
@@ -39,8 +57,9 @@ function CheckSheetLemAwal() {
   }
 
   async function startTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemAwalPoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemAwalPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -69,8 +88,9 @@ function CheckSheetLemAwal() {
     bentuk_jadi: any,
     kebersihan: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemAwalPoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemAwalPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -100,8 +120,9 @@ function CheckSheetLemAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemAwalPoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemAwalPoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -122,8 +143,9 @@ function CheckSheetLemAwal() {
   }
 
   async function pendingCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemAwal/pending/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemAwal/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -140,20 +162,20 @@ function CheckSheetLemAwal() {
   }
 
   async function doneCekAwal(id: number) {
-    if (jenisLem == null
-    ) {
-
+    if (jenisLem == null) {
       alert('Jenis Lem Belum Terisi');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemAwal/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemAwal/done/${id}`;
     try {
       const res = await axios.put(
         url,
         {
           id_inspeksi_lem_awal: id,
           jenis_lem: jenisLem,
+          masterKodeLem: masterKode,
         },
         {
           withCredentials: true,
@@ -177,15 +199,19 @@ function CheckSheetLemAwal() {
   const tanggal = convertTimeStampToDateOnly(cetakMesinAwal?.tanggal);
   const jam = convertDateToTime(cetakMesinAwal?.tanggal);
 
-  const tanggalHistory = convertTimeStampToDateOnly(cetakMesinAwalHistory?.tanggal);
+  const tanggalHistory = convertTimeStampToDateOnly(
+    cetakMesinAwalHistory?.tanggal,
+  );
   const jamHistory = convertDateToTime(cetakMesinAwalHistory?.tanggal);
 
   const jumlahWaktuCheck = formatElapsedTime(
     cetakMesinAwal?.inspeksi_lem_awal[0].waktu_check,
   );
 
-
-  const isOnprogres = cetakMesinAwal?.inspeksi_lem_awal[0].inspeksi_lem_awal_point.some((data: { status: any; }) => data?.status === 'on progress')
+  const isOnprogres =
+    cetakMesinAwal?.inspeksi_lem_awal[0].inspeksi_lem_awal_point.some(
+      (data: { status: any }) => data?.status === 'on progress',
+    );
   const [showHistory, setShowHistory] = useState(false);
   const openModalHistory = () => setShowHistory(true);
   const closeModalHistory = () => setShowHistory(false);
@@ -196,7 +222,7 @@ function CheckSheetLemAwal() {
         <main className="overflow-x-hidden">
           <div className="min-w-[700px] bg-white rounded-xl">
             <div className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12 justify-between">
-              <div className='flex'>
+              <div className="flex">
                 <svg
                   width="24"
                   height="24"
@@ -213,8 +239,7 @@ function CheckSheetLemAwal() {
                 </svg>{' '}
                 Checksheet
               </div>
-              <div className='text-[14px] font-semibold '>
-
+              <div className="text-[14px] font-semibold ">
                 <button
                   onClick={() => openModalHistory()}
                   className="  rounded-sm  text-sm text-blue-500 font-bold justify-center items-center px-4  hover:cursor-pointer"
@@ -229,7 +254,6 @@ function CheckSheetLemAwal() {
                       judul={'History Pengisian'}
                     >
                       <>
-
                         <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
                           <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">
                             <label className="text-neutral-500 text-sm font-semibold">
@@ -250,7 +274,6 @@ function CheckSheetLemAwal() {
                               : {cetakMesinAwalHistory?.jumlah_pcs}
                             </label>
 
-
                             <div className="flex gap-1 font-semibold">
                               :
                               <input
@@ -258,12 +281,10 @@ function CheckSheetLemAwal() {
                                 disabled
                                 defaultValue={cetakMesinAwalHistory?.jenis_lem}
                                 onChange={(e) => {
-                                  setJenisLem(e.target.value)
-
+                                  setJenisLem(e.target.value);
                                 }}
                               />
                             </div>
-
                           </div>
 
                           <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
@@ -330,7 +351,9 @@ function CheckSheetLemAwal() {
                         </div>
                         {cetakMesinAwalHistory?.inspeksi_lem_awal[0]?.inspeksi_lem_awal_point?.map(
                           (data: any, index: number) => {
-                            const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
+                            const lamaPengerjaan = formatElapsedTime(
+                              data.lama_pengerjaan,
+                            );
                             return (
                               <>
                                 <div className="flex flex-col py-6 px-10 border-b-8 border-[#D8EAFF]">
@@ -354,11 +377,8 @@ function CheckSheetLemAwal() {
                                         <p className="md:text-[14px] text-[9px] font-semibold">
                                           Time : {lamaPengerjaan}
                                         </p>
-
                                       </div>
                                     </div>
-
-
                                   </div>
                                 </div>
                                 <div className="grid grid-cols-7 border-b-8 border-[#D8EAFF]">
@@ -411,12 +431,16 @@ function CheckSheetLemAwal() {
 
                                   <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.posisi_lem}</label>
+                                      <label className="pl-2">
+                                        {data.posisi_lem}
+                                      </label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-white items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.daya_rekat}</label>
+                                      <label className="pl-2">
+                                        {data.daya_rekat}
+                                      </label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
@@ -435,16 +459,19 @@ function CheckSheetLemAwal() {
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.bentuk_jadi}</label>
+                                      <label className="pl-2">
+                                        {data.bentuk_jadi}
+                                      </label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-white items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.kebersihan}</label>
+                                      <label className="pl-2">
+                                        {data.kebersihan}
+                                      </label>
                                     </>
                                   </div>
                                 </div>
-
                               </>
                             );
                           },
@@ -453,9 +480,7 @@ function CheckSheetLemAwal() {
                     </ModalKosongan>
                   </>
                 )}
-
               </div>
-
             </div>
 
             <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
@@ -482,12 +507,10 @@ function CheckSheetLemAwal() {
                   <div className="flex md:gap-1 font-semibold">
                     :{' '}
                     <input
-
                       className="border rounded"
                       type="text"
                       onChange={(e) => {
-                        setJenisLem(e.target.value)
-
+                        setJenisLem(e.target.value);
                       }}
                     />
                   </div>
@@ -499,8 +522,7 @@ function CheckSheetLemAwal() {
                       disabled
                       defaultValue={cetakMesinAwal.jenis_lem}
                       onChange={(e) => {
-                        setJenisLem(e.target.value)
-
+                        setJenisLem(e.target.value);
                       }}
                     />
                   </div>
@@ -600,7 +622,7 @@ function CheckSheetLemAwal() {
                             </p>
                             <>
                               {data.status == 'incoming' &&
-                                cetakMesinAwal?.status == 'incoming' ? (
+                              cetakMesinAwal?.status == 'incoming' ? (
                                 <button
                                   onClick={() => startTaskCekAwal(data.id)}
                                   className="flex w-[50%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
@@ -907,7 +929,7 @@ function CheckSheetLemAwal() {
                           Catatan<span className="text-red-500">*</span> :
                         </label>
                         {data.status == 'on progress' &&
-                          cetakMesinAwal?.status == 'incoming' ? (
+                        cetakMesinAwal?.status == 'incoming' ? (
                           <textarea
                             name="catatan"
                             defaultValue={data.catatan}
@@ -926,7 +948,7 @@ function CheckSheetLemAwal() {
                       </div>
                       <div className="grid col-span-2 items-end justify-center">
                         {data.status == 'on progress' &&
-                          cetakMesinAwal?.status == 'incoming' ? (
+                        cetakMesinAwal?.status == 'incoming' ? (
                           <button
                             onClick={() =>
                               stopTaskCekAwal(
@@ -954,25 +976,24 @@ function CheckSheetLemAwal() {
               },
             )}
           </div>
-          {
-            (!isOnprogres &&
-              cetakMesinAwal?.status == 'incoming' &&
-              cetakMesinAwal?.inspeksi_lem_awal[0].status == 'incoming') ||
-              (cetakMesinAwal?.inspeksi_lem_awal[0].status == 'pending' &&
-                cetakMesinAwal?.status == 'incoming') ? (
-              <>
-                <button
-                  disabled={isLoading}
-                  onClick={() =>
-                    tambahTaskCekAwal(cetakMesinAwal?.inspeksi_lem_awal[0].id)
-                  }
-                  className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
-                >
-                  {isLoading ? 'Loading...' : '+ Periode Check'}
-                </button>
-                {isLoading && <Loading />}
-              </>
-            ) : null}
+          {(!isOnprogres &&
+            cetakMesinAwal?.status == 'incoming' &&
+            cetakMesinAwal?.inspeksi_lem_awal[0].status == 'incoming') ||
+          (cetakMesinAwal?.inspeksi_lem_awal[0].status == 'pending' &&
+            cetakMesinAwal?.status == 'incoming') ? (
+            <>
+              <button
+                disabled={isLoading}
+                onClick={() =>
+                  tambahTaskCekAwal(cetakMesinAwal?.inspeksi_lem_awal[0].id)
+                }
+                className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
+              >
+                {isLoading ? 'Loading...' : '+ Periode Check'}
+              </button>
+              {isLoading && <Loading />}
+            </>
+          ) : null}
 
           <div className="grid grid-cols-10 border-b-8 items-center border-[#D8EAFF] px-4 py-4 gap-3 bg-white rounded-b-xl mt-2">
             <label className=" text-[#6c6b6b] text-sm font-semibold col-span-2">
@@ -984,8 +1005,8 @@ function CheckSheetLemAwal() {
             </label>
             <div className="grid col-span-6 items-end justify-end gap-2">
               {!isOnprogres &&
-                cetakMesinAwal?.inspeksi_lem_awal[0].status == 'incoming' &&
-                cetakMesinAwal?.status == 'incoming' ? (
+              cetakMesinAwal?.inspeksi_lem_awal[0].status == 'incoming' &&
+              cetakMesinAwal?.status == 'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekAwal(cetakMesinAwal?.inspeksi_lem_awal[0].id)
@@ -998,8 +1019,7 @@ function CheckSheetLemAwal() {
               {(!isOnprogres &&
                 cetakMesinAwal?.status == 'incoming' &&
                 cetakMesinAwal?.inspeksi_lem_awal[0].status == 'incoming') ||
-                cetakMesinAwal?.inspeksi_lem_awal[0].status == 'pending' ? (
-
+              cetakMesinAwal?.inspeksi_lem_awal[0].status == 'pending' ? (
                 <button
                   onClick={() =>
                     doneCekAwal(cetakMesinAwal?.inspeksi_lem_awal[0].id)

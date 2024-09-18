@@ -35,6 +35,9 @@ function CheckSheetCetakPeriode() {
       department: '',
     },
   ]);
+
+  const [masterKodeCetak, setMasterKodeCetak] = useState<any>();
+  const [masterKodeCetak2, setMasterKodeCetak2] = useState<any>();
   const [openGuide, setOpenGuide] = useState(null);
   const handleClickGuide = (index: any) => {
     setOpenGuide((prevState: any) => {
@@ -45,7 +48,27 @@ function CheckSheetCetakPeriode() {
   useEffect(() => {
     getCetakMesinPeriode();
     getDepartment();
+    getMasterKode();
   }, []);
+
+  async function getMasterKode() {
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=3`;
+    const url2 = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=4`;
+    try {
+      const res = await axios.get(url);
+      const res2 = await axios.get(url);
+
+      setMasterKodeCetak(res);
+      setMasterKodeCetak2(res2);
+      console.log(res);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
 
   async function getDepartment() {
     const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-departmen`;
@@ -162,6 +185,8 @@ function CheckSheetCetakPeriode() {
         url,
         {
           id_inspeksi_cetak_periode: id,
+          masterKodeCetak: masterKodeCetak,
+          masterKodeCetak2: masterKodeCetak2,
         },
         {
           withCredentials: true,
