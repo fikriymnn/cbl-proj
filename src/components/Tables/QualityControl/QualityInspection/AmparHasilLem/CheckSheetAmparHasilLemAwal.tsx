@@ -43,7 +43,7 @@ function CheckSheetHasilRabut() {
   }
   async function getMasterDefect() {
     const url = `${import.meta.env.VITE_API_LINK_P1
-      }/api/list-kendala?criteria=true&proses=7`;
+      }/api/list-kendala?criteria=true`;
     try {
       const res = await axios.get(url);
       setDefectMaster(res.data);
