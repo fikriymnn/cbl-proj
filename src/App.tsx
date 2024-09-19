@@ -135,7 +135,11 @@ import ProsesPotongFIX from './pages/QualityControl/ProsesPotongFix/ProsesPotong
 import PotongBahanCheck from './pages/QualityControl/ProsesPotongFix/PotongBahan';
 import PotongJadiCheck from './pages/QualityControl/ProsesPotongFix/PotongJadi';
 import IncomingOutsourcing from './pages/QualityControl/incomingOutsourcing/IncomingOutsourcing';
-import OutsourcingAwal from './pages/QualityControl/incomingOutsourcing/outsourcingAwal';
+import OutsourcingAwal from './pages/QualityControl/incomingOutsourcingBarangJadi/outsourcingBarangJadiAwal';
+import IncomingOutsourcingBarangJadi from './pages/QualityControl/incomingOutsourcingBarangJadi/IncomingOutsourcingBarangJadi';
+import OutsourcingAwalBarangJadi from './pages/QualityControl/incomingOutsourcingBarangJadi/outsourcingBarangJadiAwal';
+import OutsourcingBarangJadiAwal from './pages/QualityControl/incomingOutsourcingBarangJadi/outsourcingBarangJadiAwal';
+import IncomingOutsourcingAwal from './pages/QualityControl/incomingOutsourcing/IncomingOutsourcingAwal';
 import ProsesPraplate from './pages/QualityControl/ProsesPraplate/ProsesPraplate';
 import ChecksheetPraplate from './components/Tables/QualityControl/QualityInspection/ProsesPraplate/ChekcsheetPraplate';
 import ChecksheetPralatePage from './pages/QualityControl/ProsesPraplate/ChecksheetPraplate';
@@ -868,12 +872,34 @@ function App() {
           }
         />
         <Route
+          path="/qc/qualityinspection/incoming_outsourcing_barang_jadi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingOutsourcingBarangJadi />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/qc/qualityinspection/incoming_outsourcing/checkAwal/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <OutsourcingAwal />
+                <IncomingOutsourcingAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/incoming_outsourcing_barang_jadi/checkAwal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OutsourcingBarangJadiAwal />
               </ProtectedRoute>
             </>
           }
