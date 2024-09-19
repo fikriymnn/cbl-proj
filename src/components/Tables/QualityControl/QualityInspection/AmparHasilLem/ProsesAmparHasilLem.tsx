@@ -57,7 +57,7 @@ function ProsesAmparHasilLem() {
           <div className="min-w-[700px] bg-white rounded-xl">
             <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
               <div className="grid grid-cols-10 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-                <label className="text-neutral-500 text-sm font-semibold col-span-4">
+                <label className="text-neutral-500 text-sm font-semibold col-span-2">
                   No. Job Order
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold col-span-2">
@@ -72,9 +72,12 @@ function ProsesAmparHasilLem() {
                 <>
                   <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] gap-2 items-center">
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-4 col-span-4 `}
+                      className={`w-full h-full sticky left-0 z-20  gap-8 col-span-2 flex items-center`}
                     >
-                      <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-6">
+                      <div
+                        className={`w-2 h-full sticky left-0 z-20 bg-green-600  `}
+                      ></div>
+                      <label className="text-neutral-500 text-sm font-semibold ">
                         {data.no_jo}
                       </label>
                     </div>
@@ -82,7 +85,7 @@ function ProsesAmparHasilLem() {
                     <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
                       {data.nama_produk}
                     </label>
-                    <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                    <label className="text-neutral-500 text-sm font-semibold col-span-4">
                       {data.operator}
                     </label>
                     <div className="justify-end flex pr-2 col-span-2">

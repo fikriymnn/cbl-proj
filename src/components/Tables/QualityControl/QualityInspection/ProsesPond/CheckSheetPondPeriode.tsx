@@ -935,7 +935,7 @@ function CheckSheetPondPeriode() {
                         (data2: any, i: number) => {
                           return (
                             <div
-                              className={`flex flex-col min-w-[200px] justify-center py-4 ${(i + 1) % 2 === 0 ? ' bg-[#F3F3F3]' : 'bg-white'
+                              className={`flex flex-col min-w-[200px] justify-center py-4 
                                 } items-center gap-2 
                                  ${data2.hasil == 'ok' ? 'bg-blue-300' :
                                   data2.hasil == 'ok (toleransi)' ? 'bg-yellow-300' :

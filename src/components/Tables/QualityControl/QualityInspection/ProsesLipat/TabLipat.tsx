@@ -7,6 +7,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import ProsesLipat from './ProsesLipat';
+import HistoryProsesLipat from './HistoryProsesLipat';
 
 
 
@@ -153,7 +154,7 @@ export default function TabLipat() {
                     <ProsesLipat />
                 </TabPanel>
                 <TabPanel value={value} index={1} dir={theme.direction}>
-
+                    <HistoryProsesLipat />
                 </TabPanel>
 
             </Box>

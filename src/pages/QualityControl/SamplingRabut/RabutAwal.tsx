@@ -10,7 +10,7 @@ const RabutAwal = () => {
     return (
         <DefaultLayout>
 
-            <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>QC &gt; Inspeksi Quality  &gt; Sampling Hasil Rabut &gt; Awal</p>
+            <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>QC &gt; Inspeksi Quality  &gt; Sampling Hasil Rabut </p>
 
             <CheckSheetHasilRabut />
 
