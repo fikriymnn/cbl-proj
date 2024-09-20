@@ -7,6 +7,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import OngoingJOBarangRS from './OngoingJOBarangRusak';
+import HistoryBarangRS from './HistoryBarangRs';
 
 
 interface TabPanelProps {
@@ -155,7 +156,7 @@ export default function TabBarangRusak() {
           <ProsesFinalInspectionPending/>
         </TabPanel> */}
                 <TabPanel value={value} index={1} dir={theme.direction}>
-
+                    <HistoryBarangRS />
                 </TabPanel>
             </Box>
         </>

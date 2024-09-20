@@ -91,34 +91,47 @@ function ListIncoming2() {
                                 <div className='flex flex-col col-span-1  text-stone-500 text-[16px] font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
                                     <p className=''>No</p>
                                 </div>
-                                <div className='flex flex-col col-span-2  text-stone-500 text-[16px] font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
+                                <div className='flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
                                     <p className=''>Supplier</p>
                                 </div>
-                                <div className='flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
+
+                                <div className='flex flex-col   text-stone-500 text-[16px] font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
                                     <p className=''>No. Surat Jalan</p>
                                 </div>
                                 <div className='flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
                                     <p className=''>Nama Barang</p>
                                 </div>
-                                <div className='flex flex-col  justify-end col-span-4 items-end'>
+                                <div className='flex flex-col   text-stone-500 text-[16px] font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
+                                    <p className=''>Gramatur</p>
+                                </div>
+                                <div className='flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
+                                    <p className=''>No. JO</p>
+                                </div>
+                                <div className='flex flex-col  justify-end  items-end'>
                                 </div>
                             </section>
                             {incoming?.map((data: any, i: any) => (
                                 <>
                                     <section className=' grid grid-cols-10 px-4 items-center  border-b-8 border-[#D8EAFF] '>
-                                        <div className='flex flex-col col-span-1   sticky left-2 ps-3 md:ps-0 bg-white'>
+                                        <div className='flex flex-col    sticky left-2 ps-3 md:ps-0 bg-white'>
                                             <p className='text-stone-500 text-sm font-medium'>{i + 1}</p>
                                         </div>
-                                        <div className='flex flex-col col-span-2   sticky left-2 ps-3 md:ps-0 bg-white'>
+                                        <div className='flex flex-col   col-span-2  sticky left-2 ps-3 md:ps-0 bg-white'>
                                             <p className='text-stone-500 text-sm font-medium line-clamp-1'>{data.supplier}</p>
                                         </div>
-                                        <div className='flex flex-col  col-span-2  sticky left-2 ps-3 md:ps-0 bg-white'>
+                                        <div className='flex flex-col   sticky left-2 ps-3 md:ps-0 bg-white'>
                                             <p className='text-stone-500 text-sm font-medium line-clamp-1'>{data.no_surat_jalan}</p>
                                         </div>
                                         <div className='flex flex-col  col-span-2  sticky left-2 ps-3 md:ps-0 bg-white'>
                                             <p className='text-stone-500 text-sm font-medium line-clamp-1'>{data.jenis_kertas}</p>
                                         </div>
-                                        <div className='flex flex-col  justify-end col-span-3 items-end'>
+                                        <div className='flex flex-col    sticky left-2 ps-3 md:ps-0 bg-white'>
+                                            <p className='text-stone-500 text-sm font-medium line-clamp-1'>{data.gramatur}</p>
+                                        </div>
+                                        <div className='flex flex-col   sticky left-2 ps-3 md:ps-0 bg-white'>
+                                            <p className='text-stone-500 text-sm font-medium line-clamp-1'>{data.no_jo}</p>
+                                        </div>
+                                        <div className='flex flex-col  justify-end col-span-2 items-end'>
 
                                             <Link to={`/qc/qualityinspection/list/${data.id}`}>
 

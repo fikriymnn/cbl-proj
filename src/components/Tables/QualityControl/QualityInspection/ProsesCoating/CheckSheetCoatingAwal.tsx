@@ -21,9 +21,8 @@ function CheckSheetCoatingAwal() {
   }, []);
 
   async function getMasterKode() {
-    const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/list-kendala?criteria=true&proses=5`;
+    const url = `${import.meta.env.VITE_API_LINK_P1
+      }/api/list-kendala?criteria=true&proses=5`;
 
     try {
       const res = await axios.get(url);
@@ -54,9 +53,8 @@ function CheckSheetCoatingAwal() {
   }
 
   async function startTaskCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCoatingResult/awal/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCoatingResult/awal/start/${id}`;
     try {
       const res = await axios.get(url, {
         withCredentials: true,
@@ -81,9 +79,8 @@ function CheckSheetCoatingAwal() {
     spot_uv: any,
     tes_cracking: any,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCoatingResult/awal/stop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCoatingResult/awal/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -114,9 +111,8 @@ function CheckSheetCoatingAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCoatingResult/awal/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCoatingResult/awal/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -135,9 +131,8 @@ function CheckSheetCoatingAwal() {
   }
 
   async function doneCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCoating/awal/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCoating/awal/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -157,9 +152,8 @@ function CheckSheetCoatingAwal() {
   }
 
   async function pendingCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiCoating/pending/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCoating/pending/${id}`;
     try {
       const res = await axios.get(
         url,
@@ -689,7 +683,7 @@ function CheckSheetCoatingAwal() {
             )}
           </div>
           {coatingMesinAwal?.inspeksi_coating_sub_awal[0].status ==
-          'incoming' ? (
+            'incoming' ? (
             <>
               <button
                 disabled={isLoading}
@@ -700,7 +694,7 @@ function CheckSheetCoatingAwal() {
                 }
                 className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
               >
-                {isLoading ? 'Loading...' : '+ Periode Check'}
+                {isLoading ? 'Loading...' : '+ Awal Jalan'}
               </button>
               {isLoading && <Loading />}
             </>
@@ -727,7 +721,7 @@ function CheckSheetCoatingAwal() {
                 </button>
               ) : null}
               {coatingMesinAwal?.inspeksi_coating_sub_awal[0].status ==
-              'incoming' ? (
+                'incoming' ? (
                 <button
                   onClick={() =>
                     doneCekAwal(

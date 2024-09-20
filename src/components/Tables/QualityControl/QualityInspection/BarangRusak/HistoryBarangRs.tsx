@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
 
-function OngoingJOBarangRS() {
+function HistoryBarangRS() {
     const [isMobile, setIsMobile] = useState(false);
     const kosong: any = [];
     const today = new Date();
@@ -38,7 +38,7 @@ function OngoingJOBarangRS() {
         try {
             const res = await axios.get(url, {
                 params: {
-                    status: 'incoming',
+                    status: 'history',
                 },
                 withCredentials: true,
             });
@@ -152,4 +152,4 @@ function OngoingJOBarangRS() {
     );
 }
 
-export default OngoingJOBarangRS;
+export default HistoryBarangRS;

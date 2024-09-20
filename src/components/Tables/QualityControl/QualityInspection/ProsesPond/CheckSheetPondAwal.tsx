@@ -24,9 +24,8 @@ function CheckSheetPondAwal() {
   }, []);
 
   async function getMasterKode() {
-    const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/list-kendala?criteria=true&proses=7`;
+    const url = `${import.meta.env.VITE_API_LINK_P1
+      }/api/list-kendala?criteria=true&proses=7`;
 
     try {
       const res = await axios.get(url);
@@ -60,9 +59,8 @@ function CheckSheetPondAwal() {
     setPondMesinAwal(onchangeVal);
   };
   async function startTaskCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPondAwalPoint/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondAwalPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -91,9 +89,8 @@ function CheckSheetPondAwal() {
     riil: any,
     reforasi: any,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPondAwalPoint/stop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondAwalPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -122,9 +119,8 @@ function CheckSheetPondAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPondAwalPoint/create`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondAwalPoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -144,9 +140,8 @@ function CheckSheetPondAwal() {
   }
 
   async function doneCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPondAwal/done/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondAwal/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -165,9 +160,8 @@ function CheckSheetPondAwal() {
     }
   }
   async function pendingCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPondAwal/pending/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondAwal/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -620,7 +614,7 @@ function CheckSheetPondAwal() {
                             </p>
                             <>
                               {data.status == 'incoming' &&
-                              pondMesinAwal?.status == 'incoming' ? (
+                                pondMesinAwal?.status == 'incoming' ? (
                                 <button
                                   onClick={() => startTaskCekAwal(data.id)}
                                   className="flex w-[50%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
@@ -920,7 +914,7 @@ function CheckSheetPondAwal() {
                           Catatan<span className="text-red-500">*</span> :
                         </label>
                         {data.status == 'on progress' &&
-                        pondMesinAwal?.status == 'incoming' ? (
+                          pondMesinAwal?.status == 'incoming' ? (
                           <textarea
                             name="catatan"
                             defaultValue={data.catatan}
@@ -939,7 +933,7 @@ function CheckSheetPondAwal() {
                       </div>
                       <div className="grid col-span-2 items-end justify-center">
                         {data.status == 'on progress' &&
-                        pondMesinAwal?.status == 'incoming' ? (
+                          pondMesinAwal?.status == 'incoming' ? (
                           <button
                             onClick={() => {
                               stopTaskCekAwal(
@@ -970,8 +964,8 @@ function CheckSheetPondAwal() {
           {(!isOnprogres &&
             pondMesinAwal?.status == 'incoming' &&
             pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming') ||
-          (pondMesinAwal?.inspeksi_pond_awal[0].status == 'pending' &&
-            pondMesinAwal?.status == 'incoming') ? (
+            (pondMesinAwal?.inspeksi_pond_awal[0].status == 'pending' &&
+              pondMesinAwal?.status == 'incoming') ? (
             <>
               <button
                 disabled={isLoading}
@@ -980,7 +974,7 @@ function CheckSheetPondAwal() {
                 }
                 className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
               >
-                {isLoading ? 'Loading...' : '+ Periode Check'}
+                {isLoading ? 'Loading...' : '+ Awal Jalan'}
               </button>
               {isLoading && <Loading />}
             </>
@@ -996,8 +990,8 @@ function CheckSheetPondAwal() {
             </label>
             <div className="grid col-span-6 items-end justify-end gap-2">
               {!isOnprogres &&
-              pondMesinAwal?.status == 'incoming' &&
-              pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ? (
+                pondMesinAwal?.status == 'incoming' &&
+                pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekAwal(pondMesinAwal?.inspeksi_pond_awal[0].id)
@@ -1010,7 +1004,7 @@ function CheckSheetPondAwal() {
               {(!isOnprogres &&
                 pondMesinAwal?.status == 'incoming' &&
                 pondMesinAwal?.inspeksi_pond_awal[0].status == 'incoming') ||
-              pondMesinAwal?.inspeksi_pond_awal[0].status == 'pending' ? (
+                pondMesinAwal?.inspeksi_pond_awal[0].status == 'pending' ? (
                 <button
                   onClick={() =>
                     doneCekAwal(pondMesinAwal?.inspeksi_pond_awal[0].id)
