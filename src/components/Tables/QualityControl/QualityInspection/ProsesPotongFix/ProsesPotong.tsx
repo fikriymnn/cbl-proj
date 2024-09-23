@@ -84,26 +84,29 @@ function ProsesPotongMesin() {
                     <div className='min-w-[700px] bg-white rounded-xl'>
 
                         <div className=' w-full h-full flex-col border-b-8 border-[#D8EAFF]'>
-                            <div className='grid grid-cols-10 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 '>
+                            <div className='grid grid-cols-12 pl-4 py-4 border-b-8 border-[#D8EAFF]  '>
 
-                                <div className='flex w-full col-span-2 bg-red items-center'>
 
-                                    <div className={`w-2 h-full sticky left-0 z-20   gap-8  `}>
-
-                                    </div>
-
-                                    <label className='text-neutral-500 text-sm font-semibold  '>
-                                        Nama Mesin
-                                    </label>
-                                </div>
-
+                                <label className='text-neutral-500 text-sm font-semibold '>
+                                    Mesin
+                                </label>
                                 <label className='text-neutral-500 text-sm font-semibold col-span-2 '>
                                     No. JO
                                 </label>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2 '>
 
+                                <label className='text-neutral-500 text-sm font-semibold  '>
+                                    Shift
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                    Customer
+                                </label>
+                                <label className='text-neutral-500 text-sm font-semibold  '>
+                                    Tanggal
+                                </label>
+                                <label className='text-neutral-500 text-sm font-semibold  col-span-2 line-clamp-1'>
+                                    Item
+                                </label>
+                                <label className='text-neutral-500 text-sm font-semibold col-span-2 uppercase'>
                                     Jenis Potong
                                 </label>
 
@@ -115,29 +118,39 @@ function ProsesPotongMesin() {
                             {pondMesin != null &&
                                 pondMesin.data?.map((data: any, i: any) => (
                                     <>
-                                        <div className='grid grid-cols-10 border-b-8 border-[#D8EAFF] gap-2 items-center '>
+                                        <div className='grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center '>
 
-                                            <div className='flex w-full col-span-2 bg-red items-center'>
+                                            <div className='flex w-full bg-red items-center gap-4'>
 
                                                 <div className={`w-2 h-full sticky left-0 z-20  gap-8 py-6 ${data.jenis_potong == 'potong bahan' ? 'bg-green-600' : 'bg-blue-600'}`}>
 
                                                 </div>
 
-                                                <label className='text-neutral-500 text-sm font-semibold pl-10 '>
+                                                <label className='text-neutral-500 text-sm font-semibold '>
                                                     {data.mesin}
                                                 </label>
                                             </div>
 
-                                            <label className='text-neutral-500 text-sm font-semibold col-span-2 pl-6'>
+                                            <label className='text-neutral-500 text-sm font-semibold col-span-2 '>
                                                 {data.no_jo}
                                             </label>
-                                            <label className='text-neutral-500 text-sm font-semibold col-span-2 pl-3'>
-                                                {data.nama_produk}
+
+                                            <label className='text-neutral-500 text-sm font-semibold  '>
+                                                {data.shift}
+                                            </label>
+                                            <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                {data.customer}
+                                            </label>
+                                            <label className='text-neutral-500 text-sm font-semibold  '>
+                                                {data.tanggal}
+                                            </label>
+                                            <label className='text-neutral-500 text-sm font-semibold  col-span-2 line-clamp-1'>
+                                                {data.item}
                                             </label>
                                             <label className='text-neutral-500 text-sm font-semibold col-span-2 uppercase'>
                                                 {data.jenis_potong}
                                             </label>
-                                            <div className='justify-end flex pr-2 col-span-2'>
+                                            <div className='justify-end flex pr-2 '>
                                                 {data.jenis_potong == 'potong bahan' ? (
                                                     <>
                                                         <Link to={`/qc/qualityinspection/prosespotong/bahan/${data.id}`}>

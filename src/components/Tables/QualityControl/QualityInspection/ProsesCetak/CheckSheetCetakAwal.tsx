@@ -8,6 +8,8 @@ import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import Loading from '../../../../Loading';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
+import formatInteger from '../../../../../utils/formaterInteger';
+
 
 function CheckSheetCetakAwal() {
   const { id } = useParams();
@@ -270,10 +272,10 @@ function CheckSheetCetakAwal() {
                               : {tanggalHistory}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {cetakMesinAwalHistory?.jumlah_druk}
+                              :  {formatInteger(parseInt(cetakMesinAwalHistory?.jumlah_druk))}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {cetakMesinAwalHistory?.jumlah_pcs}
+                              : {formatInteger(parseInt(cetakMesinAwalHistory?.jumlah_pcs))}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {cetakMesinAwalHistory?.jenis_kertas}
@@ -530,10 +532,10 @@ function CheckSheetCetakAwal() {
                   : {tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.jumlah_druk}
+                  : {formatInteger(parseInt(cetakMesinAwal?.jumlah_druk))}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.jumlah_pcs}
+                  : {formatInteger(parseInt(cetakMesinAwal?.jumlah_pcs))}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {cetakMesinAwal?.jenis_kertas}

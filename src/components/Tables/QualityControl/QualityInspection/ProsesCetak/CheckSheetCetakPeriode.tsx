@@ -12,6 +12,7 @@ import notok from '../../../../../images/icon/notOKQC.svg';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import Loading from '../../../../Loading';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
+import formatInteger from '../../../../../utils/formaterInteger';
 
 function CheckSheetCetakPeriode() {
   const { id } = useParams();
@@ -432,10 +433,12 @@ function CheckSheetCetakPeriode() {
                               : {tanggalHistory}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {cetakMesinPeriodeHistory?.jumlah_druk}
+                              : {formatInteger(parseInt(cetakMesinPeriodeHistory?.jumlah_druk))}
+
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {cetakMesinPeriodeHistory?.jumlah_pcs}
+                              : {formatInteger(parseInt(cetakMesinPeriodeHistory?.jumlah_pcs))}
+
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {cetakMesinPeriodeHistory?.jenis_kertas}
@@ -673,10 +676,11 @@ function CheckSheetCetakPeriode() {
                   : {tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinPeriode?.jumlah_druk}
+                  : {formatInteger(parseInt(cetakMesinPeriode?.jumlah_druk))}
+
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinPeriode?.jumlah_pcs}
+                  : {formatInteger(parseInt(cetakMesinPeriode?.jumlah_pcs))}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {cetakMesinPeriode?.jenis_kertas}
@@ -853,7 +857,7 @@ function CheckSheetCetakPeriode() {
                           <input
                             type="text"
                             disabled
-                            defaultValue={data.numerator}
+                            defaultValue={formatInteger(parseInt(data.numerator))}
                             name="numerator"
                             onChange={(e) => handleChangePoint(e, index)}
                             className="text-sm font-semibold w-[90%] border-stroke border"
@@ -875,7 +879,7 @@ function CheckSheetCetakPeriode() {
                         {data.status == 'done' ? (
                           <input
                             type="text"
-                            defaultValue={data.jumlah_sampling}
+                            defaultValue={formatInteger(parseInt(data.jumlah_sampling))}
                             disabled
                             name="jumlah_sampling"
                             onChange={(e) => handleChangePoint(e, index)}
@@ -1152,7 +1156,7 @@ function CheckSheetCetakPeriode() {
                                 <input
                                   type="text"
                                   name="jumlah_defect"
-                                  defaultValue={data2.jumlah_defect}
+                                  defaultValue={formatInteger(parseInt(data2.jumlah_defect))}
                                   disabled
                                   onChange={(e) =>
                                     handleChangePointHasil(e, index, i)
@@ -1495,7 +1499,7 @@ function CheckSheetCetakPeriode() {
                   <label>Kode: </label>
                   <label>{data.kode}</label>
                   <label>Total Defect: </label>
-                  <label>{data.total_defect}</label>
+                  <label>{formatInteger(parseInt(data.total_defect))}</label>
                 </div>
               );
             })}

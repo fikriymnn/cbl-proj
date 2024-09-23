@@ -6,6 +6,7 @@ import convertDateToTime from '../../../../../utils/converDateToTime';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
 import Loading from '../../../../Loading';
+import formatInteger from '../../../../../utils/formaterInteger';
 
 function CheckSheetCoatingAwal() {
   const { id } = useParams();
@@ -203,7 +204,7 @@ function CheckSheetCoatingAwal() {
                   fill="#0065DE"
                 />
               </svg>{' '}
-              Printing Checksheet
+              Coating Checksheet
             </p>
 
             <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
@@ -227,10 +228,10 @@ function CheckSheetCoatingAwal() {
               </div>
               <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {tanggal}
+                  :  {coatingMesinAwal?.tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {coatingMesinAwal?.jumlah} / Mata
+                  : {formatInteger(parseInt(coatingMesinAwal?.jumlah_druk))} / {formatInteger(parseInt(coatingMesinAwal?.mata))}
                 </label>
 
                 <label className="text-neutral-500 text-sm font-semibold">
@@ -261,7 +262,7 @@ function CheckSheetCoatingAwal() {
               </div>
               <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {jam}
+                  : {coatingMesinAwal?.jam}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold"></label>
                 <label className="text-neutral-500 text-sm font-semibold">

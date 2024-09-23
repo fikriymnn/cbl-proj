@@ -11,6 +11,7 @@ import oktole from '../../../../../images/icon/okToleransiQC.svg';
 import notok from '../../../../../images/icon/notOKQC.svg';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import Loading from '../../../../Loading';
+import formatInteger from '../../../../../utils/formaterInteger';
 
 function CheckSheetCoatingPeriode() {
   const { id } = useParams();
@@ -56,6 +57,7 @@ function CheckSheetCoatingPeriode() {
       return updatedShowDetail;
     });
   };
+
   const handleClickNotOke = (index: number, isi: boolean) => {
     setShowNotOk((prevState) => {
       const updatedShowDetail = [...prevState]; // Create a copy
@@ -63,6 +65,7 @@ function CheckSheetCoatingPeriode() {
       return updatedShowDetail;
     });
   };
+
   useEffect(() => {
     getCoatingMesinPeriode();
     getDepartment();
@@ -357,7 +360,7 @@ function CheckSheetCoatingPeriode() {
                   fill="#0065DE"
                 />
               </svg>{' '}
-              Printing Checksheet
+              Coating Checksheet
             </p>
 
             <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
@@ -386,7 +389,7 @@ function CheckSheetCoatingPeriode() {
                   : {tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {CoatingMesinPeriode?.jumlah} / Mata
+                  : {formatInteger(parseInt(CoatingMesinPeriode?.jumlah_druk))} / {formatInteger(parseInt(CoatingMesinPeriode?.mata))}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {CoatingMesinPeriode?.jumlah_pcs}

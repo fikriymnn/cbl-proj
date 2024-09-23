@@ -145,6 +145,12 @@ function ProsesPraplateRepeat() {
                                                             >
                                                                 <>
                                                                     <div className='flex flex-col w-full  px-4 py-2 pt-8'>
+
+                                                                        <input
+                                                                            type="text"
+
+                                                                            className="text-sm h-10 font-semibold w-full border-black border rounded-md"
+                                                                        ></input>
                                                                         <button
 
                                                                             className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
