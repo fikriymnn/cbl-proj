@@ -527,7 +527,7 @@ function CheckSheetCoatingPeriode() {
                     ) : (
                       <></>
                     )}
-                    <div className="flex px-5 py-5 gap-3">
+                    <div className="flex min-w-screen justify-between px-2 py-4">
                       <label className="text-sm font-semibold">
                         {index + 1}
                       </label>

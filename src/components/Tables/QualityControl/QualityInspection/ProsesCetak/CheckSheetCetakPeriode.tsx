@@ -536,7 +536,7 @@ function CheckSheetCetakPeriode() {
                             );
                             return (
                               <>
-                                <div className="border-b-8 border-[#D8EAFF]">
+                                <div className="flex w-screen border-b-8 border-[#D8EAFF]">
                                   <div className="flex px-5 py-5 gap-7">
                                     <label className="text-sm font-semibold">
                                       {index + 1}
@@ -829,7 +829,7 @@ function CheckSheetCetakPeriode() {
                     ) : (
                       <></>
                     )}
-                    <div className="flex px-5 py-5 gap-7">
+                    <div className="flex min-w-screen justify-between px-2 py-4">
                       <label className="text-sm font-semibold">
                         {index + 1}
                       </label>
@@ -937,41 +937,45 @@ function CheckSheetCetakPeriode() {
                             </>
                           ) : data.status == 'on progress' ? (
                             <>
-                              <p className="font-bold text-green-600">
-                                Task Dimulai
-                              </p>
-                              <button
-                                onClick={() => {
-                                  console.log(data);
-                                  stopTaskCekPeriode(
-                                    data.id,
-                                    data.waktu_mulai,
-                                    data.catatan,
-                                    data.numerator,
-                                    data.jumlah_sampling,
-                                    data.inspeksi_cetak_periode_defect,
-                                  );
-                                  setShowNotOk(
-                                    new Array(add != null && add.length).fill(
-                                      false,
-                                    ),
-                                  );
-                                }}
-                                className="flex w-full  rounded-md bg-red-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
-                              >
-                                <svg
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 14 14"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
+                              <div className='flex flex-col'>
+
+
+                                <p className="font-bold text-green-600">
+                                  Task Dimulai
+                                </p>
+                                <button
+                                  onClick={() => {
+                                    console.log(data);
+                                    stopTaskCekPeriode(
+                                      data.id,
+                                      data.waktu_mulai,
+                                      data.catatan,
+                                      data.numerator,
+                                      data.jumlah_sampling,
+                                      data.inspeksi_cetak_periode_defect,
+                                    );
+                                    setShowNotOk(
+                                      new Array(add != null && add.length).fill(
+                                        false,
+                                      ),
+                                    );
+                                  }}
+                                  className="flex w-full  rounded-md bg-red-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
                                 >
-                                  <path
-                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                    fill="white"
-                                  />
-                                </svg>
-                              </button>
+                                  <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 14 14"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                      fill="white"
+                                    />
+                                  </svg>
+                                </button>
+                              </div>
                             </>
                           ) : null}
                         </div>
