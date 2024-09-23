@@ -7,6 +7,7 @@ import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import Loading from '../../../../Loading';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
+import formatInteger from '../../../../../utils/formaterInteger';
 
 function CheckSheetHasilRabut() {
   const { id } = useParams();
@@ -42,9 +43,8 @@ function CheckSheetHasilRabut() {
     }
   }
   async function getMasterDefect() {
-    const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/list-kendala?criteria=true`;
+    const url = `${import.meta.env.VITE_API_LINK_P1
+      }/api/list-kendala?criteria=true`;
     try {
       const res = await axios.get(url);
       setDefectMaster(res.data);
@@ -55,9 +55,8 @@ function CheckSheetHasilRabut() {
   }
 
   async function startTaskRabut(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiRabutPoint/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiRabutPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -81,9 +80,8 @@ function CheckSheetHasilRabut() {
     qty_pallet: any,
     data_defect: any,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiRabutPoint/stop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiRabutPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -108,9 +106,8 @@ function CheckSheetHasilRabut() {
   }
 
   async function tambahTaskRabut(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiRabutPoint/create`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiRabutPoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -130,9 +127,8 @@ function CheckSheetHasilRabut() {
   }
 
   async function doneRabut(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiRabut/done/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiRabut/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -175,9 +171,8 @@ function CheckSheetHasilRabut() {
     idPoint: number,
     index: number,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiRabutPoint/createDefect`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiRabutPoint/createDefect`;
     try {
       const res = await axios.post(
         url,
@@ -355,7 +350,7 @@ function CheckSheetHasilRabut() {
                           {data.status == 'done' ? (
                             <input
                               name="qty_pallet"
-                              defaultValue={data.qty_pallet}
+                              defaultValue={formatInteger(parseInt(data.qty_pallet))}
                               disabled
                               onChange={(e) => handleChangeRabutPoint(e, index)}
                               type="text"
@@ -609,7 +604,7 @@ function CheckSheetHasilRabut() {
             )}
           </div>
           {RabutMesin?.data?.status == 'incoming' ||
-          RabutMesin?.data?.status == 'pending' ? (
+            RabutMesin?.data?.status == 'pending' ? (
             <button
               onClick={() => tambahTaskRabut(RabutMesin?.data.id)}
               className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 mb-2 hover:cursor-pointer"
@@ -627,7 +622,7 @@ function CheckSheetHasilRabut() {
                 <input
                   type="text"
                   disabled
-                  defaultValue={RabutMesin?.sumQtyPallet}
+                  defaultValue={formatInteger(parseInt(RabutMesin?.sumQtyPallet))}
                   className="bg-[#e8e6e6] border rounded border-strokedark"
                 />
               </div>
@@ -642,7 +637,7 @@ function CheckSheetHasilRabut() {
                           </label>
                           <input
                             type="text"
-                            defaultValue={data.total_defect}
+                            defaultValue={formatInteger(parseInt(data.total_defect))}
                             className="bg-[#e8e6e6] px-1 border rounded border-strokedark w-full"
                           />
                         </div>
@@ -658,7 +653,7 @@ function CheckSheetHasilRabut() {
                     <input
                       type="text"
                       disabled
-                      defaultValue={RabutMesin?.totalDefect}
+                      defaultValue={formatInteger(parseInt(RabutMesin?.totalDefect))}
                       className="bg-[#e8e6e6]  px-1 border rounded border-strokedark w-full"
                     />
                   </div>
@@ -703,7 +698,7 @@ function CheckSheetHasilRabut() {
                       </button>
                     ) : null} */}
                     {RabutMesin?.data?.status == 'incoming' ||
-                    RabutMesin?.data?.status == 'pending' ? (
+                      RabutMesin?.data?.status == 'pending' ? (
                       <button
                         onClick={() => doneRabut(RabutMesin?.data.id)}
                         className=" col-span-2 w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"

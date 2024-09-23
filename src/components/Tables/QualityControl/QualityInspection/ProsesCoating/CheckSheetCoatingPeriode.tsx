@@ -392,7 +392,7 @@ function CheckSheetCoatingPeriode() {
                   : {formatInteger(parseInt(CoatingMesinPeriode?.jumlah_druk))} / {formatInteger(parseInt(CoatingMesinPeriode?.mata))}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {CoatingMesinPeriode?.jumlah_pcs}
+                  : {formatInteger(parseInt(CoatingMesinPeriode?.jumlah_pcs))}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {CoatingMesinPeriode?.jenis_kertas}

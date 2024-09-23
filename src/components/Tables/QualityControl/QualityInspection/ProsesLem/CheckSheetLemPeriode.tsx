@@ -12,6 +12,7 @@ import notok from '../../../../../images/icon/notOKQC.svg';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import Loading from '../../../../Loading';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
+import formatInteger from '../../../../../utils/formaterInteger';
 
 function CheckSheetLemPeriode() {
   const { id } = useParams();
@@ -373,7 +374,7 @@ function CheckSheetLemPeriode() {
                     fill="#0065DE"
                   />
                 </svg>{' '}
-                Printing Checksheet
+                Lem Checksheet
               </div>
               <div className="text-[14px] font-semibold ">
                 <button
@@ -413,7 +414,7 @@ function CheckSheetLemPeriode() {
                               : {LemMesinPeriodeHistory?.jumlah}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {LemMesinPeriodeHistory?.jumlah_pcs}
+                              : {formatInteger(parseInt(LemMesinPeriodeHistory?.jumlah_pcs))}
                             </label>
 
                             <div className="flex gap-1 font-semibold">
@@ -421,7 +422,7 @@ function CheckSheetLemPeriode() {
                               <input
                                 type="text"
                                 disabled
-                                defaultValue={LemMesinPeriodeHistory.jenis_lem}
+                                defaultValue={LemMesinPeriodeHistory?.jenis_lem}
                                 onChange={(e) => setJenisLem(e.target.value)}
                               />
                             </div>
@@ -637,7 +638,7 @@ function CheckSheetLemPeriode() {
                   : {LemMesinPeriode?.jumlah}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {LemMesinPeriode?.jumlah_pcs}
+                  : {formatInteger(parseInt(LemMesinPeriode?.jumlah_pcs))}
                 </label>
 
                 {LemMesinPeriode?.jenis_lem == null ? (
@@ -655,7 +656,7 @@ function CheckSheetLemPeriode() {
                     <input
                       type="text"
                       disabled
-                      defaultValue={LemMesinPeriode.jenis_lem}
+                      defaultValue={LemMesinPeriode?.jenis_lem}
                       onChange={(e) => setJenisLem(e.target.value)}
                     />
                   </div>
@@ -826,7 +827,7 @@ function CheckSheetLemPeriode() {
                             <input
                               type="text"
                               disabled
-                              defaultValue={data.numerator}
+                              defaultValue={formatInteger(parseInt(data.numerator))}
                               name="numerator"
                               onChange={(e) => handleChangePoint(e, index)}
                               className="text-sm font-semibold w-[90%] border-stroke border"
@@ -849,7 +850,7 @@ function CheckSheetLemPeriode() {
                           {data.status == 'done' ? (
                             <input
                               type="text"
-                              defaultValue={data.jumlah_sampling}
+                              defaultValue={formatInteger(parseInt(data.jumlah_sampling))}
                               disabled
                               name="jumlah_sampling"
                               onChange={(e) => handleChangePoint(e, index)}
@@ -1088,7 +1089,7 @@ function CheckSheetLemPeriode() {
                                   <input
                                     type="text"
                                     name="jumlah_defect"
-                                    defaultValue={data2.jumlah_defect}
+                                    defaultValue={formatInteger(parseInt(data2.jumlah_defect))}
                                     disabled
                                     onChange={(e) =>
                                       handleChangePointHasil(e, index, i)
@@ -1421,7 +1422,7 @@ function CheckSheetLemPeriode() {
                   <label>kode: </label>
                   <label>{data.kode}</label>
                   <label>Total Defect: </label>
-                  <label>{data.total_defect}</label>
+                  <label>{formatInteger(parseInt(data.total_defect))}</label>
                 </div>
               );
             })}

@@ -12,6 +12,7 @@ import notok from '../../../../../images/icon/notOKQC.svg';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import Loading from '../../../../Loading';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
+import formatInteger from '../../../../../utils/formaterInteger';
 
 function CheckSheetPondPeriode() {
   const { id } = useParams();
@@ -415,11 +416,11 @@ function CheckSheetPondPeriode() {
                               : {tanggal}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {pondMesinPeriodeHistory?.jumlah_druk} / Isi :{' '}
-                              {pondMesinPeriodeHistory?.mata}
+                              : {formatInteger(parseInt(pondMesinPeriodeHistory?.jumlah_druk))} /  {formatInteger(parseInt(pondMesinPeriodeHistory?.mata))}
+
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {pondMesinPeriodeHistory?.jumlah_pcs}
+                              : {formatInteger(parseInt(pondMesinPeriodeHistory?.jumlah_pcs))}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {pondMesinPeriodeHistory?.ukuran_jadi}
@@ -643,11 +644,11 @@ function CheckSheetPondPeriode() {
                   : {tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {pondMesinPeriode?.jumlah_druk} / Isi :{' '}
-                  {pondMesinPeriode?.mata}
+                  : {formatInteger(parseInt(pondMesinPeriode?.jumlah_druk))} / {formatInteger(parseInt(pondMesinPeriode?.mata))}
+
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {pondMesinPeriode?.jumlah_pcs}
+                  : {formatInteger(parseInt(pondMesinPeriode?.jumlah_pcs))}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {pondMesinPeriode?.ukuran_jadi}
@@ -810,7 +811,7 @@ function CheckSheetPondPeriode() {
                           <input
                             type="text"
                             disabled
-                            defaultValue={data.numerator}
+                            defaultValue={formatInteger(parseInt(data.numerator))}
                             name="numerator"
                             onChange={(e) => handleChangePoint(e, index)}
                             className="text-sm font-semibold w-[90%] border-stroke border"
@@ -832,7 +833,7 @@ function CheckSheetPondPeriode() {
                         {data.status == 'done' ? (
                           <input
                             type="text"
-                            defaultValue={data.jumlah_sampling}
+                            defaultValue={formatInteger(parseInt(data.jumlah_sampling))}
                             disabled
                             name="jumlah_sampling"
                             onChange={(e) => handleChangePoint(e, index)}
@@ -1065,7 +1066,7 @@ function CheckSheetPondPeriode() {
                                 <input
                                   type="text"
                                   name="jumlah_defect"
-                                  defaultValue={data2.jumlah_defect}
+                                  defaultValue={formatInteger(parseInt(data2.jumlah_defect))}
                                   disabled
                                   onChange={(e) =>
                                     handleChangePointHasil(e, index, i)
@@ -1412,7 +1413,7 @@ function CheckSheetPondPeriode() {
                   <label>Persen kriteria: </label>
                   <label>{data.persen_kriteria}</label>
                   <label>Total Defect: </label>
-                  <label>{data.total_defect}</label>
+                  <label>{formatInteger(parseInt(data.total_defect))}</label>
                 </div>
               );
             })}

@@ -7,6 +7,7 @@ import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import Loading from '../../../../Loading';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
+import formatInteger from '../../../../../utils/formaterInteger';
 
 function CheckSheetLemAwal() {
   const { id } = useParams();
@@ -231,7 +232,7 @@ function CheckSheetLemAwal() {
                     fill="#0065DE"
                   />
                 </svg>{' '}
-                Checksheet
+                Lem Checksheet
               </div>
               <div className="text-[14px] font-semibold ">
                 <button
@@ -265,7 +266,8 @@ function CheckSheetLemAwal() {
                               : {tanggal}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {cetakMesinAwalHistory?.jumlah_pcs}
+                              : {formatInteger(parseInt(cetakMesinAwalHistory?.jumlah_pcs))}
+
                             </label>
 
                             <div className="flex gap-1 font-semibold">
@@ -494,7 +496,7 @@ function CheckSheetLemAwal() {
                   : {tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.jumlah_pcs}
+                  : {formatInteger(parseInt(cetakMesinAwal?.jumlah_pcs))}
                 </label>
 
                 {cetakMesinAwal?.jenis_lem == null ? (

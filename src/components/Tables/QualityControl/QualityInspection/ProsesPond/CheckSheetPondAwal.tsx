@@ -7,6 +7,7 @@ import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import Loading from '../../../../Loading';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
+import formatInteger from '../../../../../utils/formaterInteger';
 
 function CheckSheetPondAwal() {
   const { id } = useParams();
@@ -260,10 +261,10 @@ function CheckSheetPondAwal() {
                               : {tanggalHistory}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {pondMesinAwalHistory?.jumlah_druk}
+                              : {formatInteger(parseInt(pondMesinAwalHistory?.jumlah_druk))}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {pondMesinAwalHistory?.jumlah_pcs}
+                              :  {formatInteger(parseInt(pondMesinAwalHistory?.jumlah_pcs))}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {pondMesinAwalHistory?.jenis_kertas}
@@ -508,10 +509,10 @@ function CheckSheetPondAwal() {
                   : {tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {pondMesinAwal?.jumlah_druk} / Isi : {pondMesinAwal?.mata}
+                  : {formatInteger(parseInt(pondMesinAwal?.jumlah_druk))} /  {formatInteger(parseInt(pondMesinAwal?.mata))}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {pondMesinAwal?.jumlah_pcs}
+                  : {formatInteger(parseInt(pondMesinAwal?.jumlah_pcs))}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {pondMesinAwal?.ukuran_jadi}

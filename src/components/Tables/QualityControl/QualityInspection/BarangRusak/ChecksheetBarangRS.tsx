@@ -7,6 +7,7 @@ import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import Loading from '../../../../Loading';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
+import formatInteger from '../../../../../utils/formaterInteger';
 
 function CheckSheetBarangRS() {
   const { id } = useParams();
@@ -22,9 +23,8 @@ function CheckSheetBarangRS() {
   }, []);
 
   async function getCetakMesinAwal() {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBarangrusak/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBarangrusak/${id}`;
     try {
       const res = await axios.get(url, {
         withCredentials: true,
@@ -39,9 +39,8 @@ function CheckSheetBarangRS() {
   }
 
   async function startTaskCekAwal(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBarangrusak/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBarangrusak/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -65,9 +64,8 @@ function CheckSheetBarangRS() {
   const closeModal1 = () => setShowModal1(false);
 
   async function getMasterDefect() {
-    const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/list-kendala?criteria=true`;
+    const url = `${import.meta.env.VITE_API_LINK_P1
+      }/api/list-kendala?criteria=true`;
     try {
       const res = await axios.get(url);
 
@@ -83,9 +81,8 @@ function CheckSheetBarangRS() {
   const [asalTemuan, setAsalTemuan] = useState<any>();
 
   async function tambahDefect(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBarangRusak/createDefect/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBarangRusak/createDefect/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -123,9 +120,8 @@ function CheckSheetBarangRS() {
     setting_awal: any,
     druk_awal: any,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBarangRusak/save/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBarangRusak/save/${id}`;
     try {
       // setIsLoading(true);
       const res = await axios.put(
@@ -152,9 +148,8 @@ function CheckSheetBarangRS() {
       alert('Catatan Belum Diisi Lengkap');
       return; // Exit function if no start time
     }
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBarangrusak/done/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBarangrusak/done/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -266,7 +261,7 @@ function CheckSheetBarangRS() {
                   </label>
 
                   <label className="text-neutral-500 text-sm font-semibold">
-                    : {cetakMesinAwal?.qty_rusak}
+                    : {formatInteger(parseInt(cetakMesinAwal?.qty_rusak))}
                   </label>
                   <label className="text-neutral-500 text-sm font-semibold">
                     : {tanggal}
@@ -399,7 +394,7 @@ function CheckSheetBarangRS() {
                                   </p>
                                   <input
                                     name="setting_awal"
-                                    value={data?.setting_awal}
+                                    value={formatInteger(parseInt(data?.setting_awal))}
                                     disabled
                                     type="number"
                                     className="w-full h-6 bg-white  rounded-sm  border-2 border-stroke"
@@ -411,7 +406,7 @@ function CheckSheetBarangRS() {
                                   </p>
                                   <input
                                     name="druk_awal"
-                                    value={data?.druk_awal}
+                                    value={formatInteger(parseInt(data?.druk_awal))}
                                     disabled
                                     type="number"
                                     className="w-full h-6 bg-white  rounded-sm  border-2 border-stroke"
@@ -422,7 +417,7 @@ function CheckSheetBarangRS() {
                                     SUB TOTAL
                                   </p>
                                   <input
-                                    value={data?.sub_total}
+                                    value={formatInteger(parseInt(data?.sub_total))}
                                     type="number"
                                     disabled
                                     className="w-full h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
@@ -583,7 +578,7 @@ function CheckSheetBarangRS() {
           </div>
 
           {cetakMesinAwal?.waktu_sortir != null &&
-          cetakMesinAwal?.status == 'incoming' ? (
+            cetakMesinAwal?.status == 'incoming' ? (
             <>
               <button
                 // disabled={isLoading}
@@ -671,7 +666,7 @@ function CheckSheetBarangRS() {
                 </p>
 
                 <input
-                  value={total?.defect[0].setting_awal}
+                  value={formatInteger(parseInt(total?.defect[0].setting_awal))}
                   type="text"
                   disabled
                   className="w-full h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
@@ -682,7 +677,7 @@ function CheckSheetBarangRS() {
                   DRUK AWAL
                 </p>
                 <input
-                  value={total?.defect[0].druk_awal}
+                  value={formatInteger(parseInt(total?.defect[0].druk_awal))}
                   type="text"
                   disabled
                   className="w-full h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
@@ -693,7 +688,7 @@ function CheckSheetBarangRS() {
                   SUB TOTAL
                 </p>
                 <input
-                  value={total?.defect[0].sub_total}
+                  value={formatInteger(parseInt(total?.defect[0].sub_total))}
                   type="text"
                   disabled
                   className="w-full h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
@@ -704,7 +699,7 @@ function CheckSheetBarangRS() {
                   BARANG BAIK
                 </p>
                 <input
-                  value={total?.barangBaik}
+                  value={formatInteger(parseInt(total?.barangBaik))}
                   type="text"
                   disabled
                   className="w-full h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
