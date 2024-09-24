@@ -40,35 +40,50 @@ function ChecksheetFinalInspection() {
   async function doneFinal(id: number) {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiFinal/${id}`;
     try {
-      const res = await axios.put(
-        url,
-        {
-          catatan: Catatan,
-          no_pallet: noPallet,
-          no_packing: noPacking,
-          qty_packing: qtyPacking,
-          jumlah_packing: jumlahPacking,
-          status: status,
-          inspeksi_final_point: FinalInspection?.inspeksi_final_point,
-          inspeksi_final_sub: FinalInspection?.inspeksi_final_sub,
-        },
-        {
-          withCredentials: true,
-        },
-      );
-
       if (status == 'bisa kirim') {
         const respon = await axios.post(
           `https://erp.cbloffset.com/api/approve-final-inspection?no_jo=${FinalInspection?.no_jo}`,
           {},
         );
-        console.log(respon);
+        const res = await axios.put(
+          url,
+          {
+            catatan: Catatan,
+            no_pallet: noPallet,
+            no_packing: noPacking,
+            qty_packing: qtyPacking,
+            jumlah_packing: jumlahPacking,
+            status: status,
+            inspeksi_final_point: FinalInspection?.inspeksi_final_point,
+            inspeksi_final_sub: FinalInspection?.inspeksi_final_sub,
+          },
+          {
+            withCredentials: true,
+          },
+        );
+        getFinalInspection();
+      } else {
+        const res = await axios.put(
+          url,
+          {
+            catatan: Catatan,
+            no_pallet: noPallet,
+            no_packing: noPacking,
+            qty_packing: qtyPacking,
+            jumlah_packing: jumlahPacking,
+            status: status,
+            inspeksi_final_point: FinalInspection?.inspeksi_final_point,
+            inspeksi_final_sub: FinalInspection?.inspeksi_final_sub,
+          },
+          {
+            withCredentials: true,
+          },
+        );
+        getFinalInspection();
       }
-
-      getFinalInspection();
     } catch (error: any) {
-      console.log(error);
-      alert(error.response.data.msg);
+      console.log(error.response.data.message);
+      alert(error.response.data.message);
     }
   }
 
