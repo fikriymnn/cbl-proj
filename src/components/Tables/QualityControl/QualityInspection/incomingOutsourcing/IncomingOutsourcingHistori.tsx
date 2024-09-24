@@ -34,7 +34,7 @@ function IncomingOutsourcingHistori() {
   }, []);
 
   async function getRabutMesin() {
-    const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiRabut`;
+    const url = `${import.meta.env.VITE_API_LINK}/qc/cs/incomingOutsourcing`;
     try {
       const res = await axios.get(url, {
         params: {
@@ -90,7 +90,7 @@ function IncomingOutsourcingHistori() {
                       {data.nama_produk}
                     </label>
                     <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                      {data.operator}
+                      {data.inspektor.nama}
                     </label>
                     <div className="justify-end flex pr-2 col-span-2">
                       <>

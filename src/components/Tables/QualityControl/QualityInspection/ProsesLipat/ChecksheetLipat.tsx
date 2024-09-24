@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import convertTimeStampToDateTime from '../../../../../utils/converDateTime';
 
 function ChecksheetLipat() {
   const [isMobile, setIsMobile] = useState(false);
@@ -49,8 +50,9 @@ function ChecksheetLipat() {
     }
   }
   async function startTask(id: any) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLipat/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLipat/start/${id}`;
 
     try {
       const res = await axios.get(url, {
@@ -62,6 +64,120 @@ function ChecksheetLipat() {
       console.log(error);
     }
   }
+
+  const waktuMulaiincoming = convertTimeStampToDateTime(
+    incoming != null && incoming?.waktu_mulai,
+  );
+
+  const waktuSelesaiincoming =
+    incoming != null && incoming?.waktu_selesai != null
+      ? convertTimeStampToDateTime(incoming?.waktu_selesai)
+      : '-';
+
+  async function tambahChecksheetPoint(id: number) {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLipat/addPoint/${id}`;
+    try {
+      const res = await axios.put(
+        url,
+        {},
+        {
+          withCredentials: true,
+        },
+      );
+
+      getInspection();
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
+
+  async function saveChecksheetResult(id: number, hasilCheck: any) {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLipat/save/${id}`;
+    try {
+      const res = await axios.put(
+        url,
+        {
+          hasil_check: hasilCheck,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      getInspection();
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
+
+  async function sumbitChecksheet(id: number, start: any) {
+    if (!start) {
+      // Check if start time is available
+      alert('Task tidak bisa diberhentikan: Belum Start.');
+      return; // Exit function if no start time
+    }
+    if (ctt == null) {
+      // Check if start time is available
+      alert('Data Tidak Lengkap');
+      return; // Exit function if no start time
+    }
+
+    const stopTime = new Date();
+    const timestamp = convertTimeStampToDateTime(new Date());
+
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLipat/done/${id}`;
+    try {
+      const elapsedSeconds = await calculateElapsedTime(start, stopTime);
+
+      // **Save total seconds elsewhere**
+      const totalSecondsToSave = elapsedSeconds;
+      // Use totalSecondsToSave for your saving logic (e.g., local storage, separate API)
+
+      // Formatted time can be used for logging if needed
+      const formattedTime = formatElapsedTime(elapsedSeconds);
+      const res = await axios.put(
+        url,
+        {
+          catatan: ctt,
+
+          lama_pengerjaan: totalSecondsToSave,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      alert('Data Berhasil Di-Update');
+      getInspection();
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
+
+  const handleChangePoint = (e: any, i: number, ii: number) => {
+    const { name, value } = e.target;
+    const onchangeVal: any = incoming;
+    onchangeVal.inspeksi_lipat_point[i].inspeksi_lipat_result[ii][name] = value;
+    setIncoming(onchangeVal);
+  };
+
+  const handleChangePointRadio = (e: any, i: number, ii: number) => {
+    const { name, value } = e.target;
+    const onchangeVal: any = incoming;
+    onchangeVal.inspeksi_lipat_point[i].inspeksi_lipat_result[ii][
+      'hasil_check'
+    ] = value;
+    setIncoming(onchangeVal);
+  };
+
+  const [ctt, setCtt] = useState<any>();
+
   function formatElapsedTime(seconds: number): string {
     // Ensure seconds is non-negative
     seconds = Math.max(0, seconds);
@@ -86,16 +202,6 @@ function ChecksheetLipat() {
     return formattedTime;
   }
 
-  function convertDatetimeToDate(datetime: any) {
-    const dateObject = new Date(datetime);
-    const day = dateObject.getDate().toString().padStart(2, '0'); // Ensure two-digit day
-    const month = (dateObject.getMonth() + 1).toString().padStart(2, '0'); // Adjust for zero-based month
-    const year = dateObject.getFullYear();
-    const hours = dateObject.getHours().toString().padStart(2, '0');
-    const minutes = dateObject.getMinutes().toString().padStart(2, '0');
-
-    return `${year}/${month}/${day} ${hours}:${minutes}`; // Example format (YYYY-MM-DD)
-  }
   function calculateElapsedTime(startTime: any, stopTime: Date) {
     const start = new Date(startTime);
     const diffInMs = stopTime.getTime() - start.getTime();
@@ -105,91 +211,17 @@ function ChecksheetLipat() {
     return elapsedTime;
   }
 
-  const waktuMulaiincoming = convertDatetimeToDate(
-    incoming != null && incoming?.waktu_mulai,
-  );
-
-  const waktuSelesaiincoming =
-    incoming != null && incoming?.waktu_selesai != null
-      ? convertDatetimeToDate(incoming?.waktu_selesai)
-      : '-';
-
-  async function sumbitChecksheet(id: number, start: any) {
-    if (!start) {
-      // Check if start time is available
-      alert('Task tidak bisa diberhentikan: Belum Start.');
-      return; // Exit function if no start time
-    }
-    if (ctt == null) {
-      // Check if start time is available
-      alert('Data Tidak Lengkap');
-      return; // Exit function if no start time
-    }
-    // if (
-    //   incoming?.inspeksi_lipat_result[0].hasil_check == null ||
-    //   incoming?.inspeksi_lipat_result[0].keterangan == null ||
-    //   incoming?.inspeksi_lipat_result[1].hasil_check == null ||
-    //   incoming?.inspeksi_lipat_result[1].keterangan == null ||
-    //   incoming?.inspeksi_lipat_result[2].hasil_panjang == null ||
-    //   incoming?.inspeksi_lipat_result[2].hasil_lebar == null ||
-    //   incoming?.inspeksi_lipat_result[2].keterangan == null ||
-    //   incoming?.inspeksi_lipat_result[3].hasil_check == null ||
-    //   incoming?.inspeksi_lipat_result[3].keterangan == null
-    // ) {
-    //   alert('Checksheet belum terisi semua');
-    //   return;
-    // }
-
-    const stopTime = new Date();
-    const timestamp = convertDatetimeToDate(new Date());
-
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLipat/done/${id}`;
-    try {
-      const elapsedSeconds = await calculateElapsedTime(start, stopTime);
-
-      // **Save total seconds elsewhere**
-      const totalSecondsToSave = elapsedSeconds;
-      // Use totalSecondsToSave for your saving logic (e.g., local storage, separate API)
-
-      // Formatted time can be used for logging if needed
-      const formattedTime = formatElapsedTime(elapsedSeconds);
-
-      console.log(formattedTime);
-      const res = await axios.put(
-        url,
-        {
-          catatan: ctt,
-          merk: merk,
-          lama_pengerjaan: totalSecondsToSave,
-          hasil_check: incoming.inspeksi_lipat_result,
-        },
-        {
-          withCredentials: true,
-        },
-      );
-
-      console.log('Succes', timestamp);
-      alert('Data Berhasil Di-Update');
-      console.log('succes');
-      getInspection();
-    } catch (error: any) {
-      console.log(error);
-    }
-  }
-
-  const [merk, setMerk] = useState<any>();
-  const [ctt, setCtt] = useState<any>();
-
   return (
     <>
       {!isMobile && (
         <main className="overflow-x-hidden">
-          <form action="" onSubmit={(e) => {
-            e.preventDefault()
-            console.log(incoming);
-            sumbitChecksheet(incoming?.id, incoming?.waktu_mulai);
-          }}>
+          <form
+            action=""
+            onSubmit={(e) => {
+              e.preventDefault();
+              sumbitChecksheet(incoming?.id, incoming?.waktu_mulai);
+            }}
+          >
             <div className="min-w-[700px] bg-white rounded-xl">
               <p className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
                 <svg
@@ -407,596 +439,185 @@ function ChecksheetLipat() {
                       {/* =============================Point 1========================== */}
 
                       <>
-                        <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
-                          <div className="flex gap-4 col-span-2">
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              1
-                            </label>
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              Keriput
-                            </label>
-                          </div>
-                          <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                            Visual
-                          </label>
-                          <div className="flex flex-col gap-1 col-span-2">
-                            <div>
-                              <input
-                                required
-                                type="radio"
-                                id="sesuai1"
-                                name="sesuai1"
-                                value="sesuai"
-                                onChange={(e) => {
-                                  let array = [...incoming?.inspeksi_lipat_result];
-                                  array[0].hasil_check = e.target.value;
-                                  setIncoming({
-                                    ...incoming,
-                                    inspeksi_lipat_result: array,
-                                  });
-                                }}
-                              />
-                              <label className="pl-2">Sesuai</label>
-                            </div>
-                            <div>
-                              <input
-                                required
-                                type="radio"
-                                id="sesuai12"
-                                name="sesuai1"
-                                value="tidak sesuai"
-                                onChange={(e) => {
-                                  let array = [...incoming?.inspeksi_lipat_result];
-                                  array[0].hasil_check = e.target.value;
-                                  setIncoming({
-                                    ...incoming,
-                                    inspeksi_lipat_result: array,
-                                  });
-                                }}
-                              />
-                              <label className="pl-2">Tidak Sesuai</label>
-                            </div>
-                          </div>
-                          <textarea
-                            required
-                            onChange={(e) => {
-                              let array = [...incoming?.inspeksi_lipat_result];
-                              array[0].keterangan = e.target.value;
-                              setIncoming({
-                                ...incoming,
-                                inspeksi_lipat_result: array,
-                              });
-                            }}
-                            className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                          ></textarea>
-                          <div className="flex flex-col w-full col-span-3">
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              Upload Foto
-                            </label>
-                            <div className="flex w-full rounded-md border border-stroke px-2 py-2">
-                              <label
-                                htmlFor="formFile"
-                                className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
-                              >
-                                Pilih File
-                                <input
-                                  type="file"
-                                  id="formFile"
-                                  accept="image/*"
-                                  className="hidden"
-                                />
-                              </label>
+                        {incoming?.inspeksi_lipat_point.map(
+                          (dataPoint: any, iPoint: number) => {
+                            return (
+                              <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
+                                {dataPoint.inspeksi_lipat_result.map(
+                                  (dataResult: any, iResult: number) => {
+                                    return (
+                                      <>
+                                        <div className="flex gap-4 col-span-2">
+                                          <label className="text-neutral-500 text-sm font-semibold">
+                                            {iResult + 1}
+                                          </label>
+                                          <label className="text-neutral-500 text-sm font-semibold">
+                                            {dataResult.point_check}
+                                          </label>
+                                        </div>
+                                        <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                                          {dataResult.acuan}
+                                        </label>
+                                        <div className="flex flex-col gap-1 col-span-2">
+                                          <div>
+                                            <input
+                                              required
+                                              type="radio"
+                                              id="sesuai1"
+                                              name={`sesuai1 ${iResult}`}
+                                              value="sesuai"
+                                              onChange={(e) => {
+                                                handleChangePointRadio(
+                                                  e,
+                                                  iPoint,
+                                                  iResult,
+                                                );
+                                              }}
+                                            />
+                                            <label className="pl-2">
+                                              Sesuai
+                                            </label>
+                                          </div>
+                                          <div>
+                                            <input
+                                              required
+                                              type="radio"
+                                              id="sesuai12"
+                                              name={`sesuai1 ${iResult}`}
+                                              value="tidak sesuai"
+                                              onChange={(e) => {
+                                                handleChangePointRadio(
+                                                  e,
+                                                  iPoint,
+                                                  iResult,
+                                                );
+                                              }}
+                                            />
+                                            <label className="pl-2">
+                                              Tidak Sesuai
+                                            </label>
+                                          </div>
+                                        </div>
+                                        <textarea
+                                          required
+                                          name="keterangan"
+                                          onChange={(e) => {
+                                            handleChangePoint(
+                                              e,
+                                              iPoint,
+                                              iResult,
+                                            );
+                                          }}
+                                          className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                        ></textarea>
+                                        <div className="flex flex-col w-full col-span-3">
+                                          <label className="text-neutral-500 text-sm font-semibold">
+                                            Upload Foto
+                                          </label>
+                                          <div className="flex w-full rounded-md border border-stroke px-2 py-2">
+                                            <label
+                                              htmlFor="formFile"
+                                              className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
+                                            >
+                                              Pilih File
+                                              <input
+                                                type="file"
+                                                id="formFile"
+                                                accept="image/*"
+                                                className="hidden"
+                                              />
+                                            </label>
 
-                              <span id="formFile" className="ml-2 text-sm"></span>
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                      {/* =============================Point 2========================== */}
-                      <>
-                        <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
-                          <div className="flex gap-4 col-span-2">
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              2
-                            </label>
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              Presisi Lipatan
-                            </label>
-                          </div>
-                          <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                            Sample / Dummy
-                          </label>
-                          <div className="flex flex-col gap-1 col-span-2">
-                            <div>
-                              <input
-                                required
-                                type="radio"
-                                id="sesuai2"
-                                name="sesuai2"
-                                value="sesuai"
-                                onChange={(e) => {
-                                  let array = [...incoming?.inspeksi_lipat_result];
-                                  array[1].hasil_check = e.target.value;
-                                  setIncoming({
-                                    ...incoming,
-                                    inspeksi_lipat_result: array,
-                                  });
-                                }}
-                              />
-                              <label className="pl-2">Sesuai</label>
-                            </div>
-                            <div>
-                              <input
-                                required
-                                type="radio"
-                                id="sesuai2"
-                                name="sesuai2"
-                                value="tidak sesuai"
-                                onChange={(e) => {
-                                  let array = [...incoming?.inspeksi_lipat_result];
-                                  array[1].hasil_check = e.target.value;
-                                  setIncoming({
-                                    ...incoming,
-                                    inspeksi_lipat_result: array,
-                                  });
-                                }}
-                              />
-                              <label className="pl-2">Tidak Sesuai</label>
-                            </div>
-                          </div>
-                          <textarea
-                            required
-                            onChange={(e) => {
-                              let array = [...incoming?.inspeksi_lipat_result];
-                              array[1].keterangan = e.target.value;
-                              setIncoming({
-                                ...incoming,
-                                inspeksi_lipat_result: array,
-                              });
-                            }}
-                            className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                          ></textarea>
-                          <div className="flex flex-col w-full col-span-3">
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              Upload Foto
-                            </label>
-                            <div className="flex w-full rounded-md border border-stroke px-2 py-2">
-                              <label
-                                htmlFor="formFile"
-                                className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
-                              >
-                                Pilih File
-                                <input
-                                  type="file"
-                                  id="formFile"
-                                  accept="image/*"
-                                  className="hidden"
-                                />
-                              </label>
-
-                              <span id="formFile" className="ml-2 text-sm"></span>
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                      {/* =============================Point 3========================== */}
-                      <>
-                        <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
-                          <div className="flex gap-4 col-span-2">
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              3
-                            </label>
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              Kotor
-                            </label>
-                          </div>
-                          <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                            Visual
-                          </label>
-                          <div className="flex flex-col gap-1 col-span-2">
-                            <div>
-                              <input
-                                required
-                                type="radio"
-                                id="sesuai3"
-                                name="sesuai3"
-                                value="sesuai"
-                                onChange={(e) => {
-                                  let array = [...incoming?.inspeksi_lipat_result];
-                                  array[2].hasil_check = e.target.value;
-                                  setIncoming({
-                                    ...incoming,
-                                    inspeksi_lipat_result: array,
-                                  });
-                                }}
-                              />
-                              <label className="pl-2">Sesuai</label>
-                            </div>
-                            <div>
-                              <input
-                                required
-                                type="radio"
-                                id="sesuai3"
-                                name="sesuai3"
-                                value="tidak sesuai"
-                                onChange={(e) => {
-                                  let array = [...incoming?.inspeksi_lipat_result];
-                                  array[2].hasil_check = e.target.value;
-                                  setIncoming({
-                                    ...incoming,
-                                    inspeksi_lipat_result: array,
-                                  });
-                                }}
-                              />
-                              <label className="pl-2">Tidak Sesuai</label>
-                            </div>
-                          </div>
-                          <textarea
-                            required
-                            onChange={(e) => {
-                              let array = [...incoming?.inspeksi_lipat_result];
-                              array[2].keterangan = e.target.value;
-                              setIncoming({
-                                ...incoming,
-                                inspeksi_lipat_result: array,
-                              });
-                            }}
-                            className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                          ></textarea>
-                          <div className="flex flex-col w-full col-span-3">
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              Upload Foto
-                            </label>
-                            <div className="flex w-full rounded-md border border-stroke px-2 py-2">
-                              <label
-                                htmlFor="formFile"
-                                className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
-                              >
-                                Pilih File
-                                <input
-                                  type="file"
-                                  id="formFile"
-                                  accept="image/*"
-                                  className="hidden"
-                                />
-                              </label>
-
-                              <span id="formFile" className="ml-2 text-sm"></span>
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                      {/* =============================Point 4========================== */}
-                      <>
-                        <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
-                          <div className="flex gap-4 col-span-2">
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              4
-                            </label>
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              Kerataan Hasil Lipatan
-                            </label>
-                          </div>
-                          <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                            Sample / Dummy
-                          </label>
-                          <div className="flex flex-col gap-1 col-span-2">
-                            <div>
-                              <input
-                                required
-                                type="radio"
-                                id="sesuai4"
-                                name="sesuai4"
-                                value="sesuai"
-                                onChange={(e) => {
-                                  let array = [...incoming?.inspeksi_lipat_result];
-                                  array[3].hasil_check = e.target.value;
-                                  setIncoming({
-                                    ...incoming,
-                                    inspeksi_lipat_result: array,
-                                  });
-                                }}
-                              />
-                              <label className="pl-2">Sesuai</label>
-                            </div>
-                            <div>
-                              <input
-                                required
-                                type="radio"
-                                id="sesuai4"
-                                name="sesuai4"
-                                value="tidak sesuai"
-                                onChange={(e) => {
-                                  let array = [...incoming?.inspeksi_lipat_result];
-                                  array[3].hasil_check = e.target.value;
-                                  setIncoming({
-                                    ...incoming,
-                                    inspeksi_lipat_result: array,
-                                  });
-                                }}
-                              />
-                              <label className="pl-2">Tidak Sesuai</label>
-                            </div>
-                          </div>
-                          <textarea
-                            required
-                            onChange={(e) => {
-                              let array = [...incoming?.inspeksi_lipat_result];
-                              array[3].keterangan = e.target.value;
-                              setIncoming({
-                                ...incoming,
-                                inspeksi_lipat_result: array,
-                              });
-                            }}
-                            className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                          ></textarea>
-                          <div className="flex flex-col w-full col-span-3">
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              Upload Foto
-                            </label>
-                            <div className="flex w-full rounded-md border border-stroke px-2 py-2">
-                              <label
-                                htmlFor="formFile"
-                                className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
-                              >
-                                Pilih File
-                                <input
-                                  type="file"
-                                  id="formFile"
-                                  accept="image/*"
-                                  className="hidden"
-                                />
-                              </label>
-
-                              <span id="formFile" className="ml-2 text-sm"></span>
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                      {/* =============================Point 5========================== */}
-                      <>
-                        <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
-                          <div className="flex gap-4 col-span-2">
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              5
-                            </label>
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              Serat Tercampur
-                            </label>
-                          </div>
-                          <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                            Sample / Dummy
-                          </label>
-                          <div className="flex flex-col gap-1 col-span-2">
-                            <div>
-                              <input
-                                required
-                                type="radio"
-                                id="sesuai5"
-                                name="sesuai5"
-                                value="sesuai"
-                                onChange={(e) => {
-                                  let array = [...incoming?.inspeksi_lipat_result];
-                                  array[4].hasil_check = e.target.value;
-                                  setIncoming({
-                                    ...incoming,
-                                    inspeksi_lipat_result: array,
-                                  });
-                                }}
-                              />
-                              <label className="pl-2">Sesuai</label>
-                            </div>
-                            <div>
-                              <input
-                                required
-                                type="radio"
-                                id="sesuai5"
-                                name="sesuai5"
-                                value="tidak sesuai"
-                                onChange={(e) => {
-                                  let array = [...incoming?.inspeksi_lipat_result];
-                                  array[4].hasil_check = e.target.value;
-                                  setIncoming({
-                                    ...incoming,
-                                    inspeksi_lipat_result: array,
-                                  });
-                                }}
-                              />
-                              <label className="pl-2">Tidak Sesuai</label>
-                            </div>
-                          </div>
-                          <textarea
-                            required
-                            onChange={(e) => {
-                              let array = [...incoming?.inspeksi_lipat_result];
-                              array[4].keterangan = e.target.value;
-                              setIncoming({
-                                ...incoming,
-                                inspeksi_lipat_result: array,
-                              });
-                            }}
-                            className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                          ></textarea>
-                          <div className="flex flex-col w-full col-span-3">
-                            <label className="text-neutral-500 text-sm font-semibold">
-                              Upload Foto
-                            </label>
-                            <div className="flex w-full rounded-md border border-stroke px-2 py-2">
-                              <label
-                                htmlFor="formFile"
-                                className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
-                              >
-                                Pilih File
-                                <input
-                                  type="file"
-                                  id="formFile"
-                                  accept="image/*"
-                                  className="hidden"
-                                />
-                              </label>
-
-                              <span id="formFile" className="ml-2 text-sm"></span>
-                            </div>
-                          </div>
-                        </div>
+                                            <span
+                                              id="formFile"
+                                              className="ml-2 text-sm"
+                                            ></span>
+                                          </div>
+                                        </div>
+                                      </>
+                                    );
+                                  },
+                                )}
+                                {dataPoint.status == 'incoming' ? (
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      saveChecksheetResult(
+                                        dataPoint.id,
+                                        dataPoint.inspeksi_lipat_result,
+                                      )
+                                    }
+                                    className="bg-green-500 h-10 px-6 py-3 rounded-md  text-white text-xs font-bold"
+                                  >
+                                    Save
+                                  </button>
+                                ) : null}
+                              </div>
+                            );
+                          },
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            tambahChecksheetPoint(incoming.id);
+                          }}
+                          className="bg-blue-500 h-10 w-20 px-6 py-3 rounded-md  text-white text-xs font-bold"
+                        >
+                          Tambah
+                        </button>
                       </>
                     </>
                   )}
               </>
               {/* =============================================Checksheet STOP==========================================================*/}
               {incoming?.waktu_mulai != null &&
-                incoming?.waktu_selesai != null &&
-                <>
-                  {/* =============================Point 1========================== */}
-
+                incoming?.waktu_selesai != null && (
                   <>
-                    <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
-                      <div className="flex gap-4 col-span-2">
-                        <label className="text-neutral-500 text-sm font-semibold">
-                          1
-                        </label>
-                        <label className="text-neutral-500 text-sm font-semibold">
-                          Keriput
-                        </label>
-                      </div>
-                      <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                        Visual
-                      </label>
-                      <div className="flex flex-col gap-1 col-span-2">
-                        <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                          {incoming?.inspeksi_lipat_result[0].hasil_check}
-                        </label>
-                      </div>
-                      <textarea
-                        disabled
-                        defaultValue={incoming?.inspeksi_lipat_result[0].keterangan}
-                        className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                      ></textarea>
-                      <div className="flex flex-col w-full col-span-3">
+                    {/* =============================Point 1========================== */}
 
-                      </div>
-                    </div>
+                    <>
+                      {incoming?.inspeksi_lipat_point.map(
+                        (dataPoint: any, iPoint: number) => {
+                          return (
+                            <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
+                              {dataPoint.inspeksi_lipat_result.map(
+                                (dataResult: any, iResult: number) => {
+                                  return (
+                                    <>
+                                      <div className="flex gap-4 col-span-2">
+                                        <label className="text-neutral-500 text-sm font-semibold">
+                                          {iResult + 1}
+                                        </label>
+                                        <label className="text-neutral-500 text-sm font-semibold">
+                                          {dataResult.point_check}
+                                        </label>
+                                      </div>
+                                      <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                                        {dataResult.acuan}
+                                      </label>
+                                      <div className="flex flex-col gap-1 col-span-2">
+                                        <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                                          {dataResult.hasil_check}
+                                        </label>
+                                      </div>
+                                      <textarea
+                                        name="keterangan"
+                                        disabled
+                                        defaultValue={dataResult.keterangan}
+                                        className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                      ></textarea>
+                                      <div className="flex flex-col w-full col-span-3"></div>
+                                    </>
+                                  );
+                                },
+                              )}
+                            </div>
+                          );
+                        },
+                      )}
+                    </>
                   </>
-                  {/* =============================Point 2========================== */}
-                  <>
-                    <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
-                      <div className="flex gap-4 col-span-2">
-                        <label className="text-neutral-500 text-sm font-semibold">
-                          2
-                        </label>
-                        <label className="text-neutral-500 text-sm font-semibold">
-                          Presisi Lipatan
-                        </label>
-                      </div>
-                      <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                        Sample / Dummy
-                      </label>
-                      <div className="flex flex-col gap-1 col-span-2">
-                        <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                          {incoming?.inspeksi_lipat_result[1].hasil_check}
-                        </label>
-                      </div>
-                      <textarea
-                        disabled
-                        defaultValue={incoming?.inspeksi_lipat_result[1].keterangan}
-                        className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                      ></textarea>
-                      <div className="flex flex-col w-full col-span-3">
-
-                      </div>
-                    </div>
-                  </>
-                  {/* =============================Point 3========================== */}
-                  <>
-                    <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
-                      <div className="flex gap-4 col-span-2">
-                        <label className="text-neutral-500 text-sm font-semibold">
-                          3
-                        </label>
-                        <label className="text-neutral-500 text-sm font-semibold">
-                          Kotor
-                        </label>
-                      </div>
-                      <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                        Visual
-                      </label>
-                      <div className="flex flex-col gap-1 col-span-2">
-                        <label className="text-neutral-400 text-sm font-semibold col-span-2">
-
-                          {incoming?.inspeksi_lipat_result[2].hasil_check}
-                        </label>
-                      </div>
-                      <textarea
-                        disabled
-                        defaultValue={incoming?.inspeksi_lipat_result[2].keterangan}
-                        className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                      ></textarea>
-                      <div className="flex flex-col w-full col-span-3">
-
-                      </div>
-                    </div>
-                  </>
-                  {/* =============================Point 4========================== */}
-                  <>
-                    <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
-                      <div className="flex gap-4 col-span-2">
-                        <label className="text-neutral-500 text-sm font-semibold">
-                          4
-                        </label>
-                        <label className="text-neutral-500 text-sm font-semibold">
-                          Kerataan Hasil Lipatan
-                        </label>
-                      </div>
-                      <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                        Sample / Dummy
-                      </label>
-                      <div className="flex flex-col gap-1 col-span-2">
-                        <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                          {incoming?.inspeksi_lipat_result[3].hasil_check}
-                        </label>
-                      </div>
-                      <textarea
-                        disabled
-                        defaultValue={incoming?.inspeksi_lipat_result[3].keterangan}
-                        className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                      ></textarea>
-                      <div className="flex flex-col w-full col-span-3">
-
-                      </div>
-                    </div>
-                  </>
-                  {/* =============================Point 5========================== */}
-                  <>
-                    <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
-                      <div className="flex gap-4 col-span-2">
-                        <label className="text-neutral-500 text-sm font-semibold">
-                          5
-                        </label>
-                        <label className="text-neutral-500 text-sm font-semibold">
-                          Serat Tercampur
-                        </label>
-                      </div>
-                      <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                        Sample / Dummy
-                      </label>
-                      <div className="flex flex-col gap-1 col-span-2">
-
-                        <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                          {incoming?.inspeksi_lipat_result[4].hasil_check}
-                        </label>
-                      </div>
-                      <textarea
-                        disabled
-                        defaultValue={incoming?.inspeksi_lipat_result[4].keterangan}
-                        className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                      ></textarea>
-                      <div className="flex flex-col w-full col-span-3">
-
-                      </div>
-                    </div>
-                  </>
-
-                </>}
+                )}
 
               <div className="bg-white grid grid-cols-10 px-4 py-4 items-center gap-4">
                 {/* {!incoming?.inspeksi_bahan_result[0]?.send ? (
@@ -1018,7 +639,7 @@ function ChecksheetLipat() {
                 <label className="text-neutral-500 text-sm font-semibold col-span-8">
                   Catatan
                   {incoming?.waktu_mulai != null &&
-                    incoming?.status == 'incoming' ? (
+                  incoming?.status == 'incoming' ? (
                     <>
                       <textarea
                         required
@@ -1035,11 +656,11 @@ function ChecksheetLipat() {
 
                 <div className="flex h-full col-span-2 items-end justify-end w-full">
                   {incoming?.waktu_mulai != null &&
-                    incoming?.status == 'incoming' ? (
+                  incoming?.status == 'incoming' ? (
                     <>
                       <button
-                        type='submit'
-                        value='submit'
+                        type="submit"
+                        value="submit"
                         className="bg-green-500 h-10 px-6 py-3 rounded-md  text-white text-xs font-bold"
                       >
                         SUBMIT CHECKSHEET
