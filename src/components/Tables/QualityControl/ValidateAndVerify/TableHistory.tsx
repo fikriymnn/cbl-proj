@@ -18,13 +18,13 @@ import ModalDetailValidasi from '../../../Modals/ModalDetailValidasi';
 const TableHistory = () => {
   const [page, setPage] = useState(1);
   const [ticketProsesHistory, setTicketProsesHistory] = useState<any>(null);
-  const [showModalDetail,setShowModalDetail] = useState(null);
+  const [showModalDetail, setShowModalDetail] = useState(null);
   const handleClickDetail = (index: any) => {
     setShowModalDetail((prevState: any) => {
       return prevState === index ? null : index;
     });
   };
-  const closeModalDetail= () => setShowModalDetail(null);
+  const closeModalDetail = () => setShowModalDetail(null);
   useEffect(() => {
     getMTC();
   }, [page]);
@@ -159,17 +159,31 @@ const TableHistory = () => {
                   {data.skor_mtc}
                 </p>
               </div> */}
-               <div className="flex w-full justify-end">
-                <button onClick={()=>handleClickDetail(index)} className="text-xs font-bold bg-blue-700 py-2 px-10 text-white rounded-sm">
+              <div className="flex w-full justify-end">
+                <button onClick={() => handleClickDetail(index)} className="text-xs font-bold bg-blue-700 py-2 px-10 text-white rounded-sm">
                   Detail
                 </button>
               </div>
             </div>
             {showModalDetail === index && (
               <>
-              <ModalDetailValidasi bagian={data.tiket.bagian_mesin} unit={data.tiket.unit} status={data.status_qc} note={data.note_qc} nama_kendala={data.tiket.nama_kendala} nama_mesin=  {data.tiket.mesin} operator={data.tiket.operator}  isOpen={showModalDetail} onClose={closeModalDetail} key={index}>
-                <></>
-              </ModalDetailValidasi>
+                <ModalDetailValidasi
+                  bagian={data.tiket.bagian_mesin}
+                  unit={data.tiket.unit}
+                  status={data.status_qc}
+                  note={data.note_qc}
+                  nama_kendala={data.tiket.nama_kendala}
+                  nama_mesin={data.tiket.mesin}
+                  operator={data.tiket.operator}
+                  isOpen={showModalDetail}
+                  onClose={closeModalDetail}
+                  key={index}
+
+                  nojo={data.no_jo}
+                  customer={data.nama_customer}
+                  masalah={data.nama_analisis_mtc}>
+                  <></>
+                </ModalDetailValidasi>
               </>
             )}
           </div>

@@ -8,20 +8,22 @@ const ModalDetailValidasi = ({
   nama_mesin,
   operator,
   note, status,
-  unit, bagian
- 
+  unit, bagian, nojo, customer, masalah
+
 }: {
   children: any;
   isOpen: any;
   onClose: any;
-  nama_kendala:any,
-  nama_mesin:any,
-  operator:any,
-  note:any,
-  status:any,
-  unit:any,
-  bagian:any
-  
+  nama_kendala: any,
+  nama_mesin: any,
+  operator: any,
+  note: any,
+  status: any,
+  unit: any,
+  bagian: any,
+  nojo: any,
+  customer: any,
+  masalah: any
 }) => {
   if (isOpen == null) return null;
 
@@ -29,7 +31,7 @@ const ModalDetailValidasi = ({
     <div className="absolute z-50 rounded-md  bg-white shadow-2xl md:w-96 w-11/12 p-2  md:translate-y-10 translate-y-7 right-5  border border-gray">
       <div className="flex justify-end gap-5 px-4 py-2 z-50">
         <label className="mx-auto text-center text-blue-700 text-[28px] font-semibold">
-         Detail 
+          Detail
         </label>
 
         <button
@@ -94,6 +96,18 @@ const ModalDetailValidasi = ({
         <div>
           <p className="md:text-sm text-xs font-semibold">Bagian</p>
           <p className="md:text-base text-xs">{bagian}</p>
+        </div>
+        <div>
+          <p className="md:text-sm text-xs font-semibold">No. JO</p>
+          <p className="md:text-base text-xs">{nojo}</p>
+        </div>
+        <div>
+          <p className="md:text-sm text-xs font-semibold">Customer</p>
+          <p className="md:text-base text-xs">{customer}</p>
+        </div>
+        <div>
+          <p className="md:text-sm text-xs font-semibold">Masalah Dari Kendala</p>
+          <p className="md:text-base text-xs">{masalah}</p>
         </div>
         {/* <div>
           <p className="md:text-sm text-xs font-semibold">Kode Part</p>

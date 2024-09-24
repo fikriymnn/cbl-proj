@@ -18,13 +18,13 @@ import ModalDetailValidasi from '../../../Modals/ModalDetailValidasi';
 const TableHistoryValidate = () => {
   const [page, setPage] = useState(1);
   const [ticket, setTicket] = useState<any>(null);
-  const [showModalDetail,setShowModalDetail] = useState(null);
+  const [showModalDetail, setShowModalDetail] = useState(null);
   const handleClickDetail = (index: any) => {
     setShowModalDetail((prevState: any) => {
       return prevState === index ? null : index;
     });
   };
-  const closeModalDetail= () => setShowModalDetail(null);
+  const closeModalDetail = () => setShowModalDetail(null);
   useEffect(() => {
     getMTC();
   }, [page]);
@@ -144,20 +144,33 @@ const TableHistoryValidate = () => {
                 </p>
               </div> */}
               <div className="flex w-full justify-end">
-                <button onClick={()=>handleClickDetail(index)} className="text-xs font-bold bg-blue-700 py-2 px-10 text-white rounded-sm">
+                <button onClick={() => handleClickDetail(index)} className="text-xs font-bold bg-blue-700 py-2 px-10 text-white rounded-sm">
                   Detail
                 </button>
               </div>
             </div>
             {showModalDetail === index && (
               <>
-              <ModalDetailValidasi status={data.status_qc} note={data.note_qc} nama_kendala={data.nama_kendala} nama_mesin={data.mesin} operator={data.operator}  isOpen={showModalDetail} onClose={closeModalDetail} key={index}>
-                <></>
-              </ModalDetailValidasi>
+                <ModalDetailValidasi
+                  status={data.status_qc}
+                  note={data.note_qc}
+                  nama_kendala={data.nama_kendala}
+                  nama_mesin={data.mesin}
+                  operator={data.operator}
+                  isOpen={showModalDetail}
+                  onClose={closeModalDetail}
+                  key={index} unit={undefined}
+                  bagian={undefined}
+                  nojo={data.no_jo}
+                  customer={data.nama_customer}
+                  masalah={data.nama_analisis_mtc}
+                >
+                  <></>
+                </ModalDetailValidasi>
               </>
             )}
           </div>
-         
+
         );
       })}
       <div className="w-full flex  mt-5 ">

@@ -433,9 +433,11 @@ function CheckSheetLemPeriode() {
                               Jam
                             </label>
 
-                            <label className="text-neutral-500 text-sm font-semibold"></label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              No. JO / IO
+                              No. JO
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              No. IO
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               Nama Produk
@@ -449,9 +451,11 @@ function CheckSheetLemPeriode() {
                               : {jamHistory}
                             </label>
 
-                            <label className="text-neutral-500 text-sm font-semibold"></label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {LemMesinPeriodeHistory?.no_jo}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {LemMesinPeriodeHistory?.no_io}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {LemMesinPeriodeHistory?.nama_produk}
@@ -668,9 +672,11 @@ function CheckSheetLemPeriode() {
                   Jam
                 </label>
 
-                <label className="text-neutral-500 text-sm font-semibold"></label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  No. JO / IO
+                  No. JO
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  No. IO
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   Nama Produk
@@ -684,9 +690,11 @@ function CheckSheetLemPeriode() {
                   : {jam}
                 </label>
 
-                <label className="text-neutral-500 text-sm font-semibold"></label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {LemMesinPeriode?.no_jo}
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  : {LemMesinPeriode?.no_io}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {LemMesinPeriode?.nama_produk}
@@ -971,13 +979,31 @@ function CheckSheetLemPeriode() {
                                   {data2.kode}
                                 </label>
                                 {data.status == 'done' ? (
-                                  <p
+                                  <div
 
-                                    className={`w-[80%] text-center uppercase font-semibold  
-                                    } `}
+                                    className={`w-[80%] text-center uppercase font-semibold flex gap-4  
+                                 } `}
                                   >
+                                    {data2.hasil == 'ok' ? (
+                                      <>
+                                        <img src={ok} alt="" className="w-4" />
+                                      </>
+                                    ) : data2.hasil == 'ok (toleransi)' ? (
+                                      <>
+                                        <img src={oktole} alt="" className="w-4" />
+                                      </>
+                                    ) : data2.hasil == 'not ok' ? (
+                                      <>
+                                        <img src={notok} alt="" className="w-4" />
+                                      </>
+                                    ) :
+                                      <>
+                                        -
+                                      </>
+                                    }
+
                                     {data2.hasil}
-                                  </p>
+                                  </div>
                                 ) : data.status == 'on progress' ? (
                                   <div className="flex flex-col  w-full px-2 py-2">
                                     <div className={`flex flex-col w-full`}>

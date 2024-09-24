@@ -248,10 +248,11 @@ function PotongBahanChecksheet() {
                                         : {incoming?.tanggal}
                                     </label>
                                     <label className="text-neutral-500 text-sm font-semibold">
-                                        : {incoming?.no_io}
+                                        : {incoming?.no_jo}
                                     </label>
                                     <label className="text-neutral-500 text-sm font-semibold">
-                                        : {incoming?.no_jo}
+                                        : {incoming?.no_io}
+
                                     </label>
                                     <label className="text-neutral-500 text-sm font-semibold">
                                         : {incoming?.mesin}

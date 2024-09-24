@@ -409,9 +409,11 @@ function CheckSheetCoatingPeriode() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   Jam
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold"></label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  No. JO / IO
+                  No. JO
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  No. IO
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   Nama Produk
@@ -424,9 +426,11 @@ function CheckSheetCoatingPeriode() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {jam}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold"></label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {CoatingMesinPeriode?.no_jo}
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  : {CoatingMesinPeriode?.no_io}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {CoatingMesinPeriode?.nama_produk}
@@ -769,13 +773,31 @@ function CheckSheetCoatingPeriode() {
                                 {data2.kode}
                               </label>
                               {data.status == 'done' ? (
-                                <p
+                                <div
 
-                                  className={`w-[80%] text-center uppercase font-semibold  
-                                            } `}
+                                  className={`w-[80%] text-center uppercase font-semibold flex gap-4  
+                                 } `}
                                 >
+                                  {data2.hasil == 'ok' ? (
+                                    <>
+                                      <img src={ok} alt="" className="w-4" />
+                                    </>
+                                  ) : data2.hasil == 'ok (toleransi)' ? (
+                                    <>
+                                      <img src={oktole} alt="" className="w-4" />
+                                    </>
+                                  ) : data2.hasil == 'not ok' ? (
+                                    <>
+                                      <img src={notok} alt="" className="w-4" />
+                                    </>
+                                  ) :
+                                    <>
+                                      -
+                                    </>
+                                  }
+
                                   {data2.hasil}
-                                </p>
+                                </div>
 
                               ) : data.status == 'on progress' ? (
                                 <div className="flex flex-col  w-full px-2 py-2">

@@ -194,6 +194,7 @@ function CheckSheetCetakPeriode() {
       setIsLoading(false);
       getCetakMesinPeriode();
     } catch (error: any) {
+      setIsLoading(false);
       console.log(error);
     }
   }
@@ -471,7 +472,10 @@ function CheckSheetCetakPeriode() {
                             </label>
 
                             <label className="text-neutral-500 text-sm font-semibold">
-                              No. JO / IO
+                              No. JO
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              No. IO
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               Nama Produk
@@ -487,6 +491,9 @@ function CheckSheetCetakPeriode() {
 
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {cetakMesinPeriodeHistory?.no_jo}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {cetakMesinPeriodeHistory?.no_io}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {cetakMesinPeriodeHistory?.nama_produk}
@@ -711,9 +718,11 @@ function CheckSheetCetakPeriode() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   Jam
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold"></label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  No. JO / IO
+                  No. JO
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  No. IO
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   Nama Produk
@@ -726,9 +735,11 @@ function CheckSheetCetakPeriode() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {jam}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold"></label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {cetakMesinPeriode?.no_jo}
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  : {cetakMesinPeriode?.no_io}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {cetakMesinPeriode?.nama_produk}
@@ -1000,13 +1011,31 @@ function CheckSheetCetakPeriode() {
                                 {data2.kode}
                               </label>
                               {data.status == 'done' ? (
-                                <p
+                                <div
 
-                                  className={`w-[80%] text-center uppercase font-semibold  
+                                  className={`w-[80%] text-center uppercase font-semibold flex gap-4  
                                     } `}
                                 >
+                                  {data2.hasil == 'ok' ? (
+                                    <>
+                                      <img src={ok} alt="" className="w-4" />
+                                    </>
+                                  ) : data2.hasil == 'ok (toleransi)' ? (
+                                    <>
+                                      <img src={oktole} alt="" className="w-4" />
+                                    </>
+                                  ) : data2.hasil == 'not ok' ? (
+                                    <>
+                                      <img src={notok} alt="" className="w-4" />
+                                    </>
+                                  ) :
+                                    <>
+                                      -
+                                    </>
+                                  }
+
                                   {data2.hasil}
-                                </p>
+                                </div>
                               ) : data.status == 'on progress' ? (
                                 <>
 
