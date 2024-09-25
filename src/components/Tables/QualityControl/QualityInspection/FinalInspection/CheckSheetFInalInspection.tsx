@@ -50,46 +50,51 @@ function ChecksheetFinalInspection() {
 
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiFinal/${id}`;
     try {
-      const elapsedSeconds = await calculateElapsedTime(start, stopTime);
-
-      // **Save total seconds elsewhere**
-      const totalSecondsToSave = elapsedSeconds;
-      // Use totalSecondsToSave for your saving logic (e.g., local storage, separate API)
-
-      // Formatted time can be used for logging if needed
-      const formattedTime = formatElapsedTime(elapsedSeconds);
-
-      console.log(formattedTime);
-      const res = await axios.put(
-        url,
-        {
-          catatan: Catatan,
-          no_pallet: noPallet,
-          no_packing: noPacking,
-          qty_packing: qtyPacking,
-          jumlah_packing: jumlahPacking,
-          status: status,
-          inspeksi_final_point: FinalInspection?.inspeksi_final_point,
-          inspeksi_final_sub: FinalInspection?.inspeksi_final_sub,
-          lama_pengerjaan: totalSecondsToSave
-        },
-        {
-          withCredentials: true,
-        },
-      );
-
       if (status == 'bisa kirim') {
         const respon = await axios.post(
           `https://erp.cbloffset.com/api/approve-final-inspection?no_jo=${FinalInspection?.no_jo}`,
           {},
         );
-        console.log(respon);
+        const res = await axios.put(
+          url,
+          {
+
+            catatan: Catatan,
+            no_pallet: noPallet,
+            no_packing: noPacking,
+            qty_packing: qtyPacking,
+            jumlah_packing: jumlahPacking,
+            status: status,
+            inspeksi_final_point: FinalInspection?.inspeksi_final_point,
+            inspeksi_final_sub: FinalInspection?.inspeksi_final_sub,
+          },
+          {
+            withCredentials: true,
+          },
+        );
+        getFinalInspection();
+      } else {
+        const res = await axios.put(
+          url,
+          {
+            catatan: Catatan,
+            no_pallet: noPallet,
+            no_packing: noPacking,
+            qty_packing: qtyPacking,
+            jumlah_packing: jumlahPacking,
+            status: status,
+            inspeksi_final_point: FinalInspection?.inspeksi_final_point,
+            inspeksi_final_sub: FinalInspection?.inspeksi_final_sub,
+          },
+          {
+            withCredentials: true,
+          },
+        );
+        getFinalInspection();
       }
-
-      getFinalInspection();
     } catch (error: any) {
-      console.log(error);
-
+      console.log(error.response.data.message);
+      alert(error.response.data.message);
     }
   }
 
