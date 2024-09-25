@@ -10,6 +10,7 @@ import ChecksheetPraplate from './ChekcsheetPraplate';
 import ProsesPraplate from './ProsesPraplate';
 import ProsesPraplateRepeat from './RepeatPraplate';
 import HistoryPraplate from './HistoryPraplate';
+import HistoryKelengkapanplate from './HIstoryKelengkapanPlate';
 
 
 interface TabPanelProps {
@@ -142,7 +143,8 @@ export default function TabPraplate() {
                         >
                             <Tab label="Pra-Plate" {...a11yProps(0)} />
                             <Tab label="Kelengkapan Plate" {...a11yProps(1)} />
-                            <Tab label="History" {...a11yProps(2)} />
+                            <Tab label="History Pra Plate" {...a11yProps(2)} />
+                            <Tab label="History Kelengkapan Plate" {...a11yProps(3)} />
                             <div className="flex w-full justify-end pr-4">
                                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                                     {tanggal}
@@ -159,6 +161,9 @@ export default function TabPraplate() {
                 </TabPanel>
                 <TabPanel value={value} index={2} dir={theme.direction}>
                     <HistoryPraplate />
+                </TabPanel>
+                <TabPanel value={value} index={3} dir={theme.direction}>
+                    <HistoryKelengkapanplate />
                 </TabPanel>
             </Box>
         </>

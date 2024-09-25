@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
 
-function HistoryPraplate() {
+function HistoryKelengkapanplate() {
     const [isMobile, setIsMobile] = useState(false);
     const kosong: any = [];
     const today = new Date();
@@ -34,7 +34,7 @@ function HistoryPraplate() {
     }, []);
 
     async function getPondMesin() {
-        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPraPlate`;
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiKelengkapanPlate`;
         try {
             const res = await axios.get(url, {
                 params: {
@@ -146,4 +146,4 @@ function HistoryPraplate() {
     );
 }
 
-export default HistoryPraplate;
+export default HistoryKelengkapanplate;
