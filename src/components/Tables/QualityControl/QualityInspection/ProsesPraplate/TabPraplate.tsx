@@ -9,6 +9,7 @@ import Box from '@mui/material/Box';
 import ChecksheetPraplate from './ChekcsheetPraplate';
 import ProsesPraplate from './ProsesPraplate';
 import ProsesPraplateRepeat from './RepeatPraplate';
+import HistoryPraplate from './HistoryPraplate';
 
 
 interface TabPanelProps {
@@ -157,7 +158,7 @@ export default function TabPraplate() {
                     <ProsesPraplateRepeat />
                 </TabPanel>
                 <TabPanel value={value} index={2} dir={theme.direction}>
-
+                    <HistoryPraplate />
                 </TabPanel>
             </Box>
         </>

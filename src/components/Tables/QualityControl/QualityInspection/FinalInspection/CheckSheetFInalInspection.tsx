@@ -45,11 +45,20 @@ function ChecksheetFinalInspection() {
       alert('Belum Start.');
       return; // Exit function if no start time
     }
+
     const stopTime = new Date();
-
-
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiFinal/${id}`;
     try {
+      const elapsedSeconds = await calculateElapsedTime(start, stopTime);
+
+      // **Save total seconds elsewhere**
+      const totalSecondsToSave = elapsedSeconds;
+      // Use totalSecondsToSave for your saving logic (e.g., local storage, separate API)
+
+      // Formatted time can be used for logging if needed
+      const formattedTime = formatElapsedTime(elapsedSeconds);
+
+      console.log(formattedTime);
       if (status == 'bisa kirim') {
         const respon = await axios.post(
           `https://erp.cbloffset.com/api/approve-final-inspection?no_jo=${FinalInspection?.no_jo}`,
@@ -58,7 +67,7 @@ function ChecksheetFinalInspection() {
         const res = await axios.put(
           url,
           {
-
+            lama_pengerjaan: totalSecondsToSave,
             catatan: Catatan,
             no_pallet: noPallet,
             no_packing: noPacking,
@@ -93,7 +102,7 @@ function ChecksheetFinalInspection() {
         getFinalInspection();
       }
     } catch (error: any) {
-      console.log(error.response.data.message);
+      console.log(error);
       alert(error.response.data.message);
     }
   }
@@ -286,7 +295,8 @@ function ChecksheetFinalInspection() {
                   </div>
 
                   <div className='flex w-full'>
-                    {FinalInspection?.waktu_mulai == null &&
+                    {FinalInspection?.bagian_tiket == 'incoming' &&
+                      FinalInspection?.waktu_mulai == null &&
                       FinalInspection?.waktu_selesai == null && (
                         <>
                           <div>
@@ -342,41 +352,43 @@ function ChecksheetFinalInspection() {
                           </div>
                         </>
                       )}
-                    {FinalInspection?.waktu_mulai != null &&
-                      FinalInspection?.waktu_selesai != null && (
-                        <>
-                          <div className="gap-1 flex flex-col">
-                            <p className="md:text-[14px] text-[9px] font-semibold">
-                              Waktu Mulai :
-                            </p>
-                            <p className="md:text-[14px] text-[9px] font-semibold text-stone-400">
-                              {waktuMulaiincoming}
-                            </p>
-                            <p className="md:text-[14px] text-[9px] font-semibold">
-                              Waktu Selesai :
-                            </p>
-                            <p className="md:text-[14px] text-[9px] font-semibold text-stone-400">
-                              {waktuSelesaiincoming}
-                            </p>
-                            <p className="md:text-[14px] text-[9px] font-semibold">
-                              Time :
-                            </p>
-                            <p className="md:text-[14px] text-[9px] font-semibold text-stone-400">
-                              {FinalInspection?.lama_pengerjaan != null
-                                ? formatElapsedTime(FinalInspection?.lama_pengerjaan)
-                                : ''}{' '}
-                              Detik
-                            </p>
-                          </div>
-                        </>
-                      )}
+                    {FinalInspection?.bagian_tiket == 'history' && (
+                      <>
+                        <div className="gap-1 flex flex-col">
+                          <p className="md:text-[14px] text-[9px] font-semibold">
+                            Waktu Mulai :
+                          </p>
+                          <p className="md:text-[14px] text-[9px] font-semibold text-stone-400">
+                            {waktuMulaiincoming}
+                          </p>
+                          <p className="md:text-[14px] text-[9px] font-semibold">
+                            Waktu Selesai :
+                          </p>
+                          <p className="md:text-[14px] text-[9px] font-semibold text-stone-400">
+                            {waktuSelesaiincoming}
+                          </p>
+                          <p className="md:text-[14px] text-[9px] font-semibold">
+                            Time :
+                          </p>
+                          <p className="md:text-[14px] text-[9px] font-semibold text-stone-400">
+                            {FinalInspection?.lama_pengerjaan != null
+                              ? formatElapsedTime(FinalInspection?.lama_pengerjaan)
+                              : ''}{' '}
+
+                          </p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
 
               </div>
               {/* =============================================Checksheet Not Start==========================================================*/}
-              {FinalInspection?.waktu_mulai == null &&
+
+
+              {FinalInspection?.bagian_tiket == 'incoming' &&
+                FinalInspection?.waktu_mulai == null &&
                 FinalInspection?.waktu_selesai == null && (
                   <>
                     <div className="flex px-4 py-5">
@@ -386,10 +398,11 @@ function ChecksheetFinalInspection() {
                     </div>
                   </>
                 )}
-              {/* =============================chekcsheet========================= */}
             </div>
             <>
-              {FinalInspection?.waktu_mulai != null &&
+              {/* =============================chekcsheet========================= */}
+              {
+                FinalInspection?.waktu_mulai != null &&
                 FinalInspection?.waktu_selesai == null && (
                   <>
                     <div className="grid w-full grid-cols-2 gap-2">
@@ -437,31 +450,7 @@ function ChecksheetFinalInspection() {
                           Standar Pemeriksaan
                         </p>
                         <div>
-                          {/* <div className="px-5 flex gap-5 items-center justify-between mt-5">
-                  <p className="font-semibold text-sm  ">
-                    No Pallet yang di Cek :
-                  </p>
 
-                  {FinalInspection?.status == 'incoming' ? (
-                    <input
-                      type="text"
-                      onChange={(e) => {
-                        setnoPallet(e.target.value);
-                      }}
-                      className=" border rounded border-strokedark"
-                    />
-                  ) : (
-                    <input
-                      type="text"
-                      disabled
-                      defaultValue={FinalInspection?.no_pallet}
-                      onChange={(e) => {
-                        setnoPallet(e.target.value);
-                      }}
-                      className=" border rounded border-strokedark"
-                    />
-                  )}
-                </div> */}
                           <div className="px-5 flex gap-5 items-center justify-between mt-5">
                             <p className="font-semibold text-sm  ">
                               No Packing yang diperiksa :
@@ -670,13 +659,9 @@ function ChecksheetFinalInspection() {
                 )}
 
 
-
-
-
-
             </>
-            {FinalInspection?.waktu_mulai != null &&
-              FinalInspection?.waktu_selesai != null && (
+            {FinalInspection?.bagian_tiket == 'history' &&
+              (
                 <>
                   <div className="grid w-full grid-cols-2 gap-2">
                     <div className="bg-white ">
