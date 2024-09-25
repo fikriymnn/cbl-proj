@@ -159,8 +159,10 @@ const TableHistoryValidate = () => {
                   operator={data.operator}
                   isOpen={showModalDetail}
                   onClose={closeModalDetail}
-                  key={index} unit={undefined}
-                  bagian={undefined}
+                  key={index}
+                  unit={data.unit}
+                  bagian={data.bagian}
+                  validator={data.user_respon_qc.nama}
                   nojo={data.no_jo}
                   customer={data.nama_customer}
                   masalah={data.nama_analisis_mtc}

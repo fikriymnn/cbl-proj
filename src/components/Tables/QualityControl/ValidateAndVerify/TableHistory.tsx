@@ -168,20 +168,20 @@ const TableHistory = () => {
             {showModalDetail === index && (
               <>
                 <ModalDetailValidasi
-                  bagian={data.tiket.bagian_mesin}
-                  unit={data.tiket.unit}
-                  status={data.status_qc}
-                  note={data.note_qc}
+                  bagian={data.bagian_mesin}
+                  unit={data.unit}
+                  status={data.tiket.status_qc}
+                  note={data.tiket.note_qc}
                   nama_kendala={data.tiket.nama_kendala}
                   nama_mesin={data.tiket.mesin}
                   operator={data.tiket.operator}
                   isOpen={showModalDetail}
                   onClose={closeModalDetail}
                   key={index}
-
-                  nojo={data.no_jo}
-                  customer={data.nama_customer}
-                  masalah={data.nama_analisis_mtc}>
+                  validator={data.user_qc?.nama}
+                  nojo={data.tiket.no_jo}
+                  customer={data.tiket.nama_customer}
+                  masalah={data.tiket.nama_analisis_mtc}>
                   <></>
                 </ModalDetailValidasi>
               </>
