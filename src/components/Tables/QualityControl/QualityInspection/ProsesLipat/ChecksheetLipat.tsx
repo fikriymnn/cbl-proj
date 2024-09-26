@@ -92,6 +92,21 @@ function ChecksheetLipat() {
   }
 
   async function saveChecksheetResult(id: number, hasilCheck: any) {
+    const tes = hasilCheck?.some(
+      (data: { hasil_check: any }) => data?.hasil_check === null,
+    )
+    const tesCtt = hasilCheck?.some(
+      (data: { keterangan: any }) => data?.keterangan === null,
+    )
+
+    if (tesCtt == true) {
+      alert('Keterangan Belum Terisi Semua')
+      return;
+    }
+    if (tes == true) {
+      alert('Point Belum Terisi Semua')
+      return;
+    }
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiLipat/save/${id}`;
     try {
@@ -207,6 +222,11 @@ function ChecksheetLipat() {
     return elapsedTime;
   }
 
+  const isOnprogres =
+    incoming?.inspeksi_lipat_point.some(
+      (data: { status: any }) => data?.status === 'incoming',
+    );
+
   return (
     <>
       {!isMobile && (
@@ -304,7 +324,7 @@ function ChecksheetLipat() {
                     : {incoming?.mesin}
                   </label>
                   <label className="text-neutral-500 text-sm font-semibold">
-                    : {incoming?.inspector}
+                    : {incoming?.inspektor?.nama}
                   </label>
                 </div>
                 <div className="flex flex-col w-full items-center gap-4 px-10 py-4 col-span-2  bg-[#F6FAFF]">
@@ -438,6 +458,8 @@ function ChecksheetLipat() {
                       <>
                         {incoming?.inspeksi_lipat_point.map(
                           (dataPoint: any, iPoint: number) => {
+
+
                             return (
                               <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
                                 {dataPoint.inspeksi_lipat_result.map(
@@ -466,6 +488,8 @@ function ChecksheetLipat() {
                                                   name={`sesuai1 ${iResult}`}
                                                   value="sesuai"
                                                   onChange={(e) => {
+                                                    // hasvalue(iPoint)
+                                                    // console.log(isOnprogres2)
                                                     handleChangePointRadio(
                                                       e,
                                                       iPoint,
@@ -485,6 +509,8 @@ function ChecksheetLipat() {
                                                   name={`sesuai1 ${iResult}`}
                                                   value="tidak sesuai"
                                                   onChange={(e) => {
+
+                                                    // hasvalue(iPoint)
                                                     handleChangePointRadio(
                                                       e,
                                                       iPoint,
@@ -569,20 +595,25 @@ function ChecksheetLipat() {
                                     );
                                   },
                                 )}
-                                {dataPoint.status == 'incoming' ? (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      saveChecksheetResult(
-                                        dataPoint.id,
-                                        dataPoint.inspeksi_lipat_result,
-                                      )
-                                    }
-                                    className="bg-green-500 h-10  rounded-md  text-white text-xs font-bold"
-                                  >
-                                    Simpan
-                                  </button>
-                                ) : null}
+                                {
+                                  dataPoint.status == 'incoming' ? (
+                                    <button
+
+                                      type="button"
+                                      onClick={() =>
+
+                                        saveChecksheetResult(
+                                          dataPoint.id,
+                                          dataPoint.inspeksi_lipat_result,
+                                        )
+                                      }
+                                      className="bg-green-500 h-10  rounded-md  text-white text-xs font-bold"
+                                    >
+                                      Simpan
+                                    </button>
+                                  ) : null}
+
+
                               </div>
                             );
                           },
@@ -612,10 +643,14 @@ function ChecksheetLipat() {
                     <>
                       {incoming?.inspeksi_lipat_point.map(
                         (dataPoint: any, iPoint: number) => {
+
+
+
                           return (
                             <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
                               {dataPoint.inspeksi_lipat_result.map(
                                 (dataResult: any, iResult: number) => {
+
                                   return (
                                     <>
                                       <div className="flex gap-4 col-span-2">
@@ -654,21 +689,7 @@ function ChecksheetLipat() {
                 )}
 
               <div className="bg-white grid grid-cols-10 px-4 py-4 items-center gap-4">
-                {/* {!incoming?.inspeksi_bahan_result[0]?.send ? (
-                                <>
-                                    <button onClick={() => {
-                                        console.log(incoming)
-                                        sumbitChecksheet(incoming?.id)
-                                    }
-                                    } className='bg-[#0065DE] px-4 py-2 rounded-sm text-center text-white text-xs font-bold'>
-                                        SUBMIT CHECKSHEET
-                                    </button>
-                                </>
-                            ) :
-                                (
-                                    <>
-                                    </>
-                                )} */}
+
 
                 <label className="text-neutral-500 text-sm font-semibold col-span-8">
                   Catatan
@@ -689,7 +710,8 @@ function ChecksheetLipat() {
                 </label>
 
                 <div className="flex h-full col-span-2 items-end justify-end w-full">
-                  {incoming?.waktu_mulai != null &&
+                  {!isOnprogres &&
+                    incoming?.waktu_mulai != null &&
                     incoming?.status == 'incoming' ? (
                     <>
                       <button

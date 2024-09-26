@@ -50,9 +50,8 @@ function ChecksheetPraplate() {
     }
   }
   async function startTask(id: any) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPraPlate/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPraPlate/start/${id}`;
 
     try {
       const res = await axios.get(url, {
@@ -145,9 +144,8 @@ function ChecksheetPraplate() {
     const stopTime = new Date();
     const timestamp = convertDatetimeToDate(new Date());
 
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiPraPlate/done/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPraPlate/done/${id}`;
     try {
       const elapsedSeconds = await calculateElapsedTime(start, stopTime);
 
@@ -274,7 +272,7 @@ function ChecksheetPraplate() {
                   : {incoming?.keterangan}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {incoming?.inspector}
+                  : {incoming?.inspektor?.nama}
                 </label>
               </div>
               <div className="flex flex-col w-full items-center gap-4 px-10 py-4 col-span-2  bg-[#F6FAFF]">
@@ -387,23 +385,447 @@ function ChecksheetPraplate() {
             </div>
             <>
               {/* =============================================Checksheet Not Start==========================================================*/}
-              {/* {incoming?.waktu_mulai == null &&
-                                incoming?.waktu_selesai == null && (
-                                    <>
-                                        <div className="flex px-4 py-5">
-                                            <p className="font-bold text-[#00B81D]">
-                                                Mulai Task Untuk Memunculkan Checksheet
-                                            </p>
-                                        </div>
-                                    </>
-                                )} */}
+              {incoming?.waktu_mulai == null &&
+                incoming?.waktu_selesai == null && (
+                  <>
+                    <div className="flex px-4 py-5">
+                      <p className="font-bold text-[#00B81D]">
+                        Mulai Task Untuk Memunculkan Checksheet
+                      </p>
+                    </div>
+                  </>
+                )}
 
               {/* =============================================Checksheet Start==========================================================*/}
-              {/* {incoming?.waktu_mulai != null &&
-                                incoming?.waktu_selesai == null && (
-                                    <> */}
-              {/* =============================Point 1========================== */}
+              {incoming?.waktu_mulai != null &&
+                incoming?.waktu_selesai == null && (
+                  <>
+                    {/* =============================Point 1========================== */}
 
+                    <>
+                      <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
+                        <div className="flex gap-4 col-span-2">
+                          <label className="text-neutral-500 text-sm font-semibold">
+                            1
+                          </label>
+                          <label className="text-neutral-500 text-sm font-semibold">
+                            Redaksi
+                          </label>
+                        </div>
+                        <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                          Acc Artwork
+                        </label>
+                        <div className="flex flex-col gap-1 col-span-2">
+                          <div>
+                            <input
+                              type="radio"
+                              id="sesuai1"
+                              name="sesuai1"
+                              value="sesuai"
+                              onChange={(e) => {
+                                let array = [...incoming?.inspeksi_pra_plate_result];
+                                array[0].hasil_check = e.target.value;
+                                setIncoming({
+                                  ...incoming,
+                                  inspeksi_pra_plate_result: array,
+                                });
+                              }}
+                            />
+                            <label className="pl-2">Sesuai</label>
+                          </div>
+                          <div>
+                            <input
+                              type="radio"
+                              id="sesuai11"
+                              name="sesuai1"
+                              value="tidak sesuai"
+                              onChange={(e) => {
+                                let array = [...incoming?.inspeksi_pra_plate_result];
+                                array[0].hasil_check = e.target.value;
+                                setIncoming({
+                                  ...incoming,
+                                  inspeksi_pra_plate_result: array,
+                                });
+                              }}
+                            />
+                            <label className="pl-2">Tidak Sesuai</label>
+                          </div>
+                        </div>
+                        <textarea
+                          onChange={(e) => {
+                            let array = [...incoming?.inspeksi_pra_plate_result];
+                            array[0].keterangan = e.target.value;
+                            setIncoming({
+                              ...incoming,
+                              inspeksi_pra_plate_result: array,
+                            });
+                          }}
+                          className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                        ></textarea>
+                        <div className="flex flex-col w-full col-span-3">
+                          <label className="text-neutral-500 text-sm font-semibold">
+                            Upload Foto
+                          </label>
+                          <div className="flex w-full rounded-md border border-stroke px-2 py-2">
+                            <label
+                              htmlFor="formFile"
+                              className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
+                            >
+                              Pilih File
+                              <input
+                                type="file"
+                                id="formFile"
+                                accept="image/*"
+                                className="hidden"
+                              />
+                            </label>
+
+                            <span id="formFile" className="ml-2 text-sm"></span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                    {/* =============================Point 2========================== */}
+                    <>
+                      <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
+                        <div className="flex gap-4 col-span-2">
+                          <label className="text-neutral-500 text-sm font-semibold">
+                            2
+                          </label>
+                          <label className="text-neutral-500 text-sm font-semibold">
+                            Design
+                          </label>
+                        </div>
+                        <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                          Acc Artwork
+                        </label>
+                        <div className="flex flex-col gap-1 col-span-2">
+                          <div>
+                            <input
+                              type="radio"
+                              id="sesuai2"
+                              name="sesuai2"
+                              value="sesuai"
+                              onChange={(e) => {
+                                let array = [...incoming?.inspeksi_pra_plate_result];
+                                array[1].hasil_check = e.target.value;
+                                setIncoming({
+                                  ...incoming,
+                                  inspeksi_pra_plate_result: array,
+                                });
+                              }}
+                            />
+                            <label className="pl-2">Sesuai</label>
+                          </div>
+                          <div>
+                            <input
+                              type="radio"
+                              id="sesuai2"
+                              name="sesuai2"
+                              value="tidak sesuai"
+                              onChange={(e) => {
+                                let array = [...incoming?.inspeksi_pra_plate_result];
+                                array[1].hasil_check = e.target.value;
+                                setIncoming({
+                                  ...incoming,
+                                  inspeksi_pra_plate_result: array,
+                                });
+                              }}
+                            />
+                            <label className="pl-2">Tidak Sesuai</label>
+                          </div>
+                        </div>
+                        <textarea
+                          onChange={(e) => {
+                            let array = [...incoming?.inspeksi_pra_plate_result];
+                            array[1].keterangan = e.target.value;
+                            setIncoming({
+                              ...incoming,
+                              inspeksi_pra_plate_result: array,
+                            });
+                          }}
+                          className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                        ></textarea>
+                        <div className="flex flex-col w-full col-span-3">
+                          <label className="text-neutral-500 text-sm font-semibold">
+                            Upload Foto
+                          </label>
+                          <div className="flex w-full rounded-md border border-stroke px-2 py-2">
+                            <label
+                              htmlFor="formFile"
+                              className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
+                            >
+                              Pilih File
+                              <input
+                                type="file"
+                                id="formFile"
+                                accept="image/*"
+                                className="hidden"
+                              />
+                            </label>
+
+                            <span id="formFile" className="ml-2 text-sm"></span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                    {/* =============================Point 3========================== */}
+                    <>
+                      <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
+                        <div className="flex gap-4 col-span-2">
+                          <label className="text-neutral-500 text-sm font-semibold">
+                            3
+                          </label>
+                          <label className="text-neutral-500 text-sm font-semibold">
+                            Bleed
+                          </label>
+                        </div>
+                        <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                          Film Pisau
+                        </label>
+                        <div className="flex flex-col gap-1 col-span-2">
+                          <div>
+                            <input
+                              type="radio"
+                              id="sesuai3"
+                              name="sesuai3"
+                              value="sesuai"
+                              onChange={(e) => {
+                                let array = [...incoming?.inspeksi_pra_plate_result];
+                                array[2].hasil_check = e.target.value;
+                                setIncoming({
+                                  ...incoming,
+                                  inspeksi_pra_plate_result: array,
+                                });
+                              }}
+                            />
+                            <label className="pl-2">Sesuai</label>
+                          </div>
+                          <div>
+                            <input
+                              type="radio"
+                              id="sesuai3"
+                              name="sesuai3"
+                              value="tidak sesuai"
+                              onChange={(e) => {
+                                let array = [...incoming?.inspeksi_pra_plate_result];
+                                array[2].hasil_check = e.target.value;
+                                setIncoming({
+                                  ...incoming,
+                                  inspeksi_pra_plate_result: array,
+                                });
+                              }}
+                            />
+                            <label className="pl-2">Tidak Sesuai</label>
+                          </div>
+                        </div>
+                        <textarea
+                          onChange={(e) => {
+                            let array = [...incoming?.inspeksi_pra_plate_result];
+                            array[2].keterangan = e.target.value;
+                            setIncoming({
+                              ...incoming,
+                              inspeksi_pra_plate_result: array,
+                            });
+                          }}
+                          className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                        ></textarea>
+                        <div className="flex flex-col w-full col-span-3">
+                          <label className="text-neutral-500 text-sm font-semibold">
+                            Upload Foto
+                          </label>
+                          <div className="flex w-full rounded-md border border-stroke px-2 py-2">
+                            <label
+                              htmlFor="formFile"
+                              className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
+                            >
+                              Pilih File
+                              <input
+                                type="file"
+                                id="formFile"
+                                accept="image/*"
+                                className="hidden"
+                              />
+                            </label>
+
+                            <span id="formFile" className="ml-2 text-sm"></span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                    {/* =============================Point 4========================== */}
+                    <>
+                      <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
+                        <div className="flex gap-4 col-span-2">
+                          <label className="text-neutral-500 text-sm font-semibold">
+                            4
+                          </label>
+                          <label className="text-neutral-500 text-sm font-semibold">
+                            Mounting
+                          </label>
+                        </div>
+                        <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                          Job Order
+                        </label>
+                        <div className="flex flex-col gap-1 col-span-2">
+                          <div>
+                            <input
+                              type="radio"
+                              id="sesuai4"
+                              name="sesuai4"
+                              value="sesuai"
+                              onChange={(e) => {
+                                let array = [...incoming?.inspeksi_pra_plate_result];
+                                array[3].hasil_check = e.target.value;
+                                setIncoming({
+                                  ...incoming,
+                                  inspeksi_pra_plate_result: array,
+                                });
+                              }}
+                            />
+                            <label className="pl-2">Sesuai</label>
+                          </div>
+                          <div>
+                            <input
+                              type="radio"
+                              id="sesuai4"
+                              name="sesuai4"
+                              value="tidak sesuai"
+                              onChange={(e) => {
+                                let array = [...incoming?.inspeksi_pra_plate_result];
+                                array[3].hasil_check = e.target.value;
+                                setIncoming({
+                                  ...incoming,
+                                  inspeksi_pra_plate_result: array,
+                                });
+                              }}
+                            />
+                            <label className="pl-2">Tidak Sesuai</label>
+                          </div>
+                        </div>
+                        <textarea
+                          onChange={(e) => {
+                            let array = [...incoming?.inspeksi_pra_plate_result];
+                            array[3].keterangan = e.target.value;
+                            setIncoming({
+                              ...incoming,
+                              inspeksi_pra_plate_result: array,
+                            });
+                          }}
+                          className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                        ></textarea>
+                        <div className="flex flex-col w-full col-span-3">
+                          <label className="text-neutral-500 text-sm font-semibold">
+                            Upload Foto
+                          </label>
+                          <div className="flex w-full rounded-md border border-stroke px-2 py-2">
+                            <label
+                              htmlFor="formFile"
+                              className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
+                            >
+                              Pilih File
+                              <input
+                                type="file"
+                                id="formFile"
+                                accept="image/*"
+                                className="hidden"
+                              />
+                            </label>
+
+                            <span id="formFile" className="ml-2 text-sm"></span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                    {/* =============================Point 5========================== */}
+                    <>
+                      <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
+                        <div className="flex gap-4 col-span-2">
+                          <label className="text-neutral-500 text-sm font-semibold">
+                            5
+                          </label>
+                          <label className="text-neutral-500 text-sm font-semibold">
+                            Kross Potong
+                          </label>
+                        </div>
+                        <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                          Berdasarkan Potong Bahan
+                        </label>
+                        <div className="flex flex-col gap-1 col-span-2">
+                          <div>
+                            <input
+                              type="radio"
+                              id="sesuai5"
+                              name="sesuai5"
+                              value="sesuai"
+                              onChange={(e) => {
+                                let array = [...incoming?.inspeksi_pra_plate_result];
+                                array[4].hasil_check = e.target.value;
+                                setIncoming({
+                                  ...incoming,
+                                  inspeksi_pra_plate_result: array,
+                                });
+                              }}
+                            />
+                            <label className="pl-2">Sesuai</label>
+                          </div>
+                          <div>
+                            <input
+                              type="radio"
+                              id="sesuai5"
+                              name="sesuai5"
+                              value="tidak sesuai"
+                              onChange={(e) => {
+                                let array = [...incoming?.inspeksi_pra_plate_result];
+                                array[4].hasil_check = e.target.value;
+                                setIncoming({
+                                  ...incoming,
+                                  inspeksi_pra_plate_result: array,
+                                });
+                              }}
+                            />
+                            <label className="pl-2">Tidak Sesuai</label>
+                          </div>
+                        </div>
+                        <textarea
+                          onChange={(e) => {
+                            let array = [...incoming?.inspeksi_pra_plate_result];
+                            array[4].keterangan = e.target.value;
+                            setIncoming({
+                              ...incoming,
+                              inspeksi_pra_plate_result: array,
+                            });
+                          }}
+                          className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                        ></textarea>
+                        <div className="flex flex-col w-full col-span-3">
+                          <label className="text-neutral-500 text-sm font-semibold">
+                            Upload Foto
+                          </label>
+                          <div className="flex w-full rounded-md border border-stroke px-2 py-2">
+                            <label
+                              htmlFor="formFile"
+                              className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
+                            >
+                              Pilih File
+                              <input
+                                type="file"
+                                id="formFile"
+                                accept="image/*"
+                                className="hidden"
+                              />
+                            </label>
+
+                            <span id="formFile" className="ml-2 text-sm"></span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  </>
+                )}
+            </>
+            {/* =============================================Checksheet STOP==========================================================*/}
+            {incoming?.status == 'history' && (
               <>
                 <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
                   <div className="flex gap-4 col-span-2">
@@ -419,433 +841,142 @@ function ChecksheetPraplate() {
                   </label>
                   <div className="flex flex-col gap-1 col-span-2">
                     <div>
-                      <input
-                        type="radio"
-                        id="sesuai1"
-                        name="sesuai1"
-                        value="sesuai"
-                        onChange={(e) => {
-                          let array = [...incoming?.inspeksi_pra_plate_result];
-                          array[0].hasil_check = e.target.value;
-                          setIncoming({
-                            ...incoming,
-                            inspeksi_pra_plate_result: array,
-                          });
-                        }}
-                      />
-                      <label className="pl-2">Sesuai</label>
-                    </div>
-                    <div>
-                      <input
-                        type="radio"
-                        id="sesuai11"
-                        name="sesuai1"
-                        value="tidak sesuai"
-                        onChange={(e) => {
-                          let array = [...incoming?.inspeksi_pra_plate_result];
-                          array[0].hasil_check = e.target.value;
-                          setIncoming({
-                            ...incoming,
-                            inspeksi_pra_plate_result: array,
-                          });
-                        }}
-                      />
-                      <label className="pl-2">Tidak Sesuai</label>
+                      {incoming?.inspeksi_pra_plate_result[0].hasil_check}
                     </div>
                   </div>
                   <textarea
-                    onChange={(e) => {
-                      let array = [...incoming?.inspeksi_pra_plate_result];
-                      array[0].keterangan = e.target.value;
-                      setIncoming({
-                        ...incoming,
-                        inspeksi_pra_plate_result: array,
-                      });
-                    }}
+                    readOnly
+                    defaultValue={incoming?.inspeksi_pra_plate_result[0].keterangan}
                     className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                   ></textarea>
                   <div className="flex flex-col w-full col-span-3">
-                    <label className="text-neutral-500 text-sm font-semibold">
-                      Upload Foto
-                    </label>
-                    <div className="flex w-full rounded-md border border-stroke px-2 py-2">
-                      <label
-                        htmlFor="formFile"
-                        className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
-                      >
-                        Pilih File
-                        <input
-                          type="file"
-                          id="formFile"
-                          accept="image/*"
-                          className="hidden"
-                        />
-                      </label>
-
-                      <span id="formFile" className="ml-2 text-sm"></span>
-                    </div>
                   </div>
                 </div>
-              </>
-              {/* =============================Point 2========================== */}
-              <>
-                <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
-                  <div className="flex gap-4 col-span-2">
-                    <label className="text-neutral-500 text-sm font-semibold">
-                      2
-                    </label>
-                    <label className="text-neutral-500 text-sm font-semibold">
-                      Design
-                    </label>
-                  </div>
-                  <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                    Acc Artwork
-                  </label>
-                  <div className="flex flex-col gap-1 col-span-2">
-                    <div>
-                      <input
-                        type="radio"
-                        id="sesuai2"
-                        name="sesuai2"
-                        value="sesuai"
-                        onChange={(e) => {
-                          let array = [...incoming?.inspeksi_pra_plate_result];
-                          array[1].hasil_check = e.target.value;
-                          setIncoming({
-                            ...incoming,
-                            inspeksi_pra_plate_result: array,
-                          });
-                        }}
-                      />
-                      <label className="pl-2">Sesuai</label>
-                    </div>
-                    <div>
-                      <input
-                        type="radio"
-                        id="sesuai2"
-                        name="sesuai2"
-                        value="tidak sesuai"
-                        onChange={(e) => {
-                          let array = [...incoming?.inspeksi_pra_plate_result];
-                          array[1].hasil_check = e.target.value;
-                          setIncoming({
-                            ...incoming,
-                            inspeksi_pra_plate_result: array,
-                          });
-                        }}
-                      />
-                      <label className="pl-2">Tidak Sesuai</label>
-                    </div>
-                  </div>
-                  <textarea
-                    onChange={(e) => {
-                      let array = [...incoming?.inspeksi_pra_plate_result];
-                      array[1].keterangan = e.target.value;
-                      setIncoming({
-                        ...incoming,
-                        inspeksi_pra_plate_result: array,
-                      });
-                    }}
-                    className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                  ></textarea>
-                  <div className="flex flex-col w-full col-span-3">
-                    <label className="text-neutral-500 text-sm font-semibold">
-                      Upload Foto
-                    </label>
-                    <div className="flex w-full rounded-md border border-stroke px-2 py-2">
-                      <label
-                        htmlFor="formFile"
-                        className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
-                      >
-                        Pilih File
-                        <input
-                          type="file"
-                          id="formFile"
-                          accept="image/*"
-                          className="hidden"
-                        />
+                <>
+                  <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
+                    <div className="flex gap-4 col-span-2">
+                      <label className="text-neutral-500 text-sm font-semibold">
+                        2
                       </label>
-
-                      <span id="formFile" className="ml-2 text-sm"></span>
-                    </div>
-                  </div>
-                </div>
-              </>
-              {/* =============================Point 3========================== */}
-              <>
-                <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
-                  <div className="flex gap-4 col-span-2">
-                    <label className="text-neutral-500 text-sm font-semibold">
-                      3
-                    </label>
-                    <label className="text-neutral-500 text-sm font-semibold">
-                      Bleed
-                    </label>
-                  </div>
-                  <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                    Film Pisau
-                  </label>
-                  <div className="flex flex-col gap-1 col-span-2">
-                    <div>
-                      <input
-                        type="radio"
-                        id="sesuai3"
-                        name="sesuai3"
-                        value="sesuai"
-                        onChange={(e) => {
-                          let array = [...incoming?.inspeksi_pra_plate_result];
-                          array[2].hasil_check = e.target.value;
-                          setIncoming({
-                            ...incoming,
-                            inspeksi_pra_plate_result: array,
-                          });
-                        }}
-                      />
-                      <label className="pl-2">Sesuai</label>
-                    </div>
-                    <div>
-                      <input
-                        type="radio"
-                        id="sesuai3"
-                        name="sesuai3"
-                        value="tidak sesuai"
-                        onChange={(e) => {
-                          let array = [...incoming?.inspeksi_pra_plate_result];
-                          array[2].hasil_check = e.target.value;
-                          setIncoming({
-                            ...incoming,
-                            inspeksi_pra_plate_result: array,
-                          });
-                        }}
-                      />
-                      <label className="pl-2">Tidak Sesuai</label>
-                    </div>
-                  </div>
-                  <textarea
-                    onChange={(e) => {
-                      let array = [...incoming?.inspeksi_pra_plate_result];
-                      array[2].keterangan = e.target.value;
-                      setIncoming({
-                        ...incoming,
-                        inspeksi_pra_plate_result: array,
-                      });
-                    }}
-                    className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                  ></textarea>
-                  <div className="flex flex-col w-full col-span-3">
-                    <label className="text-neutral-500 text-sm font-semibold">
-                      Upload Foto
-                    </label>
-                    <div className="flex w-full rounded-md border border-stroke px-2 py-2">
-                      <label
-                        htmlFor="formFile"
-                        className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
-                      >
-                        Pilih File
-                        <input
-                          type="file"
-                          id="formFile"
-                          accept="image/*"
-                          className="hidden"
-                        />
+                      <label className="text-neutral-500 text-sm font-semibold">
+                        Design
                       </label>
+                    </div>
+                    <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                      Acc Artwork
+                    </label>
+                    <div className="flex flex-col gap-1 col-span-2">
+                      <div>
+                        {incoming?.inspeksi_pra_plate_result[1].hasil_check}
+                      </div>
+                    </div>
+                    <textarea
+                      readOnly
+                      defaultValue={incoming?.inspeksi_pra_plate_result[1].keterangan}
+                      className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                    ></textarea>
+                    <div className="flex flex-col w-full col-span-3">
 
-                      <span id="formFile" className="ml-2 text-sm"></span>
+
                     </div>
                   </div>
-                </div>
-              </>
-              {/* =============================Point 4========================== */}
-              <>
-                <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
-                  <div className="flex gap-4 col-span-2">
-                    <label className="text-neutral-500 text-sm font-semibold">
-                      4
-                    </label>
-                    <label className="text-neutral-500 text-sm font-semibold">
-                      Mounting
-                    </label>
-                  </div>
-                  <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                    Job Order
-                  </label>
-                  <div className="flex flex-col gap-1 col-span-2">
-                    <div>
-                      <input
-                        type="radio"
-                        id="sesuai4"
-                        name="sesuai4"
-                        value="sesuai"
-                        onChange={(e) => {
-                          let array = [...incoming?.inspeksi_pra_plate_result];
-                          array[3].hasil_check = e.target.value;
-                          setIncoming({
-                            ...incoming,
-                            inspeksi_pra_plate_result: array,
-                          });
-                        }}
-                      />
-                      <label className="pl-2">Sesuai</label>
-                    </div>
-                    <div>
-                      <input
-                        type="radio"
-                        id="sesuai4"
-                        name="sesuai4"
-                        value="tidak sesuai"
-                        onChange={(e) => {
-                          let array = [...incoming?.inspeksi_pra_plate_result];
-                          array[3].hasil_check = e.target.value;
-                          setIncoming({
-                            ...incoming,
-                            inspeksi_pra_plate_result: array,
-                          });
-                        }}
-                      />
-                      <label className="pl-2">Tidak Sesuai</label>
-                    </div>
-                  </div>
-                  <textarea
-                    onChange={(e) => {
-                      let array = [...incoming?.inspeksi_pra_plate_result];
-                      array[3].keterangan = e.target.value;
-                      setIncoming({
-                        ...incoming,
-                        inspeksi_pra_plate_result: array,
-                      });
-                    }}
-                    className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                  ></textarea>
-                  <div className="flex flex-col w-full col-span-3">
-                    <label className="text-neutral-500 text-sm font-semibold">
-                      Upload Foto
-                    </label>
-                    <div className="flex w-full rounded-md border border-stroke px-2 py-2">
-                      <label
-                        htmlFor="formFile"
-                        className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
-                      >
-                        Pilih File
-                        <input
-                          type="file"
-                          id="formFile"
-                          accept="image/*"
-                          className="hidden"
-                        />
+                </>
+                <>
+                  <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
+                    <div className="flex gap-4 col-span-2">
+                      <label className="text-neutral-500 text-sm font-semibold">
+                        3
                       </label>
-
-                      <span id="formFile" className="ml-2 text-sm"></span>
-                    </div>
-                  </div>
-                </div>
-              </>
-              {/* =============================Point 5========================== */}
-              <>
-                <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
-                  <div className="flex gap-4 col-span-2">
-                    <label className="text-neutral-500 text-sm font-semibold">
-                      5
-                    </label>
-                    <label className="text-neutral-500 text-sm font-semibold">
-                      Kross Potong
-                    </label>
-                  </div>
-                  <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                    Berdasarkan Potong Bahan
-                  </label>
-                  <div className="flex flex-col gap-1 col-span-2">
-                    <div>
-                      <input
-                        type="radio"
-                        id="sesuai5"
-                        name="sesuai5"
-                        value="sesuai"
-                        onChange={(e) => {
-                          let array = [...incoming?.inspeksi_pra_plate_result];
-                          array[4].hasil_check = e.target.value;
-                          setIncoming({
-                            ...incoming,
-                            inspeksi_pra_plate_result: array,
-                          });
-                        }}
-                      />
-                      <label className="pl-2">Sesuai</label>
-                    </div>
-                    <div>
-                      <input
-                        type="radio"
-                        id="sesuai5"
-                        name="sesuai5"
-                        value="tidak sesuai"
-                        onChange={(e) => {
-                          let array = [...incoming?.inspeksi_pra_plate_result];
-                          array[4].hasil_check = e.target.value;
-                          setIncoming({
-                            ...incoming,
-                            inspeksi_pra_plate_result: array,
-                          });
-                        }}
-                      />
-                      <label className="pl-2">Tidak Sesuai</label>
-                    </div>
-                  </div>
-                  <textarea
-                    onChange={(e) => {
-                      let array = [...incoming?.inspeksi_pra_plate_result];
-                      array[4].keterangan = e.target.value;
-                      setIncoming({
-                        ...incoming,
-                        inspeksi_pra_plate_result: array,
-                      });
-                    }}
-                    className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                  ></textarea>
-                  <div className="flex flex-col w-full col-span-3">
-                    <label className="text-neutral-500 text-sm font-semibold">
-                      Upload Foto
-                    </label>
-                    <div className="flex w-full rounded-md border border-stroke px-2 py-2">
-                      <label
-                        htmlFor="formFile"
-                        className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
-                      >
-                        Pilih File
-                        <input
-                          type="file"
-                          id="formFile"
-                          accept="image/*"
-                          className="hidden"
-                        />
+                      <label className="text-neutral-500 text-sm font-semibold">
+                        Bleed
                       </label>
+                    </div>
+                    <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                      Film Pisau
+                    </label>
+                    <div className="flex flex-col gap-1 col-span-2">
+                      <div>
+                        {incoming?.inspeksi_pra_plate_result[2].hasil_check}
+                      </div>
+                    </div>
+                    <textarea
+                      readOnly
+                      defaultValue={incoming?.inspeksi_pra_plate_result[2].keterangan}
+                      className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                    ></textarea>
+                    <div className="flex flex-col w-full col-span-3">
 
-                      <span id="formFile" className="ml-2 text-sm"></span>
+
                     </div>
                   </div>
-                </div>
+
+                </>
+                {/* =============================Point 4========================== */}
+                <>
+                  <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
+                    <div className="flex gap-4 col-span-2">
+                      <label className="text-neutral-500 text-sm font-semibold">
+                        4
+                      </label>
+                      <label className="text-neutral-500 text-sm font-semibold">
+                        Mounting
+                      </label>
+                    </div>
+                    <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                      Job Order
+                    </label>
+                    <div className="flex flex-col gap-1 col-span-2">
+                      <div>
+                        {incoming?.inspeksi_pra_plate_result[3].hasil_check}
+                      </div>
+                    </div>
+                    <textarea
+                      readOnly
+                      defaultValue={incoming?.inspeksi_pra_plate_result[3].keterangan}
+                      className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                    ></textarea>
+                    <div className="flex flex-col w-full col-span-3">
+
+
+                    </div>
+                  </div>
+                </>
+                {/* =============================Point 5========================== */}
+                <>
+                  <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
+                    <div className="flex gap-4 col-span-2">
+                      <label className="text-neutral-500 text-sm font-semibold">
+                        5
+                      </label>
+                      <label className="text-neutral-500 text-sm font-semibold">
+                        Kross Potong
+                      </label>
+                    </div>
+                    <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                      Berdasarkan Potong Bahan
+                    </label>
+                    <div className="flex flex-col gap-1 col-span-2">
+                      <div>
+                        {incoming?.inspeksi_pra_plate_result[4].hasil_check}
+                      </div>
+                    </div>
+                    <textarea
+                      readOnly
+                      defaultValue={incoming?.inspeksi_pra_plate_result[4].keterangan}
+                      className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                    ></textarea>
+                    <div className="flex flex-col w-full col-span-3">
+
+
+                    </div>
+                  </div>
+                </>
               </>
-            </>
-            {/* )}
-                        </> */}
-            {/* =============================================Checksheet STOP==========================================================*/}
-            {incoming?.waktu_mulai != null &&
-              incoming?.waktu_selesai != null && <></>}
+            )
+            }
 
             <div className="bg-white grid grid-cols-10 px-4 py-4 items-center gap-4">
-              {/* {!incoming?.inspeksi_bahan_result[0]?.send ? (
-                                <>
-                                    <button onClick={() => {
-                                        console.log(incoming)
-                                        sumbitChecksheet(incoming?.id)
-                                    }
-                                    } className='bg-[#0065DE] px-4 py-2 rounded-sm text-center text-white text-xs font-bold'>
-                                        SUBMIT CHECKSHEET
-                                    </button>
-                                </>
-                            ) :
-                                (
-                                    <>
-                                    </>
-                                )} */}
+
 
               <label className="text-neutral-500 text-sm font-semibold col-span-6">
                 Catatan
@@ -863,34 +994,45 @@ function ChecksheetPraplate() {
                 )}
               </label>
               <div className="flex flex-col gap-1 col-span-2">
-                <div>
-                  <input
-                    type="radio"
-                    id="LANJUT1"
-                    name="LANJUT1"
-                    value="lanjut Proses"
-                    onChange={(e) => {
-                      setHasilCheck(e.target.value);
-                    }}
-                  />
-                  <label className="pl-2 font-semibold text-[#6c6b6b] ">
-                    LANJUT PROSES
-                  </label>
-                </div>
-                <div>
-                  <input
-                    type="radio"
-                    id="LANJUT12"
-                    name="LANJUT1"
-                    value="Reject"
-                    onChange={(e) => {
-                      setHasilCheck(e.target.value);
-                    }}
-                  />
-                  <label className="pl-2 font-semibold text-[#6c6b6b] ">
-                    REJECT
-                  </label>
-                </div>
+                {incoming?.status == 'incoming' ? (
+                  <>
+                    <div>
+                      <input
+                        type="radio"
+                        id="LANJUT1"
+                        name="LANJUT1"
+                        value="lanjut Proses"
+                        onChange={(e) => {
+                          setHasilCheck(e.target.value);
+                        }}
+                      />
+                      <label className="pl-2 font-semibold text-[#6c6b6b] ">
+                        LANJUT PROSES
+                      </label>
+                    </div>
+                    <div>
+                      <input
+                        type="radio"
+                        id="LANJUT12"
+                        name="LANJUT1"
+                        value="Reject"
+                        onChange={(e) => {
+                          setHasilCheck(e.target.value);
+                        }}
+                      />
+                      <label className="pl-2 font-semibold text-[#6c6b6b] ">
+                        REJECT
+                      </label>
+                    </div>
+                  </>
+                ) :
+                  <>
+                    <label className="pl-2 font-semibold text-[#6c6b6b] ">
+                      {incoming?.hasil_check}
+                    </label>
+                  </>
+                }
+
               </div>
               <div className="flex h-full col-span-2 items-end justify-end w-full">
                 {incoming?.status == 'incoming' ? (
@@ -911,8 +1053,9 @@ function ChecksheetPraplate() {
               </div>
             </div>
           </div>
-        </main>
-      )}
+        </main >
+      )
+      }
     </>
   );
 }
