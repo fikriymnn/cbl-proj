@@ -618,17 +618,22 @@ function ChecksheetLipat() {
                             );
                           },
                         )}
-                        <div className='px-2 py-3'>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              tambahChecksheetPoint(incoming.id);
-                            }}
-                            className="bg-blue-500 h-10 w-20  rounded-md  text-white text-xs font-bold"
-                          >
-                            Tambah
-                          </button>
-                        </div>
+                        {!isOnprogres && (
+                          <>
+                            <div className='px-2 py-3'>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  tambahChecksheetPoint(incoming.id);
+                                }}
+                                className="bg-blue-500 h-10 w-20  rounded-md  text-white text-xs font-bold"
+                              >
+                                Tambah
+                              </button>
+                            </div>
+
+                          </>
+                        )}
 
                       </>
                     </>
