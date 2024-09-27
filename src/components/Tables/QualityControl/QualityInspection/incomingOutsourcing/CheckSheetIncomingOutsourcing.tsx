@@ -246,9 +246,11 @@ function ChecksheetRusakSebagian() {
                   </label>
 
                   <label className="text-neutral-500 text-sm font-semibold">
-                    Jumlah Druk
+                    Jumlah Druk / Mata
                   </label>
-
+                  <label className="text-neutral-500 text-sm font-semibold">
+                    Jumlah Pcs
+                  </label>
                   <label className="text-neutral-500 text-sm font-semibold">
                     Outsourcing
                   </label>
@@ -266,7 +268,10 @@ function ChecksheetRusakSebagian() {
                     : {FinalInspection?.data?.nama_produk}
                   </label>
                   <label className="text-neutral-500 text-sm font-semibold">
-                    : {FinalInspection?.data?.jumlah_druk}
+                    : {FinalInspection?.data?.jumlah_druk} / {FinalInspection?.data?.isi_mata}
+                  </label>
+                  <label className="text-neutral-500 text-sm font-semibold">
+                    : {FinalInspection?.data?.jumlah_pcs}
                   </label>
                   {FinalInspection?.data?.status == 'incoming' ? (
                     <>
@@ -445,7 +450,7 @@ function ChecksheetRusakSebagian() {
                               CUPK
                             </option>
                             <option value="PERUBAHAN" className="text-[#646464] text-xs dark:text-bodydark">
-                              PERUBAHAN
+                              REPEAT PERUBAHAN
                             </option>
 
                           </select>

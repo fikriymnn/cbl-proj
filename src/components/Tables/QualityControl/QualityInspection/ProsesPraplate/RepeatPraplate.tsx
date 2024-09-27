@@ -135,6 +135,9 @@ function ProsesPraplateRepeat() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   Mesin
                 </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  Total Warna
+                </label>
               </div>
               <div className="w-2 h-full "></div>
               {pondMesin != null &&
@@ -164,14 +167,17 @@ function ProsesPraplateRepeat() {
                       <label className="text-neutral-500 text-sm font-semibold col-span-2">
                         {data.customer}
                       </label>
-                      <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                      <label className="text-neutral-500 text-sm font-semibold ">
                         {data.mesin}
+                      </label>
+                      <label className="text-neutral-500 text-sm font-semibold ">
+                        {data.total_warna}
                       </label>
                       <div className="justify-end flex pr-2 ">
                         <>
                           <button
                             onClick={() => openModalModal(i)}
-                            className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                            className={`uppercase px-4 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                           >
                             Action
                           </button>
