@@ -673,7 +673,7 @@ function CheckSheetCoatingAwal() {
                             }
                             className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                           >
-                            SIMPAN PERIODE
+                            SIMPAN AWAL JALAN
                           </button>
                         ) : null}
                       </div>
@@ -732,7 +732,7 @@ function CheckSheetCoatingAwal() {
                   }
                   className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                 >
-                  SIMPAN PERIODE
+                  CHECKSHEET SELESAI
                 </button>
               ) : null}
             </div>

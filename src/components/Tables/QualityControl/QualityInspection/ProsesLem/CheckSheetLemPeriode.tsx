@@ -1436,7 +1436,7 @@ function CheckSheetLemPeriode() {
                   }}
                   className=" w-full h-10 rounded-md bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                 >
-                  SIMPAN PERIODE
+                  CHECKSHEET SELESAI
                 </button>
               ) : null}
               {/* ) : null} */}

@@ -21,6 +21,8 @@ function ChecksheetFinalInspection() {
   const [noPallet, setnoPallet] = useState<any>();
   const [noPacking, setnoPacking] = useState<any>();
   const [status, setStatus] = useState<any>();
+  const [noBarcode, setnoBarcode] = useState<any>();
+
   useEffect(() => {
     getFinalInspection();
   }, []);
@@ -69,6 +71,7 @@ function ChecksheetFinalInspection() {
           {
             lama_pengerjaan: totalSecondsToSave,
             catatan: Catatan,
+            no_barcode: noBarcode,
             no_pallet: noPallet,
             no_packing: noPacking,
             qty_packing: qtyPacking,
@@ -89,6 +92,7 @@ function ChecksheetFinalInspection() {
             catatan: Catatan,
             no_pallet: noPallet,
             no_packing: noPacking,
+            no_barcode: noBarcode,
             qty_packing: qtyPacking,
             jumlah_packing: jumlahPacking,
             status: status,
@@ -850,7 +854,37 @@ function ChecksheetFinalInspection() {
               )}
 
             <div className="bg-white mt-2 w-full grid grid-cols-12 gap-5 p-2 text-sm font-semibold ">
+
               <div className="col-span-6">
+                <div className="w-[40%]">
+                  <p className="">Nomor Barcode :</p>
+                  {FinalInspection?.status == 'incoming' ? (
+                    <input
+                      type='text'
+                      required
+                      name=""
+                      id=""
+                      onChange={(e) => {
+                        setnoBarcode(e.target.value);
+                      }}
+
+                      className="w-full border rounded px-2"
+                    ></input>
+                  ) : (
+                    <input
+                      type='text'
+                      name=""
+                      id=""
+                      disabled
+                      defaultValue={FinalInspection?.no_barcode}
+                      onChange={(e) => {
+                        setnoBarcode(e.target.value);
+                      }}
+
+                      className="w-full border rounded px-2"
+                    ></input>
+                  )}
+                </div>
                 <p className="">Catatan *:</p>
                 {FinalInspection?.status == 'incoming' ? (
                   <textarea

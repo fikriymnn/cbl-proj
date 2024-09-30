@@ -390,8 +390,8 @@ function ChecksheetRusakSebagian() {
                           <input
                             required
                             type="radio"
-                            name="ss"
-                            id="ss"
+                            name="ss44"
+                            id="ss66"
                             value={'Sesuai'}
                             onChange={(e) => setJenisHasil(e.target.value)}
                           />
@@ -403,8 +403,8 @@ function ChecksheetRusakSebagian() {
                           <input
                             required
                             type="radio"
-                            name="ss"
-                            id="ss1"
+                            name="ss44"
+                            id="ss66"
                             value={'Tidak Sesuai'}
                             onChange={(e) => setJenisHasil(e.target.value)}
                           />
@@ -658,6 +658,19 @@ onChange={(e) => setWaktuSortir(e.target.value)}
                                 />
                                 <label className="mr-2" htmlFor="ss1">
                                   Tidak Sesuai
+                                </label>
+                              </div>
+                              <div className="flex gap-2">
+                                <input
+                                  required
+                                  type="radio"
+                                  name={`ss ${index}`}
+                                  id="ss2"
+                                  value="Tidak Ada Proses"
+                                  onChange={(e) => handleChangePointRadio(e, index)}
+                                />
+                                <label className="mr-2" htmlFor="ss2">
+                                  Tidak Ada Proses
                                 </label>
                               </div>
                             </div>
