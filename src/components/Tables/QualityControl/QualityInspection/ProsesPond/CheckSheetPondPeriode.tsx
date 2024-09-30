@@ -75,12 +75,15 @@ function CheckSheetPondPeriode() {
       }/api/list-kendala?criteria=true&proses=7`;
 
     try {
+      setIsLoading(true);
       const res = await axios.get(url);
 
       setMasterKode(res);
-
+      setIsLoading(false);
       console.log(res);
     } catch (error: any) {
+      setIsLoading(false);
+      alert('Gagal Memanggil Defect, Coba Refresh Halaman!')
       console.log(error.data.msg);
     }
   }
@@ -88,11 +91,14 @@ function CheckSheetPondPeriode() {
   async function getDepartment() {
     const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-departmen`;
     try {
+      setIsLoading(true);
       const res = await axios.get(url, {});
-
+      setIsLoading(false);
       console.log(res.data);
       setDataDepartment(res.data);
     } catch (error: any) {
+      setIsLoading(false);
+      alert('Gagal Memannggil Department, Coba Refresh Halaman!')
       console.log(error);
     }
   }
@@ -100,15 +106,17 @@ function CheckSheetPondPeriode() {
   async function getPondMesinPeriode() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPond/${id}`;
     try {
+      setIsLoading(true);
       const res = await axios.get(url, {
         withCredentials: true,
       });
-
+      setIsLoading(false);
       setPondMesinPeriode(res.data.data);
       setPondMesinPeriodeDefect(res.data.defect);
       setpondMesinPeriodeHistory(res.data.history);
       console.log(res.data.data);
     } catch (error: any) {
+      alert('Gagal Memannggil Data, Coba Refresh Halaman!')
       console.log(error.data.msg);
     }
   }

@@ -76,12 +76,15 @@ function CheckSheetLemPeriode() {
       }/api/list-kendala?criteria=true&proses=11`;
 
     try {
+      setIsLoading(true);
       const res = await axios.get(url);
-
+      setIsLoading(false);
       setMasterKode(res);
 
       console.log(res);
     } catch (error: any) {
+      setIsLoading(false);
+      alert('Gagal Memannggil Defect, Coba Refresh Halaman!')
       console.log(error.data.msg);
     }
   }
@@ -89,11 +92,14 @@ function CheckSheetLemPeriode() {
   async function getDepartment() {
     const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-departmen`;
     try {
+      setIsLoading(true);
       const res = await axios.get(url, {});
-
+      setIsLoading(false);
       console.log(res.data);
       setDataDepartment(res.data);
     } catch (error: any) {
+      setIsLoading(false);
+      alert('Gagal Memannggil Department, Coba Refresh Halaman!')
       console.log(error);
     }
   }
@@ -101,15 +107,18 @@ function CheckSheetLemPeriode() {
   async function getLemMesinPeriode() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiLem/${id}`;
     try {
+      setIsLoading(true);
       const res = await axios.get(url, {
         withCredentials: true,
       });
-
+      setIsLoading(false);
       setLemMesinPeriode(res.data.data);
       setLemMesinPeriodeDefect(res.data.defect);
       setLemMesinPeriodeHistory(res.data.history);
       console.log(res.data);
     } catch (error: any) {
+      setIsLoading(false);
+      alert('Gagal Memannggil Data, Coba Refresh Halaman!')
       console.log(error.data.msg);
     }
   }

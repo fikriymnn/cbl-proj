@@ -58,13 +58,16 @@ function CheckSheetCetakPeriode() {
     const url2 = `${import.meta.env.VITE_API_LINK_P1
       }/api/list-kendala?criteria=true&proses=4`;
     try {
+      setIsLoading(true);
       const res = await axios.get(url);
       const res2 = await axios.get(url);
-
+      setIsLoading(false);
       setMasterKodeCetak(res);
       setMasterKodeCetak2(res2);
       console.log(res);
     } catch (error: any) {
+      setIsLoading(false);
+      alert('Gagal Memannggil Defect, Coba Refresh Halaman!')
       console.log(error.data.msg);
     }
   }
@@ -72,11 +75,14 @@ function CheckSheetCetakPeriode() {
   async function getDepartment() {
     const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-departmen`;
     try {
+      setIsLoading(true);
       const res = await axios.get(url, {});
-
+      setIsLoading(false);
       console.log(res.data);
       setDataDepartment(res.data);
     } catch (error: any) {
+      setIsLoading(false);
+      alert('Gagal Memannggil Department, Coba Refresh Halaman!')
       console.log(error);
     }
   }
@@ -84,15 +90,18 @@ function CheckSheetCetakPeriode() {
   async function getCetakMesinPeriode() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiCetak/${id}`;
     try {
+      setIsLoading(true);
       const res = await axios.get(url, {
         withCredentials: true,
       });
-
+      setIsLoading(false);
       setCetakMesinPeriode(res.data.data);
       setCetakMesinPeriodeDefect(res.data.defect);
       setCetakMesinPeriodeHistory(res.data.history);
       console.log(res.data);
     } catch (error: any) {
+      setIsLoading(false);
+      alert('Gagal Memannggil Data, Coba Refresh Halaman!')
       console.log(error.data.msg);
     }
   }

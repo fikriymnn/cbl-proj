@@ -77,12 +77,15 @@ function CheckSheetCoatingPeriode() {
       }/api/list-kendala?criteria=true&proses=5`;
 
     try {
+      setIsLoading(true);
       const res = await axios.get(url);
 
       setMasterKode(res);
-
+      setIsLoading(false);
       console.log(res);
     } catch (error: any) {
+      setIsLoading(false);
+      alert('Gagal Memannggil Defect, Coba Refresh Halaman!')
       console.log(error.data.msg);
     }
   }
@@ -90,26 +93,32 @@ function CheckSheetCoatingPeriode() {
   async function getDepartment() {
     const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-departmen`;
     try {
+      setIsLoading(true);
       const res = await axios.get(url, {});
-
+      setIsLoading(false);
       console.log(res.data);
       setDataDepartment(res.data);
     } catch (error: any) {
+      setIsLoading(false);
+      alert('Gagal Memannggil Department, Coba Refresh Halaman!')
       console.log(error);
     }
   }
   async function getCoatingMesinPeriode() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiCoating/${id}`;
     try {
+      setIsLoading(true);
       const res = await axios.get(url, {
         params: { jenis_pengecekan: 'periode' },
         withCredentials: true,
       });
-
+      setIsLoading(false);
       setCoatingMesinPeriode(res.data.data);
       setCoatingMesinPeriodeDefect(res.data.defect);
       console.log(res);
     } catch (error: any) {
+      setIsLoading(false);
+      alert('Gagal Memannggil Data, Coba Refresh Halaman!')
       console.log(error.data.msg);
     }
   }
