@@ -50,8 +50,9 @@ function ChecksheetLipat() {
     }
   }
   async function startTask(id: any) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLipat/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLipat/start/${id}`;
 
     try {
       const res = await axios.get(url, {
@@ -74,8 +75,9 @@ function ChecksheetLipat() {
       : '-';
 
   async function tambahChecksheetPoint(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLipat/addPoint/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLipat/addPoint/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -92,8 +94,9 @@ function ChecksheetLipat() {
   }
 
   async function saveChecksheetResult(id: number, hasilCheck: any) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLipat/save/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLipat/save/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -126,8 +129,9 @@ function ChecksheetLipat() {
     const stopTime = new Date();
     const timestamp = convertTimeStampToDateTime(new Date());
 
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLipat/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLipat/done/${id}`;
     try {
       const elapsedSeconds = await calculateElapsedTime(start, stopTime);
 
@@ -304,7 +308,7 @@ function ChecksheetLipat() {
                     : {incoming?.mesin}
                   </label>
                   <label className="text-neutral-500 text-sm font-semibold">
-                    : {incoming?.inspector}
+                    : {incoming?.inspektor?.nama}
                   </label>
                 </div>
                 <div className="flex flex-col w-full items-center gap-4 px-10 py-4 col-span-2  bg-[#F6FAFF]">
@@ -321,7 +325,7 @@ function ChecksheetLipat() {
                                 Task Belum Dimulai
                               </p>
                               <button
-                                type='button'
+                                type="button"
                                 onClick={() => {
                                   startTask(incoming?.id);
                                 }}
@@ -533,38 +537,40 @@ function ChecksheetLipat() {
                                                 ></span>
                                               </div>
                                             </div>
-
                                           </>
-                                        ) :
-                                          (
-                                            <>
-                                              <div className="flex gap-4 col-span-2">
-                                                <label className="text-neutral-500 text-sm font-semibold">
-                                                  {iResult + 1}
-                                                </label>
-                                                <label className="text-neutral-500 text-sm font-semibold">
-                                                  {dataResult.point_check}
-                                                </label>
-                                              </div>
-                                              <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                                                {dataResult.acuan}
+                                        ) : (
+                                          <>
+                                            <div className="flex gap-4 col-span-2">
+                                              <label className="text-neutral-500 text-sm font-semibold">
+                                                {iResult + 1}
                                               </label>
-                                              <div className="flex flex-col gap-1 col-span-2">
-                                                {dataPoint.inspeksi_lipat_result[iResult]?.hasil_check}
-                                              </div>
-                                              <textarea
-                                                defaultValue={dataPoint.inspeksi_lipat_result[iResult]?.keterangan}
-                                                name="keterangan"
-                                                readOnly
-                                                className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                              ></textarea>
-                                              <div className="flex flex-col w-full col-span-3">
-
-                                              </div>
-
-                                            </>
-                                          )}
-
+                                              <label className="text-neutral-500 text-sm font-semibold">
+                                                {dataResult.point_check}
+                                              </label>
+                                            </div>
+                                            <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                                              {dataResult.acuan}
+                                            </label>
+                                            <div className="flex flex-col gap-1 col-span-2">
+                                              {
+                                                dataPoint.inspeksi_lipat_result[
+                                                  iResult
+                                                ]?.hasil_check
+                                              }
+                                            </div>
+                                            <textarea
+                                              defaultValue={
+                                                dataPoint.inspeksi_lipat_result[
+                                                  iResult
+                                                ]?.keterangan
+                                              }
+                                              name="keterangan"
+                                              readOnly
+                                              className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                            ></textarea>
+                                            <div className="flex flex-col w-full col-span-3"></div>
+                                          </>
+                                        )}
                                       </>
                                     );
                                   },
@@ -587,7 +593,7 @@ function ChecksheetLipat() {
                             );
                           },
                         )}
-                        <div className='px-2 py-3'>
+                        <div className="px-2 py-3">
                           <button
                             type="button"
                             onClick={() => {
@@ -598,7 +604,6 @@ function ChecksheetLipat() {
                             Tambah
                           </button>
                         </div>
-
                       </>
                     </>
                   )}
@@ -673,7 +678,7 @@ function ChecksheetLipat() {
                 <label className="text-neutral-500 text-sm font-semibold col-span-8">
                   Catatan
                   {incoming?.waktu_mulai != null &&
-                    incoming?.status == 'incoming' ? (
+                  incoming?.status == 'incoming' ? (
                     <>
                       <textarea
                         required
@@ -690,7 +695,7 @@ function ChecksheetLipat() {
 
                 <div className="flex h-full col-span-2 items-end justify-end w-full">
                   {incoming?.waktu_mulai != null &&
-                    incoming?.status == 'incoming' ? (
+                  incoming?.status == 'incoming' ? (
                     <>
                       <button
                         type="submit"

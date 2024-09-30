@@ -274,7 +274,7 @@ function ChecksheetPraplate() {
                   : {incoming?.keterangan}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {incoming?.inspector}
+                  : {incoming?.inspektor?.nama}
                 </label>
               </div>
               <div className="flex flex-col w-full items-center gap-4 px-10 py-4 col-span-2  bg-[#F6FAFF]">
