@@ -33,7 +33,12 @@ const Login: React.FC = () => {
       setIsLoading(false);
       // router.push("/");
       // push("/");
-      navigate('/dashboard');
+      if (response.data.role == 'pre_press') {
+        navigate('/prepress');
+      } else {
+        navigate('/dashboard');
+      }
+
     } catch (error: any) {
       alert(error.response.data.msg);
       setIsLoading(false);

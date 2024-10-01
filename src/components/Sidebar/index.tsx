@@ -1280,6 +1280,36 @@ const Sidebar = ({
             );
           }}
         </SidebarLinkGroup>
+        <>
+          <SidebarLinkGroup
+            activeCondition={pathname === '/prepress' || pathname.includes('prepress')}
+          >
+            {(handleClick, open) => {
+              return (
+                <React.Fragment>
+                  <NavLink
+                    to="/prepress"
+                    className={({ isActive }) =>
+                      `group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium !text-white duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4` +
+                      (isActive &&
+                        '!text-[#0065DE] bg-white text-primary py-3 px-1 text-[16px]')
+                    }
+                    onClick={(e) => {
+                      e.preventDefault();
+
+                      sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                      navigate('/prepress');
+                    }}
+                  >
+                    <img src={QC} alt="Logo" />
+                    Pre Press
+
+                  </NavLink>
+                </React.Fragment>
+              )
+            }}
+          </SidebarLinkGroup>
+        </>
         <SidebarLinkGroup
           activeCondition={
             pathname === '/masterdata' || pathname.includes('masterdata')
@@ -3127,7 +3157,40 @@ const Sidebar = ({
       </>
     );
   };
+  const renderPrePress = () => {
+    return (
+      <>
+        <SidebarLinkGroup
+          activeCondition={pathname === '/prepress' || pathname.includes('prepress')}
+        >
+          {(handleClick, open) => {
+            return (
+              <React.Fragment>
+                <NavLink
+                  to="/prepress"
+                  className={({ isActive }) =>
+                    `group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium !text-white duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4` +
+                    (isActive &&
+                      '!text-[#0065DE] bg-white text-primary py-3 px-1 text-[16px]')
+                  }
+                  onClick={(e) => {
+                    e.preventDefault();
 
+                    sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                    navigate('/prepress');
+                  }}
+                >
+                  <img src={QC} alt="Logo" />
+                  Pre Press
+
+                </NavLink>
+              </React.Fragment>
+            )
+          }}
+        </SidebarLinkGroup>
+      </>
+    );
+  };
   // close on click outside
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
@@ -3222,6 +3285,9 @@ const Sidebar = ({
                 bagian === 'maintenance' &&
                 renderShift()}
               {role === 'admin' && bagian === 'quality control' && renderQC()}
+
+              {role === 'pre_press' && bagian === 'quality control' && renderPrePress()}
+
             </ul>
           </div>
         </nav>

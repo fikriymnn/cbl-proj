@@ -258,6 +258,12 @@ const ModalEditUser = ({
                 >
                   Junior Technician
                 </option>
+                <option
+                  value="pre_press"
+                  className="text-body dark:text-bodydark"
+                >
+                  Pre-Press
+                </option>
               </select>
               <label className="text-black text-xs font-bold pt-4">
                 PASSWORD
@@ -301,7 +307,7 @@ const ModalEditUser = ({
         <div className="px-4 pb-4">
           <div className=" flex w-full pt-4 gap-5">
             <button
-            title='button'
+              title='button'
               type="button"
               onClick={onClose}
               className="absolute top-auto right-auto bottom-3 left-auto transform translate-x-1/2 translate-y-1/2 text-gray-400 focus:outline-none"

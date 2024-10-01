@@ -142,6 +142,7 @@ import ChecksheetPraplate from './components/Tables/QualityControl/QualityInspec
 import ChecksheetPralatePage from './pages/QualityControl/ProsesPraplate/ChecksheetPraplate';
 import ProsesLipat from './pages/QualityControl/ProsesLipat/ProsesLipat';
 import ChecksheetLipatPage from './pages/QualityControl/ProsesLipat/ChecksheetLipat';
+import PrePress from './pages/PrePress/Prepress';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1468,6 +1469,16 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <SignUp />
+            </>
+          }
+        />
+        <Route
+          path="/prepress"
+          element={
+            <>
+              <ProtectedRoute>
+                <PrePress />
+              </ProtectedRoute>
             </>
           }
         />
