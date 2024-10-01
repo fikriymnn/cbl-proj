@@ -189,13 +189,13 @@ function CheckSheetCetakAwal() {
     setCetakMesinAwal(onchangeVal);
   };
 
-  const tanggal = convertTimeStampToDateOnly(cetakMesinAwal?.tanggal);
-  const jam = convertDateToTime(cetakMesinAwal?.tanggal);
+  const tanggal = convertTimeStampToDateOnly(cetakMesinAwal?.createdAt);
+  const jam = convertDateToTime(cetakMesinAwal?.createdAt);
 
   const tanggalHistory = convertTimeStampToDateOnly(
-    cetakMesinAwalHistory?.tanggal,
+    cetakMesinAwalHistory?.createdAt,
   );
-  const jamHistory = convertDateToTime(cetakMesinAwalHistory?.tanggal);
+  const jamHistory = convertDateToTime(cetakMesinAwalHistory?.createdAt);
 
   const jumlahWaktuCheck = formatElapsedTime(
     cetakMesinAwal?.inspeksi_cetak_awal[0]?.waktu_check,

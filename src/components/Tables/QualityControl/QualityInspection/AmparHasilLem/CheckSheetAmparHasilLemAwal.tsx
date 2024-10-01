@@ -221,8 +221,8 @@ function CheckSheetHasilRabut() {
     console.log(onchangeVal);
   };
 
-  const tanggal = convertTimeStampToDateOnly(RabutMesin?.data?.tanggal);
-  const jam = convertDateToTime(RabutMesin?.data?.tanggal);
+  const tanggal = convertTimeStampToDateOnly(RabutMesin?.data?.createdAt);
+  const jam = convertDateToTime(RabutMesin?.data?.createdAt);
 
   const jumlahWaktuCheck = formatElapsedTime(RabutMesin?.data?.waktu_check);
 

@@ -12,6 +12,7 @@ import notok from '../../../../../images/icon/notOKQC.svg';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import Loading from '../../../../Loading';
 import formatInteger from '../../../../../utils/formaterInteger';
+import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 
 function CheckSheetCoatingPeriode() {
   const { id } = useParams();
@@ -28,6 +29,7 @@ function CheckSheetCoatingPeriode() {
   const [persenKriteria, setPersenKriteria] = useState<any>();
   const [sumberMasalah, setSumberMasalah] = useState<any>();
   const [DataDepartment, setDataDepartment] = useState<any>();
+  const [coatingdMesinPeriodeHistory, setcoatingdMesinPeriodeHistory] = useState<any>();
 
   const [Department, setDepartment] = useState([
     {
@@ -115,6 +117,7 @@ function CheckSheetCoatingPeriode() {
       setIsLoading(false);
       setCoatingMesinPeriode(res.data.data);
       setCoatingMesinPeriodeDefect(res.data.defect);
+      setcoatingdMesinPeriodeHistory(res.data.history);
       console.log(res);
     } catch (error: any) {
       setIsLoading(false);
@@ -336,9 +339,13 @@ function CheckSheetCoatingPeriode() {
     ].inspeksi_coating_result_point_periode[ii][name] = value;
     setCoatingMesinPeriode(onchangeVal);
   };
-  const tanggal = convertTimeStampToDateOnly(CoatingMesinPeriode?.tanggal);
-  const jam = convertDateToTime(CoatingMesinPeriode?.tanggal);
+  const tanggal = convertTimeStampToDateOnly(CoatingMesinPeriode?.createdAt);
+  const jam = convertDateToTime(CoatingMesinPeriode?.createdAt);
 
+  const tanggalHistory = convertTimeStampToDateOnly(
+    coatingdMesinPeriodeHistory?.createdAt,
+  );
+  const jamHistory = convertDateToTime(coatingdMesinPeriodeHistory?.createdAt);
   //   const jumlahWaktuCheck = formatElapsedTime(
   //     CoatingMesinPeriode?.inspeksi_coating_sub_awal[0].waktu_check,
   //   );
@@ -348,30 +355,406 @@ function CheckSheetCoatingPeriode() {
   const [showModal2, setShowModal2] = useState(false);
   const openModal2 = () => setShowModal2(true);
   const closeModal2 = () => setShowModal2(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const openModalHistory = () => setShowHistory(true);
+  const closeModalHistory = () => setShowHistory(false);
+
+
+  const isOnprogres =
+    CoatingMesinPeriode?.inspeksi_coating_result_periode?.some(
+      (data: { status: any }) => data?.status === 'on progress',
+    );
 
   return (
     <>
       {!isMobile && (
         <main className="overflow-x-hidden">
           <div className="min-w-[700px] bg-white rounded-xl">
-            <p className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z"
-                  fill="#0065DE"
-                />
-              </svg>{' '}
-              Coating Checksheet
-            </p>
+            <div className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12 justify-between">
+              <div className="flex">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z"
+                    fill="#0065DE"
+                  />
+                </svg>{' '}
+                Coating Checksheet
+              </div>
+              <div className="text-[14px] font-semibold ">
+                <button
+                  onClick={() => openModalHistory()}
+                  className="  rounded-sm  text-sm text-blue-500 font-bold justify-center items-center px-4  hover:cursor-pointer"
+                >
+                  HISTORY PENGISIAN
+                </button>
+                {showHistory == true && (
+                  <>
+                    <ModalKosongan
+                      isOpen={showHistory}
+                      onClose={() => closeModalHistory()}
+                      judul={'History Pengisian'}
+                    >
+                      <>
+                        <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
+                          <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Tanggal
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jumlah Druk
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jumlah Pcs
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jenis Kertas
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jenis Gramatur
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Coating
+                            </label>
+                          </div>
+                          <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {tanggalHistory}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {formatInteger(parseInt(coatingdMesinPeriodeHistory?.jumlah_druk))} / {formatInteger(parseInt(coatingdMesinPeriodeHistory?.mata))}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {formatInteger(parseInt(coatingdMesinPeriodeHistory?.jumlah_pcs))}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {coatingdMesinPeriodeHistory?.jenis_kertas}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {coatingdMesinPeriodeHistory?.jenis_gramatur}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {coatingdMesinPeriodeHistory?.coating}
+                            </label>
+                          </div>
 
+                          <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Jam
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              No. JO
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              No. IO
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Nama Produk
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Customer
+                            </label>
+                          </div>
+                          <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {jamHistory}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {coatingdMesinPeriodeHistory?.no_jo}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {coatingdMesinPeriodeHistory?.no_io}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {coatingdMesinPeriodeHistory?.nama_produk}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {coatingdMesinPeriodeHistory?.customer}
+                            </label>
+                          </div>
+                          <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Shift
+                            </label>
+
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Mesin
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Operator
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Status
+                            </label>
+                          </div>
+                          <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {coatingdMesinPeriodeHistory?.shift}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {coatingdMesinPeriodeHistory?.mesin}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {coatingdMesinPeriodeHistory?.operator}
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              : {coatingdMesinPeriodeHistory?.status_jo}
+                            </label>
+                          </div>
+                        </div>
+                        {coatingdMesinPeriodeHistory?.inspeksi_coating_result_periode?.map(
+                          (data: any, index: number) => {
+                            const waktuSampling = convertDateToTime(data.waktu_mulai);
+                            const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
+                            return (
+                              <>
+                                <label
+                                  className="text-blue-400 text-sm font-semibold w-full flex justify-end px-4 py-2"
+                                  onClick={() => handleClickGuide(index)}
+                                >
+                                  FILLING GUIDE
+                                </label>
+                                {openGuide == index ? (
+                                  <div className="  rounded-md bg-[#F3F3F3] border-gray flex px-5 mx-5 py-6 justify-between">
+                                    <div className="grid grid-cols-2">
+                                      <div className="flex flex-col">
+                                        <label className="text-blue-600 text-sm font-semibold pb-6">
+                                          KODE-MASALAH
+                                        </label>
+                                        {data.inspeksi_coating_result_point_periode.map(
+                                          (data3: any, iii: number) => {
+                                            return (
+                                              <label className="text-neutral-500 text-sm font-semibold">
+                                                {data3.kode} -{data3.masalah}
+                                              </label>
+                                            );
+                                          },
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="flex justify-between items-start w-[30%]">
+                                      <div className="flex flex-col gap-3">
+                                        <label className="text-blue-600 text-sm font-semibold pb-6">
+                                          FORM FILLING GUIDE
+                                        </label>
+                                        <label className="text-black text-sm font-semibold flex gap-2">
+                                          <img alt="" src={ok} className="w-5"></img>OK
+                                        </label>
+                                        <label className="text-black text-sm font-semibold flex gap-2">
+                                          <img alt="" src={oktole} className="w-5"></img>OK
+                                          (Toleransi)
+                                        </label>
+                                        <label className="text-black text-sm font-semibold flex gap-2">
+                                          <img alt="" src={notok} className="w-5"></img>NOT
+                                          OK
+                                        </label>
+                                      </div>
+
+                                      <img
+                                        onClick={() => handleClickGuide(index)}
+                                        src={X}
+                                        alt=""
+                                        className="mx-3 w-7  text-blue-600 bg-blue-600 px-1 py-1 rounded-full"
+                                      />
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <></>
+                                )}
+                                <div className="flex min-w-screen justify-between px-2 py-4">
+                                  <label className="text-sm font-semibold">
+                                    {index + 1}
+                                  </label>
+                                  <div className="flex flex-col justify-between">
+                                    <label className="text-sm font-semibold">
+                                      INSPEKTOR
+                                    </label>
+                                    <label className="text-sm font-semibold">
+                                      {data.inspektor?.nama}
+                                    </label>
+                                  </div>
+                                  <div className="flex flex-col justify-between">
+                                    <label className="text-sm font-semibold">
+                                      WAKTU SAMPLING
+                                    </label>
+                                    <label className="text-sm font-semibold">
+                                      {waktuSampling}
+                                    </label>
+                                  </div>
+                                  <div className="flex flex-col justify-between">
+                                    <label className="text-sm font-semibold">
+                                      NUMERATOR<span className="text-red-600">*</span>
+                                    </label>
+
+                                    <input
+                                      type="text"
+                                      readOnly
+                                      defaultValue={data.numerator}
+                                      name="numerator"
+
+                                      className="text-sm font-semibold w-full border-stroke border"
+                                    ></input>
+
+                                  </div>
+
+                                  <div className="flex flex-col justify-between">
+                                    <label className="text-sm font-semibold">
+                                      JUMLAH SAMPLING<span className="text-red-600">*</span>
+                                    </label>
+
+                                    <input
+                                      type="text"
+                                      readOnly
+                                      defaultValue={data.jumlah_sampling}
+                                      name="jumlah_sampling"
+
+                                      className="text-sm font-semibold w-full border-stroke border"
+                                    ></input>
+
+                                  </div>
+                                  <div className="flex flex-col justify-between">
+                                    <label className="text-sm font-semibold">
+                                      JUMLAH GLOSSY KIRI
+                                      <span className="text-red-600">*</span>
+                                    </label>
+
+                                    <input
+                                      type="text"
+                                      readOnly
+                                      defaultValue={data.nilai_glossy_kiri}
+                                      name="nilai_glossy_kiri"
+
+                                      className="text-sm font-semibold w-[90%] border-stroke border"
+                                    ></input>
+
+                                  </div>
+                                  <div className="flex flex-col justify-between">
+                                    <label className="text-sm font-semibold">
+                                      JUMLAH GLOSSY TENGAH
+                                      <span className="text-red-600">*</span>
+                                    </label>
+
+                                    <input
+                                      type="text"
+                                      readOnly
+                                      defaultValue={data.nilai_glossy_tengah}
+                                      name="nilai_glossy_tengah"
+
+                                      className="text-sm font-semibold w-[90%] border-stroke border"
+                                    ></input>
+
+                                  </div>
+                                  <div className="flex flex-col justify-between">
+                                    <label className="text-sm font-semibold">
+                                      JUMLAH GLOSSY KANAN
+                                      <span className="text-red-600">*</span>
+                                    </label>
+
+                                    <input
+                                      type="text"
+                                      readOnly
+                                      defaultValue={data.nilai_glossy_kanan}
+                                      name="nilai_glossy_kanan"
+
+                                      className="text-sm font-semibold w-[90%] border-stroke border"
+                                    ></input>
+
+                                  </div>
+                                  <>
+
+                                  </>
+                                  <>
+                                    <div className="w-[30%]">
+                                      <p className="md:text-[14px] text-[9px] font-semibold">
+                                        Time : {lamaPengerjaan}
+                                      </p>
+
+
+                                    </div>
+                                  </>
+                                </div>
+
+                                <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF]  gap-1 rounded-sm">
+                                  {data?.inspeksi_coating_result_point_periode?.map(
+                                    (data2: any, i: number) => {
+                                      return (
+                                        <div
+                                          className={`flex flex-col min-w-[200px] justify-center py-4 
+                                } items-center gap-2 
+                                 ${data2.hasil == 'ok' ? 'bg-blue-300' :
+                                              data2.hasil == 'ok (toleransi)' ? 'bg-yellow-300' :
+                                                data2.hasil == 'not ok' ? 'bg-red-300' :
+
+                                                  'bg-white'}`}
+                                        >
+                                          <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+                                            {data2.kode}
+                                          </label>
+
+                                          <div
+
+                                            className={`w-[80%] text-center uppercase font-semibold flex gap-4  
+                                 } `}
+                                          >
+                                            {data2.hasil == 'ok' ? (
+                                              <>
+                                                <img src={ok} alt="" className="w-4" />
+                                              </>
+                                            ) : data2.hasil == 'ok (toleransi)' ? (
+                                              <>
+                                                <img src={oktole} alt="" className="w-4" />
+                                              </>
+                                            ) : data2.hasil == 'not ok' ? (
+                                              <>
+                                                <img src={notok} alt="" className="w-4" />
+                                              </>
+                                            ) :
+                                              <>
+                                                -
+                                              </>
+                                            }
+
+                                            {data2.hasil}
+                                          </div>
+
+
+
+                                          {data2.hasil == 'not ok' ? (
+                                            <input
+                                              type="text"
+                                              name="jumlah_defect"
+                                              defaultValue={data2.jumlah_defect}
+                                              readOnly
+                                              className="text-sm font-semibold w-[90%] border-stroke border"
+                                            ></input>
+                                          ) : (<></>)}
+                                        </div>
+                                      );
+                                    },
+                                  )}
+
+
+
+                                </div>
+
+                              </>
+                            );
+                          },
+                        )}
+                      </>
+                    </ModalKosongan>
+                  </>
+                )
+                }
+              </div>
+            </div>
             <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
               <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">
                 <label className="text-neutral-500 text-sm font-semibold">
@@ -1178,7 +1561,8 @@ function CheckSheetCoatingPeriode() {
               },
             )}
           </div>
-          {CoatingMesinPeriode?.inspeksi_coating_sub_periode[0].status !=
+          {!isOnprogres &&
+            CoatingMesinPeriode?.inspeksi_coating_sub_periode[0].status !=
             'history' ? (
             <>
               <button
@@ -1220,8 +1604,9 @@ function CheckSheetCoatingPeriode() {
                 ></textarea>
               )}
             </div>
-            <div className="grid col-span-2 items-end justify-end">
-              {CoatingMesinPeriode?.status == 'incoming' ? (
+            <div className="grid col-span-2 items-end justify-end gap-2">
+              {!isOnprogres &&
+                CoatingMesinPeriode?.status == 'incoming' ? (
                 <button
                   onClick={() => pendingCekAwal(CoatingMesinPeriode?.id)}
                   className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
@@ -1229,14 +1614,15 @@ function CheckSheetCoatingPeriode() {
                   PENDING
                 </button>
               ) : null}
-              {CoatingMesinPeriode?.inspeksi_coating_sub_periode[0].status !=
+              {!isOnprogres &&
+                CoatingMesinPeriode?.inspeksi_coating_sub_periode[0].status !=
                 'history' ? (
                 <button
                   onClick={() => {
                     doneCekPeriode(CoatingMesinPeriode?.id);
                     console.log(CoatingMesinPeriode);
                   }}
-                  className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                  className=" w-full h-10 rounded-md bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                 >
                   CHECKSHEET SELESAI
                 </button>

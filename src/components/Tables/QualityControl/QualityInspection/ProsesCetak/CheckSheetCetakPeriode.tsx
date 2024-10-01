@@ -352,13 +352,13 @@ function CheckSheetCetakPeriode() {
     setCetakMesinPeriode(onchangeVal);
   };
 
-  const tanggal = convertTimeStampToDateOnly(cetakMesinPeriode?.tanggal);
-  const jam = convertDateToTime(cetakMesinPeriode?.tanggal);
+  const tanggal = convertTimeStampToDateOnly(cetakMesinPeriode?.createdAt);
+  const jam = convertDateToTime(cetakMesinPeriode?.createdAt);
 
   const tanggalHistory = convertTimeStampToDateOnly(
-    cetakMesinPeriodeHistory?.tanggal,
+    cetakMesinPeriodeHistory?.createdAt,
   );
-  const jamHistory = convertDateToTime(cetakMesinPeriodeHistory?.tanggal);
+  const jamHistory = convertDateToTime(cetakMesinPeriodeHistory?.createdAt);
 
   const jumlahWaktuCheck = formatElapsedTime(
     cetakMesinPeriode?.inspeksi_cetak_awal[0].waktu_check,
@@ -552,7 +552,7 @@ function CheckSheetCetakPeriode() {
                             );
                             return (
                               <>
-                                <div className="flex w-screen border-b-8 border-[#D8EAFF]">
+                                <div className="flex max-w-screen border-b-8 border-[#D8EAFF] flex-col">
                                   <div className="flex px-5 py-5 gap-7">
                                     <label className="text-sm font-semibold">
                                       {index + 1}
@@ -612,23 +612,49 @@ function CheckSheetCetakPeriode() {
                                       </div>
                                     </>
                                   </div>
-                                  <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF]">
+                                  <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF] gap-1">
                                     {data.inspeksi_cetak_periode_defect.map(
                                       (data2: any, i: number) => {
                                         return (
                                           <div
-                                            className={`flex flex-col min-w-[120px] justify-center py-4 ${(i + 1) % 2 === 0
-                                              ? ' bg-[#F3F3F3]'
-                                              : 'bg-white'
-                                              } items-center gap-2`}
+                                            className={`flex flex-col min-w-[200px] justify-center py-4 
+                                            } items-center gap-2 
+                                             ${data2.hasil == 'ok' ? 'bg-blue-300' :
+                                                data2.hasil == 'ok (toleransi)' ? 'bg-yellow-300' :
+                                                  data2.hasil == 'not ok' ? 'bg-red-300' :
+
+                                                    'bg-white'}`}
                                           >
                                             <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                               {data2.kode}
                                             </label>
 
-                                            <label className="text-center text-[#6c6b6b] text-sm font-semibold">
+
+                                            <div
+
+                                              className={`w-[80%] text-center uppercase font-semibold flex gap-4  
+                                    } `}
+                                            >
+                                              {data2.hasil == 'ok' ? (
+                                                <>
+                                                  <img src={ok} alt="" className="w-4" />
+                                                </>
+                                              ) : data2.hasil == 'ok (toleransi)' ? (
+                                                <>
+                                                  <img src={oktole} alt="" className="w-4" />
+                                                </>
+                                              ) : data2.hasil == 'not ok' ? (
+                                                <>
+                                                  <img src={notok} alt="" className="w-4" />
+                                                </>
+                                              ) :
+                                                <>
+                                                  -
+                                                </>
+                                              }
+
                                               {data2.hasil}
-                                            </label>
+                                            </div>
 
                                             <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                               {data2.jumlah_defect}
@@ -639,26 +665,13 @@ function CheckSheetCetakPeriode() {
                                     )}
                                   </div>
 
-                                  <div></div>
+
                                 </div>
                               </>
                             );
                           },
                         )}
-                        <div className="flex w-full min-w-[700px]  items-center  px-4 py-4 gap-5 bg-white  mt-2">
-                          {cetakMesinPeriodeDefect?.map(
-                            (data: any, index: number) => {
-                              return (
-                                <div className="flex flex-col max-w-45 overflow-x-scroll">
-                                  <label>Kode: </label>
-                                  <label>{data.kode}</label>
-                                  <label>Total Defect: </label>
-                                  <label>{data.total_defect}</label>
-                                </div>
-                              );
-                            },
-                          )}
-                        </div>
+
                       </>
                     </ModalKosongan>
                   </>

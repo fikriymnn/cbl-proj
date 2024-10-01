@@ -185,8 +185,8 @@ function ChecksheetRusakSebagian() {
     setFinalInspection(onchangeVal);
   };
 
-  const tanggal = convertTimeStampToDateOnly(FinalInspection?.data?.tanggal);
-  const jam = convertDateToTime(FinalInspection?.data?.tanggal);
+  const tanggal = convertTimeStampToDateOnly(FinalInspection?.data?.createdAt);
+  const jam = convertDateToTime(FinalInspection?.data?.createdAt);
 
   const jumlahWaktuCheck = formatElapsedTime(
     FinalInspection?.data?.waktu_check,
