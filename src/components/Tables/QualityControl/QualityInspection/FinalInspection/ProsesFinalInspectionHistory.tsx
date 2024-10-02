@@ -4,6 +4,8 @@ import axios from 'axios';
 import { Button } from '@mui/material';
 import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../../utils/converDateToTime';
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
 
 function ProsesFinalInspectionhistory() {
   const [isMobile, setIsMobile] = useState(false);
@@ -14,6 +16,8 @@ function ProsesFinalInspectionhistory() {
   const date = today.getDate();
   const currentDate = month + '/' + date + '/' + year;
   const navigate = useNavigate();
+
+  const [page, setPage] = useState(1);
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
   };
@@ -27,13 +31,13 @@ function ProsesFinalInspectionhistory() {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [page]);
 
   const [FinalInspection, setFinalInspection] = useState<any>();
 
   useEffect(() => {
     getFinalInspection();
-  }, []);
+  }, [page]);
 
   async function getFinalInspection() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiFinal`;
@@ -41,6 +45,8 @@ function ProsesFinalInspectionhistory() {
       const res = await axios.get(url, {
         params: {
           bagian_tiket: 'history',
+          page: page,
+          limit: 15,
         },
 
         withCredentials: true,
@@ -140,6 +146,18 @@ function ProsesFinalInspectionhistory() {
                 );
               })}
             </div>
+          </div>
+          <div className="w-full flex justify-center mt-5 ">
+            <Stack spacing={2}>
+              <Pagination
+                count={FinalInspection?.total_page}
+                color="primary"
+                onChange={(e, i) => {
+                  setPage(i);
+                  console.log(i);
+                }}
+              />
+            </Stack>
           </div>
         </main>
       )}
