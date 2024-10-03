@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
-
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
 function ProsesLemMesinHistory() {
   const [isMobile, setIsMobile] = useState(false);
   const kosong: any = [];
@@ -12,6 +13,7 @@ function ProsesLemMesinHistory() {
   const date = today.getDate();
   const currentDate = month + '/' + date + '/' + year;
   const navigate = useNavigate();
+  const [page, setPage] = useState(1);
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
   };
@@ -31,7 +33,7 @@ function ProsesLemMesinHistory() {
 
   useEffect(() => {
     getLemMesin();
-  }, []);
+  }, [page]);
 
   async function getLemMesin() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiLem`;
@@ -39,6 +41,8 @@ function ProsesLemMesinHistory() {
       const res = await axios.get(url, {
         params: {
           status: 'history',
+          page: page,
+          limit: 15,
         },
         withCredentials: true,
       });
@@ -112,9 +116,12 @@ function ProsesLemMesinHistory() {
                 <>
                   <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] gap-2 items-center">
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-4 col-span-2 `}
+                      className={`w-full h-full sticky left-0 z-20  gap-8 col-span-2 flex items-center`}
                     >
-                      <label className="text-neutral-500 text-sm font-semibold pl-10">
+                      <div
+                        className={`w-2 h-full sticky left-0 z-20 bg-green-600  `}
+                      ></div>
+                      <label className="text-neutral-500 text-sm font-semibold ">
                         {data.mesin}
                       </label>
                     </div>
@@ -145,6 +152,18 @@ function ProsesLemMesinHistory() {
                 </>
               ))}
             </div>
+          </div>
+          <div className="w-full flex justify-center mt-5 ">
+            <Stack spacing={2}>
+              <Pagination
+                count={cetakMesin?.total_page}
+                color="primary"
+                onChange={(e, i) => {
+                  setPage(i);
+                  console.log(i);
+                }}
+              />
+            </Stack>
           </div>
         </main>
       )}

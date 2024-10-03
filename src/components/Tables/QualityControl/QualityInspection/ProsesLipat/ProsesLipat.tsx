@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
 
+
 function ProsesLipat() {
   const [isMobile, setIsMobile] = useState(false);
   const kosong: any = [];
@@ -12,6 +13,7 @@ function ProsesLipat() {
   const date = today.getDate();
   const currentDate = month + '/' + date + '/' + year;
   const navigate = useNavigate();
+
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
   };
@@ -39,6 +41,7 @@ function ProsesLipat() {
       const res = await axios.get(url, {
         params: {
           status: 'incoming',
+
         },
         withCredentials: true,
       });
@@ -140,6 +143,7 @@ function ProsesLipat() {
                 ))}
             </div>
           </div>
+
         </main>
       )}
     </>
