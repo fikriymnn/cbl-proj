@@ -580,6 +580,7 @@ function CheckSheetCoatingAwal() {
             {coatingMesinAwal?.inspeksi_coating_result_awal.map(
               (data: any, index: number) => {
                 const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
+                const waktuMulai = convertDateToTime(data.waktu_mulai)
                 return (
                   <>
                     <div className="flex flex-col py-6 px-10 border-b-8 border-[#D8EAFF]">
@@ -597,7 +598,14 @@ function CheckSheetCoatingAwal() {
                             {data.inspektor?.nama}
                           </label>
                         </div>
-
+                        <div className="flex flex-col col-span-2">
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            Waktu Check
+                          </label>
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            {waktuMulai}
+                          </label>
+                        </div>
                         <div className="flex flex-col col-span-2">
                           <div>
                             <p className="md:text-[14px] text-[9px] font-semibold">

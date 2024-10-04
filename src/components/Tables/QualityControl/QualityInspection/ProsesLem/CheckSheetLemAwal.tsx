@@ -592,6 +592,7 @@ function CheckSheetLemAwal() {
             {cetakMesinAwal?.inspeksi_lem_awal[0].inspeksi_lem_awal_point.map(
               (data: any, index: number) => {
                 const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
+                const waktuMulai = convertDateToTime(data.waktu_mulai)
 
                 return (
                   <>
@@ -610,7 +611,14 @@ function CheckSheetLemAwal() {
                             {data.inspektor?.nama}
                           </label>
                         </div>
-
+                        <div className="flex flex-col col-span-2">
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            Waktu Check
+                          </label>
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            {waktuMulai}
+                          </label>
+                        </div>
                         <div className="flex flex-col col-span-2">
                           <div>
                             <p className="md:text-[14px] text-[9px] font-semibold">

@@ -1607,6 +1607,28 @@ const Sidebar = ({
     return (
       <>
         <>
+          <li>
+            <NavLink
+              to="/dashboard"
+              className={`group relative flex items-center text-white mb-4 gap-5 rounded-sm py-3 px-4 font-medium  duration-300 ease-in-out  ${pathname.includes('/dashboard') && '!bg-white text-primary '
+                }`}
+            >
+              <svg
+                className="fill-current"
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M0.998291 -0.00927734C0.445991 -0.00927734 -0.00170898 0.438723 -0.00170898 0.990723V13.9907C-0.00170898 16.1997 1.78919 17.9907 3.99829 17.9907H16.9983C17.5503 17.9907 17.9983 17.5427 17.9983 16.9907C17.9983 16.4387 17.5503 15.9907 16.9983 15.9907H3.99829C2.89369 15.9907 1.99829 15.0957 1.99829 13.9907V0.990723C1.99829 0.438723 1.55059 -0.00927734 0.998291 -0.00927734ZM10.9983 1.99072V3.99072H14.5603L11.7793 6.77173C11.6893 6.86273 11.4083 6.99072 11.2793 6.99072H9.71729C9.05829 6.99072 8.24529 7.30573 7.77929 7.77173L4.27949 11.2717C3.88899 11.6627 3.88899 12.3187 4.27949 12.7097C4.47479 12.9047 4.74239 12.9907 4.99829 12.9907C5.25419 12.9907 5.52179 12.9047 5.71709 12.7097L9.21729 9.20972C9.30729 9.11872 9.58829 8.99072 9.71729 8.99072H11.2793C11.9383 8.99072 12.7513 8.67572 13.2173 8.20972L15.9983 5.42871V8.99072H17.9983V2.99072C17.9983 2.43872 17.5503 1.99072 16.9983 1.99072H10.9983Z"
+                  fill=""
+                />
+              </svg>
+              Dashboard
+            </NavLink>
+          </li>
           <SidebarLinkGroup
             activeCondition={
               pathname === '/maintenance' || pathname.includes('maintenance')
@@ -2501,6 +2523,7 @@ const Sidebar = ({
     return (
       <>
         <li>
+
           <NavLink
             to="/dashboard"
             className={`group relative flex items-center text-white mb-4 gap-5 rounded-sm py-3 px-4 font-medium  duration-300 ease-in-out  ${pathname.includes('/dashboard') && '!bg-white text-primary '

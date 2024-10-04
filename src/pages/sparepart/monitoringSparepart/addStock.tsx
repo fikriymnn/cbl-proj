@@ -106,7 +106,7 @@ function AddStockLifetimes() {
         </p>
         <div className="grid md:grid-cols-3 gap-5 p-3 bg-white text-black">
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-extrabold text-black">Kode barang</p>
+            <p className="text-xs font-extrabold text-black">Kode barang<span className='text-red-500'>*</span></p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
@@ -119,7 +119,7 @@ function AddStockLifetimes() {
             </div>
           </div>
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-extrabold text-black">Nama Barang</p>
+            <p className="text-xs font-extrabold text-black">Nama Barang<span className='text-red-500'>*</span></p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
@@ -132,7 +132,7 @@ function AddStockLifetimes() {
             </div>
           </div>
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-extrabold text-black">Mesin</p>
+            <p className="text-xs font-extrabold text-black">Mesin<span className='text-red-500'>*</span></p>
 
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
@@ -190,7 +190,7 @@ function AddStockLifetimes() {
             </div>
           </div>
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-extrabold text-black">Posisi</p>
+            <p className="text-xs font-extrabold text-black">Posisi<span className='text-red-500'>*</span></p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
@@ -203,7 +203,7 @@ function AddStockLifetimes() {
             </div>
           </div>
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-extrabold text-black">Tanggal Pasang</p>
+            <p className="text-xs font-extrabold text-black">Tanggal Pasang<span className='text-red-500'>*</span></p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
@@ -227,7 +227,7 @@ function AddStockLifetimes() {
             </div>
           </div>
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-extrabold text-black">Umur A</p>
+            <p className="text-xs font-extrabold text-black">Umur A<span className='text-red-500'>*</span></p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
@@ -240,7 +240,7 @@ function AddStockLifetimes() {
             </div>
           </div>
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-extrabold text-black">Grade</p>
+            <p className="text-xs font-extrabold text-black">Grade<span className='text-red-500'>*</span></p>
 
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
@@ -332,7 +332,7 @@ function AddStockLifetimes() {
           </div>
 
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-extrabold text-black">Sisa Umur</p>
+            <p className="text-xs font-extrabold text-black">Sisa Umur<span className='text-red-500'>*</span></p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
@@ -345,7 +345,7 @@ function AddStockLifetimes() {
             </div>
           </div>
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-extrabold text-black">Keterangan</p>
+            <p className="text-xs font-extrabold text-black">Keterangan<span className='text-red-500'>*</span></p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
