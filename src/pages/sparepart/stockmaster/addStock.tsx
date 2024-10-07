@@ -153,7 +153,7 @@ function AddStock() {
                       </option>
                     );
                   })}
-                  <option value={'OPERATIONAL'}>OPERATIONAL</option>
+
                 </select>
 
                 <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">

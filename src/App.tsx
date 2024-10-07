@@ -143,6 +143,7 @@ import ChecksheetPralatePage from './pages/QualityControl/ProsesPraplate/Checksh
 import ProsesLipat from './pages/QualityControl/ProsesLipat/ProsesLipat';
 import ChecksheetLipatPage from './pages/QualityControl/ProsesLipat/ChecksheetLipat';
 import PrePress from './pages/PrePress/Prepress';
+import MasterPerusahaan from './pages/HR/Personal/MasterPerusahaan';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1241,6 +1242,17 @@ function App() {
           }
         />
         <Route
+          path="/masterdata/machine/add"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterData />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/masterdata/masterUsers"
           element={
             <>
@@ -1482,7 +1494,40 @@ function App() {
             </>
           }
         />
+        <Route
+          path="/hr"
+          element={
+            <>
+
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/masterperusahaan"
+          element={
+            <>
+              <MasterPerusahaan />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/masterkaryawan"
+          element={
+            <>
+
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/masterkaryawan/add"
+          element={
+            <>
+
+            </>
+          }
+        />
       </Routes>
+
     </>
   );
 }
