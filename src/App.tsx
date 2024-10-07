@@ -144,6 +144,7 @@ import ProsesLipat from './pages/QualityControl/ProsesLipat/ProsesLipat';
 import ChecksheetLipatPage from './pages/QualityControl/ProsesLipat/ChecksheetLipat';
 import PrePress from './pages/PrePress/Prepress';
 import MasterPerusahaan from './pages/HR/Personal/MasterPerusahaan';
+import MasterKaryawan from './pages/HR/Personal/MasterKaryawan';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1514,7 +1515,7 @@ function App() {
           path="/hr/pm/masterkaryawan"
           element={
             <>
-
+              <MasterKaryawan />
             </>
           }
         />
