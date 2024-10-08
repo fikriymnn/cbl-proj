@@ -1038,7 +1038,7 @@ function PotongBahanChecksheet() {
                                                             5
                                                         </label>
                                                         <label className="text-neutral-500 text-sm font-semibold">
-                                                            Arah Serat
+                                                            {incoming?.inspeksi_potong_result[4].point_check}
                                                         </label>
                                                     </div>
                                                     <label className="text-neutral-500 text-sm font-semibold col-span-2">
