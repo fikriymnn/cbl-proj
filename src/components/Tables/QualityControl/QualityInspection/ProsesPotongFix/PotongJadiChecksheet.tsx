@@ -47,6 +47,7 @@ function PotongJadiChecksheet() {
             });
 
             setIncoming(res.data.data);
+            console.log(res.data.data);
         } catch (error: any) {
             console.log(error.data.msg);
         }
@@ -334,6 +335,7 @@ function PotongJadiChecksheet() {
                                                                 Task Belum Dimulai
                                                             </p>
                                                             <button
+                                                                type='button'
                                                                 onClick={() => {
                                                                     startTask(incoming?.id);
                                                                 }}

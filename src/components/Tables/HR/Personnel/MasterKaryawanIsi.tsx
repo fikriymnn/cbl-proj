@@ -33,10 +33,13 @@ function MasterKaryawanIsi() {
                     <div className="min-w-[700px] bg-white rounded-xl">
                         <div className=" w-full h-full flex border-b-8 border-[#D8EAFF] px-2 py-3 justify-between">
                             <input type="text" className='border-1 w-[40%] border-stroke px-2 py-1 rounded-md bg-blue-100' placeholder='Cari Karyawan' />
-                            <button
-                                className='px-8 text-sm bg-blue-600 items-center justify-center text-white font-semibold rounded-md'>
-                                TAMBAH PERSONNEL
-                            </button>
+                            <Link to={'/hr/pm/masterkaryawan/add'} >
+                                <button
+                                    className='px-8 py-1 text-sm bg-blue-600 items-center justify-center text-white font-semibold rounded-md'>
+                                    TAMBAH PERSONNEL
+                                </button>
+                            </Link>
+
                         </div>
                         <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
                             <div className="flex gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">

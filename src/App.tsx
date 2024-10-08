@@ -145,6 +145,8 @@ import ChecksheetLipatPage from './pages/QualityControl/ProsesLipat/ChecksheetLi
 import PrePress from './pages/PrePress/Prepress';
 import MasterPerusahaan from './pages/HR/Personal/MasterPerusahaan';
 import MasterKaryawan from './pages/HR/Personal/MasterKaryawan';
+import AddMasterKaryawan from './pages/HR/Personal/AddMasterKaryawan';
+import KalenderKerja from './pages/HR/Personal/KalenderKerja/KalenderKerja';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1523,7 +1525,15 @@ function App() {
           path="/hr/pm/masterkaryawan/add"
           element={
             <>
-
+              <AddMasterKaryawan />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/kalenderKerja"
+          element={
+            <>
+              <KalenderKerja />
             </>
           }
         />
