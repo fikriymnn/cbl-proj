@@ -194,6 +194,14 @@ function PotongBahanChecksheet() {
     const [merk, setMerk] = useState<any>();
     const [ctt, setCtt] = useState<any>();
 
+    const [sample1Value, setSample1Value] = useState<any>();
+    const [result1, setResult1] = useState<any>();
+
+    const [sample2Value, setSample2Value] = useState<any>();
+    const [result2, setResult2] = useState<any>();
+
+    const [sample3Value, setSample3Value] = useState<any>();
+    const [result3, setResult3] = useState<any>();
     return (
         <>
             {!isMobile && (
@@ -809,76 +817,123 @@ function PotongBahanChecksheet() {
                                                             className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
                                                         />
                                                         <label className="text-neutral-500 gap-2 items-start justify-start flex flex-col text-sm font-semibold col-span-2">
-                                                            <div className='flex gap-2'>
-                                                                <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
-                                                                    Sample 1
-                                                                </label>
-                                                                <input
-                                                                    required
-                                                                    onChange={(e) => {
-                                                                        let array = [
-                                                                            ...incoming?.inspeksi_potong_result,
-                                                                        ];
-                                                                        array[4].sample_1 = e.target.value;
+                                                            <div className='flex flex-col gap-2'>
+                                                                <div className='flex gap-2'>
+                                                                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                                                                        Sample 1
+                                                                    </label>
+                                                                    <input
+                                                                        required
+                                                                        onChange={(e) => {
+                                                                            const newValue = parseFloat(e.target.value);
+                                                                            setSample1Value(newValue);
 
-                                                                        setIncoming({
-                                                                            ...incoming,
-                                                                            inspeksi_potong_result: array,
-                                                                        });
-                                                                    }}
-                                                                    type="text"
-                                                                    className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                                                                />
+                                                                            let array = [
+                                                                                ...incoming?.inspeksi_potong_result,
+                                                                            ];
+                                                                            array[4].sample_1 = e.target.value;
+
+                                                                            setIncoming({
+                                                                                ...incoming,
+                                                                                inspeksi_potong_result: array,
+                                                                            });
+                                                                            const result = (newValue / 100) * 10000;
+                                                                            setResult1(result);
+                                                                        }}
+                                                                        type="text"
+                                                                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                                    />
+                                                                    <div>
+                                                                        gr
+                                                                    </div>
+                                                                </div>
                                                                 <div>
-                                                                    g/m<sup className=''>2</sup>
+                                                                    = <input
+                                                                        name="hasilsample1"
+                                                                        disabled
+                                                                        value={result1}
+                                                                        type="text"
+                                                                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                                    /> g/m<sup className=''>2</sup>
                                                                 </div>
                                                             </div>
-                                                            <div className='flex gap-2'>
-                                                                <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
-                                                                    Sample 2
-                                                                </label>
-                                                                <input
-                                                                    required
-                                                                    onChange={(e) => {
-                                                                        let array = [
-                                                                            ...incoming?.inspeksi_potong_result,
-                                                                        ];
-                                                                        array[4].sample_2 = e.target.value;
+                                                            <div className='flex gap-2 flex-col'>
+                                                                <div className='flex gap-2'>
+                                                                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                                                                        Sample 2
+                                                                    </label>
+                                                                    <input
+                                                                        required
+                                                                        onChange={(e) => {
+                                                                            const newValue = parseFloat(e.target.value);
+                                                                            setSample2Value(newValue);
 
-                                                                        setIncoming({
-                                                                            ...incoming,
-                                                                            inspeksi_potong_result: array,
-                                                                        });
-                                                                    }}
-                                                                    type="text"
-                                                                    className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                                                                />
+                                                                            let array = [
+                                                                                ...incoming?.inspeksi_potong_result,
+                                                                            ];
+                                                                            array[4].sample_2 = e.target.value;
+
+                                                                            setIncoming({
+                                                                                ...incoming,
+                                                                                inspeksi_potong_result: array,
+                                                                            });
+                                                                            const result = (newValue / 100) * 10000;
+                                                                            setResult2(result);
+                                                                        }}
+                                                                        type="text"
+                                                                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                                    />
+                                                                    <div>
+                                                                        gr
+                                                                    </div>
+                                                                </div>
                                                                 <div>
-                                                                    g/m<sup className=''>2</sup>
+                                                                    =  <input
+                                                                        name="hasilsample2"
+                                                                        disabled
+                                                                        value={result2}
+                                                                        type="text"
+                                                                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                                    /> g/m<sup className=''>2</sup>
                                                                 </div>
                                                             </div>
-                                                            <div className='flex gap-2'>
-                                                                <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
-                                                                    Sample 3
-                                                                </label>
-                                                                <input
-                                                                    required
-                                                                    onChange={(e) => {
-                                                                        let array = [
-                                                                            ...incoming?.inspeksi_potong_result,
-                                                                        ];
-                                                                        array[4].sample_3 = e.target.value;
+                                                            <div className='flex gap-2 flex-col'>
+                                                                <div className='flex gap-2'>
+                                                                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                                                                        Sample 3
+                                                                    </label>
+                                                                    <input
+                                                                        required
+                                                                        onChange={(e) => {
+                                                                            const newValue = parseFloat(e.target.value);
+                                                                            setSample3Value(newValue);
+                                                                            let array = [
+                                                                                ...incoming?.inspeksi_potong_result,
+                                                                            ];
+                                                                            array[4].sample_3 = e.target.value;
 
-                                                                        setIncoming({
-                                                                            ...incoming,
-                                                                            inspeksi_potong_result: array,
-                                                                        });
-                                                                    }}
-                                                                    type="text"
-                                                                    className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                                                                />
+                                                                            setIncoming({
+                                                                                ...incoming,
+                                                                                inspeksi_potong_result: array,
+                                                                            });
+                                                                            const result = (newValue / 100) * 10000;
+                                                                            setResult3(result);
+                                                                        }}
+                                                                        type="text"
+                                                                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                                    />
+                                                                    <div>
+                                                                        gr
+                                                                    </div>
+                                                                </div>
                                                                 <div>
-                                                                    g/m<sup className=''>2</sup>
+                                                                    =  <input
+                                                                        name="hasilsample3"
+                                                                        disabled
+                                                                        value={result3}
+                                                                        type="text"
+                                                                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                                    /> g/m<sup className=''>2</sup>
                                                                 </div>
                                                             </div>
 
@@ -1057,19 +1112,19 @@ function PotongBahanChecksheet() {
                                                         <label className="text-neutral-500 text-sm font-semibold ">
                                                             Sample 1
                                                             <div>
-                                                                : {incoming?.inspeksi_potong_result[4].sample_1} g/m<sup className=''>2</sup>
+                                                                : {incoming?.inspeksi_potong_result[4].sample_1} gr = {incoming?.inspeksi_potong_result[4].hasil_sample_1} : g/m<sup className=''>2</sup>
                                                             </div>
                                                         </label>
                                                         <label className="text-neutral-500 text-sm font-semibold ">
                                                             Sample 2
                                                             <div>
-                                                                : {incoming?.inspeksi_potong_result[4].sample_2} g/m<sup className=''>2</sup>
+                                                                : {incoming?.inspeksi_potong_result[4].sample_2} gr = {incoming?.inspeksi_potong_result[4].hasil_sample_2} : g/m<sup className=''>2</sup>
                                                             </div>
                                                         </label>
                                                         <label className="text-neutral-500 text-sm font-semibold ">
                                                             Sample 3
                                                             <div>
-                                                                : {incoming?.inspeksi_potong_result[4].sample_3}g/m<sup className=''>2</sup>
+                                                                : {incoming?.inspeksi_potong_result[4].sample_3} gr = {incoming?.inspeksi_potong_result[4].hasil_sample_3} : g/m<sup className=''>2</sup>
                                                             </div>
                                                         </label>
                                                     </div>

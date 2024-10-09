@@ -110,18 +110,24 @@ function ChecksheetFinalInspection() {
       alert(error.response.data.message);
     }
   }
+  const [qtyReject, setQtyReject] = useState(0);
 
   const handleChangePoint = (e: any, i: number) => {
+
     const { name, value } = e.target;
     const onchangeVal: any = FinalInspection;
     onchangeVal.inspeksi_final_point[i][name] = value;
     setFinalInspection(onchangeVal);
+
+    setQtyReject(onchangeVal.inspeksi_final_point.reduce((acc: any, item: any) => acc + parseInt(item.qty), 0));
   };
   const handleChangePointHasil = (e: any, i: number) => {
     const { name, value } = e.target;
     const onchangeVal: any = FinalInspection;
     onchangeVal.inspeksi_final_point[i]['hasil'] = value;
     setFinalInspection(onchangeVal);
+
+
   };
 
   const handleChangeSubPoint = (e: any, i: number) => {
@@ -158,6 +164,8 @@ function ChecksheetFinalInspection() {
     FinalInspection != null && FinalInspection?.waktu_selesai != null
       ? convertDateTime(FinalInspection?.waktu_selesai)
       : '-';
+
+
 
   return (
     <>
@@ -522,11 +530,13 @@ function ChecksheetFinalInspection() {
                                 </div>
                               </div>
                               <div className="flex justify-center w-full mb-2">
+
                                 {FinalInspection?.status == 'incoming' ? (
                                   <input
 
                                     type="text"
                                     name="reject"
+                                    value={qtyReject}
                                     onChange={(e) => {
                                       handleChangeSubPoint(e, indexSub);
                                     }}
@@ -634,16 +644,17 @@ function ChecksheetFinalInspection() {
                               {FinalInspection?.status == 'incoming' ? (
                                 <input
                                   required
-                                  type="text"
+                                  type="number"
                                   name="qty"
                                   onChange={(e) => {
+
                                     handleChangePoint(e, indexPoint);
                                   }}
                                   className=" border rounded border-strokedark"
                                 />
                               ) : (
                                 <input
-                                  type="text"
+                                  type="number"
                                   name="qty"
                                   disabled
                                   defaultValue={dataPoint.qty}
