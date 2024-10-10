@@ -294,7 +294,7 @@ function PotongBahanChecksheet() {
                                 </div>
                                 <div className="grid grid-rows-6  gap-1 col-span-2 justify-between px-2 py-4">
                                     <label className="text-neutral-500 text-sm font-semibold">
-                                        : {convertDateToTime(incoming?.jam)}
+                                        : {convertDateToTime(incoming?.createdAt)}
                                     </label>
                                     <label className="text-neutral-500 text-sm font-semibold">
                                         : {incoming?.item}
