@@ -2,6 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
+import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
+import convertDateToTime from '../../../../../utils/converDateToTime';
+import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
+import formatElapsedTime from '../../../../../utils/formatElapsedTime';
+
 function PotongBahanChecksheet() {
     const [isMobile, setIsMobile] = useState(false);
     const kosong: any = [];
@@ -289,7 +294,7 @@ function PotongBahanChecksheet() {
                                 </div>
                                 <div className="grid grid-rows-6  gap-1 col-span-2 justify-between px-2 py-4">
                                     <label className="text-neutral-500 text-sm font-semibold">
-                                        : {incoming?.jam}
+                                        : {convertDateToTime(incoming?.jam)}
                                     </label>
                                     <label className="text-neutral-500 text-sm font-semibold">
                                         : {incoming?.item}

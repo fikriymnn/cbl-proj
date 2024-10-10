@@ -405,6 +405,7 @@ function CheckSheetHasilRabut() {
                                   Task Belum Dimulai
                                 </p>
                                 <button
+                                  type='button'
                                   onClick={() => {
                                     startTaskRabut(data.id);
                                   }}
@@ -430,6 +431,7 @@ function CheckSheetHasilRabut() {
                                   Task Dimulai
                                 </p>
                                 <button
+                                  type='button'
                                   onClick={() => {
                                     console.log(RabutMesin.data);
                                     stopTaskRabut(
@@ -514,7 +516,7 @@ function CheckSheetHasilRabut() {
                           judul={'ADD PROBLEM CODE'}
                         >
                           <div className="flex flex-col gap-2">
-                            <label>{data.id}</label>
+
                             <label className="text-black text-sm font-bold pt-4">
                               Master Defect
                             </label>
@@ -618,8 +620,8 @@ function CheckSheetHasilRabut() {
                 </p>
                 <input
                   type="text"
-                  disabled
-                  defaultValue={formatInteger(parseInt(RabutMesin?.sumQtyPallet))}
+                  readOnly
+                  value={formatInteger(parseInt(RabutMesin?.sumQtyPallet))}
                   className="bg-[#e8e6e6] border rounded border-strokedark"
                 />
               </div>
@@ -649,8 +651,8 @@ function CheckSheetHasilRabut() {
                     </label>
                     <input
                       type="text"
-                      disabled
-                      defaultValue={formatInteger(parseInt(RabutMesin?.totalDefect))}
+                      readOnly
+                      value={formatInteger(parseInt(RabutMesin?.totalDefect))}
                       className="bg-[#e8e6e6]  px-1 border rounded border-strokedark w-full"
                     />
                   </div>
