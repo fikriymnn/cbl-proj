@@ -276,7 +276,7 @@ function CheckSheetHasilRabut() {
                   : {RabutMesin?.data?.no_jo}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {RabutMesin?.data?.no_jo}
+                  : {RabutMesin?.data?.no_io}
                 </label>
 
                 <label className="text-neutral-500 text-sm font-semibold">
