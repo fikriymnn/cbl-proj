@@ -523,7 +523,7 @@ function CheckSheetCetakPeriode() {
                               Operator
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              Status
+                              Status Jo
                             </label>
                           </div>
                           <div className="flex flex-col gap-2 col-span-2 justify-between px-2 py-4">
@@ -537,7 +537,7 @@ function CheckSheetCetakPeriode() {
                               : {cetakMesinPeriodeHistory?.operator}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {cetakMesinPeriodeHistory?.status}
+                              : {cetakMesinPeriodeHistory?.status_jo}
                             </label>
                           </div>
                         </div>

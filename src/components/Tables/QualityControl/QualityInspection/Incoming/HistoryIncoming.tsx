@@ -151,7 +151,7 @@ function HistoryIncoming() {
                                     Inspector
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-
+                                    Status Jo
                                 </label>
 
                                 <label className='text-black text-lg font-bold'>
@@ -175,7 +175,7 @@ function HistoryIncoming() {
                                     : {incoming?.inspector}
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold'>
-
+                                    : {incoming?.status_jo}
                                 </label>
 
 

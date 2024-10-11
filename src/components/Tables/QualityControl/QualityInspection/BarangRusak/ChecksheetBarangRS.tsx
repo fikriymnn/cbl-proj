@@ -223,6 +223,9 @@ function CheckSheetBarangRS() {
                   <label className="text-neutral-500 text-sm font-semibold">
                     Customer
                   </label>
+                  <label className="text-neutral-500 text-sm font-semibold">
+                    Status Jo
+                  </label>
                 </div>
                 <div className="flex flex-col gap-2 ">
                   <label className="text-neutral-500 text-sm font-semibold">
@@ -239,6 +242,9 @@ function CheckSheetBarangRS() {
                   </label>
                   <label className="text-neutral-500 text-sm font-semibold">
                     : {cetakMesinAwal?.customer}
+                  </label>
+                  <label className="text-neutral-500 text-sm font-semibold">
+                    : {cetakMesinAwal?.status_jo}
                   </label>
                 </div>
               </div>

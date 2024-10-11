@@ -61,8 +61,8 @@ function MonitoringSparepart() {
               <p className="text-[10px] font-semibold w-[7%]">Posisi</p>
               <p className="text-[10px] font-semibold w-[8%]">Tgl Pasang</p>
               <p className="text-[10px] font-semibold w-[8%]">Tgl Rusak</p>
-              <p className="text-[10px] font-semibold w-[7%]">Umur A</p>
-              <p className="text-[10px] font-semibold w-[7%]">Umur Grade</p>
+              <p className="text-[10px] font-semibold w-[7%]">Umur Ori</p>
+
               <p className="text-[10px] font-semibold w-[6%]">Grade </p>
               <p className="text-[10px] font-semibold w-[7%]">Umur Aktual</p>
               <p className="text-[10px] font-semibold w-[7%]">Sisa Umur</p>
@@ -86,8 +86,8 @@ function MonitoringSparepart() {
               return `${year}/${month}/${day}`; // Example format (YYYY-MM-DD)
             }
 
-            const tglPasang = convertDatetimeToDate(data.tgl_pasang);
-            const tglRusak = convertDatetimeToDate(data.tgl_rusak);
+
+            const tglRusak = convertDatetimeToDate(data.tgl_rusak == null ? '-' : data.tgl_rusak);
             return (
               <div className="flex bg-white py-2 mb-1 px-1  min-w-[1000px]">
                 <p className="text-[10px]  w-[2%] text-center">{index + 1}</p>
@@ -100,10 +100,10 @@ function MonitoringSparepart() {
                     {data.mesin.nama_mesin}
                   </p>
                   <p className="text-[10px]  w-[7%]">{data.posisi_part}</p>
-                  <p className="text-[10px]  w-[8%]">{tglPasang}</p>
-                  <p className="text-[10px]  w-[8%]">{tglRusak}</p>
+                  <p className="text-[10px]  w-[8%]">{convertDatetimeToDate(data.tgl_pasang)}</p>
+                  <p className="text-[10px]  w-[8%]">{data.tgl_rusak == null ? '-' : convertDatetimeToDate(data.tgl_rusak)}</p>
                   <p className="text-[10px]  w-[7%]">{data.umur_a}</p>
-                  <p className="text-[10px]  w-[7%]">{data.umur_grade}%</p>
+
                   <p className="text-[10px]  w-[6%]">{data.grade_2} </p>
                   <p className="text-[10px]  w-[7%]">{data.actual_umur}</p>
                   <p className="text-[10px]  w-[7%]">{data.sisa_umur}</p>

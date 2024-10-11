@@ -307,7 +307,9 @@ function PotongJadiChecksheet() {
                                     <label className='text-neutral-500 text-sm font-semibold'>
                                         Inspector
                                     </label>
-
+                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                        Status Jo
+                                    </label>
                                 </div>
                                 <div className='grid grid-rows-6  gap-1 col-span-2 justify-between px-10 py-4'>
                                     <label className='text-neutral-500 text-sm font-semibold'>
@@ -318,6 +320,9 @@ function PotongJadiChecksheet() {
                                     </label>
                                     <label className='text-neutral-500 text-sm font-semibold'>
                                         : {incoming?.inspector}
+                                    </label>
+                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                        : {incoming?.status_jo}
                                     </label>
                                 </div>
                                 <div className='flex flex-col w-full items-center gap-4  py-4 col-span-2  bg-[#F6FAFF]'>

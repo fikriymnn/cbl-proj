@@ -98,7 +98,7 @@ function ChecksheetLipat() {
     }
   }
 
-  async function saveChecksheetResult(id: number, hasilCheck: any, start: any) {
+  async function saveChecksheetResult(id: number, hasilCheck: any, start: any, index: number) {
     const tes = hasilCheck?.some(
       (data: { hasil_check: any }) => data?.hasil_check === null,
     )
@@ -141,6 +141,7 @@ function ChecksheetLipat() {
       const res = await axios.put(
         url,
         {
+          qty: incoming.inspeksi_lipat_point[index].qty,
           hasil_check: hasilCheck,
           lama_pengerjaan: totalSecondsToSave,
         },
@@ -182,6 +183,13 @@ function ChecksheetLipat() {
       console.log(error);
     }
   }
+
+  const handleChangeQty = (e: any, i: number) => {
+    const { name, value } = e.target;
+    const onchangeVal: any = incoming;
+    onchangeVal.inspeksi_lipat_point[i][name] = value;
+    setIncoming(onchangeVal);
+  };
 
   const handleChangePoint = (e: any, i: number, ii: number) => {
     const { name, value } = e.target;
@@ -302,7 +310,7 @@ function ChecksheetLipat() {
                     : {incoming?.no_io}
                   </label>
                   <label className="text-neutral-500 text-sm font-semibold">
-                    : {incoming?.status}
+                    : {incoming?.status_jo}
                   </label>
                   <label className="text-neutral-500 text-sm font-semibold">
                     : {incoming?.item}
@@ -371,79 +379,116 @@ function ChecksheetLipat() {
 
                     return (
                       <>
-                        <div className='px-4 py-4'>
-                          {dataPoint?.waktu_mulai == null &&
-                            dataPoint?.waktu_selesai == null && (
+                        <div className='flex flex-col gap-4'>
+                          <div className='px-4 py-4'>
+                            {dataPoint?.waktu_mulai == null &&
+                              dataPoint?.waktu_selesai == null && (
+                                <>
+                                  <div>
+                                    <p className="md:text-[14px] text-[9px] font-semibold">
+                                      Time : -
+                                    </p>
+                                    <>
+                                      <p className="font-bold text-[#DE0000]">
+                                        Task Belum Dimulai
+                                      </p>
+                                      <button
+                                        type='button'
+                                        onClick={() => {
+                                          startTask(dataPoint?.id);
+                                        }}
+                                        className="flex w-[20%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                      >
+                                        <svg
+                                          width="14"
+                                          height="14"
+                                          viewBox="0 0 14 14"
+                                          fill="none"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                          <path
+                                            d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                            fill="white"
+                                          />
+                                        </svg>
+                                      </button>
+                                    </>
+                                  </div>
+                                </>
+                              )}
+                            {dataPoint?.status == 'on progress' && (
                               <>
                                 <div>
+                                  <label className="text-neutral-500 text-sm font-semibold">
+                                    Inspector : {dataPoint?.inspektor?.nama}
+                                  </label>
                                   <p className="md:text-[14px] text-[9px] font-semibold">
                                     Time : -
                                   </p>
                                   <>
-                                    <p className="font-bold text-[#DE0000]">
-                                      Task Belum Dimulai
+                                    <p className="font-bold text-[#00B81D]">
+                                      Task Sudah Dimulai
                                     </p>
-                                    <button
-                                      type='button'
-                                      onClick={() => {
-                                        startTask(dataPoint?.id);
-                                      }}
-                                      className="flex w-[20%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
-                                    >
-                                      <svg
-                                        width="14"
-                                        height="14"
-                                        viewBox="0 0 14 14"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                      >
-                                        <path
-                                          d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                          fill="white"
-                                        />
-                                      </svg>
-                                    </button>
                                   </>
                                 </div>
                               </>
                             )}
-                          {dataPoint?.status == 'on progress' && (
-                            <>
-                              <div>
-                                <label className="text-neutral-500 text-sm font-semibold">
-                                  Inspector : {dataPoint?.inspektor?.nama}
-                                </label>
-                                <p className="md:text-[14px] text-[9px] font-semibold">
-                                  Time : -
-                                </p>
-                                <>
-                                  <p className="font-bold text-[#00B81D]">
-                                    Task Sudah Dimulai
+                            {dataPoint?.status == 'done' && (
+                              <>
+                                <div className="gap-1 flex flex-col">
+                                  <label className="text-neutral-500 text-sm font-semibold">
+                                    Inspector : {dataPoint?.inspektor?.nama}
+                                  </label>
+                                  <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Time :
                                   </p>
-                                </>
-                              </div>
-                            </>
-                          )}
-                          {dataPoint?.status == 'done' && (
-                            <>
-                              <div className="gap-1 flex flex-col">
-                                <label className="text-neutral-500 text-sm font-semibold">
-                                  Inspector : {dataPoint?.inspektor?.nama}
-                                </label>
-                                <p className="md:text-[14px] text-[9px] font-semibold">
-                                  Time :
-                                </p>
-                                <p className="md:text-[14px] text-[9px] font-semibold text-stone-400">
-                                  {dataPoint?.lama_pengerjaan != null
-                                    ? formatElapsedTime(dataPoint?.lama_pengerjaan)
-                                    : ''}{' '}
-                                  Detik
-                                </p>
-                              </div>
-                            </>
-                          )}
+                                  <p className="md:text-[14px] text-[9px] font-semibold text-stone-400">
+                                    {dataPoint?.lama_pengerjaan != null
+                                      ? formatElapsedTime(dataPoint?.lama_pengerjaan)
+                                      : ''}{' '}
+                                    Detik
+                                  </p>
+                                </div>
+                              </>
+                            )}
+                          </div>
 
+                          <div className='flex px-2 gap-4'>
+                            <label className="text-neutral-500 text-sm font-semibold">
+                              Quantity
+                            </label>
+                            {dataPoint.status == 'on progress' ? (
+                              <>
+                                <input type='text'
+                                  required
+                                  name="qty"
+                                  onChange={(e) => {
+                                    handleChangeQty(
+                                      e,
+                                      iPoint,
+                                    );
+                                  }}
+                                  className='border-2 border-stroke w-[10%] rounded-md'
+                                >
+                                </input>
+                              </>
+                            ) :
+                              (
+                                <>
+                                  <label className="text-neutral-500 text-sm font-semibold">
+                                    {dataPoint.qty}
+                                  </label>
+                                </>
+                              )
+                            }
+
+
+
+                          </div>
                         </div>
+
+
+
 
                         <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
                           {
@@ -592,8 +637,8 @@ function ChecksheetLipat() {
                                     saveChecksheetResult(
                                       dataPoint.id,
                                       dataPoint.inspeksi_lipat_result,
-                                      dataPoint.waktu_mulai
-
+                                      dataPoint.waktu_mulai,
+                                      iPoint
                                     )
                                   }
                                   className="bg-green-500 h-10  rounded-md  text-white text-xs font-bold"

@@ -284,13 +284,17 @@ function ChecksheetFinalInspection() {
                   <label className="text-neutral-500 text-sm font-semibold">
                     Jam
                   </label>
-                  <label className="text-neutral-500 text-sm font-semibold"></label>
+                  <label className="text-neutral-500 text-sm font-semibold">
+                    Status Jo
+                  </label>
                 </div>
                 <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
                   <label className="text-neutral-500 text-sm font-semibold">
                     : {jam}
                   </label>
-                  <label className="text-neutral-500 text-sm font-semibold"></label>
+                  <label className="text-neutral-500 text-sm font-semibold">
+                    : {FinalInspection?.status_jo}
+                  </label>
                 </div>
                 <div className='flex flex-col w-full col-span-3 items-start px-4'>
                   <div className='flex'>

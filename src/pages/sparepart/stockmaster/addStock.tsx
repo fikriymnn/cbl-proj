@@ -15,6 +15,7 @@ function AddStock() {
     foto: '',
     keterangan: '',
     umur_sparepart: 0,
+    stok: 0,
   });
 
   const [mesin, setMesin] = useState<any>();
@@ -49,6 +50,7 @@ function AddStock() {
           limit_stok: addItem.limit_stok,
           grade: addItem.grade,
           type_part: addItem.type_part,
+          stok: addItem.stok,
           foto: addItem.foto,
           keterangan: addItem.keterangan,
           umur_sparepart: addItem.umur_sparepart,
@@ -183,6 +185,19 @@ function AddStock() {
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
                   name="lokasi"
+                  onChange={(e) => handleChangeData(e)}
+                  className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                            }`}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="mt-5 flex flex-col justify-center px-2">
+            <p className="text-xs font-semibold">Quantity Stok</p>
+            <div className="flex justify-center items-center">
+              <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                <input
+                  name="stok"
                   onChange={(e) => handleChangeData(e)}
                   className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
                                             }`}
