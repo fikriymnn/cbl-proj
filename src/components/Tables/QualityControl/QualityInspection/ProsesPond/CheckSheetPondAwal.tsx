@@ -333,7 +333,7 @@ function CheckSheetPondAwal() {
                               Operator
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              Status
+                              Status Jo
                             </label>
                           </div>
                           <div className="flex flex-col  gap-2 col-span-2 justify-between px-2 py-4">
@@ -347,7 +347,7 @@ function CheckSheetPondAwal() {
                               : {pondMesinAwalHistory?.operator}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {pondMesinAwalHistory?.status}
+                              : {pondMesinAwalHistory?.status_jo}
                             </label>
                           </div>
                         </div>

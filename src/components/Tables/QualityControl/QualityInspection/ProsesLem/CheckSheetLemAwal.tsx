@@ -569,7 +569,7 @@ function CheckSheetLemAwal() {
                   Operator
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  Status
+                  Status Jo
                 </label>
               </div>
               <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
@@ -583,7 +583,7 @@ function CheckSheetLemAwal() {
                   : {cetakMesinAwal?.operator}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.status}
+                  : {cetakMesinAwal?.status_jo}
                 </label>
               </div>
             </div>
