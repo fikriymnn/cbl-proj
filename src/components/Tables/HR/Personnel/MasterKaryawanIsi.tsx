@@ -12,7 +12,8 @@ function MasterKaryawanIsi() {
             divisi: 'quality',
             tipe_penggajian: 'Bulanan',
             tanggal_masuk: '10/11/2024',
-            tanggal_keluar: ''
+            tanggal_keluar: '',
+            status_data: 'Contact'
         },
         {
             nik: 124,
@@ -22,7 +23,19 @@ function MasterKaryawanIsi() {
             divisi: 'quality',
             tipe_penggajian: 'Bulanan',
             tanggal_masuk: '11/11/2024',
-            tanggal_keluar: ''
+            tanggal_keluar: '',
+            status_data: 'Pendidikan'
+        },
+        {
+            nik: 125,
+            nama: 'kurma aspear',
+            jenis_kelamin: 'L',
+            posisi: 'Tetap',
+            divisi: 'quality',
+            tipe_penggajian: 'Bulanan',
+            tanggal_masuk: '11/11/2024',
+            tanggal_keluar: '11/11/2024',
+            status_data: 'Complete'
         }
     ]
 
@@ -49,11 +62,11 @@ function MasterKaryawanIsi() {
                                 <label className="text-neutral-500 text-xs font-semibold w-[7%]">
                                     NIK
                                 </label>
-                                <label className="text-neutral-500 text-xs font-semibold w-[16%]">
+                                <label className="text-neutral-500 text-xs font-semibold w-[14%]">
                                     Nama
                                 </label>
-                                <label className="text-neutral-500 text-xs font-semibold w-[7%] ">
-                                    Jenis Kelamin
+                                <label className="text-neutral-500 text-xs font-semibold w-[3%] ">
+                                    J.K
                                 </label>
                                 <label className="text-neutral-500 text-xs font-semibold  w-[7%]">
                                     Posisi
@@ -70,7 +83,10 @@ function MasterKaryawanIsi() {
                                 <label className="text-neutral-500 text-xs font-semibold  w-[10%]">
                                     Tanggal Berhenti
                                 </label>
-                                <div className='flex justify-center w-32'>
+                                <label className="text-neutral-500 text-xs font-semibold  w-[10%]">
+                                    Incomplete Data
+                                </label>
+                                <div className='flex justify-center w-[19%]'>
 
                                 </div>
                             </div>
@@ -85,10 +101,10 @@ function MasterKaryawanIsi() {
                                             <label className="text-neutral-500 text-xs font-semibold w-[7%]">
                                                 {data.nik}
                                             </label>
-                                            <label className="text-neutral-500 text-xs font-semibold w-[16%] line-clamp-1">
+                                            <label className="text-neutral-500 text-xs font-semibold w-[14%] line-clamp-1">
                                                 {data.nama}
                                             </label>
-                                            <label className="text-neutral-500 text-xs font-semibold w-[7%] ">
+                                            <label className="text-neutral-500 text-xs font-semibold w-[3%] ">
                                                 {data.jenis_kelamin}
                                             </label>
                                             <label className="text-neutral-500 text-xs font-semibold  w-[7%]">
@@ -106,13 +122,20 @@ function MasterKaryawanIsi() {
                                             <label className="text-neutral-500 text-xs font-semibold  w-[10%]">
                                                 {data.tanggal_keluar == '' ? '-' : data.tanggal_keluar}
                                             </label>
-                                            <div className='flex justify-end w-32 gap-2'>
+                                            <label className="text-neutral-500 text-xs font-semibold  w-[10%]">
+                                                {data.status_data == '' ? '-' : data.status_data}
+                                            </label>
+                                            <div className='lg:flex-row md:flex-col sm:flex w-[19%] gap-1'>
                                                 <button
-                                                    className='px-2 py-1 text-xs bg-green-600 items-center justify-center text-white font-semibold rounded-md'>
+                                                    className='px-2 py-1  text-xs bg-yellow-400 items-center justify-center text-white font-semibold rounded-md  '>
+                                                    LENGKAPI
+                                                </button>
+                                                <button
+                                                    className='px-2 py-1  text-xs bg-green-600 items-center justify-center text-white font-semibold rounded-md  '>
                                                     DETAIL
                                                 </button>
                                                 <button
-                                                    className='px-2 py-1 text-xs bg-blue-600 items-center justify-center text-white font-semibold rounded-md'>
+                                                    className='px-2 py-1 text-xs bg-blue-600 items-center justify-center text-white font-semibold rounded-md  '>
                                                     EDIT
                                                 </button>
                                             </div>
