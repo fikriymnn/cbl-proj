@@ -147,6 +147,7 @@ import MasterPerusahaan from './pages/HR/Personal/MasterPerusahaan';
 import MasterKaryawan from './pages/HR/Personal/MasterKaryawan';
 import AddMasterKaryawan from './pages/HR/Personal/AddMasterKaryawan';
 import KalenderKerja from './pages/HR/Personal/KalenderKerja/KalenderKerja';
+import RekapMtcPage from './pages/Maintenance/RekapMtc';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -338,6 +339,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <ProjectMtc />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/recap"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <RekapMtcPage />
               </ProtectedRoute>
             </>
           }
