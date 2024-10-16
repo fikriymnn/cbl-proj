@@ -18,13 +18,16 @@ function RekapOs2Mtc() {
     const [dateTo2, setDateTo2] = useState<any>();
 
     const [defectOs2, setDefectOs2] = useState<any>();
+
     const [produksiDefect, setproduksiDefect] = useState<any>();
     const [qualityDefect, setqualityDefect] = useState<any>();
 
     useEffect(() => {
 
-        getMesinProblem(null, null);
 
+        getMesinProblem(null, null);
+        getQuality(null, null);
+        getProduksi(null, null);
     }, []);
 
     async function getMesinProblem(dateFrom1: any, dateTo1: any) {
@@ -41,14 +44,54 @@ function RekapOs2Mtc() {
             });
 
             setDefectOs2(res.data.data_jenis_masalah);
-            setqualityDefect(res.data.data_defect.quality_defect)
-            setproduksiDefect(res.data.data_defect.produksi_defect)
-            console.log(res.data);
+            console.log(res.data.data_jenis_masalah)
+
         } catch (error: any) {
             console.log(error);
         }
     }
 
+    async function getQuality(dateFrom1: any, dateTo1: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/reportMtc/qualityDefect`;
+        try {
+            const res = await axios.get(url, {
+                params: {
+
+                    start_date: dateFrom1,
+                    end_date: dateTo1,
+
+                },
+                withCredentials: true,
+            });
+
+
+
+            setqualityDefect(res.data.data)
+            console.log(res.data.data)
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+    async function getProduksi(dateFrom1: any, dateTo1: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/reportMtc/produksiDefect`;
+        try {
+            const res = await axios.get(url, {
+                params: {
+
+                    start_date: dateFrom1,
+                    end_date: dateTo1,
+
+                },
+                withCredentials: true,
+            });
+
+
+            setproduksiDefect(res.data.data)
+            console.log(res.data.data)
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
     return (
         <div>
             <div className="bg-white rounded-md shadow-md md:w-12/12 mb-5 border-2">
@@ -212,7 +255,9 @@ function RekapOs2Mtc() {
                     <div className="flex justify-center my-5">
                         <button
                             onClick={() => {
-                                getMesinProblem(dateFrom1, dateTo1)
+
+
+                                getQuality(dateFrom1, dateTo1)
                             }}
                             className="bg-primary text-white px-5 py-2 rounded-md my-auto "
                         >
@@ -222,7 +267,7 @@ function RekapOs2Mtc() {
                     <div className="flex justify-center my-5">
                         <button
                             onClick={() => {
-                                getMesinProblem(null, null)
+                                getQuality(null, null)
 
                             }}
                             className="bg-primary text-white px-5 py-2 rounded-md my-auto "
@@ -239,7 +284,7 @@ function RekapOs2Mtc() {
 
                             <p className="text-xl font-semibold text-[#0065DE]">Quality Defect</p>
                         </div>
-                        <BarChartVertical value={qualityDefect} />
+                        <BarChartVertical value={qualityDefect?.quality_defect} />
                     </div>
                     <div className='flex flex-col'>
                         <div className='grid grid-cols-11 border-2 border-black px-1 justify-center gap-4 bg-slate-300'>
@@ -257,7 +302,7 @@ function RekapOs2Mtc() {
                             </label>
 
                         </div>
-                        {qualityDefect?.map((data: any, i: any) => {
+                        {qualityDefect?.quality_defect.map((data: any, i: any) => {
                             return (
                                 <>
                                     <div className='grid grid-cols-11 border-x-2 py-1 px-2  border-b-2 border-black  justify-center gap-4'>
@@ -286,7 +331,7 @@ function RekapOs2Mtc() {
                             </label>
 
                             <label className='text-sm font-semibold col-span-2'>
-                                {defectOs2?.total_quality}
+                                {qualityDefect?.total_count}
                             </label>
 
                         </div>
@@ -328,7 +373,7 @@ function RekapOs2Mtc() {
                         <button
                             onClick={() => {
 
-                                getMesinProblem(dateFrom2, dateTo2)
+                                getProduksi(dateFrom2, dateTo2)
                             }}
                             className="bg-primary text-white px-5 py-2 rounded-md my-auto "
                         >
@@ -338,7 +383,7 @@ function RekapOs2Mtc() {
                     <div className="flex justify-center my-5">
                         <button
                             onClick={() => {
-                                getMesinProblem(null, null)
+                                getProduksi(null, null)
 
                             }}
                             className="bg-primary text-white px-5 py-2 rounded-md my-auto "
@@ -355,7 +400,7 @@ function RekapOs2Mtc() {
 
                             <p className="text-xl font-semibold text-[#0065DE]">Production Defect</p>
                         </div>
-                        <BarChartVertical value={produksiDefect} />
+                        <BarChartVertical value={produksiDefect?.produksi_defect} />
                     </div>
                     <div className='flex flex-col'>
                         <div className='grid grid-cols-11 border-2 border-black px-1 justify-center gap-4 bg-slate-300'>
@@ -373,7 +418,7 @@ function RekapOs2Mtc() {
                             </label>
 
                         </div>
-                        {produksiDefect?.map((data: any, i: any) => {
+                        {produksiDefect?.produksi_defect?.map((data: any, i: any) => {
                             return (
                                 <>
                                     <div className='grid grid-cols-11 border-x-2 py-1 px-2  border-b-2 border-black  justify-center gap-4'>
@@ -402,7 +447,7 @@ function RekapOs2Mtc() {
                             </label>
 
                             <label className='text-sm font-semibold col-span-2'>
-                                {defectOs2?.total_produksi}
+                                {produksiDefect?.total_count}
                             </label>
 
                         </div>
