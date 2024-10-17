@@ -122,24 +122,9 @@ function AddStockLifetimes() {
     }
   }
 
-  async function getStokSparepart(idMesin: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
-    try {
-      const res = await axios.get(url, {
-        params: {
-          id_mesin: idMesin,
-        },
-        withCredentials: true,
-      });
 
-      setStokSparepart(res.data);
-      console.log(res.data);
-    } catch (error: any) {
-      console.log(error.data.msg);
-    }
-  }
   async function getMasterSparepart(id_mesin: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/master/sparepart`;
+    const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
     try {
       const res = await axios.get(url, {
         params: {
@@ -309,7 +294,7 @@ function AddStockLifetimes() {
                               </div>
                               <div className="flex items-center text-xs  justify-center p-2.5 ml-2 col-span-2">
                                 <p className="text-slate-600 font-semibold text-center dark:text-white">
-                                  Posisi Part
+                                  Lokasi Part
                                 </p>
                               </div>
                               <div className="flex items-center text-xs  justify-center p-2.5 ml-2">
@@ -343,17 +328,17 @@ function AddStockLifetimes() {
                                     </div>
                                     <div className="flex items-center   justify-center lg:p-2.5 lg:ml-2 ">
                                       <p className="text-slate-600 text-xs font-semibold text-center dark:text-white ">
-                                        {SparepartMaster.grade_2}
+                                        {SparepartMaster.grade}
                                       </p>
                                     </div>
                                     <div className="flex items-center   justify-center lg:p-2.5 lg:ml-2 col-span-2">
                                       <p className="text-slate-600 text-xs font-semibold text-center dark:text-white ">
-                                        {SparepartMaster.umur_a}
+                                        {SparepartMaster.umur_sparepart}
                                       </p>
                                     </div>
                                     <div className="flex items-center text-xs  justify-center p-2.5 ml-2 col-span-2">
                                       <p className="text-slate-600 font-semibold text-center dark:text-white">
-                                        {SparepartMaster.posisi_part}
+                                        {SparepartMaster.lokasi}
                                       </p>
                                     </div>
                                     <div className="flex items-center text-xs  justify-center p-2.5 ml-2">
@@ -361,6 +346,7 @@ function AddStockLifetimes() {
                                         className="bg-primary w-20 text-white"
                                         onClick={() => {
                                           setidSparepart(SparepartMaster.id)
+                                          console.log(SparepartMaster.id)
                                           setnamaSparepartSelect(SparepartMaster.nama_sparepart)
                                           setShowModalMsStok(false)
                                         }}
