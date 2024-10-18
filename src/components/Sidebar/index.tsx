@@ -2051,7 +2051,30 @@ const Sidebar = ({
                           }}
                         </SidebarLinkGroup>
                       </li>
-
+                      <li>
+                        <NavLink
+                          to="/maintenance/recap"
+                          className={({ isActive }) =>
+                            `group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out ` +
+                            (isActive &&
+                              '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                          }
+                        >
+                          <svg
+                            width="17"
+                            height="21"
+                            viewBox="0 0 17 21"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M16.6667 6.25L10.4167 0H2.08333C1.5308 0 1.00089 0.219493 0.610194 0.610194C0.219493 1.00089 0 1.5308 0 2.08333V18.75C0 19.3025 0.219493 19.8324 0.610194 20.2231C1.00089 20.6138 1.5308 20.8333 2.08333 20.8333H14.5833C15.1359 20.8333 15.6658 20.6138 16.0565 20.2231C16.4472 19.8324 16.6667 19.3025 16.6667 18.75V6.25ZM5.20833 17.7083H3.125V8.33333H5.20833V17.7083ZM9.375 17.7083H7.29167V11.4583H9.375V17.7083ZM13.5417 17.7083H11.4583V14.5833H13.5417V17.7083ZM10.4167 7.29167H9.375V2.08333L14.5833 7.29167H10.4167Z"
+                              fill="white"
+                            />
+                          </svg>
+                          Rekap
+                        </NavLink>
+                      </li>
                       <li>
                         <NavLink
                           to="/maintenance/spb"

@@ -58,8 +58,6 @@ function AddStockLifetimes() {
           posisi_part: addMasterSparepart.posisi_part,
           tgl_pasang: addMasterSparepart.tgl_pasang,
           tgl_rusak: addMasterSparepart.tgl_rusak,
-
-          sisa_umur: addMasterSparepart.sisa_umur,
           keterangan: addMasterSparepart.keterangan,
         },
         {
@@ -405,19 +403,7 @@ function AddStockLifetimes() {
             </div>
           </div>
 
-          <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-extrabold text-black">Sisa Umur<span className='text-red-500'>*</span></p>
-            <div className="flex justify-center items-center">
-              <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
-                <input
-                  name="sisa_umur"
-                  onChange={(e) => handleChangeData(e)}
-                  className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
-                                                }`}
-                />
-              </div>
-            </div>
-          </div>
+
           <div className="mt-5 flex flex-col justify-center px-2">
             <p className="text-xs font-extrabold text-black">Keterangan<span className='text-red-500'>*</span></p>
             <div className="flex justify-center items-center">

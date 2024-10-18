@@ -58,6 +58,7 @@ function CheckSheetHasilRabut() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiRabutPoint/start/${id}`;
     try {
+      setIsLoading(true)
       const res = await axios.put(
         url,
         {},
@@ -65,9 +66,10 @@ function CheckSheetHasilRabut() {
           withCredentials: true,
         },
       );
-
+      setIsLoading(false)
       getRabutMesin();
     } catch (error: any) {
+      setIsLoading(false)
       console.log(error);
       alert(error.response.data.msg);
     }
@@ -83,6 +85,7 @@ function CheckSheetHasilRabut() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiRabutPoint/stop/${id}`;
     try {
+      setIsLoading(true)
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
       const res = await axios.put(
@@ -97,9 +100,10 @@ function CheckSheetHasilRabut() {
           withCredentials: true,
         },
       );
-
+      setIsLoading(false)
       getRabutMesin();
     } catch (error: any) {
+      setIsLoading(false)
       console.log(error.response.data.msg);
       alert(error.response.data.msg);
     }
@@ -122,6 +126,7 @@ function CheckSheetHasilRabut() {
       setIsLoading(false);
       getRabutMesin();
     } catch (error: any) {
+      setIsLoading(false)
       console.log(error.data.msg);
     }
   }
@@ -130,6 +135,7 @@ function CheckSheetHasilRabut() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiRabut/done/${id}`;
     try {
+      setIsLoading(true)
       const res = await axios.put(
         url,
         {
@@ -139,9 +145,10 @@ function CheckSheetHasilRabut() {
           withCredentials: true,
         },
       );
-
+      setIsLoading(false)
       getRabutMesin();
     } catch (error: any) {
+      setIsLoading(false)
       console.log(error.data.msg);
     }
   }
@@ -174,6 +181,7 @@ function CheckSheetHasilRabut() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiRabutPoint/createDefect`;
     try {
+      setIsLoading(true);
       const res = await axios.post(
         url,
 
@@ -187,12 +195,13 @@ function CheckSheetHasilRabut() {
           withCredentials: true,
         },
       );
-
+      setIsLoading(false);
       setShowModal2(false);
       handleClickAdd(index);
       setIdDefect(null);
       getRabutMesin();
     } catch (error: any) {
+      setIsLoading(false)
       console.log(error);
     }
   }
@@ -229,7 +238,9 @@ function CheckSheetHasilRabut() {
   return (
     <>
       {!isMobile && (
+
         <main className="overflow-x-hidden">
+          {isLoading && <Loading />}
           <div className="min-w-[700px] bg-white rounded-xl">
             <p className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
               <svg
@@ -354,6 +365,7 @@ function CheckSheetHasilRabut() {
                           ) : data.status == 'on progress' ? (
                             <input
                               name="qty_pallet"
+                              defaultValue={data.qty_pallet}
                               onChange={(e) => handleChangeRabutPoint(e, index)}
                               type="text"
                               className="px-1 border rounded border-strokedark w-10/12"
@@ -405,6 +417,7 @@ function CheckSheetHasilRabut() {
                                   Task Belum Dimulai
                                 </p>
                                 <button
+                                  disabled={isLoading}
                                   type='button'
                                   onClick={() => {
                                     startTaskRabut(data.id);
@@ -431,6 +444,7 @@ function CheckSheetHasilRabut() {
                                   Task Dimulai
                                 </p>
                                 <button
+                                  disabled={isLoading}
                                   type='button'
                                   onClick={() => {
                                     console.log(RabutMesin.data);
@@ -444,6 +458,7 @@ function CheckSheetHasilRabut() {
                                   }}
                                   className="flex w-full  rounded-md bg-red-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
                                 >
+
                                   <svg
                                     width="14"
                                     height="14"
@@ -555,6 +570,7 @@ function CheckSheetHasilRabut() {
                               )}
                             </select>
                             <button
+                              disabled={isLoading}
                               onClick={() => {
                                 tambahDefectPeriode(
                                   RabutMesin?.data?.id,
@@ -566,7 +582,7 @@ function CheckSheetHasilRabut() {
                               }}
                               className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
                             >
-                              TAMBAH MASALAH
+                              {isLoading ? 'Loading...' : 'TAMBAH MASALAH'}
                             </button>
                           </div>
                         </ModalAddPeriode>
@@ -605,6 +621,7 @@ function CheckSheetHasilRabut() {
           {RabutMesin?.data?.status == 'incoming' ||
             RabutMesin?.data?.status == 'pending' ? (
             <button
+              disabled={isLoading}
               onClick={() => tambahTaskRabut(RabutMesin?.data.id)}
               className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 mb-2 hover:cursor-pointer"
             >
@@ -699,6 +716,7 @@ function CheckSheetHasilRabut() {
                     {RabutMesin?.data?.status == 'incoming' ||
                       RabutMesin?.data?.status == 'pending' ? (
                       <button
+                        disabled={isLoading}
                         onClick={() => doneRabut(RabutMesin?.data.id)}
                         className=" col-span-2 w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                       >

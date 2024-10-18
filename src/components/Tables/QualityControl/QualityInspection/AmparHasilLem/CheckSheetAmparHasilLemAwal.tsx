@@ -31,13 +31,15 @@ function CheckSheetHasilRabut() {
   async function getRabutMesin() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiAmparLem/${id}`;
     try {
+      setIsLoading(true)
       const res = await axios.get(url, {
         withCredentials: true,
       });
-
+      setIsLoading(false)
       setRabutMesin(res.data);
       console.log(res.data);
     } catch (error: any) {
+      setIsLoading(false)
       console.log(error.data.msg);
     }
   }
@@ -57,6 +59,7 @@ function CheckSheetHasilRabut() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiAmparLemPoint/start/${id}`;
     try {
+      setIsLoading(true)
       const res = await axios.put(
         url,
         {},
@@ -64,10 +67,11 @@ function CheckSheetHasilRabut() {
           withCredentials: true,
         },
       );
-
+      setIsLoading(false)
       getRabutMesin();
     } catch (error: any) {
       console.log(error);
+      setIsLoading(false)
       alert(error.response.data.msg);
     }
   }
@@ -82,6 +86,7 @@ function CheckSheetHasilRabut() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiAmparLemPoint/stop/${id}`;
     try {
+      setIsLoading(true)
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
       const res = await axios.put(
@@ -96,9 +101,10 @@ function CheckSheetHasilRabut() {
           withCredentials: true,
         },
       );
-
+      setIsLoading(false)
       getRabutMesin();
     } catch (error: any) {
+      setIsLoading(false)
       console.log(error.response.data.msg);
       alert('Parameter Wajib Diisi');
     }
@@ -129,6 +135,7 @@ function CheckSheetHasilRabut() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiAmparLem/done/${id}`;
     try {
+      setIsLoading(true)
       const res = await axios.put(
         url,
         {
@@ -138,9 +145,10 @@ function CheckSheetHasilRabut() {
           withCredentials: true,
         },
       );
-
+      setIsLoading(false)
       getRabutMesin();
     } catch (error: any) {
+      setIsLoading(false)
       console.log(error);
     }
   }
@@ -173,6 +181,7 @@ function CheckSheetHasilRabut() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiAmparLemPoint/createDefect`;
     try {
+      setIsLoading(true)
       const res = await axios.post(
         url,
 
@@ -186,12 +195,13 @@ function CheckSheetHasilRabut() {
           withCredentials: true,
         },
       );
-
+      setIsLoading(false)
       setShowModal2(false);
       handleClickAdd(index);
       setIdDefect(null);
       getRabutMesin();
     } catch (error: any) {
+      setIsLoading(false)
       console.log(error);
     }
   }
@@ -230,6 +240,7 @@ function CheckSheetHasilRabut() {
     <>
       {!isMobile && (
         <main className="overflow-x-hidden">
+          {isLoading && <Loading />}
           <form action="" onSubmit={(e) => {
             e.preventDefault()
             console.log(RabutMesin);
@@ -415,6 +426,7 @@ function CheckSheetHasilRabut() {
                                     Task Belum Dimulai
                                   </p>
                                   <button
+                                    disabled={isLoading}
                                     onClick={() => {
                                       startTaskRabut(data.id);
                                     }}
@@ -440,6 +452,7 @@ function CheckSheetHasilRabut() {
                                     Task Dimulai
                                   </p>
                                   <button
+                                    disabled={isLoading}
                                     onClick={() => {
                                       console.log(RabutMesin.data);
                                       stopTaskRabut(
@@ -509,6 +522,8 @@ function CheckSheetHasilRabut() {
                         {data.status == 'on progress' ? (
                           <>
                             <button
+                              type='button'
+                              disabled={isLoading}
                               onClick={() => handleClickAdd(index)}
                               className=" h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
                             >
@@ -526,7 +541,7 @@ function CheckSheetHasilRabut() {
                             judul={'ADD PROBLEM CODE'}
                           >
                             <div className="flex flex-col gap-2">
-                              <label>{data.id}</label>
+
                               <label className="text-black text-sm font-bold pt-4">
                                 Master Defect
                               </label>
@@ -565,6 +580,8 @@ function CheckSheetHasilRabut() {
                                 )}
                               </select>
                               <button
+                                type='button'
+                                disabled={isLoading}
                                 onClick={() => {
                                   tambahDefectPeriode(
                                     RabutMesin?.data?.id,
@@ -616,6 +633,7 @@ function CheckSheetHasilRabut() {
             {RabutMesin?.data?.status == 'incoming' ||
               RabutMesin?.data?.status == 'pending' ? (
               <button
+                disabled={isLoading}
                 onClick={() => tambahTaskRabut(RabutMesin?.data.id)}
                 className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 mb-2 hover:cursor-pointer"
               >
@@ -711,6 +729,7 @@ function CheckSheetHasilRabut() {
                     {RabutMesin?.data?.status == 'incoming' ||
                       RabutMesin?.data?.status == 'pending' ? (
                       <button
+                        disabled={isLoading}
                         type='submit'
                         value='submit'
                         className=" col-span-2 w-[25%] h-10 rounded-md bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
