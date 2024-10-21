@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
 import JenisCetak from '../../../../../pages/QualityControl/ProsesCetak/JenisCetak';
-import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
+import convertTimeStampToDateOnly from '../../../../../utils/converDateTime';
 
 function JenisCoatingMesin() {
   const { id } = useParams();
@@ -71,12 +71,11 @@ function JenisCoatingMesin() {
                 <div className="flex  border-b-8 border-[#D8EAFF] gap-7 items-center">
                   <div className="flex items-center gap-7 w-full">
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 ${
-                        coatingMesin?.data?.inspeksi_coating_sub_awal[0]
+                      className={`w-2 h-full sticky left-0 z-20 ${coatingMesin?.data?.inspeksi_coating_sub_awal[0]
                           .status == 'incoming'
                           ? 'bg-red-500'
                           : 'bg-green-500'
-                      }  gap-8 py-7 `}
+                        }  gap-8 py-7 `}
                     ></div>
 
                     <label className="text-neutral-500 text-sm font-semibold flex ">
@@ -102,12 +101,11 @@ function JenisCoatingMesin() {
                 <div className="flex  border-b-8 border-[#D8EAFF] gap-7 items-center">
                   <div className="flex items-center gap-7 w-full">
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 ${
-                        coatingMesin?.data?.inspeksi_coating_sub_periode[0]
+                      className={`w-2 h-full sticky left-0 z-20 ${coatingMesin?.data?.inspeksi_coating_sub_periode[0]
                           .status == 'incoming'
                           ? 'bg-red-500'
                           : 'bg-green-500'
-                      }  gap-8 py-7 `}
+                        }  gap-8 py-7 `}
                     ></div>
 
                     <label className="text-neutral-500 text-sm font-semibold flex ">

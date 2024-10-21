@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
-import convertTimeStampToDate from '../../../../../utils/convertDate';
+import convertTimeStampToDate from '../../../../../utils/converDateTime';
 
 function ProsesPraplate() {
   const [isMobile, setIsMobile] = useState(false);

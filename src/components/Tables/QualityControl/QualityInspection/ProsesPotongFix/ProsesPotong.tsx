@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
-import convertTimeStampToDate from '../../../../../utils/convertDate';
+import convertTimeStampToDate from '../../../../../utils/converDateTime';
 
 function ProsesPotongMesin() {
     const [isMobile, setIsMobile] = useState(false);
@@ -90,7 +90,7 @@ function ProsesPotongMesin() {
                                 <label className='text-neutral-500 text-sm font-semibold '>
                                     Mesin
                                 </label>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2 '>
+                                <label className='text-neutral-500 text-sm font-semibold line-clamp-1 '>
                                     No. JO
                                 </label>
 
@@ -100,7 +100,7 @@ function ProsesPotongMesin() {
                                 <label className='text-neutral-500 text-sm font-semibold col-span-2'>
                                     Customer
                                 </label>
-                                <label className='text-neutral-500 text-sm font-semibold  '>
+                                <label className='text-neutral-500 text-sm font-semibold  col-span-2'>
                                     Tanggal
                                 </label>
                                 <label className='text-neutral-500 text-sm font-semibold  col-span-2 line-clamp-1'>
@@ -133,7 +133,7 @@ function ProsesPotongMesin() {
                                                     </label>
                                                 </div>
 
-                                                <label className='text-neutral-500 text-sm font-semibold col-span-2 '>
+                                                <label className='text-neutral-500 text-sm font-semibold line-clamp-1 '>
                                                     {data.no_jo}
                                                 </label>
 
@@ -143,7 +143,7 @@ function ProsesPotongMesin() {
                                                 <label className='text-neutral-500 text-sm font-semibold col-span-2'>
                                                     {data.customer}
                                                 </label>
-                                                <label className='text-neutral-500 text-sm font-semibold  '>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2 '>
                                                     {tglTicket}
                                                 </label>
                                                 <label className='text-neutral-500 text-sm font-semibold  col-span-2 line-clamp-1'>

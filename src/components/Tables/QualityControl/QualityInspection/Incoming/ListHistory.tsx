@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Button } from '@mui/material';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-import convertTimeStampToDate from '../../../../../utils/convertDate';
+import convertTimeStampToDate from '../../../../../utils/converDateTime';
 
 function ListHistory() {
     const [isMobile, setIsMobile] = useState(false);

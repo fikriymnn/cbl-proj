@@ -6,7 +6,7 @@ import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../../utils/converDateToTime';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-import convertTimeStampToDate from '../../../../../utils/convertDate';
+import convertTimeStampToDate from '../../../../../utils/converDateTime';
 
 function ProsesFinalInspectionhistory() {
   const [isMobile, setIsMobile] = useState(false);

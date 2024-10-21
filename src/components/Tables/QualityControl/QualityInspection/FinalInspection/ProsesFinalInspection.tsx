@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Button } from '@mui/material';
 import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../../utils/converDateToTime';
-import convertTimeStampToDate from '../../../../../utils/convertDate';
+import convertTimeStampToDate from '../../../../../utils/converDateTime';
 
 function ProsesFinalInspection() {
   const [isMobile, setIsMobile] = useState(false);
