@@ -6,6 +6,7 @@ import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../../utils/converDateToTime';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
+import convertTimeStampToDate from '../../../../../utils/convertDate';
 
 function ProsesFinalInspectionhistory() {
   const [isMobile, setIsMobile] = useState(false);
@@ -94,7 +95,7 @@ function ProsesFinalInspectionhistory() {
               </div>
               <div className="w-2 h-full "></div>
               {FinalInspection?.data.map((data: any, i: any) => {
-                const tglTicket = convertTimeStampToDateOnly(data.createdAt);
+                const tglTicket = convertTimeStampToDate(data.createdAt);
                 return (
                   <>
                     <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center">

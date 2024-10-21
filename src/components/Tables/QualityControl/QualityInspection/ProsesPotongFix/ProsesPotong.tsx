@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
-
+import convertTimeStampToDate from '../../../../../utils/convertDate';
 
 function ProsesPotongMesin() {
     const [isMobile, setIsMobile] = useState(false);
@@ -116,73 +116,76 @@ function ProsesPotongMesin() {
 
                             </div>
                             {pondMesin != null &&
-                                pondMesin.data?.map((data: any, i: any) => (
-                                    <>
-                                        <div className='grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center '>
+                                pondMesin.data?.map((data: any, i: any) => {
+                                    const tglTicket = convertTimeStampToDate(data.createdAt);
+                                    return (
+                                        <>
+                                            <div className='grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center '>
 
-                                            <div className='flex w-full bg-red items-center gap-4'>
+                                                <div className='flex w-full bg-red items-center gap-4'>
 
-                                                <div className={`w-2 h-full sticky left-0 z-20  gap-8 py-6 ${data.jenis_potong == 'potong bahan' ? 'bg-green-600' : 'bg-blue-600'}`}>
+                                                    <div className={`w-2 h-full sticky left-0 z-20  gap-8 py-6 ${data.jenis_potong == 'potong bahan' ? 'bg-green-600' : 'bg-blue-600'}`}>
 
+                                                    </div>
+
+                                                    <label className='text-neutral-500 text-sm font-semibold '>
+                                                        {data.mesin}
+                                                    </label>
                                                 </div>
 
-                                                <label className='text-neutral-500 text-sm font-semibold '>
-                                                    {data.mesin}
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2 '>
+                                                    {data.no_jo}
                                                 </label>
+
+                                                <label className='text-neutral-500 text-sm font-semibold  '>
+                                                    {data.shift}
+                                                </label>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                    {data.customer}
+                                                </label>
+                                                <label className='text-neutral-500 text-sm font-semibold  '>
+                                                    {tglTicket}
+                                                </label>
+                                                <label className='text-neutral-500 text-sm font-semibold  col-span-2 line-clamp-1'>
+                                                    {data.item}
+                                                </label>
+                                                <label className='text-neutral-500 text-sm font-semibold col-span-2 uppercase'>
+                                                    {data.jenis_potong}
+                                                </label>
+                                                <div className='justify-end flex pr-2 '>
+                                                    {data.jenis_potong == 'potong bahan' ? (
+                                                        <>
+                                                            <Link to={`/qc/qualityinspection/prosespotong/bahan/${data.id}`}>
+
+                                                                <button
+                                                                    className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                                                                >
+                                                                    PILIH
+                                                                </button>
+                                                            </Link>
+                                                        </>
+                                                    ) : data.jenis_potong == 'potong jadi' ? (
+                                                        <>
+                                                            <Link to={`/qc/qualityinspection/prosespotong/jadi/${data.id}`}>
+
+                                                                <button
+                                                                    className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                                                                >
+                                                                    PILIH
+                                                                </button>
+                                                            </Link>
+                                                        </>
+                                                    ) :
+                                                        <>
+                                                        </>}
+
+
+                                                </div>
                                             </div>
 
-                                            <label className='text-neutral-500 text-sm font-semibold col-span-2 '>
-                                                {data.no_jo}
-                                            </label>
-
-                                            <label className='text-neutral-500 text-sm font-semibold  '>
-                                                {data.shift}
-                                            </label>
-                                            <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                                {data.customer}
-                                            </label>
-                                            <label className='text-neutral-500 text-sm font-semibold  '>
-                                                {data.tanggal}
-                                            </label>
-                                            <label className='text-neutral-500 text-sm font-semibold  col-span-2 line-clamp-1'>
-                                                {data.item}
-                                            </label>
-                                            <label className='text-neutral-500 text-sm font-semibold col-span-2 uppercase'>
-                                                {data.jenis_potong}
-                                            </label>
-                                            <div className='justify-end flex pr-2 '>
-                                                {data.jenis_potong == 'potong bahan' ? (
-                                                    <>
-                                                        <Link to={`/qc/qualityinspection/prosespotong/bahan/${data.id}`}>
-
-                                                            <button
-                                                                className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
-                                                            >
-                                                                PILIH
-                                                            </button>
-                                                        </Link>
-                                                    </>
-                                                ) : data.jenis_potong == 'potong jadi' ? (
-                                                    <>
-                                                        <Link to={`/qc/qualityinspection/prosespotong/jadi/${data.id}`}>
-
-                                                            <button
-                                                                className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
-                                                            >
-                                                                PILIH
-                                                            </button>
-                                                        </Link>
-                                                    </>
-                                                ) :
-                                                    <>
-                                                    </>}
-
-
-                                            </div>
-                                        </div>
-
-                                    </>
-                                ))}
+                                        </>
+                                    )
+                                })}
                         </div>
                     </div>
                 </main >

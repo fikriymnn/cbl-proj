@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Button } from '@mui/material';
 import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../../utils/converDateToTime';
+import convertTimeStampToDate from '../../../../../utils/convertDate';
 
 function ProsesFinalInspection() {
   const [isMobile, setIsMobile] = useState(false);
@@ -93,7 +94,7 @@ function ProsesFinalInspection() {
               </div>
               <div className="w-2 h-full "></div>
               {FinalInspection?.data.map((data: any, i: number) => {
-                const tglTicket = convertTimeStampToDateOnly(data.createdAt);
+                const tglTicket = convertTimeStampToDate(data.createdAt);
                 return (
 
                   <>
