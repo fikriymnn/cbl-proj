@@ -6,7 +6,8 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import BarChartVertical from '../../../../pages/UiElements/BarChartVertical';
 import axios from 'axios';
 import BarChartResponTime from '../../../../pages/UiElements/BarchartResponTime';
-
+import BarChartResponMonth from '../../../../pages/UiElements/BarchartResponMonth';
+import convertTimeStampToDate from '../../../../utils/convertDate';
 
 function RekapOs2Mtc() {
     const [bulan, setBulan] = useState(0);
@@ -24,12 +25,16 @@ function RekapOs2Mtc() {
     const [dateFrom2, setDateFrom2] = useState<any>();
     const [dateTo2, setDateTo2] = useState<any>();
 
+    const [dateFrom3, setDateFrom3] = useState<any>();
+    const [dateTo3, setDateTo3] = useState<any>();
+
     const [defectOs2, setDefectOs2] = useState<any>();
 
     const [produksiDefect, setproduksiDefect] = useState<any>();
     const [qualityDefect, setqualityDefect] = useState<any>();
 
     useEffect(() => {
+
         const today = new Date();
         setBulan(today.getMonth() + 1); // Ditambah 1 karena index bulan dimulai dari 0
         setTahun(today.getFullYear());
@@ -38,6 +43,7 @@ function RekapOs2Mtc() {
         getMesinProblem(null, null);
         getQuality(null, null);
         getProduksi(null, null);
+        getResponTimeBulan(null, null)
     }, []);
 
     async function getMesinProblem(dateFrom1: any, dateTo1: any) {
@@ -126,6 +132,28 @@ function RekapOs2Mtc() {
         }
     }
 
+    const [responTimeBulan, setresponTimeBulan] = useState<any>();
+
+    async function getResponTimeBulan(fromdate: any, todate: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/reportMtc/responTime`;
+        try {
+            const res = await axios.get(url, {
+                params: {
+
+                    fromDate: fromdate,
+                    toDate: todate,
+
+                },
+                withCredentials: true,
+            });
+
+
+            setresponTimeBulan(res.data)
+            console.log('Respon Time Bulan', res.data)
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
     return (
         <div>
 
@@ -558,14 +586,16 @@ function RekapOs2Mtc() {
                                 }}
                                 className="bg-primary text-white px-5 py-2 rounded-md my-auto "
                             >
-                                Reset
+                                Bulan Ini
                             </button>
                         </div>
+
                     </div>
 
                 </div>
 
                 <div className="md:grid grid-cols-1 gap-5 px-10 pb-10 pt-5">
+
                     <div className="">
                         <div className="flex gap-3 p-3">
                             <img src={Production} alt="Logo" />
@@ -643,7 +673,128 @@ function RekapOs2Mtc() {
                 </div>
 
             </div>
-        </div>
+            <div className="bg-white rounded-md shadow-md md:w-12/12 mb-5 border-2">
+                <div className="flex md:gap-4 gap-1 md:flex-row flex-col px-4 py-4 md:mt-0 ">
+                    <p className="my-auto text-sm text-primary font-semibold">
+                        Pilih Tanggal
+                    </p>
+                    <div className="flex md:justify-center items-center gap-2">
+                        <p className="text-sm text-primary font-semibold md:w-3/12 w-2/12">
+                            Dari:
+                        </p>
+
+                        <input
+                            className='rounded-full bg-[#D8EAFF] px-2'
+                            type="date"
+                            onChange={(e) => setDateFrom3(e.target.value)}
+                        ></input>
+
+                    </div>
+                    <div className="flex md:justify-center items-center gap-2">
+                        <p className=" my-auto text-sm text-primary font-semibold md:w-3/12 w-2/12">
+                            Sampai:
+                        </p>
+
+                        <input
+                            className='rounded-full bg-[#D8EAFF] px-2'
+                            type="date"
+                            onChange={(e) => setDateTo3(e.target.value)}
+                        ></input>
+
+                    </div>
+                    <div className="flex justify-center my-5">
+                        <button
+                            onClick={() => {
+                                getResponTimeBulan(dateFrom3, dateTo3)
+                            }}
+                            className="bg-primary text-white px-5 py-2 rounded-md my-auto "
+                        >
+                            Tampilkan
+                        </button>
+                    </div>
+                    <div className="flex justify-center my-5">
+                        <button
+                            onClick={() => {
+                                getResponTimeBulan(null, null)
+
+                            }}
+                            className="bg-primary text-white px-5 py-2 rounded-md my-auto "
+                        >
+                            Reset
+                        </button>
+                    </div>
+                </div>
+                <div className='flex gap-10 w-full justify-center'>
+                    <label className='text-xl text-blue-400 font-semibold'>
+                        {convertTimeStampToDate(responTimeBulan?.queryDari)} ~  {convertTimeStampToDate(responTimeBulan?.querySampai)}
+                    </label>
+                </div>
+                <div className="md:grid grid-cols-1 gap-5 px-10 pb-10 pt-5">
+
+                    <div className="">
+                        <div className="flex gap-3 p-3">
+                            <img src={Production} alt="Logo" />
+
+                            <p className="text-xl font-semibold text-[#0065DE]">Respon Time</p>
+                        </div>
+                        <BarChartResponMonth value={responTimeBulan} />
+                    </div>
+                    <div className='flex flex-col '>
+
+                        {responTimeBulan?.data.map((data: any, i: any) => {
+                            return (
+                                <>
+                                    <div className='flex  py-1 px-2   border-black  gap-4 pt-4'>
+                                        <label className='text-sm font-semibold'>
+                                            {i + 1}.
+                                        </label>
+                                        <label className='text-sm col-span-2 font-semibold'>
+                                            {data.mesin}
+                                        </label>
+                                    </div>
+                                    <div className='grid grid-cols-12 border-2 border-black px-1 justify-center gap-4 bg-slate-300'>
+
+                                        {responTimeBulan?.listBulan?.map((data: any, i: any) => {
+                                            return (
+                                                <>
+                                                    <label className='text-xs font-semibold '>
+                                                        {data.nama_bulan}
+                                                    </label>
+                                                </>
+                                            )
+                                        })}
+                                    </div>
+                                    <div className='grid grid-cols-12 border-x-2 py-1 px-2  border-b-2 border-black  justify-center gap-4'>
+
+
+                                        {data.data?.map((data2: any, i: any) => {
+                                            return (
+                                                <>
+                                                    <label className='text-xs '>
+                                                        {data2.jumlah_waktu_menit}
+                                                    </label>
+                                                </>
+                                            )
+                                        })}
+                                        <label className='text-sm col-span-2 line-clamp-1'>
+                                            {data.jumlah_waktu_menit}
+                                        </label>
+                                        <label className='text-sm col-span-2 line-clamp-1'>
+                                            {data.rata_rata_waktu_menit}
+                                        </label>
+
+                                    </div >
+                                </>
+                            )
+                        })}
+
+
+                    </div >
+
+                </div>
+
+            </div>
+        </div >
     )
 }
 
