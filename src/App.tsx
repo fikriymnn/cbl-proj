@@ -148,6 +148,11 @@ import MasterKaryawan from './pages/HR/Personal/MasterKaryawan';
 import AddMasterKaryawan from './pages/HR/Personal/AddMasterKaryawan';
 import KalenderKerja from './pages/HR/Personal/KalenderKerja/KalenderKerja';
 import RekapMtcPage from './pages/Maintenance/RekapMtc';
+import InputSpl from './pages/HR/Pengajuan/InputSPL';
+import CutiHR from './pages/HR/Pengajuan/CutiHr';
+import IzinHR from './pages/HR/Pengajuan/IzinHR';
+import SakitHR from './pages/HR/Pengajuan/SakitHR';
+import PinjamanHR from './pages/HR/Pengajuan/PinjamanHR';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1546,6 +1551,46 @@ function App() {
           element={
             <>
               <KalenderKerja />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/spl"
+          element={
+            <>
+              <InputSpl />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/cuti"
+          element={
+            <>
+              <CutiHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/izin"
+          element={
+            <>
+              <IzinHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/sakit"
+          element={
+            <>
+              <SakitHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/pinjaman"
+          element={
+            <>
+              <PinjamanHR />
             </>
           }
         />

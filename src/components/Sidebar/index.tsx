@@ -1771,6 +1771,155 @@ const Sidebar = ({
 
                   </ul>
                 </div>
+                <div
+                  className={`translate transform overflow-hidden ${!open && 'hidden'
+                    }`}
+                >
+                  <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-3">
+                    <li>
+                      <SidebarLinkGroup
+                        activeCondition={
+                          pathname === '/pengajuan' || pathname.includes('pengajuan')
+                        }
+                      >
+                        {(handleClick, open) => {
+                          return (
+                            <React.Fragment>
+                              <NavLink
+                                to="#"
+                                className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${(pathname === '/hr/pengajuan' ||
+                                  pathname.includes('/hr/pengajuan')) &&
+                                  ' dark:bg-meta-4'
+                                  }`}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  sidebarExpanded
+                                    ? handleClick()
+                                    : setSidebarExpanded1(true);
+                                }}
+                              >
+                                <img src={Inspect} alt="Logo" />
+                                PENGAJUAN
+                                <svg
+                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
+                                    }`}
+                                  width="7"
+                                  height="8"
+                                  viewBox="0 0 7 8"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z"
+                                    fill="white"
+                                  />
+                                </svg>
+                              </NavLink>
+                              {/* <!-- Dropdown Menu Start --> */}
+                              <div
+                                className={`translate transform overflow-hidden ${!open && 'hidden'
+                                  }`}
+                              >
+                                <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                  <li>
+                                    <NavLink
+                                      to="/hr/pengajuan/spl"
+                                      className={({ isActive }) =>
+                                        'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                        (isActive &&
+                                          '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                      }
+                                    >
+                                      Input SPL
+                                    </NavLink>
+                                  </li>
+                                </ul>
+                              </div>
+                              <div
+                                className={`translate transform overflow-hidden ${!open && 'hidden'
+                                  }`}
+                              >
+                                <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                  <li>
+                                    <NavLink
+                                      to="/hr/pengajuan/cuti"
+                                      className={({ isActive }) =>
+                                        'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                        (isActive &&
+                                          '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                      }
+                                    >
+                                      Cuti
+                                    </NavLink>
+                                  </li>
+                                </ul>
+                              </div>
+                              <div
+                                className={`translate transform overflow-hidden ${!open && 'hidden'
+                                  }`}
+                              >
+                                <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                  <li>
+                                    <NavLink
+                                      to="/hr/pengajuan/izin"
+                                      className={({ isActive }) =>
+                                        'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                        (isActive &&
+                                          '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                      }
+                                    >
+                                      Izin
+                                    </NavLink>
+                                  </li>
+                                </ul>
+                              </div>
+                              <div
+                                className={`translate transform overflow-hidden ${!open && 'hidden'
+                                  }`}
+                              >
+                                <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                  <li>
+                                    <NavLink
+                                      to="/hr/pengajuan/sakit"
+                                      className={({ isActive }) =>
+                                        'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                        (isActive &&
+                                          '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                      }
+                                    >
+                                      Sakit
+                                    </NavLink>
+                                  </li>
+                                </ul>
+                              </div>
+                              <div
+                                className={`translate transform overflow-hidden ${!open && 'hidden'
+                                  }`}
+                              >
+                                <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                  <li>
+                                    <NavLink
+                                      to="/hr/pengajuan/pinjaman"
+                                      className={({ isActive }) =>
+                                        'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                        (isActive &&
+                                          '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                      }
+                                    >
+                                      Pinjaman
+                                    </NavLink>
+                                  </li>
+                                </ul>
+                              </div>
+                              {/* <!-- Dropdown Menu End --> */}
+                            </React.Fragment>
+                          );
+                        }}
+                      </SidebarLinkGroup>
+                    </li>
+
+                  </ul>
+                </div>
                 {/* <!-- Dropdown Menu End --> */}
               </React.Fragment>
             );
