@@ -126,10 +126,12 @@ function MasterKaryawanIsi() {
                                                 {data.status_data == '' ? '-' : data.status_data}
                                             </label>
                                             <div className='lg:flex-row md:flex-col sm:flex w-[19%] gap-1'>
-                                                <button
-                                                    className='px-2 py-1  text-xs bg-yellow-400 items-center justify-center text-white font-semibold rounded-md  '>
-                                                    LENGKAPI
-                                                </button>
+                                                <Link to={`/hr/pm/masterkaryawan/lengkapi`} >
+                                                    <button
+                                                        className='px-2 py-1  text-xs bg-yellow-400 items-center justify-center text-white font-semibold rounded-md  '>
+                                                        LENGKAPI
+                                                    </button>
+                                                </Link>
                                                 <button
                                                     className='px-2 py-1  text-xs bg-green-600 items-center justify-center text-white font-semibold rounded-md  '>
                                                     DETAIL

@@ -8,6 +8,7 @@ import axios from 'axios';
 import BarChartResponTime from '../../../../pages/UiElements/BarchartResponTime';
 import BarChartResponMonth from '../../../../pages/UiElements/BarchartResponMonth';
 import convertTimeStampToDate from '../../../../utils/convertDate';
+import BarChartProductionQuality from '../../../../pages/UiElements/BarchartProductionQuality';
 
 function RekapOs2Mtc() {
     const [bulan, setBulan] = useState(0);
@@ -349,7 +350,7 @@ function RekapOs2Mtc() {
 
                             <p className="text-xl font-semibold text-[#0065DE]">Quality Defect</p>
                         </div>
-                        <BarChartVertical value={qualityDefect?.quality_defect} />
+                        <BarChartProductionQuality value={qualityDefect?.quality_defect} />
                     </div>
                     <div className='flex flex-col'>
                         <div className='grid grid-cols-11 border-2 border-black px-1 justify-center gap-4 bg-slate-300'>
@@ -465,7 +466,7 @@ function RekapOs2Mtc() {
 
                             <p className="text-xl font-semibold text-[#0065DE]">Production Defect</p>
                         </div>
-                        <BarChartVertical value={produksiDefect?.produksi_defect} />
+                        <BarChartProductionQuality value={produksiDefect?.produksi_defect} />
                     </div>
                     <div className='flex flex-col'>
                         <div className='grid grid-cols-11 border-2 border-black px-1 justify-center gap-4 bg-slate-300'>

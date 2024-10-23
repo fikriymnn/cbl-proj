@@ -10,7 +10,7 @@ const BarChartVertical = ({ value }: { value: any }) => {
     <div className="h-50 flex w-full">
       <div className="h-full w-[1.5px] bg-black"></div>
       {data?.map((item: any, index: number) => {
-
+        const maxValue = Math.max(...data.map((item: { count: any; }) => item.count));
         return (
 
           <div key={index} className="flex flex-col h-full w-full">
@@ -18,8 +18,8 @@ const BarChartVertical = ({ value }: { value: any }) => {
               <div
                 className="flex items-center justify-center md:mx-2 mx-1 max-w-30"
                 style={{
-                  height: `${(item.count / Math.max(data[0].count)) * 80}%`,
-                  background: item.count >= 5 ? 'blue' : 'red',
+                  height: `${(item.count / maxValue) * 80}%`,
+                  background: item.count <= 5 ? 'blue' : 'red',
                 }}
               ></div>
               <div className="w-full text-center text-xs font-medium text-primary">

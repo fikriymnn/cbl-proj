@@ -73,7 +73,6 @@ function IncomingCutiHR() {
             nama_jo: 'Kemasan',
         },
     ];
-
     const [showModal, setShowModal] = useState<any>([]);
     const openModalModal = (i: any) => {
         const onchangeVal: any = [...showModal];
@@ -144,8 +143,8 @@ function IncomingCutiHR() {
                                                                 onClose={() => closeModalModal(i)}
                                                                 judul={'Permohonan Cuti'}>
                                                                 <>
-                                                                    <div className='grid grid-cols-2 gap-2 px-4 py-7'>
-                                                                        <div className='flex flex-col gap-3 '>
+                                                                    <div className='grid grid-cols-2 gap-2 px-4 py-4'>
+                                                                        <div className='flex flex-col gap-2 '>
                                                                             <div className='flex flex-col '>
                                                                                 <label htmlFor="" className='text-black text-xs font-bold'>
                                                                                     NAMA PERSONNEL
@@ -164,7 +163,7 @@ function IncomingCutiHR() {
                                                                             </div>
                                                                             <div className='flex flex-col '>
                                                                                 <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                    Tanggal
+                                                                                    TANGGAL
                                                                                 </label>
                                                                                 <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
                                                                                     10 MEI 2024
@@ -179,7 +178,7 @@ function IncomingCutiHR() {
                                                                                 </label>
                                                                             </div>
                                                                         </div>
-                                                                        <div className='flex flex-col gap-3 '>
+                                                                        <div className='flex flex-col gap-2 '>
                                                                             <div className='flex flex-col '>
                                                                                 <label htmlFor="" className='text-black text-xs font-bold'>
                                                                                     TIPE CUTI
@@ -190,15 +189,15 @@ function IncomingCutiHR() {
                                                                             </div>
                                                                             <div className='flex flex-col '>
                                                                                 <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                    DEPARTEMEN
+                                                                                    LAMA CUTI
                                                                                 </label>
                                                                                 <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
-                                                                                    Maintenance
+                                                                                    138 HARI
                                                                                 </label>
                                                                             </div>
                                                                             <div className='flex flex-col '>
                                                                                 <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                    Tanggal
+                                                                                    AWAL
                                                                                 </label>
                                                                                 <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
                                                                                     10 MEI 2024
@@ -206,13 +205,79 @@ function IncomingCutiHR() {
                                                                             </div>
                                                                             <div className='flex flex-col '>
                                                                                 <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                    DEPARTEMEN SUPERVISOR
+                                                                                    AKHIR
                                                                                 </label>
                                                                                 <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
-                                                                                    Not Steve
+                                                                                    10 OKTOBER 2024
                                                                                 </label>
                                                                             </div>
                                                                         </div>
+                                                                    </div>
+                                                                    <div className='flex flex-col w-full px-4'>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                            ALASAN CUTI
+                                                                        </label>
+                                                                        <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                            Contoh tulisan untuk mendeskripsikan alasan cuti agar terlihat di bagian ini
+                                                                        </label>
+                                                                    </div>
+                                                                    <div className='px-4 py-2'>
+                                                                        <button className='bg-blue-600 rounded-md px-3 py-2 text-white font-semibold text-sm'>
+                                                                            CETAK SURAT
+                                                                        </button>
+                                                                    </div>
+                                                                    <div className='grid grid-cols-2 gap-2 px-4 py-2'>
+                                                                        <div className='flex flex-col gap-1'>
+                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                                TANGGAL MASUK KEMBALI
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                                11 OKTOBER 2024
+                                                                            </label>
+                                                                        </div>
+                                                                        <div className='flex flex-col gap-2'>
+                                                                            <div className='flex flex-col gap-1'>
+                                                                                <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                                    JUMLAH HAK CUTI PERIODE
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                                    5
+                                                                                </label>
+                                                                            </div>
+                                                                            <div className='flex flex-col gap-1'>
+                                                                                <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                                    PENGGUNAAN HAK CUTI LALU
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                                    1
+                                                                                </label>
+                                                                            </div>
+                                                                            <div className='flex flex-col gap-1'>
+                                                                                <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                                    HAK CUTI YANG MASIH ADA
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                                    2
+                                                                                </label>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className='flex flex-col w-full px-4 '>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                            RESPON HR<span className='text-red-600'>*</span>
+                                                                        </label>
+                                                                        <textarea
+
+                                                                            className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                                        ></textarea>
+                                                                    </div>
+                                                                    <div className='flex gap-2 w-full px-4 pt-1'>
+                                                                        <button className='bg-green-500 w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm'>
+                                                                            TERIMA
+                                                                        </button>
+                                                                        <button className='bg-red-500 w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm'>
+                                                                            TOLAK
+                                                                        </button>
                                                                     </div>
                                                                 </>
                                                             </ModalKosongan>

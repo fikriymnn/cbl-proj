@@ -153,6 +153,8 @@ import CutiHR from './pages/HR/Pengajuan/CutiHr';
 import IzinHR from './pages/HR/Pengajuan/IzinHR';
 import SakitHR from './pages/HR/Pengajuan/SakitHR';
 import PinjamanHR from './pages/HR/Pengajuan/PinjamanHR';
+import LengkapiMasterKaryawan from './pages/HR/Personal/LengkapiMasterKaryawan';
+import Absensi from './pages/HR/Personal/KalenderKerja/absensi';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1547,10 +1549,26 @@ function App() {
           }
         />
         <Route
+          path="/hr/pm/masterkaryawan/lengkapi"
+          element={
+            <>
+              <LengkapiMasterKaryawan />
+            </>
+          }
+        />
+        <Route
           path="/hr/pm/kalenderKerja"
           element={
             <>
               <KalenderKerja />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/absensi"
+          element={
+            <>
+              <Absensi />
             </>
           }
         />
