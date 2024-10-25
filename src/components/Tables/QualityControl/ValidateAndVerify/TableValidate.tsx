@@ -11,7 +11,7 @@ import Logo from '../../images/logo/logo-cbl 1.svg';
 import axios from 'axios';
 import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination';
-import convertTimeStampToDate from '../../../../utils/convertDate';
+import convertTimeStampToDate from '../../../../utils/converDateTime';
 
 const brandData: BRAND[] = [
   {

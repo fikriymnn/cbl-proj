@@ -11,7 +11,7 @@ import Logo from '../../images/logo/logo-cbl 1.svg';
 import axios from 'axios';
 import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination';
-import convertTimeStampToDate from '../../../../utils/convertDate';
+import convertTimeStampToDate from '../../../../utils/converDateTime';
 import ModalStockCheck1 from '../../../Modals/ModalStockCheck1';
 import zIndex from '@mui/material/styles/zIndex';
 import ModalVerifikasi from '../../../Modals/Qc/ModalVerifikasi';
@@ -64,9 +64,8 @@ const TableVerifikasi = () => {
   }
 
   async function getMTC() {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/ticket?status_tiket=request to qc`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/ticket?status_tiket=request to qc`;
     try {
       const res = await axios.get(url, {
         params: {
@@ -282,7 +281,7 @@ const TableVerifikasi = () => {
                     }
                     durasiPerbaikan={waktuPengerjaan}
                     eksekutor={data.operator}
-                     unit={data.proses_mtcs[lengthProses].unit} bagian={data.proses_mtcs[lengthProses].bagian_mesin}
+                    unit={data.proses_mtcs[lengthProses].unit} bagian={data.proses_mtcs[lengthProses].bagian_mesin}
                   >
                     <div>
                       <label

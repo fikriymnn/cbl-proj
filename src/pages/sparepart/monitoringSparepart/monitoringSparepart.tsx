@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import DefaultLayout from '../../../layout/DefaultLayout';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import formatInteger from '../../../utils/formaterInteger';
 
 function MonitoringSparepart() {
   const [masterSparepart, setMasterSparepart] = useState<any>(null);
@@ -102,11 +103,11 @@ function MonitoringSparepart() {
                   <p className="text-[10px]  w-[7%]">{data.posisi_part}</p>
                   <p className="text-[10px]  w-[8%]">{convertDatetimeToDate(data.tgl_pasang)}</p>
                   <p className="text-[10px]  w-[8%]">{data.tgl_rusak == null ? '-' : convertDatetimeToDate(data.tgl_rusak)}</p>
-                  <p className="text-[10px]  w-[7%]">{data.umur_a}</p>
+                  <p className="text-[10px]  w-[7%]">{formatInteger(data.umur_a)}</p>
 
                   <p className="text-[10px]  w-[6%]">{data.grade_2} </p>
-                  <p className="text-[10px]  w-[7%]">{data.actual_umur}</p>
-                  <p className="text-[10px]  w-[7%]">{data.sisa_umur}</p>
+                  <p className="text-[10px]  w-[7%]">{formatInteger(data.actual_umur)}</p>
+                  <p className="text-[10px]  w-[7%]">{formatInteger(data.sisa_umur)}</p>
                   <p className="text-[10px]  w-[7%]">{data.keterangan}</p>
                 </div>
               </div>

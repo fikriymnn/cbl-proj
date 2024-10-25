@@ -36,6 +36,8 @@ function AddStockLifetimes() {
   const [idSparepart, setidSparepart] = useState<any>();
 
   const [namaSparepartSelect, setnamaSparepartSelect] = useState<any>();
+  const [gradetSelect, setgradetSelect] = useState<any>();
+  const [umurtSelect, setumurtSelect] = useState<any>();
 
   const [addMasterSparepart, setAddMasterSparepart] = useState({
 
@@ -346,6 +348,8 @@ function AddStockLifetimes() {
                                           setidSparepart(SparepartMaster.id)
                                           console.log(SparepartMaster.id)
                                           setnamaSparepartSelect(SparepartMaster.nama_sparepart)
+                                          setgradetSelect(SparepartMaster.grade)
+                                          setumurtSelect(SparepartMaster.umur_sparepart)
                                           setShowModalMsStok(false)
                                         }}
                                       >
@@ -362,6 +366,32 @@ function AddStockLifetimes() {
                     </div>
                   </>
                 )}
+              </div>
+            </div>
+          </div>
+          <div className="mt-5 flex flex-col justify-center px-2">
+            <p className="text-xs font-extrabold text-black">Grade</p>
+            <div className="flex justify-center items-center">
+              <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                <input
+                  readOnly
+                  value={gradetSelect}
+                  className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                            }`}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="mt-5 flex flex-col justify-center px-2">
+            <p className="text-xs font-extrabold text-black">Umur</p>
+            <div className="flex justify-center items-center">
+              <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                <input
+                  readOnly
+                  value={umurtSelect}
+                  className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                            }`}
+                />
               </div>
             </div>
           </div>

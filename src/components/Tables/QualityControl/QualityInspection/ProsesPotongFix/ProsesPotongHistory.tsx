@@ -84,130 +84,129 @@ function ProsesPotongHistory() {
 
     return (
         <>
-            {!isMobile && (
-                <main className='overflow-x-scroll'>
-                    <div className='min-w-[700px] bg-white rounded-xl'>
 
-                        <div className=' w-full h-full flex-col border-b-8 border-[#D8EAFF]'>
-                            <div className='grid grid-cols-12 pl-4 py-4 border-b-8 border-[#D8EAFF]  '>
+            <main className='overflow-x-scroll'>
+                <div className='min-w-[700px] bg-white rounded-xl'>
 
-
-                                <label className='text-neutral-500 text-sm font-semibold '>
-                                    Mesin
-                                </label>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2 '>
-                                    No. JO
-                                </label>
-
-                                <label className='text-neutral-500 text-sm font-semibold  '>
-                                    Shift
-                                </label>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                    Customer
-                                </label>
-                                <label className='text-neutral-500 text-sm font-semibold  '>
-                                    Tanggal
-                                </label>
-                                <label className='text-neutral-500 text-sm font-semibold  col-span-2 line-clamp-1'>
-                                    Item
-                                </label>
-                                <label className='text-neutral-500 text-sm font-semibold col-span-2 uppercase'>
-                                    Jenis Potong
-                                </label>
+                    <div className=' w-full h-full flex-col border-b-8 border-[#D8EAFF]'>
+                        <div className='grid grid-cols-12 pl-4 py-4 border-b-8 border-[#D8EAFF]  '>
 
 
-                            </div>
-                            <div className='w-2 h-full '>
+                            <label className='text-neutral-500 text-sm font-semibold '>
+                                Mesin
+                            </label>
+                            <label className='text-neutral-500 text-sm font-semibold  '>
+                                No. JO
+                            </label>
 
-                            </div>
-                            {pondMesin != null &&
-                                pondMesin.data?.map((data: any, i: any) => {
-                                    const tglTicket = convertTimeStampToDate(data.createdAt);
-                                    return (
-                                        <>
-                                            <div className='grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center '>
+                            <label className='text-neutral-500 text-sm font-semibold  '>
+                                Shift
+                            </label>
+                            <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                Customer
+                            </label>
+                            <label className='text-neutral-500 text-sm font-semibold  col-span-2'>
+                                Tanggal
+                            </label>
+                            <label className='text-neutral-500 text-sm font-semibold  col-span-2 line-clamp-1'>
+                                Item
+                            </label>
+                            <label className='text-neutral-500 text-sm font-semibold col-span-2 uppercase'>
+                                Jenis Potong
+                            </label>
 
-                                                <div className='flex w-full bg-red items-center gap-4'>
 
-                                                    <div className={`w-2 h-full sticky left-0 z-20  gap-8 py-6 ${data.jenis_potong == 'potong bahan' ? 'bg-green-600' : 'bg-blue-600'}`}>
+                        </div>
+                        <div className='w-2 h-full '>
 
-                                                    </div>
+                        </div>
+                        {pondMesin != null &&
+                            pondMesin.data?.map((data: any, i: any) => {
+                                const tglTicket = convertTimeStampToDate(data.createdAt);
+                                return (
+                                    <>
+                                        <div className='grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center '>
 
-                                                    <label className='text-neutral-500 text-sm font-semibold '>
-                                                        {data.mesin}
-                                                    </label>
-                                                </div>
+                                            <div className='flex w-full bg-red items-center gap-4'>
 
-                                                <label className='text-neutral-500 text-sm font-semibold col-span-2 '>
-                                                    {data.no_jo}
-                                                </label>
-
-                                                <label className='text-neutral-500 text-sm font-semibold  '>
-                                                    {data.shift}
-                                                </label>
-                                                <label className='text-neutral-500 text-sm font-semibold col-span-2'>
-                                                    {data.customer}
-                                                </label>
-                                                <label className='text-neutral-500 text-sm font-semibold  '>
-                                                    {tglTicket}
-                                                </label>
-                                                <label className='text-neutral-500 text-sm font-semibold  col-span-2 line-clamp-2'>
-                                                    {data.item}
-                                                </label>
-                                                <label className='text-neutral-500 text-sm font-semibold col-span-2 uppercase'>
-                                                    {data.jenis_potong}
-                                                </label>
-                                                <div className='justify-end flex pr-2 '>
-                                                    {data.jenis_potong == 'potong bahan' ? (
-                                                        <>
-                                                            <Link to={`/qc/qualityinspection/prosespotong/bahan/${data.id}`}>
-
-                                                                <button
-                                                                    className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
-                                                                >
-                                                                    PILIH
-                                                                </button>
-                                                            </Link>
-                                                        </>
-                                                    ) : data.jenis_potong == 'potong jadi' ? (
-                                                        <>
-                                                            <Link to={`/qc/qualityinspection/prosespotong/jadi/${data.id}`}>
-
-                                                                <button
-                                                                    className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
-                                                                >
-                                                                    PILIH
-                                                                </button>
-                                                            </Link>
-                                                        </>
-                                                    ) :
-                                                        <>
-                                                        </>}
-
+                                                <div className={`w-2 h-full sticky left-0 z-20  gap-8 py-6 ${data.jenis_potong == 'potong bahan' ? 'bg-green-600' : 'bg-blue-600'}`}>
 
                                                 </div>
+
+                                                <label className='text-neutral-500 text-sm font-semibold '>
+                                                    {data.mesin}
+                                                </label>
                                             </div>
 
-                                        </>
-                                    )
-                                })}
-                        </div>
+                                            <label className='text-neutral-500 text-sm font-semibold  '>
+                                                {data.no_jo}
+                                            </label>
+
+                                            <label className='text-neutral-500 text-sm font-semibold  '>
+                                                {data.shift}
+                                            </label>
+                                            <label className='text-neutral-500 text-sm font-semibold col-span-2'>
+                                                {data.customer}
+                                            </label>
+                                            <label className='text-neutral-500 text-sm font-semibold  col-span-2'>
+                                                {tglTicket}
+                                            </label>
+                                            <label className='text-neutral-500 text-sm font-semibold  col-span-2 line-clamp-2'>
+                                                {data.item}
+                                            </label>
+                                            <label className='text-neutral-500 text-sm font-semibold col-span-2 uppercase'>
+                                                {data.jenis_potong}
+                                            </label>
+                                            <div className='justify-end flex pr-2 '>
+                                                {data.jenis_potong == 'potong bahan' ? (
+                                                    <>
+                                                        <Link to={`/qc/qualityinspection/prosespotong/bahan/${data.id}`}>
+
+                                                            <button
+                                                                className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                                                            >
+                                                                PILIH
+                                                            </button>
+                                                        </Link>
+                                                    </>
+                                                ) : data.jenis_potong == 'potong jadi' ? (
+                                                    <>
+                                                        <Link to={`/qc/qualityinspection/prosespotong/jadi/${data.id}`}>
+
+                                                            <button
+                                                                className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                                                            >
+                                                                PILIH
+                                                            </button>
+                                                        </Link>
+                                                    </>
+                                                ) :
+                                                    <>
+                                                    </>}
+
+
+                                            </div>
+                                        </div>
+
+                                    </>
+                                )
+                            })}
                     </div>
-                    <div className="w-full flex justify-center mt-5 ">
-                        <Stack spacing={2}>
-                            <Pagination
-                                count={pondMesin?.total_page}
-                                color="primary"
-                                onChange={(e, i) => {
-                                    setPage(i);
-                                    console.log(i);
-                                }}
-                            />
-                        </Stack>
-                    </div>
-                </main >
-            )
-            }
+                </div>
+                <div className="w-full flex justify-center mt-5 ">
+                    <Stack spacing={2}>
+                        <Pagination
+                            count={pondMesin?.total_page}
+                            color="primary"
+                            onChange={(e, i) => {
+                                setPage(i);
+                                console.log(i);
+                            }}
+                        />
+                    </Stack>
+                </div>
+            </main >
+
 
         </>
     )

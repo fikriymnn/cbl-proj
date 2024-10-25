@@ -63,7 +63,10 @@ function JenisLemMesin() {
             <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
               <div className="grid grid-cols-10 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
                 <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                  MESIN
+                  Mesin : {cetakMesin?.data?.mesin}
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold col-span-3">
+                  No. JO : {cetakMesin?.data?.no_jo}
                 </label>
               </div>
               <div className="w-2 h-full "></div>
@@ -72,12 +75,11 @@ function JenisLemMesin() {
                 <div className="flex  border-b-8 border-[#D8EAFF] gap-7 items-center">
                   <div className="flex items-center gap-7 w-full">
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 ${
-                        cetakMesin?.data?.inspeksi_lem_awal[0].status ==
+                      className={`w-2 h-full sticky left-0 z-20 ${cetakMesin?.data?.inspeksi_lem_awal[0].status ==
                         'incoming'
-                          ? 'bg-red-500'
-                          : 'bg-green-500'
-                      }  gap-8 py-7 `}
+                        ? 'bg-red-500'
+                        : 'bg-green-500'
+                        }  gap-8 py-7 `}
                     ></div>
 
                     <label className="text-neutral-500 text-sm font-semibold flex ">
@@ -103,12 +105,11 @@ function JenisLemMesin() {
                 <div className="flex  border-b-8 border-[#D8EAFF] gap-7 items-center">
                   <div className="flex items-center gap-7 w-full">
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 ${
-                        cetakMesin?.data?.inspeksi_lem_periode[0].status ==
+                      className={`w-2 h-full sticky left-0 z-20 ${cetakMesin?.data?.inspeksi_lem_periode[0].status ==
                         'incoming'
-                          ? 'bg-red-500'
-                          : 'bg-green-500'
-                      }  gap-8 py-7 `}
+                        ? 'bg-red-500'
+                        : 'bg-green-500'
+                        }  gap-8 py-7 `}
                     ></div>
 
                     <label className="text-neutral-500 text-sm font-semibold flex ">

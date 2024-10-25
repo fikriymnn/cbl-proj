@@ -9,7 +9,7 @@ import Modal from '../../../Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
 import Logo from '../../images/logo/logo-cbl 1.svg';
 import axios from 'axios';
-import convertTimeStampToDate from '../../../../utils/convertDate';
+import convertTimeStampToDate from '../../../../utils/converDateTime';
 import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination/Pagination';
 import calculateTime from '../../../../utils/calculateTime';

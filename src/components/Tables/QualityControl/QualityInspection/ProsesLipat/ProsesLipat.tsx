@@ -68,92 +68,92 @@ function ProsesLipat() {
 
   return (
     <>
-      {!isMobile && (
-        <main className="overflow-x-scroll">
-          <div className="min-w-[700px] bg-white rounded-xl">
-            <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
-              <div className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF]">
-                <label className="text-neutral-500 text-sm font-semibold col-span-2 ">
-                  No. JO
-                </label>
 
-                <label className="text-neutral-500 text-sm font-semibold col-span-2 ">
-                  Nama Produk
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                  Customer
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold ">
-                  Shift
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold ">
-                  Mesin
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold ">
-                  Operator
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold ">
-                  Tanggal
-                </label>
-              </div>
-              <div className="w-2 h-full "></div>
-              {pondMesin != null &&
-                pondMesin.data?.map((data: any, i: any) => {
-                  const tglTicket = convertTimeStampToDate(data.createdAt);
-                  return (
-                    <>
-                      <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF]  items-center gap-1">
-                        <div className="flex w-full col-span-2 bg-red items-center gap-3">
-                          <div
-                            className={`w-2 h-full sticky left-0 z-20  gap-8 py-6 ${data.mesin == 'LIPAT'
-                              ? 'bg-green-600'
-                              : 'bg-blue-600'
-                              }`}
-                          ></div>
+      <main className="overflow-x-scroll">
+        <div className="min-w-[700px] bg-white rounded-xl">
+          <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
+            <div className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF]">
+              <label className="text-neutral-500 text-sm font-semibold col-span-2 ">
+                No. JO
+              </label>
 
-                          <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                            {data.no_jo}
-                          </label>
-
-                        </div>
-                        <label className="text-neutral-500 text-sm font-semibold col-span-2 line-clamp-3">
-                          {data.item}
-                        </label>
-                        <label className="text-neutral-500 text-sm font-semibold col-span-2 line-clamp-2">
-                          {data.customer}
-                        </label>
-                        <label className="text-neutral-500 text-sm font-semibold ">
-                          {data.shift}
-                        </label>
-                        <label className="text-neutral-500 text-sm font-semibold ">
-                          {data.mesin}
-                        </label>
-                        <label className="text-neutral-500 text-sm font-semibold ">
-                          {data.operator}
-                        </label>
-                        <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                          {tglTicket}
-                        </label>
-                        <div className="justify-end flex pr-1">
-                          <>
-                            <Link to={`/qc/qualityinspection/lipat/${data.id}`}>
-                              <button
-                                className={`uppercase px-8 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
-                              >
-                                PILIH
-                              </button>
-                            </Link>
-                          </>
-                        </div>
-                      </div>
-                    </>
-                  )
-                })}
+              <label className="text-neutral-500 text-sm font-semibold col-span-2 ">
+                Nama Produk
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                Customer
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold ">
+                Shift
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold ">
+                Mesin
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold ">
+                Operator
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold pl-4">
+                Tanggal
+              </label>
             </div>
-          </div>
+            <div className="w-2 h-full "></div>
+            {pondMesin != null &&
+              pondMesin.data?.map((data: any, i: any) => {
+                const tglTicket = convertTimeStampToDate(data.createdAt);
+                return (
+                  <>
+                    <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] justify-center  items-center gap-1">
+                      <div className="flex w-full col-span-2 bg-red items-center gap-3">
+                        <div
+                          className={`w-2 h-full sticky left-0 z-20  gap-8 py-6 ${data.mesin == 'LIPAT'
+                            ? 'bg-green-600'
+                            : 'bg-blue-600'
+                            }`}
+                        ></div>
 
-        </main>
-      )}
+                        <label className="text-neutral-500 text-sm font-semibold ">
+                          {data.no_jo}
+                        </label>
+
+                      </div>
+                      <label className="text-neutral-500 text-sm font-semibold col-span-2 line-clamp-3 md:pl-4 pl-10 ">
+                        {data.item}
+                      </label>
+                      <label className="text-neutral-500 text-sm font-semibold col-span-2 line-clamp-2">
+                        {data.customer}
+                      </label>
+                      <label className="text-neutral-500 text-sm font-semibold ">
+                        {data.shift}
+                      </label>
+                      <label className="text-neutral-500 text-sm font-semibold ">
+                        {data.mesin}
+                      </label>
+                      <label className="text-neutral-500 text-sm font-semibold ">
+                        {data.operator}
+                      </label>
+                      <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                        {tglTicket}
+                      </label>
+                      <div className="justify-end flex pr-1">
+                        <>
+                          <Link to={`/qc/qualityinspection/lipat/${data.id}`}>
+                            <button
+                              className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                            >
+                              PILIH
+                            </button>
+                          </Link>
+                        </>
+                      </div>
+                    </div>
+                  </>
+                )
+              })}
+          </div>
+        </div>
+
+      </main>
+
     </>
   );
 }

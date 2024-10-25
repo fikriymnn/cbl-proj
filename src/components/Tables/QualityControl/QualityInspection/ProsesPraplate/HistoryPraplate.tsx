@@ -82,7 +82,7 @@ function HistoryPraplate() {
                                 <label className="text-neutral-500 text-sm font-semibold ">
                                     No. IO
                                 </label>
-                                <label className="text-neutral-500 text-sm font-semibold ">
+                                <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                     Status JO
                                 </label>
                                 <label className="text-neutral-500 text-sm font-semibold col-span-2">
@@ -119,7 +119,7 @@ function HistoryPraplate() {
                                                 <label className="text-neutral-500 text-sm font-semibold ">
                                                     {data.no_io}
                                                 </label>
-                                                <label className="text-neutral-500 text-sm font-semibold ">
+                                                <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                                     {data.status_jo}
                                                 </label>
                                                 <label className="text-neutral-500 text-sm font-semibold col-span-2">
@@ -131,7 +131,7 @@ function HistoryPraplate() {
                                                 <label className="text-neutral-500 text-sm font-semibold">
                                                     {data.mesin}
                                                 </label>
-                                                <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                                <label className="text-neutral-500 text-sm font-semibold ">
                                                     {tglTicket}
                                                 </label>
                                                 <div className="justify-end flex pr-2 col-span-2">
@@ -140,7 +140,7 @@ function HistoryPraplate() {
                                                             to={`/qc/qualityinspection/praplate/${data.id}`}
                                                         >
                                                             <button
-                                                                className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                                                                className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                             >
                                                                 PILIH
                                                             </button>
