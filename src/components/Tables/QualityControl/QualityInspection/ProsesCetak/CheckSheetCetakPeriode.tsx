@@ -52,21 +52,26 @@ function CheckSheetCetakPeriode() {
     getMasterKode();
   }, []);
 
+  const [isFailed, setIsFailed] = useState(false);
+
   async function getMasterKode() {
     const url = `${import.meta.env.VITE_API_LINK_P1
       }/api/list-kendala?criteria=true&proses=3`;
     const url2 = `${import.meta.env.VITE_API_LINK_P1
       }/api/list-kendala?criteria=true&proses=4`;
     try {
+
       setIsLoading(true);
       const res = await axios.get(url);
       const res2 = await axios.get(url);
       setIsLoading(false);
       setMasterKodeCetak(res);
       setMasterKodeCetak2(res2);
+      setIsFailed(false)
       console.log(res);
     } catch (error: any) {
       setIsLoading(false);
+      setIsFailed(true)
       alert('Gagal Memannggil Defect, Coba Refresh Halaman!')
       console.log(error.data.msg);
     }
@@ -101,7 +106,7 @@ function CheckSheetCetakPeriode() {
       console.log(res.data);
     } catch (error: any) {
       setIsLoading(false);
-      alert('Gagal Memannggil Data, Coba Refresh Halaman!')
+      alert('Gagal Memanggil Data, Coba Refresh Halaman!')
       console.log(error.data.msg);
     }
   }
@@ -1465,17 +1470,30 @@ function CheckSheetCetakPeriode() {
             (cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status == 'pending' &&
               cetakMesinPeriode?.status == 'incoming') ? (
             <>
-              <button
-                disabled={isLoading}
-                onClick={() =>
-                  tambahTaskCekPeriode(
-                    cetakMesinPeriode?.inspeksi_cetak_periode[0].id,
-                  )
-                }
-                className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
-              >
-                {isLoading ? 'Loading...' : '+ Periode Check'}
-              </button>
+              {!isFailed ? (
+                <>
+                  <button
+                    disabled={isLoading}
+                    onClick={() =>
+                      tambahTaskCekPeriode(
+                        cetakMesinPeriode?.inspeksi_cetak_periode[0].id,
+                      )
+                    }
+                    className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
+                  >
+                    {isLoading ? 'Loading...' : '+ Periode Check'}
+                  </button>
+                </>
+              ) :
+                <>
+                  <button
+
+                    className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
+                  >
+                    Refresh Halaman
+                  </button>
+                </>}
+
               {isLoading && <Loading />}
             </>
           ) : null}

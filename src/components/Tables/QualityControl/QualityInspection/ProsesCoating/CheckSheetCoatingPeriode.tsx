@@ -74,6 +74,8 @@ function CheckSheetCoatingPeriode() {
     getMasterKode();
   }, []);
 
+  const [isFailed, setIsFailed] = useState(false);
+
   async function getMasterKode() {
     const url = `${import.meta.env.VITE_API_LINK_P1
       }/api/list-kendala?criteria=true&proses=5`;
@@ -84,10 +86,12 @@ function CheckSheetCoatingPeriode() {
 
       setMasterKode(res);
       setIsLoading(false);
+      setIsFailed(false)
       console.log(res);
     } catch (error: any) {
       setIsLoading(false);
-      alert('Gagal Memannggil Defect, Coba Refresh Halaman!')
+      setIsFailed(true)
+      alert('Gagal Memanggil Defect, Coba Refresh Halaman!')
       console.log(error.data.msg);
     }
   }
@@ -1565,13 +1569,25 @@ function CheckSheetCoatingPeriode() {
             CoatingMesinPeriode?.inspeksi_coating_sub_periode[0].status !=
             'history' ? (
             <>
-              <button
-                disabled={isLoading}
-                onClick={() => tambahTaskCekPeriode(CoatingMesinPeriode?.id)}
-                className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
-              >
-                {isLoading ? 'Loading...' : '+ Periode Check'}
-              </button>
+              {!isFailed ? (
+                <>
+                  <button
+                    disabled={isLoading}
+                    onClick={() => tambahTaskCekPeriode(CoatingMesinPeriode?.id)}
+                    className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
+                  >
+                    {isLoading ? 'Loading...' : '+ Periode Check'}
+                  </button>
+                </>
+              ) :
+                <>
+                  <button
+
+                    className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
+                  >
+                    Refresh Halaman
+                  </button>
+                </>}
               {isLoading && <Loading />}
             </>
           ) : null}

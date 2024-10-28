@@ -155,6 +155,7 @@ import SakitHR from './pages/HR/Pengajuan/SakitHR';
 import PinjamanHR from './pages/HR/Pengajuan/PinjamanHR';
 import LengkapiMasterKaryawan from './pages/HR/Personal/LengkapiMasterKaryawan';
 import Absensi from './pages/HR/Personal/KalenderKerja/absensi';
+import MasterGrade from './pages/MasterData/MTC/MasterGrade';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1446,6 +1447,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterKPI />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/grade"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterGrade />
               </ProtectedRoute>
             </>
           }

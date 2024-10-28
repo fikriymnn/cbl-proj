@@ -10,13 +10,33 @@ function AddStock() {
     part_number: '',
     lokasi: '',
     limit_stok: 0,
-    grade: '',
+    id_grade: '',
     type_part: '',
     foto: '',
     keterangan: '',
     umur_sparepart: 0,
     stok: 0,
   });
+  const [masterGrade, setmasterGrade] = useState<any>();
+
+  useEffect(() => {
+
+    getMasterGrade();
+  }, []);
+
+  async function getMasterGrade() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/grade`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+
+      setmasterGrade(res.data);
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
 
   const [mesin, setMesin] = useState<any>();
   useEffect(() => {
@@ -48,7 +68,7 @@ function AddStock() {
           part_number: addItem.part_number,
           lokasi: addItem.lokasi,
           limit_stok: addItem.limit_stok,
-          grade: addItem.grade,
+          id_grade: addItem.id_grade,
           type_part: addItem.type_part,
           stok: addItem.stok,
           foto: addItem.foto,
@@ -222,12 +242,27 @@ function AddStock() {
             <p className="text-xs font-semibold">Grade (keperluan awal)</p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
-                <input
-                  name="grade"
+                <select
+                  name="id_grade"
                   onChange={(e) => handleChangeData(e)}
                   className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
                                                 }`}
-                />
+                >
+                  <option value="" className="text-body dark:text-bodydark">
+                    Select Grade
+                  </option>
+                  {masterGrade?.map((data: any, index: number) => {
+                    return (
+                      <option
+                        key={index}
+                        value={data.id}
+                        className="text-body dark:text-bodydark"
+                      >
+                        {data.grade} - {data.percent}
+                      </option>
+                    );
+                  })}
+                </select>
               </div>
             </div>
           </div>
