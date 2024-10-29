@@ -556,7 +556,7 @@ function CheckSheetHasilRabut() {
                               Master Defect
                             </label>
                             <Select
-
+                              placeholder='Cari...'
                               options={options}
                               onChange={(selectedId) => {
 
