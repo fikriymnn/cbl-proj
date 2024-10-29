@@ -7,6 +7,7 @@ import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import Loading from '../../../../Loading';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
+import Select from 'react-select';
 
 function CheckSheetHasilRabut() {
   const { id } = useParams();
@@ -43,12 +44,20 @@ function CheckSheetHasilRabut() {
       console.log(error.data.msg);
     }
   }
+  const [options, setOptions] = useState([]);
+
   async function getMasterDefect() {
     const url = `${import.meta.env.VITE_API_LINK_P1
       }/api/list-kendala?criteria=true`;
     try {
       const res = await axios.get(url);
       setDefectMaster(res.data);
+      setOptions(
+        res.data.map((item: any) => ({
+          value: item.i_id,
+          label: item.e_kode_produksi + ' - ' + item.nama_kendala,
+        }))
+      );
       console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
@@ -127,7 +136,7 @@ function CheckSheetHasilRabut() {
       setIsLoading(false);
       getRabutMesin();
     } catch (error: any) {
-      console.log(error.data.msg);
+      alert(error.data.msg);
     }
   }
 
@@ -195,17 +204,28 @@ function CheckSheetHasilRabut() {
           withCredentials: true,
         },
       );
-      setIsLoading(false)
+
       setShowModal2(false);
       handleClickAdd(index);
       setIdDefect(null);
+      setIsLoading(false)
       getRabutMesin();
     } catch (error: any) {
       setIsLoading(false)
       console.log(error);
     }
   }
+  const handleChangePointDepatment = (selected: any, i: number) => {
+    const { value } = selected;
+    const filteredData = defectMaster.find(
+      (item: any) => item.i_id == value,
+      // item.id.includes(parseInt(value));
+    );
 
+    console.log(filteredData?.i_id);
+
+    setIdDefect(filteredData);
+  };
   const handleClickAdd = (index: number) => {
     setShowDetail((prevState) => {
       const updatedShowDetail = [...prevState]; // Create a copy
@@ -545,40 +565,18 @@ function CheckSheetHasilRabut() {
                             <label className="text-black text-sm font-bold pt-4">
                               Master Defect
                             </label>
-                            <select
-                              onChange={(e) => {
-                                const selectedDefect = defectMaster?.find(
-                                  (defect: any) =>
-                                    //console.log(defect.id)
-                                    defect.i_id == e.target.value,
-                                );
-                                setIdDefect(selectedDefect);
+                            <Select
+
+                              options={options}
+                              onChange={(selectedId) => {
+
+                                handleChangePointDepatment(selectedId, index)
                               }}
                               className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
                   }`}
                             >
-                              <option
-                                value=""
-                                disabled
-                                selected
-                                className="text-body dark:text-bodydark"
-                              >
-                                Pilih Sumber Masalah
-                              </option>
-                              {defectMaster?.map(
-                                (dataMaster: any, indexMaster: number) => {
-                                  return (
-                                    <option
-                                      value={dataMaster.i_id}
-                                      className="text-body dark:text-bodydark"
-                                    >
-                                      {dataMaster.e_kode_produksi} -{' '}
-                                      {dataMaster.nama_kendala}
-                                    </option>
-                                  );
-                                },
-                              )}
-                            </select>
+
+                            </Select>
                             <button
                               type='button'
                               disabled={isLoading}
@@ -589,7 +587,10 @@ function CheckSheetHasilRabut() {
                                   data.id,
                                   index,
                                 ),
-                                  console.log(data.id);
+                                  console.log(RabutMesin?.data?.id,
+                                    idDefect,
+                                    data.id,
+                                    index,);
                               }}
                               className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
                             >
