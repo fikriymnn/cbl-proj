@@ -4,15 +4,15 @@ import AddMasterKaryawanIsi from '../../../components/Tables/HR/Personnel/AddMas
 import TabInputSpl from '../../../components/Tables/HR/Pengajuan/InputSPL/TabInputSpl'
 
 
-function InputSpl() {
+function InputKeSpl() {
     return (
         <DefaultLayout>
             <>
-                <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>Pengajuan &gt; Lembur</p>
+                <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>PENGAJUAN KE HR  &gt; Lembur</p>
                 <TabInputSpl />
             </>
         </DefaultLayout>
     )
 }
 
-export default InputSpl
+export default InputKeSpl

@@ -1,0 +1,17 @@
+import React from 'react'
+import DefaultLayout from '../../../layout/DefaultLayout'
+import TabSakitHR from '../../../components/Tables/HR/Pengajuan/Sakit/TabSakitHR'
+
+
+function SakitKeHR() {
+    return (
+        <DefaultLayout>
+            <>
+                <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>PENGAJUAN KE HR  &gt; Sakit</p>
+                <TabSakitHR />
+            </>
+        </DefaultLayout>
+    )
+}
+
+export default SakitKeHR

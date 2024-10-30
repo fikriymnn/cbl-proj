@@ -8,6 +8,7 @@ import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import Loading from '../../../../Loading';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import formatInteger from '../../../../../utils/formaterInteger';
+import Select from 'react-select';
 
 function CheckSheetBarangRS() {
   const { id } = useParams();
@@ -34,7 +35,7 @@ function CheckSheetBarangRS() {
       setTotal(res.data);
       console.log(res.data);
     } catch (error: any) {
-      console.log(error.data.msg);
+      console.log(error);
     }
   }
 
@@ -63,6 +64,8 @@ function CheckSheetBarangRS() {
   const openModal1 = () => setShowModal1(true);
   const closeModal1 = () => setShowModal1(false);
 
+  const [options, setOptions] = useState([]);
+
   async function getMasterDefect() {
     const url = `${import.meta.env.VITE_API_LINK_P1
       }/api/list-kendala?criteria=true`;
@@ -70,6 +73,12 @@ function CheckSheetBarangRS() {
       const res = await axios.get(url);
 
       setDefectMaster(res.data);
+      setOptions(
+        res.data.map((item: any) => ({
+          value: item.i_id,
+          label: item.e_kode_produksi + ' - ' + item.nama_kendala,
+        }))
+      );
       console.log(res.data);
     } catch (error: any) {
       console.log(error);
@@ -105,6 +114,20 @@ function CheckSheetBarangRS() {
       console.log(error);
     }
   }
+  const handleChangePointDepatment = (selected: any) => {
+    const { value } = selected;
+    const filteredData = defectMaster.find(
+      (item: any) => item.i_id == value,
+      // item.id.includes(parseInt(value));
+    );
+
+    console.log(filteredData?.i_id);
+
+    setKode(filteredData?.e_kode_produksi);
+    setMasalah(filteredData?.nama_kendala);
+    setAsalTemuan(filteredData?.kategori_kendala);
+
+  };
 
   const handleChangePoint = (e: any, i: number) => {
     const { name, value } = e.target;
@@ -606,46 +629,19 @@ function CheckSheetBarangRS() {
                       <label className="text-black text-sm font-bold pt-4">
                         Master Defect
                       </label>
-                      <select
-                        onChange={(e) => {
-                          const selectedDefect = defectMaster?.find(
-                            (defect: any) =>
-                              //console.log(defect.id)
-                              defect.i_id == e.target.value,
-                          );
-                          console.log(selectedDefect);
-                          if (selectedDefect) {
-                            setKode(selectedDefect.e_kode_produksi);
-                            setMasalah(selectedDefect.nama_kendala);
-                            setAsalTemuan(selectedDefect.kategori_kendala);
-                          }
-                          console.log(selectedDefect);
+
+                      <Select
+                        placeholder='Cari...'
+                        options={options}
+                        onChange={(selectedId) => {
+
+                          handleChangePointDepatment(selectedId)
                         }}
                         className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
                   }`}
                       >
-                        <option
-                          value=""
-                          disabled
-                          selected
-                          className="text-body dark:text-bodydark"
-                        >
-                          Pilih Kode Defect
-                        </option>
-                        {defectMaster?.map(
-                          (dataMaster: any, indexMaster: number) => {
-                            return (
-                              <option
-                                value={dataMaster.i_id}
-                                className="text-body dark:text-bodydark"
-                              >
-                                {dataMaster.e_kode_produksi} -{' '}
-                                {dataMaster.nama_kendala}
-                              </option>
-                            );
-                          },
-                        )}
-                      </select>
+
+                      </Select>
                       <button
                         disabled={isLoading}
                         onClick={() => {

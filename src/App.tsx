@@ -156,6 +156,18 @@ import PinjamanHR from './pages/HR/Pengajuan/PinjamanHR';
 import LengkapiMasterKaryawan from './pages/HR/Personal/LengkapiMasterKaryawan';
 import Absensi from './pages/HR/Personal/KalenderKerja/absensi';
 import MasterGrade from './pages/MasterData/MTC/MasterGrade';
+import SPHR from './pages/HR/Pengajuan/SPHR';
+import DinasHr from './pages/HR/Pengajuan/DinasHr';
+import KaryawanHr from './pages/HR/Pengajuan/KaryawanHR';
+import InputKeSpl from './pages/HR/PengajuanKeHR/InputKeSPL';
+import CutiKeHR from './pages/HR/PengajuanKeHR/CutiKeHr';
+import IzinKeHR from './pages/HR/PengajuanKeHR/IzinKeHR';
+import SakitKeHR from './pages/HR/PengajuanKeHR/SakitKeHR';
+import PinjamanKeHR from './pages/HR/PengajuanKeHR/PinjamanKeHR';
+import DinasKeHr from './pages/HR/PengajuanKeHR/DinasKeHr';
+import SPKeHR from './pages/HR/PengajuanKeHR/SPKeHR';
+import KaryawanKeHr from './pages/HR/PengajuanKeHR/KaryawanKeHR';
+import MasterSHiftHR from './pages/HR/MasterDataHR/MastershiftHr';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1585,7 +1597,7 @@ function App() {
           }
         />
         <Route
-          path="/hr/pengajuan/spl"
+          path="/hr/rp/spl"
           element={
             <>
               <InputSpl />
@@ -1593,7 +1605,7 @@ function App() {
           }
         />
         <Route
-          path="/hr/pengajuan/cuti"
+          path="/hr/rp/cuti"
           element={
             <>
               <CutiHR />
@@ -1601,7 +1613,7 @@ function App() {
           }
         />
         <Route
-          path="/hr/pengajuan/izin"
+          path="/hr/rp/izin"
           element={
             <>
               <IzinHR />
@@ -1609,7 +1621,7 @@ function App() {
           }
         />
         <Route
-          path="/hr/pengajuan/sakit"
+          path="/hr/rp/sakit"
           element={
             <>
               <SakitHR />
@@ -1617,10 +1629,107 @@ function App() {
           }
         />
         <Route
-          path="/hr/pengajuan/pinjaman"
+          path="/hr/rp/pinjaman"
           element={
             <>
               <PinjamanHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/rp/dinas"
+          element={
+            <>
+              <DinasHr />
+            </>
+          }
+        />
+        <Route
+          path="/hr/rp/sp"
+          element={
+            <>
+              <SPHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/rp/karyawan"
+          element={
+            <>
+              <KaryawanHr />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/spl"
+          element={
+            <>
+              <InputKeSpl />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/cuti"
+          element={
+            <>
+              <CutiKeHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/izin"
+          element={
+            <>
+              <IzinKeHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/sakit"
+          element={
+            <>
+              <SakitKeHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/pinjaman"
+          element={
+            <>
+              <PinjamanKeHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/dinas"
+          element={
+            <>
+              <DinasKeHr />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/sp"
+          element={
+            <>
+              <SPKeHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/karyawan"
+          element={
+            <>
+              <KaryawanKeHr />
+            </>
+          }
+        />
+
+        <Route
+          path="/hr/master/shift"
+          element={
+            <>
+              <MasterSHiftHR />
             </>
           }
         />
