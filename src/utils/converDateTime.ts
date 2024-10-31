@@ -7,7 +7,7 @@ export default function convertTimeStampToDateTime(datetime: any) {
   const hours = dateObject.getHours().toString().padStart(2, '0');
   const minutes = dateObject.getMinutes().toString().padStart(2, '0');
 
-  return `${year}/${monthName}/${day} ${hours}:${minutes}`; // Example format (YYYY-MM-DD)
+  return ` ${day} / ${monthName} / ${year}  ${hours}:${minutes}`; // Example format (YYYY-MM-DD)
 }
 
 function getMonthName(monthString: string) {

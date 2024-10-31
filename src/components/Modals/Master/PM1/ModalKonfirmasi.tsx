@@ -10,6 +10,7 @@ const ModalKonfirmasi = ({ children, isOpen, onClose, idPoint, onFinish }:
         const url = `${import.meta.env.VITE_API_LINK}/master/pointPm1/${id}`;
 
         try {
+
             const res = await axios.delete(
                 url,
 
@@ -17,6 +18,7 @@ const ModalKonfirmasi = ({ children, isOpen, onClose, idPoint, onFinish }:
                     withCredentials: true,
                 },
             );
+
             onFinish();
             alert(res.data.msg);
         } catch (error: any) {

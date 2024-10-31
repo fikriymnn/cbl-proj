@@ -16,7 +16,7 @@ import Material from './pages/Maintenance/Material';
 import MaintenanceQC from './pages/QualityControl/validatenverify';
 import HistoryMtc from './pages/History/Maintenance';
 
-import MasterData from './pages/MasterData/Master';
+import MasterData from './pages/MasterData/MTC/Master';
 
 import Dashboard from './pages/Maintenance/dashboard';
 import Pm1Form from './pages/inspection/pm1/Pm1Form';
@@ -28,21 +28,21 @@ import Pm3 from './pages/inspection/pm3/Pm3';
 import OS3 from './pages/inspection/os3/Os3';
 
 import KPI from './pages/Maintenance/KPI/KPI';
-import MasterSparepart from './pages/MasterData/MasterSparepart';
-import MasterAnalisis from './pages/MasterData/MasterAnalisis';
-import MasterPM1 from './pages/MasterData/MasterPM1';
-import MasterPM1Check from './pages/MasterData/MasterPM1Check';
-import MasterPM1TambahInspection from './pages/MasterData/MasterPM1TambahInspection';
+import MasterSparepart from './pages/MasterData/MTC/MasterSparepart';
+import MasterAnalisis from './pages/MasterData/MTC/MasterAnalisis';
+import MasterPM1 from './pages/MasterData/MTC/MasterPM1';
+import MasterPM1Check from './pages/MasterData/MTC/MasterPM1Check';
+import MasterPM1TambahInspection from './pages/MasterData/MTC/MasterPM1TambahInspection';
 import Preventive from './pages/inspection/os3/Preventive';
 import HistoriPage from './pages/inspection/histori/HistoriPage';
 import KPIForm from './pages/Maintenance/KPI/KPIForm';
 import KPIInput from './pages/Maintenance/KPI/KPIInput';
-import MasterPM2 from './pages/MasterData/MasterPM2';
+import MasterPM2 from './pages/MasterData/MTC/MasterPM2';
 import PM2Checklist from './components/Tables/MasterData/PM2/PM2Checklist';
-import MasterPM2Check from './pages/MasterData/MasterPM2Check';
-import MasterPM2TambahInspection from './pages/MasterData/MasterPM2TambahInspection';
-import MasterKPI from './pages/MasterData/MasterKPI';
-import MasterKPIForm from './pages/MasterData/MasterKPIForm';
+import MasterPM2Check from './pages/MasterData/MTC/MasterPM2Check';
+import MasterPM2TambahInspection from './pages/MasterData/MTC/MasterPM2TambahInspection';
+import MasterKPI from './pages/MasterData/MTC/MasterKPI';
+import MasterKPIForm from './pages/MasterData/MTC/MasterKPIForm';
 import Sparepart from './pages/sparepart/submitOpname';
 import MasterUsers from './pages/MasterData/MasterUsers';
 import MasterRole from './pages/MasterData/MasterRole';
@@ -50,7 +50,7 @@ import Adjustment from './pages/sparepart/adjustment';
 import HistoriOpname from './pages/sparepart/crumb/historiOpname';
 import CrumbSparepart from './pages/sparepart/crumb/header';
 import MainOpname from './pages/sparepart/crumb/main';
-import MasterMonitoring from './pages/MasterData/MasterMonitoring';
+import MasterMonitoring from './pages/MasterData/MTC/MasterMonitoring';
 import SpbService from './pages/Maintenance/SPB/spbService';
 
 import Stockmaster from './pages/sparepart/stockmaster/stockmaster';
@@ -74,9 +74,9 @@ import PotongBahanPage from './pages/QualityControl/Prosespotong/potongBahanpage
 import PotongJadiPage from './pages/QualityControl/Prosespotong/potongJadiPage';
 import ProsesCetak from './pages/QualityControl/ProsesCetak/ProsesCetak';
 import IncomingList from './pages/QualityControl/Incoming/DaftarIncoming';
-import MasterPM3 from './pages/MasterData/MasterPM3';
-import MasterPM3Check from './pages/MasterData/MasterPM3Check';
-import MasterPM3TambahInspection from './pages/MasterData/MasterPM3TambahInspection';
+import MasterPM3 from './pages/MasterData/MTC/MasterPM3';
+import MasterPM3Check from './pages/MasterData/MTC/MasterPM3Check';
+import MasterPM3TambahInspection from './pages/MasterData/MTC/MasterPM3TambahInspection';
 import HistoryIns from './pages/QualityControl/Incoming/HistoryIns';
 import PotongBahan1 from './pages/QualityControl/Prosespotong/PotongBahan1';
 import PotongJadi1 from './pages/QualityControl/Prosespotong/PotongJadi1';
@@ -102,6 +102,72 @@ import ProsesLem from './pages/QualityControl/ProsesLem/ProsesLem';
 import JenisLem from './pages/QualityControl/ProsesLem/JenisLem';
 import LemAwal from './pages/QualityControl/ProsesLem/LemAwal';
 import CetakPeriode from './pages/QualityControl/ProsesCetak/CetakPeriode';
+import MasterDefect from './pages/MasterData/QC/MasterDefect';
+import PondPeriode from './pages/QualityControl/ProsesPond/PondPeriode';
+import LemPeriode from './pages/QualityControl/ProsesLem/LemPeriode';
+import CheckSheetCoatingPeriode from './components/Tables/QualityControl/QualityInspection/ProsesCoating/CheckSheetCoatingPeriode';
+import CoatingPeriode from './pages/QualityControl/ProsesCoating/CoatingPeriode';
+import TabSamplingHasilRabut from './components/Tables/QualityControl/QualityInspection/SamplingHasilRabut/TabSamplingHasilRabut';
+import SamplingHasilRabut from './pages/QualityControl/SamplingRabut/SamplingHasilRabut';
+import AmparHasilLem from './pages/QualityControl/AmparHasilLem/AmparHasilLem';
+import CheckSheetHasilRabut from './components/Tables/QualityControl/QualityInspection/SamplingHasilRabut/CheckSheetHAsilRabutAwal';
+import RabutAwal from './pages/QualityControl/SamplingRabut/RabutAwal';
+import AmparLemAwal from './pages/QualityControl/AmparHasilLem/AmparLemAwal';
+import NcrMtc from './pages/Maintenance/NCR/Ncrmtc';
+import IncomingNCRQA from './pages/QualityControl/IncomingNCR/IncomingNCRQA';
+import IncomingNCRMR from './pages/MR/NCR/IncomingNCRMR';
+import CapaMtc from './pages/Maintenance/Capa/CapaMtc';
+import QcCapa from './pages/QualityControl/Capa/QcCapa';
+import MrCapa from './pages/MR/Capa/MrCapa';
+import FinalInspection from './pages/QualityControl/FinalInspection/FinalInspection';
+import FinalAwal from './pages/QualityControl/FinalInspection/FinalAwal';
+import OutsourcingBJ from './pages/QualityControl/OutsourcingBJ/OutsourcingBJ';
+import OutsourcingBJAwal from './pages/QualityControl/OutsourcingBJ/OutsourcingBJAwal';
+import MasterFinalInspection from './pages/MasterData/QC/MasterFinalInspection';
+import MasterOutsourcingBJ from './pages/MasterData/QC/MasterOutsourcingBJ';
+import BarangRusak from './pages/QualityControl/BarangRusak/BarangRusak';
+import BarangRSChecksheet from './pages/QualityControl/BarangRusak/BarangRSChecksheet';
+import NcrLaporQC from './pages/QualityControl/Lapor/NCR/NcrLaporQC';
+import CapaLaporQC from './pages/QualityControl/Lapor/Capa/CapaLaporQC';
+import NcrLaporMR from './pages/MR/Lapor/NCR/NcrLaporQC';
+import CapaLaporMR from './pages/MR/Lapor/Capa/CapaLaporQC';
+import ProsesPotongFIX from './pages/QualityControl/ProsesPotongFix/ProsesPotongFix';
+import PotongBahanCheck from './pages/QualityControl/ProsesPotongFix/PotongBahan';
+import PotongJadiCheck from './pages/QualityControl/ProsesPotongFix/PotongJadi';
+import IncomingOutsourcing from './pages/QualityControl/incomingOutsourcing/IncomingOutsourcing';
+
+import IncomingOutsourcingAwal from './pages/QualityControl/incomingOutsourcing/IncomingOutsourcingAwal';
+import ProsesPraplate from './pages/QualityControl/ProsesPraplate/ProsesPraplate';
+import ChecksheetPraplate from './components/Tables/QualityControl/QualityInspection/ProsesPraplate/ChekcsheetPraplate';
+import ChecksheetPralatePage from './pages/QualityControl/ProsesPraplate/ChecksheetPraplate';
+import ProsesLipat from './pages/QualityControl/ProsesLipat/ProsesLipat';
+import ChecksheetLipatPage from './pages/QualityControl/ProsesLipat/ChecksheetLipat';
+import PrePress from './pages/PrePress/Prepress';
+import MasterPerusahaan from './pages/HR/Personal/MasterPerusahaan';
+import MasterKaryawan from './pages/HR/Personal/MasterKaryawan';
+import AddMasterKaryawan from './pages/HR/Personal/AddMasterKaryawan';
+import KalenderKerja from './pages/HR/Personal/KalenderKerja/KalenderKerja';
+import RekapMtcPage from './pages/Maintenance/RekapMtc';
+import InputSpl from './pages/HR/Pengajuan/InputSPL';
+import CutiHR from './pages/HR/Pengajuan/CutiHr';
+import IzinHR from './pages/HR/Pengajuan/IzinHR';
+import SakitHR from './pages/HR/Pengajuan/SakitHR';
+import PinjamanHR from './pages/HR/Pengajuan/PinjamanHR';
+import LengkapiMasterKaryawan from './pages/HR/Personal/LengkapiMasterKaryawan';
+import Absensi from './pages/HR/Personal/KalenderKerja/absensi';
+import MasterGrade from './pages/MasterData/MTC/MasterGrade';
+import SPHR from './pages/HR/Pengajuan/SPHR';
+import DinasHr from './pages/HR/Pengajuan/DinasHr';
+import KaryawanHr from './pages/HR/Pengajuan/KaryawanHR';
+import InputKeSpl from './pages/HR/PengajuanKeHR/InputKeSPL';
+import CutiKeHR from './pages/HR/PengajuanKeHR/CutiKeHr';
+import IzinKeHR from './pages/HR/PengajuanKeHR/IzinKeHR';
+import SakitKeHR from './pages/HR/PengajuanKeHR/SakitKeHR';
+import PinjamanKeHR from './pages/HR/PengajuanKeHR/PinjamanKeHR';
+import DinasKeHr from './pages/HR/PengajuanKeHR/DinasKeHr';
+import SPKeHR from './pages/HR/PengajuanKeHR/SPKeHR';
+import KaryawanKeHr from './pages/HR/PengajuanKeHR/KaryawanKeHR';
+import MasterSHiftHR from './pages/HR/MasterDataHR/MastershiftHr';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -298,6 +364,17 @@ function App() {
           }
         />
         <Route
+          path="/maintenance/recap"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <RekapMtcPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/maintenance/inspection/pm_1"
           element={
             <>
@@ -386,6 +463,28 @@ function App() {
           }
         />
         <Route
+          path="/maintenance/lapor/ncr"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <NcrMtc />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/lapor/capa"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CapaMtc />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/maintenance/MAN"
           element={
             <>
@@ -426,6 +525,94 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <Qualityinspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qms/ncr"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingNCRQA />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qms/capa"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <QcCapa />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/lapor/ncr"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <NcrLaporQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/lapor/capa"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CapaLaporQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/mr/qms/ncr"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingNCRMR />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/mr/qms/capa"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MrCapa />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/mr/lapor/ncr"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <NcrLaporMR />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/mr/lapor/capa"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CapaLaporMR />
               </ProtectedRoute>
             </>
           }
@@ -503,6 +690,39 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <HistoryJadiItohPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/prosespotong"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesPotongFIX />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/prosespotong/bahan/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongBahanCheck />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/prosespotong/jadi/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PotongJadiCheck />
               </ProtectedRoute>
             </>
           }
@@ -619,12 +839,128 @@ function App() {
           }
         />
         <Route
+          path="/qc/qualityinspection/praplate"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesPraplate />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/praplate/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ChecksheetPralatePage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lipat"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProsesLipat />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lipat/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ChecksheetLipatPage />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/qc/qualityinspection/lem"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <ProsesLem />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/qc/qualityinspection/incoming_outsourcing"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingOutsourcing />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/qc/qualityinspection/incoming_outsourcing/checkAwal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingOutsourcingAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/qc/qualityinspection/sampling_hasil_rabut"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <SamplingHasilRabut />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/qc/qualityinspection/sampling/jenis_sampling/checkAwal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <RabutAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/qc/qualityinspection/ampar_hasil_lem"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <AmparHasilLem />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/qc/qualityinspection/ampar/checkAwal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <AmparLemAwal />
               </ProtectedRoute>
             </>
           }
@@ -641,7 +977,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/pond/jenispond"
+          path="/qc/qualityinspection/pond/jenispond/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -652,7 +988,7 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/coating/jeniscoating"
+          path="/qc/qualityinspection/coating/jeniscoating/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -663,7 +999,29 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/lem/jenislem"
+          path="/qc/qualityinspection/coating/jeniscoating/checkawal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CoatingAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/coating/jeniscoating/checkperiode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CoatingPeriode />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lem/jenisLem/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -696,7 +1054,29 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/pond/jenispond/checkawal"
+          path="/qc/qualityinspection/lem/jenisLem/checkperiode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <LemPeriode />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lem/jenisLem/checkperiode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <LemPeriode />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/pond/jenispond/checkawal/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -707,7 +1087,18 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/coating/jeniscoating/checkawal"
+          path="/qc/qualityinspection/pond/jenispond/checkperiode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PondPeriode />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/coating/jeniscoating/checkawal/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -718,7 +1109,18 @@ function App() {
           }
         />
         <Route
-          path="/qc/qualityinspection/lem/jenislem/checkawal"
+          path="/qc/qualityinspection/coating/jeniscoating/checkperiode/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CoatingAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/lem/jenislem/checkawal/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -750,7 +1152,72 @@ function App() {
             </>
           }
         />
-
+        <Route
+          path="/qc/qualityinspection/final_inspection"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <FinalInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="qc/qualityinspection/final_inspection/checkAwal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <FinalAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/outsourcing_barang_jadi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OutsourcingBJ />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="qc/qualityinspection/outsourcing_barang_jadi/checkAwal/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OutsourcingBJAwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/barangrs"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <BarangRusak />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspection/barangrs/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <BarangRSChecksheet />
+              </ProtectedRoute>
+            </>
+          }
+        />
         <Route
           path="/history"
           element={
@@ -763,7 +1230,54 @@ function App() {
           }
         />
         <Route
+          path="/masterdataqc/defect"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterDefect />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/masterdataqc/finalinspection"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterFinalInspection />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
+          path="/masterdataqc/outsourcing_bj"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterOutsourcingBJ />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        <Route
           path="/masterdata/machine"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterData />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdata/machine/add"
           element={
             <>
               <PageTitle title="PT CBL" />
@@ -950,6 +1464,17 @@ function App() {
           }
         />
         <Route
+          path="/masterdata/grade"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterGrade />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/masterdata/masterkpi/form"
           element={
             <>
@@ -1005,7 +1530,211 @@ function App() {
             </>
           }
         />
+        <Route
+          path="/prepress"
+          element={
+            <>
+              <ProtectedRoute>
+                <PrePress />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/hr"
+          element={
+            <>
+
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/masterperusahaan"
+          element={
+            <>
+              <MasterPerusahaan />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/masterkaryawan"
+          element={
+            <>
+              <MasterKaryawan />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/masterkaryawan/add"
+          element={
+            <>
+              <AddMasterKaryawan />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/masterkaryawan/lengkapi"
+          element={
+            <>
+              <LengkapiMasterKaryawan />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/kalenderKerja"
+          element={
+            <>
+              <KalenderKerja />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/absensi"
+          element={
+            <>
+              <Absensi />
+            </>
+          }
+        />
+        <Route
+          path="/hr/rp/spl"
+          element={
+            <>
+              <InputSpl />
+            </>
+          }
+        />
+        <Route
+          path="/hr/rp/cuti"
+          element={
+            <>
+              <CutiHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/rp/izin"
+          element={
+            <>
+              <IzinHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/rp/sakit"
+          element={
+            <>
+              <SakitHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/rp/pinjaman"
+          element={
+            <>
+              <PinjamanHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/rp/dinas"
+          element={
+            <>
+              <DinasHr />
+            </>
+          }
+        />
+        <Route
+          path="/hr/rp/sp"
+          element={
+            <>
+              <SPHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/rp/karyawan"
+          element={
+            <>
+              <KaryawanHr />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/spl"
+          element={
+            <>
+              <InputKeSpl />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/cuti"
+          element={
+            <>
+              <CutiKeHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/izin"
+          element={
+            <>
+              <IzinKeHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/sakit"
+          element={
+            <>
+              <SakitKeHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/pinjaman"
+          element={
+            <>
+              <PinjamanKeHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/dinas"
+          element={
+            <>
+              <DinasKeHr />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/sp"
+          element={
+            <>
+              <SPKeHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuan/karyawan"
+          element={
+            <>
+              <KaryawanKeHr />
+            </>
+          }
+        />
+
+        <Route
+          path="/hr/master/shift"
+          element={
+            <>
+              <MasterSHiftHR />
+            </>
+          }
+        />
       </Routes>
+
     </>
   );
 }

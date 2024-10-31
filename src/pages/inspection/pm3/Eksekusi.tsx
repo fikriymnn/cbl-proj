@@ -141,11 +141,11 @@ function Eksekusi() {
   }
   async function getPM3Calender() {
     const url = `${import.meta.env.VITE_API_LINK}/pm3`;
-   
+
     try {
       const res = await axios.get(url, {
         params: {
-          year: true
+          year: true,
         },
         withCredentials: true,
       });
@@ -187,24 +187,22 @@ function Eksekusi() {
 
   return (
     <>
-     
-        <main className="overflow-x-scroll">
-        <div className='bg-white w-full mb-5 rounded-md p-3'>
-       
-            <MyCalendar data={pm3Calender}/>
-            <div className='flex flex-col gap-3 font-semibold text-black pt-3'>
-              
-              <div className=' flex gap-3 items-center'>
-                <div className='bg-red-500 w-5 h-5'></div>
-                <p>JADWAL DIMINTA</p>
-              </div>
-              <div className=' flex gap-3 items-center'>
-                <div className='bg-blue-500 w-5 h-5'></div>
-                <p>JADWAL TERVERIFIKASI</p>
-              </div>
-              </div>
+      <main className="">
+        <div className="bg-white w-full mb-5 rounded-md p-3">
+          <MyCalendar data={pm3Calender} />
+          <div className="flex flex-col gap-3 font-semibold text-black pt-3">
+            <div className=" flex gap-3 items-center">
+              <div className="bg-red-500 w-5 h-5"></div>
+              <p>JADWAL DIMINTA</p>
+            </div>
+            <div className=" flex gap-3 items-center">
+              <div className="bg-blue-500 w-5 h-5"></div>
+              <p>JADWAL TERVERIFIKASI</p>
+            </div>
           </div>
-          <div className="min-w-[700px] bg-white rounded-xl">
+        </div>
+        <div className="overflow-x-scroll">
+          <div className="min-w-[700px]  bg-white rounded-xl">
             <div className=" ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]">
               <div className="w-2 h-full "></div>
               <section className="grid grid-cols-5  justify-between w-full py-4  font-semibold text-[14px]">
@@ -212,31 +210,35 @@ function Eksekusi() {
 
                 <p>Jadwal diminta</p>
                 <p>Jadwal terverifikasi</p>
-                <p className='md:flex hidden'>Inspector</p>
+                <p className="md:flex hidden">Inspector</p>
 
                 <div className="mx-5 flex justify-end">
-                  
-              <div className='my-auto '>
-
-              <select
-              className='border rounded-sm py-1'
-                onChange={(e) => {
-                  getPM3(e.target.value);
-                }}
-              >
-                <option className='text-xs' value={''}>Select Month</option>
-                {monthName.map((month, key) => {
-                  return <option value={month.value}>{month.name}</option>;
-                })}
-              </select>
-              </div>
+                  <div className="my-auto ">
+                    <select
+                      className="border rounded-sm py-1"
+                      onChange={(e) => {
+                        getPM3(e.target.value);
+                      }}
+                    >
+                      <option className="text-xs" value={''}>
+                        Select Month
+                      </option>
+                      {monthName.map((month, key) => {
+                        return (
+                          <option value={month.value}>{month.name}</option>
+                        );
+                      })}
+                    </select>
+                  </div>
                 </div>
               </section>
             </div>
             {pm3?.map((data: any, index: number) => {
               const tglFrom = convertTimeStampToDate(data.tgl_request_from);
               const tglTo = convertTimeStampToDate(data.tgl_request_to);
-              const tglFromVerif = convertTimeStampToDate(data.tgl_approve_from);
+              const tglFromVerif = convertTimeStampToDate(
+                data.tgl_approve_from,
+              );
               const tglToVerif = convertTimeStampToDate(data.tgl_approve_to);
               return (
                 <>
@@ -269,32 +271,36 @@ function Eksekusi() {
                           <p className="text-red-500 font-bold">{tglTo}</p>
                         </div>
                         <div className="flex flex-col justify-center  ">
-                          <p className="text-blue-500 font-bold">{tglFromVerif}</p>
-                          <p className="text-blue-500 font-bold">{tglToVerif}</p>
+                          <p className="text-blue-500 font-bold">
+                            {tglFromVerif}
+                          </p>
+                          <p className="text-blue-500 font-bold">
+                            {tglToVerif}
+                          </p>
                         </div>
-                        
+
                         <div className="md:flex hidden flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">
-                        {data.inspector != null ? data.inspector.nama : '-'}
+                          {data.inspector != null ? data.inspector.nama : '-'}
                         </div>
 
                         <div className="w-full flex justify-end px-3">
                           {data.id_inspector == me?.id ? (
                             <>
-                              {data.status == "on progres"  ? (
+                              {data.status == 'on progres' ? (
                                 <Link
                                   to={`/maintenance/inspection/pm_3_form/${data.id}`}
                                   className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
                                 >
                                   Eksekusi
                                 </Link>
-                              ) : data.status == 'done'?
-                              <Link
+                              ) : data.status == 'done' ? (
+                                <Link
                                   to={`/maintenance/inspection/pm_3_form/${data.id}`}
                                   className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
                                 >
                                   Detail
-                                </Link>:
-                               (
+                                </Link>
+                              ) : (
                                 <button
                                   onClick={() => inspectPM3(data.id)}
                                   className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
@@ -323,8 +329,9 @@ function Eksekusi() {
               );
             })}
           </div>
-        </main>
-     
+        </div>
+      </main>
+
       {/* {isMobile && (
         <main className="overflow-x-scroll">
           <div className="w-full bg-white rounded-xl">

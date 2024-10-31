@@ -11,7 +11,7 @@ import Logo from '../../images/logo/logo-cbl 1.svg';
 import axios from 'axios';
 import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination';
-import convertTimeStampToDate from '../../../../utils/convertDate';
+import convertTimeStampToDate from '../../../../utils/converDateTime';
 import ModalStockCheck1 from '../../../Modals/ModalStockCheck1';
 import zIndex from '@mui/material/styles/zIndex';
 import ModalVerifikasi from '../../../Modals/Qc/ModalVerifikasi';
@@ -64,9 +64,8 @@ const TableVerifikasi = () => {
   }
 
   async function getMTC() {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/ticket?status_tiket=request to qc`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/ticket?status_tiket=request to qc`;
     try {
       const res = await axios.get(url, {
         params: {
@@ -138,7 +137,7 @@ const TableVerifikasi = () => {
           </p>
         </div>
         <div className="flex flex-col w-full">
-          <div className="grid grid-cols-12 dark:border-strokedark  w-full">
+          <div className="grid grid-cols-12 gap-5 dark:border-strokedark  w-full">
             <div className="flex w-full justify-start col-span-2 ">
               <p className="text-slate-600  text-[14px] font-semibold  dark:text-white">
                 Kode Tiket
@@ -192,9 +191,9 @@ const TableVerifikasi = () => {
                 {index + 1}
               </p>
             </div>
-            <div className="grid grid-cols-12 w-full dark:border-strokedark items-center">
+            <div className="grid grid-cols-12 gap-5 w-full dark:border-strokedark items-center">
               <div className="flex w-full justify-start col-span-2 gap-8 ">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                <p className="text-neutral-500 text-sm font-light  dark:text-white break-all">
                   {' '}
                   {data.kode_ticket}
                 </p>
@@ -282,6 +281,7 @@ const TableVerifikasi = () => {
                     }
                     durasiPerbaikan={waktuPengerjaan}
                     eksekutor={data.operator}
+                    unit={data.proses_mtcs[lengthProses].unit} bagian={data.proses_mtcs[lengthProses].bagian_mesin}
                   >
                     <div>
                       <label

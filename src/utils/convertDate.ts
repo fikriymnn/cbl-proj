@@ -5,7 +5,7 @@ export default function convertTimeStampToDate(datetime: any) {
   const year = dateObject.getFullYear();
   const monthName = getMonthName(month);
 
-  return `${year}/${monthName}/${day}  `; // Example format (YYYY-MM-DD)
+  return `${day} / ${monthName} / ${year}  `; // Example format (YYYY-MM-DD)
 }
 
 function getMonthName(monthString: string) {

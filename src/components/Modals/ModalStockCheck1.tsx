@@ -26,6 +26,7 @@ const ModalStockCheck1 = ({
   namaMesin,
   skor_mtc,
   jenis_perbaikan,
+  unit, bagian
 }: {
   children: any;
   isOpen: any;
@@ -43,6 +44,8 @@ const ModalStockCheck1 = ({
   namaMesin: any;
   skor_mtc: any;
   jenis_perbaikan: any;
+  unit:any,
+  bagian:any;
 }) => {
   if (!isOpen) return null;
 
@@ -118,6 +121,8 @@ const ModalStockCheck1 = ({
   const [selectedKodeAnalisis, setSelectedKodeAnalisis] = useState<any>();
   const [selectedSkorPerbaikan, setSelectedSkorPerbaikan] = useState<any>();
   const [noteMaintenance, setNoteMaintenance] = useState<any>();
+  const [unitMaintenance, setUnitMaintenance] = useState<any>();
+  const [bagianMaintenance, setBagianMaintenance] = useState<any>();
   const [alasanPending, setAlasanPending] = useState<any>();
 
   const [kodeAnalisis, setKodeAnalisis] = useState<any>(null);
@@ -231,7 +236,8 @@ const ModalStockCheck1 = ({
             skor_mtc: selectedSkorPerbaikan.skor,
             cara_perbaikan: selectedSkorPerbaikan.nama_skor,
             note_mtc: noteMaintenance,
-
+            unit: unitMaintenance,
+bagian_mesin: bagianMaintenance,
             nama_mesin: namaMesin,
           },
           {
@@ -471,6 +477,30 @@ const ModalStockCheck1 = ({
               >
                 {namaPemeriksa}
               </span>
+              <label
+                htmlFor="unit"
+                className="form-label block  text-black text-xs font-extrabold mt-2"
+              >
+                UNIT
+              </label>
+              <span
+                id="unit"
+                className="text-neutral-500 text-xl font-normal"
+              >
+                {unit}
+              </span>
+              <label
+                htmlFor="bagian"
+                className="form-label block  text-black text-xs font-extrabold mt-2"
+              >
+                BAGIAN 
+              </label>
+              <span
+                id="unit"
+                className="text-neutral-500 text-xl font-normal"
+              >
+                {bagian}
+              </span>
             </div>
           </div>
           <div className="flex w-full pt-1">
@@ -486,7 +516,9 @@ const ModalStockCheck1 = ({
                 </label>
               </div>
             )}
+            
           </div>
+          
           <div className="flex w-full pt-1">
             <div className="flex lg:w-6/12 w-full">
               <div>
@@ -575,6 +607,18 @@ const ModalStockCheck1 = ({
               </div>
             )}
           </div>
+          <div className="flex  w-6/12">
+                <label className="form-label block  text-black text-xs font-extrabold mt-3">
+                  UNIT
+                </label>
+          </div>
+          <input type="text"  onChange={(e) => setUnitMaintenance(e.target.value)} className='lg:w-[400px] rounded-md border border-stroke px-2 py-2' />
+          <div className="flex  w-6/12">
+                <label className="form-label block  text-black text-xs font-extrabold mt-3">
+                  BAGIAN
+                </label>
+          </div>
+          <input type="text"  onChange={(e) => setBagianMaintenance(e.target.value)}  className='lg:w-[400px] rounded-md border border-stroke px-2 py-2' />
           {isMobile && (
             <>
               <div className="flex pl-2 w-6/12">
@@ -601,6 +645,7 @@ const ModalStockCheck1 = ({
               </div>
             </>
           )}
+         
 
           <div className="flex w-full pt-2"></div>
           <div className="flex w-full pt-2">
@@ -1295,6 +1340,7 @@ const ModalStockCheck1 = ({
               +
             </button>
           </div>
+          
 
           <div className="flex w-full pt-1">
             <div className="flex w-full">
@@ -1303,6 +1349,7 @@ const ModalStockCheck1 = ({
               </label>
             </div>
           </div>
+          
 
           <div className="flex w-full pt-1">
             <div className="flex lg:w-6/12 w-full">
@@ -1390,6 +1437,7 @@ const ModalStockCheck1 = ({
               </div>
             </div>
           </div>
+          
           <div className="flex w-full pt-1">
             <div className="flex w-full">
               <label className="form-label block  text-black text-xs font-extrabold mt-3">

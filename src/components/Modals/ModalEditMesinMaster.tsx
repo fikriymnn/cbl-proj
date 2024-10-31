@@ -49,6 +49,7 @@ const ModalEditMesinMaster = ({ children, isOpen, onClose, idMesin, data }:
         onchangeVal.bagian_mesin = value;
         setBagian(onchangeVal);
     };
+
     async function submitEDitMesin(id: number) {
         const url = `${import.meta.env.VITE_API_LINK}/master/mesin/${id}`;
 

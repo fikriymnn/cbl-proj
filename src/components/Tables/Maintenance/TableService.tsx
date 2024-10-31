@@ -843,7 +843,7 @@ function TableService() {
                           <div className="grid md:grid-cols-8 grid-cols-7 w-full gap-5">
                             <div className="flex flex-col md:gap-5 gap-1 ">
                               <div className="my-auto ">
-                                <p className="text-xs font-light">
+                                <p className="text-xs font-light break-all">
                                   {data.kode_ticket}
                                 </p>
                               </div>
@@ -988,6 +988,7 @@ function TableService() {
                                             data.proses_mtcs[lengthProses]
                                               .cara_perbaikan
                                           }
+                                          unit={data.proses_mtcs[lengthProses].unit} bagian={data.proses_mtcs[lengthProses].bagian_mesin}
                                         />
                                         // <ModalStockCheckPengganti children={undefined} isOpen={showModal1[i]} onClose={() => closeModal1(i)} kendala={"nu"} onFinish={"nu"} machineName={"nu"} tgl={"nu"} jam={"nu"} namaPemeriksa={"nu"} no={"nu"}>
 
@@ -1189,7 +1190,7 @@ function TableService() {
                                               tipeMaintenance={
                                                 proses.cara_perbaikan
                                               }
-                                              catatan={proses.note_mtc}
+                                              catatan={proses.note_mtc} unit={proses.unit} bagian={proses.bagian_mesin}
                                             ></ModalDetail>
                                           )}
                                         </>
@@ -1350,6 +1351,7 @@ function TableService() {
                                     data.proses_mtcs[lengthProses]
                                       .cara_perbaikan
                                   }
+                                  unit={data.proses_mtcs[lengthProses].unit} bagian={data.proses_mtcs[lengthProses].bagian_mesin}
                                 />
                               )}
                               {showModal2 && (
@@ -1547,7 +1549,7 @@ function TableService() {
                                           tipeMaintenance={
                                             proses.cara_perbaikan
                                           }
-                                          catatan={proses.note_mtc}
+                                          catatan={proses.note_mtc} unit={proses.unit} bagian={proses.bagian_mesin}
                                         ></ModalDetail>
                                       )}
                                     </div>

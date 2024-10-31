@@ -9,7 +9,7 @@ import Modal from '../../../Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
 import Logo from '../../images/logo/logo-cbl 1.svg';
 import axios from 'axios';
-import convertTimeStampToDate from '../../../../utils/convertDate';
+import convertTimeStampToDate from '../../../../utils/converDateTime';
 import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination/Pagination';
 import calculateTime from '../../../../utils/calculateTime';
@@ -18,13 +18,13 @@ import ModalDetailValidasi from '../../../Modals/ModalDetailValidasi';
 const TableHistoryValidate = () => {
   const [page, setPage] = useState(1);
   const [ticket, setTicket] = useState<any>(null);
-  const [showModalDetail,setShowModalDetail] = useState(null);
+  const [showModalDetail, setShowModalDetail] = useState(null);
   const handleClickDetail = (index: any) => {
     setShowModalDetail((prevState: any) => {
       return prevState === index ? null : index;
     });
   };
-  const closeModalDetail= () => setShowModalDetail(null);
+  const closeModalDetail = () => setShowModalDetail(null);
   useEffect(() => {
     getMTC();
   }, [page]);
@@ -53,7 +53,7 @@ const TableHistoryValidate = () => {
       <div className="flex px-2 border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
         <p className="w-5 text-[14px] font-semibold mr-3">No</p>
         <div className="flex flex-col w-full">
-          <div className="grid grid-cols-7 w-full dark:border-strokedark  ">
+          <div className="grid grid-cols-7 gap-5 w-full dark:border-strokedark  ">
             <div className="flex w-full justify-start ">
               <p className="text-slate-600  text-[14px] font-semibold  dark:text-white">
                 Kode Tiket
@@ -99,9 +99,9 @@ const TableHistoryValidate = () => {
                 {index + 1}{' '}
               </p>
             </div>
-            <div className="grid grid-cols-7 w-full items-center dark:border-strokedark">
+            <div className="grid grid-cols-7 gap-5 w-full items-center dark:border-strokedark">
               <div className="flex w-full justify-start  gap-14">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                <p className="text-neutral-500 break-all text-sm font-light  dark:text-white">
                   {' '}
                   {data.kode_ticket}
                 </p>
@@ -144,20 +144,35 @@ const TableHistoryValidate = () => {
                 </p>
               </div> */}
               <div className="flex w-full justify-end">
-                <button onClick={()=>handleClickDetail(index)} className="text-xs font-bold bg-blue-700 py-2 px-10 text-white rounded-sm">
+                <button onClick={() => handleClickDetail(index)} className="text-xs font-bold bg-blue-700 py-2 px-10 text-white rounded-sm">
                   Detail
                 </button>
               </div>
             </div>
             {showModalDetail === index && (
               <>
-              <ModalDetailValidasi status={data.status_qc} note={data.note_qc} nama_kendala={data.nama_kendala} nama_mesin={data.mesin} operator={data.operator}  isOpen={showModalDetail} onClose={closeModalDetail} key={index}>
-                <></>
-              </ModalDetailValidasi>
+                <ModalDetailValidasi
+                  status={data.status_qc}
+                  note={data.note_qc}
+                  nama_kendala={data.nama_kendala}
+                  nama_mesin={data.mesin}
+                  operator={data.operator}
+                  isOpen={showModalDetail}
+                  onClose={closeModalDetail}
+                  key={index}
+                  unit={data.unit}
+                  bagian={data.bagian}
+                  validator={data.user_respon_qc.nama}
+                  nojo={data.no_jo}
+                  customer={data.nama_customer}
+                  masalah={data.nama_analisis_mtc}
+                >
+                  <></>
+                </ModalDetailValidasi>
               </>
             )}
           </div>
-         
+
         );
       })}
       <div className="w-full flex  mt-5 ">

@@ -9,7 +9,7 @@ import Modal from '../../../Modals/ModalDetailPopup';
 // import Gambar from '../../images/BACKGROUND.png';
 import Logo from '../../images/logo/logo-cbl 1.svg';
 import axios from 'axios';
-import convertTimeStampToDate from '../../../../utils/convertDate';
+import convertTimeStampToDate from '../../../../utils/converDateTime';
 import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination/Pagination';
 import calculateTime from '../../../../utils/calculateTime';
@@ -18,13 +18,13 @@ import ModalDetailValidasi from '../../../Modals/ModalDetailValidasi';
 const TableHistory = () => {
   const [page, setPage] = useState(1);
   const [ticketProsesHistory, setTicketProsesHistory] = useState<any>(null);
-  const [showModalDetail,setShowModalDetail] = useState(null);
+  const [showModalDetail, setShowModalDetail] = useState(null);
   const handleClickDetail = (index: any) => {
     setShowModalDetail((prevState: any) => {
       return prevState === index ? null : index;
     });
   };
-  const closeModalDetail= () => setShowModalDetail(null);
+  const closeModalDetail = () => setShowModalDetail(null);
   useEffect(() => {
     getMTC();
   }, [page]);
@@ -52,7 +52,7 @@ const TableHistory = () => {
       <div className="flex px-2 border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
         <p className="w-5 text-[14px] font-semibold mr-3">No</p>
         <div className="flex flex-col w-full">
-          <div className="grid grid-cols-12 w-full dark:border-strokedark  ">
+          <div className="grid grid-cols-12 gap-5 w-full dark:border-strokedark  ">
             <div className="flex w-full justify-start col-span-2">
               <p className="text-slate-600  text-[14px] font-semibold  dark:text-white">
                 Kode Tiket
@@ -77,7 +77,7 @@ const TableHistory = () => {
             <div className=" text-[14px] justify-start ">
               <p className="text-slate-600 font-semibold ">status</p>
             </div>
-            <div className=" text-[14px] justify-start ">
+            <div className=" text-[14px] justify-start mx-auto">
               <p className="text-slate-600 font-semibold ">Skor</p>
             </div>
             <div className=" text-[14px] justify-start col-span-2">
@@ -106,20 +106,20 @@ const TableHistory = () => {
                 {index + 1}{' '}
               </p>
             </div>
-            <div className="grid grid-cols-12 w-full items-center dark:border-strokedark">
+            <div className="grid grid-cols-12 gap-5 w-full items-center dark:border-strokedark">
               <div className="flex w-full justify-start col-span-2 gap-14">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                <p className="text-neutral-500 text-sm font-light  dark:text-white break-all">
                   {' '}
                   {data.tiket.kode_ticket}
                 </p>
               </div>
               <div className="flex w-full  justify-start ">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                <p className="text-neutral-500 text-sm font-light  dark:text-white break-all">
                   {tglTicket}
                 </p>
               </div>
               <div className="flex w-full  justify-start ">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                <p className="text-neutral-500 text-sm font-light  dark:text-white break-all">
                   {tglSelesaiTicket}
                 </p>
               </div>
@@ -145,7 +145,7 @@ const TableHistory = () => {
                 </p>
               </div>
               <div className="flex w-full  justify-start ">
-                <p className="text-neutral-500 text-sm font-light ">
+                <p className="text-neutral-500 text-sm font-light mx-auto">
                   {data.skor_mtc}
                 </p>
               </div>
@@ -159,17 +159,31 @@ const TableHistory = () => {
                   {data.skor_mtc}
                 </p>
               </div> */}
-               <div className="flex w-full justify-end">
-                <button onClick={()=>handleClickDetail(index)} className="text-xs font-bold bg-blue-700 py-2 px-10 text-white rounded-sm">
+              <div className="flex w-full justify-end">
+                <button onClick={() => handleClickDetail(index)} className="text-xs font-bold bg-blue-700 py-2 px-10 text-white rounded-sm">
                   Detail
                 </button>
               </div>
             </div>
             {showModalDetail === index && (
               <>
-              <ModalDetailValidasi status={data.status_qc} note={data.note_qc} nama_kendala={data.tiket.nama_kendala} nama_mesin=  {data.tiket.mesin} operator={data.tiket.operator}  isOpen={showModalDetail} onClose={closeModalDetail} key={index}>
-                <></>
-              </ModalDetailValidasi>
+                <ModalDetailValidasi
+                  bagian={data.bagian_mesin}
+                  unit={data.unit}
+                  status={data.tiket.status_qc}
+                  note={data.tiket.note_qc}
+                  nama_kendala={data.tiket.nama_kendala}
+                  nama_mesin={data.tiket.mesin}
+                  operator={data.tiket.operator}
+                  isOpen={showModalDetail}
+                  onClose={closeModalDetail}
+                  key={index}
+                  validator={data.user_qc?.nama}
+                  nojo={data.tiket.no_jo}
+                  customer={data.tiket.nama_customer}
+                  masalah={data.tiket.nama_analisis_mtc}>
+                  <></>
+                </ModalDetailValidasi>
               </>
             )}
           </div>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import DefaultLayout from '../../../layout/DefaultLayout';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import formatInteger from '../../../utils/formaterInteger';
 
 function Stockmaster() {
   const [stokSparepart, setStokSparepart] = useState<any>(null);
@@ -75,7 +76,7 @@ function Stockmaster() {
                   <p className="text-xs col-span-2">{data.nama_sparepart} </p>
                   <p className="text-xs">{data.mesin.nama_mesin}</p>
                   <p className="text-xs">{data.lokasi}</p>
-                  <p className="text-xs">{data.umur_sparepart}</p>
+                  <p className="text-xs">{formatInteger(data.umur_sparepart)}</p>
                   <p className="text-xs">{data.grade}</p>
                   <p className="text-xs">{data.stok}</p>
                   <p className="text-xs">{data.type_part}</p>
