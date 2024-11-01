@@ -88,26 +88,25 @@ function ListIncoming2() {
 
                             </div>
                             <section className=' grid grid-cols-12 px-4 py-4 items-center  border-b-8 border-[#D8EAFF] text-[14px]  text-black'>
-                                <div className='flex flex-col col-span-1  text-stone-500 text-[16px] font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
+
+                                <div className='flex gap-4 col-span-2 text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
                                     <p className=''>No</p>
-                                </div>
-                                <div className='flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
                                     <p className=''>Supplier</p>
                                 </div>
 
-                                <div className='flex flex-col   text-stone-500 text-[16px] font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
+                                <div className='flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
                                     <p className=''>No. Surat Jalan</p>
                                 </div>
-                                <div className='flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
+                                <div className='flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
                                     <p className=''>Nama Barang</p>
                                 </div>
-                                <div className='flex flex-col   text-stone-500 text-[16px] font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
+                                <div className='flex flex-col   text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
                                     <p className=''>Gramatur</p>
                                 </div>
-                                <div className='flex flex-col   text-stone-500 text-[16px] font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
+                                <div className='flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
                                     <p className=''>No. JO</p>
                                 </div>
-                                <div className='flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold sticky left-2 ps-3 md:ps-0 bg-white'>
+                                <div className='flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
                                     <p className=''>Tanggal</p>
                                 </div>
                                 <div className='flex flex-col  justify-end  items-end'>
@@ -117,34 +116,33 @@ function ListIncoming2() {
                                 const tglTicket = convertTimeStampToDate(data.createdAt);
                                 return (
                                     <>
-                                        <section className=' grid grid-cols-12 px-4 items-center  border-b-8 border-[#D8EAFF] '>
-                                            <div className='flex flex-col    sticky left-2 ps-3 md:ps-0 bg-white'>
+                                        <section className=' grid grid-cols-12 px-4 items-center gap-2 border-b-8 border-[#D8EAFF] '>
+
+                                            <div className='flex  gap-4  col-span-2   bg-white'>
                                                 <p className='text-stone-500 text-sm font-medium'>{i + 1}</p>
+                                                <p className='text-stone-500 text-sm font-medium '>{data.supplier}</p>
                                             </div>
-                                            <div className='flex flex-col   col-span-2  sticky left-2 ps-3 md:ps-0 bg-white'>
-                                                <p className='text-stone-500 text-sm font-medium line-clamp-1'>{data.supplier}</p>
+                                            <div className='flex flex-col   col-span-2 bg-white'>
+                                                <p className='text-stone-500 text-sm font-medium '>{data.no_surat_jalan}</p>
                                             </div>
-                                            <div className='flex flex-col   sticky left-2 ps-3 md:ps-0 bg-white'>
-                                                <p className='text-stone-500 text-sm font-medium line-clamp-1'>{data.no_surat_jalan}</p>
+                                            <div className='flex flex-col  col-span-2   bg-white'>
+                                                <p className='text-stone-500 text-sm font-medium '>{data.jenis_kertas}</p>
                                             </div>
-                                            <div className='flex flex-col  col-span-2  sticky left-2 ps-3 md:ps-0 bg-white'>
-                                                <p className='text-stone-500 text-sm font-medium line-clamp-1'>{data.jenis_kertas}</p>
+                                            <div className='flex flex-col     bg-white'>
+                                                <p className='text-stone-500 text-sm font-medium '>{data.gramatur}</p>
                                             </div>
-                                            <div className='flex flex-col    sticky left-2 ps-3 md:ps-0 bg-white'>
-                                                <p className='text-stone-500 text-sm font-medium line-clamp-1'>{data.gramatur}</p>
+                                            <div className='flex flex-col  col-span-2  bg-white'>
+                                                <p className='text-stone-500 text-sm font-medium '>{data.no_jo}</p>
                                             </div>
-                                            <div className='flex flex-col   sticky left-2 ps-3 md:ps-0 bg-white'>
-                                                <p className='text-stone-500 text-sm font-medium line-clamp-1'>{data.no_jo}</p>
+                                            <div className='flex flex-col col-span-2   bg-white'>
+                                                <p className='text-stone-500 text-sm font-medium '>{tglTicket}</p>
                                             </div>
-                                            <div className='flex flex-col col-span-2  sticky left-2 ps-3 md:ps-0 bg-white'>
-                                                <p className='text-stone-500 text-sm font-medium line-clamp-1'>{tglTicket}</p>
-                                            </div>
-                                            <div className='flex flex-col  justify-end col-span-2 items-end'>
+                                            <div className='flex flex-col  justify-end  items-end'>
 
                                                 <Link to={`/qc/qualityinspection/list/${data.id}`}>
 
                                                     <button
-                                                        className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                                                        className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                     >
                                                         PILIH
 

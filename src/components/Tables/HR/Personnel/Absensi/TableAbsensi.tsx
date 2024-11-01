@@ -87,7 +87,7 @@ function TableAbsensi() {
                                 <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                     Nama
                                 </label>
-                                <label className="text-neutral-500 text-sm font-semibold col-span-3">
+                                <label className="text-neutral-500 text-sm font-semibold col-span-4">
                                     Waktu
                                 </label>
                                 <label className="text-neutral-500 text-sm font-semibold">
@@ -109,28 +109,28 @@ function TableAbsensi() {
                                     <>
                                         <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center px-10 min-h-10">
 
-                                            <label className="text-neutral-500 text-xs font-semibold ">
+                                            <label className="text-neutral-500 text-sm font-semibold ">
                                                 {i + 1}
                                             </label>
-                                            <label className="text-neutral-500 text-xs font-semibold col-span-2">
+                                            <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                                 {data.name}
                                             </label>
-                                            <div className='col-span-3 flex flex-col'>
-                                                <label className="text-neutral-500 text-xs font-semibold  ">
-                                                    Masuk : {convertTimeStampToDateOnly(data.waktu_masuk)} Pukul {data.jam_masuk}
+                                            <div className='col-span-4 flex flex-col gap-1 py-2'>
+                                                <label className="text-neutral-500 text-sm font-semibold  ">
+                                                    Masuk : {data.tgl_masuk} Pukul {data.jam_masuk}
                                                 </label>
-                                                <label className="text-neutral-500 text-xs font-semibold  ">
-                                                    Keluar : {data.jam_keluar == null ? '-' : convertTimeStampToDateOnly(data.waktu_masuk)} Pukul {data.jam_keluar}
+                                                <label className="text-neutral-500 text-sm font-semibold  ">
+                                                    Keluar : {data.tgl_keluar} Pukul {data.jam_keluar}
                                                 </label>
                                             </div>
 
-                                            <label className="text-neutral-500 text-xs font-semibold ">
+                                            <label className="text-neutral-500 text-sm font-semibold ">
                                                 {data.shift}
                                             </label>
-                                            <label className="text-neutral-500 text-xs font-semibold col-span-2 ">
+                                            <label className="text-neutral-500 text-sm font-semibold col-span-2 ">
                                                 {data.status_lembur} {data.jam_lembur == 0 ? '' : '~ ' + data.jam_lembur + 'Jam'}
                                             </label>
-                                            <label className="text-neutral-500 text-xs font-semibold col-span-2 ">
+                                            <label className="text-neutral-500 text-sm font-semibold col-span-2 ">
                                                 {data.status_masuk}  {data.menit_terlambat == 0 ? '' : '~ ' + data.menit_terlambat + 'Menit'}
                                             </label>
                                         </div>

@@ -193,6 +193,12 @@ const ModalTambahUser = ({
               >
                 Quality Control
               </option>
+              <option
+                value="hr"
+                className="text-body dark:text-bodydark"
+              >
+                HR
+              </option>
             </select>
             <label className="text-black text-xs font-bold pt-4">ROLE</label>
             <select

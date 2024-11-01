@@ -165,7 +165,7 @@ function CheckSheetBarangRS() {
       console.log(error);
     }
   }
-  async function simpanBarangRusak(id: number, startTime: any, catatan: any) {
+  async function simpanBarangRusak(id: number, startTime: any, catatan: any, barangBagus: any) {
     if (catatan == null) {
       // Check if start time is available
       alert('Catatan Belum Diisi Lengkap');
@@ -181,6 +181,7 @@ function CheckSheetBarangRS() {
         url,
         {
           catatan: catatan,
+          barang_baik_aktual: barangBagus,
           lama_pengerjaan: elapsedSeconds,
         },
         {
@@ -204,6 +205,7 @@ function CheckSheetBarangRS() {
   );
 
   const [catatan, setCatatan] = useState<any>();
+  const [bbAktual, setbbAktual] = useState<any>();
 
   return (
     <>
@@ -565,6 +567,7 @@ function CheckSheetBarangRS() {
                                     className="w-full h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
                                   ></input>
                                 </div>
+
                                 <div className="flex flex-col col-span-4 gap-1">
                                   <p className="text-neutral-500 text-sm font-semibold">
                                     CATATAN{' '}
@@ -708,7 +711,27 @@ function CheckSheetBarangRS() {
                 ></input>
               </div>
             </div>
-
+            <div className="flex flex-col w-full">
+              <label className="form-label block  text-black text-xs font-extrabold mt-3">
+                Barang Baik Aktual <span className="text-red-500">*</span> :
+              </label>
+              {cetakMesinAwal?.status == 'incoming' ? (
+                <input
+                  type='number'
+                  onChange={(e) => setbbAktual(e.target.value)}
+                  className="w-[20%] h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
+                ></input>
+              ) : (
+                <>
+                  <input
+                    type='number'
+                    readOnly
+                    defaultValue={cetakMesinAwal?.barang_baik_aktual}
+                    className="w-[20%] h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
+                  ></input>
+                </>
+              )}
+            </div>
             <div className="flex w-full justify-between gap-8">
               <div className="flex flex-col w-full">
                 <label className="form-label block  text-black text-xs font-extrabold mt-3">
@@ -738,6 +761,7 @@ function CheckSheetBarangRS() {
                           cetakMesinAwal?.id,
                           cetakMesinAwal?.waktu_sortir,
                           catatan,
+                          bbAktual
                         )
                       }
                       className=" w-full h-10 rounded-md bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
