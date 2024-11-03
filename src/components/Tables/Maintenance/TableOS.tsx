@@ -187,9 +187,8 @@ function TableOS() {
     const minutesDiff = Math.floor(secondsDiff / 60);
     const hoursDiff = Math.floor(minutesDiff / 60);
 
-    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${
-      hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
-    } `;
+    const formattedDifference = `${hoursDiff ? hoursDiff + ' hours ' : ''}${hoursDiff >= 1 ? '' : minutesDiff + ' minutes '
+      } `;
 
     return formattedDifference; // Example format (YYYY-MM-DD)
   }
@@ -835,15 +834,15 @@ function TableOS() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'monitoring'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                      : data.status_tiket == 'temporary'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                      : data.status_tiket == 'request to qc'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                      : data.status_tiket == 'qc rejected'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `: ''
+                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                        : data.status_tiket == 'monitoring'
+                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                          : data.status_tiket == 'temporary'
+                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                            : data.status_tiket == 'request to qc'
+                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                              : data.status_tiket == 'qc rejected'
+                                                ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -854,18 +853,17 @@ function TableOS() {
                               <div className="flex ">
                                 <p
                                   className={
-                                    data.status_tiket == 'pending'
+                                    data.skor_mtc == 0
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'open'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'monitoring'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                      : data.status_tiket == 'temporary'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#fff2b1bd] `
-                                      : data.status_tiket == 'request to qc'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#fcb911] bg-[#FFF2B1] `
-                                      : data.status_tiket == 'qc rejected'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `: ''
+                                      : data.skor_mtc == 20
+                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                        : data.skor_mtc == 40
+                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                          : data.skor_mtc == 50
+                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#fff2b1bd] `
+                                            : data.skor_mtc >= 60
+                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                              : ''
                                   }
                                 >
                                   {data.skor_mtc}%
@@ -883,7 +881,7 @@ function TableOS() {
                               <div>
                                 <div>
                                   {data.status_tiket == 'monitoring' ||
-                                  data.status_tiket == 'request to qc' ? (
+                                    data.status_tiket == 'request to qc' ? (
                                     <button
                                       title="button"
                                       className="text-xs font-bold bg-blue-200 py-2 text-white rounded-md opacity-0"
@@ -921,7 +919,7 @@ function TableOS() {
                                                 openModal1(i);
                                               } else if (
                                                 data.status_tiket ==
-                                                  'temporary' &&
+                                                'temporary' &&
                                                 data.proses_mtcs[lengthProses]
                                                   .cara_perbaikan == null
                                               ) {
@@ -964,7 +962,7 @@ function TableOS() {
                                           skor_mtc={data.proses_mtcs[lengthProses]
                                             .skor_mtc}
                                           jenis_perbaikan={data.proses_mtcs[lengthProses]
-                                            .cara_perbaikan} unit={data.proses_mtcs[lengthProses].unit} bagian={data.proses_mtcs[lengthProses].bagian_mesin}                                        />
+                                            .cara_perbaikan} unit={data.proses_mtcs[lengthProses].unit} bagian={data.proses_mtcs[lengthProses].bagian_mesin} />
                                         // <ModalStockCheckPengganti children={undefined} isOpen={showModal1[i]} onClose={() => closeModal1(i)} kendala={"nu"} onFinish={"nu"} machineName={"nu"} tgl={"nu"} jam={"nu"} namaPemeriksa={"nu"} no={"nu"}>
 
                                         // </ModalStockCheckPengganti>
@@ -1150,14 +1148,14 @@ function TableOS() {
                                               <p
                                                 className={
                                                   proses.skor_mtc <= 100 &&
-                                                  proses.skor_mtc >= 60
+                                                    proses.skor_mtc >= 60
                                                     ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                                     : proses.skor_mtc > 20 &&
                                                       proses.skor_mtc <= 59
-                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                    : proses.skor_mtc <= 20
-                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                                    : ''
+                                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
+                                                      : proses.skor_mtc <= 20
+                                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                                        : ''
                                                 }
                                               >
                                                 {proses.skor_mtc}%
@@ -1205,7 +1203,7 @@ function TableOS() {
                                               tipeMaintenance={
                                                 proses.cara_perbaikan
                                               }
-                                             
+
                                               catatan={proses.note_mtc} unit={proses.unit} bagian={proses.bagian_mesin}
                                             ></ModalDetail>
                                           )}
@@ -1358,7 +1356,7 @@ function TableOS() {
                                   namaMesin={data.mesin}
                                   skor_mtc={data.proses_mtcs[lengthProses].skor_mtc}
                                   jenis_perbaikan={data.proses_mtcs[lengthProses]
-                                    .cara_perbaikan} unit={data.proses_mtcs[lengthProses].unit} bagian={data.proses_mtcs[lengthProses].bagian_mesin}                                />
+                                    .cara_perbaikan} unit={data.proses_mtcs[lengthProses].unit} bagian={data.proses_mtcs[lengthProses].bagian_mesin} />
                               )}
                               {showModal2 && (
                                 <ModalMtcLightHeavy
@@ -1427,15 +1425,15 @@ function TableOS() {
                             data.status_tiket == 'pending'
                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                               : data.status_tiket == 'open'
-                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                              : data.status_tiket == 'monitoring'
-                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                              : data.status_tiket == 'temporary'
-                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                              : data.status_tiket == 'request to qc'
+                                ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                : data.status_tiket == 'monitoring'
+                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                  : data.status_tiket == 'temporary'
+                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                    : data.status_tiket == 'request to qc'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#fcb911] bg-[#FFF2B1] `
                                       : data.status_tiket == 'qc rejected'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `: ''
+                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ''
                           }
                         >
                           {data.skor_mtc}%
@@ -1465,15 +1463,15 @@ function TableOS() {
                                     data.status_tiket == 'pending'
                                       ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                       : data.status_tiket == 'open'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'monitoring'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                      : data.status_tiket == 'temporary'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                      : data.status_tiket == 'request to qc'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#fcb911] bg-[#FFF2B1] `
-                                      : data.status_tiket == 'qc rejected'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `: ''
+                                        ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                        : data.status_tiket == 'monitoring'
+                                          ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                          : data.status_tiket == 'temporary'
+                                            ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
+                                            : data.status_tiket == 'request to qc'
+                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#fcb911] bg-[#FFF2B1] `
+                                              : data.status_tiket == 'qc rejected'
+                                                ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] ` : ''
                                   }
                                 >
                                   {data.status_tiket}{' '}
@@ -1607,14 +1605,14 @@ function TableOS() {
                                         <p
                                           className={
                                             proses.skor_mtc <= 100 &&
-                                            proses.skor_mtc >= 60
+                                              proses.skor_mtc >= 60
                                               ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
                                               : proses.skor_mtc >= 20 &&
                                                 proses.skor_mtc <= 59
-                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                              : proses.skor_mtc < 20
-                                              ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
-                                              : ''
+                                                ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
+                                                : proses.skor_mtc < 20
+                                                  ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                                  : ''
                                           }
                                         >
                                           {proses.skor_mtc}%

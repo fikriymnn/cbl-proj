@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
 
 function HistoryProsesLipat() {
     const [isMobile, setIsMobile] = useState(false);
@@ -12,6 +14,7 @@ function HistoryProsesLipat() {
     const date = today.getDate();
     const currentDate = month + '/' + date + '/' + year;
     const navigate = useNavigate();
+    const [page, setPage] = useState(1);
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
     };
@@ -31,7 +34,7 @@ function HistoryProsesLipat() {
 
     useEffect(() => {
         getPondMesin();
-    }, []);
+    }, [page]);
 
     async function getPondMesin() {
         const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiLipat`;
@@ -39,6 +42,8 @@ function HistoryProsesLipat() {
             const res = await axios.get(url, {
                 params: {
                     status: 'history',
+                    page: page,
+                    limit: 15,
                 },
                 withCredentials: true,
             });
@@ -74,34 +79,60 @@ function HistoryProsesLipat() {
                                     No. JO
                                 </label>
 
+                                <label className="text-neutral-500 text-sm font-semibold col-span-2 ">
+                                    Nama Produk
+                                </label>
                                 <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                    Nama. JO
+                                    Customer
+                                </label>
+                                <label className="text-neutral-500 text-sm font-semibold ">
+                                    Shift
+                                </label>
+                                <label className="text-neutral-500 text-sm font-semibold pl-4">
+                                    Mesin
+                                </label>
+                                <label className="text-neutral-500 text-sm font-semibold pl-5">
+                                    Operator
                                 </label>
                             </div>
                             <div className="w-2 h-full "></div>
                             {pondMesin != null &&
                                 pondMesin.data?.map((data: any, i: any) => (
                                     <>
-                                        <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] gap-2 items-center ">
-                                            <div className="flex w-full col-span-2 bg-red items-center">
+                                        <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF]  items-center ">
+                                            <div className="flex w-full col-span-2 bg-red items-center gap-3">
                                                 <div
                                                     className={`w-2 h-full sticky left-0 z-20  gap-8 py-6 ${data.jenis_potong == 'potong bahan'
-                                                            ? 'bg-green-600'
-                                                            : 'bg-blue-600'
+                                                        ? 'bg-green-600'
+                                                        : 'bg-blue-600'
                                                         }`}
                                                 ></div>
 
-                                                <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-6">
+                                                <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                                     {data.no_jo}
                                                 </label>
-                                            </div>
 
-                                            <label className="text-neutral-500 text-sm font-semibold col-span-6 uppercase"></label>
-                                            <div className="justify-end flex pr-2 col-span-2">
+                                            </div>
+                                            <label className="text-neutral-500 text-sm font-semibold col-span-2 line-clamp-2">
+                                                {data.item}
+                                            </label>
+                                            <label className="text-neutral-500 text-sm font-semibold col-span-2 line-clamp-2">
+                                                {data.customer}
+                                            </label>
+                                            <label className="text-neutral-500 text-sm font-semibold ">
+                                                {data.shift}
+                                            </label>
+                                            <label className="text-neutral-500 text-sm font-semibold ">
+                                                {data.mesin}
+                                            </label>
+                                            <label className="text-neutral-500 text-sm font-semibold ">
+                                                {data.operator}
+                                            </label>
+                                            <div className="justify-end flex pr-2 ">
                                                 <>
                                                     <Link to={`/qc/qualityinspection/lipat/${data.id}`}>
                                                         <button
-                                                            className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                                                            className={`uppercase px-4 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                         >
                                                             PILIH
                                                         </button>
@@ -112,6 +143,18 @@ function HistoryProsesLipat() {
                                     </>
                                 ))}
                         </div>
+                    </div>
+                    <div className="w-full flex justify-center mt-5 ">
+                        <Stack spacing={2}>
+                            <Pagination
+                                count={pondMesin?.total_page}
+                                color="primary"
+                                onChange={(e, i) => {
+                                    setPage(i);
+                                    console.log(i);
+                                }}
+                            />
+                        </Stack>
                     </div>
                 </main>
             )}

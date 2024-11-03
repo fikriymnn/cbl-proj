@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
 
 function HistoryKelengkapanplate() {
     const [isMobile, setIsMobile] = useState(false);
@@ -12,6 +14,7 @@ function HistoryKelengkapanplate() {
     const date = today.getDate();
     const currentDate = month + '/' + date + '/' + year;
     const navigate = useNavigate();
+    const [page, setPage] = useState(1);
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
     };
@@ -31,7 +34,7 @@ function HistoryKelengkapanplate() {
 
     useEffect(() => {
         getPondMesin();
-    }, []);
+    }, [page]);
 
     async function getPondMesin() {
         const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiKelengkapanPlate`;
@@ -39,7 +42,8 @@ function HistoryKelengkapanplate() {
             const res = await axios.get(url, {
                 params: {
                     status: 'history',
-
+                    page: page,
+                    limit: 15,
                 },
                 withCredentials: true,
             });
@@ -90,6 +94,9 @@ function HistoryKelengkapanplate() {
                                 <label className="text-neutral-500 text-sm font-semibold">
                                     Mesin
                                 </label>
+                                <label className="text-neutral-500 text-sm font-semibold">
+                                    Total Warna
+                                </label>
                             </div>
                             <div className="w-2 h-full "></div>
                             {pondMesin != null &&
@@ -119,8 +126,11 @@ function HistoryKelengkapanplate() {
                                             <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                                 {data.customer}
                                             </label>
-                                            <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                            <label className="text-neutral-500 text-sm font-semibold ">
                                                 {data.mesin}
+                                            </label>
+                                            <label className="text-neutral-500 text-sm font-semibold ">
+                                                {data.total_warna}
                                             </label>
                                             <div className="justify-end flex pr-2 ">
                                                 <>
@@ -128,7 +138,7 @@ function HistoryKelengkapanplate() {
                                                         to={`/qc/qualityinspection/praplate/${data.id}`}
                                                     >
                                                         <button
-                                                            className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                                                            className={`uppercase px-4 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                         >
                                                             PILIH
                                                         </button>
@@ -139,6 +149,18 @@ function HistoryKelengkapanplate() {
                                     </>
                                 ))}
                         </div>
+                    </div>
+                    <div className="w-full flex justify-center mt-5 ">
+                        <Stack spacing={2}>
+                            <Pagination
+                                count={pondMesin?.total_page}
+                                color="primary"
+                                onChange={(e, i) => {
+                                    setPage(i);
+                                    console.log(i);
+                                }}
+                            />
+                        </Stack>
                     </div>
                 </main>
             )}

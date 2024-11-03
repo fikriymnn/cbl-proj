@@ -342,11 +342,6 @@ function CheckSheetHasilRabut() {
                           <label className="text-neutral-500 text-sm font-semibold w-10/12">
                             QTY PALET KE {index + 1}
                           </label>
-                        </div>
-                        <div>
-                          <label className="text-neutral-500 text-sm font-semibold ">
-                            PARAMETER
-                          </label>
                           {data.status == 'done' ? (
                             <input
                               name="qty_pallet"
@@ -364,6 +359,8 @@ function CheckSheetHasilRabut() {
                               className="px-1 border rounded border-strokedark w-10/12"
                             />
                           ) : null}
+                        </div>
+                        <div className="flex flex-col">
                         </div>
                         <div className="flex flex-col">
                           <label className="text-neutral-500 text-sm font-semibold ">
@@ -703,7 +700,7 @@ function CheckSheetHasilRabut() {
                         onClick={() => doneRabut(RabutMesin?.data.id)}
                         className=" col-span-2 w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                       >
-                        SIMPAN PERIODE
+                        CHECKSHEET SELESAI
                       </button>
                     ) : null}
                   </div>

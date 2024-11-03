@@ -1280,6 +1280,36 @@ const Sidebar = ({
             );
           }}
         </SidebarLinkGroup>
+        <>
+          <SidebarLinkGroup
+            activeCondition={pathname === '/prepress' || pathname.includes('prepress')}
+          >
+            {(handleClick, open) => {
+              return (
+                <React.Fragment>
+                  <NavLink
+                    to="/prepress"
+                    className={({ isActive }) =>
+                      `group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium !text-white duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4` +
+                      (isActive &&
+                        '!text-[#0065DE] bg-white text-primary py-3 px-1 text-[16px]')
+                    }
+                    onClick={(e) => {
+                      e.preventDefault();
+
+                      sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                      navigate('/prepress');
+                    }}
+                  >
+                    <img src={QC} alt="Logo" />
+                    Pre Press
+
+                  </NavLink>
+                </React.Fragment>
+              )
+            }}
+          </SidebarLinkGroup>
+        </>
         <SidebarLinkGroup
           activeCondition={
             pathname === '/masterdata' || pathname.includes('masterdata')
@@ -1569,6 +1599,160 @@ const Sidebar = ({
             );
           }}
         </SidebarLinkGroup>
+        <SidebarLinkGroup
+          activeCondition={pathname === '/hr' || pathname.includes('hr')}
+        >
+          {(handleClick, open) => {
+            return (
+              <React.Fragment>
+                <NavLink
+                  to="/hr"
+                  className={({ isActive }) =>
+                    `group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium !text-white duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4` +
+                    (isActive &&
+                      '!text-[#0065DE] bg-white text-primary py-3 px-1 text-[16px]')
+                  }
+                  onClick={(e) => {
+                    e.preventDefault();
+
+                    sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                  }}
+                >
+                  <img src={QC} alt="Logo" />
+                  Human Resource
+                  <svg
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
+                      }`}
+                    width="7"
+                    height="8"
+                    viewBox="0 0 7 8"
+                    fill=""
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z"
+                      fill=""
+                    />
+                  </svg>
+                </NavLink>
+                {/* <!-- Dropdown Menu Start --> */}
+                <div
+                  className={`translate transform overflow-hidden ${!open && 'hidden'
+                    }`}
+                >
+                  <ul className="mt-4 mb-5.5 flex flex-col gap-5 pl-3">
+                    <li>
+                      <SidebarLinkGroup
+                        activeCondition={
+                          pathname === '/pm' || pathname.includes('pm')
+                        }
+                      >
+                        {(handleClick, open) => {
+                          return (
+                            <React.Fragment>
+                              <NavLink
+                                to="#"
+                                className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${(pathname === '/hr/pm' ||
+                                  pathname.includes('/hr/pm')) &&
+                                  ' dark:bg-meta-4'
+                                  }`}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  sidebarExpanded
+                                    ? handleClick()
+                                    : setSidebarExpanded1(true);
+                                }}
+                              >
+                                <img src={Inspect} alt="Logo" />
+                                PERSONNEL MANAGEMENT
+                                <svg
+                                  className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
+                                    }`}
+                                  width="7"
+                                  height="8"
+                                  viewBox="0 0 7 8"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z"
+                                    fill="white"
+                                  />
+                                </svg>
+                              </NavLink>
+                              {/* <!-- Dropdown Menu Start --> */}
+                              <div
+                                className={`translate transform overflow-hidden ${!open && 'hidden'
+                                  }`}
+                              >
+                                <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                  <li>
+                                    <NavLink
+                                      to="/hr/pm/masterperusahaan"
+                                      className={({ isActive }) =>
+                                        'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                        (isActive &&
+                                          '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                      }
+                                    >
+                                      Master Perusahaan
+                                    </NavLink>
+                                  </li>
+                                </ul>
+                              </div>
+                              <div
+                                className={`translate transform overflow-hidden ${!open && 'hidden'
+                                  }`}
+                              >
+                                <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
+                                  <li>
+                                    <NavLink
+                                      to="/hr/pm/masterkaryawan"
+                                      className={({ isActive }) =>
+                                        'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                        (isActive &&
+                                          '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                      }
+                                    >
+                                      Master Karyawan
+                                    </NavLink>
+                                  </li>
+                                </ul>
+                              </div>
+                              <div
+                                className={`translate transform overflow-hidden ${!open && 'hidden'
+                                  }`}
+                              >
+                                <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
+                                  <li>
+                                    <NavLink
+                                      to="/hr/pm/kalenderkerja"
+                                      className={({ isActive }) =>
+                                        'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                        (isActive &&
+                                          '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                      }
+                                    >
+                                      Kalender Kerja
+                                    </NavLink>
+                                  </li>
+                                </ul>
+                              </div>
+                              {/* <!-- Dropdown Menu End --> */}
+                            </React.Fragment>
+                          );
+                        }}
+                      </SidebarLinkGroup>
+                    </li>
+
+                  </ul>
+                </div>
+                {/* <!-- Dropdown Menu End --> */}
+              </React.Fragment>
+            );
+          }}
+
+        </SidebarLinkGroup>
       </>
     );
   };
@@ -1577,6 +1761,28 @@ const Sidebar = ({
     return (
       <>
         <>
+          <li>
+            <NavLink
+              to="/dashboard"
+              className={`group relative flex items-center text-white mb-4 gap-5 rounded-sm py-3 px-4 font-medium  duration-300 ease-in-out  ${pathname.includes('/dashboard') && '!bg-white text-primary '
+                }`}
+            >
+              <svg
+                className="fill-current"
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M0.998291 -0.00927734C0.445991 -0.00927734 -0.00170898 0.438723 -0.00170898 0.990723V13.9907C-0.00170898 16.1997 1.78919 17.9907 3.99829 17.9907H16.9983C17.5503 17.9907 17.9983 17.5427 17.9983 16.9907C17.9983 16.4387 17.5503 15.9907 16.9983 15.9907H3.99829C2.89369 15.9907 1.99829 15.0957 1.99829 13.9907V0.990723C1.99829 0.438723 1.55059 -0.00927734 0.998291 -0.00927734ZM10.9983 1.99072V3.99072H14.5603L11.7793 6.77173C11.6893 6.86273 11.4083 6.99072 11.2793 6.99072H9.71729C9.05829 6.99072 8.24529 7.30573 7.77929 7.77173L4.27949 11.2717C3.88899 11.6627 3.88899 12.3187 4.27949 12.7097C4.47479 12.9047 4.74239 12.9907 4.99829 12.9907C5.25419 12.9907 5.52179 12.9047 5.71709 12.7097L9.21729 9.20972C9.30729 9.11872 9.58829 8.99072 9.71729 8.99072H11.2793C11.9383 8.99072 12.7513 8.67572 13.2173 8.20972L15.9983 5.42871V8.99072H17.9983V2.99072C17.9983 2.43872 17.5503 1.99072 16.9983 1.99072H10.9983Z"
+                  fill=""
+                />
+              </svg>
+              Dashboard
+            </NavLink>
+          </li>
           <SidebarLinkGroup
             activeCondition={
               pathname === '/maintenance' || pathname.includes('maintenance')
@@ -2471,6 +2677,7 @@ const Sidebar = ({
     return (
       <>
         <li>
+
           <NavLink
             to="/dashboard"
             className={`group relative flex items-center text-white mb-4 gap-5 rounded-sm py-3 px-4 font-medium  duration-300 ease-in-out  ${pathname.includes('/dashboard') && '!bg-white text-primary '
@@ -3127,7 +3334,40 @@ const Sidebar = ({
       </>
     );
   };
+  const renderPrePress = () => {
+    return (
+      <>
+        <SidebarLinkGroup
+          activeCondition={pathname === '/prepress' || pathname.includes('prepress')}
+        >
+          {(handleClick, open) => {
+            return (
+              <React.Fragment>
+                <NavLink
+                  to="/prepress"
+                  className={({ isActive }) =>
+                    `group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium !text-white duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4` +
+                    (isActive &&
+                      '!text-[#0065DE] bg-white text-primary py-3 px-1 text-[16px]')
+                  }
+                  onClick={(e) => {
+                    e.preventDefault();
 
+                    sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                    navigate('/prepress');
+                  }}
+                >
+                  <img src={QC} alt="Logo" />
+                  Pre Press
+
+                </NavLink>
+              </React.Fragment>
+            )
+          }}
+        </SidebarLinkGroup>
+      </>
+    );
+  };
   // close on click outside
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
@@ -3222,6 +3462,9 @@ const Sidebar = ({
                 bagian === 'maintenance' &&
                 renderShift()}
               {role === 'admin' && bagian === 'quality control' && renderQC()}
+
+              {role === 'pre_press' && bagian === 'quality control' && renderPrePress()}
+
             </ul>
           </div>
         </nav>

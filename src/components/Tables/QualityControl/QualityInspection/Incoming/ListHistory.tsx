@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
-
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
 
 function ListHistory() {
     const [isMobile, setIsMobile] = useState(false);
@@ -13,6 +14,9 @@ function ListHistory() {
     const date = today.getDate();
     const currentDate = month + "/" + date + "/" + year;
     const navigate = useNavigate();
+
+    const [page, setPage] = useState(1);
+
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
     };
@@ -34,18 +38,22 @@ function ListHistory() {
     useEffect(() => {
 
         getInspection();
-    }, []);
+    }, [page]);
 
     async function getInspection() {
         const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahan?status=history`;
         try {
             const res = await axios.get(url, {
+                params: {
 
+                    page: page,
+                    limit: 15,
+                },
                 withCredentials: true,
             });
 
-            setIncoming(res.data.data);
-            console.log(res.data.data);
+            setIncoming(res.data);
+            console.log(res.data);
         } catch (error: any) {
             console.log(error.data.msg);
         }
@@ -110,7 +118,7 @@ function ListHistory() {
                                 <div className='flex flex-col  justify-end  items-end'>
                                 </div>
                             </section>
-                            {incoming?.map((data: any, i: any) => (
+                            {incoming?.data?.map((data: any, i: any) => (
                                 <>
                                     <section className=' grid grid-cols-10 px-4 items-center  border-b-8 border-[#D8EAFF] '>
                                         <div className='flex flex-col    sticky left-2 ps-3 md:ps-0 bg-white'>
@@ -148,6 +156,18 @@ function ListHistory() {
                                 </>
                             ))}
                         </div>
+                    </div>
+                    <div className="w-full flex justify-center mt-5 ">
+                        <Stack spacing={2}>
+                            <Pagination
+                                count={incoming?.total_page}
+                                color="primary"
+                                onChange={(e, i) => {
+                                    setPage(i);
+                                    console.log(i);
+                                }}
+                            />
+                        </Stack>
                     </div>
                 </main>
             )}

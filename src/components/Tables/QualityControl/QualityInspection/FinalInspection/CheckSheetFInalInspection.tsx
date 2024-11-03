@@ -21,6 +21,8 @@ function ChecksheetFinalInspection() {
   const [noPallet, setnoPallet] = useState<any>();
   const [noPacking, setnoPacking] = useState<any>();
   const [status, setStatus] = useState<any>();
+  const [noBarcode, setnoBarcode] = useState<any>();
+
   useEffect(() => {
     getFinalInspection();
   }, []);
@@ -69,6 +71,7 @@ function ChecksheetFinalInspection() {
           {
             lama_pengerjaan: totalSecondsToSave,
             catatan: Catatan,
+            no_barcode: noBarcode,
             no_pallet: noPallet,
             no_packing: noPacking,
             qty_packing: qtyPacking,
@@ -89,6 +92,7 @@ function ChecksheetFinalInspection() {
             catatan: Catatan,
             no_pallet: noPallet,
             no_packing: noPacking,
+            no_barcode: noBarcode,
             qty_packing: qtyPacking,
             jumlah_packing: jumlahPacking,
             status: status,
@@ -106,18 +110,24 @@ function ChecksheetFinalInspection() {
       alert(error.response.data.message);
     }
   }
+  const [qtyReject, setQtyReject] = useState(0);
 
   const handleChangePoint = (e: any, i: number) => {
+
     const { name, value } = e.target;
     const onchangeVal: any = FinalInspection;
     onchangeVal.inspeksi_final_point[i][name] = value;
     setFinalInspection(onchangeVal);
+
+    setQtyReject(onchangeVal.inspeksi_final_point.reduce((acc: any, item: any) => acc + parseInt(item.qty), 0));
   };
   const handleChangePointHasil = (e: any, i: number) => {
     const { name, value } = e.target;
     const onchangeVal: any = FinalInspection;
     onchangeVal.inspeksi_final_point[i]['hasil'] = value;
     setFinalInspection(onchangeVal);
+
+
   };
 
   const handleChangeSubPoint = (e: any, i: number) => {
@@ -154,6 +164,8 @@ function ChecksheetFinalInspection() {
     FinalInspection != null && FinalInspection?.waktu_selesai != null
       ? convertDateTime(FinalInspection?.waktu_selesai)
       : '-';
+
+
 
   return (
     <>
@@ -518,11 +530,13 @@ function ChecksheetFinalInspection() {
                                 </div>
                               </div>
                               <div className="flex justify-center w-full mb-2">
+
                                 {FinalInspection?.status == 'incoming' ? (
                                   <input
 
                                     type="text"
                                     name="reject"
+                                    value={qtyReject}
                                     onChange={(e) => {
                                       handleChangeSubPoint(e, indexSub);
                                     }}
@@ -630,16 +644,17 @@ function ChecksheetFinalInspection() {
                               {FinalInspection?.status == 'incoming' ? (
                                 <input
                                   required
-                                  type="text"
+                                  type="number"
                                   name="qty"
                                   onChange={(e) => {
+
                                     handleChangePoint(e, indexPoint);
                                   }}
                                   className=" border rounded border-strokedark"
                                 />
                               ) : (
                                 <input
-                                  type="text"
+                                  type="number"
                                   name="qty"
                                   disabled
                                   defaultValue={dataPoint.qty}
@@ -850,7 +865,37 @@ function ChecksheetFinalInspection() {
               )}
 
             <div className="bg-white mt-2 w-full grid grid-cols-12 gap-5 p-2 text-sm font-semibold ">
+
               <div className="col-span-6">
+                <div className="w-[40%]">
+                  <p className="">Nomor Barcode :</p>
+                  {FinalInspection?.status == 'incoming' ? (
+                    <input
+                      type='text'
+                      required
+                      name=""
+                      id=""
+                      onChange={(e) => {
+                        setnoBarcode(e.target.value);
+                      }}
+
+                      className="w-full border rounded px-2"
+                    ></input>
+                  ) : (
+                    <input
+                      type='text'
+                      name=""
+                      id=""
+                      disabled
+                      defaultValue={FinalInspection?.no_barcode}
+                      onChange={(e) => {
+                        setnoBarcode(e.target.value);
+                      }}
+
+                      className="w-full border rounded px-2"
+                    ></input>
+                  )}
+                </div>
                 <p className="">Catatan *:</p>
                 {FinalInspection?.status == 'incoming' ? (
                   <textarea

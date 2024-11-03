@@ -185,8 +185,8 @@ function ChecksheetRusakSebagian() {
     setFinalInspection(onchangeVal);
   };
 
-  const tanggal = convertTimeStampToDateOnly(FinalInspection?.data?.tanggal);
-  const jam = convertDateToTime(FinalInspection?.data?.tanggal);
+  const tanggal = convertTimeStampToDateOnly(FinalInspection?.data?.createdAt);
+  const jam = convertDateToTime(FinalInspection?.data?.createdAt);
 
   const jumlahWaktuCheck = formatElapsedTime(
     FinalInspection?.data?.waktu_check,
@@ -246,9 +246,11 @@ function ChecksheetRusakSebagian() {
                   </label>
 
                   <label className="text-neutral-500 text-sm font-semibold">
-                    Jumlah Druk
+                    Jumlah Druk / Mata
                   </label>
-
+                  <label className="text-neutral-500 text-sm font-semibold">
+                    Jumlah Pcs
+                  </label>
                   <label className="text-neutral-500 text-sm font-semibold">
                     Outsourcing
                   </label>
@@ -266,7 +268,10 @@ function ChecksheetRusakSebagian() {
                     : {FinalInspection?.data?.nama_produk}
                   </label>
                   <label className="text-neutral-500 text-sm font-semibold">
-                    : {FinalInspection?.data?.jumlah_druk}
+                    : {FinalInspection?.data?.jumlah_druk} / {FinalInspection?.data?.isi_mata}
+                  </label>
+                  <label className="text-neutral-500 text-sm font-semibold">
+                    : {FinalInspection?.data?.jumlah_pcs}
                   </label>
                   {FinalInspection?.data?.status == 'incoming' ? (
                     <>
@@ -385,8 +390,8 @@ function ChecksheetRusakSebagian() {
                           <input
                             required
                             type="radio"
-                            name="ss"
-                            id="ss"
+                            name="ss44"
+                            id="ss66"
                             value={'Sesuai'}
                             onChange={(e) => setJenisHasil(e.target.value)}
                           />
@@ -398,8 +403,8 @@ function ChecksheetRusakSebagian() {
                           <input
                             required
                             type="radio"
-                            name="ss"
-                            id="ss1"
+                            name="ss44"
+                            id="ss66"
                             value={'Tidak Sesuai'}
                             onChange={(e) => setJenisHasil(e.target.value)}
                           />
@@ -445,7 +450,7 @@ function ChecksheetRusakSebagian() {
                               CUPK
                             </option>
                             <option value="PERUBAHAN" className="text-[#646464] text-xs dark:text-bodydark">
-                              PERUBAHAN
+                              REPEAT PERUBAHAN
                             </option>
 
                           </select>
@@ -653,6 +658,19 @@ onChange={(e) => setWaktuSortir(e.target.value)}
                                 />
                                 <label className="mr-2" htmlFor="ss1">
                                   Tidak Sesuai
+                                </label>
+                              </div>
+                              <div className="flex gap-2">
+                                <input
+                                  required
+                                  type="radio"
+                                  name={`ss ${index}`}
+                                  id="ss2"
+                                  value="Tidak Ada Proses"
+                                  onChange={(e) => handleChangePointRadio(e, index)}
+                                />
+                                <label className="mr-2" htmlFor="ss2">
+                                  Tidak Ada Proses
                                 </label>
                               </div>
                             </div>

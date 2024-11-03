@@ -11,6 +11,8 @@ import Logo from '../../images/logo/logo-cbl 1.svg';
 
 import axios from 'axios';
 import ModalEditMesinMaster from '../../Modals/ModalEditMesinMaster';
+import ModalKosongan from '../../Modals/Qc/NCR/NCRResponQC';
+import ModalKosonganSmall from '../../Modals/ModalKosonganSmall';
 
 
 const TableMachine = () => {
@@ -35,6 +37,7 @@ const TableMachine = () => {
 
         getMasterMesin();
     }, []);
+
     async function getMasterMesin() {
         const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
         try {
@@ -43,6 +46,52 @@ const TableMachine = () => {
             });
 
             setmasterMesin(res.data);
+            console.log(res.data);
+        } catch (error: any) {
+            console.log(error.data.msg);
+        }
+    }
+
+    async function deleteMasterMesin(id: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/master/mesin/${id}`;
+        try {
+            const res = await axios.delete(url, {
+                withCredentials: true,
+            });
+
+            window.location.reload();
+            getMasterMesin()
+            console.log(res.data);
+        } catch (error: any) {
+            console.log(error.data.msg);
+        }
+    }
+
+    const [serial, setSerial] = useState<any>();
+    const [namaMesin, setnamaMesin] = useState<any>();
+    const [bagianMesin, setbagianMesin] = useState<any>();
+    const [lokasiMesin, setlokasiMesin] = useState<any>();
+    const [kodeMesin, setkodeMesin] = useState<any>();
+
+
+    async function postMasterMesin() {
+
+        const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
+        try {
+            const res = await axios.post(url,
+                {
+                    serial_number: serial,
+                    nama_mesin: namaMesin,
+                    bagian_mesin: bagianMesin,
+                    lokasi_mesin: lokasiMesin,
+                    kode_mesin: kodeMesin
+                },
+                {
+
+                    withCredentials: true,
+                });
+            window.location.reload();
+            getMasterMesin()
             console.log(res.data);
         } catch (error: any) {
             console.log(error.data.msg);
@@ -62,6 +111,26 @@ const TableMachine = () => {
 
         setShowEdit(onchangeVal);
     };
+
+    const [showHistory, setShowHistory] = useState(false);
+    const openModalHistory = () => setShowHistory(true);
+    const closeModalHistory = () => setShowHistory(false);
+
+
+    const [showDelete, setShowDelete] = useState<any>([]);
+    const openDelete = (i: any) => {
+        const onchangeVal: any = [...showDelete];
+        onchangeVal[i] = true;
+
+        setShowDelete(onchangeVal);
+    };
+    const closeDelete = (i: any) => {
+        const onchangeVal: any = [...showDelete];
+        onchangeVal[i] = false;
+
+        setShowDelete(onchangeVal);
+    };
+
     return (
         <div className="rounded-xl border border-stroke bg-white pt-4 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
             {!isMobile && (
@@ -74,9 +143,114 @@ const TableMachine = () => {
                             id=""
                             className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
                         />
-                        <button className=' bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1'>
-                            TAMBAH MACHINE
+                        <button
+                            onClick={() => openModalHistory()}
+                            className=' bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1'>
+                            TAMBAH MESIN
                         </button>
+                        {showHistory == true && (
+                            <>
+                                <ModalKosongan
+                                    isOpen={showHistory}
+                                    onClose={() => closeModalHistory()}
+                                    judul={'Tambah Mesin'}
+                                >
+                                    <>
+                                        <div className="flex w-full flex-col pt-7 ">
+                                            <>
+                                                <form onSubmit={(e) => {
+                                                    e.preventDefault()
+                                                    postMasterMesin()
+                                                }}>
+
+
+                                                    <div className="flex w-full flex-row  pt-3 px-4">
+                                                        <label className="text-black text-xs font-bold">
+                                                            Serial Number
+                                                        </label>
+                                                        <div className="flex w-full">
+                                                            <input
+                                                                name="serial_number"
+                                                                onChange={(e) => { setSerial(e.target.value) }}
+                                                                type="text"
+                                                                className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                            />
+                                                        </div>
+
+                                                    </div>
+                                                    <div className="flex w-full flex-row  pt-3 px-4">
+                                                        <label className="text-black text-xs font-bold">
+                                                            Nama Mesin
+                                                        </label>
+                                                        <div className="flex w-full">
+                                                            <input
+                                                                name="nama_mesin"
+                                                                onChange={(e) => { setnamaMesin(e.target.value) }}
+                                                                type="text"
+                                                                className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                            />
+                                                        </div>
+
+                                                    </div>
+                                                    <div className="flex w-full flex-row  pt-3 px-4">
+                                                        <label className="text-black text-xs font-bold">
+                                                            Kode Mesin
+                                                        </label>
+                                                        <div className="flex w-full">
+                                                            <input
+                                                                name="kode_mesin"
+                                                                onChange={(e) => { setkodeMesin(e.target.value) }}
+                                                                type="text"
+                                                                className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                            />
+                                                        </div>
+
+                                                    </div>
+                                                    <div className="flex w-full flex-row  pt-3 px-4">
+                                                        <label className="text-black text-xs font-bold">
+                                                            Lokasi Mesin
+                                                        </label>
+                                                        <div className="flex w-full">
+                                                            <input
+                                                                name="lokasi_mesin"
+                                                                onChange={(e) => { setlokasiMesin(e.target.value) }}
+                                                                type="text"
+                                                                className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                            />
+                                                        </div>
+
+                                                    </div>
+                                                    <div className="flex w-full flex-row  pt-3 px-4">
+                                                        <label className="text-black text-xs font-bold">
+                                                            Bagian Mesin
+                                                        </label>
+                                                        <div className="flex w-full">
+                                                            <input
+                                                                name="bagian_mesin"
+                                                                onChange={(e) => { setbagianMesin(e.target.value) }}
+                                                                type="text"
+                                                                className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                            />
+                                                        </div>
+
+                                                    </div>
+                                                    <div className="flex w-full justify-end">
+                                                        <button
+                                                            type='submit'
+                                                            value='submit'
+                                                            className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
+                                                        >
+                                                            SIMPAN
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </>
+                                        </div>
+                                    </>
+                                </ModalKosongan>
+                            </>
+                        )
+                        }
                     </div>
 
                     <div className="flex flex-col">
@@ -158,9 +332,33 @@ const TableMachine = () => {
                                                         data={data}
                                                     />
                                                 )}
-                                                <button className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                <button
+                                                    onClick={() => openDelete(i)}
+                                                    className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                     DELETE
                                                 </button>
+                                                {showDelete[i] == true && (
+                                                    <>
+                                                        <ModalKosonganSmall
+                                                            isOpen={showDelete[i]}
+                                                            onClose={() => closeDelete(i)}
+                                                            judul={'Hapus Mesin'}
+                                                        >
+                                                            <>
+                                                                <div className="flex w-full flex-col pt-7 px-2 py-3">
+                                                                    <>
+                                                                        <button
+                                                                            onClick={() => deleteMasterMesin(data.id)}
+                                                                            className='bg-red-600 h-7 rounded-md text-white text-xs font-bold px-4 py-1'>
+                                                                            HAPUS MESIN
+                                                                        </button>
+                                                                    </>
+                                                                </div>
+                                                            </>
+                                                        </ModalKosonganSmall>
+                                                    </>
+                                                )
+                                                }
                                             </div>
                                         </div>
                                     </>
@@ -180,9 +378,114 @@ const TableMachine = () => {
                             id=""
                             className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
                         />
-                        <button className=' bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1'>
+                        <button
+                            onClick={() => openModalHistory()}
+                            className=' bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1'>
                             TAMBAH MESIN
                         </button>
+                        {showHistory == true && (
+                            <>
+                                <ModalKosongan
+                                    isOpen={showHistory}
+                                    onClose={() => closeModalHistory()}
+                                    judul={'Tambah Mesin'}
+                                >
+                                    <>
+                                        <div className="flex w-full flex-col pt-7 ">
+                                            <>
+                                                <form onSubmit={(e) => {
+                                                    e.preventDefault()
+                                                    postMasterMesin()
+                                                }}>
+
+
+                                                    <div className="flex w-full flex-row  pt-3 px-4">
+                                                        <label className="text-black text-xs font-bold">
+                                                            Serial Number
+                                                        </label>
+                                                        <div className="flex w-full">
+                                                            <input
+                                                                name="serial_number"
+                                                                onChange={(e) => { setSerial(e.target.value) }}
+                                                                type="text"
+                                                                className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                            />
+                                                        </div>
+
+                                                    </div>
+                                                    <div className="flex w-full flex-row  pt-3 px-4">
+                                                        <label className="text-black text-xs font-bold">
+                                                            Nama Mesin
+                                                        </label>
+                                                        <div className="flex w-full">
+                                                            <input
+                                                                name="nama_mesin"
+                                                                onChange={(e) => { setnamaMesin(e.target.value) }}
+                                                                type="text"
+                                                                className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                            />
+                                                        </div>
+
+                                                    </div>
+                                                    <div className="flex w-full flex-row  pt-3 px-4">
+                                                        <label className="text-black text-xs font-bold">
+                                                            Kode Mesin
+                                                        </label>
+                                                        <div className="flex w-full">
+                                                            <input
+                                                                name="kode_mesin"
+                                                                onChange={(e) => { setkodeMesin(e.target.value) }}
+                                                                type="text"
+                                                                className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                            />
+                                                        </div>
+
+                                                    </div>
+                                                    <div className="flex w-full flex-row  pt-3 px-4">
+                                                        <label className="text-black text-xs font-bold">
+                                                            Lokasi Mesin
+                                                        </label>
+                                                        <div className="flex w-full">
+                                                            <input
+                                                                name="lokasi_mesin"
+                                                                onChange={(e) => { setlokasiMesin(e.target.value) }}
+                                                                type="text"
+                                                                className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                            />
+                                                        </div>
+
+                                                    </div>
+                                                    <div className="flex w-full flex-row  pt-3 px-4">
+                                                        <label className="text-black text-xs font-bold">
+                                                            Bagian Mesin
+                                                        </label>
+                                                        <div className="flex w-full">
+                                                            <input
+                                                                name="bagian_mesin"
+                                                                onChange={(e) => { setbagianMesin(e.target.value) }}
+                                                                type="text"
+                                                                className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                            />
+                                                        </div>
+
+                                                    </div>
+                                                    <div className="flex w-full justify-end">
+                                                        <button
+                                                            type='submit'
+                                                            value='submit'
+                                                            className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
+                                                        >
+                                                            SIMPAN
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </>
+                                        </div>
+                                    </>
+                                </ModalKosongan>
+                            </>
+                        )
+                        }
                     </div>
 
                     <div className="flex flex-col w-full ">
@@ -241,12 +544,45 @@ const TableMachine = () => {
 
                                         </div>
                                         <div className="flex items-start w-full justify-start p-2.5 gap-2 border-b border-stroke dark:border-strokedark">
-                                            <button className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                            <button onClick={() => openEdit(i)} className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                 EDIT
                                             </button>
-                                            <button className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                            {showEdit[i] == true && (
+                                                <ModalEditMesinMaster
+                                                    children={undefined}
+                                                    isOpen={showEdit[i]}
+                                                    onClose={() => closeEdit(i)}
+                                                    idMesin={data.id}
+                                                    data={data}
+                                                />
+                                            )}
+                                            <button
+                                                onClick={() => openDelete(i)}
+                                                className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                 DELETE
                                             </button>
+                                            {showDelete[i] == true && (
+                                                <>
+                                                    <ModalKosonganSmall
+                                                        isOpen={showDelete[i]}
+                                                        onClose={() => closeDelete(i)}
+                                                        judul={'Hapus Mesin'}
+                                                    >
+                                                        <>
+                                                            <div className="flex w-full flex-col pt-7 px-2 py-3">
+                                                                <>
+                                                                    <button
+                                                                        onClick={() => deleteMasterMesin(data.id)}
+                                                                        className='bg-red-600 h-7 rounded-md text-white text-xs font-bold px-4 py-1'>
+                                                                        HAPUS MESIN
+                                                                    </button>
+                                                                </>
+                                                            </div>
+                                                        </>
+                                                    </ModalKosonganSmall>
+                                                </>
+                                            )
+                                            }
                                         </div>
 
                                     </>

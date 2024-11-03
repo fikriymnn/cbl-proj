@@ -189,13 +189,13 @@ function CheckSheetCetakAwal() {
     setCetakMesinAwal(onchangeVal);
   };
 
-  const tanggal = convertTimeStampToDateOnly(cetakMesinAwal?.tanggal);
-  const jam = convertDateToTime(cetakMesinAwal?.tanggal);
+  const tanggal = convertTimeStampToDateOnly(cetakMesinAwal?.createdAt);
+  const jam = convertDateToTime(cetakMesinAwal?.createdAt);
 
   const tanggalHistory = convertTimeStampToDateOnly(
-    cetakMesinAwalHistory?.tanggal,
+    cetakMesinAwalHistory?.createdAt,
   );
-  const jamHistory = convertDateToTime(cetakMesinAwalHistory?.tanggal);
+  const jamHistory = convertDateToTime(cetakMesinAwalHistory?.createdAt);
 
   const jumlahWaktuCheck = formatElapsedTime(
     cetakMesinAwal?.inspeksi_cetak_awal[0]?.waktu_check,
@@ -627,6 +627,7 @@ function CheckSheetCetakAwal() {
             {cetakMesinAwal?.inspeksi_cetak_awal[0]?.inspeksi_cetak_awal_point?.map(
               (data: any, index: number) => {
                 const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
+                const waktuMulai = convertDateToTime(data.waktu_mulai)
                 return (
                   <>
                     <div className="flex flex-col py-6 px-10 border-b-8 border-[#D8EAFF]">
@@ -644,7 +645,14 @@ function CheckSheetCetakAwal() {
                             {data.inspektor?.nama}
                           </label>
                         </div>
-
+                        <div className="flex flex-col col-span-2">
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            Waktu Check
+                          </label>
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            {waktuMulai}
+                          </label>
+                        </div>
                         <div className="flex flex-col col-span-2">
                           <div>
                             <p className="md:text-[14px] text-[9px] font-semibold">
@@ -1026,7 +1034,7 @@ function CheckSheetCetakAwal() {
                             }
                             className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                           >
-                            SIMPAN PERIODE
+                            SIMPAN AWAL JALAN
                           </button>
                         ) : null}
                       </div>
@@ -1086,7 +1094,7 @@ function CheckSheetCetakAwal() {
                   }
                   className=" w-full h-10 rounded-md bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                 >
-                  SIMPAN PERIODE
+                  CHECKSHEET SELESAI
                 </button>
               ) : null}
             </div>

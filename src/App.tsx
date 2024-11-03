@@ -142,6 +142,11 @@ import ChecksheetPraplate from './components/Tables/QualityControl/QualityInspec
 import ChecksheetPralatePage from './pages/QualityControl/ProsesPraplate/ChecksheetPraplate';
 import ProsesLipat from './pages/QualityControl/ProsesLipat/ProsesLipat';
 import ChecksheetLipatPage from './pages/QualityControl/ProsesLipat/ChecksheetLipat';
+import PrePress from './pages/PrePress/Prepress';
+import MasterPerusahaan from './pages/HR/Personal/MasterPerusahaan';
+import MasterKaryawan from './pages/HR/Personal/MasterKaryawan';
+import AddMasterKaryawan from './pages/HR/Personal/AddMasterKaryawan';
+import KalenderKerja from './pages/HR/Personal/KalenderKerja/KalenderKerja';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1240,6 +1245,17 @@ function App() {
           }
         />
         <Route
+          path="/masterdata/machine/add"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterData />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/masterdata/masterUsers"
           element={
             <>
@@ -1471,7 +1487,58 @@ function App() {
             </>
           }
         />
+        <Route
+          path="/prepress"
+          element={
+            <>
+              <ProtectedRoute>
+                <PrePress />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/hr"
+          element={
+            <>
+
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/masterperusahaan"
+          element={
+            <>
+              <MasterPerusahaan />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/masterkaryawan"
+          element={
+            <>
+              <MasterKaryawan />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/masterkaryawan/add"
+          element={
+            <>
+              <AddMasterKaryawan />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/kalenderKerja"
+          element={
+            <>
+              <KalenderKerja />
+            </>
+          }
+        />
       </Routes>
+
     </>
   );
 }

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
-
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
 
 function ProsesPotongHistory() {
     const [isMobile, setIsMobile] = useState(false);
@@ -13,6 +14,7 @@ function ProsesPotongHistory() {
     const date = today.getDate();
     const currentDate = month + "/" + date + "/" + year;
     const navigate = useNavigate();
+    const [page, setPage] = useState(1);
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
     };
@@ -33,7 +35,7 @@ function ProsesPotongHistory() {
 
     useEffect(() => {
         getPondMesin();
-    }, []);
+    }, [page]);
 
     async function getPondMesin() {
         const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPotong`;
@@ -41,6 +43,8 @@ function ProsesPotongHistory() {
             const res = await axios.get(url, {
                 params: {
                     status: 'history',
+                    page: page,
+                    limit: 15,
                 },
                 withCredentials: true,
             });
@@ -184,6 +188,18 @@ function ProsesPotongHistory() {
                                     </>
                                 ))}
                         </div>
+                    </div>
+                    <div className="w-full flex justify-center mt-5 ">
+                        <Stack spacing={2}>
+                            <Pagination
+                                count={pondMesin?.total_page}
+                                color="primary"
+                                onChange={(e, i) => {
+                                    setPage(i);
+                                    console.log(i);
+                                }}
+                            />
+                        </Stack>
                     </div>
                 </main >
             )

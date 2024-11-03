@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import convertTimeStampToDateTime from '../../../../../utils/converDateTime';
+import Loading from '../../../../Loading';
 
 function ChecksheetLipat() {
   const [isMobile, setIsMobile] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const kosong: any = [];
   const today = new Date();
   const month = today.getMonth() + 1;
@@ -55,12 +57,14 @@ function ChecksheetLipat() {
     }/qc/cs/inspeksiLipat/start/${id}`;
 
     try {
+      setIsLoading(true);
       const res = await axios.get(url, {
         withCredentials: true,
       });
-
+      setIsLoading(false);
       getInspection();
     } catch (error: any) {
+      setIsLoading(false);
       console.log(error);
     }
   }
@@ -79,6 +83,7 @@ function ChecksheetLipat() {
       import.meta.env.VITE_API_LINK
     }/qc/cs/inspeksiLipat/addPoint/${id}`;
     try {
+      setIsLoading(true);
       const res = await axios.put(
         url,
         {},
@@ -86,43 +91,34 @@ function ChecksheetLipat() {
           withCredentials: true,
         },
       );
-
+      setIsLoading(false);
       getInspection();
     } catch (error: any) {
+      setIsLoading(false);
       console.log(error);
     }
   }
 
-  async function saveChecksheetResult(id: number, hasilCheck: any) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiLipat/save/${id}`;
-    try {
-      const res = await axios.put(
-        url,
-        {
-          hasil_check: hasilCheck,
-        },
-        {
-          withCredentials: true,
-        },
-      );
+  async function saveChecksheetResult(id: number, hasilCheck: any, start: any) {
+    const tes = hasilCheck?.some(
+      (data: { hasil_check: any }) => data?.hasil_check === null,
+    );
+    const tesCtt = hasilCheck?.some(
+      (data: { keterangan: any }) => data?.keterangan === null,
+    );
 
-      getInspection();
-    } catch (error: any) {
-      console.log(error);
+    if (tesCtt == true) {
+      alert('Keterangan Belum Terisi Semua');
+      return;
     }
-  }
+    if (tes == true) {
+      alert('Point Belum Terisi Semua');
+      return;
+    }
 
-  async function sumbitChecksheet(id: number, start: any) {
     if (!start) {
       // Check if start time is available
       alert('Task tidak bisa diberhentikan: Belum Start.');
-      return; // Exit function if no start time
-    }
-    if (ctt == null) {
-      // Check if start time is available
-      alert('Data Tidak Lengkap');
       return; // Exit function if no start time
     }
 
@@ -131,8 +127,9 @@ function ChecksheetLipat() {
 
     const url = `${
       import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiLipat/done/${id}`;
+    }/qc/cs/inspeksiLipat/stop/${id}`;
     try {
+      setIsLoading(true);
       const elapsedSeconds = await calculateElapsedTime(start, stopTime);
 
       // **Save total seconds elsewhere**
@@ -144,18 +141,41 @@ function ChecksheetLipat() {
       const res = await axios.put(
         url,
         {
-          catatan: ctt,
-
+          hasil_check: hasilCheck,
           lama_pengerjaan: totalSecondsToSave,
         },
         {
           withCredentials: true,
         },
       );
+      setIsLoading(false);
+      getInspection();
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
 
+  async function sumbitChecksheet(id: number) {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLipat/done/${id}`;
+    try {
+      setIsLoading(true);
+      const res = await axios.put(
+        url,
+        {
+          catatan: ctt,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+      setIsLoading(false);
       alert('Data Berhasil Di-Update');
       getInspection();
     } catch (error: any) {
+      setIsLoading(false);
       console.log(error);
     }
   }
@@ -211,6 +231,13 @@ function ChecksheetLipat() {
     return elapsedTime;
   }
 
+  const isOnprogres = incoming?.inspeksi_lipat_point.some(
+    (data: { status: any }) => data?.status === 'on progress',
+  );
+  const isIncoming = incoming?.inspeksi_lipat_point.some(
+    (data: { status: any }) => data?.status === 'incoming',
+  );
+
   return (
     <>
       {!isMobile && (
@@ -219,7 +246,7 @@ function ChecksheetLipat() {
             action=""
             onSubmit={(e) => {
               e.preventDefault();
-              sumbitChecksheet(incoming?.id, incoming?.waktu_mulai);
+              sumbitChecksheet(incoming?.id);
             }}
           >
             <div className="min-w-[700px] bg-white rounded-xl">
@@ -290,9 +317,6 @@ function ChecksheetLipat() {
                   <label className="text-neutral-500 text-sm font-semibold">
                     Mesin
                   </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    Inspector
-                  </label>
                 </div>
                 <div className="grid grid-rows-6  gap-1 col-span-2 justify-between px-2 py-4">
                   <label className="text-neutral-500 text-sm font-semibold">
@@ -307,97 +331,6 @@ function ChecksheetLipat() {
                   <label className="text-neutral-500 text-sm font-semibold">
                     : {incoming?.mesin}
                   </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    : {incoming?.inspektor?.nama}
-                  </label>
-                </div>
-                <div className="flex flex-col w-full items-center gap-4 px-10 py-4 col-span-2  bg-[#F6FAFF]">
-                  <div>
-                    {incoming?.waktu_mulai == null &&
-                      incoming?.waktu_selesai == null && (
-                        <>
-                          <div>
-                            <p className="md:text-[14px] text-[9px] font-semibold">
-                              Time : -
-                            </p>
-                            <>
-                              <p className="font-bold text-[#DE0000]">
-                                Task Belum Dimulai
-                              </p>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  startTask(incoming?.id);
-                                }}
-                                className="flex w-full  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
-                              >
-                                <svg
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 14 14"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                    fill="white"
-                                  />
-                                </svg>
-                              </button>
-                            </>
-                          </div>
-                        </>
-                      )}
-                    {incoming?.waktu_mulai != null &&
-                      incoming?.waktu_selesai == null && (
-                        <>
-                          <div>
-                            <p className="md:text-[14px] text-[9px] font-semibold">
-                              Waktu Mulai : {waktuMulaiincoming}
-                            </p>
-                            <p className="md:text-[14px] text-[9px] font-semibold">
-                              Waktu Selesai : {waktuSelesaiincoming}
-                            </p>
-                            <p className="md:text-[14px] text-[9px] font-semibold">
-                              Time : -
-                            </p>
-                            <>
-                              <p className="font-bold text-[#00B81D]">
-                                Task Sudah Dimulai
-                              </p>
-                            </>
-                          </div>
-                        </>
-                      )}
-                    {incoming?.waktu_mulai != null &&
-                      incoming?.waktu_selesai != null && (
-                        <>
-                          <div className="gap-1 flex flex-col">
-                            <p className="md:text-[14px] text-[9px] font-semibold">
-                              Waktu Mulai :
-                            </p>
-                            <p className="md:text-[14px] text-[9px] font-semibold text-stone-400">
-                              {waktuMulaiincoming}
-                            </p>
-                            <p className="md:text-[14px] text-[9px] font-semibold">
-                              Waktu Selesai :
-                            </p>
-                            <p className="md:text-[14px] text-[9px] font-semibold text-stone-400">
-                              {waktuSelesaiincoming}
-                            </p>
-                            <p className="md:text-[14px] text-[9px] font-semibold">
-                              Time :
-                            </p>
-                            <p className="md:text-[14px] text-[9px] font-semibold text-stone-400">
-                              {incoming?.lama_pengerjaan != null
-                                ? formatElapsedTime(incoming?.lama_pengerjaan)
-                                : ''}{' '}
-                              Detik
-                            </p>
-                          </div>
-                        </>
-                      )}
-                  </div>
                 </div>
               </div>
 
@@ -420,194 +353,262 @@ function ChecksheetLipat() {
                   Keterangan
                 </label>
               </div>
+
+              {/* =============================Point 1========================== */}
+
               <>
-                {/* =============================================Checksheet Not Start==========================================================*/}
-                {incoming?.waktu_mulai == null &&
-                  incoming?.waktu_selesai == null && (
+                {incoming?.inspeksi_lipat_point.map(
+                  (dataPoint: any, iPoint: number) => {
+                    return (
+                      <>
+                        <div className="px-4 py-4">
+                          {dataPoint?.waktu_mulai == null &&
+                            dataPoint?.waktu_selesai == null && (
+                              <>
+                                <div>
+                                  <p className="md:text-[14px] text-[9px] font-semibold">
+                                    Time : -
+                                  </p>
+                                  <>
+                                    <p className="font-bold text-[#DE0000]">
+                                      Task Belum Dimulai
+                                    </p>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        startTask(dataPoint?.id);
+                                      }}
+                                      className="flex w-[20%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                    >
+                                      <svg
+                                        width="14"
+                                        height="14"
+                                        viewBox="0 0 14 14"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                      >
+                                        <path
+                                          d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                          fill="white"
+                                        />
+                                      </svg>
+                                    </button>
+                                  </>
+                                </div>
+                              </>
+                            )}
+                          {dataPoint?.status == 'on progress' && (
+                            <>
+                              <div>
+                                <label className="text-neutral-500 text-sm font-semibold">
+                                  Inspector : {dataPoint?.inspektor?.nama}
+                                </label>
+                                <p className="md:text-[14px] text-[9px] font-semibold">
+                                  Time : -
+                                </p>
+                                <>
+                                  <p className="font-bold text-[#00B81D]">
+                                    Task Sudah Dimulai
+                                  </p>
+                                </>
+                              </div>
+                            </>
+                          )}
+                          {dataPoint?.status == 'done' && (
+                            <>
+                              <div className="gap-1 flex flex-col">
+                                <label className="text-neutral-500 text-sm font-semibold">
+                                  Inspector : {dataPoint?.inspektor?.nama}
+                                </label>
+                                <p className="md:text-[14px] text-[9px] font-semibold">
+                                  Time :
+                                </p>
+                                <p className="md:text-[14px] text-[9px] font-semibold text-stone-400">
+                                  {dataPoint?.lama_pengerjaan != null
+                                    ? formatElapsedTime(
+                                        dataPoint?.lama_pengerjaan,
+                                      )
+                                    : ''}{' '}
+                                  Detik
+                                </p>
+                              </div>
+                            </>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
+                          {dataPoint.inspeksi_lipat_result.map(
+                            (dataResult: any, iResult: number) => {
+                              return (
+                                <>
+                                  {dataPoint.status == 'on progress' ? (
+                                    <>
+                                      <div className="flex gap-4 col-span-2">
+                                        <label className="text-neutral-500 text-sm font-semibold">
+                                          {iResult + 1}
+                                        </label>
+                                        <label className="text-neutral-500 text-sm font-semibold">
+                                          {dataResult.point_check}
+                                        </label>
+                                      </div>
+                                      <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                                        {dataResult.acuan}
+                                      </label>
+                                      <div className="flex flex-col gap-1 col-span-2">
+                                        <div>
+                                          <input
+                                            required
+                                            type="radio"
+                                            id="sesuai1"
+                                            name={`sesuai1 ${iResult}`}
+                                            value="sesuai"
+                                            onChange={(e) => {
+                                              // hasvalue(iPoint)
+                                              // console.log(isOnprogres2)
+                                              handleChangePointRadio(
+                                                e,
+                                                iPoint,
+                                                iResult,
+                                              );
+                                            }}
+                                          />
+                                          <label className="pl-2">Sesuai</label>
+                                        </div>
+                                        <div>
+                                          <input
+                                            required
+                                            type="radio"
+                                            id="sesuai12"
+                                            name={`sesuai1 ${iResult}`}
+                                            value="tidak sesuai"
+                                            onChange={(e) => {
+                                              // hasvalue(iPoint)
+                                              handleChangePointRadio(
+                                                e,
+                                                iPoint,
+                                                iResult,
+                                              );
+                                            }}
+                                          />
+                                          <label className="pl-2">
+                                            Tidak Sesuai
+                                          </label>
+                                        </div>
+                                      </div>
+                                      <textarea
+                                        required
+                                        name="keterangan"
+                                        onChange={(e) => {
+                                          handleChangePoint(e, iPoint, iResult);
+                                        }}
+                                        className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                      ></textarea>
+                                      <div className="flex flex-col w-full col-span-3">
+                                        <label className="text-neutral-500 text-sm font-semibold">
+                                          Upload Foto
+                                        </label>
+                                        <div className="flex w-full rounded-md border border-stroke px-2 py-2">
+                                          <label
+                                            htmlFor="formFile"
+                                            className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
+                                          >
+                                            Pilih File
+                                            <input
+                                              type="file"
+                                              id="formFile"
+                                              accept="image/*"
+                                              className="hidden"
+                                            />
+                                          </label>
+
+                                          <span
+                                            id="formFile"
+                                            className="ml-2 text-sm"
+                                          ></span>
+                                        </div>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <div className="flex gap-4 col-span-2">
+                                        <label className="text-neutral-500 text-sm font-semibold">
+                                          {iResult + 1}
+                                        </label>
+                                        <label className="text-neutral-500 text-sm font-semibold">
+                                          {dataResult.point_check}
+                                        </label>
+                                      </div>
+                                      <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                                        {dataResult.acuan}
+                                      </label>
+                                      <div className="flex flex-col gap-1 col-span-2">
+                                        {
+                                          dataPoint.inspeksi_lipat_result[
+                                            iResult
+                                          ]?.hasil_check
+                                        }
+                                      </div>
+                                      <textarea
+                                        defaultValue={
+                                          dataPoint.inspeksi_lipat_result[
+                                            iResult
+                                          ]?.keterangan
+                                        }
+                                        name="keterangan"
+                                        readOnly
+                                        className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                      ></textarea>
+                                      <div className="flex flex-col w-full col-span-3"></div>
+                                    </>
+                                  )}
+                                </>
+                              );
+                            },
+                          )}
+                          {dataPoint.status == 'on progress' ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  saveChecksheetResult(
+                                    dataPoint.id,
+                                    dataPoint.inspeksi_lipat_result,
+                                    dataPoint.waktu_mulai,
+                                  )
+                                }
+                                className="bg-green-500 h-10  rounded-md  text-white text-xs font-bold"
+                              >
+                                {isLoading ? 'Loading...' : 'SIMPAN'}
+                              </button>
+                              {isLoading && <Loading />}
+                            </>
+                          ) : null}
+                        </div>
+                      </>
+                    );
+                  },
+                )}
+                {!isOnprogres &&
+                  !isIncoming &&
+                  incoming?.status != 'history' && (
                     <>
-                      <div className="flex px-4 py-5">
-                        <p className="font-bold text-[#00B81D]">
-                          Mulai Task Untuk Memunculkan Checksheet
-                        </p>
+                      <div className="px-2 py-3">
+                        <button
+                          disabled={isLoading}
+                          type="button"
+                          onClick={() => {
+                            tambahChecksheetPoint(incoming.id);
+                          }}
+                          className="bg-blue-500 h-10 w-20  rounded-md  text-white text-xs font-bold"
+                        >
+                          {isLoading ? 'Loading...' : 'TAMBAH'}
+                        </button>
+                        {isLoading && <Loading />}
                       </div>
                     </>
                   )}
-
-                {/* =============================================Checksheet Start==========================================================*/}
-                {incoming?.waktu_mulai != null &&
-                  incoming?.waktu_selesai == null && (
-                    <>
-                      {/* =============================Point 1========================== */}
-
-                      <>
-                        {incoming?.inspeksi_lipat_point.map(
-                          (dataPoint: any, iPoint: number) => {
-                            return (
-                              <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
-                                {dataPoint.inspeksi_lipat_result.map(
-                                  (dataResult: any, iResult: number) => {
-                                    return (
-                                      <>
-                                        {dataPoint.status == 'incoming' ? (
-                                          <>
-                                            <div className="flex gap-4 col-span-2">
-                                              <label className="text-neutral-500 text-sm font-semibold">
-                                                {iResult + 1}
-                                              </label>
-                                              <label className="text-neutral-500 text-sm font-semibold">
-                                                {dataResult.point_check}
-                                              </label>
-                                            </div>
-                                            <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                                              {dataResult.acuan}
-                                            </label>
-                                            <div className="flex flex-col gap-1 col-span-2">
-                                              <div>
-                                                <input
-                                                  required
-                                                  type="radio"
-                                                  id="sesuai1"
-                                                  name={`sesuai1 ${iResult}`}
-                                                  value="sesuai"
-                                                  onChange={(e) => {
-                                                    handleChangePointRadio(
-                                                      e,
-                                                      iPoint,
-                                                      iResult,
-                                                    );
-                                                  }}
-                                                />
-                                                <label className="pl-2">
-                                                  Sesuai
-                                                </label>
-                                              </div>
-                                              <div>
-                                                <input
-                                                  required
-                                                  type="radio"
-                                                  id="sesuai12"
-                                                  name={`sesuai1 ${iResult}`}
-                                                  value="tidak sesuai"
-                                                  onChange={(e) => {
-                                                    handleChangePointRadio(
-                                                      e,
-                                                      iPoint,
-                                                      iResult,
-                                                    );
-                                                  }}
-                                                />
-                                                <label className="pl-2">
-                                                  Tidak Sesuai
-                                                </label>
-                                              </div>
-                                            </div>
-                                            <textarea
-                                              required
-                                              name="keterangan"
-                                              onChange={(e) => {
-                                                handleChangePoint(
-                                                  e,
-                                                  iPoint,
-                                                  iResult,
-                                                );
-                                              }}
-                                              className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                            ></textarea>
-                                            <div className="flex flex-col w-full col-span-3">
-                                              <label className="text-neutral-500 text-sm font-semibold">
-                                                Upload Foto
-                                              </label>
-                                              <div className="flex w-full rounded-md border border-stroke px-2 py-2">
-                                                <label
-                                                  htmlFor="formFile"
-                                                  className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
-                                                >
-                                                  Pilih File
-                                                  <input
-                                                    type="file"
-                                                    id="formFile"
-                                                    accept="image/*"
-                                                    className="hidden"
-                                                  />
-                                                </label>
-
-                                                <span
-                                                  id="formFile"
-                                                  className="ml-2 text-sm"
-                                                ></span>
-                                              </div>
-                                            </div>
-                                          </>
-                                        ) : (
-                                          <>
-                                            <div className="flex gap-4 col-span-2">
-                                              <label className="text-neutral-500 text-sm font-semibold">
-                                                {iResult + 1}
-                                              </label>
-                                              <label className="text-neutral-500 text-sm font-semibold">
-                                                {dataResult.point_check}
-                                              </label>
-                                            </div>
-                                            <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                                              {dataResult.acuan}
-                                            </label>
-                                            <div className="flex flex-col gap-1 col-span-2">
-                                              {
-                                                dataPoint.inspeksi_lipat_result[
-                                                  iResult
-                                                ]?.hasil_check
-                                              }
-                                            </div>
-                                            <textarea
-                                              defaultValue={
-                                                dataPoint.inspeksi_lipat_result[
-                                                  iResult
-                                                ]?.keterangan
-                                              }
-                                              name="keterangan"
-                                              readOnly
-                                              className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                            ></textarea>
-                                            <div className="flex flex-col w-full col-span-3"></div>
-                                          </>
-                                        )}
-                                      </>
-                                    );
-                                  },
-                                )}
-                                {dataPoint.status == 'incoming' ? (
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      saveChecksheetResult(
-                                        dataPoint.id,
-                                        dataPoint.inspeksi_lipat_result,
-                                      )
-                                    }
-                                    className="bg-green-500 h-10  rounded-md  text-white text-xs font-bold"
-                                  >
-                                    Simpan
-                                  </button>
-                                ) : null}
-                              </div>
-                            );
-                          },
-                        )}
-                        <div className="px-2 py-3">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              tambahChecksheetPoint(incoming.id);
-                            }}
-                            className="bg-blue-500 h-10 w-20  rounded-md  text-white text-xs font-bold"
-                          >
-                            Tambah
-                          </button>
-                        </div>
-                      </>
-                    </>
-                  )}
               </>
+
               {/* =============================================Checksheet STOP==========================================================*/}
               {incoming?.waktu_mulai != null &&
                 incoming?.waktu_selesai != null && (
@@ -659,26 +660,9 @@ function ChecksheetLipat() {
                 )}
 
               <div className="bg-white grid grid-cols-10 px-4 py-4 items-center gap-4">
-                {/* {!incoming?.inspeksi_bahan_result[0]?.send ? (
-                                <>
-                                    <button onClick={() => {
-                                        console.log(incoming)
-                                        sumbitChecksheet(incoming?.id)
-                                    }
-                                    } className='bg-[#0065DE] px-4 py-2 rounded-sm text-center text-white text-xs font-bold'>
-                                        SUBMIT CHECKSHEET
-                                    </button>
-                                </>
-                            ) :
-                                (
-                                    <>
-                                    </>
-                                )} */}
-
                 <label className="text-neutral-500 text-sm font-semibold col-span-8">
                   Catatan
-                  {incoming?.waktu_mulai != null &&
-                  incoming?.status == 'incoming' ? (
+                  {incoming?.status == 'incoming' ? (
                     <>
                       <textarea
                         required
@@ -694,16 +678,19 @@ function ChecksheetLipat() {
                 </label>
 
                 <div className="flex h-full col-span-2 items-end justify-end w-full">
-                  {incoming?.waktu_mulai != null &&
+                  {!isIncoming &&
+                  !isOnprogres &&
                   incoming?.status == 'incoming' ? (
                     <>
                       <button
+                        disabled={isLoading}
                         type="submit"
                         value="submit"
                         className="bg-green-500 h-10 px-6 py-3 rounded-md  text-white text-xs font-bold"
                       >
-                        SUBMIT CHECKSHEET
+                        {isLoading ? 'Loading...' : 'SUBMIT CHECKSHEET'}
                       </button>
+                      {isLoading && <Loading />}
                     </>
                   ) : (
                     <></>

@@ -221,8 +221,8 @@ function CheckSheetHasilRabut() {
     console.log(onchangeVal);
   };
 
-  const tanggal = convertTimeStampToDateOnly(RabutMesin?.data?.tanggal);
-  const jam = convertDateToTime(RabutMesin?.data?.tanggal);
+  const tanggal = convertTimeStampToDateOnly(RabutMesin?.data?.createdAt);
+  const jam = convertDateToTime(RabutMesin?.data?.createdAt);
 
   const jumlahWaktuCheck = formatElapsedTime(RabutMesin?.data?.waktu_check);
 
@@ -714,7 +714,7 @@ function CheckSheetHasilRabut() {
                         value='submit'
                         className=" col-span-2 w-[25%] h-10 rounded-md bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                       >
-                        SIMPAN PERIODE
+                        CHECKSHEET SELESAI
                       </button>
                     ) : null}
 

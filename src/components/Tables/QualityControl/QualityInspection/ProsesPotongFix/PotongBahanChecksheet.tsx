@@ -194,6 +194,14 @@ function PotongBahanChecksheet() {
     const [merk, setMerk] = useState<any>();
     const [ctt, setCtt] = useState<any>();
 
+    const [sample1Value, setSample1Value] = useState<any>();
+    const [result1, setResult1] = useState<any>();
+
+    const [sample2Value, setSample2Value] = useState<any>();
+    const [result2, setResult2] = useState<any>();
+
+    const [sample3Value, setSample3Value] = useState<any>();
+    const [result3, setResult3] = useState<any>();
     return (
         <>
             {!isMobile && (
@@ -321,6 +329,7 @@ function PotongBahanChecksheet() {
                                                                 Task Belum Dimulai
                                                             </p>
                                                             <button
+                                                                type='button'
                                                                 onClick={() => {
                                                                     startTask(incoming?.id);
                                                                 }}
@@ -779,6 +788,201 @@ function PotongBahanChecksheet() {
                                                     </div>
                                                 </div>
                                             </>
+                                            {/* =============================Point 5========================== */}
+                                            <>
+                                                <div className="border-b-8 border-[#D8EAFF]">
+                                                    <div className="grid grid-cols-8 px-3 py-4 gap-2 items-center">
+                                                        <div className="flex gap-4 col-span-2">
+                                                            <label className="text-neutral-500 text-sm font-semibold">
+                                                                5
+                                                            </label>
+                                                            <label className="text-neutral-500 text-sm font-semibold">
+                                                                {incoming?.inspeksi_potong_result[4].point_check}
+                                                            </label>
+                                                        </div>
+                                                        <input
+                                                            required
+                                                            onChange={(e) => {
+                                                                let array = [
+                                                                    ...incoming?.inspeksi_potong_result,
+                                                                ];
+                                                                array[4].standar = e.target.value;
+
+                                                                setIncoming({
+                                                                    ...incoming,
+                                                                    inspeksi_potong_result: array,
+                                                                });
+                                                            }}
+                                                            type="text"
+                                                            className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                        />
+                                                        <label className="text-neutral-500 gap-2 items-start justify-start flex flex-col text-sm font-semibold col-span-2">
+                                                            <div className='flex flex-col gap-2'>
+                                                                <div className='flex gap-2'>
+                                                                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                                                                        Sample 1
+                                                                    </label>
+                                                                    <input
+                                                                        required
+                                                                        onChange={(e) => {
+                                                                            const newValue = parseFloat(e.target.value);
+                                                                            setSample1Value(newValue);
+
+                                                                            let array = [
+                                                                                ...incoming?.inspeksi_potong_result,
+                                                                            ];
+                                                                            array[4].sample_1 = e.target.value;
+
+                                                                            setIncoming({
+                                                                                ...incoming,
+                                                                                inspeksi_potong_result: array,
+                                                                            });
+                                                                            const result = (newValue / 100) * 10000;
+                                                                            setResult1(result);
+                                                                        }}
+                                                                        type="text"
+                                                                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                                    />
+                                                                    <div>
+                                                                        gr
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    = <input
+                                                                        name="hasilsample1"
+                                                                        disabled
+                                                                        value={result1}
+                                                                        type="text"
+                                                                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                                    /> g/m<sup className=''>2</sup>
+                                                                </div>
+                                                            </div>
+                                                            <div className='flex gap-2 flex-col'>
+                                                                <div className='flex gap-2'>
+                                                                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                                                                        Sample 2
+                                                                    </label>
+                                                                    <input
+                                                                        required
+                                                                        onChange={(e) => {
+                                                                            const newValue = parseFloat(e.target.value);
+                                                                            setSample2Value(newValue);
+
+                                                                            let array = [
+                                                                                ...incoming?.inspeksi_potong_result,
+                                                                            ];
+                                                                            array[4].sample_2 = e.target.value;
+
+                                                                            setIncoming({
+                                                                                ...incoming,
+                                                                                inspeksi_potong_result: array,
+                                                                            });
+                                                                            const result = (newValue / 100) * 10000;
+                                                                            setResult2(result);
+                                                                        }}
+                                                                        type="text"
+                                                                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                                    />
+                                                                    <div>
+                                                                        gr
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    =  <input
+                                                                        name="hasilsample2"
+                                                                        disabled
+                                                                        value={result2}
+                                                                        type="text"
+                                                                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                                    /> g/m<sup className=''>2</sup>
+                                                                </div>
+                                                            </div>
+                                                            <div className='flex gap-2 flex-col'>
+                                                                <div className='flex gap-2'>
+                                                                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                                                                        Sample 3
+                                                                    </label>
+                                                                    <input
+                                                                        required
+                                                                        onChange={(e) => {
+                                                                            const newValue = parseFloat(e.target.value);
+                                                                            setSample3Value(newValue);
+                                                                            let array = [
+                                                                                ...incoming?.inspeksi_potong_result,
+                                                                            ];
+                                                                            array[4].sample_3 = e.target.value;
+
+                                                                            setIncoming({
+                                                                                ...incoming,
+                                                                                inspeksi_potong_result: array,
+                                                                            });
+                                                                            const result = (newValue / 100) * 10000;
+                                                                            setResult3(result);
+                                                                        }}
+                                                                        type="text"
+                                                                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                                    />
+                                                                    <div>
+                                                                        gr
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    =  <input
+                                                                        name="hasilsample3"
+                                                                        disabled
+                                                                        value={result3}
+                                                                        type="text"
+                                                                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                                    /> g/m<sup className=''>2</sup>
+                                                                </div>
+                                                            </div>
+
+                                                        </label>
+                                                        <div className="flex flex-col gap-1  w-[50%] col-span-2">
+                                                            <div>
+                                                                <input
+                                                                    required
+                                                                    onChange={(e) => {
+                                                                        let array = [
+                                                                            ...incoming?.inspeksi_potong_result,
+                                                                        ];
+                                                                        array[4].keterangan = e.target.value;
+                                                                        setIncoming({
+                                                                            ...incoming,
+                                                                            inspeksi_potong_result: array,
+                                                                        });
+                                                                    }}
+                                                                    type="radio"
+                                                                    id="sesuai51"
+                                                                    name="sesuai51"
+                                                                    value="sesuai"
+                                                                />
+                                                                <label className="pl-2">Sesuai</label>
+                                                            </div>
+                                                            <div>
+                                                                <input
+                                                                    required
+                                                                    onChange={(e) => {
+                                                                        let array = [
+                                                                            ...incoming?.inspeksi_potong_result,
+                                                                        ];
+                                                                        array[4].keterangan = e.target.value;
+                                                                        setIncoming({
+                                                                            ...incoming,
+                                                                            inspeksi_potong_result: array,
+                                                                        });
+                                                                    }}
+                                                                    type="radio"
+                                                                    id="sesuai52"
+                                                                    name="sesuai51"
+                                                                    value="tidak sesuai"
+                                                                />
+                                                                <label className="pl-2">Tidak Sesuai</label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </>
                                         </>
                                     )}
                             </>
@@ -885,6 +1089,48 @@ function PotongBahanChecksheet() {
                                                     </label>
                                                     <div className="flex flex-col gap-1  w-[50%] col-span-2">
                                                         {incoming?.inspeksi_potong_result[3].keterangan}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
+                                        {/* =============================Point 5========================== */}
+                                        <>
+                                            <div className="border-b-8 border-[#D8EAFF]">
+                                                <div className="grid grid-cols-8 px-3 py-4 gap-2 items-center">
+                                                    <div className="flex gap-4 col-span-2">
+                                                        <label className="text-neutral-500 text-sm font-semibold">
+                                                            5
+                                                        </label>
+                                                        <label className="text-neutral-500 text-sm font-semibold">
+                                                            {incoming?.inspeksi_potong_result[4].point_check}
+                                                        </label>
+                                                    </div>
+                                                    <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                                        {incoming?.inspeksi_potong_result[4].standar}
+                                                    </label>
+                                                    <div className='flex flex-col gap-2 col-span-2'>
+                                                        <label className="text-neutral-500 text-sm font-semibold ">
+                                                            Sample 1
+                                                            <div>
+                                                                : {incoming?.inspeksi_potong_result[4].sample_1} gr = {incoming?.inspeksi_potong_result[4].hasil_sample_1} : g/m<sup className=''>2</sup>
+                                                            </div>
+                                                        </label>
+                                                        <label className="text-neutral-500 text-sm font-semibold ">
+                                                            Sample 2
+                                                            <div>
+                                                                : {incoming?.inspeksi_potong_result[4].sample_2} gr = {incoming?.inspeksi_potong_result[4].hasil_sample_2} : g/m<sup className=''>2</sup>
+                                                            </div>
+                                                        </label>
+                                                        <label className="text-neutral-500 text-sm font-semibold ">
+                                                            Sample 3
+                                                            <div>
+                                                                : {incoming?.inspeksi_potong_result[4].sample_3} gr = {incoming?.inspeksi_potong_result[4].hasil_sample_3} : g/m<sup className=''>2</sup>
+                                                            </div>
+                                                        </label>
+                                                    </div>
+
+                                                    <div className="flex flex-col gap-1  w-[50%] col-span-2">
+                                                        {incoming?.inspeksi_potong_result[4].keterangan}
                                                     </div>
                                                 </div>
                                             </div>

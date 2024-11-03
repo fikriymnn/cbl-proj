@@ -245,6 +245,12 @@ const ModalTambahUser = ({
               >
                 Junior Technician
               </option>
+              <option
+                value="pre_press"
+                className="text-body dark:text-bodydark"
+              >
+                Pre-Press
+              </option>
             </select>
             <label className="text-black text-xs font-bold pt-4">
               PASSWORD

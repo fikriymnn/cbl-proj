@@ -75,12 +75,15 @@ function CheckSheetPondPeriode() {
       }/api/list-kendala?criteria=true&proses=7`;
 
     try {
+      setIsLoading(true);
       const res = await axios.get(url);
 
       setMasterKode(res);
-
+      setIsLoading(false);
       console.log(res);
     } catch (error: any) {
+      setIsLoading(false);
+      alert('Gagal Memanggil Defect, Coba Refresh Halaman!')
       console.log(error.data.msg);
     }
   }
@@ -88,11 +91,14 @@ function CheckSheetPondPeriode() {
   async function getDepartment() {
     const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-departmen`;
     try {
+      setIsLoading(true);
       const res = await axios.get(url, {});
-
+      setIsLoading(false);
       console.log(res.data);
       setDataDepartment(res.data);
     } catch (error: any) {
+      setIsLoading(false);
+      alert('Gagal Memannggil Department, Coba Refresh Halaman!')
       console.log(error);
     }
   }
@@ -100,15 +106,17 @@ function CheckSheetPondPeriode() {
   async function getPondMesinPeriode() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPond/${id}`;
     try {
+      setIsLoading(true);
       const res = await axios.get(url, {
         withCredentials: true,
       });
-
+      setIsLoading(false);
       setPondMesinPeriode(res.data.data);
       setPondMesinPeriodeDefect(res.data.defect);
       setpondMesinPeriodeHistory(res.data.history);
       console.log(res.data.data);
     } catch (error: any) {
+      alert('Gagal Memannggil Data, Coba Refresh Halaman!')
       console.log(error.data.msg);
     }
   }
@@ -326,13 +334,13 @@ function CheckSheetPondPeriode() {
     ].inspeksi_pond_periode_defect[ii][name] = value;
     setPondMesinPeriode(onchangeVal);
   };
-  const tanggal = convertTimeStampToDateOnly(pondMesinPeriode?.tanggal);
-  const jam = convertDateToTime(pondMesinPeriode?.tanggal);
+  const tanggal = convertTimeStampToDateOnly(pondMesinPeriode?.createdAt);
+  const jam = convertDateToTime(pondMesinPeriode?.createdAt);
 
   const tanggalHistory = convertTimeStampToDateOnly(
-    pondMesinPeriodeHistory?.tanggal,
+    pondMesinPeriodeHistory?.createdAt,
   );
-  const jamHistory = convertDateToTime(pondMesinPeriodeHistory?.tanggal);
+  const jamHistory = convertDateToTime(pondMesinPeriodeHistory?.createdAt);
 
   const jumlahWaktuCheck = formatElapsedTime(
     pondMesinPeriode?.inspeksi_pond_awal[0].waktu_check,
@@ -413,7 +421,7 @@ function CheckSheetPondPeriode() {
                           </div>
                           <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {tanggal}
+                              : {tanggalHistory}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {formatInteger(parseInt(pondMesinPeriodeHistory?.jumlah_druk))} /  {formatInteger(parseInt(pondMesinPeriodeHistory?.mata))}
@@ -567,24 +575,48 @@ function CheckSheetPondPeriode() {
                                       </div>
                                     </>
                                   </div>
-                                  <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF]">
+                                  <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF] gap-1">
                                     {data.inspeksi_pond_periode_defect.map(
                                       (data2: any, i: number) => {
                                         return (
                                           <div
-                                            className={`flex flex-col min-w-[120px] justify-center py-4 ${(i + 1) % 2 === 0
-                                              ? ' bg-[#F3F3F3]'
-                                              : 'bg-white'
-                                              } items-center gap-2`}
+                                            className={`flex flex-col min-w-[200px] justify-center py-4 
+                                            } items-center gap-2 
+                                             ${data2.hasil == 'ok' ? 'bg-blue-300' :
+                                                data2.hasil == 'ok (toleransi)' ? 'bg-yellow-300' :
+                                                  data2.hasil == 'not ok' ? 'bg-red-300' :
+
+                                                    'bg-white'}`}
                                           >
                                             <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                               {data2.kode}
                                             </label>
 
-                                            <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                              {data2.hasil}
-                                            </label>
+                                            <div
 
+                                              className={`w-[80%] text-center uppercase font-semibold flex gap-4  
+} `}
+                                            >
+                                              {data2.hasil == 'ok' ? (
+                                                <>
+                                                  <img src={ok} alt="" className="w-4" />
+                                                </>
+                                              ) : data2.hasil == 'ok (toleransi)' ? (
+                                                <>
+                                                  <img src={oktole} alt="" className="w-4" />
+                                                </>
+                                              ) : data2.hasil == 'not ok' ? (
+                                                <>
+                                                  <img src={notok} alt="" className="w-4" />
+                                                </>
+                                              ) :
+                                                <>
+                                                  -
+                                                </>
+                                              }
+
+                                              {data2.hasil}
+                                            </div>
                                             <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                               {data2.jumlah_defect}
                                             </label>
@@ -594,26 +626,13 @@ function CheckSheetPondPeriode() {
                                     )}
                                   </div>
 
-                                  <div></div>
+
                                 </div>
                               </>
                             );
                           },
                         )}
-                        <div className="flex w-full min-w-[700px]  items-center  px-4 py-4 gap-5 bg-white  mt-2">
-                          {pondMesinPeriodeDefect?.map(
-                            (data: any, index: number) => {
-                              return (
-                                <div className="flex flex-col max-w-45 overflow-x-scroll">
-                                  <label>Kode: </label>
-                                  <label>{data.kode}</label>
-                                  <label>Total Defect: </label>
-                                  <label>{data.total_defect}</label>
-                                </div>
-                              );
-                            },
-                          )}
-                        </div>
+
                       </>
                     </ModalKosongan>
                   </>
@@ -1424,7 +1443,7 @@ function CheckSheetPondPeriode() {
                   }}
                   className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                 >
-                  SIMPAN PERIODE
+                  CHECKSHEET SELESAI
                 </button>
               ) : null}
 

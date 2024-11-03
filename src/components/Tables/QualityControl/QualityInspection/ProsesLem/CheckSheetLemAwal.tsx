@@ -592,6 +592,7 @@ function CheckSheetLemAwal() {
             {cetakMesinAwal?.inspeksi_lem_awal[0].inspeksi_lem_awal_point.map(
               (data: any, index: number) => {
                 const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
+                const waktuMulai = convertDateToTime(data.waktu_mulai)
 
                 return (
                   <>
@@ -610,7 +611,14 @@ function CheckSheetLemAwal() {
                             {data.inspektor?.nama}
                           </label>
                         </div>
-
+                        <div className="flex flex-col col-span-2">
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            Waktu Check
+                          </label>
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            {waktuMulai}
+                          </label>
+                        </div>
                         <div className="flex flex-col col-span-2">
                           <div>
                             <p className="md:text-[14px] text-[9px] font-semibold">
@@ -962,7 +970,7 @@ function CheckSheetLemAwal() {
                             }
                             className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                           >
-                            SIMPAN PERIODE
+                            SIMPAN AWAL JALAN
                           </button>
                         ) : null}
                       </div>
@@ -1022,7 +1030,7 @@ function CheckSheetLemAwal() {
                   }
                   className=" w-full h-10 rounded-md bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                 >
-                  SIMPAN PERIODE
+                  CHECKSHEET SELESAI
                 </button>
               ) : null}
             </div>

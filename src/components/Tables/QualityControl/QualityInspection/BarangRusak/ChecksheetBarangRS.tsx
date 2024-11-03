@@ -170,8 +170,8 @@ function CheckSheetBarangRS() {
       console.log(error);
     }
   }
-  const tanggal = convertTimeStampToDateOnly(cetakMesinAwal?.tanggal);
-  const jam = convertDateToTime(cetakMesinAwal?.tanggal);
+  const tanggal = convertTimeStampToDateOnly(cetakMesinAwal?.createdAt);
+  const jam = convertDateToTime(cetakMesinAwal?.createdAt);
 
   // const jumlahWaktuCheck = formatElapsedTime(
   //     cetakMesinAwal?.inspeksi_cetak_awal[0].waktu_check,
@@ -740,7 +740,7 @@ function CheckSheetBarangRS() {
                       }
                       className=" w-full h-10 rounded-md bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                     >
-                      SIMPAN CHECKSHEET
+                      CHECKSHEET SELESAI
                     </button>
                   </>
                 ) : (
