@@ -168,6 +168,7 @@ import DinasKeHr from './pages/HR/PengajuanKeHR/DinasKeHr';
 import SPKeHR from './pages/HR/PengajuanKeHR/SPKeHR';
 import KaryawanKeHr from './pages/HR/PengajuanKeHR/KaryawanKeHR';
 import MasterSHiftHR from './pages/HR/MasterDataHR/MastershiftHr';
+import MasterDepartment from './pages/HR/MasterDataHR/MasterDepartment';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1730,6 +1731,14 @@ function App() {
           element={
             <>
               <MasterSHiftHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/master/department"
+          element={
+            <>
+              <MasterDepartment />
             </>
           }
         />

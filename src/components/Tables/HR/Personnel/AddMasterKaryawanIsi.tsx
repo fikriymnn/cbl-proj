@@ -1,6 +1,27 @@
 import React from 'react'
-
+import axios from 'axios';
 function AddMasterKaryawanIsi() {
+
+    async function tambahKaryawan() {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/qc/cs/inspeksiBarangRusak/createDefect`;
+        try {
+
+            const res = await axios.post(
+                url,
+                {
+
+                },
+                {
+                    withCredentials: true,
+                },
+            );
+
+        } catch (error: any) {
+
+            console.log(error);
+        }
+    }
     return (
         <main className="overflow-x-scroll">
             <div className="min-w-[700px] bg-white rounded-t-md border-b-8 border-[#D8EAFF] h-12">
@@ -543,7 +564,7 @@ function AddMasterKaryawanIsi() {
 
                     </div>
                 </div>
-                <div className='flex w-full bg-[#eeeeee] px-6 py-3'>
+                {/* <div className='flex w-full bg-[#eeeeee] px-6 py-3'>
                     <label className='text-[#0065de] text-sm font-semibold'>
                         DETAIL INFORMASI
                     </label>
@@ -771,7 +792,7 @@ function AddMasterKaryawanIsi() {
 
                     </div>
 
-                </div>
+                </div> */}
                 <div className='flex w-full justify-end items-end px-8 py-5'>
                     <button className='bg-blue-500 text-white text-md px-4 py-1 rounded-md font-semibold'>
                         SIMPAN

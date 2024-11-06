@@ -2282,7 +2282,25 @@ const Sidebar = ({
                                   </li>
                                 </ul>
                               </div>
-
+                              <div
+                                className={`translate transform overflow-hidden ${!open && 'hidden'
+                                  }`}
+                              >
+                                <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                  <li>
+                                    <NavLink
+                                      to="/hr/master/department"
+                                      className={({ isActive }) =>
+                                        'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                        (isActive &&
+                                          '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                      }
+                                    >
+                                      Department
+                                    </NavLink>
+                                  </li>
+                                </ul>
+                              </div>
 
                               {/* <!-- Dropdown Menu End --> */}
                             </React.Fragment>
@@ -4599,7 +4617,25 @@ const Sidebar = ({
                                   </li>
                                 </ul>
                               </div>
-
+                              <div
+                                className={`translate transform overflow-hidden ${!open && 'hidden'
+                                  }`}
+                              >
+                                <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                  <li>
+                                    <NavLink
+                                      to="/hr/master/department"
+                                      className={({ isActive }) =>
+                                        'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                        (isActive &&
+                                          '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                      }
+                                    >
+                                      Department
+                                    </NavLink>
+                                  </li>
+                                </ul>
+                              </div>
 
                               {/* <!-- Dropdown Menu End --> */}
                             </React.Fragment>
