@@ -169,6 +169,7 @@ import SPKeHR from './pages/HR/PengajuanKeHR/SPKeHR';
 import KaryawanKeHr from './pages/HR/PengajuanKeHR/KaryawanKeHR';
 import MasterSHiftHR from './pages/HR/MasterDataHR/MastershiftHr';
 import MasterDepartment from './pages/HR/MasterDataHR/MasterDepartment';
+import EditMasterKaryawan from './pages/HR/Personal/EditMasterKaryawan';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1570,6 +1571,14 @@ function App() {
           element={
             <>
               <AddMasterKaryawan />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/masterkaryawan/edit/:id"
+          element={
+            <>
+              <EditMasterKaryawan />
             </>
           }
         />

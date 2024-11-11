@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
 
 function MasterKaryawanIsi() {
 
@@ -30,42 +31,6 @@ function MasterKaryawanIsi() {
             console.log(error);
         }
     }
-
-    const masterKaryawan = [
-        {
-            nik: 123,
-            nama: 'asep kurma',
-            jenis_kelamin: 'L',
-            posisi: 'Tetap',
-            divisi: 'quality',
-            tipe_penggajian: 'Bulanan',
-            tanggal_masuk: '10/11/2024',
-            tanggal_keluar: '',
-            status_data: 'Contact'
-        },
-        {
-            nik: 124,
-            nama: 'kurma aspe',
-            jenis_kelamin: 'L',
-            posisi: 'Tetap',
-            divisi: 'quality',
-            tipe_penggajian: 'Bulanan',
-            tanggal_masuk: '11/11/2024',
-            tanggal_keluar: '',
-            status_data: 'Pendidikan'
-        },
-        {
-            nik: 125,
-            nama: 'kurma aspear',
-            jenis_kelamin: 'L',
-            posisi: 'Tetap',
-            divisi: 'quality',
-            tipe_penggajian: 'Bulanan',
-            tanggal_masuk: '11/11/2024',
-            tanggal_keluar: '11/11/2024',
-            status_data: 'Complete'
-        }
-    ]
 
     return (
         <div>
@@ -162,13 +127,13 @@ function MasterKaryawanIsi() {
                                                 {data.biodata_karyawan[0]?.jabatan}
                                             </label>
                                             <label className="text-neutral-500 text-xs font-semibold  ">
-                                                {data.biodata_karyawan[0]?.type_penggajian}
+                                                {data.biodata_karyawan[0]?.tipe_penggajian}
                                             </label>
                                             <label className="text-neutral-500 text-xs font-semibold  ">
-                                                {data.biodata_karyawan[0]?.tgl_masuk == '' ? '-' : data.biodata_karyawan[0]?.tgl_masuk}
+                                                {data.biodata_karyawan[0]?.tgl_masuk == '' ? '-' : convertTimeStampToDateOnly(data.biodata_karyawan[0]?.tgl_masuk)}
                                             </label>
                                             <label className="text-neutral-500 text-xs font-semibold  ">
-                                                {data.biodata_karyawan[0]?.tgl_keluar == '' ? '-' : data.biodata_karyawan[0]?.tgl_keluar}
+                                                {data.biodata_karyawan[0]?.tgl_keluar == '' ? '-' : convertTimeStampToDateOnly(data.biodata_karyawan[0]?.tgl_keluar)}
                                             </label>
                                             <label className="text-neutral-500 text-xs font-semibold  ">
                                                 {data.status_data == '' ? '-' : data.status_data}
@@ -186,10 +151,14 @@ function MasterKaryawanIsi() {
                                                     className='px-2 py-1  text-xs bg-green-600 items-center justify-center text-white font-semibold rounded-md  '>
                                                     DETAIL
                                                 </button>
-                                                <button
-                                                    className='px-2 py-1 text-xs bg-blue-600 items-center justify-center text-white font-semibold rounded-md  '>
-                                                    EDIT
-                                                </button>
+                                                <Link
+                                                    className='px-2 py-1 text-xs bg-blue-600 items-center justify-center text-white font-semibold rounded-md  flex'
+                                                    to={`/hr/pm/masterkaryawan/edit/${data.USERID}`} >
+                                                    <button
+                                                    >
+                                                        EDIT
+                                                    </button>
+                                                </Link>
                                             </div>
 
                                         </div>

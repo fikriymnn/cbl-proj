@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
+import Loading from '../../../Loading';
+
 
 function IsiDepartment() {
-
+    const [isLoading, setIsLoading] = useState(false);
     useEffect(() => {
         getKaryawan();
 
@@ -16,7 +18,7 @@ function IsiDepartment() {
         const url = `${import.meta.env.VITE_API_LINK
             }/master/hr/department`;
         try {
-
+            setIsLoading(true)
             const res = await axios.get(
                 url,
 
@@ -24,10 +26,11 @@ function IsiDepartment() {
                     withCredentials: true,
                 },
             );
+            setIsLoading(false)
             setKaryawan(res.data)
             console.log(res.data)
         } catch (error: any) {
-
+            setIsLoading(false)
             console.log(error);
         }
     }
@@ -41,6 +44,7 @@ function IsiDepartment() {
 
         const url = `${import.meta.env.VITE_API_LINK}/master/hr/department`;
         try {
+            setIsLoading(true)
             const res = await axios.post(url,
                 {
                     nama_department: namaDepartment
@@ -50,10 +54,12 @@ function IsiDepartment() {
 
                     withCredentials: true,
                 });
+            setIsLoading(false)
             window.location.reload();
             getKaryawan()
             console.log(res.data);
         } catch (error: any) {
+            setIsLoading(false)
             console.log(error);
         }
     }
@@ -77,6 +83,7 @@ function IsiDepartment() {
 
         const url = `${import.meta.env.VITE_API_LINK}/master/hr/department/${id}`;
         try {
+            setIsLoading(true)
             const res = await axios.put(url,
                 {
                     nama_department: namaDepartmentEdit
@@ -86,10 +93,12 @@ function IsiDepartment() {
 
                     withCredentials: true,
                 });
+            setIsLoading(false)
             window.location.reload();
             getKaryawan()
             console.log(res.data);
         } catch (error: any) {
+            setIsLoading(false)
             console.log(error);
         }
     }
@@ -97,15 +106,18 @@ function IsiDepartment() {
 
         const url = `${import.meta.env.VITE_API_LINK}/master/hr/department/${id}`;
         try {
+            setIsLoading(true)
             const res = await axios.delete(url,
                 {
 
                     withCredentials: true,
                 });
+            setIsLoading(false)
             window.location.reload();
             getKaryawan()
             console.log(res.data);
         } catch (error: any) {
+            setIsLoading(false)
             console.log(error);
         }
     }
@@ -127,8 +139,7 @@ function IsiDepartment() {
         <div>
             <>
                 <main className="overflow-x-scroll">
-
-
+                    {isLoading && <Loading />}
                     <div className="min-w-[700px] bg-white rounded-xl">
                         <div className='flex w-full  pr-8 border-b-8 border-[#D8EAFF] pb-2'>
                             <div className='px-2 py-1 flex w-full justify-end items-center'>
@@ -170,12 +181,14 @@ function IsiDepartment() {
 
                                                             <div className=" pt-3">
                                                                 <button
+                                                                    disabled={isLoading}
                                                                     type='submit'
                                                                     value='submit'
                                                                     className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
                                                                 >
                                                                     SIMPAN
                                                                 </button>
+
                                                             </div>
                                                         </form>
                                                     </>
@@ -245,6 +258,7 @@ function IsiDepartment() {
 
                                                                 <div className=" pt-3">
                                                                     <button
+                                                                        disabled={isLoading}
                                                                         onClick={() => editMasterMesin(data.id)}
                                                                         className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
                                                                     >
@@ -276,6 +290,7 @@ function IsiDepartment() {
                                                                         {data.nama_department}
                                                                     </label>
                                                                     <button
+                                                                        disabled={isLoading}
                                                                         onClick={() => deleteMasterMesin(data.id)}
                                                                         className='bg-red-600 h-7 w-full rounded-md text-white text-xs font-bold px-4 py-1'>
                                                                         HAPUS DEPARTMENT
