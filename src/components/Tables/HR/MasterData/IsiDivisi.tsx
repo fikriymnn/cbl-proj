@@ -101,6 +101,7 @@ function IsiDivisi() {
             console.log(error);
         }
     }
+
     async function deleteMasterMesin(id: number) {
 
         const url = `${import.meta.env.VITE_API_LINK}/master/hr/divisi/${id}`;
