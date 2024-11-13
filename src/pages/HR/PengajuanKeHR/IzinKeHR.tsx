@@ -1,6 +1,7 @@
 import React from 'react'
 import DefaultLayout from '../../../layout/DefaultLayout'
-import TabIzinHR from '../../../components/Tables/HR/Pengajuan/Izin/TabIzinHR'
+
+import TabIzinKeHR from '../../../components/Tables/HR/PengajuanKeHR/IzinKeHR/TabIzinKeHR'
 
 
 function IzinKeHR() {
@@ -8,7 +9,7 @@ function IzinKeHR() {
         <DefaultLayout>
             <>
                 <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>PENGAJUAN KE HR  &gt; Izin</p>
-                <TabIzinHR />
+                <TabIzinKeHR />
             </>
         </DefaultLayout>
     )

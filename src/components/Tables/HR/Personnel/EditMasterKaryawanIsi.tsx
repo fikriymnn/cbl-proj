@@ -231,7 +231,9 @@ function EditMasterKaryawanIsi() {
                                         className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                     >
-
+                                        <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
+                                            Pilih
+                                        </option>
                                         {divisi?.data?.map((data: any, i: number) => {
 
                                             return (
@@ -293,7 +295,9 @@ function EditMasterKaryawanIsi() {
                                             className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                         >
-
+                                            <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
+                                                Pilih
+                                            </option>
                                             {department?.data?.map((data: any, i: number) => {
 
                                                 return (
@@ -378,7 +382,9 @@ function EditMasterKaryawanIsi() {
                                         className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                     >
-
+                                        <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
+                                            Pilih
+                                        </option>
                                         <option value={'Tetap'} className="text-[#646464] text-xs dark:text-bodydark">
                                             Tetap
                                         </option>
@@ -444,7 +450,9 @@ function EditMasterKaryawanIsi() {
                                         className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                     >
-
+                                        <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
+                                            Pilih
+                                        </option>
                                         <option value={'TK0'} className="text-[#646464] text-xs dark:text-bodydark">
                                             TK0
                                         </option>
@@ -530,7 +538,9 @@ function EditMasterKaryawanIsi() {
                                     className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                 >
-
+                                    <option value={''} disabled selected className="text-[#646464] text-xs dark:text-bodydark">
+                                        Pilih
+                                    </option>
                                     <option value={'mingguan'} className="text-[#646464] text-xs dark:text-bodydark">
                                         MINGGUAN
                                     </option>
@@ -587,7 +597,9 @@ function EditMasterKaryawanIsi() {
                                             className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                         >
-
+                                            <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
+                                                Pilih
+                                            </option>
                                             {bagian?.data?.map((data: any, i: number) => {
 
                                                 return (
@@ -891,7 +903,7 @@ function EditMasterKaryawanIsi() {
                 </div> */}
                 <div className='flex w-full justify-end items-end px-8 py-5'>
                     <button
-                        onClick={tambahKaryawan}
+                        onClick={() => tambahKaryawan()}
                         className='bg-blue-500 text-white text-md px-4 py-1 rounded-md font-semibold'>
                         SIMPAN
                     </button>

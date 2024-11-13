@@ -19,6 +19,7 @@ function IncomingCutiHR() {
     async function getCuti() {
         const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanCuti`;
         try {
+            setIsLoading(true)
             const res = await axios.get(url,
                 {
                     params: {
@@ -26,10 +27,11 @@ function IncomingCutiHR() {
                     },
                     withCredentials: true,
                 });
-
+            setIsLoading(false)
             setCuti(res.data);
             console.log(res.data);
         } catch (error: any) {
+            setIsLoading(false)
             console.log(error);
         }
     }
@@ -42,6 +44,7 @@ function IncomingCutiHR() {
         }
         const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanCuti/approve/${id}`;
         try {
+            setIsLoading(true)
             const res = await axios.put(url,
                 {
                     catatan_hr: catatanHr
@@ -50,13 +53,14 @@ function IncomingCutiHR() {
 
                     withCredentials: true,
                 });
-
+            setIsLoading(false)
             getCuti();
             console.log(res.data);
             const updatedModalStates = [...showModal];
             updatedModalStates[index] = false;
             setShowModal(updatedModalStates);
         } catch (error: any) {
+            setIsLoading(false)
             console.log(error);
         }
     }
@@ -68,6 +72,7 @@ function IncomingCutiHR() {
         if (window.confirm('Apakah Anda yakin ingin menolak pengajuan cuti ini?')) {
             const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanCuti/reject/${id}`;
             try {
+                setIsLoading(true)
                 const res = await axios.put(url,
                     {
                         catatan_hr: catatanHr
@@ -76,13 +81,14 @@ function IncomingCutiHR() {
 
                         withCredentials: true,
                     });
-
+                setIsLoading(false)
                 getCuti();
                 console.log(res.data);
                 const updatedModalStates = [...showModal];
                 updatedModalStates[index] = false;
                 setShowModal(updatedModalStates);
             } catch (error: any) {
+                setIsLoading(false)
                 console.log(error);
             }
         }

@@ -6,9 +6,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import IncomingSakitHR from './IncomingSakitHR';
-import DiprosesSakitHR from './DiprosesSakitHR';
-
+import BuatSakitKeHR from './BuatSakitKeHR';
 
 
 
@@ -47,7 +45,7 @@ function a11yProps(index: number) {
     };
 }
 
-export default function TabSakitHR() {
+export default function TabIPinjamanKeHR() {
     const theme = createTheme({
         palette: {
             primary: {
@@ -140,7 +138,7 @@ export default function TabSakitHR() {
                             aria-label="full width tabs example"
                             className="bg-white text-[#00499F] font-semibold mb-2 flex w-full"
                         >
-                            <Tab label="Incoming" {...a11yProps(0)} />
+                            <Tab label="Pengajuan" {...a11yProps(0)} />
                             <Tab label="Diproses" {...a11yProps(1)} />
                             <div className="flex w-full justify-end pr-4">
                                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
@@ -151,11 +149,11 @@ export default function TabSakitHR() {
                     </ThemeProvider>
                 </AppBar>
                 <TabPanel value={value} index={0} dir={theme.direction}>
-                    <IncomingSakitHR />
+                    <BuatSakitKeHR />
                 </TabPanel>
 
                 <TabPanel value={value} index={1} dir={theme.direction}>
-                    <DiprosesSakitHR />
+
                 </TabPanel>
             </Box>
         </>

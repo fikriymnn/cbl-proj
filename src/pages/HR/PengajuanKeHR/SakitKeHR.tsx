@@ -1,6 +1,7 @@
 import React from 'react'
 import DefaultLayout from '../../../layout/DefaultLayout'
 import TabSakitHR from '../../../components/Tables/HR/Pengajuan/Sakit/TabSakitHR'
+import TabSakitKeHR from '../../../components/Tables/HR/PengajuanKeHR/SakitKeHR/TabSakitKeHR'
 
 
 function SakitKeHR() {
@@ -8,7 +9,7 @@ function SakitKeHR() {
         <DefaultLayout>
             <>
                 <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>PENGAJUAN KE HR  &gt; Sakit</p>
-                <TabSakitHR />
+                <TabSakitKeHR />
             </>
         </DefaultLayout>
     )
