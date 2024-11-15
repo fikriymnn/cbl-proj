@@ -122,10 +122,13 @@ function IncomingCutiHR() {
                                 Tanggal
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                Sumber
+                                Department
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                 Personnel
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                Tipe Cuti
                             </label>
                         </div>
                         <div className="w-2 h-full "></div>
@@ -158,7 +161,10 @@ function IncomingCutiHR() {
                                         <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                             {data.karyawan?.name}
                                         </label>
-                                        <div className="justify-end flex pr-2 col-span-4">
+                                        <label className="text-neutral-500 text-sm font-semibold col-span-2 uppercase">
+                                            {data.tipe_cuti}
+                                        </label>
+                                        <div className="justify-end flex pr-2 col-span-2">
                                             <>
 
                                                 <button

@@ -129,6 +129,7 @@ function CheckSheetPondPeriode() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiPondPeriodePoint/start/${id}`;
     try {
+      setIsLoading(true)
       const res = await axios.put(
         url,
         {},
@@ -136,14 +137,36 @@ function CheckSheetPondPeriode() {
           withCredentials: true,
         },
       );
-
       getPondMesinPeriode();
+      setIsLoading(false)
     } catch (error: any) {
       console.log(error.data.msg);
       alert(error.response.data.msg);
+      setIsLoading(false)
     }
   }
+  async function deletePeriode(id: number) {
+    if (window.confirm('Hapus Periode?')) {
+      const url = `${import.meta.env.VITE_API_LINK
+        }/qc/cs/inspeksiPondPeriodePoint/delete/${id}`;
+      try {
+        setIsLoading(true)
+        const res = await axios.delete(
+          url,
 
+          {
+            withCredentials: true,
+          },
+        );
+        getPondMesinPeriode();
+        setIsLoading(false)
+      } catch (error: any) {
+        console.log(error);
+        setIsLoading(false)
+        alert(error);
+      }
+    }
+  }
   async function stopTaskCekPeriode(
     id: number,
     startTime: any,
@@ -155,6 +178,7 @@ function CheckSheetPondPeriode() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiPondPeriodePoint/stop/${id}`;
     try {
+      setIsLoading(true)
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
       const res = await axios.put(
@@ -172,8 +196,10 @@ function CheckSheetPondPeriode() {
       );
 
       getPondMesinPeriode();
+      setIsLoading(false)
     } catch (error: any) {
       console.log(error);
+      setIsLoading(false)
     }
   }
 
@@ -192,10 +218,11 @@ function CheckSheetPondPeriode() {
           withCredentials: true,
         },
       );
-      setIsLoading(false);
       getPondMesinPeriode();
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error.data.msg);
+      setIsLoading(false)
     }
   }
 
@@ -212,6 +239,7 @@ function CheckSheetPondPeriode() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiPondPeriodePoint/createDefect`;
     try {
+      setIsLoading(true)
       const res = await axios.post(
         url,
 
@@ -244,14 +272,17 @@ function CheckSheetPondPeriode() {
         },
       ]);
       getPondMesinPeriode();
+      setIsLoading(false)
     } catch (error: any) {
       console.log(error);
+      setIsLoading(false)
     }
   }
   async function pendingCekPeriode(id: number) {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiPondPeriode/pending/${id}`;
     try {
+      setIsLoading(true)
       const res = await axios.put(
         url,
         {},
@@ -261,14 +292,17 @@ function CheckSheetPondPeriode() {
       );
 
       getPondMesinPeriode();
+      setIsLoading(false)
     } catch (error: any) {
       console.log(error.data.msg);
+      setIsLoading(false)
     }
   }
   async function doneCekPeriode(id: number) {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiPondPeriode/done/${id}`;
     try {
+      setIsLoading(true)
       const res = await axios.put(
         url,
         { catatan: catatan },
@@ -278,8 +312,10 @@ function CheckSheetPondPeriode() {
       );
 
       getPondMesinPeriode();
+      setIsLoading(false)
     } catch (error: any) {
       console.log(error);
+      setIsLoading(false)
     }
   }
 
@@ -814,6 +850,30 @@ function CheckSheetPondPeriode() {
                       <></>
                     )}
                     <div className="flex min-w-screen justify-between px-2 py-4">
+                      {data.status == 'incoming' &&
+                        pondMesinPeriode?.status == 'incoming' ? (
+                        <>
+                          <button
+                            onClick={() =>
+                              deletePeriode(data.id)
+                            }
+                            className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                          >
+                            Hapus Periode
+                          </button>
+                        </>
+                      ) : data.status == 'on progress' ? (
+                        <>
+                          <button
+                            onClick={() =>
+                              deletePeriode(data.id)
+                            }
+                            className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                          >
+                            Hapus Periode
+                          </button>
+                        </>
+                      ) : null}
                       <label className="text-sm font-semibold">
                         {index + 1}
                       </label>

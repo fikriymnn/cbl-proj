@@ -134,6 +134,7 @@ function CheckSheetCoatingPeriode() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiCoatingResult/periode/start/${id}`;
     try {
+      setIsLoading(true)
       const res = await axios.get(
         url,
 
@@ -143,12 +144,35 @@ function CheckSheetCoatingPeriode() {
       );
 
       getCoatingMesinPeriode();
+      setIsLoading(false)
     } catch (error: any) {
       console.log(error.data.msg);
       alert(error.response.data.msg);
+      setIsLoading(false)
     }
   }
+  async function deletePeriode(id: number) {
+    if (window.confirm('Hapus Periode?')) {
+      const url = `${import.meta.env.VITE_API_LINK
+        }/qc/cs/inspeksiCoatingResult/periode/delete/${id}`;
+      try {
+        setIsLoading(true)
+        const res = await axios.delete(
+          url,
 
+          {
+            withCredentials: true,
+          },
+        );
+        getCoatingMesinPeriode();
+        setIsLoading(false)
+      } catch (error: any) {
+        console.log(error);
+        setIsLoading(false)
+        alert(error);
+      }
+    }
+  }
   async function stopTaskCekPeriode(
     id: number,
     startTime: any,
@@ -163,6 +187,7 @@ function CheckSheetCoatingPeriode() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiCoatingResult/periode/stop/${id}`;
     try {
+      setIsLoading(true)
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
       const res = await axios.put(
@@ -183,8 +208,10 @@ function CheckSheetCoatingPeriode() {
       );
 
       getCoatingMesinPeriode();
+      setIsLoading(false)
     } catch (error: any) {
       console.log(error);
+      setIsLoading(false)
     }
   }
 
@@ -221,6 +248,7 @@ function CheckSheetCoatingPeriode() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiCoatingResult/periode/point/${id}`;
     try {
+      setIsLoading(true)
       const res = await axios.post(
         url,
 
@@ -248,8 +276,10 @@ function CheckSheetCoatingPeriode() {
         },
       ]);
       getCoatingMesinPeriode();
+      setIsLoading(false)
     } catch (error: any) {
       console.log(error);
+      setIsLoading(false)
     }
   }
 
@@ -257,6 +287,7 @@ function CheckSheetCoatingPeriode() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiCoating/periode/${id}`;
     try {
+      setIsLoading(true)
       const res = await axios.put(
         url,
         { catatan: catatan },
@@ -266,8 +297,10 @@ function CheckSheetCoatingPeriode() {
       );
 
       getCoatingMesinPeriode();
+      setIsLoading(false)
     } catch (error: any) {
       console.log(error);
+      setIsLoading(false)
     }
   }
 
@@ -275,6 +308,7 @@ function CheckSheetCoatingPeriode() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiCoating/pending/${id}`;
     try {
+      setIsLoading(true)
       const res = await axios.get(
         url,
 
@@ -284,8 +318,10 @@ function CheckSheetCoatingPeriode() {
       );
 
       getCoatingMesinPeriode();
+      setIsLoading(false)
     } catch (error: any) {
       console.log(error.data.msg);
+      setIsLoading(false)
     }
   }
 
@@ -927,7 +963,32 @@ function CheckSheetCoatingPeriode() {
                     ) : (
                       <></>
                     )}
+                    {data.status == 'incoming' &&
+                      CoatingMesinPeriode?.status == 'incoming' ? (
+                      <>
+                        <button
+                          onClick={() =>
+                            deletePeriode(data.id)
+                          }
+                          className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                        >
+                          Hapus Periode
+                        </button>
+                      </>
+                    ) : data.status == 'on progress' ? (
+                      <>
+                        <button
+                          onClick={() =>
+                            deletePeriode(data.id)
+                          }
+                          className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                        >
+                          Hapus Periode
+                        </button>
+                      </>
+                    ) : null}
                     <div className="flex min-w-screen justify-between px-2 py-4">
+
                       <label className="text-sm font-semibold">
                         {index + 1}
                       </label>

@@ -214,7 +214,7 @@ function BuatCutiKeHR() {
                                 className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent  px-5 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary 
                                 }`}
                             >
-                                <option value="" disabled className="text-body dark:text-bodydark">
+                                <option value="" disabled selected className="text-body dark:text-bodydark">
                                     Pilih Tipe Cuti
                                 </option>
                                 <option value="tahunan" className="text-body dark:text-bodydark">
@@ -308,7 +308,7 @@ function BuatCutiKeHR() {
 
                 </div>
                 <div className='flex w-full justify-end items-end px-7 py-4'>
-                    {!(showError || showErrorEarlyDate) && sisaCuti >= 1 ? (
+                    {!(showError || showErrorEarlyDate) && (tipeCuti == 'khusus' || sisaCuti >= 1) ? (
                         <>
                             <button
                                 onClick={() => postCuti()}

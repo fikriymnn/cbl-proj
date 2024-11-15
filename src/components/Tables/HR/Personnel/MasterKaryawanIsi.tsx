@@ -133,7 +133,7 @@ function MasterKaryawanIsi() {
                                                 {data.biodata_karyawan[0]?.tgl_masuk == '' ? '-' : convertTimeStampToDateOnly(data.biodata_karyawan[0]?.tgl_masuk)}
                                             </label>
                                             <label className="text-neutral-500 text-xs font-semibold  ">
-                                                {data.biodata_karyawan[0]?.tgl_keluar == '' ? '-' : convertTimeStampToDateOnly(data.biodata_karyawan[0]?.tgl_keluar)}
+                                                {data.biodata_karyawan[0]?.tgl_keluar == null ? '-' : convertTimeStampToDateOnly(data.biodata_karyawan[0]?.tgl_keluar)}
                                             </label>
                                             <label className="text-neutral-500 text-xs font-semibold  ">
                                                 {data.status_data == '' ? '-' : data.status_data}
