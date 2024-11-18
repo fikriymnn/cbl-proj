@@ -121,6 +121,29 @@ function TableOS() {
 
     setShowModalDetail(onchangeVal);
   };
+  const [masterMesin, setmasterMesin] = useState<any>();
+  useEffect(() => {
+
+    getMasterMesin();
+  }, []);
+
+  async function getMasterMesin() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+
+      setmasterMesin(res.data);
+
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
+  const [startDate, setStartDate] = useState<any>();
+  const [endDate, setEndDate] = useState<any>();
+  const [mesinNama, setMesinNama] = useState<any>();
+  const [statusTiket, setStatusTiket] = useState<any>();
 
   async function getTiket(isRework?: boolean, idModal?: number) {
     const url = `${import.meta.env.VITE_API_LINK}/ticket`;
@@ -130,6 +153,10 @@ function TableOS() {
           bagian_tiket: 'os2',
           page: page,
           limit: 10,
+          start_date: startDate,
+          end_date: endDate,
+          mesin: mesinNama,
+          status_tiket: statusTiket
         },
         withCredentials: true,
       });
@@ -209,17 +236,17 @@ function TableOS() {
 
   return (
     <main>
-      <div className="flex justify-between items-center bg-white p-2">
+      <div className="flex  gap-1 items-center bg-white ">
         <div>
-          <img
+          {/* <img
             onClick={() => setFilter(!filter)}
             src={Filter}
             alt=""
             className="mx-3 my-auto"
-          />
+          /> */}
           {filter == true ? (
             <div className="absolute rounded-md bg-white shadow-2xl md:w-96 w-11/12 p-2 -translate-x-2 md:-translate-y-6 -translate-y-32 border border-gray">
-              <div className="flex justify-between">
+              {/* <div className="flex justify-between">
                 <img src={Filter} alt="" className="mx-3 my-auto" />
                 <img
                   onClick={() => setFilter(!filter)}
@@ -711,19 +738,131 @@ function TableOS() {
                 <button className="mt-5 text-white text-xs font-semibold rounded-md w-full bg-primary flex flex-col justify-center items-center px-2 py-2">
                   TERAPKAN
                 </button>
-              </div>
+              </div> */}
             </div>
           ) : (
             ''
           )}
         </div>
-        <input
+        <div className="flex md:gap-4 gap-1 md:flex-row flex-col px-4 py-4 md:mt-0 ">
+          <p className="my-auto text-sm text-primary font-semibold">
+            Pilih Tanggal
+          </p>
+          <div className="flex md:justify-center items-center gap-2">
+            <p className="text-sm text-primary font-semibold md:w-3/12 w-2/12">
+              Dari:
+            </p>
+
+            <input
+              className='rounded-full bg-[#D8EAFF] px-2'
+              type="date"
+              onChange={(e) => setStartDate(e.target.value)}
+            ></input>
+
+          </div>
+          <div className="flex md:justify-center items-center gap-2">
+            <p className=" my-auto text-sm text-primary font-semibold md:w-3/12 w-2/12">
+              Sampai:
+            </p>
+
+            <input
+              className='rounded-full bg-[#D8EAFF] px-2'
+              type="date"
+              onChange={(e) => setEndDate(e.target.value)}
+            ></input>
+
+          </div>
+          <div className="flex md:justify-center items-center gap-2">
+            <select
+              onChange={(e) => {
+                setMesinNama(
+                  e.target.value,
+                );
+
+              }}
+              className={` z-20 w-full rounded-md bg-blue-200 items-center h-8`}
+            >
+              <option
+                selected
+                disabled>
+                Pilih Mesin
+              </option>
+              {masterMesin?.map(
+                (data: any, i: number) => {
+                  return (
+                    <option
+                      value={data.nama_mesin}
+                      className="text-gray-800 text-sm font-light dark:text-bodydark"
+                    >
+                      {data.nama_mesin}
+                    </option>
+                  );
+                },
+              )}
+            </select>
+          </div>
+          <div className="flex md:justify-center items-center gap-2">
+            <select
+              onChange={(e) => {
+                setStatusTiket(
+                  e.target.value,
+                );
+
+              }}
+              className={` z-20 w-full rounded-md bg-blue-200 items-center h-8`}
+            >
+              <option
+                selected
+                disabled>
+                Pilih Status Tiket
+              </option>
+
+              <option
+                value={'open'}
+                className="text-gray-800 text-sm font-light dark:text-bodydark"
+              >
+                open
+              </option>
+              <option
+                value={'request to qc'}
+                className="text-gray-800 text-sm font-light dark:text-bodydark"
+              >
+                request to qc
+              </option>
+              <option
+                value={'temporary'}
+                className="text-gray-800 text-sm font-light dark:text-bodydark"
+              >
+                temporary
+              </option>
+              <option
+                value={'monitoring'}
+                className="text-gray-800 text-sm font-light dark:text-bodydark"
+              >
+                monitoring
+              </option>
+            </select>
+          </div>
+          <div className="flex justify-center my-5">
+            <button
+              onClick={() => {
+                getTiket()
+              }}
+              className="bg-primary text-white px-5 py-2 rounded-md my-auto "
+            >
+              Tampilkan
+            </button>
+
+          </div>
+
+        </div>
+        {/* <input
           type="search"
           placeholder="search"
           name=""
           id=""
           className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
-        />
+        /> */}
       </div>
 
       {!isMobile && (

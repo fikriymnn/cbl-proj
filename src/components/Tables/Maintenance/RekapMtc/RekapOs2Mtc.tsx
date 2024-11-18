@@ -180,7 +180,7 @@ function RekapOs2Mtc() {
 
 
             setoneMesin(res.data)
-            console.log('All Mesin', res.data)
+            console.log('Mesin Filter', res.data)
         } catch (error: any) {
             console.log(error);
         }
@@ -420,56 +420,106 @@ function RekapOs2Mtc() {
                     </div>
                     <div className='flex flex-col '>
                         <p className="text-xl font-semibold text-black"> Mesin : {oneMesin?.data_jenis_masalah?.jenis_masalah[0]?.mesin}</p>
-                        <div className='grid grid-cols-12 border-2 border-black px-1 justify-center gap-4 bg-slate-300'>
-                            <label className='text-sm col-span-2 font-semibold'>
-                                Bulan
-                            </label>
-                            <label className='text-sm col-span-2 font-semibold'>
-                                Produksi
-                            </label>
-                            <label className='text-sm col-span-2 font-semibold'>
-                                Quality
-                            </label>
-                            <label className='text-sm col-span-2 font-semibold'>
-                                Total
-                            </label>
-                        </div>
-                        {oneMesin?.data_jenis_masalah?.jenis_masalah[0]?.data?.map((data: any, i: any) => {
-                            return (
-                                <>
-                                    <div className='grid grid-cols-12 border-x-2 border-b-2 border-black px-1 justify-center gap-4 bg-white'>
-                                        <label className='text-sm col-span-2 font-semibold'>
-                                            {data.nama_bulan}
-                                        </label>
-                                        <label className='text-sm col-span-2 font-semibold'>
-                                            {data.produksi}
-                                        </label>
-                                        <label className='text-sm col-span-2 font-semibold'>
-                                            {data.quality}
-                                        </label>
-                                        <label className='text-sm col-span-2 font-semibold'>
-                                            {data.total}
-                                        </label>
-                                    </div>
-                                </>
-                            )
-                        })}
-                        <div className='grid grid-cols-12 border-2 border-black px-1 justify-center items-center gap-4 bg-slate-300'>
+                        <div className='grid grid-cols-2 gap-3'>
+                            <div>
 
-                            <label className='text-sm col-span-2 font-semibold'>
-                                Total
-                            </label>
+                                <div className='grid grid-cols-12 border-x-2 bg-slate-300 border-2 border-black px-1 justify-center gap-4 '>
 
-                            <label className='text-sm col-span-2 font-semibold'>
-                                {oneMesin?.data_jenis_masalah?.total_produksi}
-                            </label>
-                            <label className='text-sm col-span-2 font-semibold'>
-                                {oneMesin?.data_jenis_masalah?.total_quality}
-                            </label>
-                            <label className='text-sm col-span-2 font-semibold'>
-                                {oneMesin?.data_jenis_masalah?.total_count}
-                            </label>
+                                    <label className='text-sm col-span-2 font-semibold'>
+                                        Kode
+                                    </label>
+                                    <label className='text-sm col-span-8 font-semibold'>
+                                        Nama Analisis
+                                    </label>
+                                    <label className='text-sm col-span-2 font-semibold'>
+                                        Jumlah
+                                    </label>
+                                </div>
+
+                            </div>
+                            <div>
+
+                                <div className='grid grid-cols-12 border-x-2  border-2 border-black px-1 justify-center gap-4 bg-slate-300'>
+
+                                    <label className='text-sm col-span-2 font-semibold'>
+                                        Kode
+                                    </label>
+                                    <label className='text-sm col-span-8 font-semibold'>
+                                        Nama Analisis
+                                    </label>
+                                    <label className='text-sm col-span-2 font-semibold'>
+                                        Jumlah
+                                    </label>
+                                </div>
+
+                            </div>
                         </div>
+                        <div className='grid grid-cols-2 gap-3'>
+                            <div>
+                                {oneMesin?.data_jenis_masalah?.kode_produksi?.map((data: any, i: any) => {
+                                    return (
+                                        <>
+                                            <div className='grid grid-cols-12 border-x-2 border-b-2 border-black px-1 justify-center gap-4 bg-white'>
+
+                                                <label className='text-sm col-span-2 font-semibold'>
+                                                    {data.kode_analisis_mtc}
+                                                </label>
+                                                <label className='text-sm col-span-8 font-semibold'>
+                                                    {data.nama_analisis_mtc}
+                                                </label>
+                                                <label className='text-sm col-span-2 font-semibold'>
+                                                    {data.count}
+                                                </label>
+                                            </div>
+                                        </>
+                                    )
+                                })}
+                                <div className='grid grid-cols-12 border-2 border-black px-1 justify-center items-center gap-4 bg-slate-300'>
+
+                                    <label className='text-sm col-span-10 font-semibold'>
+                                        Total Produksi
+                                    </label>
+
+                                    <label className='text-sm col-span-2 font-semibold'>
+                                        {oneMesin?.data_jenis_masalah?.total_produksi}
+                                    </label>
+
+                                </div>
+                            </div>
+                            <div>
+                                {oneMesin?.data_jenis_masalah?.kode_quality?.map((data: any, i: any) => {
+                                    return (
+                                        <>
+                                            <div className='grid grid-cols-12 border-x-2 border-b-2 border-black px-1 justify-center gap-4 bg-white'>
+
+                                                <label className='text-sm col-span-2 font-semibold'>
+                                                    {data.kode_analisis_mtc}
+                                                </label>
+                                                <label className='text-sm col-span-8 font-semibold'>
+                                                    {data.nama_analisis_mtc}
+                                                </label>
+                                                <label className='text-sm col-span-2 font-semibold'>
+                                                    {data.count}
+                                                </label>
+                                            </div>
+                                        </>
+                                    )
+                                })}
+                                <div className='grid grid-cols-12 border-2 border-black px-1 justify-center items-center gap-4 bg-slate-300'>
+
+                                    <label className='text-sm col-span-10 font-semibold'>
+                                        Total Quality
+                                    </label>
+
+                                    <label className='text-sm col-span-2 font-semibold'>
+                                        {oneMesin?.data_jenis_masalah?.total_quality}
+                                    </label>
+
+                                </div>
+                            </div>
+                        </div>
+
+
 
                     </div >
 

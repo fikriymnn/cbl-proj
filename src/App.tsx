@@ -170,6 +170,7 @@ import KaryawanKeHr from './pages/HR/PengajuanKeHR/KaryawanKeHR';
 import MasterSHiftHR from './pages/HR/MasterDataHR/MastershiftHr';
 import MasterDepartment from './pages/HR/MasterDataHR/MasterDepartment';
 import EditMasterKaryawan from './pages/HR/Personal/EditMasterKaryawan';
+import MasterCutiKhusus from './pages/HR/MasterDataHR/MasterCutiKhusus';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1748,6 +1749,14 @@ function App() {
           element={
             <>
               <MasterDepartment />
+            </>
+          }
+        />
+        <Route
+          path="/hr/master/cutikhusus"
+          element={
+            <>
+              <MasterCutiKhusus />
             </>
           }
         />

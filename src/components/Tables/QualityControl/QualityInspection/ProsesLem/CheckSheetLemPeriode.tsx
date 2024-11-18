@@ -864,31 +864,31 @@ function CheckSheetLemPeriode() {
                       ) : (
                         <></>
                       )}
+                      {data.status == 'incoming' &&
+                        LemMesinPeriode?.status == 'incoming' ? (
+                        <>
+                          <button
+                            onClick={() =>
+                              deletePeriode(data.id)
+                            }
+                            className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                          >
+                            Hapus Periode
+                          </button>
+                        </>
+                      ) : data.status == 'on progress' ? (
+                        <>
+                          <button
+                            onClick={() =>
+                              deletePeriode(data.id)
+                            }
+                            className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                          >
+                            Hapus Periode
+                          </button>
+                        </>
+                      ) : null}
                       <div className="flex min-w-screen justify-between px-2 py-4">
-                        {data.status == 'incoming' &&
-                          LemMesinPeriode?.status == 'incoming' ? (
-                          <>
-                            <button
-                              onClick={() =>
-                                deletePeriode(data.id)
-                              }
-                              className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
-                            >
-                              Hapus Periode
-                            </button>
-                          </>
-                        ) : data.status == 'on progress' ? (
-                          <>
-                            <button
-                              onClick={() =>
-                                deletePeriode(data.id)
-                              }
-                              className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
-                            >
-                              Hapus Periode
-                            </button>
-                          </>
-                        ) : null}
                         <label className="text-sm font-semibold">
                           {index + 1}
                         </label>
