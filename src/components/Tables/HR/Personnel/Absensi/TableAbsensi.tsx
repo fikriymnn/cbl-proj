@@ -87,7 +87,10 @@ function TableAbsensi() {
                                 <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                     Nama
                                 </label>
-                                <label className="text-neutral-500 text-sm font-semibold col-span-4">
+                                <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                    Tanggal
+                                </label>
+                                <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                     Waktu
                                 </label>
                                 <label className="text-neutral-500 text-sm font-semibold">
@@ -96,18 +99,23 @@ function TableAbsensi() {
                                 <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                     Lembur (Jam)
                                 </label>
-                                <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                <label className="text-neutral-500 text-sm font-semibold ">
                                     Terlambat (Menit)
+                                </label>
+                                <label className="text-neutral-500 text-sm font-semibold ">
+                                    Status Absen
                                 </label>
                             </div>
                             <div className="w-2 h-full "></div>
                             {absen?.map((data: any, i: any) => {
 
-
-
                                 return (
                                     <>
-                                        <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center px-10 min-h-10">
+                                        <div className={`grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center px-10 min-h-10  
+                                            ${data.status_absen == 'cuti khusus' ? 'bg-orange-200' : ''} 
+                                              ${data.status_absen == 'sakit' ? 'bg-red-200' : ''}
+                                               ${data.status_absen == 'izin' ? 'bg-blue-200' : ''}
+                                            `}>
 
                                             <label className="text-neutral-500 text-sm font-semibold ">
                                                 {i + 1}
@@ -115,12 +123,15 @@ function TableAbsensi() {
                                             <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                                 {data.name}
                                             </label>
-                                            <div className='col-span-4 flex flex-col gap-1 py-2'>
+                                            <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                                {data.tgl_masuk}
+                                            </label>
+                                            <div className='col-span-2 flex flex-col gap-1 py-2'>
                                                 <label className="text-neutral-500 text-sm font-semibold  ">
-                                                    Masuk : {data.tgl_masuk} Pukul {data.jam_masuk}
+                                                    Masuk :  {data.jam_masuk}
                                                 </label>
                                                 <label className="text-neutral-500 text-sm font-semibold  ">
-                                                    Keluar : {data.tgl_keluar} Pukul {data.jam_keluar}
+                                                    Keluar :  {data.jam_keluar}
                                                 </label>
                                             </div>
 
@@ -128,10 +139,18 @@ function TableAbsensi() {
                                                 {data.shift}
                                             </label>
                                             <label className="text-neutral-500 text-sm font-semibold col-span-2 ">
-                                                {data.status_lembur} {data.jam_lembur == 0 ? '' : '~ ' + data.jam_lembur + 'Jam'}
+                                                {data.status_lembur} {(data.jam_lembur == null || data.jam_lembur == 0) ? '' : '~ ' + data.jam_lembur + 'Jam'}
                                             </label>
-                                            <label className="text-neutral-500 text-sm font-semibold col-span-2 ">
-                                                {data.status_masuk}  {data.menit_terlambat == 0 ? '' : '~ ' + data.menit_terlambat + 'Menit'}
+                                            <div className='flex flex-col gap-1'>
+                                                <label className="text-neutral-500 text-sm font-semibold ">
+                                                    {data.status_masuk}
+                                                </label>
+                                                <label className="text-neutral-500 text-sm font-semibold ">
+                                                    {(data.menit_terlambat == null || data.menit_terlambat == 0) ? '~' : '~ ' + data.menit_terlambat + ' Menit'}
+                                                </label>
+                                            </div>
+                                            <label className="text-neutral-500 text-sm font-semibold ">
+                                                {data.status_absen}
                                             </label>
                                         </div>
                                     </>

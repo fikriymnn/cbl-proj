@@ -153,7 +153,7 @@ function MasterKaryawanIsi() {
                                                 </button>
                                                 <Link
                                                     className='px-2 py-1 text-xs bg-blue-600 items-center justify-center text-white font-semibold rounded-md  flex'
-                                                    to={`/hr/pm/masterkaryawan/edit/${data.USERID}`} >
+                                                    to={`/hr/pm/masterkaryawan/edit/${data.userid}`} >
                                                     <button
                                                     >
                                                         EDIT

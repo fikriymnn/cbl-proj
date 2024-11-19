@@ -120,6 +120,9 @@ function EditMasterKaryawanIsi() {
     const [statusPajakEdit, sestatusPajakEdit] = useState<any>();
     const [levelEdit, setlevelEdit] = useState<any>();
     const [subLevelEdit, setsubLevelEdit] = useState<any>();
+    const [gaji, setGaji] = useState<any>(0);
+    const [kontrakDari, setKOntrakDari] = useState<any>(null);
+    const [kontrakSampai, setKontrakSampai] = useState<any>(null);
 
     async function tambahKaryawan() {
         const url = `${import.meta.env.VITE_API_LINK
@@ -143,7 +146,10 @@ function EditMasterKaryawanIsi() {
                     status_karyawan: statusKaryawanEdit,
                     status_pajak: statusPajakEdit,
                     level: levelEdit,
-                    sub_level: subLevelEdit
+                    sub_level: subLevelEdit,
+                    gaji: gaji,
+                    kontrak_dari: kontrakDari,
+                    kontrak_sampai: kontrakSampai
                 },
                 {
                     withCredentials: true,
@@ -347,6 +353,7 @@ function EditMasterKaryawanIsi() {
 
                         </div>
                     </div>
+
                     <div className=''>
                         <div className='flex w-full gap-3'>
                             <div className='flex flex-col gap-1 w-[50%]'>
@@ -416,6 +423,38 @@ function EditMasterKaryawanIsi() {
                                 </div>
                             </div>
                         </div>
+                        {(karyawan?.data?.biodata_karyawan[0]?.status_karyawan == 'tetap' || karyawan?.data?.biodata_karyawan[0]?.status_karyawan == null) ? (
+                            <>
+                            </>
+                        ) :
+                            (
+                                <>
+                                    <div className='flex w-full gap-3'>
+                                        <div className='flex flex-col gap-1 w-[50%]'>
+                                            <label className=' text-sm font-semibold'>
+                                                Tanggal Mulai Kontrak
+                                            </label>
+                                            <input
+
+                                                onChange={(e) => setKOntrakDari(e.target.value)}
+                                                type="date"
+                                                className='border-2 border-stroke rounded-md'
+                                            ></input>
+                                        </div>
+                                        <div className='flex flex-col gap-1 w-[50%]'>
+                                            <label className=' text-sm font-semibold'>
+                                                Tanggal Akhir Kontrak
+                                            </label>
+                                            <input
+                                                onChange={(e) => setKontrakSampai(e.target.value)}
+                                                type="date"
+                                                className='border-2 border-stroke rounded-md'
+                                            ></input>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
                         <div className='flex w-full gap-3'>
                             <div className='flex flex-col gap-1 w-[50%]'>
                                 <label className=' text-sm font-semibold'>
@@ -533,12 +572,12 @@ function EditMasterKaryawanIsi() {
                                 </span>
 
                                 <select
-                                    defaultValue={karyawan?.data?.biodata_karyawan[0]?.status_pajak}
+                                    defaultValue={karyawan?.data?.biodata_karyawan[0]?.tipe_penggajian}
                                     onChange={(e) => settipePenggajianEdit(e.target.value)}
                                     className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                 >
-                                    <option value={''} disabled selected className="text-[#646464] text-xs dark:text-bodydark">
+                                    <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
                                         Pilih
                                     </option>
                                     <option value={'mingguan'} className="text-[#646464] text-xs dark:text-bodydark">

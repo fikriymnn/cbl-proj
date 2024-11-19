@@ -82,21 +82,24 @@ function AddMasterKaryawanIsi() {
             console.log(error);
         }
     }
-    const [namaKaryawan, setnamaKaryawan] = useState<any>([]);
-    const [nik, setnik] = useState<any>([]);
-    const [jenisKelamin, setjenisKelamin] = useState<any>([]);
-    const [idDivisi, seidDivisi] = useState<any>([]);
-    const [idDepartment, setidDepartment] = useState<any>([]);
-    const [idDagian, setidDagian] = useState<any>([]);
-    const [grade, setgrade] = useState<any>([]);
+    const [namaKaryawan, setnamaKaryawan] = useState<any>();
+    const [nik, setnik] = useState<any>();
+    const [jenisKelamin, setjenisKelamin] = useState<any>();
+    const [idDivisi, seidDivisi] = useState<any>();
+    const [idDepartment, setidDepartment] = useState<any>();
+    const [idDagian, setidDagian] = useState<any>();
+    const [grade, setgrade] = useState<any>();
     const [tglMasuk, setglMasuk] = useState<any>(null);
     const [tglKeluar, setglKeluar] = useState<any>(null);
-    const [tipePenggajian, settipePenggajian] = useState<any>([]);
-    const [jabatan, sejabatan] = useState<any>([]);
-    const [statusKaryawan, setstatusKaryawan] = useState<any>([]);
-    const [statusPajak, sestatusPajak] = useState<any>([]);
-    const [level, setlevel] = useState<any>([]);
-    const [subLevel, setsubLevel] = useState<any>([]);
+    const [tipePenggajian, settipePenggajian] = useState<any>();
+    const [jabatan, sejabatan] = useState<any>();
+    const [statusKaryawan, setstatusKaryawan] = useState<any>();
+    const [statusPajak, sestatusPajak] = useState<any>();
+    const [level, setlevel] = useState<any>();
+    const [subLevel, setsubLevel] = useState<any>();
+    const [gaji, setGaji] = useState<any>(0);
+    const [kontrakDari, setKOntrakDari] = useState<any>(null);
+    const [kontrakSampai, setKontrakSampai] = useState<any>(null);
 
     async function tambahKaryawan() {
         const url = `${import.meta.env.VITE_API_LINK
@@ -120,7 +123,11 @@ function AddMasterKaryawanIsi() {
                     status_karyawan: statusKaryawan,
                     status_pajak: statusPajak,
                     level: level,
-                    sub_level: subLevel
+                    sub_level: subLevel,
+                    gaji: gaji,
+                    kontrak_dari: kontrakDari,
+                    kontrak_sampai: kontrakSampai
+
                 },
                 {
                     withCredentials: true,
@@ -346,7 +353,11 @@ function AddMasterKaryawanIsi() {
                                     </span>
 
                                     <select
-                                        onChange={(e) => setstatusKaryawan(e.target.value)}
+                                        onChange={(e) => {
+                                            setKOntrakDari(null)
+                                            setKontrakSampai(null)
+                                            setstatusKaryawan(e.target.value)
+                                        }}
                                         className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                     >
@@ -384,6 +395,37 @@ function AddMasterKaryawanIsi() {
                                 </div>
                             </div>
                         </div>
+                        {(statusKaryawan == 'tetap' || statusKaryawan == null) ? (
+                            <>
+                            </>
+                        ) :
+                            (
+                                <>
+                                    <div className='flex w-full gap-3'>
+                                        <div className='flex flex-col gap-1 w-[50%]'>
+                                            <label className=' text-sm font-semibold'>
+                                                Tanggal Mulai Kontrak
+                                            </label>
+                                            <input
+                                                onChange={(e) => setKOntrakDari(e.target.value)}
+                                                type="date"
+                                                className='border-2 border-stroke rounded-md'
+                                            ></input>
+                                        </div>
+                                        <div className='flex flex-col gap-1 w-[50%]'>
+                                            <label className=' text-sm font-semibold'>
+                                                Tanggal Akhir Kontrak
+                                            </label>
+                                            <input
+                                                onChange={(e) => setKontrakSampai(e.target.value)}
+                                                type="date"
+                                                className='border-2 border-stroke rounded-md'
+                                            ></input>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+
                         <div className='flex w-full gap-3'>
                             <div className='flex flex-col gap-1 w-[50%]'>
                                 <label className=' text-sm font-semibold'>
@@ -482,59 +524,70 @@ function AddMasterKaryawanIsi() {
                             </div>
                         </div>
 
-                        <div className='flex flex-col gap-1 w-[50%]'>
-                            <label className=' text-sm font-semibold'>
-                                Tipe Penggajian<span className='text-red-600'>*</span>
-                            </label>
-                            <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                                <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                    <svg
-                                        width="20"
-                                        height="20"
-                                        viewBox="0 0 20 20"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
+                        <div className='grid grid-cols-2 gap-1 w-full'>
+                            <div className='flex flex-col gap-1'>
+                                <label className=' text-sm font-semibold'>
+                                    Tipe Penggajian<span className='text-red-600'>*</span>
+                                </label>
+                                <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
+                                    <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                        <svg
+                                            width="20"
+                                            height="20"
+                                            viewBox="0 0 20 20"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
 
-                                    </svg>
-                                </span>
+                                        </svg>
+                                    </span>
 
-                                <select
-                                    onChange={(e) => settipePenggajian(e.target.value)}
-                                    className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
+                                    <select
+                                        onChange={(e) => settipePenggajian(e.target.value)}
+                                        className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
-                                >
-                                    <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                        Tipe Penggajian
-                                    </option>
-                                    <option value={'mingguan'} className="text-[#646464] text-xs dark:text-bodydark">
-                                        MINGGUAN
-                                    </option>
-                                    <option value={'bulanan'} className="text-[#646464] text-xs dark:text-bodydark">
-                                        BULANAN
-                                    </option>
-
-                                </select>
-
-                                <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
-                                    <svg
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
                                     >
-                                        <g opacity="0.8">
-                                            <path
-                                                fillRule="evenodd"
-                                                clipRule="evenodd"
-                                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                                fill="#637381"
-                                            ></path>
-                                        </g>
-                                    </svg>
-                                </span>
+                                        <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
+                                            Tipe Penggajian
+                                        </option>
+                                        <option value={'mingguan'} className="text-[#646464] text-xs dark:text-bodydark">
+                                            MINGGUAN
+                                        </option>
+                                        <option value={'bulanan'} className="text-[#646464] text-xs dark:text-bodydark">
+                                            BULANAN
+                                        </option>
 
+                                    </select>
+
+                                    <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
+                                        <svg
+                                            width="24"
+                                            height="24"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                        >
+                                            <g opacity="0.8">
+                                                <path
+                                                    fillRule="evenodd"
+                                                    clipRule="evenodd"
+                                                    d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                                    fill="#637381"
+                                                ></path>
+                                            </g>
+                                        </svg>
+                                    </span>
+
+                                </div>
+                            </div>
+
+                            <div className='flex flex-col gap-1 w-full'>
+                                <label className=' text-sm font-semibold'>
+                                    Gaji<span className='text-red-600'>*</span>
+                                </label>
+                                <input
+                                    onChange={(e) => setGaji(e.target.value)}
+                                    type='text' className='border-stroke border-2 rounded-md w-full' />
                             </div>
                         </div>
 
