@@ -128,18 +128,18 @@ function TableAbsensi() {
                                             </label>
                                             <div className='col-span-2 flex flex-col gap-1 py-2'>
                                                 <label className="text-neutral-500 text-sm font-semibold  ">
-                                                    Masuk :  {data.jam_masuk}
+                                                    Masuk :  {(data.jam_masuk == null || data.jam_masuk == 0) ? ' ~' : data.jam_masuk}
                                                 </label>
                                                 <label className="text-neutral-500 text-sm font-semibold  ">
-                                                    Keluar :  {data.jam_keluar}
+                                                    Keluar : {(data.jam_keluar == null || data.jam_keluar == 0) ? ' ~' : data.jam_keluar}
                                                 </label>
                                             </div>
 
                                             <label className="text-neutral-500 text-sm font-semibold ">
-                                                {data.shift}
+                                                {(data.shift == null || data.shift == 0) ? ' ~' : data.shift}
                                             </label>
                                             <label className="text-neutral-500 text-sm font-semibold col-span-2 ">
-                                                {data.status_lembur} {(data.jam_lembur == null || data.jam_lembur == 0) ? '' : '~ ' + data.jam_lembur + 'Jam'}
+                                                {(data.status_lembur == null || data.status_lembur == 0) ? ' ~' : data.status_lembur} {(data.jam_lembur == null || data.jam_lembur == 0) ? '' : '~ ' + data.jam_lembur + 'Jam'}
                                             </label>
                                             <div className='flex flex-col gap-1'>
                                                 <label className="text-neutral-500 text-sm font-semibold ">
