@@ -9,6 +9,7 @@ import BarChartResponTime from '../../../../pages/UiElements/BarchartResponTime'
 import BarChartResponMonth from '../../../../pages/UiElements/BarchartResponMonth';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import BarChartProductionQuality from '../../../../pages/UiElements/BarchartProductionQuality';
+import BarChartMesinOnly from '../../../../pages/UiElements/BarchartMesinOnly';
 
 function RekapOs2Mtc() {
     const [bulan, setBulan] = useState(0);
@@ -29,6 +30,9 @@ function RekapOs2Mtc() {
     const [dateFrom3, setDateFrom3] = useState<any>();
     const [dateTo3, setDateTo3] = useState<any>();
 
+    const [dateFrom4, setDateFrom4] = useState<any>();
+    const [dateTo4, setDateTo4] = useState<any>();
+
     const [defectOs2, setDefectOs2] = useState<any>();
 
     const [produksiDefect, setproduksiDefect] = useState<any>();
@@ -45,6 +49,7 @@ function RekapOs2Mtc() {
         getQuality(null, null);
         getProduksi(null, null);
         getResponTimeBulan(null, null)
+        getMesin()
     }, []);
 
     async function getMesinProblem(dateFrom1: any, dateTo1: any) {
@@ -151,6 +156,48 @@ function RekapOs2Mtc() {
 
             setresponTimeBulan(res.data)
             console.log('Respon Time Bulan', res.data)
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+
+    const [oneMesin, setoneMesin] = useState<any>();
+    const [mesinSelect, setmesinSelect] = useState<any>();
+
+    async function getOneMesin(fromdate: any, todate: any, namaMesin: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/reportMtc/oneMesinProblem`;
+        try {
+            const res = await axios.get(url, {
+                params: {
+
+                    start_date: fromdate,
+                    end_date: todate,
+                    mesin_name: namaMesin
+
+                },
+                withCredentials: true,
+            });
+
+
+            setoneMesin(res.data)
+            console.log('Mesin Filter', res.data)
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+    const [allMesin, setallMesin] = useState<any>();
+
+    async function getMesin() {
+        const url = `${import.meta.env.VITE_API_LINK}/reportMtc/mesinTicket`;
+        try {
+            const res = await axios.get(url, {
+
+                withCredentials: true,
+            });
+
+
+            setallMesin(res.data)
+            console.log('All Mesin', res.data)
         } catch (error: any) {
             console.log(error);
         }
@@ -285,6 +332,196 @@ function RekapOs2Mtc() {
                         </div>
 
                     </div>
+
+                </div>
+
+            </div>
+            <div className="bg-white rounded-md shadow-md md:w-12/12 mb-5 border-2">
+                <div className="flex md:gap-4 gap-1 md:flex-row flex-col px-4 py-4 md:mt-0 ">
+                    <p className="my-auto text-sm text-primary font-semibold">
+                        Pilih Tanggal
+                    </p>
+                    <div className="flex md:justify-center items-center gap-2">
+                        <p className="text-sm text-primary font-semibold md:w-3/12 w-2/12">
+                            Dari:
+                        </p>
+
+                        <input
+                            className='rounded-full bg-[#D8EAFF] px-2'
+                            type="date"
+                            onChange={(e) => setDateFrom4(e.target.value)}
+                        ></input>
+
+                    </div>
+                    <div className="flex md:justify-center items-center gap-2">
+                        <p className=" my-auto text-sm text-primary font-semibold md:w-3/12 w-2/12">
+                            Sampai:
+                        </p>
+
+                        <input
+                            className='rounded-full bg-[#D8EAFF] px-2'
+                            type="date"
+                            onChange={(e) => setDateTo4(e.target.value)}
+                        ></input>
+
+                    </div>
+                    <div className="relative flex w-full items-center">
+                        <select
+                            onChange={(e) => {
+                                setmesinSelect(
+                                    e.target.value,
+                                );
+
+                            }}
+                            className={` z-20 w-[40%]  rounded-md bg-blue-200 items-center h-8`}
+                        >
+                            <option
+                                selected
+                                disabled>
+                                Pilih Mesin
+                            </option>
+                            {allMesin?.map(
+                                (data: any, i: number) => {
+                                    return (
+                                        <option
+                                            value={data.mesin}
+                                            className="text-gray-800 text-sm font-light dark:text-bodydark"
+                                        >
+                                            {data.mesin}
+                                        </option>
+                                    );
+                                },
+                            )}
+                        </select>
+
+                    </div>
+                    <div className="flex justify-center my-5">
+                        <button
+                            onClick={() => {
+                                console.log(dateFrom4, dateTo4, mesinSelect)
+                                getOneMesin(dateFrom4, dateTo4, mesinSelect)
+                            }}
+                            className="bg-primary text-white px-5 py-2 rounded-md my-auto "
+                        >
+                            Tampilkan
+                        </button>
+                    </div>
+
+                </div>
+
+                <div className="md:grid grid-cols-1 gap-5 px-10 pb-10 ">
+                    <div className="">
+                        <div className="flex gap-3 p-3">
+                            <img src={Production} alt="Logo" />
+
+                            <p className="text-xl font-semibold text-[#0065DE]"> Mesin : {oneMesin?.data_jenis_masalah?.jenis_masalah[0]?.mesin}</p>
+                        </div>
+                        <BarChartMesinOnly value={oneMesin?.data_jenis_masalah} />
+                    </div>
+                    <div className='flex flex-col '>
+                        <p className="text-xl font-semibold text-black"> Mesin : {oneMesin?.data_jenis_masalah?.jenis_masalah[0]?.mesin}</p>
+                        <div className='grid grid-cols-2 gap-3'>
+                            <div>
+
+                                <div className='grid grid-cols-12 border-x-2 bg-slate-300 border-2 border-black px-1 justify-center gap-4 '>
+
+                                    <label className='text-sm col-span-2 font-semibold'>
+                                        Kode
+                                    </label>
+                                    <label className='text-sm col-span-8 font-semibold'>
+                                        Nama Analisis
+                                    </label>
+                                    <label className='text-sm col-span-2 font-semibold'>
+                                        Jumlah
+                                    </label>
+                                </div>
+
+                            </div>
+                            <div>
+
+                                <div className='grid grid-cols-12 border-x-2  border-2 border-black px-1 justify-center gap-4 bg-slate-300'>
+
+                                    <label className='text-sm col-span-2 font-semibold'>
+                                        Kode
+                                    </label>
+                                    <label className='text-sm col-span-8 font-semibold'>
+                                        Nama Analisis
+                                    </label>
+                                    <label className='text-sm col-span-2 font-semibold'>
+                                        Jumlah
+                                    </label>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div className='grid grid-cols-2 gap-3'>
+                            <div>
+                                {oneMesin?.data_jenis_masalah?.kode_produksi?.map((data: any, i: any) => {
+                                    return (
+                                        <>
+                                            <div className='grid grid-cols-12 border-x-2 border-b-2 border-black px-1 justify-center gap-4 bg-white'>
+
+                                                <label className='text-sm col-span-2 font-semibold'>
+                                                    {data.kode_analisis_mtc}
+                                                </label>
+                                                <label className='text-sm col-span-8 font-semibold'>
+                                                    {data.nama_analisis_mtc}
+                                                </label>
+                                                <label className='text-sm col-span-2 font-semibold'>
+                                                    {data.count}
+                                                </label>
+                                            </div>
+                                        </>
+                                    )
+                                })}
+                                <div className='grid grid-cols-12 border-2 border-black px-1 justify-center items-center gap-4 bg-slate-300'>
+
+                                    <label className='text-sm col-span-10 font-semibold'>
+                                        Total Produksi
+                                    </label>
+
+                                    <label className='text-sm col-span-2 font-semibold'>
+                                        {oneMesin?.data_jenis_masalah?.total_produksi}
+                                    </label>
+
+                                </div>
+                            </div>
+                            <div>
+                                {oneMesin?.data_jenis_masalah?.kode_quality?.map((data: any, i: any) => {
+                                    return (
+                                        <>
+                                            <div className='grid grid-cols-12 border-x-2 border-b-2 border-black px-1 justify-center gap-4 bg-white'>
+
+                                                <label className='text-sm col-span-2 font-semibold'>
+                                                    {data.kode_analisis_mtc}
+                                                </label>
+                                                <label className='text-sm col-span-8 font-semibold'>
+                                                    {data.nama_analisis_mtc}
+                                                </label>
+                                                <label className='text-sm col-span-2 font-semibold'>
+                                                    {data.count}
+                                                </label>
+                                            </div>
+                                        </>
+                                    )
+                                })}
+                                <div className='grid grid-cols-12 border-2 border-black px-1 justify-center items-center gap-4 bg-slate-300'>
+
+                                    <label className='text-sm col-span-10 font-semibold'>
+                                        Total Quality
+                                    </label>
+
+                                    <label className='text-sm col-span-2 font-semibold'>
+                                        {oneMesin?.data_jenis_masalah?.total_quality}
+                                    </label>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                    </div >
 
                 </div>
 

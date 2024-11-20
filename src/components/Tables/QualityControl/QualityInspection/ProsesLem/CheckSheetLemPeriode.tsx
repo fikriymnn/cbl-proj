@@ -144,6 +144,7 @@ function CheckSheetLemPeriode() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiLemPeriodePoint/start/${id}`;
     try {
+      setIsLoading(true)
       const res = await axios.put(
         url,
         {},
@@ -153,12 +154,36 @@ function CheckSheetLemPeriode() {
       );
 
       getLemMesinPeriode();
+      setIsLoading(false)
     } catch (error: any) {
       console.log(error.data.msg);
+      setIsLoading(false)
       alert(error.response.data.msg);
     }
   }
+  async function deletePeriode(id: number) {
+    if (window.confirm('Hapus Periode?')) {
+      const url = `${import.meta.env.VITE_API_LINK
+        }/qc/cs/inspeksiLemPeriodePoint/delete/${id}`;
+      try {
+        setIsLoading(true)
+        const res = await axios.delete(
+          url,
 
+          {
+            withCredentials: true,
+          },
+        );
+
+        getLemMesinPeriode();
+        setIsLoading(false)
+      } catch (error: any) {
+        console.log(error);
+        setIsLoading(false)
+        alert(error);
+      }
+    }
+  }
   async function stopTaskCekPeriode(
     id: number,
     startTime: any,
@@ -170,6 +195,7 @@ function CheckSheetLemPeriode() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiLemPeriodePoint/stop/${id}`;
     try {
+      setIsLoading(true)
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
       const res = await axios.put(
@@ -187,8 +213,10 @@ function CheckSheetLemPeriode() {
       );
 
       getLemMesinPeriode();
+      setIsLoading(false)
     } catch (error: any) {
       console.log(error);
+      setIsLoading(false)
     }
   }
 
@@ -207,10 +235,11 @@ function CheckSheetLemPeriode() {
           withCredentials: true,
         },
       );
-      setIsLoading(false);
       getLemMesinPeriode();
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error.data.msg);
+      setIsLoading(false)
     }
   }
 
@@ -227,6 +256,7 @@ function CheckSheetLemPeriode() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiLemPeriodePoint/createDefect`;
     try {
+      setIsLoading(true)
       const res = await axios.post(
         url,
 
@@ -260,8 +290,10 @@ function CheckSheetLemPeriode() {
         },
       ]);
       getLemMesinPeriode();
+      setIsLoading(false)
     } catch (error: any) {
       console.log(error);
+      setIsLoading(false)
     }
   }
 
@@ -269,6 +301,7 @@ function CheckSheetLemPeriode() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiLemPeriode/done/${id}`;
     try {
+      setIsLoading(true)
       const res = await axios.put(
         url,
         { catatan: catatan },
@@ -278,8 +311,10 @@ function CheckSheetLemPeriode() {
       );
 
       getLemMesinPeriode();
+      setIsLoading(false)
     } catch (error: any) {
       console.log(error);
+      setIsLoading(false)
     }
   }
   //add Point
@@ -829,6 +864,30 @@ function CheckSheetLemPeriode() {
                       ) : (
                         <></>
                       )}
+                      {data.status == 'incoming' &&
+                        LemMesinPeriode?.status == 'incoming' ? (
+                        <>
+                          <button
+                            onClick={() =>
+                              deletePeriode(data.id)
+                            }
+                            className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                          >
+                            Hapus Periode
+                          </button>
+                        </>
+                      ) : data.status == 'on progress' ? (
+                        <>
+                          <button
+                            onClick={() =>
+                              deletePeriode(data.id)
+                            }
+                            className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                          >
+                            Hapus Periode
+                          </button>
+                        </>
+                      ) : null}
                       <div className="flex min-w-screen justify-between px-2 py-4">
                         <label className="text-sm font-semibold">
                           {index + 1}

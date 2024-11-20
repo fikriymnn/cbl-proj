@@ -29,13 +29,18 @@ const Login: React.FC = () => {
           withCredentials: true,
         },
       );
-
+      console.log(response.data)
       setIsLoading(false);
       // router.push("/");
       // push("/");
       if (response.data.role == 'pre_press') {
         navigate('/prepress');
-      } else {
+      } else if (response.data.bagian == 'hr') {
+        navigate('/hr/pm/masterperusahaan');
+      } else if (response.data.bagian == 'quality control') {
+        navigate('/qc/validatenverify');
+      }
+      else {
         navigate('/dashboard');
       }
 

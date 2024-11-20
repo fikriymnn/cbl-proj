@@ -168,6 +168,10 @@ import DinasKeHr from './pages/HR/PengajuanKeHR/DinasKeHr';
 import SPKeHR from './pages/HR/PengajuanKeHR/SPKeHR';
 import KaryawanKeHr from './pages/HR/PengajuanKeHR/KaryawanKeHR';
 import MasterSHiftHR from './pages/HR/MasterDataHR/MastershiftHr';
+import MasterDepartment from './pages/HR/MasterDataHR/MasterDepartment';
+import EditMasterKaryawan from './pages/HR/Personal/EditMasterKaryawan';
+import MasterCutiKhusus from './pages/HR/MasterDataHR/MasterCutiKhusus';
+import MasterGradeHR from './pages/HR/MasterDataHR/MasterGrade';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1573,6 +1577,14 @@ function App() {
           }
         />
         <Route
+          path="/hr/pm/masterkaryawan/edit/:id"
+          element={
+            <>
+              <EditMasterKaryawan />
+            </>
+          }
+        />
+        <Route
           path="/hr/pm/masterkaryawan/lengkapi"
           element={
             <>
@@ -1730,6 +1742,30 @@ function App() {
           element={
             <>
               <MasterSHiftHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/master/department"
+          element={
+            <>
+              <MasterDepartment />
+            </>
+          }
+        />
+        <Route
+          path="/hr/master/cutikhusus"
+          element={
+            <>
+              <MasterCutiKhusus />
+            </>
+          }
+        />
+        <Route
+          path="/hr/master/grade"
+          element={
+            <>
+              <MasterGradeHR />
             </>
           }
         />

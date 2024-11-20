@@ -1,0 +1,364 @@
+import React, { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
+import Loading from '../../../Loading';
+
+function IsiMasterCutiKhusus() {
+    const [isLoading, setIsLoading] = useState(false);
+    useEffect(() => {
+        getCutiKhusus();
+
+    }, []);
+
+    const [cutiKhusus, setCutiKhusus] = useState<any>();
+
+    async function getCutiKhusus() {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/master/hr/cutiKhusus`;
+        try {
+            setIsLoading(true)
+            const res = await axios.get(
+                url,
+
+                {
+                    withCredentials: true,
+                },
+            );
+            setIsLoading(false)
+            setCutiKhusus(res.data)
+            console.log(res.data)
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
+
+    const [showHistory, setShowHistory] = useState(false);
+    const openModalHistory = () => setShowHistory(true);
+    const closeModalHistory = () => setShowHistory(false);
+
+    const [namaCuti, setNamaCuti] = useState<any>();
+    const [jumlahHari, setJumlahHari] = useState<any>(0);
+    async function postMasterMesin() {
+
+        const url = `${import.meta.env.VITE_API_LINK}/master/hr/cutiKhusus`;
+        try {
+            setIsLoading(true)
+            const res = await axios.post(url,
+                {
+                    nama_cuti: namaCuti,
+                    jumlah_hari: jumlahHari
+
+                },
+                {
+
+                    withCredentials: true,
+                });
+            setIsLoading(false)
+            window.location.reload();
+            getCutiKhusus()
+            console.log(res.data);
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
+
+    const [showEdit, setShowEdit] = useState<any>([]);
+    const openEdit = (i: any) => {
+        const onchangeVal: any = [...showEdit];
+        onchangeVal[i] = true;
+
+        setShowEdit(onchangeVal);
+    };
+    const closeEdit = (i: any) => {
+        const onchangeVal: any = [...showEdit];
+        onchangeVal[i] = false;
+
+        setShowEdit(onchangeVal);
+    };
+
+    const [namaCutiEdit, setNamaCutiEdit] = useState<any>();
+    const [jumlahHariEdit, setJumlahHariEdit] = useState<any>(0);
+    async function editMasterMesin(id: number) {
+
+        const url = `${import.meta.env.VITE_API_LINK}/master/hr/cutiKhusus/${id}`;
+        try {
+            setIsLoading(true)
+            const res = await axios.put(url,
+                {
+                    nama_cuti: namaCutiEdit,
+                    jumlah_hari: jumlahHariEdit
+
+                },
+                {
+
+                    withCredentials: true,
+                });
+            setIsLoading(false)
+            window.location.reload();
+            getCutiKhusus()
+            console.log(res.data);
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
+
+    async function deleteMasterMesin(id: number) {
+
+        const url = `${import.meta.env.VITE_API_LINK}/master/hr/cutiKhusus/${id}`;
+        try {
+            setIsLoading(true)
+            const res = await axios.delete(url,
+                {
+
+                    withCredentials: true,
+                });
+            setIsLoading(false)
+            window.location.reload();
+            getCutiKhusus()
+            console.log(res.data);
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
+
+    const [showDelete, setShowDelete] = useState<any>([]);
+    const openDelete = (i: any) => {
+        const onchangeVal: any = [...showDelete];
+        onchangeVal[i] = true;
+
+        setShowDelete(onchangeVal);
+    };
+    const closeDelete = (i: any) => {
+        const onchangeVal: any = [...showDelete];
+        onchangeVal[i] = false;
+
+        setShowDelete(onchangeVal);
+    };
+
+
+    return (
+        <div>
+            <>
+                <main className="overflow-x-scroll">
+                    {isLoading && <Loading />}
+
+                    <div className="min-w-[700px] bg-white rounded-xl">
+                        <div className='flex w-full  pr-8 border-b-8 border-[#D8EAFF] pb-2'>
+                            <div className='px-2 py-1 flex w-full justify-end items-center'>
+                                <button
+                                    onClick={() => openModalHistory()}
+                                    className=' bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-2'>
+                                    TAMBAH CUTI KHUSUS
+                                </button>
+                                {showHistory == true && (
+                                    <>
+                                        <ModalKosonganSmall
+                                            isOpen={showHistory}
+                                            onClose={() => closeModalHistory()}
+                                            judul={'Tambah Cuti Khusus'}
+                                        >
+                                            <>
+                                                <div className="grid   gap-3 w-full px-5 py-2">
+                                                    <>
+                                                        <form onSubmit={(e) => {
+                                                            e.preventDefault()
+                                                            postMasterMesin()
+                                                        }}>
+                                                            <div className="flex w-full flex-col">
+                                                                <label className="text-black text-xs font-bold">
+                                                                    Nama Cuti
+                                                                </label>
+                                                                <div className="flex w-full">
+                                                                    <input
+                                                                        required
+                                                                        name="nama_cuti"
+                                                                        onChange={(e) => { setNamaCuti(e.target.value) }}
+                                                                        type="text"
+                                                                        className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                                    />
+                                                                </div>
+
+                                                            </div>
+                                                            <div className="flex w-full flex-col">
+                                                                <label className="text-black text-xs font-bold">
+                                                                    Jumlah Hari
+                                                                </label>
+                                                                <div className="flex w-full">
+                                                                    <input
+                                                                        required
+                                                                        name="jumlah_hari"
+                                                                        onChange={(e) => { setJumlahHari(e.target.value) }}
+                                                                        type="number"
+                                                                        className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                                    />
+                                                                </div>
+
+                                                            </div>
+
+                                                            <div className=" pt-3">
+                                                                <button
+                                                                    disabled={isLoading}
+                                                                    type='submit'
+                                                                    value='submit'
+                                                                    className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
+                                                                >
+                                                                    SIMPAN
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </>
+                                                </div>
+                                            </>
+                                        </ModalKosonganSmall>
+                                    </>
+                                )
+                                }
+                            </div>
+                        </div>
+
+                        <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
+                            <div className="grid grid-cols-11 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
+
+                                <label className="text-neutral-500 text-xs font-semibold  ">
+                                    No
+                                </label>
+                                <label className="text-neutral-500 text-xs font-semibold  col-span-2">
+                                    Nama Cuti
+                                </label>
+                                <label className="text-neutral-500 text-xs font-semibold  col-span-2">
+                                    Jumlah Hari
+                                </label>
+                            </div>
+                            <div className="w-2 h-full "></div>
+                            {cutiKhusus != null &&
+                                cutiKhusus?.data?.map((data: any, i: any) => (
+                                    <>
+                                        <div className="grid grid-cols-11 gap-4 px-3 items-center py-2 border-b-8 border-[#D8EAFF] ">
+
+                                            <label className="text-neutral-500 text-xs font-semibold  ">
+                                                {i + 1}
+                                            </label>
+                                            <label className="text-neutral-500 text-xs font-semibold  col-span-2">
+                                                {data.nama_cuti}
+                                            </label>
+                                            <label className="text-neutral-500 text-xs font-semibold  col-span-6">
+                                                {data.jumlah_hari}
+                                            </label>
+                                            <button
+
+                                                onClick={() => openEdit(i)}
+                                                className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                EDIT
+                                            </button>
+                                            {showEdit[i] == true && (
+
+                                                <ModalKosonganSmall
+                                                    isOpen={showEdit[i]}
+                                                    onClose={() => closeEdit(i)}
+                                                    judul={'Edit Cuti Khusus'}
+                                                >
+                                                    <>
+                                                        <div className="grid   gap-3 w-full px-5 py-2">
+                                                            <>
+
+                                                                <div className="flex w-full flex-col">
+                                                                    <label className="text-black text-xs font-bold">
+                                                                        Nama Cuti
+                                                                    </label>
+                                                                    <div className="flex w-full">
+                                                                        <input
+                                                                            defaultValue={data.nama_cuti}
+                                                                            required
+                                                                            name="nama_cuti"
+                                                                            onChange={(e) => { setNamaCutiEdit(e.target.value) }}
+                                                                            type="text"
+                                                                            className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                                        />
+                                                                    </div>
+
+                                                                </div>
+                                                                <div className="flex w-full flex-col">
+                                                                    <label className="text-black text-xs font-bold">
+                                                                        Jumlah Hari
+                                                                    </label>
+                                                                    <div className="flex w-full">
+                                                                        <input
+                                                                            defaultValue={data.jumlah_hari}
+                                                                            required
+                                                                            name="jumlah_hari"
+                                                                            onChange={(e) => { setJumlahHariEdit(e.target.value) }}
+                                                                            type="number"
+                                                                            className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                                        />
+                                                                    </div>
+
+                                                                </div>
+
+                                                                <div className=" pt-3">
+                                                                    <button
+                                                                        disabled={isLoading}
+                                                                        onClick={() => editMasterMesin(data.id)}
+                                                                        className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
+                                                                    >
+                                                                        SIMPAN
+                                                                    </button>
+                                                                </div>
+
+                                                            </>
+                                                        </div>
+                                                    </>
+                                                </ModalKosonganSmall>
+                                            )}
+                                            <button
+                                                onClick={() => openDelete(i)}
+                                                className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                DELETE
+                                            </button>
+                                            {showDelete[i] == true && (
+                                                <>
+                                                    <ModalKosonganSmall
+                                                        isOpen={showDelete[i]}
+                                                        onClose={() => closeDelete(i)}
+                                                        judul={'Hapus Cuti Khusus'}
+                                                    >
+                                                        <>
+                                                            <div className="flex w-full flex-col pt-7 px-2 py-3 gap-1">
+                                                                <>
+                                                                    <label className="text-black text-xl font-bold">
+                                                                        Nama Cuti : {data.nama_cuti}
+                                                                    </label>
+                                                                    <label className="text-black text-xl font-bold">
+                                                                        Jumlah Hari : {data.jumlah_hari}
+                                                                    </label>
+                                                                    <button
+                                                                        disabled={isLoading}
+                                                                        onClick={() => deleteMasterMesin(data.id)}
+                                                                        className='bg-red-600 h-7 w-full rounded-md text-white text-xs font-bold px-4 py-1'>
+                                                                        HAPUS CUTI KHUSUS
+                                                                    </button>
+                                                                </>
+                                                            </div>
+                                                        </>
+                                                    </ModalKosonganSmall>
+                                                </>
+                                            )
+                                            }
+                                        </div>
+                                    </>
+                                ))}
+                        </div>
+                    </div>
+                </main>
+
+            </>
+
+        </div>
+    )
+}
+
+export default IsiMasterCutiKhusus

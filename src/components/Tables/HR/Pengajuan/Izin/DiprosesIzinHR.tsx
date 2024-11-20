@@ -7,7 +7,7 @@ import dateOnly from '../../../../../utils/convertDateOnly';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 import Loading from '../../../../Loading';
 
-function IncomingIzinHR() {
+function DiProsesIzinHR() {
     const [isLoading, setIsLoading] = useState(false);
     const [izin, setIzin] = useState<any>();
 
@@ -19,80 +19,21 @@ function IncomingIzinHR() {
     async function getIzin() {
         const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanIzin`;
         try {
-            setIsLoading(true)
             const res = await axios.get(url,
                 {
                     params: {
-                        status_tiket: 'incoming'
+                        status_tiket: 'history'
                     },
                     withCredentials: true,
                 });
-            setIsLoading(false)
+
             setIzin(res.data);
             console.log(res.data);
         } catch (error: any) {
-            setIsLoading(false)
             console.log(error);
         }
     }
-    const [catatanHr, setcatatanHr] = useState<any>();
 
-    async function approveIzin(id: any, index: any) {
-        if (catatanHr == null) {
-            alert('Catatan Wajib Diisi');
-            return;
-        }
-        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanIzin/approve/${id}`;
-        try {
-            setIsLoading(true)
-            const res = await axios.put(url,
-                {
-                    catatan_hr: catatanHr
-                },
-                {
-
-                    withCredentials: true,
-                });
-            setIsLoading(false)
-            getIzin();
-            console.log(res.data);
-            const updatedModalStates = [...showModal];
-            updatedModalStates[index] = false;
-            setShowModal(updatedModalStates);
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
-        }
-    }
-    async function rejectIzin(id: any, index: number) {
-        if (catatanHr == null) {
-            alert('Catatan Wajib Diisi');
-            return;
-        }
-        if (window.confirm('Apakah Anda yakin ingin menolak pengajuan izin ini?')) {
-            const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanIzin/reject/${id}`;
-            try {
-                setIsLoading(true)
-                const res = await axios.put(url,
-                    {
-                        catatan_hr: catatanHr
-                    },
-                    {
-
-                        withCredentials: true,
-                    });
-                setIsLoading(false)
-                getIzin();
-                console.log(res.data);
-                const updatedModalStates = [...showModal];
-                updatedModalStates[index] = false;
-                setShowModal(updatedModalStates);
-            } catch (error: any) {
-                setIsLoading(false)
-                console.log(error);
-            }
-        }
-    }
     const [showModal, setShowModal] = useState<boolean[]>([]);
     const openModalModal = (i: any) => {
         const onchangeVal: any = [...showModal];
@@ -127,6 +68,9 @@ function IncomingIzinHR() {
                             <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                 Personnel
                             </label>
+                            <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                Status
+                            </label>
                         </div>
                         <div className="w-2 h-full "></div>
                         {izin?.data?.map((data: any, i: any) => {
@@ -158,14 +102,17 @@ function IncomingIzinHR() {
                                         <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                             {data.karyawan?.name}
                                         </label>
-                                        <div className="justify-end flex pr-2 col-span-4">
+                                        <label className="text-neutral-500 text-sm font-semibold uppercase">
+                                            {data.status}
+                                        </label>
+                                        <div className="justify-end flex pr-2 col-span-3">
                                             <>
 
                                                 <button
                                                     onClick={() => openModalModal(i)}
-                                                    className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                                                    className={`uppercase px-5 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                 >
-                                                    ACTION
+                                                    DETAIL
                                                 </button>
                                                 {showModal[i] == true && (
                                                     <>
@@ -174,6 +121,25 @@ function IncomingIzinHR() {
                                                             onClose={() => closeModalModal(i)}
                                                             judul={'Permohonan Izin'}>
                                                             <>
+                                                                <div className='grid grid-cols-2 gap-2 px-4 py-4'>
+                                                                    <div className='flex flex-col  '>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                            Status
+                                                                        </label>
+                                                                        <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                            {data.status}
+                                                                        </label>
+                                                                    </div>
+                                                                    <div className='flex flex-col  '>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                            Yang Menyetujui
+                                                                        </label>
+                                                                        <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                            {data.karyawan_hr?.name}
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+
                                                                 <div className='grid grid-cols-2 gap-2 px-4 py-4'>
                                                                     <div className='flex flex-col gap-2 '>
                                                                         <div className='flex flex-col '>
@@ -208,12 +174,13 @@ function IncomingIzinHR() {
                                                                                 {data.karyawan_pengaju?.name}
                                                                             </label>
                                                                         </div>
+
                                                                     </div>
                                                                     <div className='flex flex-col gap-2 '>
 
                                                                         <div className='flex flex-col '>
                                                                             <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                LAMA CUTI
+                                                                                LAMA IZIN
                                                                             </label>
                                                                             <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
                                                                                 {data.jumlah_hari} HARI
@@ -235,11 +202,12 @@ function IncomingIzinHR() {
                                                                                 {dateOnly(data.sampai)}
                                                                             </label>
                                                                         </div>
+
                                                                     </div>
                                                                 </div>
                                                                 <div className='flex flex-col w-full px-4'>
                                                                     <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                        ALASAN IZIN
+                                                                        ALASAN CUTI
                                                                     </label>
                                                                     <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
                                                                         {data.alasan_izin}
@@ -266,26 +234,12 @@ function IncomingIzinHR() {
                                                                         RESPON HR<span className='text-red-600'>*</span>
                                                                     </label>
                                                                     <textarea
-                                                                        onChange={(e) => setcatatanHr(e.target.value)}
+                                                                        readOnly
+                                                                        value={data.catatan_hr}
                                                                         className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                                                     ></textarea>
                                                                 </div>
-                                                                <div className='flex gap-2 w-full px-4 pt-1'>
-                                                                    <button
-                                                                        disabled={isLoading}
-                                                                        onClick={() => approveIzin(data.id, i)}
-                                                                        className='bg-green-500 w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm'>
-                                                                        TERIMA
-                                                                    </button>
-                                                                    {isLoading && <Loading />}
-                                                                    <button
-                                                                        disabled={isLoading}
-                                                                        onClick={() => rejectIzin(data.id, i)}
-                                                                        className='bg-red-500 w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm'>
-                                                                        TOLAK
-                                                                    </button>
-                                                                    {isLoading && <Loading />}
-                                                                </div>
+
                                                             </>
                                                         </ModalKosongan>
                                                     </>
@@ -305,4 +259,4 @@ function IncomingIzinHR() {
     );
 }
 
-export default IncomingIzinHR;
+export default DiProsesIzinHR;

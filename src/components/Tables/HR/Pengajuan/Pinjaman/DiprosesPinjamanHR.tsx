@@ -7,92 +7,35 @@ import dateOnly from '../../../../../utils/convertDateOnly';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 import Loading from '../../../../Loading';
 
-function IncomingIzinHR() {
+function DiprosesPinjamanHR() {
     const [isLoading, setIsLoading] = useState(false);
-    const [izin, setIzin] = useState<any>();
+    const [pinjaman, setPinjaman] = useState<any>();
 
     useEffect(() => {
-        getIzin();
+        getPinjaman();
 
     }, []);
 
-    async function getIzin() {
-        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanIzin`;
+    async function getPinjaman() {
+        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanPinjaman`;
         try {
             setIsLoading(true)
             const res = await axios.get(url,
                 {
                     params: {
-                        status_tiket: 'incoming'
+                        status_tiket: 'history'
                     },
                     withCredentials: true,
                 });
             setIsLoading(false)
-            setIzin(res.data);
+            setPinjaman(res.data);
             console.log(res.data);
         } catch (error: any) {
             setIsLoading(false)
             console.log(error);
         }
     }
-    const [catatanHr, setcatatanHr] = useState<any>();
 
-    async function approveIzin(id: any, index: any) {
-        if (catatanHr == null) {
-            alert('Catatan Wajib Diisi');
-            return;
-        }
-        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanIzin/approve/${id}`;
-        try {
-            setIsLoading(true)
-            const res = await axios.put(url,
-                {
-                    catatan_hr: catatanHr
-                },
-                {
-
-                    withCredentials: true,
-                });
-            setIsLoading(false)
-            getIzin();
-            console.log(res.data);
-            const updatedModalStates = [...showModal];
-            updatedModalStates[index] = false;
-            setShowModal(updatedModalStates);
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
-        }
-    }
-    async function rejectIzin(id: any, index: number) {
-        if (catatanHr == null) {
-            alert('Catatan Wajib Diisi');
-            return;
-        }
-        if (window.confirm('Apakah Anda yakin ingin menolak pengajuan izin ini?')) {
-            const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanIzin/reject/${id}`;
-            try {
-                setIsLoading(true)
-                const res = await axios.put(url,
-                    {
-                        catatan_hr: catatanHr
-                    },
-                    {
-
-                        withCredentials: true,
-                    });
-                setIsLoading(false)
-                getIzin();
-                console.log(res.data);
-                const updatedModalStates = [...showModal];
-                updatedModalStates[index] = false;
-                setShowModal(updatedModalStates);
-            } catch (error: any) {
-                setIsLoading(false)
-                console.log(error);
-            }
-        }
-    }
     const [showModal, setShowModal] = useState<boolean[]>([]);
     const openModalModal = (i: any) => {
         const onchangeVal: any = [...showModal];
@@ -106,7 +49,9 @@ function IncomingIzinHR() {
 
         setShowModal(onchangeVal);
     };
-
+    const formatCurrency = (amount: number): string => {
+        return `Rp. ${amount.toLocaleString('id-ID')}`;
+    };
     return (
         <>
 
@@ -118,7 +63,7 @@ function IncomingIzinHR() {
                             <label className="text-neutral-500 text-sm font-semibold ">
                                 No
                             </label>
-                            <label className="text-neutral-500 text-sm font-semibold col-span-3">
+                            <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                 Tanggal
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold col-span-2">
@@ -127,9 +72,12 @@ function IncomingIzinHR() {
                             <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                 Personnel
                             </label>
+                            <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                Status
+                            </label>
                         </div>
                         <div className="w-2 h-full "></div>
-                        {izin?.data?.map((data: any, i: any) => {
+                        {pinjaman?.data?.map((data: any, i: any) => {
                             const tanggal = dateOnly(data.createdAt);
 
                             // const endDate = new Date(data.sampai);
@@ -143,14 +91,10 @@ function IncomingIzinHR() {
                                         <label className="text-neutral-500 text-sm font-semibold ">
                                             {i + 1}
                                         </label>
-                                        <div className='flex flex-col gap-1 col-span-3'>
-                                            <label className="text-neutral-500 text-sm font-semibold ">
-                                                Dari : {dateOnly(data.dari)}
-                                            </label>
-                                            <label className="text-neutral-500 text-sm font-semibold ">
-                                                Sampai :{dateOnly(data.sampai)}
-                                            </label>
-                                        </div>
+
+                                        <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                            {dateOnly(data.createdAt)}
+                                        </label>
 
                                         <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                             {data.karyawan_pengaju?.biodata_karyawan[0]?.department?.nama_department}
@@ -158,23 +102,45 @@ function IncomingIzinHR() {
                                         <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                             {data.karyawan?.name}
                                         </label>
-                                        <div className="justify-end flex pr-2 col-span-4">
+                                        <label className="text-neutral-500 text-sm uppercase font-semibold col-span-2">
+                                            {data.status}
+                                        </label>
+                                        <div className="justify-end flex pr-2 col-span-3">
                                             <>
 
                                                 <button
                                                     onClick={() => openModalModal(i)}
                                                     className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                 >
-                                                    ACTION
+                                                    DETAIL
                                                 </button>
                                                 {showModal[i] == true && (
                                                     <>
                                                         <ModalKosongan
                                                             isOpen={showModal[i]}
                                                             onClose={() => closeModalModal(i)}
-                                                            judul={'Permohonan Izin'}>
+                                                            judul={'Permohonan Pinjaman'}>
                                                             <>
                                                                 <div className='grid grid-cols-2 gap-2 px-4 py-4'>
+                                                                    <div className='flex flex-col  '>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                            Status
+                                                                        </label>
+                                                                        <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                            {data.status}
+                                                                        </label>
+                                                                    </div>
+                                                                    <div className='flex flex-col  '>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                            Yang Menyetujui
+                                                                        </label>
+                                                                        <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                            {data.karyawan_hr?.name}
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                                <div className='grid grid-cols-2 gap-2 px-4 py-4'>
+
                                                                     <div className='flex flex-col gap-2 '>
                                                                         <div className='flex flex-col '>
                                                                             <label htmlFor="" className='text-black text-xs font-bold'>
@@ -213,36 +179,52 @@ function IncomingIzinHR() {
 
                                                                         <div className='flex flex-col '>
                                                                             <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                LAMA CUTI
+                                                                                JUMLAH PINJAMAN
                                                                             </label>
                                                                             <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
-                                                                                {data.jumlah_hari} HARI
+                                                                                {formatCurrency(data.jumlah_pinjaman)}
                                                                             </label>
                                                                         </div>
                                                                         <div className='flex flex-col '>
                                                                             <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                AWAL
+                                                                                TEMPO CICILAN
                                                                             </label>
                                                                             <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
-                                                                                {dateOnly(data.dari)}
+                                                                                {data.tempo_cicilan}
                                                                             </label>
                                                                         </div>
                                                                         <div className='flex flex-col '>
                                                                             <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                AKHIR
+                                                                                TIPE CICILAN
                                                                             </label>
-                                                                            <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
-                                                                                {dateOnly(data.sampai)}
+                                                                            <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                                {data.tipe_cicilan}
+                                                                            </label>
+                                                                        </div>
+                                                                        <div className='flex flex-col '>
+                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                                JUMLAH CICILAN
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                                {formatCurrency(data.jumlah_cicilan)}
+                                                                            </label>
+                                                                        </div>
+                                                                        <div className='flex flex-col '>
+                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                                JAMINAN PINJAMAN
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                                {data.jaminan_pinjaman}
                                                                             </label>
                                                                         </div>
                                                                     </div>
                                                                 </div>
                                                                 <div className='flex flex-col w-full px-4'>
                                                                     <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                        ALASAN IZIN
+                                                                        KEPERLUAN PINJAMAN
                                                                     </label>
                                                                     <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                        {data.alasan_izin}
+                                                                        {data.keperluan_pinjaman}
                                                                     </label>
                                                                 </div>
                                                                 {/* <div className='px-4 py-2'>
@@ -261,31 +243,30 @@ function IncomingIzinHR() {
                                                                     </div> */}
 
                                                                 </div>
+                                                                <div className='flex flex-col w-[50%] px-4 '>
+
+
+                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                        SUMBER PINJAMAN<span className='text-red-600'>*</span>
+                                                                    </label>
+                                                                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                        {data.sumber_pinjaman}
+                                                                    </label>
+
+
+                                                                </div>
                                                                 <div className='flex flex-col w-full px-4 '>
                                                                     <label htmlFor="" className='text-black text-xs font-bold'>
                                                                         RESPON HR<span className='text-red-600'>*</span>
                                                                     </label>
                                                                     <textarea
-                                                                        onChange={(e) => setcatatanHr(e.target.value)}
+                                                                        readOnly
+                                                                        defaultValue={data.catatan_hr}
+
                                                                         className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                                                     ></textarea>
                                                                 </div>
-                                                                <div className='flex gap-2 w-full px-4 pt-1'>
-                                                                    <button
-                                                                        disabled={isLoading}
-                                                                        onClick={() => approveIzin(data.id, i)}
-                                                                        className='bg-green-500 w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm'>
-                                                                        TERIMA
-                                                                    </button>
-                                                                    {isLoading && <Loading />}
-                                                                    <button
-                                                                        disabled={isLoading}
-                                                                        onClick={() => rejectIzin(data.id, i)}
-                                                                        className='bg-red-500 w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm'>
-                                                                        TOLAK
-                                                                    </button>
-                                                                    {isLoading && <Loading />}
-                                                                </div>
+
                                                             </>
                                                         </ModalKosongan>
                                                     </>
@@ -293,16 +274,16 @@ function IncomingIzinHR() {
                                                 }
                                             </>
                                         </div>
-                                    </div>
+                                    </div >
                                 </>
                             )
                         })}
                     </div>
                 </div>
-            </main>
+            </main >
 
         </>
     );
 }
 
-export default IncomingIzinHR;
+export default DiprosesPinjamanHR;

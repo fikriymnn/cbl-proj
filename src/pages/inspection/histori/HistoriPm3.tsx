@@ -175,18 +175,29 @@ function HistoriPm3() {
           </div>
           <div className=" ps-7 w-full h-full flex border-b-8 border-[#D8EAFF]">
             <div className="w-2 h-full "></div>
-            <section className="grid grid-cols-4 w-full py-4  font-semibold text-[14px]">
+            <section className="grid grid-cols-5 w-full py-4  font-semibold text-[14px]">
               <p className="">Machine Name</p>
 
               <p className="sm:block hidden">Tanggal</p>
 
               <p className="sm:block hidden">Inspektor</p>
 
+              <p className="">Temuan</p>
+
               <div className="w-[125px]">{''}</div>
             </section>
           </div>
           {pm3?.data.map((data: any, index: number) => {
             const tgl = convertTimeStampToDate(data.tgl_approve_from);
+            const inspectionPointsTotal = data.inspection_point_pm3s;
+
+
+            const countTotal = inspectionPointsTotal.length;
+
+            const inspectionPoints = data.point_pm3;
+
+
+            const count = inspectionPoints.length;
             return (
               <>
                 <section
@@ -194,21 +205,20 @@ function HistoriPm3() {
                   className=" flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black"
                 >
                   <div
-                    className={`w-2 h-full sticky left-0 z-20 ${
-                      data.mesin.bagian_mesin == 'printing'
-                        ? 'bg-green-600'
-                        : data.mesin.bagian_mesin == 'water base'
+                    className={`w-2 h-full sticky left-0 z-20 ${data.mesin.bagian_mesin == 'printing'
+                      ? 'bg-green-600'
+                      : data.mesin.bagian_mesin == 'water base'
                         ? 'bg-yellow-600'
                         : data.mesin.bagian_mesin == 'pond'
-                        ? 'bg-violet-900'
-                        : data.mesin.bagian_mesin == 'finishing'
-                        ? 'bg-red-900'
-                        : ''
-                    }`}
+                          ? 'bg-violet-900'
+                          : data.mesin.bagian_mesin == 'finishing'
+                            ? 'bg-red-900'
+                            : ''
+                      }`}
                   ></div>
 
                   <div className=" w-full h-full flex flex-col justify-center relative">
-                    <div className="ps-7 w-full grid md:grid-cols-4 grid-cols-2">
+                    <div className="ps-7 w-full grid md:grid-cols-5 grid-cols-3">
                       <div className="flex flex-col justify-center font-bold sticky left-2 ps-3 md:ps-0 bg-white">
                         <p className="">{data.nama_mesin}</p>
                       </div>
@@ -221,7 +231,9 @@ function HistoriPm3() {
                           {data.inspector != null ? data.inspector.nama : '-'}
                         </p>
                       </div>
-
+                      <div className=" flex-col justify-center  items-center ">
+                        <p className="">{count} / {countTotal}</p>
+                      </div>
                       <div className="flex justify-center">
                         <>
                           {data.waktu_selesai != null ? (

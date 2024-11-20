@@ -3,17 +3,19 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import Loading from '../../../Loading';
+import Select from 'react-select';
 
 const ModalTambahUser = ({
   children,
   isOpen,
   onClose,
-  onFinish,
+  onFinish
 }: {
   children: any;
   isOpen: any;
   onClose: any;
   onFinish: any;
+
 }) => {
   if (!isOpen) return null;
 
@@ -36,9 +38,12 @@ const ModalTambahUser = ({
   const [password1, setPassword1] = useState<any>();
   const [confpassword1, setConfPassword1] = useState<any>();
   const [no, setNo] = useState<any>();
+  const [id_karyawan1, setId_karyawan] = useState<any>();
+  const [options, setOptions] = useState([]);
 
   useEffect(() => {
     checkpassword();
+    getKaryawan();
   }, [password1, confpassword1]);
 
   const checkpassword = () => {
@@ -60,6 +65,7 @@ const ModalTambahUser = ({
           role: role,
           password: password1,
           confPassword: confpassword1,
+          id_karyawan: id_karyawan1
         },
         {
           withCredentials: true,
@@ -75,6 +81,48 @@ const ModalTambahUser = ({
       //alert(error.data.msg);
     }
   }
+
+  const [defectMaster, setDefectMaster] = useState<any>();
+
+  async function getKaryawan() {
+    const url = `${import.meta.env.VITE_API_LINK
+      }/hr/karyawan`;
+    try {
+
+      const res = await axios.get(
+        url,
+        {
+          withCredentials: true,
+        },
+      );
+      setDefectMaster(res.data.data);
+      console.log(res.data.data)
+      setOptions(
+        res.data?.data?.map((item: any) => ({
+          value: item.biodata_karyawan[0]?.id_karyawan,
+          label: item.biodata_karyawan[0]?.nik + ' - ' + item.name,
+        }))
+      );
+
+
+    } catch (error: any) {
+
+      console.log(error);
+    }
+  }
+  const handleChangePointDepatment = (selected: any) => {
+    const { value } = selected;
+    const filteredData = defectMaster.find(
+      (item: any) => item.biodata_karyawan[0]?.id_karyawan == value,
+      // item.id.includes(parseInt(value));
+    );
+
+    console.log(filteredData?.biodata_karyawan[0]?.id_karyawan);
+
+    setId_karyawan(filteredData?.biodata_karyawan[0]?.id_karyawan);
+
+
+  };
   return (
     <div className="fixed z-50 inset-0 overflow-y-auto backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
       <div className="w-full max-w-md bg-white rounded-xl shadow-md">
@@ -148,12 +196,23 @@ const ModalTambahUser = ({
               type="text"
               className="w-full h-10  self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
             />
-            <label className="text-black text-xs font-bold pt-4">NIK</label>
-            <input
-              type="text"
-              className="w-full h-10 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
-            />
 
+            <label className="text-black text-sm font-bold pt-4">
+              Karyawan
+            </label>
+
+            <Select
+              placeholder='Cari...'
+              options={options}
+              onChange={(selectedId) => {
+
+                handleChangePointDepatment(selectedId)
+              }}
+              className={`relative z-30 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
+                  }`}
+            >
+
+            </Select>
             <label className="text-black text-xs font-bold pt-4">
               NOMOR TELEPON
             </label>
@@ -192,6 +251,12 @@ const ModalTambahUser = ({
                 className="text-body dark:text-bodydark"
               >
                 Quality Control
+              </option>
+              <option
+                value="hr"
+                className="text-body dark:text-bodydark"
+              >
+                HR
               </option>
             </select>
             <label className="text-black text-xs font-bold pt-4">ROLE</label>

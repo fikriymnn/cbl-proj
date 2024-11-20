@@ -141,6 +141,7 @@ function CheckSheetCetakPeriode() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiCetakPeriodePoint/start/${id}`;
     try {
+      setIsLoading(true)
       const res = await axios.put(
         url,
         {},
@@ -150,9 +151,34 @@ function CheckSheetCetakPeriode() {
       );
 
       getCetakMesinPeriode();
+      setIsLoading(false)
     } catch (error: any) {
+      setIsLoading(false)
       console.log(error.data.msg);
       alert(error.response.data.msg);
+    }
+  }
+  async function deletePeriode(id: number) {
+    if (window.confirm('Hapus Periode?')) {
+      const url = `${import.meta.env.VITE_API_LINK
+        }/qc/cs/inspeksiCetakPeriodePoint/delete/${id}`;
+      try {
+        setIsLoading(true)
+        const res = await axios.delete(
+          url,
+
+          {
+            withCredentials: true,
+          },
+        );
+
+        getCetakMesinPeriode();
+        setIsLoading(false)
+      } catch (error: any) {
+        console.log(error);
+        setIsLoading(false)
+        alert(error);
+      }
     }
   }
 
@@ -167,6 +193,7 @@ function CheckSheetCetakPeriode() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiCetakPeriodePoint/stop/${id}`;
     try {
+      setIsLoading(true)
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
       const res = await axios.put(
@@ -184,7 +211,9 @@ function CheckSheetCetakPeriode() {
       );
 
       getCetakMesinPeriode();
+      setIsLoading(false)
     } catch (error: any) {
+      setIsLoading(false)
       console.log(error);
     }
   }
@@ -205,8 +234,9 @@ function CheckSheetCetakPeriode() {
           withCredentials: true,
         },
       );
-      setIsLoading(false);
+
       getCetakMesinPeriode();
+      setIsLoading(false);
     } catch (error: any) {
       setIsLoading(false);
       console.log(error);
@@ -226,6 +256,7 @@ function CheckSheetCetakPeriode() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiCetakPeriodePoint/createDefect`;
     try {
+      setIsLoading(true);
       const res = await axios.post(
         url,
 
@@ -258,8 +289,10 @@ function CheckSheetCetakPeriode() {
       ]);
       getCetakMesinPeriode();
       handleClickAdd(index);
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error);
+      setIsLoading(false);
     }
   }
 
@@ -267,6 +300,7 @@ function CheckSheetCetakPeriode() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiCetakPeriode/done/${id}`;
     try {
+      setIsLoading(true);
       const res = await axios.put(
         url,
         { catatan: catatan },
@@ -276,8 +310,10 @@ function CheckSheetCetakPeriode() {
       );
 
       getCetakMesinPeriode();
+      setIsLoading(false);
       console.log(res);
     } catch (error: any) {
+      setIsLoading(false);
       console.log(error);
     }
   }
@@ -562,6 +598,7 @@ function CheckSheetCetakPeriode() {
                                     <label className="text-sm font-semibold">
                                       {index + 1}
                                     </label>
+
                                     <div className="flex flex-col gap-1">
                                       <label className="text-sm font-semibold">
                                         INSPEKTOR
@@ -867,7 +904,32 @@ function CheckSheetCetakPeriode() {
                     ) : (
                       <></>
                     )}
+                    {data.status == 'incoming' &&
+                      cetakMesinPeriode?.status == 'incoming' ? (
+                      <>
+                        <button
+                          onClick={() =>
+                            deletePeriode(data.id)
+                          }
+                          className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                        >
+                          Hapus Periode
+                        </button>
+                      </>
+                    ) : data.status == 'on progress' ? (
+                      <>
+                        <button
+                          onClick={() =>
+                            deletePeriode(data.id)
+                          }
+                          className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                        >
+                          Hapus Periode
+                        </button>
+                      </>
+                    ) : null}
                     <div className="flex min-w-screen justify-between px-2 py-4">
+
                       <label className="text-sm font-semibold">
                         {index + 1}
                       </label>
@@ -911,6 +973,7 @@ function CheckSheetCetakPeriode() {
                       </div>
 
                       <div className="flex flex-col gap-1">
+
                         <label className="text-sm font-semibold">
                           JUMLAH SAMPLING<span className="text-red-600">*</span>
                         </label>

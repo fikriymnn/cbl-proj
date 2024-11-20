@@ -1,18 +1,41 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import Loading from '../../../Loading';
+import { useParams } from 'react-router-dom';
 
-function AddMasterKaryawanIsi() {
+function EditMasterKaryawanIsi() {
+
+    const { id } = useParams();
     const [isLoading, setIsLoading] = useState(false);
-
-
-
-
     useEffect(() => {
         getDepartment();
         getBagian();
-        getDivisi()
+        getDivisi();
+        getKaryawan()
     }, []);
+
+    const [karyawan, setKaryawan] = useState<any>([]);
+
+    async function getKaryawan() {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/hr/karyawan/${id}`;
+        try {
+            setIsLoading(true)
+            const res = await axios.get(
+                url,
+                {
+                    withCredentials: true,
+                },
+            );
+            console.log(res.data)
+            setKaryawan(res.data)
+            setIsLoading(false)
+
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
 
     const [department, setDepartment] = useState<any>();
 
@@ -82,64 +105,64 @@ function AddMasterKaryawanIsi() {
             console.log(error);
         }
     }
-    const [namaKaryawan, setnamaKaryawan] = useState<any>();
-    const [nik, setnik] = useState<any>();
-    const [jenisKelamin, setjenisKelamin] = useState<any>();
-    const [idDivisi, seidDivisi] = useState<any>();
-    const [idDepartment, setidDepartment] = useState<any>();
-    const [idDagian, setidDagian] = useState<any>();
-    const [grade, setgrade] = useState<any>();
-    const [tglMasuk, setglMasuk] = useState<any>(null);
-    const [tglKeluar, setglKeluar] = useState<any>(null);
-    const [tipePenggajian, settipePenggajian] = useState<any>();
-    const [jabatan, sejabatan] = useState<any>();
-    const [statusKaryawan, setstatusKaryawan] = useState<any>();
-    const [statusPajak, sestatusPajak] = useState<any>();
-    const [level, setlevel] = useState<any>();
-    const [subLevel, setsubLevel] = useState<any>();
+    const [namaKaryawanEdit, setnamaKaryawanEdit] = useState<any>();
+    const [nikEdit, setnikEdit] = useState<any>();
+    const [jenisKelaminEdit, setjenisKelaminEdit] = useState<any>();
+    const [idDivisiEdit, seidDivisiEdit] = useState<any>();
+    const [idDepartmentEdit, setidDepartmentEdit] = useState<any>();
+    const [idDagianEdit, setidDagianEdit] = useState<any>();
+    const [gradeEdit, setgradeEdit] = useState<any>();
+    const [tglMasukEdit, setglMasukEdit] = useState<any>();
+    const [tglKeluarEdit, setglKeluarEdit] = useState<any>();
+    const [tipePenggajianEdit, settipePenggajianEdit] = useState<any>();
+    const [jabatanEdit, sejabatanEdit] = useState<any>();
+    const [statusKaryawanEdit, setstatusKaryawanEdit] = useState<any>();
+    const [statusPajakEdit, sestatusPajakEdit] = useState<any>();
+    const [levelEdit, setlevelEdit] = useState<any>();
+    const [subLevelEdit, setsubLevelEdit] = useState<any>();
     const [gaji, setGaji] = useState<any>(0);
     const [kontrakDari, setKOntrakDari] = useState<any>(null);
     const [kontrakSampai, setKontrakSampai] = useState<any>(null);
 
     async function tambahKaryawan() {
         const url = `${import.meta.env.VITE_API_LINK
-            }/hr/karyawan`;
+            }/hr/karyawan/${id}`;
         try {
             setIsLoading(true)
-            const res = await axios.post(
+            const res = await axios.put(
                 url,
                 {
-                    nama_karyawan: namaKaryawan,
-                    nik: nik,
-                    jenis_kelamin: jenisKelamin,
-                    id_divisi: idDivisi,
-                    id_department: idDepartment,
-                    id_bagian: idDagian,
-                    grade: grade,
-                    tgl_masuk: tglMasuk,
-                    tgl_keluar: tglKeluar,
-                    tipe_penggajian: tipePenggajian,
-                    jabatan: jabatan,
-                    status_karyawan: statusKaryawan,
-                    status_pajak: statusPajak,
-                    level: level,
-                    sub_level: subLevel,
+                    nama_karyawan: namaKaryawanEdit,
+                    nik: nikEdit,
+                    jenis_kelamin: jenisKelaminEdit,
+                    id_divisi: idDivisiEdit,
+                    id_department: idDepartmentEdit,
+                    id_bagian: idDagianEdit,
+                    grade: gradeEdit,
+                    tgl_masuk: tglMasukEdit,
+                    tgl_keluar: tglKeluarEdit,
+                    tipe_penggajian: tipePenggajianEdit,
+                    jabatan: jabatanEdit,
+                    status_karyawan: statusKaryawanEdit,
+                    status_pajak: statusPajakEdit,
+                    level: levelEdit,
+                    sub_level: subLevelEdit,
                     gaji: gaji,
                     kontrak_dari: kontrakDari,
                     kontrak_sampai: kontrakSampai
-
                 },
                 {
                     withCredentials: true,
                 },
             );
             setIsLoading(false)
-            window.location.reload();
+            alert('Data Berhasil Diubah')
         } catch (error: any) {
             setIsLoading(false)
             console.log(error);
         }
     }
+
     return (
         <main className="overflow-x-scroll">
             {isLoading && <Loading />}
@@ -161,17 +184,20 @@ function AddMasterKaryawanIsi() {
                             </label>
                             <div className='flex w-full gap-7'>
                                 <input
-                                    onChange={(e) => setnik(e.target.value)}
+                                    defaultValue={karyawan?.data?.biodata_karyawan[0]?.nik}
+                                    onChange={(e) => setnikEdit(e.target.value)}
                                     type='text' className='border-stroke border-2 rounded-md w-[40%]' />
                                 <div className='flex gap-1'>
                                     <input
-                                        onChange={(e) => setjenisKelamin(e.target.value)}
+
+                                        onChange={(e) => setjenisKelaminEdit(e.target.value)}
                                         type='radio' name='kelamin' id='kelamin1' value={'Laki-Laki'} />Laki-Laki
                                 </div>
 
                                 <div className='flex gap-1'>
                                     <input
-                                        onChange={(e) => setjenisKelamin(e.target.value)}
+
+                                        onChange={(e) => setjenisKelaminEdit(e.target.value)}
                                         type='radio' name='kelamin' id='kelamin2' value={'Perempuan'} />Perempuan
                                 </div>
 
@@ -181,7 +207,8 @@ function AddMasterKaryawanIsi() {
                                     Nama Karyawan<span className='text-red-600'>*</span>
                                 </label>
                                 <input
-                                    onChange={(e) => setnamaKaryawan(e.target.value)}
+                                    defaultValue={karyawan?.data?.name}
+                                    onChange={(e) => setnamaKaryawanEdit(e.target.value)}
                                     type='text' className='border-stroke border-2 rounded-md w-[40%]' />
                             </div>
                         </div>
@@ -204,13 +231,14 @@ function AddMasterKaryawanIsi() {
                                     </span>
 
                                     <select
+                                        defaultValue={karyawan?.data?.biodata_karyawan[0]?.divisi?.nama_divisi}
                                         name='nama_divisi'
-                                        onChange={(e) => seidDivisi(e.target.value)}
+                                        onChange={(e) => seidDivisiEdit(e.target.value)}
                                         className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                     >
-                                        <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                            PILIH DIVISI
+                                        <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
+                                            Pilih
                                         </option>
                                         {divisi?.data?.map((data: any, i: number) => {
 
@@ -267,13 +295,14 @@ function AddMasterKaryawanIsi() {
                                         </span>
 
                                         <select
+                                            defaultValue={karyawan?.data?.biodata_karyawan[0]?.department?.nama_department}
                                             name='nama_department'
-                                            onChange={(e) => setidDepartment(e.target.value)}
+                                            onChange={(e) => setidDepartmentEdit(e.target.value)}
                                             className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                         >
-                                            <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                                PILIH DEPARTMENT
+                                            <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
+                                                Pilih
                                             </option>
                                             {department?.data?.map((data: any, i: number) => {
 
@@ -316,13 +345,15 @@ function AddMasterKaryawanIsi() {
                                         Grade<span className='text-red-600'>*</span>
                                     </label>
                                     <input
-                                        onChange={(e) => setgrade(e.target.value)}
+                                        defaultValue={karyawan?.data?.biodata_karyawan[0]?.grade}
+                                        onChange={(e) => setgradeEdit(e.target.value)}
                                         type='text' className='border-stroke border-2 rounded-md w-[40%]' />
                                 </div>
                             </div>
 
                         </div>
                     </div>
+
                     <div className=''>
                         <div className='flex w-full gap-3'>
                             <div className='flex flex-col gap-1 w-[50%]'>
@@ -330,7 +361,7 @@ function AddMasterKaryawanIsi() {
                                     Tanggal Masuk<span className='text-red-600'>*</span>
                                 </label>
                                 <input
-                                    onChange={(e) => setglMasuk(e.target.value)}
+                                    onChange={(e) => setglMasukEdit(e.target.value)}
                                     type="date"
                                     className='border-2 border-stroke rounded-md'
                                 ></input>
@@ -353,18 +384,15 @@ function AddMasterKaryawanIsi() {
                                     </span>
 
                                     <select
-                                        onChange={(e) => {
-                                            setKOntrakDari(null)
-                                            setKontrakSampai(null)
-                                            setstatusKaryawan(e.target.value)
-                                        }}
+                                        defaultValue={karyawan?.data?.biodata_karyawan[0]?.status_karyawan}
+                                        onChange={(e) => setstatusKaryawanEdit(e.target.value)}
                                         className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                     >
-                                        <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                            Status
+                                        <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
+                                            Pilih
                                         </option>
-                                        <option value={'tetap'} className="text-[#646464] text-xs dark:text-bodydark">
+                                        <option value={'Tetap'} className="text-[#646464] text-xs dark:text-bodydark">
                                             Tetap
                                         </option>
 
@@ -395,7 +423,7 @@ function AddMasterKaryawanIsi() {
                                 </div>
                             </div>
                         </div>
-                        {(statusKaryawan == 'tetap' || statusKaryawan == null) ? (
+                        {(karyawan?.data?.biodata_karyawan[0]?.status_karyawan == 'tetap' || karyawan?.data?.biodata_karyawan[0]?.status_karyawan == null) ? (
                             <>
                             </>
                         ) :
@@ -407,6 +435,7 @@ function AddMasterKaryawanIsi() {
                                                 Tanggal Mulai Kontrak
                                             </label>
                                             <input
+
                                                 onChange={(e) => setKOntrakDari(e.target.value)}
                                                 type="date"
                                                 className='border-2 border-stroke rounded-md'
@@ -432,7 +461,7 @@ function AddMasterKaryawanIsi() {
                                     Tanggal Keluar
                                 </label>
                                 <input
-                                    onChange={(e) => setglKeluar(e.target.value)}
+                                    onChange={(e) => setglKeluarEdit(e.target.value)}
                                     type="date"
                                     className='border-2 border-stroke rounded-md'
                                 ></input>
@@ -455,12 +484,13 @@ function AddMasterKaryawanIsi() {
                                     </span>
 
                                     <select
-                                        onChange={(e) => sestatusPajak(e.target.value)}
+                                        defaultValue={karyawan?.data?.biodata_karyawan[0]?.status_pajak}
+                                        onChange={(e) => sestatusPajakEdit(e.target.value)}
                                         className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                     >
-                                        <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                            Status Pajak
+                                        <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
+                                            Pilih
                                         </option>
                                         <option value={'TK0'} className="text-[#646464] text-xs dark:text-bodydark">
                                             TK0
@@ -524,70 +554,60 @@ function AddMasterKaryawanIsi() {
                             </div>
                         </div>
 
-                        <div className='grid grid-cols-2 gap-1 w-full'>
-                            <div className='flex flex-col gap-1'>
-                                <label className=' text-sm font-semibold'>
-                                    Tipe Penggajian<span className='text-red-600'>*</span>
-                                </label>
-                                <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                                    <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                        <svg
-                                            width="20"
-                                            height="20"
-                                            viewBox="0 0 20 20"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-
-                                        </svg>
-                                    </span>
-
-                                    <select
-                                        onChange={(e) => settipePenggajian(e.target.value)}
-                                        className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
+                        <div className='flex flex-col gap-1 w-[50%]'>
+                            <label className=' text-sm font-semibold'>
+                                Tipe Penggajian<span className='text-red-600'>*</span>
+                            </label>
+                            <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
+                                <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                    <svg
+                                        width="20"
+                                        height="20"
+                                        viewBox="0 0 20 20"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
                                     >
-                                        <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                            Tipe Penggajian
-                                        </option>
-                                        <option value={'mingguan'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            MINGGUAN
-                                        </option>
-                                        <option value={'bulanan'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            BULANAN
-                                        </option>
 
-                                    </select>
+                                    </svg>
+                                </span>
 
-                                    <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
-                                        <svg
-                                            width="24"
-                                            height="24"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                            <g opacity="0.8">
-                                                <path
-                                                    fillRule="evenodd"
-                                                    clipRule="evenodd"
-                                                    d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                                    fill="#637381"
-                                                ></path>
-                                            </g>
-                                        </svg>
-                                    </span>
+                                <select
+                                    defaultValue={karyawan?.data?.biodata_karyawan[0]?.tipe_penggajian}
+                                    onChange={(e) => settipePenggajianEdit(e.target.value)}
+                                    className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
+                                    }`}
+                                >
+                                    <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
+                                        Pilih
+                                    </option>
+                                    <option value={'mingguan'} className="text-[#646464] text-xs dark:text-bodydark">
+                                        MINGGUAN
+                                    </option>
+                                    <option value={'bulanan'} className="text-[#646464] text-xs dark:text-bodydark">
+                                        BULANAN
+                                    </option>
 
-                                </div>
-                            </div>
+                                </select>
 
-                            <div className='flex flex-col gap-1 w-full'>
-                                <label className=' text-sm font-semibold'>
-                                    Gaji<span className='text-red-600'>*</span>
-                                </label>
-                                <input
-                                    onChange={(e) => setGaji(e.target.value)}
-                                    type='text' className='border-stroke border-2 rounded-md w-full' />
+                                <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
+                                    <svg
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                        <g opacity="0.8">
+                                            <path
+                                                fillRule="evenodd"
+                                                clipRule="evenodd"
+                                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                                fill="#637381"
+                                            ></path>
+                                        </g>
+                                    </svg>
+                                </span>
+
                             </div>
                         </div>
 
@@ -611,12 +631,13 @@ function AddMasterKaryawanIsi() {
                                         </span>
 
                                         <select
-                                            onChange={(e) => setidDagian(e.target.value)}
+                                            defaultValue={karyawan?.data?.biodata_karyawan[0]?.bagian?.nama_bagian}
+                                            onChange={(e) => setidDagianEdit(e.target.value)}
                                             className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                         >
-                                            <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                                PILIH BAGIAN
+                                            <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
+                                                Pilih
                                             </option>
                                             {bagian?.data?.map((data: any, i: number) => {
 
@@ -661,7 +682,8 @@ function AddMasterKaryawanIsi() {
                                         Level
                                     </label>
                                     <input
-                                        onChange={(e) => setlevel(e.target.value)}
+                                        defaultValue={karyawan?.data?.biodata_karyawan[0]?.level}
+                                        onChange={(e) => setlevelEdit(e.target.value)}
                                         type='text' className='border-stroke border-2 rounded-md w-[50%]' />
                                 </div>
                             </div>
@@ -671,7 +693,8 @@ function AddMasterKaryawanIsi() {
                                         Jabatan<span className='text-red-600'>*</span>
                                     </label>
                                     <input
-                                        onChange={(e) => sejabatan(e.target.value)}
+                                        defaultValue={karyawan?.data?.biodata_karyawan[0]?.jabatan}
+                                        onChange={(e) => sejabatanEdit(e.target.value)}
                                         type='text' className='border-stroke border-2 rounded-md w-[50%]' />
                                 </div>
                                 <div className='flex flex-col gap-1 w-[50%]'>
@@ -679,7 +702,8 @@ function AddMasterKaryawanIsi() {
                                         Sub-Level
                                     </label>
                                     <input
-                                        onChange={(e) => setsubLevel(e.target.value)}
+                                        defaultValue={karyawan?.data?.biodata_karyawan[0]?.sub_level}
+                                        onChange={(e) => setsubLevelEdit(e.target.value)}
                                         type='text' className='border-stroke border-2 rounded-md w-[50%]' />
                                 </div>
                             </div>
@@ -918,10 +942,7 @@ function AddMasterKaryawanIsi() {
                 </div> */}
                 <div className='flex w-full justify-end items-end px-8 py-5'>
                     <button
-                        onClick={() => {
-                            tambahKaryawan()
-                            console.log(tglKeluar)
-                        }}
+                        onClick={() => tambahKaryawan()}
                         className='bg-blue-500 text-white text-md px-4 py-1 rounded-md font-semibold'>
                         SIMPAN
                     </button>
@@ -931,4 +952,4 @@ function AddMasterKaryawanIsi() {
     )
 }
 
-export default AddMasterKaryawanIsi
+export default EditMasterKaryawanIsi

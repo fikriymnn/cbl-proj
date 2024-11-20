@@ -1,43 +1,36 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
 
 function MasterKaryawanIsi() {
 
-    const masterKaryawan = [
-        {
-            nik: 123,
-            nama: 'asep kurma',
-            jenis_kelamin: 'L',
-            posisi: 'Tetap',
-            divisi: 'quality',
-            tipe_penggajian: 'Bulanan',
-            tanggal_masuk: '10/11/2024',
-            tanggal_keluar: '',
-            status_data: 'Contact'
-        },
-        {
-            nik: 124,
-            nama: 'kurma aspe',
-            jenis_kelamin: 'L',
-            posisi: 'Tetap',
-            divisi: 'quality',
-            tipe_penggajian: 'Bulanan',
-            tanggal_masuk: '11/11/2024',
-            tanggal_keluar: '',
-            status_data: 'Pendidikan'
-        },
-        {
-            nik: 125,
-            nama: 'kurma aspear',
-            jenis_kelamin: 'L',
-            posisi: 'Tetap',
-            divisi: 'quality',
-            tipe_penggajian: 'Bulanan',
-            tanggal_masuk: '11/11/2024',
-            tanggal_keluar: '11/11/2024',
-            status_data: 'Complete'
+    useEffect(() => {
+        getKaryawan();
+
+    }, []);
+
+    const [karyawan, setKaryawan] = useState<any>();
+
+    async function getKaryawan() {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/hr/karyawan`;
+        try {
+
+            const res = await axios.get(
+                url,
+
+                {
+                    withCredentials: true,
+                },
+            );
+            setKaryawan(res.data)
+            console.log(res.data)
+        } catch (error: any) {
+
+            console.log(error);
         }
-    ]
+    }
 
     return (
         <div>
@@ -55,80 +48,102 @@ function MasterKaryawanIsi() {
 
                         </div>
                         <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
-                            <div className="flex gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
-                                <label className="text-neutral-500 text-xs font-semibold w-[2%]">
-                                    No
-                                </label>
-                                <label className="text-neutral-500 text-xs font-semibold w-[7%]">
-                                    NIK
-                                </label>
-                                <label className="text-neutral-500 text-xs font-semibold w-[14%]">
+                            <div className="grid grid-cols-12 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
+                                <div className='flex gap-3'>
+                                    <label className="text-black text-xs font-bold">
+                                        No
+                                    </label>
+                                    <label className="text-neutral-500 text-xs font-semibold ">
+                                        NIK
+                                    </label>
+                                </div>
+
+
+                                <label className="text-neutral-500 text-xs font-semibold ] ">
                                     Nama
                                 </label>
-                                <label className="text-neutral-500 text-xs font-semibold w-[3%] ">
-                                    J.K
+                                <label className="text-neutral-500 text-xs font-semibold  ">
+                                    Jenis Kelamin
                                 </label>
-                                <label className="text-neutral-500 text-xs font-semibold  w-[7%]">
-                                    Posisi
-                                </label>
-                                <label className="text-neutral-500 text-xs font-semibold  w-[7%]">
+
+                                <label className="text-neutral-500 text-xs font-semibold  ">
                                     Divisi
                                 </label>
-                                <label className="text-neutral-500 text-xs font-semibold  w-[8%]">
+                                <label className="text-neutral-500 text-xs font-semibold  ">
+                                    Department
+                                </label>
+                                <label className="text-neutral-500 text-xs font-semibold  ">
+                                    Bagian
+                                </label>
+                                <label className="text-neutral-500 text-xs font-semibold  ">
+                                    Jabatan
+                                </label>
+                                <label className="text-neutral-500 text-xs font-semibold ">
                                     Tipe Penggajian
                                 </label>
-                                <label className="text-neutral-500 text-xs font-semibold  w-[10%]">
+                                <label className="text-neutral-500 text-xs font-semibold  ">
                                     Tanggal Masuk
                                 </label>
-                                <label className="text-neutral-500 text-xs font-semibold  w-[10%]">
+                                <label className="text-neutral-500 text-xs font-semibold  ">
                                     Tanggal Berhenti
                                 </label>
-                                <label className="text-neutral-500 text-xs font-semibold  w-[10%]">
+                                <label className="text-neutral-500 text-xs font-semibold  ">
                                     Incomplete Data
                                 </label>
-                                <div className='flex justify-center w-[19%]'>
+                                <div className='flex justify-center '>
 
                                 </div>
                             </div>
                             <div className="w-2 h-full "></div>
-                            {masterKaryawan != null &&
-                                masterKaryawan.map((data: any, i: any) => (
+                            {karyawan != null &&
+                                karyawan?.data?.map((data: any, i: any) => (
                                     <>
-                                        <div className="flex gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
-                                            <label className="text-neutral-500 text-xs font-semibold w-[2%]">
-                                                {i + 1}
+                                        <div className="grid grid-cols-12 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
+                                            <div className='flex gap-3'>
+                                                <label className="text-black text-xs font-bold ">
+                                                    {i + 1}
+                                                </label>
+                                                <label className="text-neutral-500 text-xs font-semibold ">
+                                                    {data.biodata_karyawan[0]?.nik}
+                                                </label>
+                                            </div>
+
+                                            <label className="text-neutral-500 text-xs font-semibold ">
+                                                {data.name}
                                             </label>
-                                            <label className="text-neutral-500 text-xs font-semibold w-[7%]">
-                                                {data.nik}
+                                            <label className="text-neutral-500 text-xs font-semibold">
+                                                {data.biodata_karyawan[0]?.jenis_kelamin}
                                             </label>
-                                            <label className="text-neutral-500 text-xs font-semibold w-[14%] line-clamp-1">
-                                                {data.nama}
+                                            <label className="text-neutral-500 text-xs font-semibold  ">
+                                                {data.biodata_karyawan[0]?.divisi?.nama_divisi}
                                             </label>
-                                            <label className="text-neutral-500 text-xs font-semibold w-[3%] ">
-                                                {data.jenis_kelamin}
+                                            <label className="text-neutral-500 text-xs font-semibold  ">
+                                                {data.biodata_karyawan[0]?.department?.nama_department}
                                             </label>
-                                            <label className="text-neutral-500 text-xs font-semibold  w-[7%]">
-                                                {data.posisi}
+                                            <label className="text-neutral-500 text-xs font-semibold  ">
+                                                {data.biodata_karyawan[0]?.bagian?.nama_bagian}
                                             </label>
-                                            <label className="text-neutral-500 text-xs font-semibold  w-[7%]">
-                                                {data.divisi}
+                                            <label className="text-neutral-500 text-xs font-semibold  ">
+                                                {data.biodata_karyawan[0]?.jabatan}
                                             </label>
-                                            <label className="text-neutral-500 text-xs font-semibold  w-[8%]">
-                                                {data.tipe_penggajian}
+                                            <label className="text-neutral-500 text-xs font-semibold  ">
+                                                {data.biodata_karyawan[0]?.tipe_penggajian}
                                             </label>
-                                            <label className="text-neutral-500 text-xs font-semibold  w-[10%]">
-                                                {data.tanggal_masuk}
+                                            <label className="text-neutral-500 text-xs font-semibold  ">
+                                                {data.biodata_karyawan[0]?.tgl_masuk == '' ? '-' : convertTimeStampToDateOnly(data.biodata_karyawan[0]?.tgl_masuk)}
                                             </label>
-                                            <label className="text-neutral-500 text-xs font-semibold  w-[10%]">
-                                                {data.tanggal_keluar == '' ? '-' : data.tanggal_keluar}
+                                            <label className="text-neutral-500 text-xs font-semibold  ">
+                                                {data.biodata_karyawan[0]?.tgl_keluar == null ? '-' : convertTimeStampToDateOnly(data.biodata_karyawan[0]?.tgl_keluar)}
                                             </label>
-                                            <label className="text-neutral-500 text-xs font-semibold  w-[10%]">
+                                            <label className="text-neutral-500 text-xs font-semibold  ">
                                                 {data.status_data == '' ? '-' : data.status_data}
                                             </label>
-                                            <div className='lg:flex-row md:flex-col sm:flex w-[19%] gap-1'>
-                                                <Link to={`/hr/pm/masterkaryawan/lengkapi`} >
+                                            <div className='lg:flex-col md:flex-col sm:flex  gap-1'>
+                                                <Link
+                                                    className='px-2 py-1  text-xs bg-yellow-400 items-center justify-center text-white font-semibold rounded-md flex w-full'
+                                                    to={`/hr/pm/masterkaryawan/lengkapi`} >
                                                     <button
-                                                        className='px-2 py-1  text-xs bg-yellow-400 items-center justify-center text-white font-semibold rounded-md  '>
+                                                        className=' '>
                                                         LENGKAPI
                                                     </button>
                                                 </Link>
@@ -136,10 +151,14 @@ function MasterKaryawanIsi() {
                                                     className='px-2 py-1  text-xs bg-green-600 items-center justify-center text-white font-semibold rounded-md  '>
                                                     DETAIL
                                                 </button>
-                                                <button
-                                                    className='px-2 py-1 text-xs bg-blue-600 items-center justify-center text-white font-semibold rounded-md  '>
-                                                    EDIT
-                                                </button>
+                                                <Link
+                                                    className='px-2 py-1 text-xs bg-blue-600 items-center justify-center text-white font-semibold rounded-md  flex'
+                                                    to={`/hr/pm/masterkaryawan/edit/${data.userid}`} >
+                                                    <button
+                                                    >
+                                                        EDIT
+                                                    </button>
+                                                </Link>
                                             </div>
 
                                         </div>

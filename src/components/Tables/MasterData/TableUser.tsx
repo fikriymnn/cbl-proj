@@ -100,7 +100,8 @@ const TableUser = () => {
                                 children={undefined}
                                 isOpen={showModalTambah}
                                 onClose={closeModalTambah}
-                                onFinish={getuser} />
+                                onFinish={getuser}
+                            />
 
                         )}
                     </div>
@@ -123,6 +124,9 @@ const TableUser = () => {
                                 </div>
                                 <div className=" justify-start p-2.5 grid col-span-2">
                                     <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">NIK</p>
+                                </div>
+                                <div className=" justify-start p-2.5 grid col-span-2">
+                                    <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">Bagian</p>
                                 </div>
                                 <div className=" justify-start p-2.5 grid col-span-2">
                                     <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">Email</p>
@@ -151,21 +155,24 @@ const TableUser = () => {
                                                         {i + 1}
                                                     </p>
                                                 </div>
-                                                <div className="  w-2/12 justify-start p-2.5 grid col-span-2">
+                                                <div className=" justify-start p-2.5 grid col-span-2">
                                                     <p className="text-neutral-500 text-sm font-light text-center dark:text-white">{data.nama}</p>
                                                 </div>
                                                 <div className=" justify-start p-2.5 grid col-span-2">
-                                                    <p className="text-neutral-500 text-sm font-light text-center dark:text-white">{data.nik}</p>
+                                                    <p className="text-neutral-500 text-sm font-light text-center dark:text-white">{data.karyawan?.biodata_karyawan[0]?.nik}</p>
                                                 </div>
-                                                <div className="  w-2/12 justify-start p-2.5 grid col-span-3">
+                                                <div className=" justify-start p-2.5 grid col-span-2">
+                                                    <p className="text-slate-600 text-[14px] font-light text-center dark:text-white">{data.bagian}</p>
+                                                </div>
+                                                <div className=" justify-start p-2.5 grid col-span-2">
                                                     <p className="text-neutral-500 text-sm font-light text-center dark:text-white">{data.email}</p>
                                                 </div>
 
-                                                <div className="  text-[14px] w-2/12 justify-start  p-2.5 col-span-2">
+                                                <div className="  text-[14px]justify-start  p-2.5 col-span-2">
                                                     <p className="text-neutral-500 text-sm font-light text-center">{data.role}</p>
                                                 </div>
 
-                                                <div className="grid col-span-2 justify-end p-2.5 gap-2">
+                                                <div className="grid justify-end p-2.5 gap-2">
                                                     <button
                                                         onClick={() => openEdit(i)}
                                                         className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>

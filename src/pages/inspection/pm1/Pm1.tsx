@@ -3,7 +3,7 @@ import DefaultLayout from '../../../layout/DefaultLayout'
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
-
+import Loading from '../../../components/Loading'
 
 function Pm1() {
     const [isMobile, setIsMobile] = useState(false);
@@ -14,6 +14,8 @@ function Pm1() {
     const date = today.getDate();
     const currentDate = month + "/" + date + "/" + year;
     const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
+
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
     };
@@ -43,16 +45,19 @@ function Pm1() {
     async function getPM1() {
         const url = `${import.meta.env.VITE_API_LINK}/pm1`;
         try {
+            setIsLoading(true)
             const res = await axios.get(url, {
                 params: {
                     tgl: currentDate
                 },
                 withCredentials: true,
             });
-
+            setIsLoading(false)
             setPm1(res.data);
+            console.log(currentDate)
             console.log(res.data);
         } catch (error: any) {
+            setIsLoading(false)
             console.log(error.data.msg);
         }
     }
@@ -93,13 +98,15 @@ function Pm1() {
     async function createPM1() {
         const url = `${import.meta.env.VITE_API_LINK}/pm1/create`;
         try {
+            setIsLoading(true)
             const res = await axios.post(url, {
                 withCredentials: true,
             });
 
-
+            setIsLoading(false)
             getPM1()
         } catch (error: any) {
+            setIsLoading(false)
             console.log(error);
         }
     }
@@ -220,7 +227,7 @@ function Pm1() {
                                                         data.id_inspector == me?.id ? (
                                                             <>
                                                                 {
-                                                                    data.status == "done" || data.status == "on progres"  ?
+                                                                    data.status == "done" || data.status == "on progres" ?
                                                                         <Link to={`/maintenance/inspection/pm_1_form/${data.id}`}
                                                                             className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
                                                                         >
@@ -304,50 +311,50 @@ function Pm1() {
                                                     <p className=''>{data.nama_mesin}</p>
                                                 </div>
                                                 <div className='flex flex-col justify-center sticky left-2 ps-3 md:ps-0 bg-white'>
-                                                <p className=''>{data.inspector != null ? data.inspector.nama : "-"}</p>
+                                                    <p className=''>{data.inspector != null ? data.inspector.nama : "-"}</p>
                                                 </div>
 
                                                 <div className='flex justify-center'>
                                                     <>
-                                                    <div>
-                                                    {
-                                                        data.id_inspector == me?.id ? (
-                                                            <>
-                                                                {
-                                                                    data.status == "done" || data.status == "on progres"  ?
-                                                                        <Link to={`/maintenance/inspection/pm_1_form/${data.id}`}
-                                                                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
-                                                                        >
-                                                                            INSPECT
-
-                                                                        </Link> :
-                                                                        <button onClick={() => inspectPM1(data.id)}
-                                                                            className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
-                                                                        >
-                                                                            INSPECT
-
-                                                                        </button>
-                                                                }
-                                                            </>
-                                                        ) :
-                                                            data.id_inspector == null ? (
-                                                                <>
-                                                                    <button onClick={() => inspectPM1(data.id)}
-                                                                        className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
-                                                                    >
-                                                                        INSPECT
-
-                                                                    </button>
-                                                                </>
-                                                            ) :
-                                                                (
+                                                        <div>
+                                                            {
+                                                                data.id_inspector == me?.id ? (
                                                                     <>
+                                                                        {
+                                                                            data.status == "done" || data.status == "on progres" ?
+                                                                                <Link to={`/maintenance/inspection/pm_1_form/${data.id}`}
+                                                                                    className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                                                >
+                                                                                    INSPECT
 
+                                                                                </Link> :
+                                                                                <button onClick={() => inspectPM1(data.id)}
+                                                                                    className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                                                >
+                                                                                    INSPECT
+
+                                                                                </button>
+                                                                        }
                                                                     </>
-                                                                )}
+                                                                ) :
+                                                                    data.id_inspector == null ? (
+                                                                        <>
+                                                                            <button onClick={() => inspectPM1(data.id)}
+                                                                                className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
+                                                                            >
+                                                                                INSPECT
+
+                                                                            </button>
+                                                                        </>
+                                                                    ) :
+                                                                        (
+                                                                            <>
+
+                                                                            </>
+                                                                        )}
 
 
-                                                </div>
+                                                        </div>
                                                     </>
 
 
