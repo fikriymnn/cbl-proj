@@ -12,10 +12,13 @@ import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import ModalMtcLightHeavy from '../../Modals/ModalMtcLightHeavy';
 import ModalSPBService from '../../Modals/ModalNewSPBService';
+import Loading from '../../Loading';
+
 // import moment from 'moment';
 
 function TableOS() {
   const [isMobile, setIsMobile] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState();
   const [openButton, setOpenButton] = useState(null);
   const [page, setPage] = useState(1);
@@ -95,15 +98,18 @@ function TableOS() {
 
   async function getUser() {
     try {
+      setIsLoading(true)
       const res = await axios.get(`${import.meta.env.VITE_API_LINK}/me`, {
         withCredentials: true,
       });
       // if (res.data.success == false) {
       //   navigate("/auth/login");
       // }
+      setIsLoading(false)
       setUser(res.data);
       console.log(res.data);
     } catch (error: any) {
+      setIsLoading(false)
       console.log(error.response);
     }
   }
@@ -130,13 +136,15 @@ function TableOS() {
   async function getMasterMesin() {
     const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
     try {
+      setIsLoading(true)
       const res = await axios.get(url, {
         withCredentials: true,
       });
-
+      setIsLoading(false)
       setmasterMesin(res.data);
 
     } catch (error: any) {
+      setIsLoading(false)
       console.log(error.data.msg);
     }
   }
@@ -148,6 +156,7 @@ function TableOS() {
   async function getTiket(isRework?: boolean, idModal?: number) {
     const url = `${import.meta.env.VITE_API_LINK}/ticket`;
     try {
+      setIsLoading(true)
       const res = await axios.get(url, {
         params: {
           bagian_tiket: 'os2',
@@ -160,7 +169,7 @@ function TableOS() {
         },
         withCredentials: true,
       });
-
+      setIsLoading(false)
       setTiket(res.data);
       console.log(res.data);
 
@@ -177,6 +186,7 @@ function TableOS() {
         openModal1(idModal);
       }
     } catch (error: any) {
+      setIsLoading(false)
       console.log(error.response);
     }
   }
@@ -185,6 +195,7 @@ function TableOS() {
     const url = `${import.meta.env.VITE_API_LINK}/ticket/rework/${idTiket}`;
 
     try {
+      setIsLoading(true)
       const res = await axios.put(
         url,
         {
@@ -194,12 +205,13 @@ function TableOS() {
           withCredentials: true,
         },
       );
-
+      setIsLoading(false)
       alert(res.data.msg);
       getTiket(true, iModal);
       openModal1(iModal);
     } catch (error: any) {
       console.log(error);
+      setIsLoading(false)
       alert(error.respone.data.msg);
     }
   }
@@ -237,6 +249,7 @@ function TableOS() {
   return (
     <main>
       <div className="flex  gap-1 items-center bg-white ">
+        {isLoading && <Loading />}
         <div>
           {/* <img
             onClick={() => setFilter(!filter)}
