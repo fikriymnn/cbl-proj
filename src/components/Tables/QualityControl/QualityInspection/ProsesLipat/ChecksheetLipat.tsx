@@ -440,7 +440,7 @@ function ChecksheetLipat() {
                                   Inspector : {dataPoint?.inspektor?.nama}
                                 </label>
                                 <p className="md:text-[14px] text-[9px] font-semibold">
-                                  Time : -
+                                  Time : {convertTimeStampToDateTime(dataPoint.waktu_mulai)}
                                 </p>
                                 <>
                                   <p className="font-bold text-[#00B81D]">
@@ -457,7 +457,7 @@ function ChecksheetLipat() {
                                   Inspector : {dataPoint?.inspektor?.nama}
                                 </label>
                                 <p className="md:text-[14px] text-[9px] font-semibold">
-                                  Time :
+                                  Time : {convertTimeStampToDateTime(dataPoint.waktu_mulai)}
                                 </p>
                                 <p className="md:text-[14px] text-[9px] font-semibold text-stone-400">
                                   {dataPoint?.lama_pengerjaan != null

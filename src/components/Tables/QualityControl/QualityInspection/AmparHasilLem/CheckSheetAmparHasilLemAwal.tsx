@@ -8,6 +8,7 @@ import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import Loading from '../../../../Loading';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import Select from 'react-select';
+import convertTimeStampToDateTime from '../../../../../utils/converDateTime';
 
 function CheckSheetHasilRabut() {
   const { id } = useParams();
@@ -419,6 +420,14 @@ function CheckSheetHasilRabut() {
                             {lamaPengerjaan}
                           </label>
                         </div>
+                        <div className="flex flex-col">
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            Time :
+                          </label>
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            {convertTimeStampToDateTime(data.waktu_mulai)}
+                          </label>
+                        </div>
                         <div className="flex flex-col ">
                           <>
                             <div className="flex flex-col ">
@@ -470,6 +479,9 @@ function CheckSheetHasilRabut() {
                               <>
                                 <p className="font-bold text-green-600">
                                   Task Dimulai
+                                </p>
+                                <p className="font-semibold">
+                                  Time :  {convertTimeStampToDateTime(data.waktu_mulai)}
                                 </p>
                                 <button
                                   disabled={isLoading}

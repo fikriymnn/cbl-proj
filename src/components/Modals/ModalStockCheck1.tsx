@@ -44,8 +44,8 @@ const ModalStockCheck1 = ({
   namaMesin: any;
   skor_mtc: any;
   jenis_perbaikan: any;
-  unit:any,
-  bagian:any;
+  unit: any,
+  bagian: any;
 }) => {
   if (!isOpen) return null;
 
@@ -215,12 +215,10 @@ const ModalStockCheck1 = ({
   const [isLoading, setIsLoading] = useState(false);
 
   async function postAnalisis() {
-    const urlNormal = `${
-      import.meta.env.VITE_API_LINK
-    }/ticket/analisis/${idTiket}`;
-    const urlPending = `${
-      import.meta.env.VITE_API_LINK
-    }/ticket/pending/${idTiket}`;
+    const urlNormal = `${import.meta.env.VITE_API_LINK
+      }/ticket/analisis/${idTiket}`;
+    const urlPending = `${import.meta.env.VITE_API_LINK
+      }/ticket/pending/${idTiket}`;
     try {
       if (typePost === 'normal') {
         setIsLoading(true);
@@ -237,7 +235,7 @@ const ModalStockCheck1 = ({
             cara_perbaikan: selectedSkorPerbaikan.nama_skor,
             note_mtc: noteMaintenance,
             unit: unitMaintenance,
-bagian_mesin: bagianMaintenance,
+            bagian_mesin: bagianMaintenance,
             nama_mesin: namaMesin,
           },
           {
@@ -493,7 +491,7 @@ bagian_mesin: bagianMaintenance,
                 htmlFor="bagian"
                 className="form-label block  text-black text-xs font-extrabold mt-2"
               >
-                BAGIAN 
+                BAGIAN
               </label>
               <span
                 id="unit"
@@ -516,9 +514,9 @@ bagian_mesin: bagianMaintenance,
                 </label>
               </div>
             )}
-            
+
           </div>
-          
+
           <div className="flex w-full pt-1">
             <div className="flex lg:w-6/12 w-full">
               <div>
@@ -543,9 +541,8 @@ bagian_mesin: bagianMaintenance,
                       console.log(selectedOption);
                       changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                      isOptionSelected ? 'text-black dark:text-white' : ''
-                    }`}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
+                      }`}
                   >
                     <option
                       value=""
@@ -608,17 +605,17 @@ bagian_mesin: bagianMaintenance,
             )}
           </div>
           <div className="flex  w-6/12">
-                <label className="form-label block  text-black text-xs font-extrabold mt-3">
-                  UNIT
-                </label>
+            <label className="form-label block  text-black text-xs font-extrabold mt-3">
+              UNIT
+            </label>
           </div>
-          <input type="text"  onChange={(e) => setUnitMaintenance(e.target.value)} className='lg:w-[400px] rounded-md border border-stroke px-2 py-2' />
+          <input type="text" onChange={(e) => setUnitMaintenance(e.target.value)} className='lg:w-[400px] rounded-md border border-stroke px-2 py-2' />
           <div className="flex  w-6/12">
-                <label className="form-label block  text-black text-xs font-extrabold mt-3">
-                  BAGIAN
-                </label>
+            <label className="form-label block  text-black text-xs font-extrabold mt-3">
+              BAGIAN
+            </label>
           </div>
-          <input type="text"  onChange={(e) => setBagianMaintenance(e.target.value)}  className='lg:w-[400px] rounded-md border border-stroke px-2 py-2' />
+          <input type="text" onChange={(e) => setBagianMaintenance(e.target.value)} className='lg:w-[400px] rounded-md border border-stroke px-2 py-2' />
           {isMobile && (
             <>
               <div className="flex pl-2 w-6/12">
@@ -645,7 +642,7 @@ bagian_mesin: bagianMaintenance,
               </div>
             </>
           )}
-         
+
 
           <div className="flex w-full pt-2"></div>
           <div className="flex w-full pt-2">
@@ -737,11 +734,10 @@ bagian_mesin: bagianMaintenance,
                                             getMasterSparepart(e.target.value);
                                             changeTextColor();
                                           }}
-                                          className={`relative z-20 w-8/12  appearance-none rounded-md  text-xs bg-blue-100 py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                                            isOptionSelected
-                                              ? 'text-gray-800 dark:text-white'
-                                              : ''
-                                          }`}
+                                          className={`relative z-20 w-8/12  appearance-none rounded-md  text-xs bg-blue-100 py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected
+                                            ? 'text-gray-800 dark:text-white'
+                                            : ''
+                                            }`}
                                         >
                                           <option
                                             value=""
@@ -851,6 +847,7 @@ bagian_mesin: bagianMaintenance,
                                                   </p>
                                                 </div>
                                                 <div className="flex items-center text-xs lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
+
                                                   <button
                                                     className="bg-primary w-20 text-white"
                                                     onClick={() => {
@@ -883,6 +880,7 @@ bagian_mesin: bagianMaintenance,
                                                   >
                                                     select
                                                   </button>
+
                                                 </div>
                                               </div>
                                             );
@@ -1028,11 +1026,10 @@ bagian_mesin: bagianMaintenance,
                                           getStokSparepart(e.target.value);
                                           changeTextColor();
                                         }}
-                                        className={`relative z-20 w-10/12 appearance-none rounded-md  text-xs bg-blue-100 py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                                          isOptionSelected
-                                            ? 'text-gray-800 dark:text-white '
-                                            : ''
-                                        }`}
+                                        className={`relative z-20 w-10/12 appearance-none rounded-md  text-xs bg-blue-100 py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected
+                                          ? 'text-gray-800 dark:text-white '
+                                          : ''
+                                          }`}
                                       >
                                         <option
                                           value=""
@@ -1155,39 +1152,41 @@ bagian_mesin: bagianMaintenance,
                                                 </p>
                                               </div>
                                               <div className="my-auto lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
-                                                <button
-                                                  className="bg-primary w-20 text-white"
-                                                  onClick={() => {
-                                                    const onchangeVal: any = [
-                                                      ...kebutuhanSparepart,
-                                                    ];
-                                                    onchangeVal[i]['id_stok'] =
-                                                      SparepartStok.id;
-                                                    onchangeVal[i][
-                                                      'detail_stok'
-                                                    ] = {
-                                                      kode: SparepartStok.kode,
-                                                      part_number:
-                                                        SparepartStok.part_number,
-                                                      nama_sparepart:
-                                                        SparepartStok.nama_sparepart,
-                                                      nama_mesin:
-                                                        SparepartStok.nama_mesin,
-                                                      lokasi:
-                                                        SparepartStok.lokasi,
-                                                      umur: SparepartStok.umur_sparepart,
-                                                      grade:
-                                                        SparepartStok.grade,
-                                                    };
-                                                    setKebutuhanSparepart(
-                                                      onchangeVal,
-                                                    );
+                                                {SparepartStok.stok > 0 ?
+                                                  <button
+                                                    className="bg-primary w-20 text-white"
+                                                    onClick={() => {
+                                                      const onchangeVal: any = [
+                                                        ...kebutuhanSparepart,
+                                                      ];
+                                                      onchangeVal[i]['id_stok'] =
+                                                        SparepartStok.id;
+                                                      onchangeVal[i][
+                                                        'detail_stok'
+                                                      ] = {
+                                                        kode: SparepartStok.kode,
+                                                        part_number:
+                                                          SparepartStok.part_number,
+                                                        nama_sparepart:
+                                                          SparepartStok.nama_sparepart,
+                                                        nama_mesin:
+                                                          SparepartStok.nama_mesin,
+                                                        lokasi:
+                                                          SparepartStok.lokasi,
+                                                        umur: SparepartStok.umur_sparepart,
+                                                        grade:
+                                                          SparepartStok.grade,
+                                                      };
+                                                      setKebutuhanSparepart(
+                                                        onchangeVal,
+                                                      );
 
-                                                    closeModalStok();
-                                                  }}
-                                                >
-                                                  select
-                                                </button>
+                                                      closeModalStok();
+                                                    }}
+                                                  >
+                                                    select
+                                                  </button>
+                                                  : null}
                                               </div>
                                             </div>
                                           );
@@ -1254,9 +1253,8 @@ bagian_mesin: bagianMaintenance,
                               <div
                                 onFocus={() => setInfo({ ...info, [i]: true })}
                                 onBlur={() => setInfo({ ...info, [i]: false })}
-                                className={` mt-1 mb-5 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${
-                                  info[i] ? 'block' : 'hidden'
-                                }`}
+                                className={` mt-1 mb-5 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${info[i] ? 'block' : 'hidden'
+                                  }`}
                               >
                                 <div className="flex flex-col bg-blue-100 shadow-md">
                                   <p className="text-xs font-bold text-primary p-2">
@@ -1298,9 +1296,8 @@ bagian_mesin: bagianMaintenance,
                                   [i]: false,
                                 })
                               }
-                              className={`  mt-1 mb-5 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${
-                                infoPengganti[i] ? 'block' : 'hidden'
-                              }`}
+                              className={`  mt-1 mb-5 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${infoPengganti[i] ? 'block' : 'hidden'
+                                }`}
                             >
                               <div className="flex flex-col bg-blue-100 shadow-md">
                                 <p className="text-xs font-bold text-primary p-2">
@@ -1340,7 +1337,7 @@ bagian_mesin: bagianMaintenance,
               +
             </button>
           </div>
-          
+
 
           <div className="flex w-full pt-1">
             <div className="flex w-full">
@@ -1349,7 +1346,7 @@ bagian_mesin: bagianMaintenance,
               </label>
             </div>
           </div>
-          
+
 
           <div className="flex w-full pt-1">
             <div className="flex lg:w-6/12 w-full">
@@ -1382,9 +1379,8 @@ bagian_mesin: bagianMaintenance,
 
                       changeTextColor();
                     }}
-                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                      isOptionSelected ? 'text-black dark:text-white' : ''
-                    }`}
+                    className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-3 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
+                      }`}
                   >
                     <option
                       value=""
@@ -1437,7 +1433,7 @@ bagian_mesin: bagianMaintenance,
               </div>
             </div>
           </div>
-          
+
           <div className="flex w-full pt-1">
             <div className="flex w-full">
               <label className="form-label block  text-black text-xs font-extrabold mt-3">
