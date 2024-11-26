@@ -172,6 +172,9 @@ import MasterDepartment from './pages/HR/MasterDataHR/MasterDepartment';
 import EditMasterKaryawan from './pages/HR/Personal/EditMasterKaryawan';
 import MasterCutiKhusus from './pages/HR/MasterDataHR/MasterCutiKhusus';
 import MasterGradeHR from './pages/HR/MasterDataHR/MasterGrade';
+import NcrHr from './pages/HR/Ncrhr/Ncrhr';
+import CapaHR from './pages/HR/Capahr/Capahr';
+import AbsenQC from './pages/QualityControl/Absensi/AbsenQC';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1609,6 +1612,14 @@ function App() {
           }
         />
         <Route
+          path="/qc/absensi"
+          element={
+            <>
+              <AbsenQC />
+            </>
+          }
+        />
+        <Route
           path="/hr/rp/spl"
           element={
             <>
@@ -1766,6 +1777,28 @@ function App() {
           element={
             <>
               <MasterGradeHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/lapor/ncr"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <NcrHr />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/hr/lapor/capa"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CapaHR />
+              </ProtectedRoute>
             </>
           }
         />

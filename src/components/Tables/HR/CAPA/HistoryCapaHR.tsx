@@ -7,7 +7,7 @@ import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
 import convertDateToTime from '../../../../utils/converDateToTime';
 
-function CapaHistoryMTC() {
+function CapaHistoryHR() {
     const tiket = [
         {
             name: 'EX000003',
@@ -51,7 +51,7 @@ function CapaHistoryMTC() {
     }, []);
 
     async function getCapa() {
-        const url = `${import.meta.env.VITE_API_LINK}/capa?id_department=27&bagian_tiket=history
+        const url = `${import.meta.env.VITE_API_LINK}/capa?id_department=21&bagian_tiket=history
         `;
         try {
             const res = await axios.get(url, {
@@ -421,4 +421,4 @@ function CapaHistoryMTC() {
     )
 }
 
-export default CapaHistoryMTC
+export default CapaHistoryHR

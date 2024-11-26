@@ -56,7 +56,7 @@ function IncomingNCRQC() {
     }, []);
 
     async function getNcrQC() {
-        const url = `${import.meta.env.VITE_API_LINK}/capa?id=10&status=incoming
+        const url = `${import.meta.env.VITE_API_LINK}/capa?id_department=10&status=incoming
         `;
         try {
             const res = await axios.get(url, {

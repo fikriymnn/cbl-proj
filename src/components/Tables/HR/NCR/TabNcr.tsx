@@ -6,8 +6,9 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import NcrDibuatMTC from './NcrDibuat';
-import IncomingNCRMTC from './IncomingNCR';
+import NcrDibuatHR from './NcrDibuat';
+import IncomingNCRHR from './IncomingNCR';
+
 
 
 
@@ -48,7 +49,7 @@ function a11yProps(index: number) {
     };
 }
 
-export default function TabNcrMTC() {
+export default function TabNcrHR() {
     const theme = createTheme({
         palette: {
             primary: {
@@ -138,10 +139,10 @@ export default function TabNcrMTC() {
                 </ThemeProvider>
             </AppBar>
             <TabPanel value={value} index={0} dir={theme.direction}>
-                <IncomingNCRMTC />
+                <IncomingNCRHR />
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
-                <NcrDibuatMTC />
+                <NcrDibuatHR />
             </TabPanel>
 
 

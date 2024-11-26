@@ -54,7 +54,7 @@ function CapaMasukMTC() {
     }, []);
 
     async function getCapa() {
-        const url = `${import.meta.env.VITE_API_LINK}/capa?department=maintenance&statusNotEqual=incoming&bagian_tiket=incoming
+        const url = `${import.meta.env.VITE_API_LINK}/capa?id_department=27&statusNotEqual=incoming&bagian_tiket=incoming
         `;
         try {
             const res = await axios.get(url, {
