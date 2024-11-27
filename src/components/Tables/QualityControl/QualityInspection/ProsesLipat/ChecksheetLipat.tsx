@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import convertTimeStampToDateTime from '../../../../../utils/converDateTime';
 import Loading from '../../../../Loading';
+import { useReactToPrint } from "react-to-print";
+import printIcon from "../../../../../images/icon/print.svg";
 
 function ChecksheetLipat() {
 
@@ -252,6 +254,9 @@ function ChecksheetLipat() {
       (data: { status: any }) => data?.status === 'incoming',
     );
 
+  const contentRef = useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({ contentRef });
+
   return (
     <>
 
@@ -263,24 +268,31 @@ function ChecksheetLipat() {
             sumbitChecksheet(incoming?.id);
           }}
         >
-          <div className="min-w-[700px] bg-white rounded-xl">
-            <p className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z"
-                  fill="#0065DE"
-                />
-              </svg>{' '}
-              Checksheet Lipat
-            </p>
+
+          <div ref={contentRef} className="min-w-[700px] bg-white rounded-xl">
+            <div className="text-[14px] items-center font-semibold w-full flex border-b-8 justify-between border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
+              <div className='flex'>
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z"
+                    fill="#0065DE"
+                  />
+                </svg>{' '}
+                Checksheet Lipat
+              </div>
+              <div className='flex gap-1'>
+                <button className=' px-2 py-1 rounded-full flex gap-1  font-bold items-center' type='button' onClick={() => reactToPrintFn()}>
+                  <img src={printIcon} alt="" className='h-10 w-10' />PRINT</button>
+              </div>
+            </div>
 
             <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF]">
               <div className="grid grid-rows-6 gap-1 col-span-2 px-10 py-4 ">

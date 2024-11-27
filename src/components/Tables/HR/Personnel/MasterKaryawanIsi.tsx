@@ -147,10 +147,14 @@ function MasterKaryawanIsi() {
                                                         LENGKAPI
                                                     </button>
                                                 </Link>
-                                                <button
-                                                    className='px-2 py-1  text-xs bg-green-600 items-center justify-center text-white font-semibold rounded-md  '>
-                                                    DETAIL
-                                                </button>
+                                                <Link
+                                                    className='px-2 py-1  text-xs bg-green-600 items-center justify-center text-white font-semibold rounded-md  flex'
+                                                    to={`/hr/pm/masterkaryawan/detail/${data.userid}`} >
+                                                    <button
+                                                    >
+                                                        DETAIL
+                                                    </button>
+                                                </Link>
                                                 <Link
                                                     className='px-2 py-1 text-xs bg-blue-600 items-center justify-center text-white font-semibold rounded-md  flex'
                                                     to={`/hr/pm/masterkaryawan/edit/${data.userid}`} >

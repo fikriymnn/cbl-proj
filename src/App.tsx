@@ -175,6 +175,7 @@ import MasterGradeHR from './pages/HR/MasterDataHR/MasterGrade';
 import NcrHr from './pages/HR/Ncrhr/Ncrhr';
 import CapaHR from './pages/HR/Capahr/Capahr';
 import AbsenQC from './pages/QualityControl/Absensi/AbsenQC';
+import DetailMasterKaryawan from './pages/HR/Personal/DetailMasterKaryawan';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1592,6 +1593,14 @@ function App() {
           element={
             <>
               <LengkapiMasterKaryawan />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/masterkaryawan/detail/:id"
+          element={
+            <>
+              <DetailMasterKaryawan />
             </>
           }
         />
