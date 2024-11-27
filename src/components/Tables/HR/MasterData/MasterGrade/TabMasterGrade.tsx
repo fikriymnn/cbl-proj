@@ -143,7 +143,6 @@ export default function TabMasterGrade() {
                             className="bg-white text-[#00499F] font-semibold mb-2 flex w-full"
                         >
                             <Tab label="Nama Grade" {...a11yProps(0)} />
-                            <Tab label="Isi Grade" {...a11yProps(1)} />
 
                             <div className="flex w-full justify-end pr-4">
                                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
@@ -156,9 +155,7 @@ export default function TabMasterGrade() {
                 <TabPanel value={value} index={0} dir={theme.direction}>
                     <IsiMasterGrade />
                 </TabPanel>
-                <TabPanel value={value} index={1} dir={theme.direction}>
-                    <MasterGradeKolom />
-                </TabPanel>
+
 
             </Box>
         </>
