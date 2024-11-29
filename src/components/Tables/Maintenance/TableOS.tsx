@@ -884,7 +884,7 @@ function TableOS() {
             <p className="w-10 px-3 text-xs font-bold ">No</p>
             <div className="grid md:grid-cols-8 grid-cols-7 w-full">
               <div className="flex gap-2">
-                <p className="text-xs font-bold ">Kode Tiket</p>
+                <p className="text-xs font-bold ">Waktu Tiket</p>
                 <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className="flex gap-2">
@@ -904,7 +904,7 @@ function TableOS() {
                 <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className="flex gap-2">
-                <p className="text-xs font-bold ">Jadwal</p>
+                <p className="text-xs font-bold ">Breakdown Time</p>
                 <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className="flex gap-2">
@@ -947,6 +947,10 @@ function TableOS() {
                       : data.waktu_respon_qc,
                     data.waktu_respon,
                   );
+                  const waktuBreakdown = calculateResponTime(
+                    data.waktu_mulai_mtc,
+                    data.waktu_selesai_mtc,
+                  );
                   return (
                     <>
                       <div className="my-2">
@@ -961,7 +965,8 @@ function TableOS() {
                             <div className="flex flex-col md:gap-5 gap-1 w-full ">
                               <div className="my-auto  ">
                                 <p className="text-xs font-light break-all">
-                                  {data.kode_ticket}
+                                  {dateMtc}
+
                                 </p>
                               </div>
                             </div>
@@ -1025,7 +1030,8 @@ function TableOS() {
                             <div className="flex flex-col md:gap-5 gap-1 ">
                               <div>
                                 <p className="text-xs font-light">
-                                  {data.proses_mtcs[lengthProses].tgl_mtc}
+                                  {data.waktu_selesai_mtc == null ? '-' : waktuBreakdown}
+                                  {/* {data.proses_mtcs[lengthProses].tgl_mtc}  */}
                                 </p>
                               </div>
                             </div>
@@ -1184,7 +1190,7 @@ function TableOS() {
                               <div className="flex px-5 py-2">
                                 <div className="flex flex-col gap-2 w-2/12">
                                   <p className="text-xs font-bold">
-                                    Waktu Tiket Masuk
+                                    Kode Tiket
                                   </p>
                                 </div>
                                 <div className="grid grid-cols-6 gap-3 w-10/12">
@@ -1219,7 +1225,7 @@ function TableOS() {
                                 <div className="flex flex-col gap-2 w-2/12">
                                   <div>
                                     <p className="text-xs font-medium">
-                                      {dateMtc}
+                                      {data.kode_ticket}
                                     </p>
                                   </div>
                                   <div>
@@ -1280,7 +1286,7 @@ function TableOS() {
                                       return (
                                         <>
                                           <div className="flex flex-col gap-2">
-                                            <h5 className="text-xs font-medium">
+                                            <h5 className="text-xs font-medium pl-5">
                                               {ii + 1}
                                             </h5>
                                           </div>

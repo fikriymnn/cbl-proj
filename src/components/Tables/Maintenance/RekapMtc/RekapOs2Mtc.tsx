@@ -948,7 +948,7 @@ function RekapOs2Mtc() {
                                             {data.jumlah_waktu_menit}
                                         </label>
                                         <label className='text-sm col-span-2 line-clamp-1'>
-                                            {data.rata_rata_waktu_menit}
+                                            {data.rata_rata_waktu_menit.toFixed(2)}
                                         </label>
 
                                     </div >

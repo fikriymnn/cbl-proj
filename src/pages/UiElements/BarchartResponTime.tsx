@@ -19,11 +19,11 @@ const BarChartResponTime = ({ value }: { value: any }) => {
                                 className="flex items-center justify-center md:mx-2 mx-1 max-w-30"
                                 style={{
                                     height: `${(item.rata_rata_waktu_menit / Math.max(data[0].rata_rata_waktu_menit)) * 80}%`,
-                                    background: item.rata_rata_waktu_menit >= 100 ? 'red' : 'blue',
+                                    background: item.rata_rata_waktu_menit >= 100 ? 'blue' : 'blue',
                                 }}
                             ></div>
                             <div className="w-full text-center text-xs font-medium text-primary">
-                                {item.rata_rata_waktu_menit}
+                                {item.rata_rata_waktu_menit.toFixed(2)}
                             </div>
                         </div>
                         <div className="w-full h-[1.5px] bg-black"></div>

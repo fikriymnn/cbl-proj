@@ -11,7 +11,8 @@ function EditMasterKaryawanIsi() {
         getDepartment();
         getBagian();
         getDivisi();
-        getKaryawan()
+        getKaryawan();
+        getGradeMaster();
     }, []);
 
     const [karyawan, setKaryawan] = useState<any>([]);
@@ -36,7 +37,27 @@ function EditMasterKaryawanIsi() {
             console.log(error);
         }
     }
+    const [gradeMaster, setGradeMaster] = useState<any>();
+    async function getGradeMaster() {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/master/hr/grade`;
+        try {
+            setIsLoading(true)
+            const res = await axios.get(
+                url,
 
+                {
+                    withCredentials: true,
+                },
+            );
+            setIsLoading(false)
+            setGradeMaster(res.data)
+            console.log(res.data)
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
     const [department, setDepartment] = useState<any>();
 
     async function getDepartment() {
@@ -138,7 +159,7 @@ function EditMasterKaryawanIsi() {
                     id_divisi: idDivisiEdit,
                     id_department: idDepartmentEdit,
                     id_bagian: idDagianEdit,
-                    grade: gradeEdit,
+                    id_grade: gradeEdit,
                     tgl_masuk: tglMasukEdit,
                     tgl_keluar: tglKeluarEdit,
                     tipe_penggajian: tipePenggajianEdit,
@@ -155,6 +176,7 @@ function EditMasterKaryawanIsi() {
                     withCredentials: true,
                 },
             );
+            console.log(res.data)
             setIsLoading(false)
             alert('Data Berhasil Diubah')
         } catch (error: any) {
@@ -341,13 +363,67 @@ function EditMasterKaryawanIsi() {
                                     </div>
                                 </div>
                                 <div className='flex flex-col gap-1 w-[40%]'>
-                                    <label className=' text-sm font-semibold'>
-                                        Grade<span className='text-red-600'>*</span>
-                                    </label>
-                                    <input
-                                        defaultValue={karyawan?.data?.biodata_karyawan[0]?.grade}
-                                        onChange={(e) => setgradeEdit(e.target.value)}
-                                        type='text' className='border-stroke border-2 rounded-md w-[40%]' />
+                                    <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
+                                        <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                            <svg
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 20 20"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+
+                                            </svg>
+                                        </span>
+
+                                        <label className=' text-sm font-semibold'>
+                                            Grade<span className='text-red-600'>*</span>
+                                        </label>
+                                        <select
+                                            defaultValue={karyawan?.data?.biodata_karyawan[0]?.grade?.kategori}
+
+                                            name='grade'
+                                            onChange={(e) => setgradeEdit(e.target.value)}
+                                            className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
+                                    }`}
+                                        >
+                                            <option disabled className="text-[#646464] text-xs dark:text-bodydark">
+                                                Pilib Grade
+                                            </option>
+                                            {gradeMaster?.data?.map((data: any, i: number) => {
+
+                                                return (
+                                                    <option
+                                                        value={data.id}
+                                                        className="text-gray-800 text-xs font-light dark:text-bodydark"
+                                                    >
+                                                        {data.kategori}
+                                                    </option>
+                                                )
+                                            }
+                                            )}
+
+                                        </select>
+                                        <span className="absolute top-10 right-4 z-10 -translate-y-1/2">
+                                            <svg
+                                                width="24"
+                                                height="24"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <g opacity="0.8">
+                                                    <path
+                                                        fillRule="evenodd"
+                                                        clipRule="evenodd"
+                                                        d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                                        fill="#637381"
+                                                    ></path>
+                                                </g>
+                                            </svg>
+                                        </span>
+
+                                    </div>
                                 </div>
                             </div>
 
@@ -948,7 +1024,7 @@ function EditMasterKaryawanIsi() {
                     </button>
                 </div>
             </div>
-        </main>
+        </main >
     )
 }
 

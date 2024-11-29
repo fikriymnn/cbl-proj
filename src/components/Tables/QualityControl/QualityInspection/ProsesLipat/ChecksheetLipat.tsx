@@ -343,9 +343,9 @@ function ChecksheetLipat() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   Mesin
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                {/* <label className="text-neutral-500 text-sm font-semibold">
                   QTY
-                </label>
+                </label> */}
               </div>
               <div className="grid grid-rows-6  gap-1 col-span-2 justify-between px-2 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
@@ -360,7 +360,7 @@ function ChecksheetLipat() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {incoming?.mesin}
                 </label>
-                {
+                {/* {
                   incoming?.status == 'incoming' ? (
                     <>
                       <input
@@ -374,7 +374,7 @@ function ChecksheetLipat() {
                     </>
                   ) : (
                     <>:{incoming?.qty}</>
-                  )}
+                  )} */}
               </div>
 
             </div>

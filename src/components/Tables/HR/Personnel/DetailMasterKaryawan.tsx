@@ -269,7 +269,11 @@ export default function DetailMasterKaryawanIsi() {
                                         <label htmlFor="" className='text-black text-sm font-semibold'>Status Pajak</label>
                                         <label htmlFor="" className='text-[#636363] text-xl font-normal '>{karyawan?.data?.biodata_karyawan[0]?.status_pajak}</label>
                                     </div>
+                                    <div className='flex flex-col gap-1'>
 
+                                        <label htmlFor="" className='text-black text-sm font-semibold'>Grade</label>
+                                        <label htmlFor="" className='text-[#636363] text-xl font-normal '>{karyawan?.data?.biodata_karyawan[0]?.grade?.kategori}</label>
+                                    </div>
                                     {/* <div className='flex flex-col gap-1'>
 
                                         <label htmlFor="" className='text-black text-sm font-semibold'>Masa Kerja</label>
