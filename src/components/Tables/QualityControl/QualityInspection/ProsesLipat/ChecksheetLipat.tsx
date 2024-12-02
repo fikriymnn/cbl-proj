@@ -5,6 +5,9 @@ import convertTimeStampToDateTime from '../../../../../utils/converDateTime';
 import Loading from '../../../../Loading';
 import { useReactToPrint } from "react-to-print";
 import printIcon from "../../../../../images/icon/print.svg";
+import convertDateToTime from '../../../../../utils/converDateToTime';
+import convertTimeStampToDate from '../../../../../utils/convertDate';
+import formatInteger from '../../../../../utils/formaterInteger';
 
 function ChecksheetLipat() {
 
@@ -314,7 +317,7 @@ function ChecksheetLipat() {
               </div>
               <div className="grid grid-rows-6 gap-1 col-span-2 px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {incoming?.tanggal}
+                  : {convertTimeStampToDate(incoming?.createdAt)}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {incoming?.no_jo}
@@ -343,13 +346,13 @@ function ChecksheetLipat() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   Mesin
                 </label>
-                {/* <label className="text-neutral-500 text-sm font-semibold">
+                <label className="text-neutral-500 text-sm font-semibold">
                   QTY
-                </label> */}
+                </label>
               </div>
               <div className="grid grid-rows-6  gap-1 col-span-2 justify-between px-2 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {incoming?.jam}
+                  : {convertDateToTime(incoming?.createdAt)}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {incoming?.shift}
@@ -359,6 +362,9 @@ function ChecksheetLipat() {
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {incoming?.mesin}
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  : {(incoming?.qty_jo == null) ? '-' : formatInteger(incoming?.qty_jo)}
                 </label>
                 {/* {
                   incoming?.status == 'incoming' ? (
@@ -505,7 +511,7 @@ function ChecksheetLipat() {
                             (
                               <>
                                 <label className="text-neutral-500 text-sm font-semibold">
-                                  {dataPoint.qty}
+                                  {formatInteger(dataPoint.qty)}
                                 </label>
                               </>
                             )

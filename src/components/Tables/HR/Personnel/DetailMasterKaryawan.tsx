@@ -13,6 +13,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import Loading from '../../../Loading';
 import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
+import formatInteger from '../../../../utils/formaterInteger';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -127,7 +128,7 @@ export default function DetailMasterKaryawanIsi() {
     return (
         <>
             {isLoading && <Loading />}
-            <div className="min-w-[700px] bg-white rounded-xl">
+            <div className=" bg-white rounded-xl">
                 <div className=" w-full h-full flex gap-3 flex-col border-b-8 border-[#D8EAFF] px-6 py-[2%] justify-between">
                     <div className='flex flex-col gap-1'>
                         <label htmlFor="" className='text-black text-sm font-semibold'>Nama Karyawan</label>
@@ -272,7 +273,7 @@ export default function DetailMasterKaryawanIsi() {
                                     <div className='flex flex-col gap-1'>
 
                                         <label htmlFor="" className='text-black text-sm font-semibold'>Grade</label>
-                                        <label htmlFor="" className='text-[#636363] text-xl font-normal '>{karyawan?.data?.biodata_karyawan[0]?.grade?.kategori}</label>
+                                        <label htmlFor="" className='text-[#636363] text-xl font-normal '>{karyawan?.data?.biodata_karyawan[0]?.grade?.kategori == null ? '-' : karyawan?.data?.biodata_karyawan[0]?.grade?.kategori}</label>
                                     </div>
                                     {/* <div className='flex flex-col gap-1'>
 
@@ -286,7 +287,274 @@ export default function DetailMasterKaryawanIsi() {
                 </TabPanel>
 
                 <TabPanel value={value} index={1} dir={theme.direction}>
+                    <DetailTabMasterKaryawan  >
+                        <>
+                            <div className='bg-[#eeeeee] px-6 py-2'>
+                                <label htmlFor="" className='text-blue-400 text-sm font-normal '>OVERVIEW</label>
+                            </div>
+                            <div className='grid grid-cols-2 px-6 py-3 border-b-8 border-[#D8EAFF]'>
+                                <div className='flex flex-col gap-2'>
+                                    <div className='flex flex-col gap-1'>
 
+                                        <label htmlFor="" className='text-black text-sm font-semibold'>IZIN</label>
+                                        <label htmlFor="" className='text-[#636363] text-xl font-normal '>-</label>
+                                    </div>
+                                    <div className='flex flex-col gap-1'>
+
+                                        <label htmlFor="" className='text-black text-sm font-semibold'>SAKIT</label>
+                                        <label htmlFor="" className='text-[#636363] text-xl font-normal '>-</label>
+                                    </div>
+
+                                </div>
+                                <div className='flex flex-col gap-2'>
+                                    <div className='flex flex-col gap-1'>
+
+                                        <label htmlFor="" className='text-black text-sm font-semibold'>CUTI</label>
+                                        <label htmlFor="" className='text-[#636363] text-xl font-normal '>-</label>
+                                    </div>
+                                    <div className='flex flex-col gap-1'>
+
+                                        <label htmlFor="" className='text-black text-sm font-semibold'>CUTI KHUSUS</label>
+                                        <label htmlFor="" className='text-[#636363] text-xl font-normal '>-</label>
+                                    </div>
+                                    <div className='flex flex-col gap-1'>
+
+                                        <label htmlFor="" className='text-black text-sm font-semibold'>SISA CUTI TAHUN INI</label>
+                                        <label htmlFor="" className='text-[#636363] text-xl font-normal '>-</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className='bg-[#eeeeee] px-6 py-2'>
+                                <label htmlFor="" className='text-blue-400 text-sm font-normal '>KETERLAMBATAN</label>
+                            </div>
+                            <div className='grid grid-cols-12 gap-1 px-6 py-2 border-b-4 border-[#D8EAFF]'>
+
+                                <label htmlFor="" className='text-black text-sm font-semibold'>NO</label>
+                                <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>TANGGAL</label>
+                                <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>JAM</label>
+                            </div>
+                            <div className='grid grid-cols-12 gap-1 px-6 py-2'>
+
+                                <label htmlFor="" className='text-stone-500 text-sm font-semibold'>1</label>
+                                <label htmlFor="" className='text-stone-500 text-sm font-semibold col-span-3'>12 - DESEMBER - 2024</label>
+                                <label htmlFor="" className='text-stone-500 text-sm font-semibold col-span-3'>8:20</label>
+                            </div>
+                        </>
+                    </DetailTabMasterKaryawan>
+                </TabPanel>
+
+                <TabPanel value={value} index={2} dir={theme.direction}>
+                    <DetailTabMasterKaryawan  >
+                        <>
+                            <div className='border-b-8 border-[#D8EAFF]'>
+
+                                <div className='bg-[#eeeeee] px-6 py-2'>
+                                    <label htmlFor="" className='text-blue-400 text-sm font-normal '>PROMOSI</label>
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 border-b-4 border-[#D8EAFF]'>
+
+                                    <label htmlFor="" className='text-black text-sm font-semibold'>NO</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>TANGGAL</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>JABATAN ASAL</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>JABATAN BARU</label>
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 '>
+
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold'>1</label>
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold col-span-3'>12 - DESEMBER - 2024</label>
+                                    <label htmlFor="" className='text-red-300 text-sm font-semibold col-span-3'>OPERATOR</label>
+                                    <label htmlFor="" className='text-blue-300 text-sm font-semibold col-span-3'>SENIOR OPERATOR</label>
+                                </div>
+                            </div>
+                            <div className='border-b-8 border-[#D8EAFF]'>
+
+                                <div className='bg-[#eeeeee] px-6 py-2'>
+                                    <label htmlFor="" className='text-blue-400 text-sm font-normal '>DEMOSI</label>
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 border-b-4 border-[#D8EAFF]'>
+
+                                    <label htmlFor="" className='text-black text-sm font-semibold'>NO</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>TANGGAL</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>JABATAN ASAL</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>JABATAN BARU</label>
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 '>
+
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold'>1</label>
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold col-span-3'>12 - DESEMBER - 2024</label>
+                                    <label htmlFor="" className='text-red-300 text-sm font-semibold col-span-3'>OPERATOR</label>
+                                    <label htmlFor="" className='text-blue-300 text-sm font-semibold col-span-3'>SENIOR OPERATOR</label>
+                                </div>
+                            </div>
+                            <div className=''>
+
+                                <div className='bg-[#eeeeee] px-6 py-2'>
+                                    <label htmlFor="" className='text-blue-400 text-sm font-normal '>MUTASI</label>
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 border-b-4 border-[#D8EAFF]'>
+
+                                    <label htmlFor="" className='text-black text-sm font-semibold'>NO</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>TANGGAL</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>JABATAN ASAL</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>JABATAN BARU</label>
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 '>
+
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold'>1</label>
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold col-span-3'>12 - DESEMBER - 2024</label>
+                                    <label htmlFor="" className='text-red-300 text-sm font-semibold col-span-3'>OPERATOR</label>
+                                    <label htmlFor="" className='text-blue-300 text-sm font-semibold col-span-3'>SENIOR OPERATOR</label>
+                                </div>
+                            </div>
+                        </>
+                    </DetailTabMasterKaryawan>
+                </TabPanel>
+                <TabPanel value={value} index={3} dir={theme.direction}>
+                    <DetailTabMasterKaryawan  >
+                        <>
+                            <div className='border-b-8 border-[#D8EAFF]'>
+
+                                <div className='bg-[#eeeeee] px-6 py-2'>
+                                    <label htmlFor="" className='text-blue-400 text-sm font-normal '>UPAH SAAT INI</label>
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 border-b-4 border-[#D8EAFF]'>
+
+                                    <label htmlFor="" className='"text-[#636363] text-xl'>Rp.{(karyawan?.data?.biodata_karyawan[0]?.gaji == null || karyawan?.data?.biodata_karyawan[0]?.gaji == 0) ? '-' : formatInteger(karyawan?.data?.biodata_karyawan[0]?.gaji)}</label>
+
+                                </div>
+
+                            </div>
+                            <div className=''>
+
+                                <div className='bg-[#eeeeee] px-6 py-2'>
+                                    <label htmlFor="" className='text-blue-400 text-sm font-normal '>RIWAYAT</label>
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 border-b-4 border-[#D8EAFF]'>
+
+                                    <label htmlFor="" className='text-black text-sm font-semibold'>NO</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>TANGGAL</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>GAJI</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>TIPE PENGGAJIAN</label>
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 '>
+
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold'>1</label>
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold col-span-3'>12 - DESEMBER - 2024</label>
+                                    <label htmlFor="" className='text-blue-300 text-sm font-semibold col-span-3'>500.000</label>
+                                    <label htmlFor="" className='text-blue-300 text-sm font-semibold col-span-3'>HARIAN</label>
+                                </div>
+                            </div>
+
+                        </>
+                    </DetailTabMasterKaryawan>
+                </TabPanel>
+                <TabPanel value={value} index={4} dir={theme.direction}>
+                    <DetailTabMasterKaryawan  >
+                        <>
+                            <div className='border-b-8 border-[#D8EAFF]'>
+
+                                <div className='bg-[#eeeeee] px-6 py-2'>
+                                    <label htmlFor="" className='text-blue-400 text-sm font-normal '>STATUS MARITAL</label>
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 border-b-4 border-[#D8EAFF]'>
+
+                                    <label htmlFor="" className='text-black text-sm font-semibold'>NO</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>TANGGAL</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>STATUS</label>
+
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 '>
+
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold'>1</label>
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold col-span-3'>12 - DESEMBER - 2024</label>
+
+                                    <label htmlFor="" className='text-blue-300 text-sm font-semibold col-span-3'>SINGLE</label>
+                                </div>
+                            </div>
+                            <div className='border-b-8 border-[#D8EAFF]'>
+
+                                <div className='bg-[#eeeeee] px-6 py-2'>
+                                    <label htmlFor="" className='text-blue-400 text-sm font-normal '>ANAK</label>
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 border-b-4 border-[#D8EAFF]'>
+
+                                    <label htmlFor="" className='text-black text-sm font-semibold'>NO</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>TANGGAL</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>NAMA</label>
+
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 '>
+
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold'>1</label>
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold col-span-3'>12 - DESEMBER - 2024</label>
+                                    <label htmlFor="" className='text-blue-300 text-sm font-semibold col-span-3'>ADUDU</label>
+
+                                </div>
+                            </div>
+                            <div className=''>
+
+                                <div className='bg-[#eeeeee] px-6 py-2'>
+                                    <label htmlFor="" className='text-blue-400 text-sm font-normal '>RIWAYAT PENDIDIKAN</label>
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 border-b-4 border-[#D8EAFF]'>
+
+                                    <label htmlFor="" className='text-black text-sm font-semibold'>NO</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>INSTANSI</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-2'>TAHUN LULUS</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>JURUSAN</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-2'>BERIJAZAH</label>
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 '>
+
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold'>1</label>
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold col-span-3'>SDN MELONG</label>
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold col-span-2'>2004</label>
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold col-span-3'>SEKOLAH DASAR</label>
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold col-span-2'>YA</label>
+                                </div>
+                            </div>
+                        </>
+                    </DetailTabMasterKaryawan>
+                </TabPanel>
+                <TabPanel value={value} index={5} dir={theme.direction}>
+                    <DetailTabMasterKaryawan  >
+                        <>
+                            <div className='border-b-8 border-[#D8EAFF]'>
+
+                                <div className='bg-[#eeeeee] px-6 py-2'>
+                                    <label htmlFor="" className='text-blue-400 text-sm font-normal '>SISA PINJAMAN</label>
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 border-b-4 border-[#D8EAFF]'>
+
+                                    <label htmlFor="" className='"text-[#636363] text-xl'>Rp.{(karyawan?.data?.biodata_karyawan[0]?.limit_pinjaman == null || karyawan?.data?.biodata_karyawan[0]?.limit_pinjaman == 0) ? '-' : formatInteger(karyawan?.data?.biodata_karyawan[0]?.limit_pinjaman)}</label>
+
+                                </div>
+
+                            </div>
+                            <div className=''>
+
+                                <div className='bg-[#eeeeee] px-6 py-2'>
+                                    <label htmlFor="" className='text-blue-400 text-sm font-normal '>RIWAYAT PINJAMAN</label>
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 border-b-4 border-[#D8EAFF]'>
+
+                                    <label htmlFor="" className='text-black text-sm font-semibold'>NO</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>TANGGAL</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>JUMLAH</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-2'>CICILAN</label>
+
+                                </div>
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 '>
+
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold'>1</label>
+                                    <label htmlFor="" className='text-stone-500 text-sm font-semibold col-span-3'>12 - DESEMBER - 2024</label>
+                                    <label htmlFor="" className='text-blue-300 text-sm font-semibold col-span-3'>500.000</label>
+                                    <label htmlFor="" className='text-blue-300 text-sm font-semibold col-span-3'>100.000</label>
+                                </div>
+                            </div>
+
+                        </>
+                    </DetailTabMasterKaryawan>
                 </TabPanel>
             </Box>
         </>

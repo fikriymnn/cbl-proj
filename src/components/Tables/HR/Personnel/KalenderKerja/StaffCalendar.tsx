@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Calendar,
     momentLocalizer,
@@ -55,20 +55,33 @@ const CustomToolbar: React.FC<ToolbarProps> = ({
     );
 };
 
-const StaffCalendar = ({ data }: { data: any }) => {
-    // Example array of events with color property
+const StaffCalendar = ({ data, data2 }: { data: any, data2: any }) => {
+    const [events, setEvents] = useState([]);
 
+    useEffect(() => {
+        const processedData: any = [];
 
+        if (data?.data?.length > 0) {
+            processedData?.push(...data.data.map((item: any) => ({
+                start: parseDate(item.tanggal, false),
+                end: parseDate(item.tanggal, true),
+                title: item.nama_jadwal,
+                color: "red",
+            })));
+        }
 
-    const events = [
-        ...data?.map((data: any, index: number) => ({
-            start: parseDate(data.holiday_date, true),
-            end: parseDate(data.holiday_date, true),
-            title: data.holiday_name,
-            color: "red",
-        })),
+        if (data2?.data?.length > 0) {
+            processedData?.push(...data2.data.map((item: any) => ({
+                start: parseDate(item.tanggal, false),
+                end: parseDate(item.tanggal, true),
+                title: item.nama_jadwal,
+                color: "blue",
+            })));
+        }
 
-    ];
+        setEvents(processedData);
+    }, [data, data2]);
+
 
     // Function to set custom styles for each event
     const eventPropGetter = (event: CalendarEvent) => ({
@@ -86,7 +99,7 @@ const StaffCalendar = ({ data }: { data: any }) => {
 
             <Calendar
                 localizer={localizer}
-                events={events}
+                events={events || []}
                 startAccessor="start"
                 endAccessor="end"
                 style={{ height: 500 }}
