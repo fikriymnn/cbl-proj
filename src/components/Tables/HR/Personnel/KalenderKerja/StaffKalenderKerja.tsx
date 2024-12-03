@@ -50,7 +50,7 @@ function StaffKalenderKerja() {
         const url2 = `${import.meta.env.VITE_API_LINK
             }/hr/jadwalKaryawan?jenis_karyawan=produksi`;
         try {
-            setIsLoading(true)
+
             const res = await axios.get(
                 url,
                 {
@@ -80,32 +80,83 @@ function StaffKalenderKerja() {
     const [jenisKaryawan, setJenisKaryawan] = useState<any>();
 
     async function postSabtuMinggu() {
-        const url = `${import.meta.env.VITE_API_LINK
-            }/hr/jadwalKaryawanSatuTahun`;
-        try {
-            setIsLoading(true)
-            const res = await axios.post(
-                url,
-                {
-                    tahun: tahun,
-                    hari: hari,
-                    jenis_karyawan: jenisKaryawan
-                },
-                {
-                    withCredentials: true,
-                },
 
-            );
-            setIsLoading(false)
-            window.location.reload();
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
+        if (window.confirm(`Apakah Anda yakin akan menambah hari libur 1 tahun di ${tahun} dengan hari ${hari} dengan jenis karyawan ${jenisKaryawan}`)) {
+            const url = `${import.meta.env.VITE_API_LINK
+                }/hr/jadwalKaryawanSatuTahun`;
+            try {
+                setIsLoading(true)
+                const res = await axios.post(
+                    url,
+                    {
+                        tahun: tahun,
+                        hari: hari,
+                        jenis_karyawan: jenisKaryawan
+                    },
+                    {
+                        withCredentials: true,
+                    },
+
+                );
+                setIsLoading(false)
+                window.location.reload();
+            } catch (error: any) {
+                setIsLoading(false)
+                console.log(error);
+            }
         }
     }
+
+    const [tgl, setTgl] = useState<any>();
+    const [namaJadwal, setNamaJadwal] = useState<any>();
+    const [produksi, setProduksi] = useState<any>(false);
+    const [staff, setStaff] = useState<any>(false);
+
+    async function postSatuHari() {
+
+        if (window.confirm(`Apakah Anda yakin akan menambah hari libur Pada tanggal ${tgl} dengan nama ${namaJadwal}`)) {
+            const url = `${import.meta.env.VITE_API_LINK
+                }/hr/jadwalKaryawan`;
+            try {
+                setIsLoading(true)
+                const res = await axios.post(
+                    url,
+                    {
+                        tanggal: tgl,
+                        nama_jadwal: namaJadwal,
+                        produksi: produksi,
+                        staff: staff
+                    },
+                    {
+                        withCredentials: true,
+                    },
+
+                );
+                setIsLoading(false)
+                window.location.reload();
+            } catch (error: any) {
+                setIsLoading(false)
+                console.log(error);
+            }
+        }
+    }
+    const handleCheckboxChangeP = (event: any) => {
+        const { name, checked } = event.target;
+        if (name === 'produksi') {
+            setProduksi(checked);
+        } else if (name === 'staff') {
+            setStaff(checked);
+        }
+
+    };
+
     const [showHistory, setShowHistory] = useState(false);
     const openModalHistory = () => setShowHistory(true);
     const closeModalHistory = () => setShowHistory(false);
+
+    const [showHistory2, setShowHistory2] = useState(false);
+    const openModalHistory2 = () => setShowHistory2(true);
+    const closeModalHistory2 = () => setShowHistory2(false);
 
     const handleCheckboxChange = (e: any) => {
         if (!e) return;
@@ -118,16 +169,17 @@ function StaffKalenderKerja() {
                 return prevHari.filter((item: any) => item !== value); // Remove value if unchecked
             }
         });
+        console.log(hari)
     };
     return (
         <>
             <main>
                 {isLoading && <Loading />}
                 <div className="bg-white w-full mb-5 rounded-md p-3 flex flex-col justify-center items-center gap-3">
-                    <div className='flex w-full justify-end'>
+                    <div className='flex  gap-1 w-full justify-end items-end'>
                         <button
                             onClick={() => openModalHistory()}
-                            className='bg-primary text-white font-semibold text-md px-4 py-1 rounded-md'>
+                            className='bg-primary w-[20%] text-white font-semibold text-md px-4 py-1 rounded-md'>
                             Tambah Libur 1 Tahun
                         </button>
                         {showHistory == true && (
@@ -275,6 +327,75 @@ function StaffKalenderKerja() {
                                                     </button>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </>
+                                </ModalKosonganSmall>
+                            </>
+                        )}
+                        <button
+                            onClick={() => openModalHistory2()}
+                            className='bg-primary w-[20%] text-white font-semibold text-md px-4 py-1 rounded-md'>
+                            Tambah Libur 1 Hari
+                        </button>
+                        {showHistory2 == true && (
+                            <>
+                                <ModalKosonganSmall
+                                    isOpen={showHistory2}
+                                    onClose={() => closeModalHistory2()}
+                                    judul={'Tambah Libur 1 Hari'}
+                                >
+                                    <>
+                                        <div className='flex flex-col px-4 py-2'>
+                                            <label className="text-black text-sm font-bold">
+                                                Tanggal
+                                            </label>
+                                            <input
+                                                type="date"
+                                                id="tgl"
+                                                name="tgl"
+                                                onChange={(e) => setTgl(e.target.value)}
+                                                className=" w-full h-7 border-2 border-stroke rounded-md"
+                                            />
+
+
+                                            <label className="text-black text-sm font-bold  pt-2">
+                                                Nama Jadwal
+                                            </label>
+                                            <input
+                                                type="text"
+                                                id="namaJadwal"
+                                                name="namaJadwal"
+                                                onChange={(e) => setNamaJadwal(e.target.value)}
+                                                className=" w-full h-7 border-2 border-stroke rounded-md"
+                                            />
+                                            <label className="text-black text-sm font-bold pt-2">
+                                                Produksi:
+                                                <input
+                                                    type="checkbox"
+                                                    id="produksi"
+                                                    name="produksi"
+                                                    checked={produksi}
+                                                    onChange={handleCheckboxChangeP}
+                                                />
+                                            </label>
+                                            <label className="text-black text-sm font-bold">
+                                                Staff:
+                                                <input
+                                                    type="checkbox"
+                                                    id="staff"
+                                                    name="staff"
+                                                    checked={staff}
+                                                    onChange={handleCheckboxChangeP}
+                                                />
+                                            </label>
+
+                                            <button
+                                                disabled={isLoading}
+                                                onClick={() => postSatuHari()}
+                                                className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
+                                            >
+                                                SIMPAN
+                                            </button>
                                         </div>
                                     </>
                                 </ModalKosonganSmall>

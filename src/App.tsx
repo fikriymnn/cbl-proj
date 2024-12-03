@@ -1696,7 +1696,7 @@ function App() {
           path="/hr/pengajuan/spl"
           element={
             <>
-              <InputKeSpl />
+              < InputKeSpl />
             </>
           }
         />

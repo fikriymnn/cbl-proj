@@ -1,7 +1,6 @@
 import React from 'react'
 import DefaultLayout from '../../../layout/DefaultLayout'
-import AddMasterKaryawanIsi from '../../../components/Tables/HR/Personnel/AddMasterKaryawanIsi'
-import TabInputSpl from '../../../components/Tables/HR/Pengajuan/InputSPL/TabInputSpl'
+import TabSPLKeHR from '../../../components/Tables/HR/PengajuanKeHR/BuatSPLKeHR/TabSPLKeHR'
 
 
 function InputKeSpl() {
@@ -9,7 +8,7 @@ function InputKeSpl() {
         <DefaultLayout>
             <>
                 <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>PENGAJUAN KE HR  &gt; Lembur</p>
-                <TabInputSpl />
+                <TabSPLKeHR />
             </>
         </DefaultLayout>
     )
