@@ -260,8 +260,9 @@ function TableAbsensi() {
                                     <>
                                         <div className={`grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center px-10 min-h-10  
                                             ${data.status_absen == 'cuti khusus' ? 'bg-orange-200' : ''} 
-                                              ${data.status_absen == 'sakit' ? 'bg-red-200' : ''}
+                                               ${data.status_absen == 'sakit' ? 'bg-green-200' : ''}
                                                ${data.status_absen == 'izin' ? 'bg-blue-200' : ''}
+                                               ${data.status_absen == 'Belum Masuk' ? 'bg-red-300' : ''}
                                                   ${data.status_absen == 'cuti tahunan' ? 'bg-yellow-200' : ''}
                                             `}>
                                             <div className='flex gap-1 col-span-2 '>

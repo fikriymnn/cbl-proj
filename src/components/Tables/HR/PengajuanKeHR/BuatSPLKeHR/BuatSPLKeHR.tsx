@@ -12,6 +12,8 @@ function BuatSPLKeHR() {
     const [userList, setUserList] = useState<any>();
     const [joList, setJoList] = useState<any>();
     const [idKaryawan, setIdKaryawan] = useState<any>();
+    const [error, setError] = useState<string>('');
+    const [isCheck, setIsCheck] = useState<boolean>(false);
 
     useEffect(() => {
         getMe()
@@ -87,7 +89,8 @@ function BuatSPLKeHR() {
             console.log(error);
         }
     }
-
+    const [tglDari, setTglDari] = useState<any>();
+    const [tglSampai, setTglSampai] = useState<any>();
     const [sisaCuti, setSisaCuti] = useState<any>();
 
     const handleChangePointDepatment = (selected: any) => {
@@ -113,7 +116,90 @@ function BuatSPLKeHR() {
         setjoReal(filteredData?.e_no_jo)
 
     };
+    const [hourDifference, setHourDifference] = useState<number>();
 
+    const handleDariChange = (e: any) => {
+        setTglDari(e);
+
+    };
+
+    const handleSampaiChange = (e: any) => {
+        setTglSampai(e);
+
+    };
+
+    const handleCheckChange = (e: any) => {
+        setIsCheck(e);
+
+    };
+    const calculateHourDifference = (dari: any, sampai: any) => {
+        if (!tglDari || !tglSampai) {
+            setHourDifference(0);
+            setError('Please fill in both date fields.');
+            return;
+        }
+        const dariDate = new Date(dari);
+        const sampaiDate = new Date(sampai);
+
+
+        setError('');
+        const timeDiffMs = sampaiDate.getTime() - dariDate.getTime();
+        let hourDiff = timeDiffMs / (1000 * 60 * 60);
+
+
+        if (hourDiff < 0) {
+            hourDiff = 0;
+        }
+
+        if (isCheck) {
+            hourDiff -= 0.5; // Subtract 30 minutes (0.5 hours)
+        }
+
+        setHourDifference(Math.abs(hourDiff));
+
+        return Math.abs(hourDiff)
+    };
+
+    const [alasanLembur, setAlasanLembur] = useState<any>();
+    const [targetLembur, setTargetLembur] = useState<any>();
+    const [tipeLembur, setTipeLembur] = useState<any>();
+    const [jumlahMakan, setJumlahMakan] = useState<any>();
+
+    async function postSPL(bedaJam: any) {
+        setIsLoading(true)
+        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanLembur`;
+        try {
+
+            const hitung = calculateHourDifference(tglDari, tglSampai);
+            console.log(hitung)
+            console.log(tglDari, tglSampai)
+            const res = await axios.post(url,
+                {
+                    id_karyawan: idKaryawan,
+                    id_pengaju: idPengaju,
+                    dari: tglDari,
+                    sampai: tglSampai,
+                    jo_lembur: joReal,
+                    lama_lembur: hitung,
+                    alasan_lembur: alasanLembur,
+                    target_lembur: targetLembur,
+                    isIstirahat: isCheck,
+                    tipe_lembur: tipeLembur,
+                    jumlah_makan: jumlahMakan,
+                },
+                {
+
+                    withCredentials: true,
+                });
+            setIsLoading(false)
+            console.log(res)
+            window.location.reload();
+
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
 
     return (
 
@@ -166,7 +252,7 @@ function BuatSPLKeHR() {
                                 <input
                                     className='rounded-md bg-[#D8EAFF] px-2'
                                     type="datetime-local"
-                                //onChange={(e) => setDateFrom4(e.target.value)}
+                                    onChange={(e) => handleDariChange(e.target.value)}
 
                                 ></input>
 
@@ -179,18 +265,25 @@ function BuatSPLKeHR() {
                                     className='rounded-md bg-[#D8EAFF] px-2'
                                     type="datetime-local"
 
-                                //onChange={(e) => setDateFrom4(e.target.value)}
+                                    onChange={(e) => {
+                                        handleSampaiChange(e.target.value)
+
+                                    }}
                                 ></input>
 
                             </div>
                         </div>
+                        <label className="text-red-400 text-xs font-semibold pl-1">
+                            {error}
+                        </label>
+
                         <div className='grid grid-cols-2'>
                             <div className='flex  gap-1'>
                                 <label className="text-black text-sm font-bold pl-1">
                                     Dengan Istirahat?
                                 </label>
                                 <input
-
+                                    onChange={(e) => handleCheckChange(e.target.checked)}
                                     type="checkbox"
                                     className=" h-6 w-6 border-2 border-stroke rounded-md"
                                 />
@@ -200,6 +293,7 @@ function BuatSPLKeHR() {
                                     Jumlah Makan
                                 </label>
                                 <input
+                                    onChange={(e) => setJumlahMakan(e.target.value)}
                                     type="number"
                                     className=" h-6 w-full border-2 border-stroke rounded-md"
                                 />
@@ -216,11 +310,12 @@ function BuatSPLKeHR() {
                             </div>
                             <div className='flex flex-col gap-3 px-2 py-1 col-span-2'>
                                 <input
-
+                                    onChange={(e) => setTargetLembur(e.target.value)}
                                     type="text"
                                     className=" h-8 w-full border-2 border-stroke rounded-md col-span-2"
                                 />
                                 <select
+                                    onChange={(e) => setTipeLembur(e.target.value)}
                                     className='`text-neutral-500  text-sm font-semibold relative z-20 w-full h-8  appearance-none rounded-md border-2 border-stroke  bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input'
 
                                 >
@@ -240,15 +335,29 @@ function BuatSPLKeHR() {
                         </label>
                         <div className="flex w-full h-full">
                             <textarea
-                                name="alasan_cuti"
-
-
-
+                                name="alasan_lembur"
+                                onChange={(e) => setAlasanLembur(e.target.value)}
                                 className=" peer h-full min-h-[100px] w-full resize-none border-2 border-stroke rounded-md px-2"
                             />
                         </div>
 
                     </div>
+                </div>
+                <div className='flex w-full justify-end items-end px-7 py-4'>
+                    {!(error) ? (
+                        <>
+                            <button
+                                onClick={() => {
+
+                                    postSPL(hourDifference)
+                                }}
+                                disabled={isLoading}
+                                className='flex px-4 py-1 justify-center items-center bg-blue-600 text-white font-semibold rounded-md'
+                            >
+                                AJUKAN
+                            </button>
+                        </>
+                    ) : null}
 
                 </div>
 

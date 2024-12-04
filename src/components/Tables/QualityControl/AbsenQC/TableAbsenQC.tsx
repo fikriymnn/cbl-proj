@@ -34,9 +34,9 @@ function TableAbsensiQC() {
     const [idDepart, setIdDepart] = useState<any>();
     useEffect(() => {
         const today = new Date();
-        getabsen(today, today);
         getDepartment()
         getMe()
+
     }, []);
 
     async function getMe() {
@@ -48,7 +48,7 @@ function TableAbsensiQC() {
 
 
             setIdDepart(res.data.karyawan.biodata_karyawan[0].id_department)
-
+            getabsen(today, today, res.data.karyawan.biodata_karyawan[0].id_department);
             console.log('me', res.data.karyawan.biodata_karyawan[0].id_department)
         } catch (error: any) {
             console.log(error.data.msg);
@@ -77,7 +77,7 @@ function TableAbsensiQC() {
     const [dateFrom, setDateFrom] = useState<any>();
     const [dateTo, setDateTo] = useState<any>();
 
-    async function getabsen(dateFrom1: any, dateTo1: any) {
+    async function getabsen(dateFrom1: any, dateTo1: any, idDep: any) {
         const url = `${import.meta.env.VITE_API_LINK}/hr/absensi`;
         try {
             setIsLoading(true)
@@ -86,7 +86,7 @@ function TableAbsensiQC() {
 
                     startDate: dateFrom1,
                     endDate: dateTo1,
-                    idDepartment: idDepart
+                    idDepartment: idDep
                 },
                 withCredentials: true,
             });
@@ -149,7 +149,7 @@ function TableAbsensiQC() {
                             <div className="flex justify-center my-5">
                                 <button
                                     onClick={() => {
-                                        getabsen(dateFrom, dateTo)
+                                        getabsen(dateFrom, dateTo, idDepart)
                                     }}
                                     className="bg-primary text-white px-5 py-2 rounded-md my-auto "
                                 >
@@ -160,7 +160,7 @@ function TableAbsensiQC() {
                                 <button
                                     onClick={() => {
 
-                                        getabsen(today, today)
+                                        getabsen(today, today, idDepart)
 
                                     }}
                                     className="bg-primary text-white px-5 py-2 rounded-md my-auto "
@@ -210,8 +210,9 @@ function TableAbsensiQC() {
                                     <>
                                         <div className={`grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center px-10 min-h-10  
                                             ${data.status_absen == 'cuti khusus' ? 'bg-orange-200' : ''} 
-                                              ${data.status_absen == 'sakit' ? 'bg-red-200' : ''}
+                                              ${data.status_absen == 'sakit' ? 'bg-green-200' : ''}
                                                ${data.status_absen == 'izin' ? 'bg-blue-200' : ''}
+                                               ${data.status_absen == 'Belum Masuk' ? 'bg-red-300' : ''}
                                                   ${data.status_absen == 'cuti tahunan' ? 'bg-yellow-200' : ''}
                                             `}>
                                             <div className='flex gap-1 col-span-2 '>
