@@ -16,6 +16,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import ModalKosongan from '../components/Modals/Qc/NCR/NCRResponQC';
 
 type User = {
   id: number;
@@ -98,7 +99,28 @@ const dummyData: User[] = [
     hour: '19:00',
   },
 ];
+const mesin = [
+  {
+    id: 1,
+    name: 'R700',
 
+  },
+  {
+    id: 2,
+    name: 'SM',
+
+  },
+  {
+    id: 3,
+    name: 'HOCK',
+
+  },
+  {
+    id: 4,
+    name: 'MANUAL',
+
+  },
+]
 const Cobain = () => {
   const [userList, setUserList] = useState<User[]>(dummyData);
 
@@ -145,24 +167,75 @@ const Cobain = () => {
     }
 
   }
+  const [showModal1, setShowModal1] = useState<any>([]);
+  const openModal1 = (i: any) => {
+    const onchangeVal: any = [...showModal1];
+
+    onchangeVal[i] = true;
+
+    setShowModal1(onchangeVal);
+  };
+  const closeModal1 = (i: any) => {
+    const onchangeVal: any = [...showModal1];
+    onchangeVal[i] = false;
+
+    setShowModal1(onchangeVal);
+  };
 
   return (
-    <div className="max-w-2xl mx-auto grid gap-2 my-10">
-      <h2 className="text-2xl font-bold mb-4">User List</h2>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-        modifiers={[restrictToVerticalAxis]}
-      >
-        <SortableContext items={userList}
-          strategy={verticalListSortingStrategy}>
-          {userList.map((user) => (
-            <UserItem key={user.id} user={user} />
-          ))}
-        </SortableContext>
-      </DndContext>
-    </div>
+    <div className="max-w-screen ">
+      <h2 className="text-2xl font-bold mb-4"> List Mesin</h2>
+      {mesin.map((data: any, i: number) => (
+        <>
+          <div className='flex w-full '>
+            <button
+              onClick={() => openModal1(i)}
+              className='bg-blue-600 min-w-40 text-white border-2 border-stroke font-semibold text-xl'>
+              {data.name}
+            </button >
+            {
+              showModal1[i] == true && (
+                <>
+                  <ModalKosongan
+
+                    isOpen={showModal1[i]}
+                    onClose={() => closeModal1(i)}
+                    judul={'D&D'} >
+                    <>
+                      <div className='flex flex-col gap-2 py-5 min-h-screen overflow-y-scroll'>
+                        <div
+                          className='bg-blue-200 h-full px-3 py-2 rounded shadow-md grid grid-cols-12 w-full'
+                        >
+                          <p className='text-md font-semibold'>JAM</p>
+                          <p className='text-md font-semibold col-span-3'>NO. JO</p>
+                          <p className='text-md font-semibold col-span-4'>CUSTOMER</p>
+                        </div>
+                        <DndContext
+                          sensors={sensors}
+                          collisionDetection={closestCenter}
+                          onDragEnd={handleDragEnd}
+                          modifiers={[restrictToVerticalAxis]}
+                        >
+                          <SortableContext items={userList}
+                            strategy={verticalListSortingStrategy}>
+                            {userList.map((user) => (
+                              <UserItem key={user.id} user={user} />
+                            ))}
+                          </SortableContext>
+                        </DndContext>
+                      </div>
+                    </>
+                  </ModalKosongan>
+                </>
+              )
+            }
+          </div >
+
+        </>
+      )
+      )}
+
+    </div >
   );
 };
 export default Cobain;

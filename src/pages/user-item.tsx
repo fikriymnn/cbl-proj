@@ -26,13 +26,11 @@ const UserItem: FC<UserItemProps> = (props) => {
             style={style}
             {...attributes}
             {...listeners}
-            className='bg-blue-200 p-4 rounded shadow-md flex justify-between'
+            className='bg-blue-100 h-full px-3 py-2 rounded shadow-md grid grid-cols-12 w-full'
         >
-            <div>
-                <h3 className='text-lg font-semibold'>{name}</h3>
-                <p className='text-gray-600'>{email}</p>
-                <p className='text-gray-600'>{hour}</p>
-            </div>
+            <p className='text-sm text-stone-4  00 font-semibold'>{hour}</p>
+            <p className='text-sm text-stone-4  00 font-semibold col-span-3'>{name}</p>
+            <p className='text-sm text-stone-4  00 font-semibold col-span-4'>{email}</p>
             {/* <button {...attributes} {...listeners} className='cursor-move'>
         Drag
       </button> */}
