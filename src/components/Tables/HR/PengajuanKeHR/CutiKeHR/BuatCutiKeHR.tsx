@@ -91,7 +91,7 @@ function BuatCutiKeHR() {
 
 
     const [idKaryawan, setIdKaryawan] = useState<any>();
-    const [tipeCuti, setTipeCuti] = useState<any>();
+    const [tipeCuti, setTipeCuti] = useState<any>(null);
     const [tglDari, setTglDari] = useState<any>();
     const [tglSampai, setTglSampai] = useState<any>();
     const [alasanCuti, setAlasanCuti] = useState<any>();

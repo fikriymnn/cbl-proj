@@ -209,19 +209,6 @@ function EditMasterKaryawanIsi() {
                                     defaultValue={karyawan?.data?.biodata_karyawan[0]?.nik}
                                     onChange={(e) => setnikEdit(e.target.value)}
                                     type='text' className='border-stroke border-2 rounded-md w-[40%]' />
-                                <div className='flex gap-1'>
-                                    <input
-
-                                        onChange={(e) => setjenisKelaminEdit(e.target.value)}
-                                        type='radio' name='kelamin' id='kelamin1' value={'Laki-Laki'} />Laki-Laki
-                                </div>
-
-                                <div className='flex gap-1'>
-                                    <input
-
-                                        onChange={(e) => setjenisKelaminEdit(e.target.value)}
-                                        type='radio' name='kelamin' id='kelamin2' value={'Perempuan'} />Perempuan
-                                </div>
 
                             </div>
                             <div className='flex flex-col gap-1'>

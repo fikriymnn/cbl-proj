@@ -46,29 +46,30 @@ const TableValidasi = () => {
   const [note, setNote] = useState<any>('');
   const [action, setAction] = useState(false);
 
+  const [showDetail, setShowDetail] = useState<boolean[]>(
+    new Array(ticketValidasi != null && ticketValidasi.length).fill(false)
+  );
+
   const handleClickDetail = (index: number) => {
     setShowDetail((prevState) => {
-      const updatedShowDetail = [...prevState]; // Create a copy
+      const updatedShowDetail = [...prevState];
       updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
       return updatedShowDetail;
     });
   };
-  const [showDetail, setShowDetail] = useState<boolean[]>(
-    new Array(ticketValidasi != null && ticketValidasi.length).fill(false),
-  );
 
   useEffect(() => {
     getMTC();
-  }, [page]);
+  }, []);
 
   async function getMTC() {
-    const url = `${import.meta.env.VITE_API_LINK}/ticket?bagian_tiket=qc`;
+    const url = `${import.meta.env.VITE_API_LINK}/validasiQc`;
     try {
       const res = await axios.get(url, {
-        params: {
-          page: page,
-          limit: 10,
-        },
+        // params: {
+        //   page: page,
+        //   limit: 10,
+        // },
         withCredentials: true,
       });
 
@@ -94,7 +95,10 @@ const TableValidasi = () => {
       );
 
       alert('success');
-
+      setShowDetail((prevDetail) =>
+        prevDetail.map((isOpen, idx) => (idx === id ? false : isOpen))
+      );
+      setNote('');
       getMTC();
     } catch (error: any) {
       console.log(error.response);
@@ -115,7 +119,58 @@ const TableValidasi = () => {
       );
 
       alert('success');
+      setShowDetail((prevDetail) =>
+        prevDetail.map((isOpen, idx) => (idx === id ? false : isOpen))
+      );
+      setNote('');
+      getMTC();
+    } catch (error: any) {
+      console.log(error.response);
+    }
+  }
 
+  async function validasiTicketAll(id: number) {
+    const url = `${import.meta.env.VITE_API_LINK}/kendalaLkh/validate/${id}`;
+    try {
+      const res = await axios.put(
+        url,
+        {
+          note_qc: note,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      alert('success');
+      setShowDetail((prevDetail) =>
+        prevDetail.map((isOpen, idx) => (idx === id ? false : isOpen))
+      );
+      setNote('');
+      getMTC();
+    } catch (error: any) {
+      console.log(error.response);
+    }
+  }
+
+  async function tolakTicketAll(id: number) {
+    const url = `${import.meta.env.VITE_API_LINK}/kendalaLkh/reject/${id}`;
+    try {
+      const res = await axios.put(
+        url,
+        {
+          note_qc: note,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      alert('success');
+      setShowDetail((prevDetail) =>
+        prevDetail.map((isOpen, idx) => (idx === id ? false : isOpen))
+      );
+      setNote('');
       getMTC();
     } catch (error: any) {
       console.log(error.response);
@@ -180,11 +235,12 @@ const TableValidasi = () => {
                 </div>
                 <div className="flex w-full  justify-start col-span-3">
                   <p className="text-neutral-500 text-sm font-light ">
-                    {data.kode_lkh + ' - ' + data.nama_kendala}
+                    {data.kode_lkh + ' - ' + data.nama_kendala + ' - ' + data.jenis_kendala}
                   </p>
                 </div>
 
                 <div>
+
                   <button
                     onClick={() => handleClickDetail(index)}
                     className="w-20 bg-blue-600 text-white text-sm py-1"
@@ -196,10 +252,17 @@ const TableValidasi = () => {
                   <>
                     <div className="fixed z-50 inset-0 overflow-y-auto w-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
                       <div className="flex flex-col gap-1 justify-center w-4/12 bg-white p-3 rounded-xl">
+                        <label
+                          htmlFor="namaPemeriksa"
+                          className="form-label block  text-black text-xs font-bold my-2 uppercase"
+                        >
+                          KENDALA {data.jenis_kendala}
+                        </label>
                         <div className="w-full flex justify-between">
+
                           <label
                             htmlFor="namaPemeriksa"
-                            className="form-label block  text-black text-xs font-extrabold my-2 "
+                            className="form-label block  text-black text-xs font-bold my-2 "
                           >
                             CATATAN
                           </label>
@@ -239,25 +302,50 @@ const TableValidasi = () => {
                             </svg>
                           </button>
                         </div>
-                        <textarea
-                          onChange={(e) => setNote(e.target.value)}
-                          className="w-full border border-neutral-600 h-56 p-2 rounded-sm"
-                          name=""
-                          id=""
-                        ></textarea>
+                        {data.jenis_kendala == 'mesin' ?
+                          <>
+                            <textarea
+                              onChange={(e) => setNote(e.target.value)}
+                              className="w-full border border-neutral-600 h-56 p-2 rounded-sm"
+                              name=""
+                              id=""
+                            ></textarea>
 
-                        <button
-                          onClick={() => validasiTicket(data.id)}
-                          className="text-xs font-bold bg-blue-600 py-2 px-5 text-white  w-full rounded-md"
-                        >
-                          Validasi
-                        </button>
-                        <button
-                          onClick={() => tolakTicket(data.id)}
-                          className="text-xs font-bold bg-red-600 py-2 px-5 text-white  w-full rounded-md"
-                        >
-                          Tolak
-                        </button>
+                            <button
+                              onClick={() => validasiTicket(data.id)}
+                              className="text-xs font-bold bg-blue-600 py-2 px-5 text-white  w-full rounded-md"
+                            >
+                              Validasi
+                            </button>
+                            <button
+                              onClick={() => tolakTicket(data.id)}
+                              className="text-xs font-bold bg-red-600 py-2 px-5 text-white  w-full rounded-md"
+                            >
+                              Tolak
+                            </button>
+                          </>
+                          :
+                          <>
+                            <textarea
+                              onChange={(e) => setNote(e.target.value)}
+                              className="w-full border border-neutral-600 h-56 p-2 rounded-sm"
+                              name=""
+                              id=""
+                            ></textarea>
+
+                            <button
+                              onClick={() => validasiTicketAll(data.id)}
+                              className="text-xs font-bold bg-blue-600 py-2 px-5 text-white  w-full rounded-md"
+                            >
+                              Validasi
+                            </button>
+                            <button
+                              onClick={() => tolakTicketAll(data.id)}
+                              className="text-xs font-bold bg-red-600 py-2 px-5 text-white  w-full rounded-md"
+                            >
+                              Tolak
+                            </button>
+                          </>}
                       </div>
                     </div>
                   </>
@@ -266,7 +354,7 @@ const TableValidasi = () => {
             </div>
           );
         })}
-        <div className="w-full flex  mt-5 ">
+        {/* <div className="w-full flex  mt-5 ">
           <Stack spacing={2}>
             <Pagination
               count={ticketValidasi?.total_page}
@@ -277,7 +365,7 @@ const TableValidasi = () => {
               }}
             />
           </Stack>
-        </div>
+        </div> */}
       </div>
     </>
   );

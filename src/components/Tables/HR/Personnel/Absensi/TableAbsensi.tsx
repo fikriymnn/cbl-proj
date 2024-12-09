@@ -6,6 +6,9 @@ import convertTimeStampToDate from '../../../../../utils/converDateTime';
 import convertTimeStampnoConvert from '../../../../../utils/convertdateNoConvert';
 import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 import Loading from '../../../../Loading';
+import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
+import TabPengajuanKeHR from '../../PengajuanKeHR/TabPengajuanKeHR';
+import TabPengajuanLangsung from './TabPengajuanLangsung';
 
 function TableAbsensi() {
     const [isLoading, setIsLoading] = useState(false);
@@ -16,7 +19,7 @@ function TableAbsensi() {
     const year = today.getFullYear();
     const date = today.getDate();
     const currentDate = month + '/' + date + '/' + year;
-    const navigate = useNavigate();
+
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
     };
@@ -88,6 +91,19 @@ function TableAbsensi() {
         }
     }
 
+    const [showEdit, setShowEdit] = useState<any>([]);
+    const openEdit = (i: any) => {
+        const onchangeVal: any = [...showEdit];
+        onchangeVal[i] = true;
+
+        setShowEdit(onchangeVal);
+    };
+    const closeEdit = (i: any) => {
+        const onchangeVal: any = [...showEdit];
+        onchangeVal[i] = false;
+
+        setShowEdit(onchangeVal);
+    };
 
 
     return (
@@ -243,7 +259,7 @@ function TableAbsensi() {
                                 <label className="text-neutral-500 text-sm font-semibold">
                                     Shift
                                 </label>
-                                <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                <label className="text-neutral-500 text-sm font-semibold">
                                     Lembur (Jam)
                                 </label>
                                 <label className="text-neutral-500 text-sm font-semibold ">
@@ -291,7 +307,7 @@ function TableAbsensi() {
                                             <label className="text-neutral-500 text-sm font-semibold ">
                                                 {(data.shift == null || data.shift == 0) ? ' ~' : data.shift}
                                             </label>
-                                            <label className="text-neutral-500 text-sm font-semibold col-span-2 ">
+                                            <label className="text-neutral-500 text-sm font-semibold ">
                                                 {(data.status_lembur == null || data.status_lembur == 0) ? ' ~' : data.status_lembur} {(data.jam_lembur == null || data.jam_lembur == 0) ? '' : '~ ' + data.jam_lembur + 'Jam'}
                                             </label>
                                             <div className='flex flex-col gap-1'>
@@ -305,6 +321,31 @@ function TableAbsensi() {
                                             <label className="text-neutral-500 text-sm font-semibold ">
                                                 {data.status_absen}
                                             </label>
+                                            {data.status_absen == 'Belum Masuk' ?
+                                                <>
+                                                    <button
+                                                        onClick={() => openEdit(i)}
+                                                        className="w-full bg-blue-600 text-white text-sm py-1 rounded-md"
+                                                    >
+                                                        Aksi
+                                                    </button>
+                                                    {showEdit[i] == true && (
+
+                                                        <ModalKosongan
+                                                            isOpen={showEdit[i]}
+                                                            onClose={() => closeEdit(i)}
+                                                            judul={'Lapor'}
+                                                        >
+                                                            <>
+                                                                <TabPengajuanLangsung data={data} />
+                                                            </>
+                                                        </ModalKosongan>
+                                                    )}
+                                                </> :
+                                                <>
+
+                                                </>}
+
                                         </div>
                                     </>
                                 )

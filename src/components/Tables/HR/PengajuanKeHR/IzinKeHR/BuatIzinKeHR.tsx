@@ -229,11 +229,7 @@ function BuatIzinKeHR() {
                                 Tanggal dari tidak boleh kurang dari Tanggal Sampai
                             </div>
                         )}
-                        {showErrorEarlyDate && (
-                            <div className="text-red-500">
-                                Pengajuan Izin Diajukan maksimal H-3
-                            </div>
-                        )}
+
                     </div>
 
                     <div className="flex w-full flex-col">
@@ -254,7 +250,7 @@ function BuatIzinKeHR() {
 
                 </div>
                 <div className='flex w-full justify-end items-end px-7 py-4'>
-                    {!(showError || showErrorEarlyDate) ? (
+                    {!(showError) ? (
                         <>
                             <button
                                 onClick={() => postIzin()}
