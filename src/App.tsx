@@ -148,25 +148,12 @@ import MasterKaryawan from './pages/HR/Personal/MasterKaryawan';
 import AddMasterKaryawan from './pages/HR/Personal/AddMasterKaryawan';
 import KalenderKerja from './pages/HR/Personal/KalenderKerja/KalenderKerja';
 import RekapMtcPage from './pages/Maintenance/RekapMtc';
-import InputSpl from './pages/HR/Pengajuan/InputSPL';
-import CutiHR from './pages/HR/Pengajuan/CutiHr';
-import IzinHR from './pages/HR/Pengajuan/IzinHR';
-import SakitHR from './pages/HR/Pengajuan/SakitHR';
-import PinjamanHR from './pages/HR/Pengajuan/PinjamanHR';
+
 import LengkapiMasterKaryawan from './pages/HR/Personal/LengkapiMasterKaryawan';
 import Absensi from './pages/HR/Personal/KalenderKerja/absensi';
 import MasterGrade from './pages/MasterData/MTC/MasterGrade';
-import SPHR from './pages/HR/Pengajuan/SPHR';
-import DinasHr from './pages/HR/Pengajuan/DinasHr';
-import KaryawanHr from './pages/HR/Pengajuan/KaryawanHR';
-import InputKeSpl from './pages/HR/PengajuanKeHR/InputKeSPL';
-import CutiKeHR from './pages/HR/PengajuanKeHR/CutiKeHr';
-import IzinKeHR from './pages/HR/PengajuanKeHR/IzinKeHR';
-import SakitKeHR from './pages/HR/PengajuanKeHR/SakitKeHR';
-import PinjamanKeHR from './pages/HR/PengajuanKeHR/PinjamanKeHR';
-import DinasKeHr from './pages/HR/PengajuanKeHR/DinasKeHr';
-import SPKeHR from './pages/HR/PengajuanKeHR/SPKeHR';
-import KaryawanKeHr from './pages/HR/PengajuanKeHR/KaryawanKeHR';
+
+
 import MasterSHiftHR from './pages/HR/MasterDataHR/MastershiftHr';
 import MasterDepartment from './pages/HR/MasterDataHR/MasterDepartment';
 import EditMasterKaryawan from './pages/HR/Personal/EditMasterKaryawan';
@@ -176,6 +163,10 @@ import NcrHr from './pages/HR/Ncrhr/Ncrhr';
 import CapaHR from './pages/HR/Capahr/Capahr';
 import AbsenQC from './pages/QualityControl/Absensi/AbsenQC';
 import DetailMasterKaryawan from './pages/HR/Personal/DetailMasterKaryawan';
+import PengajuanKeHR from './pages/HR/PengajuanKeHR/PengajuanKeHR';
+import HistoryPengajuanKeHR from './pages/HR/PengajuanKeHR/HistoryPengajuankeHR';
+import ResponPengajuanHR from './pages/HR/Pengajuan/ResponPengajuan';
+import HistoryResponPengajuan from './pages/HR/Pengajuan/HistoryResponPengajuan';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1629,133 +1620,38 @@ function App() {
           }
         />
         <Route
-          path="/hr/rp/spl"
+          path="/hr/rp"
           element={
             <>
-              <InputSpl />
+              <ResponPengajuanHR />
             </>
           }
         />
         <Route
-          path="/hr/rp/cuti"
+          path="/hr/rphistory"
           element={
             <>
-              <CutiHR />
+              <HistoryResponPengajuan />
             </>
           }
         />
         <Route
-          path="/hr/rp/izin"
+          path="/hr/pengajuan"
           element={
             <>
-              <IzinHR />
+              < PengajuanKeHR />
             </>
           }
         />
         <Route
-          path="/hr/rp/sakit"
+          path="/hr/pengajuanhistory"
           element={
             <>
-              <SakitHR />
+              <HistoryPengajuanKeHR />
             </>
           }
         />
-        <Route
-          path="/hr/rp/pinjaman"
-          element={
-            <>
-              <PinjamanHR />
-            </>
-          }
-        />
-        <Route
-          path="/hr/rp/dinas"
-          element={
-            <>
-              <DinasHr />
-            </>
-          }
-        />
-        <Route
-          path="/hr/rp/sp"
-          element={
-            <>
-              <SPHR />
-            </>
-          }
-        />
-        <Route
-          path="/hr/rp/karyawan"
-          element={
-            <>
-              <KaryawanHr />
-            </>
-          }
-        />
-        <Route
-          path="/hr/pengajuan/spl"
-          element={
-            <>
-              < InputKeSpl />
-            </>
-          }
-        />
-        <Route
-          path="/hr/pengajuan/cuti"
-          element={
-            <>
-              <CutiKeHR />
-            </>
-          }
-        />
-        <Route
-          path="/hr/pengajuan/izin"
-          element={
-            <>
-              <IzinKeHR />
-            </>
-          }
-        />
-        <Route
-          path="/hr/pengajuan/sakit"
-          element={
-            <>
-              <SakitKeHR />
-            </>
-          }
-        />
-        <Route
-          path="/hr/pengajuan/pinjaman"
-          element={
-            <>
-              <PinjamanKeHR />
-            </>
-          }
-        />
-        <Route
-          path="/hr/pengajuan/dinas"
-          element={
-            <>
-              <DinasKeHr />
-            </>
-          }
-        />
-        <Route
-          path="/hr/pengajuan/sp"
-          element={
-            <>
-              <SPKeHR />
-            </>
-          }
-        />
-        <Route
-          path="/hr/pengajuan/karyawan"
-          element={
-            <>
-              <KaryawanKeHr />
-            </>
-          }
-        />
+
 
         <Route
           path="/hr/master/shift"

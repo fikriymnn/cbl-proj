@@ -146,7 +146,7 @@ function ChecksheetLipat() {
       const res = await axios.put(
         url,
         {
-          qty: incoming.inspeksi_lipat_point[index].qty,
+          qty: incoming?.inspeksi_lipat_point[index]?.qty,
           hasil_check: hasilCheck,
           lama_pengerjaan: totalSecondsToSave,
         },
@@ -213,7 +213,7 @@ function ChecksheetLipat() {
   };
 
   const [ctt, setCtt] = useState<any>();
-  const [qty, setQTY] = useState<any>();
+  const [qty, setQTY] = useState<any>(0);
 
   function formatElapsedTime(seconds: number): string {
     // Ensure seconds is non-negative
@@ -364,7 +364,7 @@ function ChecksheetLipat() {
                   : {incoming?.mesin}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {(incoming?.qty_jo == null) ? '-' : formatInteger(incoming?.qty_jo)}
+                  : {(incoming?.qty_jo == null || incoming?.qty_jo == 0) ? '-' : formatInteger(incoming?.qty_jo)}
                 </label>
                 {/* {
                   incoming?.status == 'incoming' ? (
@@ -511,7 +511,7 @@ function ChecksheetLipat() {
                             (
                               <>
                                 <label className="text-neutral-500 text-sm font-semibold">
-                                  {formatInteger(dataPoint.qty)}
+                                  {(dataPoint?.qty == null || dataPoint?.qty == 0) ? '-' : formatInteger(dataPoint?.qty)}
                                 </label>
                               </>
                             )
@@ -527,7 +527,7 @@ function ChecksheetLipat() {
 
                       <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
                         {
-                          dataPoint.inspeksi_lipat_result.map(
+                          dataPoint?.inspeksi_lipat_result?.map(
                             (dataResult: any, iResult: number) => {
                               return (
                                 <>

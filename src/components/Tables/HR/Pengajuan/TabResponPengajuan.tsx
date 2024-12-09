@@ -6,9 +6,14 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import IncomingSPL from './IncomingSpl';
-import DiprosesSPL from './DiprosesSPL';
-
+import IncomingSPL from './InputSPL/IncomingSpl';
+import IncomingCutiHR from './Cuti/IncomingCutiHR';
+import IncomingIzinHR from './Izin/IncomingIzinHR';
+import IncomingSakitHR from './Sakit/IncomingSakitHR';
+import IncomingPinjamanHR from './Pinjaman/IncomingPinjamanHR';
+import IncomingDinas from './Dinas/IncomingDinas';
+import IncomingSP from './SP/IncomingSP';
+import IncomingKaryawan from './Karyawan/IncomingKaryawan';
 
 
 
@@ -47,7 +52,7 @@ function a11yProps(index: number) {
     };
 }
 
-export default function TabInputSpl() {
+export default function TabResponPengajuanHR() {
     const theme = createTheme({
         palette: {
             primary: {
@@ -140,8 +145,14 @@ export default function TabInputSpl() {
                             aria-label="full width tabs example"
                             className="bg-white text-[#00499F] font-semibold mb-2 flex w-full"
                         >
-                            <Tab label="Incoming" {...a11yProps(0)} />
-                            <Tab label="Diproses" {...a11yProps(1)} />
+                            <Tab label="Lembur" {...a11yProps(0)} />
+                            <Tab label="Cuti" {...a11yProps(1)} />
+                            <Tab label="Izin" {...a11yProps(2)} />
+                            <Tab label="Sakit" {...a11yProps(3)} />
+                            <Tab label="Pinjaman" {...a11yProps(4)} />
+                            <Tab label="Dinas" {...a11yProps(5)} />
+                            <Tab label="SP" {...a11yProps(6)} />
+                            <Tab label="Karyawan" {...a11yProps(7)} />
                             <div className="flex w-full justify-end pr-4">
                                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                                     {tanggal}
@@ -155,7 +166,31 @@ export default function TabInputSpl() {
                 </TabPanel>
 
                 <TabPanel value={value} index={1} dir={theme.direction}>
-                    <DiprosesSPL />
+                    <IncomingCutiHR />
+                </TabPanel>
+
+                <TabPanel value={value} index={2} dir={theme.direction}>
+                    <IncomingIzinHR />
+                </TabPanel>
+
+                <TabPanel value={value} index={3} dir={theme.direction}>
+                    <IncomingSakitHR />
+                </TabPanel>
+
+                <TabPanel value={value} index={4} dir={theme.direction}>
+                    <IncomingPinjamanHR />
+                </TabPanel>
+
+                <TabPanel value={value} index={5} dir={theme.direction}>
+                    <IncomingDinas />
+                </TabPanel>
+
+                <TabPanel value={value} index={6} dir={theme.direction}>
+                    <IncomingSP />
+                </TabPanel>
+
+                <TabPanel value={value} index={7} dir={theme.direction}>
+                    <IncomingKaryawan />
                 </TabPanel>
             </Box>
         </>

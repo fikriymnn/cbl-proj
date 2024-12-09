@@ -1882,14 +1882,14 @@ const Sidebar = ({
                               <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                 <li>
                                   <NavLink
-                                    to="/hr/rp/spl"
+                                    to="/hr/rp"
                                     className={({ isActive }) =>
                                       'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                       (isActive &&
                                         '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                                     }
                                   >
-                                    Lembur
+                                    Respon Pengajuan
                                   </NavLink>
                                 </li>
                               </ul>
@@ -1901,129 +1901,14 @@ const Sidebar = ({
                               <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                 <li>
                                   <NavLink
-                                    to="/hr/rp/cuti"
+                                    to="/hr/rphistory"
                                     className={({ isActive }) =>
                                       'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                       (isActive &&
                                         '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                                     }
                                   >
-                                    Cuti
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/rp/izin"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Izin
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/rp/sakit"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Sakit
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/rp/pinjaman"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Pinjaman
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/rp/dinas"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Dinas
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/rp/sp"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    SP
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/rp/karyawan"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Karyawan
+                                    History Respon Pengajuan
                                   </NavLink>
                                 </li>
                               </ul>
@@ -2089,14 +1974,14 @@ const Sidebar = ({
                               <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                 <li>
                                   <NavLink
-                                    to="/hr/pengajuan/spl"
+                                    to="/hr/pengajuan"
                                     className={({ isActive }) =>
                                       'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                       (isActive &&
                                         '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                                     }
                                   >
-                                    Lembur
+                                    Buat Pengajuan
                                   </NavLink>
                                 </li>
                               </ul>
@@ -2108,133 +1993,19 @@ const Sidebar = ({
                               <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                 <li>
                                   <NavLink
-                                    to="/hr/pengajuan/cuti"
+                                    to="/hr/pengajuanhistory"
                                     className={({ isActive }) =>
                                       'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                       (isActive &&
                                         '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                                     }
                                   >
-                                    Cuti
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/pengajuan/izin"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Izin
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/pengajuan/sakit"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Sakit
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/pengajuan/pinjaman"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Pinjaman
+                                    History Pengajuan
                                   </NavLink>
                                 </li>
                               </ul>
                             </div>
 
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/pengajuan/dinas"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Dinas
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/pengajuan/sp"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    SP
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/pengajuan/karyawan"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Karyawan
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
                             {/* <!-- Dropdown Menu End --> */}
                           </React.Fragment>
                         );
@@ -4368,14 +4139,14 @@ const Sidebar = ({
                               <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                 <li>
                                   <NavLink
-                                    to="/hr/rp/spl"
+                                    to="/hr/rp"
                                     className={({ isActive }) =>
                                       'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                       (isActive &&
                                         '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                                     }
                                   >
-                                    Lembur
+                                    Respon Pengajuan
                                   </NavLink>
                                 </li>
                               </ul>
@@ -4387,129 +4158,14 @@ const Sidebar = ({
                               <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                 <li>
                                   <NavLink
-                                    to="/hr/rp/cuti"
+                                    to="/hr/rphistory"
                                     className={({ isActive }) =>
                                       'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                       (isActive &&
                                         '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                                     }
                                   >
-                                    Cuti
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/rp/izin"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Izin
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/rp/sakit"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Sakit
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/rp/pinjaman"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Pinjaman
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/rp/dinas"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Dinas
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/rp/sp"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    SP
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/rp/karyawan"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Karyawan
+                                    History Respon Pengajuan
                                   </NavLink>
                                 </li>
                               </ul>
@@ -4575,14 +4231,14 @@ const Sidebar = ({
                               <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                 <li>
                                   <NavLink
-                                    to="/hr/pengajuan/spl"
+                                    to="/hr/pengajuan"
                                     className={({ isActive }) =>
                                       'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                       (isActive &&
                                         '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                                     }
                                   >
-                                    Lembur
+                                    Buat Pengajuan
                                   </NavLink>
                                 </li>
                               </ul>
@@ -4594,129 +4250,14 @@ const Sidebar = ({
                               <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                 <li>
                                   <NavLink
-                                    to="/hr/pengajuan/cuti"
+                                    to="/hr/pengajuanhistory"
                                     className={({ isActive }) =>
                                       'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
                                       (isActive &&
                                         '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
                                     }
                                   >
-                                    Cuti
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/pengajuan/izin"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Izin
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/pengajuan/sakit"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Sakit
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/pengajuan/pinjaman"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Pinjaman
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/pengajuan/dinas"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Dinas
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/pengajuan/sp"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    SP
-                                  </NavLink>
-                                </li>
-                              </ul>
-                            </div>
-                            <div
-                              className={`translate transform overflow-hidden ${!open && 'hidden'
-                                }`}
-                            >
-                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
-                                <li>
-                                  <NavLink
-                                    to="/hr/pengajuan/karyawan"
-                                    className={({ isActive }) =>
-                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
-                                      (isActive &&
-                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
-                                    }
-                                  >
-                                    Karyawan
+                                    History Pengajuan
                                   </NavLink>
                                 </li>
                               </ul>
