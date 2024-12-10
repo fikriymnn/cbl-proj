@@ -167,6 +167,8 @@ import PengajuanKeHR from './pages/HR/PengajuanKeHR/PengajuanKeHR';
 import HistoryPengajuanKeHR from './pages/HR/PengajuanKeHR/HistoryPengajuankeHR';
 import ResponPengajuanHR from './pages/HR/Pengajuan/ResponPengajuan';
 import HistoryResponPengajuan from './pages/HR/Pengajuan/HistoryResponPengajuan';
+import OsQC from './pages/QualityControl/OutstandingQC/OutstandingQC';
+import RekapQC from './pages/QualityControl/RekapQC/RekapQC';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -513,6 +515,28 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MaintenanceQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/outstanding"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OsQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/rekap"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <RekapQC />
               </ProtectedRoute>
             </>
           }

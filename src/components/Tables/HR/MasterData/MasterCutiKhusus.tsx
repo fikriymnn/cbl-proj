@@ -146,7 +146,6 @@ function IsiMasterCutiKhusus() {
             <>
                 <main className="overflow-x-scroll">
                     {isLoading && <Loading />}
-
                     <div className="min-w-[700px] bg-white rounded-xl">
                         <div className='flex w-full  pr-8 border-b-8 border-[#D8EAFF] pb-2'>
                             <div className='px-2 py-1 flex w-full justify-end items-center'>

@@ -235,8 +235,18 @@ const TableValidasi = () => {
                 </div>
                 <div className="flex w-full  justify-start col-span-3">
                   <p className="text-neutral-500 text-sm font-light ">
-                    {data.kode_lkh + ' - ' + data.nama_kendala + ' - ' + data.jenis_kendala}
+                    {data.jenis_kendala == 'mesin' ?
+                      <>
+                        {data.kode_lkh + ' - ' + data.nama_kendala + ' - ' + data.jenis_kendala}
+                      </>
+                      :
+                      <>
+                        {data.kode_kendala + ' - ' + data.nama_kendala + ' - ' + data.jenis_kendala}
+                      </>
+                    }
+
                   </p>
+
                 </div>
 
                 <div>
