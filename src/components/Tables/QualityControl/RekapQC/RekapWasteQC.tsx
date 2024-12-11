@@ -158,7 +158,7 @@ function RekapWasteQC() {
                                 <label className='text-sm font-semibold'>
                                     No
                                 </label>
-                                <label className='text-sm font-semibold col-span-2'>
+                                <label className='text-sm font-semibold col-span-4'>
                                     No. Jo
                                 </label>
                                 <label className='text-sm font-semibold col-span-2'>
@@ -179,13 +179,13 @@ function RekapWasteQC() {
                                                 <label className='text-sm font-semibold '>
                                                     {i + 1}
                                                 </label>
-                                                <label className='text-sm font-semibold col-span-2'>
+                                                <label className='text-sm font-semibold col-span-4'>
                                                     {data.no_jo}
                                                 </label>
                                                 <label className='text-sm font-semibold col-span-2'>
                                                     {data.total_jo_sub_total}
                                                 </label>
-                                                <div className='col-span-5 flex justify-end'>
+                                                <div className='col-span-3 flex justify-end'>
                                                     <button
                                                         title="button"
                                                         onClick={() => handleClickDetail(i)}
