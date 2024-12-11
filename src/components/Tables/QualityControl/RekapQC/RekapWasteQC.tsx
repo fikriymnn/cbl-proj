@@ -9,30 +9,62 @@ function RekapWasteQC() {
     const [dateFrom, setDateFrom] = useState<any>();
     const [dateTo, setDateTo] = useState<any>();
 
+    const [wasteMaster, setWasteMaster] = useState<any>();
+
+
     useEffect(() => {
         getWaste(null, null)
+        getWasteMaster()
     }, []);
+
     async function getWaste(dateFrom1: any, dateTo1: any) {
+        const url2 = `${import.meta.env.VITE_API_LINK_P1}/api/waste-lkh`;
         const url = `${import.meta.env.VITE_API_LINK}/reportWaste`;
         try {
             setIsLoading(true)
-            const res = await axios.get(url,
-
+            const res2 = await axios.get(url2, {
+                params: {
+                    first_date: dateFrom1,
+                    last_date: dateFrom1,
+                }
+            })
+            const res = await axios.post(url,
                 {
-                    params: {
-                        start_date: dateFrom1,
-                        end_date: dateTo1,
-                    },
+                    data_waste_master: wasteMaster,
+                    data_waste_p1: res2.data,
+                    start_date: dateFrom1,
+                    end_date: dateTo1,
+                },
+                {
                     withCredentials: true,
                 });
+
+
             setIsLoading(false)
             setWaste(res.data);
             console.log('waste', res.data);
         } catch (error: any) {
             setIsLoading(false)
-            console.log(error);
+            console.log('getwaste', error);
         }
     }
+    async function getWasteMaster() {
+        const url = `${import.meta.env.VITE_API_LINK_P1}/api/master-waste`;
+        try {
+            setIsLoading(true)
+            const res = await axios.get(url,
+                {
+
+                });
+            setIsLoading(false)
+            setWasteMaster(res.data.waste)
+            console.log('waste master', res.data);
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log('getmaster', error);
+        }
+    }
+
     const [showDetail, setShowDetail] = useState<boolean[]>(
         new Array(waste != null && waste.length).fill(false),
     );
@@ -44,11 +76,22 @@ function RekapWasteQC() {
             return updatedShowDetail;
         });
     };
+
+    const [activeComponent, setActiveComponent] = useState('component1');
+
+    const showComponent1 = () => {
+        setActiveComponent('component1');
+    };
+
+    const showComponent2 = () => {
+        setActiveComponent('component2');
+    };
+
     return (
         <div className='rounded-md'>
             {isLoading && <Loading />}
             <div className=" rounded-md shadow-md md:w-12/12 mb-5">
-                <div className="flex md:gap-4 gap-1 md:flex-row flex-col px-4 py-4 md:mt-0  rounded-md bg-white">
+                <div className="flex md:gap-4 gap-1 md:flex-row flex-col px-4 py-4 md:mt-0  rounded-md bg-white mb-2">
                     <p className="my-auto text-sm text-primary font-semibold">
                         Pilih Tanggal
                     </p>
@@ -100,141 +143,280 @@ function RekapWasteQC() {
                         </button>
                     </div>
                 </div>
-                <div className=' border-8 border-[#D8EAFF] '>
-                    <div className='grid grid-cols-10 border-2 border-black px-3 justify-center gap-4 bg-white rounded-md py-1'>
-                        <label className='text-sm font-semibold'>
-                            No
-                        </label>
-                        <label className='text-sm font-semibold col-span-2'>
-                            No. Jo
-                        </label>
-                        <label className='text-sm font-semibold col-span-2'>
-                            Total
-                        </label>
+                <button onClick={showComponent1} className='bg-blue-400 text-md font-semibold text-white border-2 rounded-md px-2 py-1'>
+                    Waste By JO
+                </button>
+                <button onClick={showComponent2} className='bg-blue-400 text-md font-semibold text-white border-2 rounded-md px-2 py-1'>
+                    Waste All
+                </button>
 
-                    </div>
-                </div>
-                {waste?.dataWasteByJo?.map((data: any, i: any) => {
-                    return (
-                        <>
-                            <div className='border-8 border-[#D8EAFF]'>
+                {activeComponent === 'component1' ? (
+                    <>
 
+                        <div className=' border-8 border-[#D8EAFF] '>
+                            <div className='grid grid-cols-10 border-2 border-black px-3 justify-center gap-4 bg-white rounded-md py-1'>
+                                <label className='text-sm font-semibold'>
+                                    No
+                                </label>
+                                <label className='text-sm font-semibold col-span-2'>
+                                    No. Jo
+                                </label>
+                                <label className='text-sm font-semibold col-span-2'>
+                                    Total
+                                </label>
 
-                                <div className=' rounded-md grid grid-cols-10 items-center  px-3 justify-center gap-4 text-stone-400 bg-white py-3 border-2 border-black'>
-                                    <label className='text-sm font-semibold '>
-                                        {i + 1}
-                                    </label>
-                                    <label className='text-sm font-semibold col-span-2'>
-                                        {data.no_jo}
-                                    </label>
-                                    <label className='text-sm font-semibold col-span-2'>
-                                        {data.total_jo_sub_total}
-                                    </label>
-                                    <div className='col-span-5 flex justify-end'>
-                                        <button
-                                            title="button"
-                                            onClick={() => handleClickDetail(i)}
-                                            className="text-xs font-bold text-blue-700 bg-blue-700 py-2 px-1 flex justify-center border-blue-700 border rounded-md"
-                                        >
-                                            <img src={Arrow} alt="" className="mx-3" />
-                                        </button>
-                                    </div>
-
-                                </div>
                             </div>
-                            {showDetail[i] && (
-                                <>
-                                    <div className='flex flex-col  bg-white border-8 border-[#D8EAFF]'>
+                        </div>
+                        <div className="border-8 border-[#D8EAFF] ">
+                            {waste?.dataWasteByJo?.map((data: any, i: any) => {
+                                return (
+                                    <>
+                                        <div
+                                            key={i} className='border-8 border-[#D8EAFF]'>
 
-                                        <div className='grid grid-cols-12 gap-1 px-3  border-2 border-black rounded-md'>
-                                            <label className='text-sm font-semibold '>
 
-                                            </label>
-                                            <label className='text-sm font-semibold'>
-                                                No
-                                            </label>
-                                            <label className='text-sm font-semibold col-span-5'>
-                                                Kode Produksi
-                                            </label>
-                                            <label className='text-sm font-semibold col-span-2'>
-                                                Sub Total
-                                            </label>
+                                            <div className=' rounded-md grid grid-cols-10 items-center  px-3 justify-center gap-4 text-stone-400 bg-white py-3 border-2 border-black'>
+                                                <label className='text-sm font-semibold '>
+                                                    {i + 1}
+                                                </label>
+                                                <label className='text-sm font-semibold col-span-2'>
+                                                    {data.no_jo}
+                                                </label>
+                                                <label className='text-sm font-semibold col-span-2'>
+                                                    {data.total_jo_sub_total}
+                                                </label>
+                                                <div className='col-span-5 flex justify-end'>
+                                                    <button
+                                                        title="button"
+                                                        onClick={() => handleClickDetail(i)}
+                                                        className="text-xs font-bold text-blue-700 bg-blue-700 py-2 px-1 flex justify-center border-blue-700 border rounded-md"
+                                                    >
+                                                        <img src={Arrow} alt="" className="mx-3" />
+                                                    </button>
+                                                </div>
+
+                                            </div>
                                         </div>
+                                        {showDetail[i] && (
+                                            <>
+                                                <div
 
-                                        {data.produksi?.map((data2: any, ii: any) => {
-                                            return (
-                                                <>
-                                                    <div className=' border-8  border-[#D8EAFF] gap-1 bg-white '>
+                                                    className='flex flex-col  bg-white border-8 border-[#D8EAFF]'>
 
-                                                        <div className='grid grid-cols-12 gap-1 rounded-md text-stone-400 border-2 border-black'>
-                                                            <label className='text-sm font-semibold '>
+                                                    <div className='grid grid-cols-12 gap-1 px-3  border-2 border-black rounded-md'>
+                                                        <label className='text-sm font-semibold '>
 
-                                                            </label>
-                                                            <label className='text-sm font-semibold text-black'>
-                                                                {ii + 1}
-                                                            </label>
-                                                            <label className='text-sm font-semibold col-span-5 text-black'>
-                                                                {data2.e_kode_produksi} - {data2.e_deskripsi}
-                                                            </label>
-                                                            <label className='text-sm font-semibold col-span-2'>
-                                                                {data2.total_sub_total}
-                                                            </label>
-                                                        </div>
-                                                        <div className='flex flex-col gap-1  bg-white border-2 border-black rounded-md'>
-                                                            <div className='grid grid-cols-12 gap-1 rounded-md'>
-                                                                <label className='text-sm font-semibold col-span-2'>
+                                                        </label>
+                                                        <label className='text-sm font-semibold'>
+                                                            No
+                                                        </label>
+                                                        <label className='text-sm font-semibold col-span-5'>
+                                                            Kode Produksi
+                                                        </label>
+                                                        <label className='text-sm font-semibold col-span-2'>
+                                                            Sub Total
+                                                        </label>
+                                                    </div>
 
-                                                                </label>
-                                                                <label className='text-sm font-semibold'>
-                                                                    No
-                                                                </label>
-                                                                <label className='text-sm font-semibold col-span-2'>
-                                                                    Bobot
-                                                                </label>
-                                                                <label className='text-sm font-semibold col-span-2'>
-                                                                    Kode - Temuan
-                                                                </label>
+                                                    {data.produksi?.map((data2: any, ii: any) => {
+                                                        return (
+                                                            <>
+                                                                <div
 
-                                                            </div>
-                                                            {data2.waste?.map((data3: any, iii: any) => {
-                                                                return (
-                                                                    <>
-                                                                        <div className='grid grid-cols-12 gap-1 text-stone-400 '>
-                                                                            <label className='text-sm font-semibold col-span-2 '>
+                                                                    key={ii}
+                                                                    className=' border-8  border-[#D8EAFF] gap-1 bg-white '>
+
+                                                                    <div className='grid grid-cols-12 gap-1 rounded-md text-stone-400 border-2 border-black'>
+                                                                        <label className='text-sm font-semibold '>
+
+                                                                        </label>
+                                                                        <label className='text-sm font-semibold text-black'>
+                                                                            {ii + 1}
+                                                                        </label>
+                                                                        <label className='text-sm font-semibold col-span-5 text-black'>
+                                                                            {data2.e_kode_produksi} - {data2.e_deskripsi}
+                                                                        </label>
+                                                                        <label className='text-sm font-semibold col-span-2'>
+                                                                            {data2.total_sub_total}
+                                                                        </label>
+                                                                    </div>
+                                                                    <div className='flex flex-col gap-1  bg-white border-2 border-black rounded-md'>
+                                                                        <div className='grid grid-cols-12 gap-1 rounded-md'>
+                                                                            <label className='text-sm font-semibold col-span-2'>
 
                                                                             </label>
                                                                             <label className='text-sm font-semibold'>
-                                                                                {iii + 1}
+                                                                                No
                                                                             </label>
                                                                             <label className='text-sm font-semibold col-span-2'>
-                                                                                {data3.bobot}
+                                                                                Bobot
+                                                                            </label>
+                                                                            <label className='text-sm font-semibold col-span-4'>
+                                                                                Kode
                                                                             </label>
                                                                             <label className='text-sm font-semibold col-span-2'>
-                                                                                {data3.kode} - {data3.sub_total_percent}
-                                                                            </label>
-                                                                            <label className='text-sm font-semibold col-span-2'>
-
+                                                                                Sub Total%
                                                                             </label>
                                                                         </div>
-                                                                    </>
-                                                                )
-                                                            })}
-                                                        </div>
+                                                                        {data2.waste?.map((data3: any, iii: any) => {
+                                                                            return (
+                                                                                <>
+                                                                                    <div
+                                                                                        key={iii}
+                                                                                        className='grid grid-cols-12 gap-1 text-stone-400 '>
+                                                                                        <label className='text-sm font-semibold col-span-2 '>
 
+                                                                                        </label>
+                                                                                        <label className='text-sm font-semibold'>
+                                                                                            {iii + 1}
+                                                                                        </label>
+                                                                                        <label className='text-sm font-semibold col-span-2'>
+                                                                                            {data3.bobot}
+                                                                                        </label>
+                                                                                        <label className='text-sm font-semibold col-span-4'>
+                                                                                            {data3.kode} - {data3.nama_waste}
+                                                                                        </label>
+                                                                                        <label className='text-sm font-semibold col-span-2'>
+                                                                                            {data3.sub_total_percent}
+                                                                                        </label>
+                                                                                    </div>
+                                                                                </>
+                                                                            )
+                                                                        })}
+                                                                    </div>
+
+                                                                </div>
+                                                            </>
+                                                        )
+                                                    }
+                                                    )
+                                                    }
+                                                </div >
+                                            </>
+                                        )}
+                                    </>
+                                )
+                            }
+                            )
+                            }
+
+                        </div>
+                    </>
+                ) : (
+                    <>
+                        <div className=' border-8 border-[#D8EAFF] '>
+                            <div className='grid grid-cols-10 border-2 border-black px-3 justify-center gap-4 bg-white rounded-md py-1'>
+                                <label className='text-sm font-semibold'>
+                                    No
+                                </label>
+                                <label className='text-sm font-semibold col-span-2'>
+                                    Kode Produksi
+                                </label>
+                                <label className='text-sm font-semibold col-span-2'>
+                                    Total
+                                </label>
+
+                            </div>
+                        </div>
+                        <div className="border-8 border-[#D8EAFF] ">
+                            {waste?.dataWasteAll?.map((data: any, i: any) => {
+                                return (
+                                    <>
+                                        <div
+                                            key={i} className='border-8 border-[#D8EAFF]'>
+                                            <div className=' rounded-md grid grid-cols-10 items-center  px-3 justify-center gap-4 text-stone-400 bg-white py-3 border-2 border-black'>
+                                                <label className='text-sm font-semibold '>
+                                                    {i + 1}
+                                                </label>
+                                                <label className='text-sm font-semibold col-span-2'>
+                                                    {data.e_kode_produksi} - {data.e_deskripsi}
+                                                </label>
+                                                <label className='text-sm font-semibold col-span-2'>
+                                                    {data.total_sub_total}
+                                                </label>
+                                                <div className='col-span-5 flex justify-end'>
+                                                    <button
+                                                        title="button"
+                                                        onClick={() => handleClickDetail(i)}
+                                                        className="text-xs font-bold text-blue-700 bg-blue-700 py-2 px-1 flex justify-center border-blue-700 border rounded-md"
+                                                    >
+                                                        <img src={Arrow} alt="" className="mx-3" />
+                                                    </button>
+                                                </div>
+
+                                            </div>
+                                        </div>
+                                        {showDetail[i] && (
+                                            <>
+                                                <div
+
+                                                    className='flex flex-col  bg-white border-8 border-[#D8EAFF]'>
+
+                                                    <div className='grid grid-cols-12 gap-1 px-3  border-2 border-black rounded-md'>
+                                                        <label className='text-sm font-semibold '>
+
+                                                        </label>
+                                                        <label className='text-sm font-semibold'>
+                                                            No
+                                                        </label>
+                                                        <label className='text-sm font-semibold col-span-2'>
+                                                            Bobot
+                                                        </label>
+                                                        <label className='text-sm font-semibold col-span-4'>
+                                                            Kode
+                                                        </label>
+                                                        <label className='text-sm font-semibold col-span-2'>
+                                                            Sub Total %
+                                                        </label>
                                                     </div>
-                                                </>
-                                            )
-                                        }
-                                        )
-                                        }
-                                    </div >
-                                </>
-                            )}
-                        </>
-                    )
-                }
-                )
-                }
+
+                                                    {data.waste?.map((data2: any, ii: any) => {
+                                                        return (
+                                                            <>
+                                                                <div
+
+                                                                    key={ii}
+                                                                    className=' border-2  border-[#D8EAFF] gap-1 bg-white '>
+
+                                                                    <div className='grid grid-cols-12 gap-1 rounded-md text-stone-400 border-2 border-black'>
+                                                                        <label className='text-sm font-semibold '>
+
+                                                                        </label>
+                                                                        <label className='text-sm font-semibold '>
+                                                                            {ii + 1}
+                                                                        </label>
+                                                                        <label className='text-sm font-semibold col-span-2 '>
+                                                                            {data2.bobot}
+                                                                        </label>
+                                                                        <label className='text-sm font-semibold col-span-4'>
+                                                                            {data2.kode} - {data2.nama_waste}
+                                                                        </label>
+                                                                        <label className='text-sm font-semibold col-span-2 '>
+                                                                            {data2.sub_total_percent}
+                                                                        </label>
+                                                                    </div>
+
+
+                                                                </div>
+                                                            </>
+                                                        )
+                                                    }
+                                                    )
+                                                    }
+                                                </div >
+                                            </>
+                                        )}
+                                    </>
+                                )
+                            }
+                            )
+                            }
+
+                        </div>
+                    </>
+
+                )}
+
             </div >
         </div>
     )
