@@ -172,6 +172,7 @@ import MasterDepartment from './pages/HR/MasterDataHR/MasterDepartment';
 import EditMasterKaryawan from './pages/HR/Personal/EditMasterKaryawan';
 import MasterCutiKhusus from './pages/HR/MasterDataHR/MasterCutiKhusus';
 import MasterGradeHR from './pages/HR/MasterDataHR/MasterGrade';
+import ProjectMTC from './pages/Maintenance/projectMTC';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -362,7 +363,7 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <ProjectMtc />
+               <ProjectMTC/>
               </ProtectedRoute>
             </>
           }
