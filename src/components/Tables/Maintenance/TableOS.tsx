@@ -152,6 +152,7 @@ function TableOS() {
   const [endDate, setEndDate] = useState<any>();
   const [mesinNama, setMesinNama] = useState<any>();
   const [statusTiket, setStatusTiket] = useState<any>();
+  const [noJo, setNoJo] = useState<any>();
 
   async function getTiket(isRework?: boolean, idModal?: number) {
     const url = `${import.meta.env.VITE_API_LINK}/ticket`;
@@ -159,6 +160,7 @@ function TableOS() {
       setIsLoading(true)
       const res = await axios.get(url, {
         params: {
+          no_jo: noJo,
           bagian_tiket: 'os2',
           page: page,
           limit: 10,
@@ -757,35 +759,36 @@ function TableOS() {
             ''
           )}
         </div>
-        <div className="flex md:gap-4 gap-1 md:flex-row flex-col px-4 py-4 md:mt-0 ">
-          <p className="my-auto text-sm text-primary font-semibold">
-            Pilih Tanggal
-          </p>
-          <div className="flex md:justify-center items-center gap-2">
-            <p className="text-sm text-primary font-semibold md:w-3/12 w-2/12">
+        <div className="grid md:grid-cols-12 grid-cols-6 px-4 py-1 gap-3">
+
+          <div className="flex flex-col gap-2 col-span-2">
+            <p className="text-sm text-primary font-semibold">
               Dari:
             </p>
-
             <input
-              className='rounded-full bg-[#D8EAFF] px-2'
+              className='rounded-full bg-[#D8EAFF] px-2 h-8'
               type="date"
               onChange={(e) => setStartDate(e.target.value)}
             ></input>
 
           </div>
-          <div className="flex md:justify-center items-center gap-2">
-            <p className=" my-auto text-sm text-primary font-semibold md:w-3/12 w-2/12">
+          <div className="flex flex-col gap-2 col-span-2">
+            <p className=" my-auto text-sm text-primary font-semibold ">
               Sampai:
             </p>
 
             <input
-              className='rounded-full bg-[#D8EAFF] px-2'
+              className='rounded-full bg-[#D8EAFF] px-2 h-8'
               type="date"
               onChange={(e) => setEndDate(e.target.value)}
             ></input>
 
           </div>
-          <div className="flex md:justify-center items-center gap-2">
+          <div className="flex flex-col  gap-2 col-span-2">
+            <p className=" my-auto text-sm text-primary font-semibold ">
+              Pilih Mesin:
+            </p>
+
             <select
               onChange={(e) => {
                 setMesinNama(
@@ -814,7 +817,10 @@ function TableOS() {
               )}
             </select>
           </div>
-          <div className="flex md:justify-center items-center gap-2">
+          <div className="flex flex-col  gap-2 col-span-2">
+            <p className=" my-auto text-sm text-primary font-semibold ">
+              Pilih Mesin:
+            </p>
             <select
               onChange={(e) => {
                 setStatusTiket(
@@ -856,7 +862,19 @@ function TableOS() {
               </option>
             </select>
           </div>
-          <div className="flex justify-center my-5">
+          <div className=" gap-2 flex flex-col col-span-2">
+            <p className=" my-auto text-sm text-primary font-semibold ">
+              No.Jo
+            </p>
+            <input
+              className='rounded-md h-8 bg-[#D8EAFF] px-2 w-full'
+              placeholder='Nomor JO'
+              type="text"
+              onChange={(e) => setNoJo(e.target.value)}
+            ></input>
+
+          </div>
+          <div className="flex ">
             <button
               onClick={() => {
                 getTiket()
@@ -869,6 +887,7 @@ function TableOS() {
           </div>
 
         </div>
+
         {/* <input
           type="search"
           placeholder="search"
@@ -882,16 +901,20 @@ function TableOS() {
         <>
           <div className="flex bg-white mt-2 py-2">
             <p className="w-10 px-3 text-xs font-bold ">No</p>
-            <div className="grid md:grid-cols-8 grid-cols-7 w-full">
-              <div className="flex gap-2">
+            <div className="grid grid-cols-12 w-full gap-2">
+              <div className="flex gap-2  col-span-2">
                 <p className="text-xs font-bold ">Waktu Tiket</p>
                 <img className="w-2" src={Polygon6} alt="" />
               </div>
-              <div className="flex gap-2">
-                <p className="text-xs font-bold ">Nama Mesin</p>
+              <div className="flex gap-2 ">
+                <p className="text-xs font-bold ">No.Jo</p>
                 <img className="w-2" src={Polygon6} alt="" />
               </div>
-              <div className="flex gap-2 col-span-2">
+              <div className="flex gap-2 ">
+                <p className="text-xs font-bold ">Mesin</p>
+                <img className="w-2" src={Polygon6} alt="" />
+              </div>
+              <div className="flex gap-2 col-span-3">
                 <p className="text-xs font-bold ">Jenis Kendala</p>
                 <img className="w-2" src={Polygon6} alt="" />
               </div>
@@ -900,14 +923,14 @@ function TableOS() {
                 <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className="flex gap-2">
-                <p className="text-xs font-bold ">Persentase</p>
+                <p className="text-xs font-bold ">Percent</p>
                 <img className="w-2" src={Polygon6} alt="" />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2  col-span-2">
                 <p className="text-xs font-bold ">Breakdown Time</p>
                 <img className="w-2" src={Polygon6} alt="" />
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 ">
                 <p className="text-xs font-bold ">Action</p>
               </div>
             </div>
@@ -961,8 +984,8 @@ function TableOS() {
                           >
                             {i + 1 + (page - 1) * 10}
                           </div>
-                          <div className="grid md:grid-cols-8 grid-cols-7 w-full gap-5">
-                            <div className="flex flex-col md:gap-5 gap-1 w-full ">
+                          <div className="grid grid-cols-12 w-full gap-2 px-3">
+                            <div className="flex flex-col md:gap-5 gap-1 w-full col-span-2">
                               <div className="my-auto  ">
                                 <p className="text-xs font-light break-all">
                                   {dateMtc}
@@ -973,14 +996,21 @@ function TableOS() {
                             <div className="flex flex-col md:gap-5 gap-1 ">
                               <div className="my-auto">
                                 <p className="text-xs font-light">
+                                  {data.no_jo}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex flex-col md:gap-5 gap-1 ">
+                              <div className="my-auto">
+                                <p className="text-xs font-light">
                                   {data.mesin}
                                 </p>
                               </div>
                             </div>
-                            <div className="flex flex-col col-span-2 md:gap-5 gap-1 ">
-                              <div className="my-auto w-11/12">
+                            <div className="flex flex-col md:gap-5 gap-1 col-span-3">
+                              <div className="my-auto w-full">
                                 <p className="text-xs font-light">
-                                  {data.kode_lkh} - {data.nama_kendala}
+                                  {data.kode_lkh} - {data.nama_kendala} - {data.no_jo}
                                 </p>
                               </div>
                             </div>
@@ -1027,7 +1057,7 @@ function TableOS() {
                                 </p>
                               </div>
                             </div>
-                            <div className="flex flex-col md:gap-5 gap-1 ">
+                            <div className="flex flex-col md:gap-5 gap-1 col-span-2">
                               <div>
                                 <p className="text-xs font-light">
                                   {data.waktu_selesai_mtc == null ? '-' : waktuBreakdown}
@@ -1035,7 +1065,7 @@ function TableOS() {
                                 </p>
                               </div>
                             </div>
-                            <div className="flex gap-2 items-center md:mb-0 mb-2">
+                            <div className="flex gap-2 items-center md:mb-0 mb-2 ">
                               <div>
                                 <div>
                                   {data.status_tiket == 'monitoring' ||
@@ -1447,6 +1477,10 @@ function TableOS() {
                     : data.waktu_respon_qc,
                   data.waktu_respon,
                 );
+                const waktuBreakdown = calculateResponTime(
+                  data.waktu_mulai_mtc,
+                  data.waktu_selesai_mtc,
+                );
                 return (
                   <>
                     <div className="bg-white mt-2 grid grid-cols-4 gap-3 p-2">
@@ -1610,7 +1644,7 @@ function TableOS() {
                           </div>
                           <div>
                             <h5 className="text-xs font-bold">Kode Tiket</h5>
-                            <p className="text-xs font-medium"></p>
+                            <p className="text-xs font-medium">{data.kode_ticket}</p>
                           </div>
                           <div>
                             <h5 className="text-xs font-bold">Status</h5>
@@ -1656,6 +1690,21 @@ function TableOS() {
                             <p className="text-xs font-medium">
                               {data.operator}
                             </p>
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold">No.Jo</p>
+                            <p className="text-xs font-medium">
+                              {data.no_jo}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold">Breakdown Time</p>
+                            <div>
+                              <p className="text-xs font-light">
+                                {data.waktu_selesai_mtc == null ? '-' : waktuBreakdown}
+                                {/* {data.proses_mtcs[lengthProses].tgl_mtc}  */}
+                              </p>
+                            </div>
                           </div>
                         </div>
                         <div className="w-full  bg-[#E9F3FF]  rounded-lg px-4 gap-y-3 mt-3 p-1">
