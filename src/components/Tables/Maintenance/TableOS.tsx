@@ -1010,7 +1010,7 @@ function TableOS() {
                             <div className="flex flex-col md:gap-5 gap-1 col-span-3">
                               <div className="my-auto w-full">
                                 <p className="text-xs font-light">
-                                  {data.kode_lkh} - {data.nama_kendala} - {data.no_jo}
+                                  {data.kode_lkh} - {data.nama_kendala}
                                 </p>
                               </div>
                             </div>
