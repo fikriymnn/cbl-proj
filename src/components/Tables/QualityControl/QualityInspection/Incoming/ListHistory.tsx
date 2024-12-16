@@ -40,13 +40,13 @@ function ListHistory() {
 
         getInspection();
     }, [page]);
-
+    const [noJo, setNoJo] = useState<any>();
     async function getInspection() {
         const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahan?status=history`;
         try {
             const res = await axios.get(url, {
                 params: {
-
+                    search: noJo,
                     page: page,
                     limit: 15,
                 },
@@ -90,6 +90,7 @@ function ListHistory() {
             {!isMobile && (
                 <main className='overflow-x-scroll'>
                     <div className='min-w-[700px] bg-white rounded-xl'>
+
                         <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>{tanggal}</p>
                         <div className=' w-full h-full flex-col border-b-8 border-[#D8EAFF]'>
 

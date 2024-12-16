@@ -39,12 +39,13 @@ function ProsesFinalInspectionhistory() {
   useEffect(() => {
     getFinalInspection();
   }, [page]);
-
+  const [noJo, setNoJo] = useState<any>();
   async function getFinalInspection() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiFinal`;
     try {
       const res = await axios.get(url, {
         params: {
+          search: noJo,
           bagian_tiket: 'history',
           page: page,
           limit: 15,
@@ -65,6 +66,33 @@ function ProsesFinalInspectionhistory() {
 
       <main className="overflow-x-scroll">
         <div className="min-w-[700px] bg-white rounded-xl">
+          <div className="flex w-full justify-end h-full items-center border-b-8 border-[#D8EAFF]">
+            <div className='flex flex-col gap-1 w-[20%] px-4 py-2 '>
+              <p className=" my-auto text-xs text-primary font-semibold ">
+                Cari
+              </p>
+              <input
+                className='rounded-md h-8 bg-[#D8EAFF] px-2 w-full'
+                placeholder='Nomor Jo'
+                type="text"
+                onChange={(e) => setNoJo(e.target.value)}
+              ></input>
+            </div>
+            <div className="flex flex-col  w-[15%] px-4 py-2   gap-4">
+              <p className=" my-auto text-xs text-primary font-semibold ">
+
+              </p>
+              <button
+                onClick={() => {
+                  getFinalInspection()
+                }}
+                className="bg-primary text-white  rounded-md px-1 py-1 "
+              >
+                Cari
+              </button>
+
+            </div>
+          </div>
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
             <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] py-4 gap-2 items-center">
               <div
@@ -77,13 +105,13 @@ function ProsesFinalInspectionhistory() {
                   NO
                 </label>
               </div>
-              <label className="text-neutral-500 text-sm font-semibold line-clamp-1">
+              <label className="text-neutral-500 text-sm font-semibold ">
                 No. JO
               </label>
-              <label className="text-neutral-500 text-sm font-semibold col-span-3 line-clamp-1">
+              <label className="text-neutral-500 text-sm font-semibold col-span-3">
                 Customer
               </label>
-              <label className="text-neutral-500 text-sm font-semibold col-span-3 pl-3 line-clamp-1 w-full">
+              <label className="text-neutral-500 text-sm font-semibold col-span-3 pl-3 w-full">
                 Nama Produk
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-1">
@@ -114,13 +142,13 @@ function ProsesFinalInspectionhistory() {
                         {i + 1}
                       </label>
                     </div>
-                    <label className="text-neutral-500 text-sm font-semibold line-clamp-1">
+                    <label className="text-neutral-500 text-sm font-semibold ">
                       {data.no_jo}
                     </label>
-                    <label className="text-neutral-500 text-sm font-semibold col-span-3 line-clamp-1">
+                    <label className="text-neutral-500 text-sm font-semibold col-span-3 ">
                       {data.customer}
                     </label>
-                    <label className="text-neutral-500 text-sm font-semibold col-span-3 pl-3 line-clamp-1 w-full">
+                    <label className="text-neutral-500 text-sm font-semibold col-span-3 pl-3  w-full">
                       {data.nama_produk}
                     </label>
                     <label className="text-neutral-500 text-sm font-semibold col-span-1">
@@ -135,7 +163,7 @@ function ProsesFinalInspectionhistory() {
                           to={`/qc/qualityinspection/final_inspection/checkAwal/${data.id}`}
                         >
                           <button
-                            className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                            className={`uppercase px-2 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                           >
                             PILIH
                           </button>

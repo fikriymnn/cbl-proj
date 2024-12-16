@@ -183,7 +183,7 @@ function RekapWasteQC() {
                                                     {data.no_jo}
                                                 </label>
                                                 <label className='text-sm font-semibold col-span-2'>
-                                                    {data.total_jo_sub_total}
+                                                    {data.total_defect}
                                                 </label>
                                                 <div className='col-span-3 flex justify-end'>
                                                     <button
@@ -201,24 +201,22 @@ function RekapWasteQC() {
                                             <>
                                                 <div
 
-                                                    className='flex flex-col  bg-white border-8 border-[#D8EAFF]'>
+                                                    className='flex flex-col  bg-white mx-[5%]'>
 
                                                     <div className='grid grid-cols-12 gap-1 px-3  border-2 border-black rounded-md'>
-                                                        <label className='text-sm font-semibold '>
 
-                                                        </label>
                                                         <label className='text-sm font-semibold'>
                                                             No
                                                         </label>
                                                         <label className='text-sm font-semibold col-span-5'>
-                                                            Kode Produksi
+                                                            Kode Waste
                                                         </label>
                                                         <label className='text-sm font-semibold col-span-2'>
-                                                            Sub Total
+                                                            Total Defect
                                                         </label>
                                                     </div>
 
-                                                    {data.produksi?.map((data2: any, ii: any) => {
+                                                    {data.defects?.map((data2: any, ii: any) => {
                                                         return (
                                                             <>
                                                                 <div
@@ -227,57 +225,51 @@ function RekapWasteQC() {
                                                                     className=' border-8  border-[#D8EAFF] gap-1 bg-white '>
 
                                                                     <div className='grid grid-cols-12 gap-1 rounded-md text-stone-400 border-2 border-black'>
-                                                                        <label className='text-sm font-semibold '>
 
-                                                                        </label>
                                                                         <label className='text-sm font-semibold text-black'>
                                                                             {ii + 1}
                                                                         </label>
                                                                         <label className='text-sm font-semibold col-span-5 text-black'>
-                                                                            {data2.e_kode_produksi} - {data2.e_deskripsi}
+                                                                            {data2.kode_waste} - {data2.waste_desc}
                                                                         </label>
                                                                         <label className='text-sm font-semibold col-span-2'>
-                                                                            {data2.total_sub_total}
+                                                                            {data2.total_defect}
                                                                         </label>
                                                                     </div>
-                                                                    <div className='flex flex-col gap-1  bg-white border-2 border-black rounded-md'>
-                                                                        <div className='grid grid-cols-12 gap-1 rounded-md'>
-                                                                            <label className='text-sm font-semibold col-span-2'>
+                                                                    <div className='flex flex-col  bg-white border-2 border-black '>
+                                                                        <div className='grid grid-cols-12   border-b-2 border-black'>
 
-                                                                            </label>
                                                                             <label className='text-sm font-semibold'>
                                                                                 No
                                                                             </label>
-                                                                            <label className='text-sm font-semibold col-span-2'>
+                                                                            <label className='text-sm font-semibold col-span-2 border-x-2 border-black'>
                                                                                 Bobot
                                                                             </label>
                                                                             <label className='text-sm font-semibold col-span-4'>
                                                                                 Kode
                                                                             </label>
-                                                                            <label className='text-sm font-semibold col-span-2'>
-                                                                                Sub Total%
+                                                                            <label className='text-sm font-semibold col-span-2 border-x-2 border-black'>
+                                                                                Calculated Defect
                                                                             </label>
                                                                         </div>
-                                                                        {data2.waste?.map((data3: any, iii: any) => {
+                                                                        {data2.kendala?.map((data3: any, iii: any) => {
                                                                             return (
                                                                                 <>
                                                                                     <div
                                                                                         key={iii}
-                                                                                        className='grid grid-cols-12 gap-1 text-stone-400 '>
-                                                                                        <label className='text-sm font-semibold col-span-2 '>
+                                                                                        className='grid grid-cols-12 text-stone-400 border-b-2 border-black'>
 
-                                                                                        </label>
                                                                                         <label className='text-sm font-semibold'>
                                                                                             {iii + 1}
                                                                                         </label>
-                                                                                        <label className='text-sm font-semibold col-span-2'>
+                                                                                        <label className='text-sm font-semibold col-span-2 border-x-2 border-black'>
                                                                                             {data3.bobot}
                                                                                         </label>
                                                                                         <label className='text-sm font-semibold col-span-4'>
-                                                                                            {data3.kode} - {data3.nama_waste}
+                                                                                            {data3.kode_kendala} - {data3.kendala_desc}
                                                                                         </label>
-                                                                                        <label className='text-sm font-semibold col-span-2'>
-                                                                                            {data3.sub_total_percent}
+                                                                                        <label className='text-sm font-semibold col-span-2 border-x-2 border-black'>
+                                                                                            {data3.calculated_defect}
                                                                                         </label>
                                                                                     </div>
                                                                                 </>
@@ -310,10 +302,13 @@ function RekapWasteQC() {
                                     No
                                 </label>
                                 <label className='text-sm font-semibold col-span-2'>
-                                    Kode Produksi
+                                    Kode Waste
                                 </label>
                                 <label className='text-sm font-semibold col-span-2'>
                                     Total
+                                </label>
+                                <label className='text-sm font-semibold col-span-2'>
+                                    Deskripsi
                                 </label>
 
                             </div>
@@ -323,18 +318,21 @@ function RekapWasteQC() {
                                 return (
                                     <>
                                         <div
-                                            key={i} className='border-8 border-[#D8EAFF]'>
+                                            key={i} className=''>
                                             <div className=' rounded-md grid grid-cols-10 items-center  px-3 justify-center gap-4 text-stone-400 bg-white py-3 border-2 border-black'>
                                                 <label className='text-sm font-semibold '>
                                                     {i + 1}
                                                 </label>
                                                 <label className='text-sm font-semibold col-span-2'>
-                                                    {data.e_kode_produksi} - {data.e_deskripsi}
+                                                    {data.kode_waste}
                                                 </label>
                                                 <label className='text-sm font-semibold col-span-2'>
-                                                    {data.total_sub_total}
+                                                    {data.total_defect}
                                                 </label>
-                                                <div className='col-span-5 flex justify-end'>
+                                                <label className='text-sm font-semibold col-span-2'>
+                                                    {data.waste_desc}
+                                                </label>
+                                                <div className='col-span-3 flex justify-end'>
                                                     <button
                                                         title="button"
                                                         onClick={() => handleClickDetail(i)}
@@ -350,27 +348,25 @@ function RekapWasteQC() {
                                             <>
                                                 <div
 
-                                                    className='flex flex-col  bg-white border-8 border-[#D8EAFF]'>
+                                                    className='flex flex-col  bg-white border-8 border-[#D8EAFF] px-[3%]'>
 
                                                     <div className='grid grid-cols-12 gap-1 px-3  border-2 border-black rounded-md'>
-                                                        <label className='text-sm font-semibold '>
 
-                                                        </label>
                                                         <label className='text-sm font-semibold'>
                                                             No
+                                                        </label>
+                                                        <label className='text-sm font-semibold col-span-4 border-x-2 border-black'>
+                                                            Kode
                                                         </label>
                                                         <label className='text-sm font-semibold col-span-2'>
                                                             Bobot
                                                         </label>
-                                                        <label className='text-sm font-semibold col-span-4'>
-                                                            Kode
-                                                        </label>
-                                                        <label className='text-sm font-semibold col-span-2'>
-                                                            Sub Total %
+                                                        <label className='text-sm font-semibold col-span-3 border-x-2 border-black'>
+                                                            Calculated Defect
                                                         </label>
                                                     </div>
 
-                                                    {data.waste?.map((data2: any, ii: any) => {
+                                                    {data.kendala?.map((data2: any, ii: any) => {
                                                         return (
                                                             <>
                                                                 <div
@@ -378,21 +374,20 @@ function RekapWasteQC() {
                                                                     key={ii}
                                                                     className=' border-2  border-[#D8EAFF] gap-1 bg-white '>
 
-                                                                    <div className='grid grid-cols-12 gap-1 rounded-md text-stone-400 border-2 border-black'>
-                                                                        <label className='text-sm font-semibold '>
+                                                                    <div className='grid grid-cols-12 gap-1 rounded-md text-stone-400 border-2 border-black mx-1'>
 
-                                                                        </label>
                                                                         <label className='text-sm font-semibold '>
                                                                             {ii + 1}
                                                                         </label>
-                                                                        <label className='text-sm font-semibold col-span-2 '>
+                                                                        <label className='text-sm font-semibold col-span-4 border-x-2 border-black'>
+
+                                                                            {data2.kode_kendala} - {data2.kendala_desc}
+                                                                        </label>
+                                                                        <label className='text-sm font-semibold col-span-2'>
                                                                             {data2.bobot}
                                                                         </label>
-                                                                        <label className='text-sm font-semibold col-span-4'>
-                                                                            {data2.kode} - {data2.nama_waste}
-                                                                        </label>
-                                                                        <label className='text-sm font-semibold col-span-2 '>
-                                                                            {data2.sub_total_percent}
+                                                                        <label className='text-sm font-semibold col-span-3 border-x-2 border-black'>
+                                                                            {data2.calculated_defect}
                                                                         </label>
                                                                     </div>
 

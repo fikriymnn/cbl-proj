@@ -169,6 +169,7 @@ import ResponPengajuanHR from './pages/HR/Pengajuan/ResponPengajuan';
 import HistoryResponPengajuan from './pages/HR/Pengajuan/HistoryResponPengajuan';
 import OsQC from './pages/QualityControl/OutstandingQC/OutstandingQC';
 import RekapQC from './pages/QualityControl/RekapQC/RekapQC';
+import PayrollPage from './pages/HR/Payroll/Payrollpage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1640,6 +1641,14 @@ function App() {
           element={
             <>
               <AbsenQC />
+            </>
+          }
+        />
+        <Route
+          path="/hr/payroll"
+          element={
+            <>
+              <PayrollPage />
             </>
           }
         />
