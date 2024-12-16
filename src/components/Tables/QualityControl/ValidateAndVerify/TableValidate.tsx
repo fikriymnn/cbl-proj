@@ -235,7 +235,7 @@ const TableValidasi = () => {
                 </div>
                 <div className="flex w-full  justify-start col-span-3">
                   <p className="text-neutral-500 text-sm font-light ">
-                    {data.jenis_kendala == 'mesin' ?
+                    {(data.jenis_kendala == 'Mesin' || data.jenis_kendala == 'mesin') ?
                       <>
                         {data.kode_lkh + ' - ' + data.nama_kendala + ' - ' + data.jenis_kendala}
                       </>
@@ -312,7 +312,7 @@ const TableValidasi = () => {
                             </svg>
                           </button>
                         </div>
-                        {data.jenis_kendala == 'mesin' ?
+                        {(data.jenis_kendala == 'Mesin' || data.jenis_kendala == 'mesin') ?
                           <>
                             <textarea
                               onChange={(e) => setNote(e.target.value)}
