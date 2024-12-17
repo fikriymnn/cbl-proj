@@ -170,6 +170,7 @@ import HistoryResponPengajuan from './pages/HR/Pengajuan/HistoryResponPengajuan'
 import OsQC from './pages/QualityControl/OutstandingQC/OutstandingQC';
 import RekapQC from './pages/QualityControl/RekapQC/RekapQC';
 import PayrollPage from './pages/HR/Payroll/Payrollpage';
+import JadwalPPIC from './pages/PPIC/JadwalPPIC/JadwalPPIC';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1684,8 +1685,6 @@ function App() {
             </>
           }
         />
-
-
         <Route
           path="/hr/master/shift"
           element={
@@ -1736,6 +1735,19 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <CapaHR />
+              </ProtectedRoute>
+            </>
+          }
+        />
+
+        {/* ===============PPIC=========== */}
+        <Route
+          path="/ppic/jadwalProduksi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JadwalPPIC />
               </ProtectedRoute>
             </>
           }

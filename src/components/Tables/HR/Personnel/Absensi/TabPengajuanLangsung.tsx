@@ -119,31 +119,57 @@ export default function TabPengajuanLangsung({ data }: { data: any }) {
             alert('Alasan Izin Belum Diisi');
             return;
         }
-        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanIzin`;
-        try {
-            setIsLoading(true)
-            const res = await axios.post(url,
-                {
-                    id_karyawan: id_KKaryawan,
-                    id_pengaju: idPengaju,
-                    dari: tglAbsen,
-                    sampai: tglAbsen,
-                    jumlah_hari: 1,
-                    alasan_izin: alasanIzin,
-                },
-                {
+        if (window.confirm(`Apakah Anda yakin akan mengajukan Izin untuk karyawan ${data.name}`)) {
+            const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanIzin`;
+            try {
+                setIsLoading(true)
+                const res = await axios.post(url,
+                    {
+                        id_karyawan: id_KKaryawan,
+                        id_pengaju: idPengaju,
+                        dari: tglAbsen,
+                        sampai: tglAbsen,
+                        jumlah_hari: 1,
+                        alasan_izin: alasanIzin,
+                    },
+                    {
 
-                    withCredentials: true,
-                });
-            setIsLoading(false)
-            window.location.reload();
+                        withCredentials: true,
+                    });
+                setIsLoading(false)
+                window.location.reload();
 
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
+            } catch (error: any) {
+                setIsLoading(false)
+                console.log(error);
+            }
         }
     }
 
+    async function postMangkir(tglAbsen: any, id_KKaryawan: any) {
+        if (window.confirm(`Apakah Anda yakin akan mengajukan Mangkir untuk karyawan ${data.name}`)) {
+            const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanMangkir`;
+            try {
+                setIsLoading(true)
+                const res = await axios.post(url,
+                    {
+                        id_karyawan: id_KKaryawan,
+                        id_pengaju: idPengaju,
+                        tanggal: tglAbsen
+                    },
+                    {
+
+                        withCredentials: true,
+                    });
+                setIsLoading(false)
+                window.location.reload();
+
+            } catch (error: any) {
+                setIsLoading(false)
+                console.log(error);
+            }
+        }
+    }
     return (
         <>
             <Box
@@ -192,7 +218,7 @@ export default function TabPengajuanLangsung({ data }: { data: any }) {
                             className="bg-white text-[#00499F] font-semibold mb-2 flex w-full"
                         >
                             <Tab label="Izin" {...a11yProps(0)} />
-                            <Tab label="Mangkir" {...a11yProps(0)} />
+                            <Tab label="Mangkir" {...a11yProps(1)} />
 
                         </Tabs>
                     </ThemeProvider>
@@ -242,6 +268,45 @@ export default function TabPengajuanLangsung({ data }: { data: any }) {
 
                                 <button
                                     onClick={() => postIzin(data.tgl_absen, data.userid)}
+                                    disabled={isLoading}
+                                    className='flex px-4 py-1 justify-center items-center bg-blue-600 text-white font-semibold rounded-md'
+                                >
+                                    AJUKAN
+                                </button>
+                            </div>
+                        </div>
+                    </main>
+                </TabPanel>
+                <TabPanel value={value} index={1} dir={theme.direction}>
+                    <main className="overflow-x-scroll px-2 py-2">
+                        {isLoading && <Loading />}
+                        <div className=" bg-white">
+                            <div className='grid grid-cols-2 gap-5  px-7 py-4 '>
+                                <div className='flex flex-col gap-1'>
+                                    <label className=' text-[#6c6b6b] text-sm font-semibold'>
+                                        Nama
+                                    </label>
+                                    <label className=' text-[#6c6b6b] text-sm'>
+                                        {data.name}
+                                    </label>
+                                </div>
+
+                            </div>
+                            <div className='grid grid-cols-2 gap-5 px-7 py-4'>
+                                <div className='flex flex-col gap-3'>
+                                    <label className=' text-[#6c6b6b] text-sm font-semibold'>
+                                        Tanggal
+                                    </label>
+                                    <label className=' text-[#6c6b6b] text-sm '>
+                                        {convertTimeStampToDate(data.tgl_absen)}
+                                    </label>
+                                </div>
+
+                            </div>
+                            <div className='flex w-full justify-end items-end px-7 py-4'>
+
+                                <button
+                                    onClick={() => postMangkir(data.tgl_absen, data.userid)}
                                     disabled={isLoading}
                                     className='flex px-4 py-1 justify-center items-center bg-blue-600 text-white font-semibold rounded-md'
                                 >

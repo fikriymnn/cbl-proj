@@ -11,6 +11,7 @@ import DiprosesCutiHR from './Cuti/DiprosesCutiHR';
 import DiprosesIzinHR from './Izin/DiprosesIzinHR';
 import DiprosesSakitHR from './Sakit/DiprosesSakitHR';
 import DiprosesPinjamanHR from './Pinjaman/DiprosesPinjamanHR';
+import DiprosesMangkirHR from './Mangkir/DiprosesMangkirHR';
 
 
 
@@ -49,7 +50,7 @@ function a11yProps(index: number) {
     };
 }
 
-export default function TabResponPengajuanHR() {
+export default function TabResponHistoryPengajuanHR() {
     const theme = createTheme({
         palette: {
             primary: {
@@ -146,10 +147,11 @@ export default function TabResponPengajuanHR() {
                             <Tab label="Cuti" {...a11yProps(1)} />
                             <Tab label="Izin" {...a11yProps(2)} />
                             <Tab label="Sakit" {...a11yProps(3)} />
-                            <Tab label="Pinjaman" {...a11yProps(4)} />
-                            <Tab label="Dinas" {...a11yProps(5)} />
-                            <Tab label="SP" {...a11yProps(6)} />
-                            <Tab label="Karyawan" {...a11yProps(7)} />
+                            <Tab label="Mangkir" {...a11yProps(4)} />
+                            <Tab label="Pinjaman" {...a11yProps(5)} />
+                            <Tab label="Dinas" {...a11yProps(6)} />
+                            <Tab label="SP" {...a11yProps(7)} />
+                            <Tab label="Karyawan" {...a11yProps(8)} />
                             <div className="flex w-full justify-end pr-4">
                                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                                     {tanggal}
@@ -175,11 +177,11 @@ export default function TabResponPengajuanHR() {
                 </TabPanel>
 
                 <TabPanel value={value} index={4} dir={theme.direction}>
-                    <DiprosesPinjamanHR />
+                    <DiprosesMangkirHR />
                 </TabPanel>
 
                 <TabPanel value={value} index={5} dir={theme.direction}>
-
+                    <DiprosesPinjamanHR />
                 </TabPanel>
 
                 <TabPanel value={value} index={6} dir={theme.direction}>
