@@ -192,7 +192,7 @@ export default function TabPengajuanLangsung({ data }: { data: any }) {
     const [daysDifference, setDaysDifference] = useState<any>();
     const [cutiKhusus, setCutiKhusus] = useState<any>();
     const [options2, setOptions2] = useState([]);
-    const [sisaCuti, setSisaCuti] = useState<any>();
+
 
     async function getCutiKhusus() {
         const url = `${import.meta.env.VITE_API_LINK
@@ -235,6 +235,7 @@ export default function TabPengajuanLangsung({ data }: { data: any }) {
             return ''; // Return empty string if no date or daysOff are available
         };
         const endDate = calculateEndDate();
+
         const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanCuti`;
         try {
             setIsLoading(true)

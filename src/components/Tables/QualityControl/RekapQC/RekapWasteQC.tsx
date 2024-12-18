@@ -296,7 +296,7 @@ function RekapWasteQC() {
                     </>
                 ) : (
                     <>
-                        <div className=' border-8 border-[#D8EAFF] '>
+                        {/* <div className=' border-8 border-[#D8EAFF] '>
                             <div className='grid grid-cols-10 border-2 border-black px-3 justify-center gap-4 bg-white rounded-md py-1'>
                                 <label className='text-sm font-semibold'>
                                     No
@@ -312,95 +312,43 @@ function RekapWasteQC() {
                                 </label>
 
                             </div>
-                        </div>
+                        </div> */}
                         <div className="border-8 border-[#D8EAFF] ">
                             {waste?.dataWasteAll?.map((data: any, i: any) => {
                                 return (
                                     <>
                                         <div
                                             key={i} className=''>
-                                            <div className=' rounded-md grid grid-cols-10 items-center  px-3 justify-center gap-4 text-stone-400 bg-white py-3 border-2 border-black'>
-                                                <label className='text-sm font-semibold '>
-                                                    {i + 1}
+                                            <div className=' rounded-md  max-w-screen gap-2 flex overflow-x-scroll items-center  text-stone-400 bg-white  border-2 border-black'>
+                                                <label className='text-[10px] font-semibold w-[2%] pl-1'>
+                                                    {i + 1}.
                                                 </label>
-                                                <label className='text-sm font-semibold col-span-2'>
-                                                    {data.kode_waste}
+                                                <label className='text-[10px] font-semibold min-w-[300px]'>
+                                                    {data.kode_waste} - {data.waste_desc} - <span className='text-md text-red-500 font-semibold '>{data.total_defect}</span>
                                                 </label>
-                                                <label className='text-sm font-semibold col-span-2'>
-                                                    {data.total_defect}
-                                                </label>
-                                                <label className='text-sm font-semibold col-span-2'>
-                                                    {data.waste_desc}
-                                                </label>
-                                                <div className='col-span-3 flex justify-end'>
-                                                    <button
-                                                        title="button"
-                                                        onClick={() => handleClickDetail(i)}
-                                                        className="text-xs font-bold text-blue-700 bg-blue-700 py-2 px-1 flex justify-center border-blue-700 border rounded-md"
-                                                    >
-                                                        <img src={Arrow} alt="" className="mx-3" />
-                                                    </button>
-                                                </div>
-
-                                            </div>
-                                        </div>
-                                        {showDetail[i] && (
-                                            <>
-                                                <div
-
-                                                    className='flex flex-col  bg-white border-8 border-[#D8EAFF] px-[3%]'>
-
-                                                    <div className='grid grid-cols-12 gap-1 px-3  border-2 border-black rounded-md'>
-
-                                                        <label className='text-sm font-semibold'>
-                                                            No
-                                                        </label>
-                                                        <label className='text-sm font-semibold col-span-4 border-x-2 border-black'>
-                                                            Kode
-                                                        </label>
-                                                        <label className='text-sm font-semibold col-span-2'>
-                                                            Bobot
-                                                        </label>
-                                                        <label className='text-sm font-semibold col-span-3 border-x-2 border-black'>
-                                                            Calculated Defect
-                                                        </label>
-                                                    </div>
-
+                                                <div className=' flex '>
                                                     {data.kendala?.map((data2: any, ii: any) => {
                                                         return (
                                                             <>
-                                                                <div
-
-                                                                    key={ii}
-                                                                    className=' border-2  border-[#D8EAFF] gap-1 bg-white '>
-
-                                                                    <div className='grid grid-cols-12 gap-1 rounded-md text-stone-400 border-2 border-black mx-1'>
-
-                                                                        <label className='text-sm font-semibold '>
-                                                                            {ii + 1}
-                                                                        </label>
-                                                                        <label className='text-sm font-semibold col-span-4 border-x-2 border-black'>
-
-                                                                            {data2.kode_kendala} - {data2.kendala_desc}
-                                                                        </label>
-                                                                        <label className='text-sm font-semibold col-span-2'>
-                                                                            {data2.bobot}
-                                                                        </label>
-                                                                        <label className='text-sm font-semibold col-span-3 border-x-2 border-black'>
-                                                                            {data2.calculated_defect}
-                                                                        </label>
-                                                                    </div>
-
-
+                                                                <div key={ii}
+                                                                    className='flex flex-col justify-between gap-2 border-x-2 border-b-2 border-black  py-4 w-30 items-center'
+                                                                >
+                                                                    <label className='text-[10px] font-semibold border-b-2 h-full w-full text-center border-black'>
+                                                                        {data2.kode_kendala} - {data2.kendala_desc}
+                                                                    </label>
+                                                                    <label className='text-md text-red-500 font-semibold '>
+                                                                        {data2.calculated_defect}
+                                                                    </label>
                                                                 </div>
                                                             </>
                                                         )
-                                                    }
-                                                    )
-                                                    }
-                                                </div >
-                                            </>
-                                        )}
+                                                    })}
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+
                                     </>
                                 )
                             }
