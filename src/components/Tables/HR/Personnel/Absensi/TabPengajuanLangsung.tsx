@@ -10,7 +10,7 @@ import convertTimeStampToDate from '../../../../../utils/convertDate';
 import Loading from '../../../../Loading';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-
+import Select from 'react-select';
 
 
 interface TabPanelProps {
@@ -95,7 +95,8 @@ export default function TabPengajuanLangsung({ data }: { data: any }) {
     const tanggal = convertDatetimeToDate(new Date());
     useEffect(() => {
         getMe()
-
+        getCutiKhusus()
+        handleStartDateChange()
     }, []);
 
 
@@ -170,6 +171,97 @@ export default function TabPengajuanLangsung({ data }: { data: any }) {
             }
         }
     }
+    const [tglDari, setTglDari] = useState<any>(data.tgl_absen);
+    const [alasanCuti, setAlasanCuti] = useState<any>();
+
+    const handleStartDateChange = () => {
+        setTglDari(new Date(data.tgl_absen));
+    };
+
+    const handleChangePointCuti = (selected: any) => {
+        const { value } = selected;
+        const filteredData = cutiKhusus.find(
+            (item: any) => item.id == value,
+            // item.id.includes(parseInt(value));
+        );
+        console.log(filteredData?.id)
+        setDaysDifference(filteredData?.jumlah_hari)
+        setAlasanCuti(filteredData?.nama_cuti)
+    };
+
+    const [daysDifference, setDaysDifference] = useState<any>();
+    const [cutiKhusus, setCutiKhusus] = useState<any>();
+    const [options2, setOptions2] = useState([]);
+    const [sisaCuti, setSisaCuti] = useState<any>();
+
+    async function getCutiKhusus() {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/master/hr/cutiKhusus`;
+        try {
+            setIsLoading(true)
+            const res = await axios.get(
+                url,
+
+                {
+                    withCredentials: true,
+                },
+            );
+
+            setIsLoading(false)
+            setCutiKhusus(res.data.data)
+            setOptions2(
+                res.data.data.map((item: any) => ({
+                    value: item.id,
+                    label: item.nama_cuti + ' - ' + item.jumlah_hari + ' Hari ',
+                }))
+            );
+            console.log(res.data)
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
+
+
+    async function postCutiKhusus(tglAbsen: any, id_KKaryawan: any) {
+
+        const calculateEndDate = () => {
+
+            if (tglDari && daysDifference > 0) {
+                const newDate = new Date(tglDari.getTime());
+                newDate.setDate(newDate.getDate() + daysDifference - 1);
+                return newDate.toISOString().substring(0, 10); // Format as YYYY-MM-DD
+            }
+            return ''; // Return empty string if no date or daysOff are available
+        };
+        const endDate = calculateEndDate();
+        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanCuti`;
+        try {
+            setIsLoading(true)
+            //console.log(id_KKaryawan, idPengaju, tglAbsen, endDate, daysDifference, alasanCuti, sisaCuti)
+            const res = await axios.post(url,
+                {
+                    id_karyawan: id_KKaryawan,
+                    id_pengaju: idPengaju,
+                    tipe_cuti: 'khusus',
+                    dari: tglAbsen,
+                    sampai: endDate,
+                    jumlah_hari: daysDifference,
+                    alasan_cuti: alasanCuti,
+                    sisa_cuti: '',
+                },
+                {
+
+                    withCredentials: true,
+                });
+            setIsLoading(false)
+            window.location.reload();
+
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
     return (
         <>
             <Box
@@ -218,7 +310,8 @@ export default function TabPengajuanLangsung({ data }: { data: any }) {
                             className="bg-white text-[#00499F] font-semibold mb-2 flex w-full"
                         >
                             <Tab label="Izin" {...a11yProps(0)} />
-                            <Tab label="Mangkir" {...a11yProps(1)} />
+                            <Tab label="Cuti Khusus" {...a11yProps(1)} />
+                            <Tab label="Mangkir" {...a11yProps(2)} />
 
                         </Tabs>
                     </ThemeProvider>
@@ -278,6 +371,62 @@ export default function TabPengajuanLangsung({ data }: { data: any }) {
                     </main>
                 </TabPanel>
                 <TabPanel value={value} index={1} dir={theme.direction}>
+                    <main className="overflow-x-scroll min-h-[400px] px-2 py-2">
+                        {isLoading && <Loading />}
+                        <div className=" bg-white">
+                            <div className='grid grid-cols-2 gap-5  px-7 py-4 '>
+                                <div className='flex flex-col gap-1'>
+                                    <label className=' text-[#6c6b6b] text-sm font-semibold'>
+                                        Nama
+                                    </label>
+                                    <label className=' text-[#6c6b6b] text-sm'>
+                                        {data.name}
+                                    </label>
+                                </div>
+
+                            </div>
+                            <div className='grid grid-cols-2 gap-5 px-7 py-4'>
+                                <div className='flex flex-col gap-3'>
+                                    <label className=' text-[#6c6b6b] text-sm font-semibold'>
+                                        Tanggal
+                                    </label>
+                                    <label className=' text-[#6c6b6b] text-sm '>
+                                        {convertTimeStampToDate(data.tgl_absen)}
+                                    </label>
+                                </div>
+
+                                <div className='flex w-full flex-col px-7 py-4'>
+                                    <div>
+                                        <label className=' text-[#6c6b6b] text-sm font-semibold'>
+                                            Pilih Tipe Cuti
+                                        </label>
+                                        <Select
+                                            placeholder='Cari...'
+                                            options={options2}
+                                            onChange={(selectedId: any) => {
+
+                                                handleChangePointCuti(selectedId)
+                                            }}
+                                            className={`relative z-50 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
+                  }`}
+                                        >
+
+                                        </Select>
+                                    </div>
+                                    <button
+                                        onClick={() => postCutiKhusus(data.tgl_absen, data.userid)}
+                                        disabled={isLoading}
+                                        className='flex px-4 py-1 justify-center items-center bg-blue-600 text-white font-semibold rounded-md'
+                                    >
+                                        AJUKAN
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </main>
+                </TabPanel>
+                <TabPanel value={value} index={2} dir={theme.direction}>
                     <main className="overflow-x-scroll px-2 py-2">
                         {isLoading && <Loading />}
                         <div className=" bg-white">
