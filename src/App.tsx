@@ -171,6 +171,7 @@ import OsQC from './pages/QualityControl/OutstandingQC/OutstandingQC';
 import RekapQC from './pages/QualityControl/RekapQC/RekapQC';
 import PayrollPage from './pages/HR/Payroll/Payrollpage';
 import JadwalPPIC from './pages/PPIC/JadwalPPIC/JadwalPPIC';
+import MasterPayrollHR from './pages/HR/MasterDataHR/MasterPayrollHR';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1714,6 +1715,14 @@ function App() {
           element={
             <>
               <MasterGradeHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/master/payroll"
+          element={
+            <>
+              <MasterPayrollHR />
             </>
           }
         />
