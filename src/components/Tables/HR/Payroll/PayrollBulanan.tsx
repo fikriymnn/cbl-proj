@@ -8,11 +8,12 @@ import convertTimeStampToDate from '../../../../utils/convertDate';
 
 function PayrollBulanan() {
     const [isLoading, setIsLoading] = useState(false);
-    const [payWeek, setPayWeek] = useState<any>();
+    const [payMonth, setPayMonth] = useState<any>();
 
     const [dateFrom, setDateFrom] = useState<any>();
     const [dateTo, setDateTo] = useState<any>();
     const [idKaryawan, setIdKaryawan] = useState<any>();
+    const [insentif, setInsentif] = useState<any>(0);
 
 
 
@@ -32,6 +33,9 @@ function PayrollBulanan() {
                 url,
 
                 {
+                    params: {
+                        tipe_penggajian: "bulanan"
+                    },
                     withCredentials: true,
                 },
             );
@@ -45,8 +49,8 @@ function PayrollBulanan() {
 
 
 
-    async function getPayrollMingguan(dateFrom1: any, dateTo1: any, id_karyawan: any) {
-        const url = `${import.meta.env.VITE_API_LINK}/hr/payroll`;
+    async function getPayrollBulanan(dateFrom1: any, dateTo1: any, id_karyawan: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/hr/payrollBulanan`;
         try {
             setIsLoading(true)
             const res = await axios.get(url,
@@ -59,8 +63,32 @@ function PayrollBulanan() {
                     withCredentials: true,
                 });
             setIsLoading(false)
-            setPayWeek(res.data);
+            setPayMonth(res.data);
             console.log(res.data);
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
+
+    async function bayarPayrollBulanan(dateFrom1: any, dateTo1: any, id_karyawan: any, data_payroll: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/hr/payroll/bayarBulanan`;
+        try {
+            setIsLoading(true)
+            const res = await axios.post(url, {
+                periode_dari: dateFrom1,
+                periode_sampai: dateTo1,
+                id_karyawan: id_karyawan,
+                insentif: insentif,
+                data_payroll: data_payroll
+            },
+                {
+                    withCredentials: true,
+                });
+            setIsLoading(false)
+
+            console.log(res.data);
+            alert("success")
         } catch (error: any) {
             setIsLoading(false)
             console.log(error);
@@ -190,23 +218,185 @@ function PayrollBulanan() {
                                                         </div>
                                                         <div className='flex flex-col'>
                                                             <p className="my-auto text-sm text-primary font-semibold ">
-                                                                Payroll Bulanan
+                                                                Pilih Periode Pembayaran
                                                             </p>
-                                                            <div className='flex gap-3'>
 
+                                                        </div>
+
+                                                        <div className='flex gap-3'>
+                                                            <div className="flex md:justify-center items-center gap-2">
+                                                                <p className="text-sm text-primary font-semibold md:w-3/12 w-2/12">
+                                                                    Dari:
+                                                                </p>
+                                                                <input
+                                                                    className='rounded-full bg-[#D8EAFF] px-2 text-black'
+                                                                    type="date"
+                                                                    onChange={(e) => setDateFrom(e.target.value)}
+                                                                ></input>
+
+                                                            </div>
+                                                            <div className="flex md:justify-center items-center gap-2">
+                                                                <p className=" my-auto text-sm text-primary font-semibold md:w-3/12 w-2/12">
+                                                                    Sampai:
+                                                                </p>
+
+                                                                <input
+                                                                    className='rounded-full bg-[#D8EAFF] px-2 text-black'
+                                                                    type="date"
+                                                                    onChange={(e) => setDateTo(e.target.value)}
+                                                                ></input>
+
+                                                            </div>
+
+
+
+                                                            <button
+                                                                disabled={isLoading}
+                                                                onClick={() => {
+                                                                    getPayrollBulanan(dateFrom, dateTo, data.biodata_karyawan[0]?.id_karyawan)
+                                                                }}
+                                                                className="bg-primary text-white px-5 py-2 rounded-md my-auto "
+                                                            >
+                                                                {isLoading ? 'Loading...' : 'TAMPILKAN'}
+                                                            </button>
+
+                                                        </div>
+
+
+                                                        <div className='grid grid-cols-2 items-center py-2  border-b-8 border-[#D8EAFF]'>
+                                                            <div className='text-sm text-neutral-500  '>
+                                                                {
+                                                                    payMonth?.data?.summaryPayroll?.potonganIzin?.length != 0 ?
+                                                                        <div className='flex'>
+                                                                            <p>
+                                                                                Potongan Izin :
+                                                                            </p>
+                                                                            <div>
+                                                                                {
+                                                                                    payMonth?.data?.summaryPayroll?.potonganIzin?.map((dataPotonganIzin: any, iRincian: number) => {
+                                                                                        return (
+                                                                                            <p className='text-sm flex flex-col'>
+                                                                                                {`${iRincian + 1}. ${dataPotonganIzin.label} : ${dataPotonganIzin.nilai} = ${dataPotonganIzin.total}`}
+                                                                                            </p>
+                                                                                        )
+
+                                                                                    })
+                                                                                }
+                                                                            </div>
+
+                                                                        </div> : null
+                                                                }
+                                                                {
+                                                                    payMonth?.data?.summaryPayroll?.potonganSakit?.length != 0 ?
+                                                                        <div className='flex'>
+                                                                            <p>
+                                                                                Potongan Sakit :
+                                                                            </p>
+                                                                            <div>
+                                                                                {
+                                                                                    payMonth?.data?.summaryPayroll?.potonganSakit?.map((dataSakit: any, iSakit: number) => {
+                                                                                        return (
+                                                                                            <p className='text-sm flex flex-col'>
+                                                                                                {`${iSakit + 1}. ${dataSakit.label} : ${dataSakit.nilai} = ${dataSakit.total}`}
+                                                                                            </p>
+                                                                                        )
+
+                                                                                    })
+                                                                                }
+                                                                            </div>
+
+                                                                        </div> : null
+                                                                }
+                                                                {
+                                                                    payMonth?.data?.summaryPayroll?.potonganMangkir.length != 0 ?
+                                                                        <div className='flex'>
+                                                                            <p>
+                                                                                Potongan Mangkir :
+                                                                            </p>
+                                                                            <div>
+                                                                                {
+                                                                                    payMonth?.data?.summaryPayroll?.potonganMangkir?.map((dataMangkir: any, iMangkir: number) => {
+                                                                                        return (
+                                                                                            <p className='text-sm flex flex-col'>
+                                                                                                {`${iMangkir + 1}. ${dataMangkir.label} :  ${dataMangkir.nilai} = ${dataMangkir.total}`}
+                                                                                            </p>
+                                                                                        )
+
+                                                                                    })
+                                                                                }
+                                                                            </div>
+
+                                                                        </div> : null
+                                                                }
+
+                                                                {
+                                                                    payMonth?.data?.summaryPayroll?.potonganPinjaman != null ?
+                                                                        <div className='flex'>
+                                                                            <p>
+                                                                                {` Potongan Pinjaman : ${payMonth?.data?.summaryPayroll?.potonganPinjaman?.jumlah_cicilan}`}
+                                                                            </p>
+
+
+                                                                        </div> : null
+                                                                }
+
+                                                                <div>
+                                                                    {
+                                                                        "TMK : " + payMonth?.data?.summaryPayroll?.tmk
+                                                                    }
+                                                                </div>
+                                                                <div>
+                                                                    {
+                                                                        "Gaji : " + payMonth?.data?.summaryPayroll?.gaji
+                                                                    }
+                                                                </div>
+
+                                                            </div>
+                                                            <div className='flex flex-col justify-end w-full'>
+
+                                                                <div className="flex w-full flex-col">
+                                                                    <label className="text-black text-xs font-bold">
+                                                                        Insentif
+                                                                    </label>
+                                                                    <div className="flex w-full">
+                                                                        <input
+                                                                            name="nama_grade"
+
+                                                                            onChange={(e) => {
+                                                                                setInsentif(e.target.value)
+
+                                                                            }}
+                                                                            type="number"
+                                                                            className=" w-[40%] h-6 border-2 border-stroke rounded-md"
+                                                                        />
+
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    {
+                                                                        `Total Gaji : Rp.  ${payMonth?.data?.summaryPayroll?.total + parseInt(insentif)}`
+                                                                    }
+                                                                </div>
+                                                            </div>
+
+                                                        </div>
+
+                                                        {payMonth?.data == null ? <></> :
+
+                                                            <>
                                                                 <button
                                                                     disabled={isLoading}
                                                                     onClick={() => {
-                                                                        getPayrollMingguan(dateFrom, dateTo, data.biodata_karyawan[0]?.id_karyawan)
+                                                                        bayarPayrollBulanan(dateFrom, dateTo, data.biodata_karyawan[0]?.id_karyawan, payMonth?.data?.summaryPayroll)
                                                                     }}
-                                                                    className="bg-primary text-white px-5 py-2 rounded-md my-auto "
+                                                                    className="bg-primary text-white  py-1 rounded-md my-auto "
                                                                 >
                                                                     {isLoading ? 'Loading...' : 'BAYAR'}
                                                                 </button>
-
-                                                            </div>
-                                                        </div>
+                                                            </>
+                                                        }
                                                     </div>
+
 
 
                                                 </>

@@ -13,6 +13,7 @@ function ListPayroll() {
     const [dateFrom, setDateFrom] = useState<any>();
     const [dateTo, setDateTo] = useState<any>();
     const [idKaryawan, setIdKaryawan] = useState<any>();
+    const [insentif, setInsentif] = useState<any>(0);
 
 
 
@@ -67,6 +68,30 @@ function ListPayroll() {
         }
     }
 
+    async function bayarPayrollMingguan(dateFrom1: any, dateTo1: any, id_karyawan: any, data_payroll: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/hr/payroll/bayarMingguan`;
+        try {
+            setIsLoading(true)
+            const res = await axios.post(url, {
+                periode_dari: dateFrom1,
+                periode_sampai: dateTo1,
+                id_karyawan: id_karyawan,
+                insentif: insentif,
+                data_payroll: data_payroll
+            },
+                {
+                    withCredentials: true,
+                });
+            setIsLoading(false)
+
+            console.log(res.data);
+            alert("success")
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
+
     const [showEdit, setShowEdit] = useState<any>([]);
     const openEdit = (i: any) => {
         const onchangeVal: any = [...showEdit];
@@ -79,6 +104,9 @@ function ListPayroll() {
         onchangeVal[i] = false;
 
         setShowEdit(onchangeVal);
+        setPayWeek(null)
+        setDateFrom(null)
+        setDateTo(null)
     };
 
     const [showEdit2, setShowEdit2] = useState<any>([]);
@@ -219,9 +247,6 @@ function ListPayroll() {
                                                                     ></input>
 
                                                                 </div>
-
-
-
                                                                 <button
                                                                     disabled={isLoading}
                                                                     onClick={() => {
@@ -234,7 +259,8 @@ function ListPayroll() {
 
                                                             </div>
                                                         </div>
-                                                        <div className='grid grid-cols-12 px-4 py-1'>
+
+                                                        <div className='grid grid-cols-12 px-4 py-1 border-b-8 border-[#D8EAFF]'>
                                                             <div className='flex gap-1 col-span-3 text-sm text-black font-semibold'>
                                                                 No. Tanggal
                                                             </div>
@@ -242,19 +268,19 @@ function ListPayroll() {
                                                                 Status Absen
                                                             </p>
                                                             <p className='text-sm text-black font-semibold col-span-5'>
-                                                                Rincihan
+                                                                Rincian
                                                             </p>
                                                             <p className='text-sm text-black font-semibold col-span-2'>
                                                                 Total
                                                             </p>
                                                         </div>
-                                                        <div className='flex flex-col gap-1 py-4'>
+                                                        <div className='flex flex-col gap-1 py-4 max-h-[500px] overflow-y-scroll '>
                                                             {payWeek != null &&
-                                                                payWeek?.data?.map((data2: any, ii: any) => (
+                                                                payWeek?.data?.detailAbsensi?.map((data2: any, ii: any) => (
                                                                     <>
                                                                         <div
                                                                             key={ii}
-                                                                            className='grid grid-cols-12 px-4 py-1'>
+                                                                            className='grid grid-cols-12 px-4 py-1 border-b-8 border-[#D8EAFF]'>
                                                                             <div className='flex gap-1 col-span-3 text-sm text-neutral-500'>
                                                                                 {ii + 1}. {data2.tgl_masuk}
                                                                             </div>
@@ -265,9 +291,8 @@ function ListPayroll() {
                                                                                 {payWeek != null &&
                                                                                     data2?.payroll?.rincian?.map((data3: any, iii: any) => (
                                                                                         <>
-
                                                                                             <p className='text-sm flex flex-col'>
-                                                                                                {iii + 1}. {data3}
+                                                                                                {`${iii + 1}. ${data3.label} : ${data3.jumlah} x ${data3.nilai} = ${data3.total}`}
                                                                                             </p>
 
                                                                                         </>
@@ -275,7 +300,7 @@ function ListPayroll() {
 
                                                                             </div>
                                                                             <div className='px-2'>
-                                                                                {data2.payroll?.data_pengajuan_lembur != null ?
+                                                                                {data2?.payroll?.data_pengajuan_lembur != null ?
                                                                                     <>
                                                                                         <button
                                                                                             onClick={() => openEdit2(ii)}
@@ -308,7 +333,6 @@ function ListPayroll() {
                                                                                                             </label>
                                                                                                         </div>
                                                                                                     </div>
-
                                                                                                     <div className='grid grid-cols-2 gap-2 px-4 py-4'>
                                                                                                         <div className='flex flex-col gap-2 '>
                                                                                                             <div className='flex flex-col '>
@@ -405,8 +429,6 @@ function ListPayroll() {
                                                                                                         </label>
                                                                                                     </div>
 
-
-
                                                                                                     <div className='flex flex-col w-full px-4 '>
                                                                                                         <label htmlFor="" className='text-black text-xs font-bold'>
                                                                                                             RESPON HR<span className='text-red-600'>*</span>
@@ -431,10 +453,110 @@ function ListPayroll() {
                                                                             <p className='text-sm text-neutral-500 col-span-2'>
                                                                                 {(data2.payroll?.total == null || data2.payroll?.total == 0) ? '-' : formatCurrency(data2.payroll?.total)}
                                                                             </p>
+
                                                                         </div >
+
                                                                     </>
                                                                 ))}
+                                                            <div className='grid grid-cols-2 items-center py-2  border-b-8 border-[#D8EAFF]'>
+
+
+                                                                <div className='flex flex-col '>
+                                                                    <div className='flex'>
+                                                                        <p>
+                                                                            Rincian :
+                                                                        </p>
+                                                                        <div>
+                                                                            {
+                                                                                payWeek?.data?.summaryPayroll?.rincian?.map((dataRincian: any, iRincian: number) => {
+                                                                                    return (
+                                                                                        <p className='text-sm flex flex-col'>
+                                                                                            {`${iRincian + 1}. ${dataRincian.label} : ${dataRincian.jumlah} x ${dataRincian.nilai} = ${dataRincian.total}`}
+                                                                                        </p>
+                                                                                    )
+
+                                                                                })
+                                                                            }
+                                                                        </div>
+
+                                                                    </div>
+                                                                    {
+                                                                        payWeek?.data?.summaryPayroll?.upahHarianSakit.length != 0 ?
+                                                                            <div className='flex'>
+                                                                                <p>
+                                                                                    Upah Harian Sakit :
+                                                                                </p>
+                                                                                <div>
+                                                                                    {
+                                                                                        payWeek?.data?.summaryPayroll?.upahHarianSakit?.map((dataSakit: any, iSAkit: number) => {
+                                                                                            return (
+                                                                                                <p className='text-sm flex flex-col'>
+                                                                                                    {`${iSAkit + 1}. ${dataSakit.label} : ${dataSakit.jumlah} x ${dataSakit.nilai} = ${dataSakit.total}`}
+                                                                                                </p>
+                                                                                            )
+
+                                                                                        })
+                                                                                    }
+                                                                                </div>
+
+                                                                            </div> : null
+                                                                    }
+                                                                    {
+                                                                        payWeek?.data?.summaryPayroll?.potonganPinjaman != null ?
+                                                                            <div className='flex'>
+                                                                                <p>
+                                                                                    {` Potongan Pinjaman : ${payWeek?.data?.summaryPayroll?.potonganPinjaman?.jumlah_cicilan}`}
+                                                                                </p>
+
+
+                                                                            </div> : null
+                                                                    }
+
+
+                                                                </div>
+                                                                <div className='flex flex-col justify-end w-full'>
+
+
+                                                                    <div className="flex w-full flex-col">
+                                                                        <label className="text-black text-xs font-bold">
+                                                                            Insentif
+                                                                        </label>
+                                                                        <div className="flex w-full">
+                                                                            <input
+
+                                                                                name="nama_grade"
+
+                                                                                onChange={(e) => {
+                                                                                    setInsentif(e.target.value)
+
+                                                                                }}
+                                                                                type="number"
+                                                                                className=" w-[40%] h-6 border-2 border-stroke rounded-md"
+                                                                            />
+
+                                                                        </div>
+                                                                    </div>
+
+
+                                                                    <div>
+                                                                        {
+                                                                            `Total Upah : Rp.  ${payWeek?.data?.summaryPayroll?.total + parseInt(insentif)}`
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            {payWeek?.data == null ? <></> :
+
+                                                                <>
+                                                                    <button
+                                                                        onClick={() => bayarPayrollMingguan(dateFrom, dateTo, data.biodata_karyawan[0]?.id_karyawan, payWeek?.data?.summaryPayroll)}
+                                                                        className='px-2 py-1  text-xs bg-blue-400 items-center justify-center text-white font-semibold rounded-md flex w-full '>
+                                                                        Bayar
+                                                                    </button>
+                                                                </>}
                                                         </div>
+
                                                     </>
                                                 </>
                                             </ModalKosongan>

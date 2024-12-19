@@ -6,6 +6,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import MasterPayroll from './MasterPayroll';
 
 
 
@@ -151,7 +152,7 @@ export default function TabMasterPayroll() {
                     </ThemeProvider>
                 </AppBar>
                 <TabPanel value={value} index={0} dir={theme.direction}>
-
+                    <MasterPayroll />
                 </TabPanel>
                 <TabPanel value={value} index={1} dir={theme.direction}>
 

@@ -54,6 +54,7 @@ function IsiMasterGrade() {
     const [uangDinas, setUangDinas] = useState<any>(0);
     const [uangHadir, setUangHadir] = useState<any>(0);
     const [uangKawal, setUangKawal] = useState<any>(0);
+    const [uangMakan, setUangMakan] = useState<any>(0);
     const [uangMakanLembur, setUangMakanLembur] = useState<any>(0);
     const [uangOngkosPulang, setUangOngkosPulang] = useState<any>(0);
 
@@ -76,6 +77,7 @@ function IsiMasterGrade() {
                     uang_hadir: uangHadir,
                     uang_kawal: uangKawal,
                     uang_makan_lembur: uangMakanLembur,
+                    uang_makan: uangMakan,
                     uang_ongkos_pulang: uangOngkosPulang
 
                 },
@@ -119,6 +121,7 @@ function IsiMasterGrade() {
     const [uangDinasEdit, setUangDinasEdit] = useState<any>(0);
     const [uangHadirEdit, setUangHadirEdit] = useState<any>(0);
     const [uangKawalEdit, setUangKawaEditl] = useState<any>(0);
+    const [uangMakanEdit, setUangMakanEdit] = useState<any>(0);
     const [uangMakanLemburEdit, setUangMakanLemburEdit] = useState<any>(0);
     const [uangOngkosPulangEdit, setUangOngkosPulangEdit] = useState<any>(0);
 
@@ -141,6 +144,7 @@ function IsiMasterGrade() {
                     uang_hadir: uangHadirEdit,
                     uang_kawal: uangKawalEdit,
                     uang_makan_lembur: uangMakanLemburEdit,
+                    uang_makan: uangMakanEdit,
                     uang_ongkos_pulang: uangOngkosPulangEdit
 
                 },
@@ -312,6 +316,18 @@ function IsiMasterGrade() {
                                                                     />
                                                                 </div>
                                                                 <label className="text-black text-xs font-semibold">
+                                                                    Uang Makan
+                                                                </label>
+                                                                <div className="flex w-full">
+                                                                    <input
+                                                                        required
+                                                                        name="nama_grade"
+                                                                        onChange={(e) => { setUangMakan(e.target.value) }}
+                                                                        type="number"
+                                                                        className=" w-[387px] h-6 border-2 border-stroke rounded-md"
+                                                                    />
+                                                                </div>
+                                                                <label className="text-black text-xs font-semibold">
                                                                     Uang Makan Lembur
                                                                 </label>
                                                                 <div className="flex w-full">
@@ -399,6 +415,9 @@ function IsiMasterGrade() {
                                 <label className="text-neutral-500 text-xs font-semibold  w-[8%]">
                                     Uang Kawal
                                 </label>
+                                <label className="text-neutral-500 text-xs font-semibold w-[8%]">
+                                    Uang Makan
+                                </label>
                                 <label className="text-neutral-500 text-xs font-semibold  w-[8%]">
                                     Uang Makan Lembur
                                 </label>
@@ -447,6 +466,9 @@ function IsiMasterGrade() {
                                                 </label>
                                                 <label className="text-neutral-500 text-xs font-semibold   w-[8%]">
                                                     {data.uang_kawal == 0 || data.uang_kawal == null ? '-' : formatInteger(data.uang_kawal)}
+                                                </label>
+                                                <label className="text-neutral-500 text-xs font-semibold  w-[8%] ">
+                                                    {data.uang_makan == 0 || data.uang_makan == null ? '-' : formatInteger(data.uang_makan)}
                                                 </label>
                                                 <label className="text-neutral-500 text-xs font-semibold  w-[8%] ">
                                                     {data.uang_makan_lembur == 0 || data.uang_makan_lembur == null ? '-' : formatInteger(data.uang_makan_lembur)}
@@ -591,6 +613,19 @@ function IsiMasterGrade() {
                                                                                 required
                                                                                 name="nama_grade"
                                                                                 onChange={(e) => { setUangKawaEditl(e.target.value) }}
+                                                                                type="number"
+                                                                                className=" w-[387px] h-6 border-2 border-stroke rounded-md"
+                                                                            />
+                                                                        </div>
+                                                                        <label className="text-black text-xs font-semibold">
+                                                                            Uang Makan
+                                                                        </label>
+                                                                        <div className="flex w-full">
+                                                                            <input
+                                                                                defaultValue={data.uang_makan}
+                                                                                required
+                                                                                name="nama_grade"
+                                                                                onChange={(e) => { setUangMakanEdit(e.target.value) }}
                                                                                 type="number"
                                                                                 className=" w-[387px] h-6 border-2 border-stroke rounded-md"
                                                                             />

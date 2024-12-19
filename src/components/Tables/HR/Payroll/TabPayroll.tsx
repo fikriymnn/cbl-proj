@@ -8,6 +8,8 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import ListPayroll from './ListPayroll';
 import PayrollBulanan from './PayrollBulanan';
+import HistoryPayroll from './HistoryPayroll';
+import HistoryPayrollBulanan from './HistoryPayrollBulanan';
 
 
 
@@ -142,12 +144,10 @@ export default function TabPayroll() {
                         >
                             <Tab label="Payroll Mingguan + Uang Makan" {...a11yProps(0)} />
                             <Tab label="Payroll Bulanan" {...a11yProps(1)} />
+                            <Tab label="History Payroll Mingguan + Uang Makan" {...a11yProps(2)} />
+                            <Tab label="History Payroll Bulanan" {...a11yProps(3)} />
 
-                            <div className="flex w-full justify-end pr-4">
-                                <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
-                                    {tanggal}
-                                </p>
-                            </div>
+
                         </Tabs>
                     </ThemeProvider>
                 </AppBar>
@@ -156,6 +156,12 @@ export default function TabPayroll() {
                 </TabPanel>
                 <TabPanel value={value} index={1} dir={theme.direction}>
                     <PayrollBulanan />
+                </TabPanel>
+                <TabPanel value={value} index={2} dir={theme.direction}>
+                    <HistoryPayroll />
+                </TabPanel>
+                <TabPanel value={value} index={3} dir={theme.direction}>
+                    <HistoryPayrollBulanan />
                 </TabPanel>
 
             </Box>
