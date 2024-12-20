@@ -6,8 +6,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import DailyJadwalProduksi from './DailyJadwalProduksi';
-import ListJOProduksi from './ListJOProduksi';
+import MasterKategori from './MasterKategori';
+
 
 
 interface TabPanelProps {
@@ -45,7 +45,7 @@ function a11yProps(index: number) {
     };
 }
 
-export default function TabJadwalProduksi() {
+export default function TabMasterJadwal() {
     const theme = createTheme({
         palette: {
             primary: {
@@ -123,14 +123,14 @@ export default function TabJadwalProduksi() {
                         aria-label="full width tabs example"
                         className='bg-white text-[#00499F] font-semibold mb-2 '
                     >
-                        <Tab label="List JO" {...a11yProps(0)} className='' />
+                        <Tab label="Kategori" {...a11yProps(0)} className='' />
 
 
                     </Tabs>
                 </ThemeProvider>
             </AppBar>
             <TabPanel value={value} index={0} dir={theme.direction}>
-                <ListJOProduksi />
+                <MasterKategori />
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
 

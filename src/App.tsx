@@ -172,6 +172,9 @@ import RekapQC from './pages/QualityControl/RekapQC/RekapQC';
 import PayrollPage from './pages/HR/Payroll/Payrollpage';
 import JadwalPPIC from './pages/PPIC/JadwalPPIC/JadwalPPIC';
 import MasterPayrollHR from './pages/HR/MasterDataHR/MasterPayrollHR';
+import MasterJadwal from './pages/PPIC/MasterPPIC/MasterJadwal';
+import OsMTC from './pages/Maintenance/OutstandingMTC/OSMTC';
+import OsHR from './pages/HR/Outstanding/OsHR';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -529,6 +532,39 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <OsQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/outstanding"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OsQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/outstanding"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OsMTC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/hr/outstanding"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OsHR />
               </ProtectedRoute>
             </>
           }
@@ -1757,6 +1793,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <JadwalPPIC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/ppic/master/jadwal"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterJadwal />
               </ProtectedRoute>
             </>
           }

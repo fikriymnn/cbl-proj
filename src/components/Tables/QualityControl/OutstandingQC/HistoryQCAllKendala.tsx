@@ -43,7 +43,7 @@ function HistoryQCAllKendala() {
                 {
                     params: {
                         status_tiket: 'history',
-                        id_department: id,
+                        id_department: 10,
                     },
                     withCredentials: true,
                 });

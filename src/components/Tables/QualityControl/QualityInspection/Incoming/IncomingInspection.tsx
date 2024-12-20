@@ -433,9 +433,15 @@ function IncomingInspection() {
 
       if (verifikasi == 'Diterima') {
         const respon = await axios.post(
-          `https://erp.cbloffset.com/api/approve-incoming-bahan/${incoming?.no_surat_jalan}`,
-          {},
+          `https://erp.cbloffset.com/api/approve-incoming-bahan`,
+          {
+            surat_jalan: incoming?.no_surat_jalan
+          },
         );
+        if (respon.data.rc = 404) {
+          alert(respon.data.msg)
+          return;
+        }
         const res = await axios.put(
           url,
           {
@@ -467,6 +473,7 @@ function IncomingInspection() {
       console.log('succes');
       getInspection();
     } catch (error: any) {
+      alert(error)
       console.log(error);
     }
   }

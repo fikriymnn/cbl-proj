@@ -9,16 +9,13 @@ import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import Loading from '../../../Loading';
 import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 
-function OSQCAlllKendala() {
+function HistoryHRAllKendala() {
 
     const [isLoading, setIsLoading] = useState(false);
     const [openButton, setOpenButton] = useState(null);
-    const [idDep, setIdDep] = useState<any>();
+
     const [lkh, setLkh] = useState<any>();
-    const [idInspektor, setIdInspektor] = useState<any>();
-    const [namInspektor, setNamaInspektor] = useState<any>();
-    const [analisaPenyebab, setAnalisaPenyebab] = useState<any>();
-    const [tindakan, setTindakan] = useState<any>();
+
 
     useEffect(() => {
         getMe()
@@ -32,9 +29,6 @@ function OSQCAlllKendala() {
                 withCredentials: true,
             });
             getLKH(res?.data.karyawan.biodata_karyawan[0]?.id_department)
-            setIdDep(res?.data.karyawan.biodata_karyawan[0]?.id_department)
-            setIdInspektor(res?.data.id)
-            setNamaInspektor(res?.data.nama)
             console.log('getme', res.data)
         } catch (error: any) {
             console.log(error.data.msg);
@@ -48,8 +42,8 @@ function OSQCAlllKendala() {
 
                 {
                     params: {
-                        status_tiket: 'incoming',
-                        id_department: 10,
+                        status_tiket: 'history',
+                        id_department: 21,
                     },
                     withCredentials: true,
                 });
@@ -60,27 +54,7 @@ function OSQCAlllKendala() {
             console.log(error);
         }
     }
-    async function postLKH(id: any) {
-        const url = `${import.meta.env.VITE_API_LINK}/kendalaLkhTiket/respon/${id}`;
-        try {
-            const res = await axios.put(url,
-                {
-                    id_inspektor: idInspektor,
-                    nama_inspektor: namInspektor,
-                    analisa_penyebab: analisaPenyebab,
-                    tindakan: tindakan,
-                },
-                {
 
-                    withCredentials: true,
-                });
-            alert('Succes')
-            getLKH(idDep)
-            console.log(res)
-        } catch (error: any) {
-            console.log(error);
-        }
-    }
     const [showModal, setShowModal] = useState<boolean[]>([]);
     const openModalModal = (i: any) => {
         const onchangeVal: any = [...showModal];
@@ -94,8 +68,7 @@ function OSQCAlllKendala() {
         onchangeVal[i] = false;
 
         setShowModal(onchangeVal);
-        setTindakan('');
-        setAnalisaPenyebab('');
+
 
     };
 
@@ -138,7 +111,7 @@ function OSQCAlllKendala() {
                                                     onClick={() => openModalModal(i)}
                                                     className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                 >
-                                                    Respon
+                                                    Detail
                                                 </button>
                                                 {showModal[i] == true && (
                                                     <>
@@ -174,27 +147,21 @@ function OSQCAlllKendala() {
                                                                 <div className='px-2 py-1 flex flex-col gap-2'>
                                                                     <p className='font-semibold text-md'>Analisis Penyebab</p>
                                                                     <textarea
-                                                                        onChange={(e) => setAnalisaPenyebab(e.target.value)}
+                                                                        value={data.analisa_penyebab}
+                                                                        readOnly
                                                                         className="w-full border border-neutral-600 h-20 p-2 rounded-sm"
                                                                         name=""
                                                                         id=""
                                                                     ></textarea>
                                                                     <p className='font-semibold text-md'>Tindakan</p>
                                                                     <textarea
-                                                                        onChange={(e) => setTindakan(e.target.value)}
+                                                                        value={data.tindakan}
+                                                                        readOnly
                                                                         className="w-full border border-neutral-600 h-20 p-2 rounded-sm"
                                                                         name=""
                                                                         id=""
                                                                     ></textarea>
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            postLKH(data.id)
-                                                                            closeModalModal(i)
-                                                                        }}
-                                                                        className="text-xs font-bold bg-blue-600 py-2 px-5 text-white  w-full rounded-md"
-                                                                    >
-                                                                        KIRIM
-                                                                    </button>
+
                                                                 </div>
                                                             </>
                                                         </ModalKosonganSmall>
@@ -216,4 +183,4 @@ function OSQCAlllKendala() {
     )
 }
 
-export default OSQCAlllKendala
+export default HistoryHRAllKendala

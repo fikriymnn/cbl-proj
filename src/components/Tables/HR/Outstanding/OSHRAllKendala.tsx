@@ -9,7 +9,7 @@ import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import Loading from '../../../Loading';
 import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 
-function OSQCAlllKendala() {
+function OSHRAlllKendala() {
 
     const [isLoading, setIsLoading] = useState(false);
     const [openButton, setOpenButton] = useState(null);
@@ -49,7 +49,7 @@ function OSQCAlllKendala() {
                 {
                     params: {
                         status_tiket: 'incoming',
-                        id_department: 10,
+                        id_department: 21,
                     },
                     withCredentials: true,
                 });
@@ -216,4 +216,4 @@ function OSQCAlllKendala() {
     )
 }
 
-export default OSQCAlllKendala
+export default OSHRAlllKendala
