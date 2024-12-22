@@ -6,9 +6,9 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import OSQCAlllKendala from './OSQCAllKendala';
-import HistoryQCAllKendala from './HistoryQCAllKendala';
-import TambahBahanQC from './TambahBahanQC';
+import OSPPICAlllKendala from './OSPPICAllKendala';
+import TambahBahanPPIC from './TambahBahanPPIC';
+import HistoryPPICAllKendala from './HistoryPPICAllKendala';
 
 
 interface TabPanelProps {
@@ -46,7 +46,7 @@ function a11yProps(index: number) {
     };
 }
 
-export default function TabOSQC() {
+export default function TabOsPPIC() {
     const theme = createTheme({
         palette: {
             primary: {
@@ -152,13 +152,13 @@ export default function TabOSQC() {
                     </ThemeProvider>
                 </AppBar>
                 <TabPanel value={value} index={0} dir={theme.direction}>
-                    <OSQCAlllKendala />
+                    <OSPPICAlllKendala />
                 </TabPanel>
                 <TabPanel value={value} index={1} dir={theme.direction}>
-                    <TambahBahanQC />
+                    <TambahBahanPPIC />
                 </TabPanel>
                 <TabPanel value={value} index={2} dir={theme.direction}>
-                    <HistoryQCAllKendala />
+                    <HistoryPPICAllKendala />
                 </TabPanel>
 
             </Box>

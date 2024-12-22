@@ -175,6 +175,7 @@ import MasterPayrollHR from './pages/HR/MasterDataHR/MasterPayrollHR';
 import MasterJadwal from './pages/PPIC/MasterPPIC/MasterJadwal';
 import OsMTC from './pages/Maintenance/OutstandingMTC/OSMTC';
 import OsHR from './pages/HR/Outstanding/OsHR';
+import OsPPIC from './pages/PPIC/OutstandingPPIC/OutstandingPPIC';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1793,6 +1794,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <JadwalPPIC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/ppic/outstanding"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OsPPIC />
               </ProtectedRoute>
             </>
           }
