@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import Loading from '../../../../Loading';
 
 function IncomingInspection() {
   const [isMobile, setIsMobile] = useState(false);
@@ -11,7 +12,7 @@ function IncomingInspection() {
   const date = today.getDate();
   const currentDate = month + '/' + date + '/' + year;
   const navigate = useNavigate();
-
+  const [isLoading, setIsLoading] = useState(false);
   const { id } = useParams();
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
@@ -32,6 +33,7 @@ function IncomingInspection() {
 
   useEffect(() => {
     getInspection();
+    getMe()
   }, []);
 
   async function getInspection() {
@@ -47,7 +49,20 @@ function IncomingInspection() {
       console.log(error.data.msg);
     }
   }
+  const [me, setMe] = useState<any>();
+  async function getMe() {
+    const url = `${import.meta.env.VITE_API_LINK}/me`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
 
+      setMe(res.data.nama);
+      console.log('me', res.data)
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
   async function startTask(id: any) {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiBahan/start/${id}`;
@@ -430,16 +445,18 @@ function IncomingInspection() {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiBahan/update/${id}`;
     try {
-
+      setIsLoading(true)
       if (verifikasi == 'Diterima') {
         const respon = await axios.post(
           `https://erp.cbloffset.com/api/approve-incoming-bahan`,
           {
-            surat_jalan: incoming?.no_surat_jalan
+            surat_jalan: incoming?.no_surat_jalan,
+            nama_inspektor: me
           },
         );
         if (respon.data.rc = 404) {
           alert(respon.data.msg)
+          setIsLoading(false)
           return;
         }
         const res = await axios.put(
@@ -454,7 +471,7 @@ function IncomingInspection() {
             withCredentials: true,
           },
         );
-        console.log(respon);
+        //console.log(respon);
       } else {
         const res = await axios.put(
           url,
@@ -469,11 +486,13 @@ function IncomingInspection() {
           },
         );
       }
+      setIsLoading(false)
       alert('Data Berhasil Di-Update');
       console.log('succes');
       getInspection();
     } catch (error: any) {
       alert(error)
+      setIsLoading(false)
       console.log(error);
     }
   }
@@ -545,6 +564,7 @@ function IncomingInspection() {
     <>
       {!isMobile && (
         <main className="overflow-x-scroll">
+          {isLoading && <Loading />}
           <div className="min-w-[700px] bg-white rounded-xl">
             <p className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
               <svg

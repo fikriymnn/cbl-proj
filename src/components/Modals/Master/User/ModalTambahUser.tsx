@@ -258,6 +258,12 @@ const ModalTambahUser = ({
               >
                 HR
               </option>
+              <option
+                value="ppic"
+                className="text-body dark:text-bodydark"
+              >
+                PPIC
+              </option>
             </select>
             <label className="text-black text-xs font-bold pt-4">ROLE</label>
             <select

@@ -79,7 +79,7 @@ function PayrollBulanan() {
                 periode_dari: dateFrom1,
                 periode_sampai: dateTo1,
                 id_karyawan: id_karyawan,
-                insentif: insentif,
+
                 data_payroll: data_payroll
             },
                 {
@@ -354,24 +354,7 @@ function PayrollBulanan() {
                                                             </div>
                                                             <div className='flex flex-col justify-end w-full'>
 
-                                                                <div className="flex w-full flex-col">
-                                                                    <label className="text-black text-xs font-bold">
-                                                                        Insentif
-                                                                    </label>
-                                                                    <div className="flex w-full">
-                                                                        <input
-                                                                            name="nama_grade"
 
-                                                                            onChange={(e) => {
-                                                                                setInsentif(e.target.value)
-
-                                                                            }}
-                                                                            type="number"
-                                                                            className=" w-[40%] h-6 border-2 border-stroke rounded-md"
-                                                                        />
-
-                                                                    </div>
-                                                                </div>
                                                                 <div>
                                                                     {
                                                                         `Total Gaji : Rp.  ${payMonth?.data?.summaryPayroll?.total + parseInt(insentif)}`

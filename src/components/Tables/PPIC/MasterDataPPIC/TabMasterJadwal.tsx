@@ -7,6 +7,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import MasterKategori from './MasterKategori';
+import MasterDrying from './MasterDrying';
 
 
 
@@ -124,6 +125,7 @@ export default function TabMasterJadwal() {
                         className='bg-white text-[#00499F] font-semibold mb-2 '
                     >
                         <Tab label="Kategori" {...a11yProps(0)} className='' />
+                        <Tab label="Drying Time" {...a11yProps(1)} className='' />
 
 
                     </Tabs>
@@ -133,7 +135,7 @@ export default function TabMasterJadwal() {
                 <MasterKategori />
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
-
+                <MasterDrying />
             </TabPanel>
             <TabPanel value={value} index={2} dir={theme.direction}>
 

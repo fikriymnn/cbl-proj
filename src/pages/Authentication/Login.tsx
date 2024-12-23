@@ -39,6 +39,8 @@ const Login: React.FC = () => {
         navigate('/hr/pm/masterperusahaan');
       } else if (response.data.bagian == 'quality control') {
         navigate('/qc/validatenverify');
+      } else if (response.data.bagian == 'ppic') {
+        navigate('/ppic/jadwalProduksi');
       }
       else {
         navigate('/dashboard');
