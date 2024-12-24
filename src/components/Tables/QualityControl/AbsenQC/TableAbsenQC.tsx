@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
 import Loading from '../../../Loading';
+import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
+import TabPengajuanLangsung from '../../HR/Personnel/Absensi/TabPengajuanLangsung';
 
 
 function TableAbsensiQC() {
@@ -100,7 +102,19 @@ function TableAbsensiQC() {
     }
 
 
+    const [showEdit, setShowEdit] = useState<any>([]);
+    const openEdit = (i: any) => {
+        const onchangeVal: any = [...showEdit];
+        onchangeVal[i] = true;
 
+        setShowEdit(onchangeVal);
+    };
+    const closeEdit = (i: any) => {
+        const onchangeVal: any = [...showEdit];
+        onchangeVal[i] = false;
+
+        setShowEdit(onchangeVal);
+    };
     return (
         <>
             {!isMobile && (
@@ -193,7 +207,7 @@ function TableAbsensiQC() {
                                 <label className="text-neutral-500 text-sm font-semibold">
                                     Shift
                                 </label>
-                                <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                <label className="text-neutral-500 text-sm font-semibold">
                                     Lembur (Jam)
                                 </label>
                                 <label className="text-neutral-500 text-sm font-semibold ">
@@ -210,7 +224,7 @@ function TableAbsensiQC() {
                                     <>
                                         <div className={`grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center px-10 min-h-10  
                                             ${data.status_absen == 'cuti khusus' ? 'bg-orange-200' : ''} 
-                                              ${data.status_absen == 'sakit' ? 'bg-green-200' : ''}
+                                               ${data.status_absen == 'sakit' ? 'bg-green-200' : ''}
                                                ${data.status_absen == 'izin' ? 'bg-blue-200' : ''}
                                                ${data.status_absen == 'Belum Masuk' ? 'bg-red-300' : ''}
                                                   ${data.status_absen == 'cuti tahunan' ? 'bg-yellow-200' : ''}
@@ -241,7 +255,7 @@ function TableAbsensiQC() {
                                             <label className="text-neutral-500 text-sm font-semibold ">
                                                 {(data.shift == null || data.shift == 0) ? ' ~' : data.shift}
                                             </label>
-                                            <label className="text-neutral-500 text-sm font-semibold col-span-2 ">
+                                            <label className="text-neutral-500 text-sm font-semibold ">
                                                 {(data.status_lembur == null || data.status_lembur == 0) ? ' ~' : data.status_lembur} {(data.jam_lembur == null || data.jam_lembur == 0) ? '' : '~ ' + data.jam_lembur + 'Jam'}
                                             </label>
                                             <div className='flex flex-col gap-1'>
@@ -255,6 +269,31 @@ function TableAbsensiQC() {
                                             <label className="text-neutral-500 text-sm font-semibold ">
                                                 {data.status_absen}
                                             </label>
+                                            {data.status_absen == 'Belum Masuk' ?
+                                                <>
+                                                    <button
+                                                        onClick={() => openEdit(i)}
+                                                        className="w-full bg-blue-600 text-white text-sm py-1 rounded-md"
+                                                    >
+                                                        Aksi
+                                                    </button>
+                                                    {showEdit[i] == true && (
+
+                                                        <ModalKosongan
+                                                            isOpen={showEdit[i]}
+                                                            onClose={() => closeEdit(i)}
+                                                            judul={'Lapor'}
+                                                        >
+                                                            <>
+                                                                <TabPengajuanLangsung data={data} />
+                                                            </>
+                                                        </ModalKosongan>
+                                                    )}
+                                                </> :
+                                                <>
+
+                                                </>}
+
                                         </div>
                                     </>
                                 )
