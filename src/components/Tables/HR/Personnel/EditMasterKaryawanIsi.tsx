@@ -144,6 +144,7 @@ function EditMasterKaryawanIsi() {
     const [gaji, setGaji] = useState<any>(0);
     const [kontrakDari, setKOntrakDari] = useState<any>(null);
     const [kontrakSampai, setKontrakSampai] = useState<any>(null);
+    const [tipeKaryawan, seTipeKaryawan] = useState<any>();
 
     async function tambahKaryawan() {
         const url = `${import.meta.env.VITE_API_LINK
@@ -154,6 +155,7 @@ function EditMasterKaryawanIsi() {
                 url,
                 {
                     nama_karyawan: namaKaryawanEdit,
+                    tipe_karyawan: tipeKaryawan,
                     nik: nikEdit,
                     jenis_kelamin: jenisKelaminEdit,
                     id_divisi: idDivisiEdit,
@@ -219,6 +221,26 @@ function EditMasterKaryawanIsi() {
                                     defaultValue={karyawan?.data?.name}
                                     onChange={(e) => setnamaKaryawanEdit(e.target.value)}
                                     type='text' className='border-stroke border-2 rounded-md w-[40%]' />
+                                <div className='flex flex-col gap-1 pt-2'>
+                                    <label className=' text-sm font-semibold'>
+                                        Tipe Karyawan<span className='text-red-600'>*</span>
+                                    </label>
+                                    <div className='flex w-full gap-7'>
+
+                                        <div className='flex gap-1'>
+                                            <input
+                                                onChange={(e) => seTipeKaryawan(e.target.value)}
+                                                type='radio' name='tipeKryawan' id='tipeKryawan1' value={'produksi'} />Produksi
+                                        </div>
+
+                                        <div className='flex gap-1'>
+                                            <input
+                                                onChange={(e) => seTipeKaryawan(e.target.value)}
+                                                type='radio' name='tipeKryawan' id='tipeKryawan2' value={'staff'} />Staff
+                                        </div>
+
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div>
@@ -671,6 +693,15 @@ function EditMasterKaryawanIsi() {
                                     </svg>
                                 </span>
 
+                            </div>
+                            <div className='flex flex-col gap-1 w-full'>
+                                <label className=' text-sm font-semibold'>
+                                    Gaji<span className='text-red-600'>*</span>
+                                </label>
+                                <input
+                                    defaultValue={karyawan?.data?.biodata_karyawan[0]?.gaji}
+                                    onChange={(e) => setGaji(e.target.value)}
+                                    type='text' className='border-stroke border-2 rounded-md w-full' />
                             </div>
                         </div>
 

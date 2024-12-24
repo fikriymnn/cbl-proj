@@ -14,6 +14,7 @@ import axios from 'axios';
 import Loading from '../../../Loading';
 import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
 import formatInteger from '../../../../utils/formaterInteger';
+import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -125,11 +126,64 @@ export default function DetailMasterKaryawanIsi() {
             console.log(error);
         }
     }
+    const [potongan, setPotongan] = useState<any>();
+    const [namaPotongan, setNamaPotongan] = useState<any>();
+    async function postPotongan() {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/hr/karyawanPotongan`;
+        try {
+            setIsLoading(true)
+            const res = await axios.post(
+                url,
+                {
+                    id_biodata_karyawan: karyawan?.data?.biodata_karyawan[0]?.id,
+                    jumlah_potongan: potongan,
+                    nama_potongan: namaPotongan,
+                },
+                {
+                    withCredentials: true,
+                },
+            );
+
+            getKaryawan()
+            setIsLoading(false)
+
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
+    async function deletePotongan(idPot: any) {
+        if (window.confirm('Apakah Anda yakin ingin Menghapus Potongan Ini?')) {
+            const url = `${import.meta.env.VITE_API_LINK
+                }/hr/karyawanPotongan/${idPot}`;
+            try {
+                setIsLoading(true)
+                const res = await axios.delete(
+                    url,
+
+                    {
+                        withCredentials: true,
+                    },
+                );
+
+                getKaryawan()
+                setIsLoading(false)
+
+            } catch (error: any) {
+                setIsLoading(false)
+                console.log(error);
+            }
+        }
+    }
+    const [showHistory, setShowHistory] = useState(false);
+    const openModalHistory = () => setShowHistory(true);
+    const closeModalHistory = () => setShowHistory(false);
     return (
         <>
             {isLoading && <Loading />}
             <div className=" bg-white rounded-xl">
-                <div className=" w-full h-full flex gap-3 flex-col border-b-8 border-[#D8EAFF] px-6 py-[2%] justify-between">
+                <div className=" w-full h-full flex gap-1 flex-col border-b-8 border-[#D8EAFF] px-6 py-[2%] justify-between">
                     <div className='flex flex-col gap-1'>
                         <label htmlFor="" className='text-black text-sm font-semibold'>Nama Karyawan</label>
                         <label htmlFor="" className='text-[#636363] text-xl font-normal '>{karyawan?.data?.name}</label>
@@ -422,6 +476,75 @@ export default function DetailMasterKaryawanIsi() {
                                     <label htmlFor="" className='"text-[#636363] text-xl'>Rp.{(karyawan?.data?.biodata_karyawan[0]?.gaji == null || karyawan?.data?.biodata_karyawan[0]?.gaji == 0) ? '-' : formatInteger(karyawan?.data?.biodata_karyawan[0]?.gaji)}</label>
 
                                 </div>
+
+                            </div>
+                            <div className='flex flex-col gap-1 px-4 py-1 w-full'>
+
+                                <div className='grid grid-cols-12 gap-1 px-6 py-2 border-b-4 border-[#D8EAFF]'>
+
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-4'>Nama Potongan</label>
+                                    <label htmlFor="" className='text-black text-sm font-semibold col-span-3'>Jumlah Potongan</label>
+
+                                </div>
+                                {karyawan?.data?.biodata_karyawan[0]?.potongan_karyawan?.map((data: any, i: any) => (
+                                    <>
+                                        <div
+                                            className='grid grid-cols-12 gap-1 px-6 py-2 '>
+
+                                            <label htmlFor="" className='text-stone-500 text-sm font-semibold col-span-4'>{data.nama_potongan}</label>
+                                            <label htmlFor="" className='text-stone-500 text-sm font-semibold col-span-3'>{data.jumlah_potongan
+                                                ? formatInteger(data.jumlah_potongan)
+                                                : 0
+                                            }</label>
+                                            <button
+                                                onClick={() => deletePotongan(data.id)}
+                                                className='px-2 py-1  text-xs bg-red-400 items-center justify-center text-white font-semibold rounded-md flex w-full '>
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </>
+                                ))}
+                                <button
+                                    onClick={() => openModalHistory()}
+                                    className=' bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-2'>
+                                    TAMBAH POTONGAN
+                                </button>
+                                {showHistory == true && (
+                                    <>
+                                        <ModalKosonganSmall
+                                            isOpen={showHistory}
+                                            onClose={() => closeModalHistory()}
+                                            judul={'Tambah Potongan'}
+                                        >
+                                            <>
+                                                <div className='flex flex-col gap-1 w-full px-[1%] py-[1%]'>
+
+                                                    <div className='flex flex-col w-full'>
+                                                        <label className=' text-black text-sm font-semibold'>
+                                                            Nama Potongan
+                                                        </label>
+                                                        <input
+                                                            onChange={(e) => setNamaPotongan(e.target.value)}
+                                                            type='text' className='border-stroke border-2 rounded-md w-full' />
+                                                    </div>
+                                                    <div className='flex flex-col w-full'>
+                                                        <label className=' text-black text-sm font-semibold'>
+                                                            Total Potongan
+                                                        </label>
+                                                        <input
+                                                            onChange={(e) => setPotongan(e.target.value)}
+                                                            type='number' className='border-stroke border-2 rounded-md w-full' />
+                                                    </div>
+                                                    <button
+                                                        onClick={() => postPotongan()}
+                                                        className='bg-blue-500 px-2 text-white font-semibold rounded-md text-md'>
+                                                        Simpan
+                                                    </button>
+                                                </div>
+                                            </>
+                                        </ModalKosonganSmall>
+                                    </>
+                                )}
 
                             </div>
                             <div className=''>

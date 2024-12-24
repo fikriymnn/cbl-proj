@@ -124,7 +124,7 @@ function AddMasterKaryawanIsi() {
     const [gaji, setGaji] = useState<any>(0);
     const [kontrakDari, setKOntrakDari] = useState<any>(null);
     const [kontrakSampai, setKontrakSampai] = useState<any>(null);
-
+    const [tipeKaryawan, seTipeKaryawan] = useState<any>();
 
     async function tambahKaryawan() {
         const url = `${import.meta.env.VITE_API_LINK
@@ -135,6 +135,7 @@ function AddMasterKaryawanIsi() {
                 url,
                 {
                     nama_karyawan: namaKaryawan,
+                    tipe_karyawan: tipeKaryawan,
                     nik: nik,
                     jenis_kelamin: jenisKelamin,
                     id_divisi: idDivisi,
@@ -165,6 +166,7 @@ function AddMasterKaryawanIsi() {
             console.log(error);
         }
     }
+
     return (
         <main className="overflow-x-scroll">
             {isLoading && <Loading />}
@@ -208,6 +210,26 @@ function AddMasterKaryawanIsi() {
                                 <input
                                     onChange={(e) => setnamaKaryawan(e.target.value)}
                                     type='text' className='border-stroke border-2 rounded-md w-[40%]' />
+                            </div>
+                            <div className='flex flex-col gap-1 pt-2'>
+                                <label className=' text-sm font-semibold'>
+                                    Tipe Karyawan<span className='text-red-600'>*</span>
+                                </label>
+                                <div className='flex w-full gap-7'>
+
+                                    <div className='flex gap-1'>
+                                        <input
+                                            onChange={(e) => seTipeKaryawan(e.target.value)}
+                                            type='radio' name='tipeKryawan' id='tipeKryawan1' value={'produksi'} />Produksi
+                                    </div>
+
+                                    <div className='flex gap-1'>
+                                        <input
+                                            onChange={(e) => seTipeKaryawan(e.target.value)}
+                                            type='radio' name='tipeKryawan' id='tipeKryawan2' value={'staff'} />Staff
+                                    </div>
+
+                                </div>
                             </div>
                         </div>
                         <div>
