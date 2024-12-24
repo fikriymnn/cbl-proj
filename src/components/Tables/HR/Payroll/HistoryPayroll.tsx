@@ -4,6 +4,8 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import Loading from '../../../Loading';
 import convertTimeStampToDate from '../../../../utils/convertDate';
+import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
+import formatInteger from '../../../../utils/formaterInteger';
 
 function HistoryPayroll() {
     const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +40,19 @@ function HistoryPayroll() {
             console.log(error);
         }
     }
+    const [showEdit, setShowEdit] = useState<any>([]);
+    const openEdit = (i: any) => {
+        const onchangeVal: any = [...showEdit];
+        onchangeVal[i] = true;
+
+        setShowEdit(onchangeVal);
+    };
+    const closeEdit = (i: any) => {
+        const onchangeVal: any = [...showEdit];
+        onchangeVal[i] = false;
+
+        setShowEdit(onchangeVal);
+    };
     return (
         <main className="overflow-x-scroll">
             {isLoading && <Loading />}
@@ -103,10 +118,123 @@ function HistoryPayroll() {
                                     </label>
                                     <div className='flex justify-center '>
                                         <button
-                                            //onClick={() => openEdit(i)}
+                                            onClick={() => openEdit(i)}
                                             className='px-2 py-1  text-xs bg-blue-400 items-center justify-center text-white font-semibold rounded-md flex w-full '>
                                             Detail
                                         </button>
+                                        {showEdit[i] == true && (
+
+                                            <ModalKosongan
+                                                isOpen={showEdit[i]}
+                                                onClose={() => closeEdit(i)}
+                                                judul={'Rincihan Payroll'}
+                                            >
+                                                <>
+                                                    <div className='grid grid-cols-2 gap-2 px-4 py-4'>
+                                                        <div className='flex flex-col  '>
+                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                Tipe Penggajian
+                                                            </label>
+                                                            <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                {data.tipe_penggajian}
+                                                            </label>
+                                                        </div>
+                                                        <div className='flex flex-col  '>
+                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                Yang Menyetujui
+                                                            </label>
+                                                            <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                {data.karyawan_hr?.name}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className='grid grid-cols-2 gap-2 px-4 py-4'>
+                                                        <div className='flex flex-col gap-2 '>
+                                                            <div className='flex flex-col '>
+                                                                <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                    NAMA PERSONNEL
+                                                                </label>
+                                                                <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                    {data.karyawan?.name}
+                                                                </label>
+                                                            </div>
+                                                            <div className='flex flex-col '>
+                                                                <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                    NIK
+                                                                </label>
+                                                                <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                    {data.karyawan.biodata_karyawan[0]?.nik}
+                                                                </label>
+                                                            </div>
+                                                            <div className='flex flex-col '>
+                                                                <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                    DEPARTEMEN
+                                                                </label>
+                                                                <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                    {data.karyawan?.biodata_karyawan[0]?.department?.nama_department}
+                                                                </label>
+                                                            </div>
+                                                            <div className='flex flex-col '>
+                                                                <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                    TANGGAL
+                                                                </label>
+                                                                <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                    {convertTimeStampToDate(data.createdAt)}
+                                                                </label>
+                                                            </div>
+
+                                                        </div>
+                                                        <div className='flex flex-col gap-2'>
+                                                            <div className='flex flex-col'>
+                                                                <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                    PERIODE
+                                                                </label>
+                                                                <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                    {convertTimeStampToDate(data.periode_dari)}
+                                                                </label>
+                                                                <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                    ~ {convertTimeStampToDate(data.periode_sampai)}
+                                                                </label>
+                                                            </div>
+                                                            <div className='flex flex-col'>
+
+                                                                <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                    TOTAL POTONGAN
+                                                                </label>
+                                                                <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                    Rp. {formatInteger(data.total_potongan)}
+                                                                </label>
+                                                            </div>
+                                                            <div className='flex flex-col'>
+                                                                <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                    INSENTIF
+                                                                </label>
+                                                                <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                    Rp. {formatInteger(data.insentif)}
+                                                                </label>
+                                                            </div>
+                                                            <div className='flex flex-col'>
+
+                                                                <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                    TOTAL UPAH
+                                                                </label>
+                                                                <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                    Rp. {formatInteger(data.total_upah)}
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+
+
+
+                                                </>
+
+                                            </ModalKosongan>
+
+                                        )
+                                        }
                                     </div>
                                 </div>
                             )
@@ -114,7 +242,7 @@ function HistoryPayroll() {
                     }
 
                 </div>
-            </div>
+            </div >
             <div className="w-full flex justify-center mt-5 ">
                 <Stack spacing={2}>
                     <Pagination
@@ -127,7 +255,7 @@ function HistoryPayroll() {
                     />
                 </Stack>
             </div>
-        </main>
+        </main >
     )
 }
 
