@@ -510,6 +510,25 @@ function ListPayroll() {
 
                                                                             </div> : null
                                                                     }
+                                                                    <div>
+                                                                        <p className='text-sm font-semibold'>
+                                                                            Rincihan Potongan
+                                                                        </p>
+                                                                        {
+                                                                            payWeek?.data?.summaryPayroll?.potongan.length != 0 ?
+
+                                                                                payWeek?.data?.summaryPayroll?.potongan.map((data3: any) => (
+                                                                                    <div className='grid grid-cols-2'>
+                                                                                        <p className='text-sm '>
+                                                                                            {data3.label}
+                                                                                        </p>
+                                                                                        <p className='text-sm '>
+                                                                                            {(data3.total == null || data3.total == 0) ? '-' : formatCurrency(data3.total)}
+                                                                                        </p>
+                                                                                    </div>
+                                                                                )) : null
+                                                                        }
+                                                                    </div>
 
 
                                                                 </div>

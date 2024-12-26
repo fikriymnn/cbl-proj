@@ -176,6 +176,7 @@ import MasterJadwal from './pages/PPIC/MasterPPIC/MasterJadwal';
 import OsMTC from './pages/Maintenance/OutstandingMTC/OSMTC';
 import OsHR from './pages/HR/Outstanding/OsHR';
 import OsPPIC from './pages/PPIC/OutstandingPPIC/OutstandingPPIC';
+import Project from './pages/Maintenance/Project';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -366,7 +367,7 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <ProjectMtc />
+                <Project />
               </ProtectedRoute>
             </>
           }

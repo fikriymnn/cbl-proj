@@ -152,66 +152,92 @@ function RekapWasteQC() {
 
                 {activeComponent === 'component1' ? (
                     <>
-
-
                         <div className="border-8 border-[#D8EAFF] flex flex-col gap-2 ">
+
                             {waste?.dataWasteByJo?.map((data: any, i: any) => {
                                 return (
                                     <>
                                         <div
-                                            key={i} className=''>
-                                            <div className=' rounded-md  max-w-screen gap-2 flex overflow-x-scroll items-center  text-stone-400 bg-white  border-2 border-black'>
-                                                <label className='text-sm font-semibold px-[1%]'>
-                                                    {i + 1}.
-                                                </label>
-                                                <label className='text-sm font-semibold col-span-4 min-w-[200px]'>
-                                                    {data.no_jo} <span className='text-md text-red-500 font-semibold '>{data.total_defect}</span>
-                                                </label>
-                                                <div className=' flex flex-col'>
-                                                    {data.defects?.map((data2: any, ii: any) => {
-                                                        return (
-                                                            <>
-                                                                <div
-                                                                    key={ii}
-                                                                    className='flex w-full'>
-                                                                    <div
-                                                                        className='flex flex-col justify-between gap-2 border-x-2 border-b-2 border-black  py-4 w-30 items-center'
-                                                                    >
-                                                                        <label className='text-[10px] font-semibold border-b-2 h-full w-full text-center border-black'>
-                                                                            {data2.kode_waste} - {data2.waste_desc}
-                                                                        </label>
-                                                                        <label className='text-md text-red-500 font-semibold '>
-                                                                            {data2.total_defect}
-                                                                        </label>
+                                            key={i} className='gap-1 '>
+                                            <div className=' rounded-md  max-w-screen gap-2 flex flex-col  overflow-x-scroll text-stone-400 bg-white  border-2 border-black'>
 
-                                                                    </div>
-                                                                    {data2.kendala?.map((data3: any, iii: any) => {
-                                                                        return (
-                                                                            <>
-                                                                                <div
-                                                                                    key={iii}
-                                                                                    className='flex flex-col justify-between gap-2 border-2 border-black  py-4 w-30 items-center'
-                                                                                >
-                                                                                    <label className='text-[10px] font-semibold border-b-2 h-full w-full text-center border-black'>
-                                                                                        {data3.kode_kendala} - {data3.kendala_desc}
-                                                                                    </label>
-                                                                                    <label className='text-md text-red-500 font-semibold '>
-                                                                                        {data3.calculated_defect}
-                                                                                    </label>
+                                                <div className='flex gap-2 min-h-20 items-center'>
+                                                    <label className='text-sm font-semibold px-[1%]'>
+                                                        {i + 1}.
+                                                    </label>
+                                                    <label className='text-sm font-semibold'>
+                                                        {data.no_jo}
+                                                    </label>
+                                                    <label className='text-sm font-semibold'>
+                                                        {data.total_defect}
+                                                    </label>
+                                                    <button
+                                                        title='button'
 
-                                                                                </div>
-                                                                            </>
-                                                                        )
-                                                                    })}
-                                                                </div>
-                                                            </>
-                                                        )
-                                                    })}
+                                                        className="text-xs text-white font-bold px-2 bg-blue-700 py-2 border-blue-700 border rounded-md flex justify-center"
+                                                    >
+                                                        Detail
+                                                    </button>
                                                 </div>
+                                                <button
+                                                    title='button'
+                                                    onClick={() => handleClickDetail(i)}
+                                                    className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md flex justify-center"
+                                                >
+                                                    <img src={Arrow} alt="" className="mx-2" />
+                                                </button>
+                                                {showDetail[i] && (
+                                                    <>
+                                                        <div className=' flex flex-col gap-1 '>
+                                                            {data.defects?.map((data2: any, ii: any) => {
+                                                                return (
+                                                                    <>
+                                                                        <div
+                                                                            key={ii}
+                                                                            className='flex w-full flex-col border-b-8 border-[#D8EAFF] px-[1%] py-[1%] gap-2'>
+                                                                            <div
+                                                                                className='flex flex-col justify-between gap-2 border-2 border-black  w-30 items-center '
+                                                                            >
+                                                                                <label className='text-[10px] font-semibold border-b-2 h-full w-full text-center border-black'>
+                                                                                    {data2.kode_waste} - {data2.waste_desc}
+                                                                                </label>
+                                                                                <label className='text-md text-red-500 font-semibold '>
+                                                                                    {data2.total_defect}
+                                                                                </label>
 
+                                                                            </div>
+                                                                            <div className='flex w-full gap-1 '>
+                                                                                {data2.kendala?.map((data3: any, iii: any) => {
+                                                                                    return (
+                                                                                        <>
+                                                                                            <div
+                                                                                                key={iii}
+                                                                                                className='flex flex-col justify-between gap-2 border-2 border-black  py-4 w-30 items-center'
+                                                                                            >
+
+                                                                                                <label className='text-[10px] font-semibold border-b-2 h-full w-full text-center border-black'>
+                                                                                                    {data3.kode_kendala} - {data3.kendala_desc}
+                                                                                                </label>
+                                                                                                <label className='text-md text-red-500 font-semibold '>
+                                                                                                    {data3.calculated_defect}
+                                                                                                </label>
+
+                                                                                            </div>
+                                                                                        </>
+                                                                                    )
+                                                                                })}
+                                                                            </div>
+                                                                        </div>
+
+                                                                    </>
+                                                                )
+                                                            })}
+                                                        </div>
+                                                    </>
+                                                )}
 
                                             </div>
-                                        </div>
+                                        </div >
 
 
 
@@ -290,7 +316,7 @@ function RekapWasteQC() {
                 )}
 
             </div >
-        </div>
+        </div >
     )
 }
 
