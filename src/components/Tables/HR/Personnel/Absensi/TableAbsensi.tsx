@@ -9,17 +9,22 @@ import Loading from '../../../../Loading';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 import TabPengajuanKeHR from '../../PengajuanKeHR/TabPengajuanKeHR';
 import TabPengajuanLangsung from './TabPengajuanLangsung';
+import Polygon6 from '../../../../../images/icon/Polygon6.svg';
 
 function TableAbsensi() {
     const [isLoading, setIsLoading] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const kosong: any = [];
-    const today = new Date();
-    const month = today.getMonth() + 1;
-    const year = today.getFullYear();
-    const date = today.getDate();
-    const currentDate = month + '/' + date + '/' + year;
 
+    const [absen, setabsen] = useState<any>();
+
+    const today = new Date();
+
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const day = String(today.getDate()).padStart(2, '0');
+
+    const formattedDate = `${year}-${month}-${day}`;
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
     };
@@ -35,11 +40,10 @@ function TableAbsensi() {
         };
     }, []);
 
-    const [absen, setabsen] = useState<any>();
 
     useEffect(() => {
-        const today = new Date();
-        getabsen(today, today);
+
+        getabsen(formattedDate, formattedDate);
         getDepartment()
     }, []);
 
@@ -66,8 +70,8 @@ function TableAbsensi() {
             console.log(error);
         }
     }
-    const [dateFrom, setDateFrom] = useState<any>();
-    const [dateTo, setDateTo] = useState<any>();
+    const [dateFrom, setDateFrom] = useState<any>(null);
+    const [dateTo, setDateTo] = useState<any>(null);
 
     async function getabsen(dateFrom1: any, dateTo1: any) {
         const url = `${import.meta.env.VITE_API_LINK}/hr/absensi`;
@@ -104,7 +108,28 @@ function TableAbsensi() {
 
         setShowEdit(onchangeVal);
     };
+    const [sortOrder, setSortOrder] = useState('asc'); // State to track sort order
 
+    const handleSort = () => {
+        const sortedAbsen = [...absen].sort((a, b) => {
+            const waktuAMinus = new Date(a.waktu_masuk);
+            const waktuBMinus = new Date(b.waktu_masuk);
+
+            if (sortOrder === 'asc') {
+                // Sort in ascending order
+                if (waktuAMinus < waktuBMinus) return -1;
+                if (waktuAMinus > waktuBMinus) return 1;
+            } else {
+                // Sort in descending order
+                if (waktuAMinus > waktuBMinus) return -1;
+                if (waktuAMinus < waktuBMinus) return 1;
+            }
+            return 0;
+        });
+
+        setabsen(sortedAbsen);
+        setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'); // Toggle sort order
+    };
 
     return (
         <>
@@ -130,7 +155,10 @@ function TableAbsensi() {
                                         <input
                                             className='rounded-full bg-[#D8EAFF] px-2'
                                             type="date"
-                                            onChange={(e) => setDateFrom(e.target.value)}
+                                            onChange={(e) => {
+                                                setDateFrom(e.target.value)
+                                                console.log(e.target.value)
+                                            }}
                                         ></input>
 
                                     </div>
@@ -213,20 +241,34 @@ function TableAbsensi() {
                                 </div>
                             </div>
                             <div className="flex justify-center my-5">
-                                <button
-                                    onClick={() => {
-                                        getabsen(dateFrom, dateTo)
-                                    }}
-                                    className="bg-primary text-white px-5 py-2 rounded-md my-auto "
-                                >
-                                    Tampilkan
-                                </button>
+                                {(dateFrom == null || dateTo == null) ?
+                                    <>
+                                        <button
+
+                                            className="bg-red-600 text-white px-5 py-2 rounded-md my-auto "
+                                        >
+                                            Pilih Tanggal
+                                        </button>
+                                    </> :
+                                    <>
+                                        <button
+                                            onClick={() => {
+                                                getabsen(dateFrom, dateTo)
+                                            }}
+                                            className="bg-primary text-white px-5 py-2 rounded-md my-auto "
+                                        >
+                                            Tampilkan
+                                        </button>
+                                    </>
+                                }
+
+
                             </div>
                             <div className="flex justify-center my-5">
                                 <button
                                     onClick={() => {
 
-                                        getabsen(today, today)
+                                        getabsen(formattedDate, formattedDate)
 
                                     }}
                                     className="bg-primary text-white px-5 py-2 rounded-md my-auto "
@@ -234,9 +276,11 @@ function TableAbsensi() {
                                     Hari Ini
                                 </button>
                             </div>
+
                         </div>
                     </div>
                     <div className="min-w-[700px] bg-white rounded-xl">
+
                         <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
                             <div className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
                                 <div className='flex col-span-2 gap-2'>
@@ -253,10 +297,11 @@ function TableAbsensi() {
                                 <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                     Tanggal
                                 </label>
-                                <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                    Waktu
-                                </label>
-                                <label className="text-neutral-500 text-sm font-semibold">
+                                <div className="flex gap-2  col-span-2">
+                                    <p className="text-xs font-bold ">Waktu </p>
+                                    <img className="w-2 hover:cursor-pointer" onClick={handleSort} src={Polygon6} alt="" />
+                                </div>
+                                <label className="text-neutral-500 text-sm font-semibold flex gap-1">
                                     Shift
                                 </label>
                                 <label className="text-neutral-500 text-sm font-semibold">
