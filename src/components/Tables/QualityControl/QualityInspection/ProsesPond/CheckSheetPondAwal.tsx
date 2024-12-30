@@ -416,7 +416,7 @@ function CheckSheetPondAwal() {
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center">
                                     <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                      REFORASI
+                                      PERFORASI
                                     </label>
                                   </div>
                                 </div>
@@ -700,7 +700,7 @@ function CheckSheetPondAwal() {
                       </div>
                       <div className="grid py-4 bg-[#f3f3f3] items-center">
                         <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                          REFORASI
+                          PERFORASI
                         </label>
                       </div>
                     </div>
