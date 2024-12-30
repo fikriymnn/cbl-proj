@@ -35,7 +35,11 @@ const TambahBahanPPIC = () => {
     async function getTambahBahanQC() {
         const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-tambah-bahan-ppic`;
         try {
-            const res = await axios.get(url);
+            const res = await axios.get(url, {
+                params: {
+                    status: 'persiapan',
+                },
+            });
 
             settambahBahan(res.data);
             console.log(res.data);
@@ -58,33 +62,7 @@ const TambahBahanPPIC = () => {
         setShowEdit(onchangeVal);
     };
 
-    const [statusApprove, setstatusApprove] = useState<any>();
-    const [qty, setqty] = useState<any>();
 
-
-    async function submitEDitMesin(id: any) {
-        const url = `${import.meta.env.VITE_API_LINK_P1}/api/approve-tambah-bahan-ppic/${id}`;
-
-        try {
-            const res = await axios.put(
-                url,
-                {
-                    status_approve: statusApprove,
-                    qty: qty
-                },
-
-            );
-
-            getTambahBahanQC()
-            alert("Succes");
-            setstatusApprove(null)
-            setqty(null)
-            closeEdit(id)
-        } catch (error: any) {
-            console.log(error);
-            //alert(error.data.msg);
-        }
-    }
 
     return (
         <div className="rounded-xl border border-stroke bg-white pt-4 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
@@ -110,7 +88,10 @@ const TambahBahanPPIC = () => {
                         <div className="flex  col-span-3">
                             <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">Item</p>
                         </div>
-                        <div className="flex  col-span-4">
+                        <div className="flex ">
+                            <p className="text-slate-600 text-[14px] font-semibold dark:text-white">Operator</p>
+                        </div>
+                        <div className="flex  col-span-3">
                             <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">Kertas</p>
                         </div>
                         <div className="flex ">
@@ -139,7 +120,10 @@ const TambahBahanPPIC = () => {
                                         <div className="flex  col-span-3">
                                             <p className="text-slate-600 text-[14px]  text-center dark:text-white">{data.i_item_kertas}</p>
                                         </div>
-                                        <div className="flex  col-span-4">
+                                        <div className="flex  ">
+                                            <p className="text-slate-600 text-[14px]   dark:text-white">{data.operator}</p>
+                                        </div>
+                                        <div className="flex  col-span-3">
                                             <p className="text-slate-600 text-[14px]  text-center dark:text-white">{data.kertas}</p>
                                         </div>
                                         <div className="flex  ">
@@ -148,66 +132,115 @@ const TambahBahanPPIC = () => {
 
                                         <div className="flex  justify-end gap-2">
                                             <button onClick={() => openEdit(i)} className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
-                                                Respon
+                                                Detail
                                             </button>
                                             {showEdit[i] == true && (
 
                                                 <ModalKosonganSmall
                                                     isOpen={showEdit[i]}
                                                     onClose={() => closeEdit(i)}
-                                                    judul={'Respon Tambah Bahan'}
+                                                    judul={'Detail History Tambah Bahan Persiapan'}
                                                 >
                                                     <>
-                                                        <div className="grid   gap-3 w-full px-5 py-2">
+                                                        <div className="flex flex-col   gap-3 w-full px-5 py-2">
                                                             <>
+                                                                <div
+                                                                    className='grid grid-cols-3   py-1'
 
+                                                                    key={i}
+                                                                >
+                                                                    <div>
+                                                                        <div className="flex  ">
+                                                                            <p className="text-slate-600 text-[14px]  text-center dark:text-white">Nomor JO</p>
+                                                                        </div>
+                                                                        <div className="flex ">
+                                                                            <p className="text-slate-600 text-[14px]  text-center dark:text-white">Item</p>
+                                                                        </div>
+                                                                        <div className="flex  ">
+                                                                            <p className="text-slate-600 text-[14px]  text-center dark:text-white">Operator</p>
+                                                                        </div>
+                                                                        <div className="flex ">
+                                                                            <p className="text-slate-600 text-[14px]  text-center dark:text-white">Kertas</p>
+                                                                        </div>
+                                                                        <div className="flex  ">
+                                                                            <p className="text-slate-600 text-[14px]  text-center dark:text-white">Qty</p>
+                                                                        </div>
+                                                                        <div className="flex  ">
+                                                                            <p className="text-slate-600 text-[14px]  text-center dark:text-white">Notes</p>
+                                                                        </div>
+
+                                                                    </div>
+                                                                    <div className='col-span-2'>
+                                                                        <div className="flex  ">
+                                                                            <p className="text-slate-600 text-[14px]  text-center dark:text-white">: {data.nomor_jo}</p>
+                                                                        </div>
+                                                                        <div className="flex ">
+                                                                            <p className="text-slate-600 text-[14px]  text-center dark:text-white">: {data.i_item_kertas}</p>
+                                                                        </div>
+                                                                        <div className="flex  ">
+                                                                            <p className="text-slate-600 text-[14px]  text-center dark:text-white">: {data.operator}</p>
+                                                                        </div>
+                                                                        <div className="flex ">
+                                                                            <p className="text-slate-600 text-[14px]  text-center dark:text-white">: {data.kertas}</p>
+                                                                        </div>
+                                                                        <div className="flex  ">
+                                                                            <p className="text-slate-600 text-[14px]  text-center dark:text-white">: {data.qty_tambah_bahan}</p>
+                                                                        </div>
+                                                                        <div className="flex  ">
+                                                                            <p className="text-slate-600 text-[14px]  text-center dark:text-white">: {data.notes}</p>
+                                                                        </div>
+
+                                                                    </div>
+                                                                </div>
                                                                 <div className="flex w-full flex-col">
                                                                     <label className="text-black text-xs font-bold">
-                                                                        Quantity
+                                                                        Quantity Approve QC
                                                                     </label>
                                                                     <div className="flex w-full">
                                                                         <input
+                                                                            readOnly
+                                                                            value={data.qty_tambah_bahan_approve_qc}
                                                                             name="qty"
-                                                                            onChange={(e) => { setqty(e.target.value) }}
+
                                                                             type="text"
                                                                             className=" w-full h-8 border-2 border-stroke rounded-md"
                                                                         />
                                                                     </div>
 
                                                                 </div>
+
                                                                 <div className="flex w-full flex-col">
-
-                                                                    <div className=''>
+                                                                    <label className="text-black text-xs font-bold">
+                                                                        Note QC
+                                                                    </label>
+                                                                    <div className="flex w-full">
                                                                         <input
-                                                                            onChange={(e) => {
-
-                                                                                setstatusApprove(e.target.value)
-                                                                            }}
-                                                                            type="radio" id="sspoint1" name="sspoint1" value="1" />
-                                                                        <label className='pl-2 text-xl text-black   '>Sesuai</label>
+                                                                            name="note"
+                                                                            readOnly
+                                                                            value={data.notes_qc}
+                                                                            type="text"
+                                                                            className=" w-full h-8 border-2 border-stroke rounded-md"
+                                                                        />
                                                                     </div>
-                                                                    <div>
-                                                                        <input
-                                                                            onChange={(e) => {
 
-                                                                                setstatusApprove(e.target.value)
-                                                                            }}
-                                                                            type="radio" id="ssspoint1" name="sspoint1" value="0" />
-                                                                        <label className='pl-2 text-xl text-black'>Tidak Sesuai</label>
-                                                                    </div>
+                                                                </div>
+                                                                <div className="flex w-full gap-2">
+
+                                                                    {data.approve_qc == 1 ? <>
+                                                                        <label className="text-green-500 text-xs font-bold">
+                                                                            APPROVE QC
+                                                                        </label>
+                                                                    </> : <>
+                                                                        <label className="text-red-500 text-xs font-bold">
+                                                                            REJECT QC
+                                                                        </label>
+                                                                    </>}
 
                                                                 </div>
 
                                                             </>
                                                         </div>
-                                                        <div className=" flex w-full px-2 py-2">
-                                                            <button
-                                                                onClick={() => submitEDitMesin(data.i_id)}
-                                                                className="bg-[#0065DE] w-full h-8 text-center text-white text-xs font-bold  rounded-md"
-                                                            >
-                                                                Respon
-                                                            </button>
-                                                        </div>
+
                                                     </>
                                                 </ModalKosonganSmall>
                                             )}

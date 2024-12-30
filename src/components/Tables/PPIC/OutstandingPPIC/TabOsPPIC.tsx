@@ -9,6 +9,7 @@ import Box from '@mui/material/Box';
 import OSPPICAlllKendala from './OSPPICAllKendala';
 import TambahBahanPPIC from './TambahBahanPPIC';
 import HistoryPPICAllKendala from './HistoryPPICAllKendala';
+import TambahBahanPemakaianPPIC from './TambahBahanPemakaianPPIC';
 
 
 interface TabPanelProps {
@@ -140,8 +141,9 @@ export default function TabOsPPIC() {
                             className="bg-white text-[#00499F] font-semibold mb-2 flex w-full"
                         >
                             <Tab label="OS" {...a11yProps(0)} />
-                            <Tab label="Tambah Bahan" {...a11yProps(1)} />
-                            <Tab label="History OS" {...a11yProps(2)} />
+                            <Tab label="Persiapan" {...a11yProps(1)} />
+                            <Tab label="Pemakaian" {...a11yProps(2)} />
+                            <Tab label="History OS" {...a11yProps(3)} />
 
                             <div className="flex w-full justify-end pr-4">
                                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
@@ -158,6 +160,9 @@ export default function TabOsPPIC() {
                     <TambahBahanPPIC />
                 </TabPanel>
                 <TabPanel value={value} index={2} dir={theme.direction}>
+                    <TambahBahanPemakaianPPIC />
+                </TabPanel>
+                <TabPanel value={value} index={3} dir={theme.direction}>
                     <HistoryPPICAllKendala />
                 </TabPanel>
 

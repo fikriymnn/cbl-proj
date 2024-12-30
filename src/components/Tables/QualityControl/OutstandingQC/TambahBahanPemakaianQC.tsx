@@ -8,7 +8,7 @@ import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 
 
 
-const TambahBahanQC = () => {
+const TambahBahanPemakaianQC = () => {
     const [isMobile, setIsMobile] = useState(false);
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
@@ -26,8 +26,7 @@ const TambahBahanQC = () => {
     }, []);
 
     const [tambahBahan, settambahBahan] = useState<any>();
-    const [statusTiket, setStatusTiket] = useState<any>('persiapan');
-
+    const [statusTiket, setStatusTiket] = useState<any>('pemakaian');
     useEffect(() => {
 
         getTambahBahanQC();
@@ -36,7 +35,6 @@ const TambahBahanQC = () => {
     async function getTambahBahanQC() {
         const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-tambah-bahan-qc`;
         try {
-
             const res = await axios.get(url, {
                 params: {
                     status: statusTiket,
@@ -106,10 +104,10 @@ const TambahBahanQC = () => {
                         PILIH STATUS TIKET
                     </option>
 
-                    <option value={'persiapan'} className="text-[#646464] text-xs dark:text-bodydark">
+                    <option value={'pemakaian'} className="text-[#646464] text-xs dark:text-bodydark">
                         Incoming
                     </option>
-                    <option value={'history_persiapan'} className="text-[#646464] text-xs dark:text-bodydark">
+                    <option value={'history_pemakaian'} className="text-[#646464] text-xs dark:text-bodydark">
                         History
                     </option>
                 </select>
@@ -122,7 +120,6 @@ const TambahBahanQC = () => {
                     Tampilkan
                 </button>
             </div>
-
             <div className="rounded-xl border border-stroke bg-white pt-4 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
 
                 <>
@@ -141,19 +138,19 @@ const TambahBahanQC = () => {
                             </div>
 
                             <div className="flex  col-span-2">
-                                <p className="text-slate-600 text-[14px] font-semibold  dark:text-white">No.JO</p>
+                                <p className="text-slate-600 text-[14px] font-semibold dark:text-white">No.JO</p>
                             </div>
                             <div className="flex  col-span-3">
-                                <p className="text-slate-600 text-[14px] font-semibold  dark:text-white">Item</p>
+                                <p className="text-slate-600 text-[14px] font-semibold dark:text-white">Item</p>
                             </div>
                             <div className="flex ">
-                                <p className="text-slate-600 text-[14px] font-semibold  dark:text-white">Operator</p>
+                                <p className="text-slate-600 text-[14px] font-semibold dark:text-white">Operator</p>
                             </div>
                             <div className="flex  col-span-3">
-                                <p className="text-slate-600 text-[14px] font-semibold  dark:text-white">Kertas</p>
+                                <p className="text-slate-600 text-[14px] font-semibold dark:text-white">Kertas</p>
                             </div>
                             <div className="flex ">
-                                <p className="text-slate-600 text-[14px] font-semibold  dark:text-white">Qty</p>
+                                <p className="text-slate-600 text-[14px] font-semibold dark:text-white">Qty</p>
                             </div>
                         </div>
                         {tambahBahan != null &&
@@ -188,6 +185,7 @@ const TambahBahanQC = () => {
                                                 <p className="text-slate-600 text-[14px]   dark:text-white">{data.qty_tambah_bahan}</p>
                                             </div>
 
+
                                             <div className="flex  justify-end gap-2">
                                                 {data.approve_qc == null ?
                                                     <>
@@ -199,7 +197,7 @@ const TambahBahanQC = () => {
                                                             <ModalKosonganSmall
                                                                 isOpen={showEdit[i]}
                                                                 onClose={() => closeEdit(i)}
-                                                                judul={'Respon Tambah Bahan Persiapan'}
+                                                                judul={'Respon Tambah Bahan Pemakaian'}
                                                             >
                                                                 <>
                                                                     <div className="flex flex-col   gap-3 w-full px-5 py-2">
@@ -228,7 +226,9 @@ const TambahBahanQC = () => {
                                                                                     <div className="flex  ">
                                                                                         <p className="text-slate-600 text-[14px]  text-center dark:text-white">Notes</p>
                                                                                     </div>
-
+                                                                                    <div className="flex  ">
+                                                                                        <p className="text-slate-600 text-[14px]  text-center dark:text-white">Kendala</p>
+                                                                                    </div>
                                                                                 </div>
                                                                                 <div className='col-span-2'>
                                                                                     <div className="flex  ">
@@ -249,7 +249,16 @@ const TambahBahanQC = () => {
                                                                                     <div className="flex  ">
                                                                                         <p className="text-slate-600 text-[14px]  text-center dark:text-white">: {data.notes}</p>
                                                                                     </div>
+                                                                                    <div className="flex flex-col ">
+                                                                                        {data.kendala?.map((data2: any, ii: any) => (
+                                                                                            <div key={ii} className='flex flex-col gap-1'>
+                                                                                                <p className="text-slate-600 text-[14px]   dark:text-white">- {data2.kode_kendala} ~ {data2.nama_kendala} ~ Dengan QTY {data2.qty_kendala}</p>
 
+                                                                                            </div>
+                                                                                        ))}
+
+
+                                                                                    </div>
                                                                                 </div>
                                                                             </div>
                                                                             <div className="flex w-full flex-col">
@@ -327,7 +336,7 @@ const TambahBahanQC = () => {
                                                             <ModalKosonganSmall
                                                                 isOpen={showEdit[i]}
                                                                 onClose={() => closeEdit(i)}
-                                                                judul={'Detail History Tambah Bahan Persiapan'}
+                                                                judul={'Detail History Tambah Bahan Pemakaian'}
                                                             >
                                                                 <>
                                                                     <div className="flex flex-col   gap-3 w-full px-5 py-2">
@@ -356,7 +365,9 @@ const TambahBahanQC = () => {
                                                                                     <div className="flex  ">
                                                                                         <p className="text-slate-600 text-[14px]  text-center dark:text-white">Notes</p>
                                                                                     </div>
-
+                                                                                    <div className="flex  ">
+                                                                                        <p className="text-slate-600 text-[14px]  text-center dark:text-white">Kendala</p>
+                                                                                    </div>
                                                                                 </div>
                                                                                 <div className='col-span-2'>
                                                                                     <div className="flex  ">
@@ -377,17 +388,42 @@ const TambahBahanQC = () => {
                                                                                     <div className="flex  ">
                                                                                         <p className="text-slate-600 text-[14px]  text-center dark:text-white">: {data.notes}</p>
                                                                                     </div>
+                                                                                    <div className="flex flex-col ">
+                                                                                        {data.kendala?.map((data2: any, ii: any) => (
+                                                                                            <div key={ii} className='flex flex-col gap-1'>
+                                                                                                <p className="text-slate-600 text-[14px]   dark:text-white">- {data2.kode_kendala} ~ {data2.nama_kendala} ~ Dengan QTY {data2.qty_kendala}</p>
 
+                                                                                            </div>
+                                                                                        ))}
+
+
+                                                                                    </div>
                                                                                 </div>
                                                                             </div>
                                                                             <div className="flex w-full flex-col">
                                                                                 <label className="text-black text-xs font-bold">
-                                                                                    Quantity
+                                                                                    Quantity Approve QC
                                                                                 </label>
                                                                                 <div className="flex w-full">
                                                                                     <input
                                                                                         readOnly
                                                                                         value={data.qty_tambah_bahan_approve_qc}
+                                                                                        name="qty"
+
+                                                                                        type="text"
+                                                                                        className=" w-full h-8 border-2 border-stroke rounded-md"
+                                                                                    />
+                                                                                </div>
+
+                                                                            </div>
+                                                                            <div className="flex w-full flex-col">
+                                                                                <label className="text-black text-xs font-bold">
+                                                                                    Quantity Approve RM
+                                                                                </label>
+                                                                                <div className="flex w-full">
+                                                                                    <input
+                                                                                        readOnly
+                                                                                        value={data.qty_tambah_bahan_approve_rm}
                                                                                         name="qty"
 
                                                                                         type="text"
@@ -411,7 +447,7 @@ const TambahBahanQC = () => {
                                                                                 </div>
 
                                                                             </div>
-                                                                            <div className="flex w-full flex-col">
+                                                                            <div className="flex w-full gap-2">
 
                                                                                 {data.approve_qc == 1 ? <>
                                                                                     <label className="text-green-500 text-xs font-bold">
@@ -422,7 +458,15 @@ const TambahBahanQC = () => {
                                                                                         REJECT
                                                                                     </label>
                                                                                 </>}
-
+                                                                                {data.approve_rm == 1 ? <>
+                                                                                    <label className="text-green-500 text-xs font-bold">
+                                                                                        APPROVE RM
+                                                                                    </label>
+                                                                                </> : <>
+                                                                                    <label className="text-red-500 text-xs font-bold">
+                                                                                        REJECT RM
+                                                                                    </label>
+                                                                                </>}
                                                                             </div>
 
                                                                         </>
@@ -432,8 +476,6 @@ const TambahBahanQC = () => {
                                                             </ModalKosonganSmall>
                                                         )}
                                                     </>}
-
-
                                             </div>
                                         </div>
                                     </>
@@ -445,9 +487,8 @@ const TambahBahanQC = () => {
 
 
             </div>
-
         </main>
     );
 };
 
-export default TambahBahanQC;
+export default TambahBahanPemakaianQC;
