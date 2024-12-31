@@ -33,7 +33,7 @@ function IncomingInspection() {
 
   useEffect(() => {
     getInspection();
-    getMe()
+    getMe();
   }, []);
 
   async function getInspection() {
@@ -58,14 +58,15 @@ function IncomingInspection() {
       });
 
       setMe(res.data.nama);
-      console.log('me', res.data)
+      console.log('me', res.data);
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
   async function startTask(id: any) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahan/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahan/start/${id}`;
 
     try {
       const res = await axios.get(url, {
@@ -100,8 +101,9 @@ function IncomingInspection() {
     }
     const stopTime = new Date();
     const timestamp = convertDatetimeToDate(new Date());
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahan/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahan/stop/${id}`;
 
     try {
       const elapsedSeconds = await calculateElapsedTime(start, stopTime);
@@ -134,8 +136,9 @@ function IncomingInspection() {
     }
   }
   async function sumbitPoint(objek: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${objek.id
-      }`;
+    const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${
+      objek.id
+    }`;
     try {
       const res = await axios.put(
         url,
@@ -161,8 +164,9 @@ function IncomingInspection() {
       alert('Point 1 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -195,8 +199,9 @@ function IncomingInspection() {
       alert('Point 2 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -232,8 +237,9 @@ function IncomingInspection() {
       alert('Point 3 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -263,8 +269,9 @@ function IncomingInspection() {
       alert('Point 4 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -292,8 +299,9 @@ function IncomingInspection() {
       alert('Point 5 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -322,8 +330,9 @@ function IncomingInspection() {
       alert('Point 6 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -350,8 +359,9 @@ function IncomingInspection() {
       alert('Point 7 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -377,8 +387,9 @@ function IncomingInspection() {
       alert('Point 8 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -404,8 +415,9 @@ function IncomingInspection() {
       alert('Point 9 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -442,21 +454,22 @@ function IncomingInspection() {
       return; // Exit function if no start time
     }
 
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahan/update/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahan/update/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       if (verifikasi == 'Diterima') {
         const respon = await axios.post(
           `https://erp.cbloffset.com/api/approve-incoming-bahan`,
           {
             surat_jalan: incoming?.no_surat_jalan,
-            nama_inspektor: me
+            nama_inspektor: me,
           },
         );
-        if (respon.data.rc = 404) {
-          alert(respon.data.msg)
-          setIsLoading(false)
+        if (respon.data.rc == 404) {
+          alert(respon.data.msg);
+          setIsLoading(false);
           return;
         }
         const res = await axios.put(
@@ -486,13 +499,13 @@ function IncomingInspection() {
           },
         );
       }
-      setIsLoading(false)
+      setIsLoading(false);
       alert('Data Berhasil Di-Update');
       console.log('succes');
       getInspection();
     } catch (error: any) {
-      alert(error)
-      setIsLoading(false)
+      alert(error);
+      setIsLoading(false);
       console.log(error);
     }
   }
