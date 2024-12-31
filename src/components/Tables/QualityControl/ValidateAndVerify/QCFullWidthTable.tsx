@@ -11,6 +11,7 @@ import TableVerifikasi from './TableVerify';
 import TableValidasi from './TableValidate';
 import TableHistory from './TableHistory';
 import TableHistoryValidate from './TableHistoryValidate';
+import TableHistoryValidateAllKendala from './TableHistoryValidasiAllKendala';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -130,6 +131,8 @@ export default function QCFullWidthTabs() {
             <Tab label="Verifikasi" {...a11yProps(1)} />
             <Tab label="History Validasi" {...a11yProps(2)} />
             <Tab label="History Verifikasi" {...a11yProps(3)} />
+            <Tab label="History Validasi All Kendala" {...a11yProps(4)} />
+
           </Tabs>
         </ThemeProvider>
       </AppBar>
@@ -144,6 +147,9 @@ export default function QCFullWidthTabs() {
       </TabPanel>
       <TabPanel value={value} index={3} dir={theme.direction}>
         <TableHistory />
+      </TabPanel>
+      <TabPanel value={value} index={4} dir={theme.direction}>
+        <TableHistoryValidateAllKendala />
       </TabPanel>
     </Box>
   );
