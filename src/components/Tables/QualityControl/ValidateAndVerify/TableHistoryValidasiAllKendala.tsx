@@ -292,14 +292,7 @@ const TableHistoryValidateAllKendala = () => {
                                                     {data.operator}
                                                 </label>
                                             </div>
-                                            <div className='flex flex-col '>
-                                                <label htmlFor="" className='text-black text-xs font-bold'>
-                                                    NO. JO
-                                                </label>
-                                                <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
-                                                    {data.jo_lembur}
-                                                </label>
-                                            </div>
+
                                             <div className='flex flex-col '>
                                                 <label htmlFor="" className='text-black text-xs font-bold'>
                                                     DENGAN ISTIRAHAT
