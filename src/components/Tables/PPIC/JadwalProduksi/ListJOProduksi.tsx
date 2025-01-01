@@ -1,63 +1,22 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import ModalXL from './ModalXL';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
+import axios from 'axios';
+import Loading from '../../../Loading';
 
 function ListJOProduksi() {
 
-    const mesin = [
-        {
-            nama: 'R700',
-            druk: '123.456',
-            jam8: 'JO-0001',
-            jam9: 'JO-0001',
-            jam10: 'JO-0001',
-            jam11: 'JO-0001',
+    const [isLoading, setIsLoading] = useState(false);
+    const [listJO, setJo] = useState<any>();
+    const [hasilKalkulasi, setHasilKalkulasi] = useState<any>();
+    useEffect(() => {
+        getmasterKategori()
+    }, []);
 
-        },
+    const listJoTest = [
         {
-            nama: 'SM74',
-            druk: '123.456',
-            jam8: 'JO-0001',
-            jam9: 'JO-0001',
-            jam10: 'JO-0001',
-            jam11: 'JO-0001',
-        },
-        {
-            nama: 'GTO',
-            druk: '123.456',
-            jam8: 'JO-0001',
-            jam9: 'JO-0001',
-            jam10: 'JO-0001',
-            jam11: 'JO-0001',
-        },
-        {
-            nama: 'Manual 1',
-            druk: '123.456',
-            jam8: 'JO-0001',
-            jam9: 'JO-0001',
-            jam10: 'JO-0001',
-            jam11: 'JO-0001',
-        },
-        {
-            nama: 'Manual 2',
-            druk: '123.456',
-            jam8: 'JO-0001',
-            jam9: 'JO-0001',
-            jam10: 'JO-0001',
-            jam11: 'JO-0001',
-        },
-        {
-            nama: 'Manual 3',
-            druk: '123.456',
-            jam8: 'JO-0001',
-            jam9: 'JO-0001',
-            jam10: 'JO-0001',
-            jam11: 'JO-0001',
-        },
-    ];
-    const listJo = [
-        {
+            id: 1,
             noJo: 'JO-24-00818',
             namaItem: 'Dus Paracetamol 200ml',
             qtyJo: '10.000',
@@ -66,6 +25,7 @@ function ListJOProduksi() {
 
         },
         {
+            id: 1,
             noJo: 'JO-24-00819',
             namaItem: 'Dus Vitamin 200ml',
             qtyJo: '11.000',
@@ -74,6 +34,7 @@ function ListJOProduksi() {
 
         },
         {
+            id: 1,
             noJo: 'JO-24-00820',
             namaItem: 'Dus Mineral 200ml',
             qtyJo: '12.000',
@@ -82,102 +43,7 @@ function ListJOProduksi() {
 
         },
         {
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
+            id: 1,
             noJo: 'JO-24-00821',
             namaItem: 'Dus Besi 200ml',
             qtyJo: '13.000',
@@ -186,32 +52,39 @@ function ListJOProduksi() {
 
         },
 
-        {
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
 
-        },
-        {
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
     ]
+    async function getKalkulasi(id: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/ppic/calculateJadwalProduksi/${id}`;
+        try {
+            setIsLoading(true)
+            const res = await axios.get(url, {
+                withCredentials: true,
+            });
+            setIsLoading(false)
+            setHasilKalkulasi(res.data)
+            console.log('Kalkulasi', res.data);
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
 
+    async function getmasterKategori() {
+        const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksi`;
+        try {
+            setIsLoading(true)
+            const res = await axios.get(url, {
+                withCredentials: true,
+            });
+            setIsLoading(false)
+            setJo(res.data)
+            console.log('listJO', res.data);
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
     const [activeComponent, setActiveComponent] = useState('component1');
 
     const showComponent1 = () => {
@@ -242,6 +115,7 @@ function ListJOProduksi() {
     };
     return (
         <main className="overflow-x-scroll ' ">
+            {isLoading && <Loading />}
             <div className="min-w-[700px]  bg-[#D8EAFF] rounded-xl flex gap-1 ">
                 {activeComponent === 'component1' ? (
                     <>
@@ -350,30 +224,49 @@ function ListJOProduksi() {
                                 </p>
 
                             </div>
-                            {listJo?.map((data: any, i: number) => (
-                                <>
-                                    <div className='grid grid-cols-12  bg-white  border-b-8 border-[#D8EAFF] px-[1%] py-[1%]'>
-                                        <p className='text-[#646464] text-sm  col-span-2'>
-                                            {data.noJo}
-                                        </p>
-                                        <p className='text-[#646464] text-sm  col-span-3'>
-                                            {data.namaItem}
-                                        </p>
-                                        <p className='text-[#646464] text-sm  '>
-                                            {data.qtyJo}
-                                        </p>
-                                        <p className='text-[#646464] text-sm  '>
-                                            {data.qtyDruk}
-                                        </p>
-                                        <p className='text-[#646464] text-sm  col-span-3'>
-                                            {data.tglKirim}
-                                        </p>
-                                        <p className='text-[#0065de] text-sm  font-bold'>
-                                            CALCULATE
-                                        </p>
-                                    </div>
-                                </>
-                            ))}
+                            <div className='max-h-[500px] overflow-y-scroll'>
+                                {listJoTest?.map((data: any, i: number) => (
+                                    <>
+                                        <div className='grid grid-cols-12  bg-white  border-b-8 border-[#D8EAFF] px-[1%] py-[1%] '>
+                                            <p className='text-[#646464] text-sm  col-span-2'>
+                                                {data.noJo}
+                                            </p>
+                                            <p className='text-[#646464] text-sm  col-span-3'>
+                                                {data.namaItem}
+                                            </p>
+                                            <p className='text-[#646464] text-sm  '>
+                                                {data.qtyJo}
+                                            </p>
+                                            <p className='text-[#646464] text-sm  '>
+                                                {data.qtyDruk}
+                                            </p>
+                                            <p className='text-[#646464] text-sm  col-span-3'>
+                                                {data.tglKirim}
+                                            </p>
+                                            <button
+                                                onClick={() => {
+                                                    getKalkulasi(data.id)
+                                                    openCalculate(i)
+                                                }}
+                                                className='text-[#0065de] text-sm  font-bold'>
+                                                CALCULATE
+                                            </button>
+                                            {showCalculate[i] == true && (
+
+                                                <ModalXL
+                                                    isOpen={showCalculate[i]}
+                                                    onClose={() => closeCalculate(i)}
+                                                    judul={'Rumus Kalkulasi'}
+                                                >
+                                                    <>
+
+                                                    </>
+                                                </ModalXL>
+                                            )}
+                                        </div>
+                                    </>
+                                ))}
+                            </div>
                         </div>
                         <div
                             onClick={showComponent2}
@@ -392,57 +285,16 @@ function ListJOProduksi() {
                             </div>
                             <div className='flex w-[97%] flex-col bg-[#D8EAFF]'>
                                 <div className='flex gap-2 w-full border-b-8 border-[#D8EAFF] bg-[#D8EAFF]'>
-                                    {mesin?.map((data: any) => (
-                                        <>
-                                            <div className='flex flex-col w-40  justify-center items-center bg-white rounded-md py-4'>
-                                                <p className='text-center text-[#0065de] text-base font-semibold'>
-                                                    {data.nama}
-                                                </p>
-                                                <p className='text-center text-black text-2xl font-light'>
-                                                    {data.druk}
-                                                </p>
-                                            </div>
-                                        </>
-                                    ))}
+
                                 </div>
                                 <div className='flex  bg-white  border-b-8 border-[#D8EAFF]'>
                                     <p className='text-center text-[#0065de] text-[11px] w-[6%] font-semibold py-[1%] '>
                                         TIME
                                     </p>
-                                    {mesin?.map((data: any, i: number) => (
-                                        <>
-                                            <div
-                                                key={i}
-                                                className={`flex w-[6%] justify-center items-center ${i % 2 === 1 ? 'bg-white   ' : 'bg-[#eaf4ff]'}`}>
-                                                <p className='text-center text-[#0065de] text-[11px]  font-semibold'>
-                                                    {data.nama}
-                                                </p>
-                                            </div >
-                                        </>
-                                    ))}
+
                                 </div>
                                 <div className='flex w-full bg-white  border-b-8 border-[#D8EAFF] flex-col '>
 
-                                    {mesin?.map((data: any, i: number) => (
-                                        <>
-                                            <div className='flex border-b-8 border-[#D8EAFF]'>
-                                                <div
-                                                    key={i}
-                                                    className={`flex w-[6%] py-[1%] justify-center items-center `}>
-                                                    <p className='text-center text-[#0065de] text-[11px]  font-semibold'>
-                                                        JAM {8 + i}
-                                                    </p>
-                                                </div >
-                                                <div
-                                                    key={i}
-                                                    className={`flex w-[6%] justify-center items-center bg-[#eaf4ff]`}>
-                                                    <p className='text-center text-[#0065de] text-[11px]  font-semibold'>
-                                                        {data.jam8}
-                                                    </p>
-                                                </div >
-                                            </div>
-                                        </>
-                                    ))}
                                 </div>
                             </div>
 
