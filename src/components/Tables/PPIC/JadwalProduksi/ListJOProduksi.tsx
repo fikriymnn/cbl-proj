@@ -51,6 +51,79 @@ function ListJOProduksi() {
             tglKirim: '30-Januari-2025'
 
         },
+        {
+            id: 1,
+            noJo: 'JO-24-00821',
+            namaItem: 'Dus Besi 200ml',
+            qtyJo: '13.000',
+            qtyDruk: '1400',
+            tglKirim: '30-Januari-2025'
+
+        },
+
+        {
+            id: 1,
+            noJo: 'JO-24-00821',
+            namaItem: 'Dus Besi 200ml',
+            qtyJo: '13.000',
+            qtyDruk: '1400',
+            tglKirim: '30-Januari-2025'
+
+        },
+        {
+            id: 1,
+            noJo: 'JO-24-00821',
+            namaItem: 'Dus Besi 200ml',
+            qtyJo: '13.000',
+            qtyDruk: '1400',
+            tglKirim: '30-Januari-2025'
+
+        },
+        {
+            id: 1,
+            noJo: 'JO-24-00821',
+            namaItem: 'Dus Besi 200ml',
+            qtyJo: '13.000',
+            qtyDruk: '1400',
+            tglKirim: '30-Januari-2025'
+
+        },
+        {
+            id: 1,
+            noJo: 'JO-24-00821',
+            namaItem: 'Dus Besi 200ml',
+            qtyJo: '13.000',
+            qtyDruk: '1400',
+            tglKirim: '30-Januari-2025'
+
+        },
+        {
+            id: 1,
+            noJo: 'JO-24-00821',
+            namaItem: 'Dus Besi 200ml',
+            qtyJo: '13.000',
+            qtyDruk: '1400',
+            tglKirim: '30-Januari-2025'
+
+        },
+        {
+            id: 1,
+            noJo: 'JO-24-00821',
+            namaItem: 'Dus Besi 200ml',
+            qtyJo: '13.000',
+            qtyDruk: '1400',
+            tglKirim: '30-Januari-2025'
+
+        },
+        {
+            id: 1,
+            noJo: 'JO-24-00821',
+            namaItem: 'Dus Besi 200ml',
+            qtyJo: '13.000',
+            qtyDruk: '1400',
+            tglKirim: '30-Januari-2025'
+
+        },
 
 
     ]
@@ -259,7 +332,99 @@ function ListJOProduksi() {
                                                     judul={'Rumus Kalkulasi'}
                                                 >
                                                     <>
+                                                        <div className='grid grid-cols-3 gap-2 px-4 py-4  border-b-8 border-[#D8EAFF]'>
+                                                            <div className='flex flex-col  '>
+                                                                <div className='grid grid-cols-2 gap-2'>
+                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                        Tanggal Kirim
+                                                                    </label>
+                                                                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                        {data.status} 11
+                                                                    </label>
+                                                                </div>
+                                                                <div className='grid grid-cols-2 gap-2'>
+                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                        Tanggal Cetak
+                                                                    </label>
+                                                                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                        {data.status} 11
+                                                                    </label>
+                                                                </div>
+                                                            </div>
 
+                                                        </div>
+                                                        <div className='flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF] gap-2 px-4 py-4'>
+                                                            <div className='w-[150px] flex flex-col '>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    KATEGORI
+                                                                </label>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    DRYING TIME
+                                                                </label>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    MESIN
+                                                                </label>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    KAPASITAS/JAM
+                                                                </label>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    DRYING TIME (JAM)
+                                                                </label>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    SETTING (JAM)
+                                                                </label>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    KAPASITAS (JAM)
+                                                                </label>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    TOLERANSI
+                                                                </label>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    TOTAL WAKTU
+                                                                </label>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    TANGGAL
+                                                                </label>
+                                                            </div>
+                                                            <div className='flex overflow-x-scroll max-w-screen'>
+                                                                {listJoTest?.map((data: any, i: number) => (
+                                                                    <>
+                                                                        <div className='min-w-[150px] flex flex-col justify-center'>
+                                                                            <label htmlFor="" className='text-black text-xs justify-center  border-2 border-stroke flex items-center h-[50px]'>
+                                                                                A
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                B
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                ITTOH
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                0
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                0
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                0
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                0
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                0
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                0
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                17-AGUSTUS-2025 ~ 17-AGUSTUS-2025
+                                                                            </label>
+                                                                        </div>
+                                                                    </>
+                                                                ))}
+                                                            </div>
+                                                        </div>
                                                     </>
                                                 </ModalXL>
                                             )}
