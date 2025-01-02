@@ -195,10 +195,10 @@ function ListJOProduksi() {
                                             key={i}
                                             className='grid grid-cols-12  bg-white  border-b-8 border-[#D8EAFF] px-[1%] py-[1%] '>
                                             <p className='text-[#646464] text-sm  col-span-2'>
-                                                JO-24-00001
+                                                {data.jo}
                                             </p>
                                             <p className='text-[#646464] text-sm  col-span-2'>
-                                                ITEM 1
+                                                {data.item}
                                             </p>
                                             <p className='text-[#646464] text-sm  '>
                                                 {data.qty_pcs}
@@ -232,10 +232,26 @@ function ListJOProduksi() {
                                                             <div className='flex flex-col '>
                                                                 <div className='grid grid-cols-2 gap-2'>
                                                                     <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                        Nomor JO
+                                                                    </label>
+                                                                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                        : {data.jo}
+                                                                    </label>
+                                                                </div>
+                                                                <div className='grid grid-cols-2 gap-2'>
+                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                        Item
+                                                                    </label>
+                                                                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                        : {data.item}
+                                                                    </label>
+                                                                </div>
+                                                                <div className='grid grid-cols-2 gap-2'>
+                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
                                                                         Tanggal Kirim
                                                                     </label>
                                                                     <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
-                                                                        {convertTimeStampToDate(data.tgl_kirim)}
+                                                                        : {convertTimeStampToDate(data.tgl_kirim)}
                                                                     </label>
                                                                 </div>
                                                                 <div className='grid grid-cols-2 gap-2'>
@@ -243,7 +259,7 @@ function ListJOProduksi() {
                                                                         Tanggal Cetak
                                                                     </label>
                                                                     <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
-                                                                        {convertTimeStampToDate(data.tgl_cetak)}
+                                                                        : {convertTimeStampToDate(data.tgl_cetak)}
                                                                     </label>
                                                                 </div>
                                                             </div>
@@ -298,7 +314,7 @@ function ListJOProduksi() {
                                                                                 {data2.kategory}
                                                                             </label>
                                                                             <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                B
+                                                                                {data2.kategory_drying_time}
                                                                             </label>
                                                                             <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
                                                                                 {data2.mesin}

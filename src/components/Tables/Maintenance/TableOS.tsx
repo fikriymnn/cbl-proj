@@ -819,7 +819,7 @@ function TableOS() {
           </div>
           <div className="flex flex-col  gap-2 col-span-2">
             <p className=" my-auto text-sm text-primary font-semibold ">
-              Pilih Mesin:
+              Pilih Status Tiket:
             </p>
             <select
               onChange={(e) => {

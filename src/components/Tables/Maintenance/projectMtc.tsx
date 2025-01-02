@@ -170,8 +170,25 @@ function ProjectMtc() {
             console.log(error);
         }
     }
-    async function DeleteSubTask(id: any) {
+    async function DeleteTask(id: any) {
         if (window.confirm('Apakah Anda yakin ingin Menghapus Task Ini?')) {
+            try {
+                const url = `${import.meta.env.VITE_API_LINK}/mtc/projectMtc/${id}`;
+                const res = await axios.delete(url,
+                    {
+
+                        withCredentials: true,
+                    });
+                alert('Data Berhasil Di-Hapus')
+                getTiket()
+
+            } catch (error: any) {
+                console.log(error);
+            }
+        }
+    }
+    async function DeleteSubTask(id: any) {
+        if (window.confirm('Apakah Anda yakin ingin Menghapus Sub Task Ini?')) {
             try {
                 const url = `${import.meta.env.VITE_API_LINK}/mtc/subProjectMtc/${id}`;
                 const res = await axios.delete(url,
@@ -706,6 +723,13 @@ function ProjectMtc() {
                                                                 </ModalKosongan>
                                                             </>
                                                         )}
+                                                        <button
+                                                            title="button"
+                                                            className="text-xs w-full font-bold px-1 bg-red-700 py-2 text-white rounded-md"
+                                                            onClick={() => DeleteTask(data.id)}
+                                                        >
+                                                            Hapus
+                                                        </button>
                                                         <div className=''>
                                                             <button
                                                                 title="button"
