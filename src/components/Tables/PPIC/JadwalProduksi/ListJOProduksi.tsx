@@ -4,6 +4,7 @@ import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 import axios from 'axios';
 import Loading from '../../../Loading';
+import convertTimeStampToDate from '../../../../utils/convertDate';
 
 function ListJOProduksi() {
 
@@ -14,119 +15,7 @@ function ListJOProduksi() {
         getmasterKategori()
     }, []);
 
-    const listJoTest = [
-        {
-            id: 1,
-            noJo: 'JO-24-00818',
-            namaItem: 'Dus Paracetamol 200ml',
-            qtyJo: '10.000',
-            qtyDruk: '1000',
-            tglKirim: '1-Januari-2025'
 
-        },
-        {
-            id: 1,
-            noJo: 'JO-24-00819',
-            namaItem: 'Dus Vitamin 200ml',
-            qtyJo: '11.000',
-            qtyDruk: '1100',
-            tglKirim: '10-Januari-2025'
-
-        },
-        {
-            id: 1,
-            noJo: 'JO-24-00820',
-            namaItem: 'Dus Mineral 200ml',
-            qtyJo: '12.000',
-            qtyDruk: '1200',
-            tglKirim: '20-Januari-2025'
-
-        },
-        {
-            id: 1,
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            id: 1,
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-
-        {
-            id: 1,
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            id: 1,
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            id: 1,
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            id: 1,
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            id: 1,
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            id: 1,
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-        {
-            id: 1,
-            noJo: 'JO-24-00821',
-            namaItem: 'Dus Besi 200ml',
-            qtyJo: '13.000',
-            qtyDruk: '1400',
-            tglKirim: '30-Januari-2025'
-
-        },
-
-
-    ]
     async function getKalkulasi(id: any) {
         const url = `${import.meta.env.VITE_API_LINK}/ppic/calculateJadwalProduksi/${id}`;
         try {
@@ -283,38 +172,45 @@ function ListJOProduksi() {
                                 <p className='text-[#646464] text-xs font-bold col-span-2'>
                                     Job Order
                                 </p>
-                                <p className='text-[#646464] text-xs font-bold col-span-3'>
+                                <p className='text-[#646464] text-xs font-bold col-span-2'>
                                     Nama Item
                                 </p>
                                 <p className='text-[#646464] text-xs font-bold '>
-                                    Qty Jo
+                                    Qty Pcs
                                 </p>
                                 <p className='text-[#646464] text-xs font-bold '>
                                     Qty Druk
                                 </p>
-                                <p className='text-[#646464] text-xs font-bold col-span-5'>
+                                <p className='text-[#646464] text-xs font-bold col-span-2'>
                                     Tanggal Kirim
                                 </p>
-
+                                <p className='text-[#646464] text-xs font-bold col-span-3'>
+                                    Tanggal Cetak
+                                </p>
                             </div>
                             <div className='max-h-[500px] overflow-y-scroll'>
-                                {listJoTest?.map((data: any, i: number) => (
+                                {listJO?.data?.map((data: any, i: number) => (
                                     <>
-                                        <div className='grid grid-cols-12  bg-white  border-b-8 border-[#D8EAFF] px-[1%] py-[1%] '>
+                                        <div
+                                            key={i}
+                                            className='grid grid-cols-12  bg-white  border-b-8 border-[#D8EAFF] px-[1%] py-[1%] '>
                                             <p className='text-[#646464] text-sm  col-span-2'>
-                                                {data.noJo}
+                                                JO-24-00001
                                             </p>
-                                            <p className='text-[#646464] text-sm  col-span-3'>
-                                                {data.namaItem}
-                                            </p>
-                                            <p className='text-[#646464] text-sm  '>
-                                                {data.qtyJo}
+                                            <p className='text-[#646464] text-sm  col-span-2'>
+                                                ITEM 1
                                             </p>
                                             <p className='text-[#646464] text-sm  '>
-                                                {data.qtyDruk}
+                                                {data.qty_pcs}
                                             </p>
-                                            <p className='text-[#646464] text-sm  col-span-3'>
-                                                {data.tglKirim}
+                                            <p className='text-[#646464] text-sm  '>
+                                                {data.qty_druk}
+                                            </p>
+                                            <p className='text-[#646464] text-sm  col-span-2'>
+                                                {data.tgl_kirim}
+                                            </p>
+                                            <p className='text-[#646464] text-sm  col-span-2'>
+                                                {data.tgl_cetak}
                                             </p>
                                             <button
                                                 onClick={() => {
@@ -332,14 +228,14 @@ function ListJOProduksi() {
                                                     judul={'Rumus Kalkulasi'}
                                                 >
                                                     <>
-                                                        <div className='grid grid-cols-3 gap-2 px-4 py-4  border-b-8 border-[#D8EAFF]'>
-                                                            <div className='flex flex-col  '>
+                                                        <div className='grid grid-cols-2 gap-2 px-4 py-4  border-b-8 border-[#D8EAFF]'>
+                                                            <div className='flex flex-col '>
                                                                 <div className='grid grid-cols-2 gap-2'>
                                                                     <label htmlFor="" className='text-black text-xs font-bold'>
                                                                         Tanggal Kirim
                                                                     </label>
                                                                     <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
-                                                                        {data.status} 11
+                                                                        {convertTimeStampToDate(data.tgl_kirim)}
                                                                     </label>
                                                                 </div>
                                                                 <div className='grid grid-cols-2 gap-2'>
@@ -347,7 +243,7 @@ function ListJOProduksi() {
                                                                         Tanggal Cetak
                                                                     </label>
                                                                     <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
-                                                                        {data.status} 11
+                                                                        {convertTimeStampToDate(data.tgl_cetak)}
                                                                     </label>
                                                                 </div>
                                                             </div>
@@ -355,6 +251,9 @@ function ListJOProduksi() {
                                                         </div>
                                                         <div className='flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF] gap-2 px-4 py-4'>
                                                             <div className='w-[150px] flex flex-col '>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    TAHAPAN
+                                                                </label>
                                                                 <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
                                                                     KATEGORI
                                                                 </label>
@@ -387,38 +286,43 @@ function ListJOProduksi() {
                                                                 </label>
                                                             </div>
                                                             <div className='flex overflow-x-scroll max-w-screen'>
-                                                                {listJoTest?.map((data: any, i: number) => (
+                                                                {hasilKalkulasi?.data?.tahap?.map((data2: any, ii: number) => (
                                                                     <>
-                                                                        <div className='min-w-[150px] flex flex-col justify-center'>
+                                                                        <div
+                                                                            key={ii}
+                                                                            className='min-w-[150px] flex flex-col justify-center'>
                                                                             <label htmlFor="" className='text-black text-xs justify-center  border-2 border-stroke flex items-center h-[50px]'>
-                                                                                A
+                                                                                {data2.tahapan}
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-black text-xs justify-center  border-2 border-stroke flex items-center h-[50px]'>
+                                                                                {data2.kategory}
                                                                             </label>
                                                                             <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
                                                                                 B
                                                                             </label>
                                                                             <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                ITTOH
+                                                                                {data2.mesin}
                                                                             </label>
                                                                             <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                0
+                                                                                {data2.kapasitas_per_jam}
                                                                             </label>
                                                                             <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                0
+                                                                                {data2.drying_time}
                                                                             </label>
                                                                             <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                0
+                                                                                {data2.setting}
                                                                             </label>
                                                                             <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                0
+                                                                                {data2.kapasitas}
                                                                             </label>
                                                                             <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                0
+                                                                                {data2.toleransi}
                                                                             </label>
                                                                             <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                0
+                                                                                {data2.total_waktu}
                                                                             </label>
                                                                             <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                17-AGUSTUS-2025 ~ 17-AGUSTUS-2025
+                                                                                {convertTimeStampToDate(data2.tgl_from)} ~  {convertTimeStampToDate(data2.tgl_to)}
                                                                             </label>
                                                                         </div>
                                                                     </>
