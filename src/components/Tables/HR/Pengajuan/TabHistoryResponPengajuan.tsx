@@ -151,7 +151,7 @@ export default function TabResponHistoryPengajuanHR() {
                             <Tab label="Pinjaman" {...a11yProps(5)} />
                             <Tab label="Dinas" {...a11yProps(6)} />
                             <Tab label="SP" {...a11yProps(7)} />
-                            <Tab label="Karyawan" {...a11yProps(8)} />
+                            <Tab label="Penambahan Karyawan" {...a11yProps(8)} />
                             <div className="flex w-full justify-end pr-4">
                                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                                     {tanggal}

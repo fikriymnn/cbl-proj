@@ -204,20 +204,6 @@ function ProjectMtc() {
             }
         }
     }
-    const handleResize = () => {
-        setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
-    };
-    useEffect(() => {
-        handleResize();
-
-        // Event listener for window resize
-        window.addEventListener('resize', handleResize);
-
-        // Cleanup on component unmount
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
 
     const handleClickDetail = (index: number) => {
         setShowDetail((prevState) => {
@@ -288,6 +274,24 @@ function ProjectMtc() {
     useEffect(() => {
         getTiket()
     }, []);
+    const [masterMesin, setmasterMesin] = useState<any>();
+    useEffect(() => {
+        getMasterMesin();
+    }, []);
+
+    async function getMasterMesin() {
+        const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
+        try {
+            const res = await axios.get(url, {
+                withCredentials: true,
+            });
+
+            setmasterMesin(res.data);
+            console.log(res.data);
+        } catch (error: any) {
+            console.log(error.data.msg);
+        }
+    }
     async function getTiket() {
         const url = `${import.meta.env.VITE_API_LINK}/mtc/projectMtc`;
         try {
@@ -323,9 +327,6 @@ function ProjectMtc() {
             console.log(error);
         }
     }
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [currentItem, setCurrentItem] = useState(null);
 
 
     const [showDetail, setShowDetail] = useState<boolean[]>(
@@ -365,14 +366,33 @@ function ProjectMtc() {
                                             <label className="text-black text-xs font-bold w-10">
                                                 Task
                                             </label>
-                                            <div className="flex w-full">
-                                                <input
-                                                    name="serial_number"
-                                                    onChange={(e) => { setTask(e.target.value) }}
-                                                    type="text"
-                                                    className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                />
-                                            </div>
+
+                                            <select
+                                                onChange={(e) => {
+                                                    setTask(e.target.value);
+                                                    // changeTextColor();
+                                                }}
+                                                className={`relative z-20 w-full  appearance-none rounded-md  text-xs bg-blue-100 py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${'text-gray-800 dark:text-white'}`}
+                                            >
+                                                <option
+                                                    value={''}
+                                                    selected
+                                                    disabled
+                                                    className="text-gray-800 text-xs font-light dark:text-bodydark"
+                                                >
+                                                    Select Mesin
+                                                </option>
+                                                {masterMesin?.map((data: any, i: number) => {
+                                                    return (
+                                                        <option
+                                                            value={data.nama_mesin}
+                                                            className="text-gray-800 text-xs font-light dark:text-bodydark"
+                                                        >
+                                                            {data.nama_mesin}
+                                                        </option>
+                                                    );
+                                                })}
+                                            </select>
 
                                         </div>
                                         <div className="flex w-full flex-row gap-2">

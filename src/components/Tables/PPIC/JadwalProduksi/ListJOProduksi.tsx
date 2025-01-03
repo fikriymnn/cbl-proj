@@ -5,6 +5,8 @@ import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 import axios from 'axios';
 import Loading from '../../../Loading';
 import convertTimeStampToDate from '../../../../utils/convertDate';
+import formatInteger from '../../../../utils/formaterInteger';
+import Arrow from '../../../../images/icon/icon-arrow-down.svg';
 
 function ListJOProduksi() {
 
@@ -75,6 +77,16 @@ function ListJOProduksi() {
 
         setShowCalculate(onchangeVal);
     };
+    const handleClickDetail = (index: number) => {
+        setShowDetail((prevState) => {
+            const updatedShowDetail = [...prevState]; // Create a copy
+            updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
+            return updatedShowDetail;
+        });
+    };
+    const [showDetail, setShowDetail] = useState<boolean[]>(
+        new Array(hasilKalkulasi != null && hasilKalkulasi.length).fill(false),
+    );
     return (
         <main className="overflow-x-scroll ' ">
             {isLoading && <Loading />}
@@ -181,12 +193,10 @@ function ListJOProduksi() {
                                 <p className='text-[#646464] text-xs font-bold '>
                                     Qty Druk
                                 </p>
-                                <p className='text-[#646464] text-xs font-bold col-span-2'>
+                                <p className='text-[#646464] text-xs font-bold col-span-4'>
                                     Tanggal Kirim
                                 </p>
-                                <p className='text-[#646464] text-xs font-bold col-span-3'>
-                                    Tanggal Cetak
-                                </p>
+
                             </div>
                             <div className='max-h-[500px] overflow-y-scroll'>
                                 {listJO?.data?.map((data: any, i: number) => (
@@ -201,17 +211,15 @@ function ListJOProduksi() {
                                                 {data.item}
                                             </p>
                                             <p className='text-[#646464] text-sm  '>
-                                                {data.qty_pcs}
+                                                {formatInteger(data.qty_pcs)}
                                             </p>
                                             <p className='text-[#646464] text-sm  '>
-                                                {data.qty_druk}
+                                                {formatInteger(data.qty_druk)}
                                             </p>
-                                            <p className='text-[#646464] text-sm  col-span-2'>
+                                            <p className='text-[#646464] text-sm  col-span-4'>
                                                 {data.tgl_kirim}
                                             </p>
-                                            <p className='text-[#646464] text-sm  col-span-2'>
-                                                {data.tgl_cetak}
-                                            </p>
+
                                             <button
                                                 onClick={() => {
                                                     getKalkulasi(data.id)
@@ -263,7 +271,24 @@ function ListJOProduksi() {
                                                                     </label>
                                                                 </div>
                                                             </div>
-
+                                                            <div className='flex flex-col '>
+                                                                <div className='grid grid-cols-2 gap-2'>
+                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                        Qty Druk
+                                                                    </label>
+                                                                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                        : {formatInteger(data.qty_druk)}
+                                                                    </label>
+                                                                </div>
+                                                                <div className='grid grid-cols-2 gap-2'>
+                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                        Qty Pcs
+                                                                    </label>
+                                                                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                        : {formatInteger(data.qty_pcs)}
+                                                                    </label>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                         <div className='flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF] gap-2 px-4 py-4'>
                                                             <div className='w-[150px] flex flex-col '>
@@ -271,36 +296,41 @@ function ListJOProduksi() {
                                                                     TAHAPAN
                                                                 </label>
                                                                 <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                    KATEGORI
-                                                                </label>
-                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                    DRYING TIME
-                                                                </label>
-                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                    MESIN
-                                                                </label>
-                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                    KAPASITAS/JAM
-                                                                </label>
-                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                    DRYING TIME (JAM)
-                                                                </label>
-                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                    SETTING (JAM)
-                                                                </label>
-                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                    KAPASITAS (JAM)
-                                                                </label>
-                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                    TOLERANSI
-                                                                </label>
-                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                    TOTAL WAKTU
-                                                                </label>
-                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
                                                                     TANGGAL
                                                                 </label>
+                                                                {showDetail[i] && (
+                                                                    <>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                            KATEGORI
+                                                                        </label>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                            DRYING TIME
+                                                                        </label>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                            MESIN
+                                                                        </label>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                            KAPASITAS/JAM
+                                                                        </label>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                            DRYING TIME (JAM)
+                                                                        </label>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                            SETTING (JAM)
+                                                                        </label>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                            KAPASITAS (JAM)
+                                                                        </label>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                            TOLERANSI
+                                                                        </label>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                            TOTAL WAKTU
+                                                                        </label>
+                                                                    </>
+                                                                )}
                                                             </div>
+
                                                             <div className='flex overflow-x-scroll max-w-screen'>
                                                                 {hasilKalkulasi?.data?.tahap?.map((data2: any, ii: number) => (
                                                                     <>
@@ -310,39 +340,52 @@ function ListJOProduksi() {
                                                                             <label htmlFor="" className='text-black text-xs justify-center  border-2 border-stroke flex items-center h-[50px]'>
                                                                                 {data2.tahapan}
                                                                             </label>
-                                                                            <label htmlFor="" className='text-black text-xs justify-center  border-2 border-stroke flex items-center h-[50px]'>
-                                                                                {data2.kategory}
-                                                                            </label>
                                                                             <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                {data2.kategory_drying_time}
+                                                                                {convertTimeStampToDate(data2.tgl_from)}
                                                                             </label>
-                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                {data2.mesin}
-                                                                            </label>
-                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                {data2.kapasitas_per_jam}
-                                                                            </label>
-                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                {data2.drying_time}
-                                                                            </label>
-                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                {data2.setting}
-                                                                            </label>
-                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                {data2.kapasitas}
-                                                                            </label>
-                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                {data2.toleransi}
-                                                                            </label>
-                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                {data2.total_waktu}
-                                                                            </label>
-                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                {convertTimeStampToDate(data2.tgl_from)} ~  {convertTimeStampToDate(data2.tgl_to)}
-                                                                            </label>
+                                                                            {showDetail[i] && (
+                                                                                <>
+                                                                                    <label htmlFor="" className='text-black text-xs justify-center  border-2 border-stroke flex items-center h-[50px]'>
+                                                                                        {data2.kategory}
+                                                                                    </label>
+                                                                                    <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                        {data2.kategory_drying_time}
+                                                                                    </label>
+                                                                                    <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                        {data2.mesin}
+                                                                                    </label>
+                                                                                    <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                        {data2.kapasitas_per_jam}
+                                                                                    </label>
+                                                                                    <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                        {data2.drying_time}
+                                                                                    </label>
+                                                                                    <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                        {data2.setting}
+                                                                                    </label>
+                                                                                    <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                        {data2.kapasitas}
+                                                                                    </label>
+                                                                                    <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                        {data2.toleransi}
+                                                                                    </label>
+                                                                                    <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                        {data2.total_waktu}
+                                                                                    </label>
+                                                                                </>
+                                                                            )}
                                                                         </div>
                                                                     </>
                                                                 ))}
+                                                            </div>
+                                                            <div className=''>
+                                                                <button
+                                                                    title="button"
+                                                                    onClick={() => handleClickDetail(i)}
+                                                                    className="text-xs w-full flex  font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
+                                                                >
+                                                                    DETAIL
+                                                                </button>
                                                             </div>
                                                         </div>
                                                     </>
