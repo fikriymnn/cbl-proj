@@ -15,6 +15,7 @@ import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 import formatInteger from '../../../../../utils/formaterInteger';
 
 function CheckSheetCetakPeriode() {
+  const [selectedECs, setSelectedECs] = useState<string[]>([]);
   const { id } = useParams();
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +30,7 @@ function CheckSheetCetakPeriode() {
   const [cetakMesinPeriodeHistory, setCetakMesinPeriodeHistory] =
     useState<any>();
   const [DataDepartment, setDataDepartment] = useState<any>();
-
+  const [eyeC, setEyeC] = useState<any>();
   const [Department, setDepartment] = useState([
     {
       id: 0,
@@ -50,6 +51,14 @@ function CheckSheetCetakPeriode() {
     getCetakMesinPeriode();
     getDepartment();
     getMasterKode();
+    if (cetakMesinPeriode?.inspeksi_cetak_periode?.length > 0) {
+      const initialSelectedECs = cetakMesinPeriode?.inspeksi_cetak_periode?.inspeksi_cetak_periode_point[0]?.map(
+        (item: any) => item.eye_c || ''
+      );
+      setSelectedECs(initialSelectedECs);
+    } else {
+      setSelectedECs([]);
+    }
   }, []);
 
   const [isFailed, setIsFailed] = useState(false);
@@ -181,7 +190,33 @@ function CheckSheetCetakPeriode() {
       }
     }
   }
+  const handleECChange = (event: React.ChangeEvent<HTMLSelectElement>, index: number) => {
+    const selectedEC = event.target.value;
+    setSelectedECs((prevSelectedECs: string[]) => {
+      const updatedSelectedECs = [...prevSelectedECs];
+      updatedSelectedECs[index] = selectedEC;
+      return updatedSelectedECs;
+    });
+  };
 
+  const getAvailableECs = (): string[] => {
+    const allECs: string[] = ['EC1', 'EC2', 'EC3', 'EC4', 'EC5', 'EC6', 'EC7', 'EC8', 'EC9', 'EC10'];
+
+    // Extract used eye_c values from cetakMesinAwal
+    const usedEyeCs: string[] = [];
+    if (cetakMesinPeriode?.inspeksi_cetak_periode?.length > 0) {
+      cetakMesinPeriode.inspeksi_cetak_periode.forEach((item: any) => {
+        item.inspeksi_cetak_periode_point.forEach((point: any) => {
+          if (point.eye_c) {
+            usedEyeCs.push(point.eye_c);
+          }
+        });
+      });
+    }
+    const availableECs = allECs.filter((ec) => !usedEyeCs.includes(ec));
+
+    return availableECs;
+  };
   async function stopTaskCekPeriode(
     id: number,
     startTime: any,
@@ -199,6 +234,7 @@ function CheckSheetCetakPeriode() {
       const res = await axios.put(
         url,
         {
+          eye_c: eyeC,
           catatan: catatan,
           lama_pengerjaan: elapsedSeconds,
           numerator: numerator,
@@ -1004,6 +1040,34 @@ function CheckSheetCetakPeriode() {
                           <div className="">
                             <input type="file" name="" id="" className="w-60" />
                           </div>
+                          {data.status == 'on progress' &&
+                            cetakMesinPeriode?.status == 'incoming' ? (
+                            <>
+                              <select
+                                onChange={(event) => {
+                                  setEyeC(event.target.value)
+                                  handleECChange(event, index)
+                                }}
+                                name=""
+                                id=""
+                                className="relative z-20 inline-flex   py-1 pl-3 pr-8 text-sm font-medium outline-none"
+                              >
+                                <option selected disabled value="" className="dark:bg-boxdark">
+                                  Add Eye C
+                                </option>
+                                {getAvailableECs().map((ec) => (
+                                  <option key={ec} value={ec} className="dark:bg-boxdark">
+                                    {ec}
+                                  </option>
+                                ))}
+                              </select>
+
+                            </>
+                          ) :
+                            <label className="pl-2">
+                              {data.eye_c}
+                            </label>}
+
                         </div>
                       </>
                       <>

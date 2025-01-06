@@ -12,6 +12,7 @@ import formatInteger from '../../../../../utils/formaterInteger';
 
 
 function CheckSheetCetakAwal() {
+  const [selectedECs, setSelectedECs] = useState<string[]>([]);
   const { id } = useParams();
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -19,12 +20,50 @@ function CheckSheetCetakAwal() {
   const [cetakMesinAwalHistory, setCetakMesinAwalHistory] = useState<any>();
   const [masterKodeCetak, setMasterKodeCetak] = useState<any>();
   const [masterKodeCetak2, setMasterKodeCetak2] = useState<any>();
+  const [currentPeriod, setCurrentPeriod] = useState(1);
+  const [eyeC, setEyeC] = useState<any>();
 
   useEffect(() => {
     getCetakMesinAwal();
     getMasterKode();
+    if (cetakMesinAwal?.inspeksi_cetak_awal?.length > 0) {
+      const initialSelectedECs = cetakMesinAwal?.inspeksi_cetak_awal?.inspeksi_cetak_awal_point[0]?.map(
+        (item: any) => item.eye_c || ''
+      );
+      setSelectedECs(initialSelectedECs);
+    } else {
+      setSelectedECs([]);
+    }
   }, []);
+  const handleECChange = (event: React.ChangeEvent<HTMLSelectElement>, index: number) => {
+    const selectedEC = event.target.value;
+    setSelectedECs((prevSelectedECs: string[]) => {
+      const updatedSelectedECs = [...prevSelectedECs];
+      updatedSelectedECs[index] = selectedEC;
+      return updatedSelectedECs;
+    });
+  };
 
+  const getAvailableECs = (): string[] => {
+    const allECs: string[] = ['EC1', 'EC2', 'EC3', 'EC4', 'EC5', 'EC6', 'EC7', 'EC8', 'EC9', 'EC10'];
+
+    // Extract used eye_c values from cetakMesinAwal
+    const usedEyeCs: string[] = [];
+    if (cetakMesinAwal?.inspeksi_cetak_awal?.length > 0) {
+      cetakMesinAwal.inspeksi_cetak_awal.forEach((item: any) => {
+        item.inspeksi_cetak_awal_point.forEach((point: any) => {
+          if (point.eye_c) {
+            usedEyeCs.push(point.eye_c);
+          }
+        });
+      });
+    }
+
+    // Filter allECs to remove used eye_c values
+    const availableECs = allECs.filter((ec) => !usedEyeCs.includes(ec));
+
+    return availableECs;
+  };
   async function getMasterKode() {
     const url = `${import.meta.env.VITE_API_LINK_P1
       }/api/list-kendala?criteria=true&proses=3`;
@@ -97,6 +136,7 @@ function CheckSheetCetakAwal() {
       const res = await axios.put(
         url,
         {
+          eye_c: eyeC,
           catatan: catatan,
           lama_pengerjaan: elapsedSeconds,
           line_clearance: line_clearance,
@@ -681,9 +721,10 @@ function CheckSheetCetakAwal() {
                               ) : null}
                             </>
                           </div>
+
                         </div>
 
-                        <div className="flex flex-col col-span-2">
+                        <div className="flex flex-col col-span-2 gap-2">
                           <>
                             <div className="flex flex-col ">
                               <p className="md:text-[14px] text-[9px] font-semibold">
@@ -700,6 +741,32 @@ function CheckSheetCetakAwal() {
                                 />
                               </div>
                             </div>
+                            {data.status == 'on progress' &&
+                              cetakMesinAwal?.status == 'incoming' ? (
+                              <>
+                                <select
+                                  onChange={(event) => {
+                                    setEyeC(event.target.value)
+                                    handleECChange(event, index)
+                                  }}
+                                  name=""
+                                  id=""
+                                  className="relative z-20 inline-flex   py-1 pl-3 pr-8 text-sm font-medium outline-none"
+                                >
+                                  <option selected disabled value="" className="dark:bg-boxdark">
+                                    Add Eye C
+                                  </option>
+                                  {getAvailableECs().map((ec) => (
+                                    <option key={ec} value={ec} className="dark:bg-boxdark">
+                                      {ec}
+                                    </option>
+                                  ))}
+                                </select>
+                              </>
+                            ) :
+                              <label className="pl-2">
+                                {data.eye_c}
+                              </label>}
                           </>
                         </div>
                       </div>
@@ -1016,26 +1083,29 @@ function CheckSheetCetakAwal() {
                       <div className="grid col-span-2 items-end justify-center">
                         {data.status == 'on progress' &&
                           cetakMesinAwal?.status == 'incoming' ? (
-                          <button
-                            onClick={() =>
-                              stopTaskCekAwal(
-                                data.id,
-                                data.waktu_mulai,
-                                data.catatan,
-                                data.line_clearance,
-                                data.design,
-                                data.redaksi,
-                                data.barcode,
-                                data.jenis_bahan,
-                                data.gramatur,
-                                data.layout_pisau,
-                                data.acc_warna_awal_jalan,
-                              )
-                            }
-                            className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
-                          >
-                            SIMPAN AWAL JALAN
-                          </button>
+                          <>
+                            <button
+                              onClick={() =>
+                                stopTaskCekAwal(
+                                  data.id,
+                                  data.waktu_mulai,
+                                  data.catatan,
+                                  data.line_clearance,
+                                  data.design,
+                                  data.redaksi,
+                                  data.barcode,
+                                  data.jenis_bahan,
+                                  data.gramatur,
+                                  data.layout_pisau,
+                                  data.acc_warna_awal_jalan,
+                                )
+                              }
+                              className=" w-full h-10 rounded-sm bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                            >
+                              SIMPAN AWAL JALAN
+                            </button>
+
+                          </>
                         ) : null}
                       </div>
                     </div>

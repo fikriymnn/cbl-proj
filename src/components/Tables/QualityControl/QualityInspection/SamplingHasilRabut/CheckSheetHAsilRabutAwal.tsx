@@ -12,6 +12,8 @@ import Select from 'react-select';
 import convertTimeStampToDateTime from '../../../../../utils/converDateTime';
 
 function CheckSheetHasilRabut() {
+  const [selectedECs, setSelectedECs] = useState<string[]>([]);
+  const [usedEyeCs, setUsedEyeCs] = useState<string[]>([]);
   const { id } = useParams();
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,10 +27,16 @@ function CheckSheetHasilRabut() {
   const [showDetail, setShowDetail] = useState<boolean[]>(
     new Array(add != null && add.length).fill(false),
   );
-
+  const [eyeC, setEyeC] = useState<any>();
   useEffect(() => {
     getRabutMesin();
     getMasterDefect();
+
+    if (RabutMesin?.data?.inspeksi_rabut_point) {
+      const extractedEyeCs = RabutMesin?.data?.inspeksi_rabut_point.map((point: any) => point.eye_c) || [];
+      setUsedEyeCs(extractedEyeCs.filter((v: any, i: any, a: any) => a.indexOf(v) === i));
+    }
+
   }, []);
 
   async function getRabutMesin() {
@@ -101,6 +109,7 @@ function CheckSheetHasilRabut() {
       const res = await axios.put(
         url,
         {
+          eye_c: eyeC,
           catatan: catatan,
           lama_pengerjaan: elapsedSeconds,
           qty_pallet,
@@ -118,6 +127,30 @@ function CheckSheetHasilRabut() {
       alert(error.response.data.msg);
     }
   }
+  const handleECChange = (event: React.ChangeEvent<HTMLSelectElement>, index: number) => {
+    const selectedEC = event.target.value;
+    setSelectedECs((prevSelectedECs) => {
+      const updatedSelectedECs = [...prevSelectedECs];
+      updatedSelectedECs[index] = selectedEC;
+      return updatedSelectedECs;
+    });
+  };
+
+  const getAvailableECs = (): string[] => {
+    const allECs: string[] = ['EF1', 'EF2', 'EF3', 'EF4', 'EF5', 'EF6', 'EF7', 'EF8', 'EF9', 'EF10'];
+    const usedEyeCs: string[] = [];
+
+
+    RabutMesin.data?.inspeksi_rabut_point?.forEach((point: any) => {
+      if (point.eye_c) {
+        usedEyeCs.push(point.eye_c);
+      }
+    });
+
+    const availableECs = allECs.filter((ec) => !usedEyeCs.includes(ec));
+
+    return availableECs;
+  };
 
   async function tambahTaskRabut(id: number) {
     const url = `${import.meta.env.VITE_API_LINK
@@ -394,6 +427,24 @@ function CheckSheetHasilRabut() {
                         ) : null}
                       </div>
                       <div className="flex flex-col">
+                        {data.status == 'on progress' ? (
+                          <>
+                            <select value={selectedECs[index]} onChange={(e) => {
+                              setEyeC(e.target.value)
+                              handleECChange(e, index)
+                            }}>
+                              {getAvailableECs().map((ec) => (
+                                <option key={ec} value={ec}>
+                                  {ec}
+                                </option>
+                              ))}
+                            </select>
+
+                          </>
+                        ) :
+                          <label className="pl-2">
+                            {data.eye_c}
+                          </label>}
                       </div>
                       <div className="flex flex-col">
                         <label className="text-neutral-500 text-sm font-semibold ">
