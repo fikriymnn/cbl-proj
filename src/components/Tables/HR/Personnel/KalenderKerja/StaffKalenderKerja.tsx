@@ -4,10 +4,13 @@ import axios from 'axios';
 import StaffCalendar from './StaffCalendar';
 import ModalKosonganSmall from '../../../../Modals/ModalKosonganSmall';
 import Loading from '../../../../Loading';
+import ModalXL from '../../../PPIC/JadwalProduksi/ModalXL';
+import convertTimeStampToDate from '../../../../../utils/convertDate';
 
 
 function StaffKalenderKerja() {
-
+    const [dateFrom, setDateFrom] = useState<any>();
+    const [dateTo, setDateTo] = useState<any>();
     const [isLoading, setIsLoading] = useState(false);
     const tukarHari = [
         {
@@ -35,10 +38,9 @@ function StaffKalenderKerja() {
 
 
     useEffect(() => {
-
+        getBiasaJadwal(null, null)
         getKaryawanJadwal()
     }, []);
-
 
 
     const [karyawanJadwal, setKaryawanJadwal] = useState<any>([]);
@@ -50,7 +52,7 @@ function StaffKalenderKerja() {
         const url2 = `${import.meta.env.VITE_API_LINK
             }/hr/jadwalKaryawan?jenis_karyawan=produksi`;
         try {
-
+            setIsLoading(true)
             const res = await axios.get(
                 url,
                 {
@@ -74,7 +76,52 @@ function StaffKalenderKerja() {
             console.log(error);
         }
     }
+    const [biasaJadwal, setBiasaJadwal] = useState<any>([]);
 
+    async function getBiasaJadwal(start: any, end: any) {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/hr/jadwalKaryawan`;
+
+        try {
+            setIsLoading(true)
+            const res = await axios.get(url, {
+                params: {
+                    start_date: start,
+                    end_date: end,
+                    libur_1_tahun: false
+                },
+                withCredentials: true,
+            });
+            setIsLoading(false)
+            setBiasaJadwal(res.data)
+            console.log('libur 1', res.data);
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
+    async function deleteBiasaJadwal(id: any, tgl: any, ket: any) {
+        if (window.confirm(`Apakah Anda yakin akan menghapus hari libur di tanggal ${tgl} ini dengan keterangan ${ket}`)) {
+            const url = `${import.meta.env.VITE_API_LINK
+                }/hr/jadwalKaryawan/${id}`;
+
+            try {
+                setIsLoading(true)
+                const res = await axios.delete(
+                    url,
+                    {
+                        withCredentials: true,
+                    },
+
+                );
+                setIsLoading(false)
+                getBiasaJadwal(null, null)
+            } catch (error: any) {
+                setIsLoading(false)
+                console.log(error);
+            }
+        }
+    }
     const [tahun, setTahun] = useState<any>();
     const [hari, setHari] = useState<any>([]);
     const [jenisKaryawan, setJenisKaryawan] = useState<any>();
@@ -171,12 +218,133 @@ function StaffKalenderKerja() {
         });
         console.log(hari)
     };
+    const [showHistory3, setShowHistory3] = useState(false);
+    const openModalHistory3 = () => setShowHistory3(true);
+    const closeModalHistory3 = () => setShowHistory3(false);
     return (
         <>
             <main>
                 {isLoading && <Loading />}
                 <div className="bg-white w-full mb-5 rounded-md p-3 flex flex-col justify-center items-center gap-3">
                     <div className='flex  gap-1 w-full justify-end items-end'>
+                        <button
+                            onClick={() => openModalHistory3()}
+                            className='bg-primary w-[20%] text-white font-semibold text-md px-4 py-1 rounded-md'>
+                            Daftar Libur
+                        </button>
+                        {showHistory3 == true && (
+                            <>
+                                <ModalXL
+                                    isOpen={showHistory3}
+                                    onClose={() => closeModalHistory3()}
+                                    judul={'Daftar Libur'}
+                                >
+                                    <>
+                                        <div className="grid grid-cols-12 w-full md:gap-4 gap-1  px-4 py-4 md:mt-0   bg-white mb-2 border-b-8 border-[#D8EAFF]">
+                                            <div className='col-span-8 gap-2 flex flex-col'>
+                                                <p className="my-auto text-sm text-primary font-semibold">
+                                                    Pilih Tanggal
+                                                </p>
+                                                <div className="flex md:max-w-[40%] max-w-[70%]  gap-2 justify-between">
+                                                    <p className="text-sm text-primary font-semibold ">
+                                                        Dari :
+                                                    </p>
+
+                                                    <input
+                                                        className='rounded-md bg-blue-200 px-2'
+                                                        type="date"
+                                                        onChange={(e) => setDateFrom(e.target.value)}
+                                                    ></input>
+
+                                                </div>
+                                                <div className="flex   md:max-w-[40%] max-w-[70%] gap-2 justify-between">
+                                                    <p className="text-sm text-primary font-semibold ">
+                                                        Sampai :
+                                                    </p>
+
+                                                    <input
+                                                        className='rounded-md bg-blue-200 px-2'
+                                                        type="date"
+                                                        onChange={(e) => setDateTo(e.target.value)}
+                                                    ></input>
+
+                                                </div>
+                                            </div>
+
+                                            <div className="flex w-full  items-end gap-1">
+                                                <button
+                                                    onClick={() => {
+                                                        console.log(dateTo, dateFrom)
+                                                        getBiasaJadwal(dateFrom, dateTo)
+                                                    }}
+                                                    className="bg-primary text-white px-5 py-2 rounded-md my-auto "
+                                                >
+                                                    Filter
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+
+                                                        getBiasaJadwal(null, null)
+                                                    }}
+                                                    className="bg-primary text-white px-5 py-2 rounded-md my-auto "
+                                                >
+                                                    Reset
+                                                </button>
+                                            </div>
+                                        </div>
+
+
+                                        <div className='grid grid-cols-12  bg-white  border-b-8 border-[#D8EAFF] px-[1%] py-[1%]'>
+                                            <p className='text-[#646464] text-xs font-bold '>
+                                                No
+                                            </p>
+                                            <p className='text-[#646464] text-xs font-bold col-span-2'>
+                                                Jenis Karyawan
+                                            </p>
+                                            <p className='text-[#646464] text-xs font-bold col-span-3'>
+                                                Nama Jadwal
+                                            </p>
+                                            <p className='text-[#646464] text-xs font-bold col-span-2'>
+                                                Tanggal
+                                            </p>
+
+
+                                        </div>
+
+                                        <div className='max-h-[500px] overflow-y-scroll'>
+                                            {biasaJadwal?.data?.map((data: any, i: number) => (
+                                                <>
+                                                    <div
+                                                        key={i}
+                                                        className='grid grid-cols-12  bg-white  border-b-8 border-[#D8EAFF] px-[1%] py-[1%] '>
+                                                        <p className='text-[#646464] text-sm  '>
+                                                            {i + 1}
+                                                        </p>
+                                                        <p className='text-[#646464] text-sm  col-span-2'>
+                                                            {data.jenis_karyawan}
+                                                        </p>
+                                                        <p className='text-[#646464] text-sm  col-span-3'>
+                                                            {data.nama_jadwal}
+                                                        </p>
+                                                        <p className='text-[#646464] text-sm  col-span-4'>
+                                                            {convertTimeStampToDate(data.tanggal)}
+                                                        </p>
+
+                                                        <button
+                                                            onClick={() => deleteBiasaJadwal(data.id, convertTimeStampToDate(data.tanggal), data.nama_jadwal)}
+                                                            className='text-red-400 text-sm  font-bold'>
+                                                            HAPUS
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            ))}
+                                        </div>
+
+                                    </>
+                                </ModalXL>
+                            </>
+                        )}
+
                         <button
                             onClick={() => openModalHistory()}
                             className='bg-primary w-[20%] text-white font-semibold text-md px-4 py-1 rounded-md'>

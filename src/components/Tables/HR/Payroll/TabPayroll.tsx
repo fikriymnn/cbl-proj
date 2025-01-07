@@ -10,6 +10,7 @@ import ListPayroll from './ListPayroll';
 import PayrollBulanan from './PayrollBulanan';
 import HistoryPayroll from './HistoryPayroll';
 import HistoryPayrollBulanan from './HistoryPayrollBulanan';
+import PayrollMinggu from './PayrollMinggu';
 
 
 
@@ -152,7 +153,7 @@ export default function TabPayroll() {
                     </ThemeProvider>
                 </AppBar>
                 <TabPanel value={value} index={0} dir={theme.direction}>
-                    <ListPayroll />
+                    <PayrollMinggu />
                 </TabPanel>
                 <TabPanel value={value} index={1} dir={theme.direction}>
                     <PayrollBulanan />
