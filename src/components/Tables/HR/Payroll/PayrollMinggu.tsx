@@ -12,7 +12,7 @@ function PayrollMinggu() {
     const [dateTo, setDateTo] = useState<any>();
 
     useEffect(() => {
-        getPayrollMingguan(null, null)
+
     }, []);
 
     async function getPayrollMingguan(dateFrom1: any, dateTo1: any) {

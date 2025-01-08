@@ -130,15 +130,18 @@ function TableAbsensi() {
         setabsen(sortedAbsen);
         setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'); // Toggle sort order
     };
-
+    const [searchQuery, setSearchQuery] = useState('');
+    const filteredAbsen = absen?.filter((data: any) =>
+        data.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
     return (
         <>
             {!isMobile && (
                 <main className="overflow-x-scroll">
                     {isLoading && <Loading />}
                     <div className="bg-white rounded-md shadow-md md:w-12/12 mb-5 border-2 border-stroke">
-                        <div className="flex md:gap-4 gap-1 md:flex-row flex-col px-4 py-4 md:mt-0 ">
-                            <div className='flex flex-col gap-1'>
+                        <div className="grid md:gap-4 gap-1 md:flex-row grid-cols-12 items-center px-4 py-4 md:mt-0 ">
+                            <div className='flex flex-col gap-1 col-span-3'>
                                 <div className='flex flex-col'>
                                     <p className="my-auto text-sm text-primary font-semibold ">
                                         Pilih Tanggal
@@ -146,7 +149,7 @@ function TableAbsensi() {
 
                                 </div>
 
-                                <div className='flex gap-3'>
+                                <div className='flex gap-3 flex-col'>
                                     <div className="flex md:justify-center items-center gap-2">
                                         <p className="text-sm text-primary font-semibold md:w-3/12 w-2/12">
                                             Dari:
@@ -178,7 +181,7 @@ function TableAbsensi() {
 
                             </div>
 
-                            <div className='flex flex-col gap-1 '>
+                            <div className='flex flex-col gap-1 col-span-2'>
                                 <label className='text-sm text-primary font-semibold'>
                                     Department
                                 </label>
@@ -240,7 +243,7 @@ function TableAbsensi() {
 
                                 </div>
                             </div>
-                            <div className="flex justify-center my-5">
+                            <div className="flex justify-center my-5 col-span-2">
                                 {(dateFrom == null || dateTo == null) ?
                                     <>
                                         <button
@@ -264,7 +267,7 @@ function TableAbsensi() {
 
 
                             </div>
-                            <div className="flex justify-center my-5">
+                            <div className="flex my-5 col-span-3">
                                 <button
                                     onClick={() => {
 
@@ -276,7 +279,16 @@ function TableAbsensi() {
                                     Hari Ini
                                 </button>
                             </div>
+                            <div className="flex justify-end my-5 col-span-2 items-end">
 
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Cari Nama Karyawan"
+                                    className="border p-2 rounded mb-4"
+                                />
+                            </div>
                         </div>
                     </div>
                     <div className="min-w-[700px] bg-white rounded-xl">
@@ -315,7 +327,7 @@ function TableAbsensi() {
                                 </label>
                             </div>
                             <div className="w-2 h-full "></div>
-                            {absen?.map((data: any, i: any) => {
+                            {filteredAbsen?.map((data: any, i: any) => {
 
                                 return (
                                     <>

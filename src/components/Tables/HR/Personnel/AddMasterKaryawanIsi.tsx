@@ -5,14 +5,12 @@ import Loading from '../../../Loading';
 function AddMasterKaryawanIsi() {
     const [isLoading, setIsLoading] = useState(false);
 
-
-
-
     useEffect(() => {
         getDepartment();
         getBagian();
         getDivisi();
         getGradeMaster();
+        getkaryawanStatus();
     }, []);
 
     const [department, setDepartment] = useState<any>();
@@ -37,7 +35,28 @@ function AddMasterKaryawanIsi() {
             console.log(error);
         }
     }
+    const [karyawanStatus, setkaryawanStatus] = useState<any>();
 
+    async function getkaryawanStatus() {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/master/statusKaryawan`;
+        try {
+            setIsLoading(true)
+            const res = await axios.get(
+                url,
+
+                {
+                    withCredentials: true,
+                },
+            );
+            setIsLoading(false)
+            setkaryawanStatus(res.data)
+            console.log(res.data)
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
     const [divisi, setDivisi] = useState<any>();
 
     async function getDivisi() {
@@ -111,19 +130,17 @@ function AddMasterKaryawanIsi() {
     const [jenisKelamin, setjenisKelamin] = useState<any>();
     const [idDivisi, seidDivisi] = useState<any>();
     const [idDepartment, setidDepartment] = useState<any>();
+    const [idStatusKaryawan, setIdStatusKaryawan] = useState<any>();
     const [idDagian, setidDagian] = useState<any>();
     const [grade, setgrade] = useState<any>();
     const [tglMasuk, setglMasuk] = useState<any>(null);
     const [tglKeluar, setglKeluar] = useState<any>(null);
     const [tipePenggajian, settipePenggajian] = useState<any>();
     const [jabatan, sejabatan] = useState<any>();
-    const [statusKaryawan, setstatusKaryawan] = useState<any>();
     const [statusPajak, sestatusPajak] = useState<any>();
     const [level, setlevel] = useState<any>();
     const [subLevel, setsubLevel] = useState<any>();
     const [gaji, setGaji] = useState<any>(0);
-    const [kontrakDari, setKOntrakDari] = useState<any>(null);
-    const [kontrakSampai, setKontrakSampai] = useState<any>(null);
     const [tipeKaryawan, seTipeKaryawan] = useState<any>();
 
     async function tambahKaryawan() {
@@ -134,6 +151,7 @@ function AddMasterKaryawanIsi() {
             const res = await axios.post(
                 url,
                 {
+                    id_status_karyawan: idStatusKaryawan,
                     nama_karyawan: namaKaryawan,
                     tipe_karyawan: tipeKaryawan,
                     nik: nik,
@@ -146,13 +164,12 @@ function AddMasterKaryawanIsi() {
                     tgl_keluar: tglKeluar,
                     tipe_penggajian: tipePenggajian,
                     jabatan: jabatan,
-                    status_karyawan: statusKaryawan,
                     status_pajak: statusPajak,
                     level: level,
                     sub_level: subLevel,
                     gaji: gaji,
-                    kontrak_dari: kontrakDari,
-                    kontrak_sampai: kontrakSampai
+                    kontrak_dari: null,
+                    kontrak_sampai: null
 
                 },
                 {
@@ -166,7 +183,35 @@ function AddMasterKaryawanIsi() {
             console.log(error);
         }
     }
+    const recalculateWaktuKeluar = (masukDate: any, waktuBulan: any) => {
+        if (!masukDate || !waktuBulan) return null; // If no input date or waktuBulan, return empty
+        const date = new Date(masukDate);
+        date.setMonth(date.getMonth() + waktuBulan); // Add months
+        return date.toISOString().split("T")[0]; // Format to YYYY-MM-DD
+    };
 
+    const handleStatusChange = (e: any) => {
+        const selectedId = e.target.value;
+        setIdStatusKaryawan(selectedId);
+
+        const selectedStatus = karyawanStatus.data.find((data: any) => data.id === parseInt(selectedId));
+        if (selectedStatus) {
+            // Use current or default tglMasuk if not set
+            const defaultTglMasuk = tglMasuk || new Date().toISOString().split("T")[0];
+            const recalculatedKeluar = recalculateWaktuKeluar(defaultTglMasuk, selectedStatus.waktu_bulan);
+            setglKeluar(recalculatedKeluar);
+        }
+    };
+    const handleTglMasukChange = (e: any) => {
+        const inputDate = e.target.value;
+        setglMasuk(inputDate);
+
+        const selectedStatus = karyawanStatus.data.find((data: any) => data.id === parseInt(idStatusKaryawan));
+        if (selectedStatus) {
+            const recalculatedKeluar = recalculateWaktuKeluar(inputDate, selectedStatus.waktu_bulan);
+            setglKeluar(recalculatedKeluar);
+        }
+    };
     return (
         <main className="overflow-x-scroll">
             {isLoading && <Loading />}
@@ -429,7 +474,7 @@ function AddMasterKaryawanIsi() {
                                     Tanggal Masuk<span className='text-red-600'>*</span>
                                 </label>
                                 <input
-                                    onChange={(e) => setglMasuk(e.target.value)}
+                                    onChange={handleTglMasukChange}
                                     type="date"
                                     className='border-2 border-stroke rounded-md'
                                 ></input>
@@ -452,24 +497,29 @@ function AddMasterKaryawanIsi() {
                                     </span>
 
                                     <select
-                                        onChange={(e) => {
-                                            setKOntrakDari(null)
-                                            setKontrakSampai(null)
-                                            setstatusKaryawan(e.target.value)
-                                        }}
+                                        name='nama_department'
+                                        onChange={
+                                            handleStatusChange
+                                        }
                                         className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                     >
                                         <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                            Status
+                                            PILIH STATUS KARYAWAN
                                         </option>
-                                        <option value={'tetap'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            Tetap
-                                        </option>
+                                        {karyawanStatus?.data?.map((data: any, i: number) => {
 
-                                        <option value={'Probation'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            Probation
-                                        </option>
+                                            return (
+                                                <option
+                                                    value={data.id}
+                                                    className="text-gray-800 text-xs font-light dark:text-bodydark"
+                                                >
+                                                    {data.nama_status} - {data.waktu_bulan} Bulan
+                                                </option>
+                                            )
+                                        }
+                                        )}
+
                                     </select>
 
                                     <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
@@ -492,50 +542,17 @@ function AddMasterKaryawanIsi() {
                                     </span>
 
                                 </div>
+
+
                             </div>
                         </div>
-                        {(statusKaryawan == 'tetap' || statusKaryawan == null) ? (
-                            <>
-                            </>
-                        ) :
-                            (
-                                <>
-                                    <div className='flex w-full gap-3'>
-                                        <div className='flex flex-col gap-1 w-[50%]'>
-                                            <label className=' text-sm font-semibold'>
-                                                Tanggal Mulai Kontrak
-                                            </label>
-                                            <input
-                                                onChange={(e) => setKOntrakDari(e.target.value)}
-                                                type="date"
-                                                className='border-2 border-stroke rounded-md'
-                                            ></input>
-                                        </div>
-                                        <div className='flex flex-col gap-1 w-[50%]'>
-                                            <label className=' text-sm font-semibold'>
-                                                Tanggal Akhir Kontrak
-                                            </label>
-                                            <input
-                                                onChange={(e) => setKontrakSampai(e.target.value)}
-                                                type="date"
-                                                className='border-2 border-stroke rounded-md'
-                                            ></input>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
 
                         <div className='flex w-full gap-3'>
-                            <div className='flex flex-col gap-1 w-[50%]'>
-                                <label className=' text-sm font-semibold'>
-                                    Tanggal Keluar
-                                </label>
-                                <input
-                                    onChange={(e) => setglKeluar(e.target.value)}
-                                    type="date"
-                                    className='border-2 border-stroke rounded-md'
-                                ></input>
+                            <div className="flex flex-col gap-1 w-[50%]">
+                                <label className="text-sm font-semibold">Tanggal Keluar:</label>
+                                <p>{tglKeluar}</p>
                             </div>
+
                             <div className='flex flex-col gap-1 w-[50%]'>
                                 <label className=' text-sm font-semibold'>
                                     Status Pajak<span className='text-red-600'>*</span>

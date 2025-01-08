@@ -31,14 +31,20 @@ function MasterKaryawanIsi() {
             console.log(error);
         }
     }
-
+    const [searchQuery, setSearchQuery] = useState('');
+    const filteredAbsen = karyawan?.data?.filter((data: any) =>
+        data.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
     return (
         <div>
             <>
                 <main className="overflow-x-scroll">
                     <div className="min-w-[700px] bg-white rounded-xl">
                         <div className=" w-full h-full flex border-b-8 border-[#D8EAFF] px-2 py-3 justify-between">
-                            <input type="text" className='border-1 w-[40%] border-stroke px-2 py-1 rounded-md bg-blue-100' placeholder='Cari Karyawan' />
+                            <input type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className='border-1 w-[40%] border-stroke px-2 py-1 rounded-md bg-blue-100' placeholder='Cari Karyawan' />
                             <Link to={'/hr/pm/masterkaryawan/add'} >
                                 <button
                                     className='px-8 py-1 text-sm bg-blue-600 items-center justify-center text-white font-semibold rounded-md'>
@@ -88,7 +94,7 @@ function MasterKaryawanIsi() {
                                     Tanggal Berhenti
                                 </label>
                                 <label className="text-neutral-500 text-xs font-semibold  ">
-                                    Incomplete Data
+                                    Status Karyawan
                                 </label>
                                 <div className='flex justify-center '>
 
@@ -96,7 +102,7 @@ function MasterKaryawanIsi() {
                             </div>
                             <div className="w-2 h-full "></div>
                             {karyawan != null &&
-                                karyawan?.data?.map((data: any, i: any) => (
+                                filteredAbsen?.map((data: any, i: any) => (
                                     <>
                                         <div className="grid grid-cols-12 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
                                             <div className='flex gap-3'>
@@ -136,7 +142,7 @@ function MasterKaryawanIsi() {
                                                 {data.biodata_karyawan[0]?.tgl_keluar == null ? '-' : convertTimeStampToDateOnly(data.biodata_karyawan[0]?.tgl_keluar)}
                                             </label>
                                             <label className="text-neutral-500 text-xs font-semibold  ">
-                                                {data.status_data == '' ? '-' : data.status_data}
+                                                {(data.biodata_karyawan[0]?.status?.nama_status == null || data.biodata_karyawan[0]?.status?.nama_status == 0) ? '-' : data.biodata_karyawan[0]?.status?.nama_status}
                                             </label>
                                             <div className='lg:flex-col md:flex-col sm:flex  gap-1'>
                                                 <Link

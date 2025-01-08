@@ -3,6 +3,7 @@ import DefaultLayout from '../../../layout/DefaultLayout';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
+import Loading from '../../../components/Loading';
 
 function Pm2() {
   const [isMobile, setIsMobile] = useState(false);
@@ -13,6 +14,7 @@ function Pm2() {
   const date = today.getDate();
   const currentDate = month + '/' + date + '/' + year;
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
   };
@@ -87,12 +89,14 @@ function Pm2() {
   async function createPM2() {
     const url = `${import.meta.env.VITE_API_LINK}/pm2/create`;
     try {
+      setIsLoading(true)
       const res = await axios.post(url, {
         withCredentials: true,
       });
-
+      setIsLoading(false)
       getPM2();
     } catch (error: any) {
+      setIsLoading(false)
       console.log(error);
     }
   }
@@ -128,6 +132,7 @@ function Pm2() {
       <p className="font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]">
         Maintenance &gt; Inspection &gt; PM 2
       </p>
+      {isLoading && <Loading />}
       {!isMobile && (
         <main className="overflow-x-scroll">
           <div className="min-w-[700px] bg-white rounded-xl">
@@ -167,17 +172,16 @@ function Pm2() {
                     className=" flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black"
                   >
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 ${
-                        data.mesin.bagian_mesin == 'printing'
+                      className={`w-2 h-full sticky left-0 z-20 ${data.mesin.bagian_mesin == 'printing'
                           ? 'bg-green-600'
                           : data.mesin.bagian_mesin == 'water base'
-                          ? 'bg-yellow-600'
-                          : data.mesin.bagian_mesin == 'pond'
-                          ? 'bg-violet-900'
-                          : data.mesin.bagian_mesin == 'finishing'
-                          ? 'bg-red-900'
-                          : ''
-                      }`}
+                            ? 'bg-yellow-600'
+                            : data.mesin.bagian_mesin == 'pond'
+                              ? 'bg-violet-900'
+                              : data.mesin.bagian_mesin == 'finishing'
+                                ? 'bg-red-900'
+                                : ''
+                        }`}
                     ></div>
 
                     <div className=" w-full h-full flex flex-col justify-center relative">
@@ -205,7 +209,7 @@ function Pm2() {
                           {data.id_inspector == me?.id ? (
                             <>
                               {data.status == 'done' ||
-                              data.status == 'on progres' ? (
+                                data.status == 'on progres' ? (
                                 <Link
                                   to={`/maintenance/inspection/pm_2_form/${data.id}`}
                                   className={`uppercase p-5 inline-flex rounded-[3px] items-center text-sm  py-1 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600 text-white font-bold text-[12px] justify-center`} // Dynamic class assignment
@@ -273,17 +277,16 @@ function Pm2() {
                     className=" flex  justify-center  w-full h-[59px]  border-b-8 border-[#D8EAFF] text-[14px]  text-black"
                   >
                     <div
-                      className={`w-2 h-full sticky left-0 z-20 ${
-                        data.mesin.bagian_mesin == 'printing'
+                      className={`w-2 h-full sticky left-0 z-20 ${data.mesin.bagian_mesin == 'printing'
                           ? 'bg-green-600'
                           : data.mesin.bagian_mesin == 'water base'
-                          ? 'bg-yellow-600'
-                          : data.mesin.bagian_mesin == 'pond'
-                          ? 'bg-violet-900'
-                          : data.mesin.bagian_mesin == 'finishing'
-                          ? 'bg-red-900'
-                          : ''
-                      }`}
+                            ? 'bg-yellow-600'
+                            : data.mesin.bagian_mesin == 'pond'
+                              ? 'bg-violet-900'
+                              : data.mesin.bagian_mesin == 'finishing'
+                                ? 'bg-red-900'
+                                : ''
+                        }`}
                     ></div>
                     <div className=" w-full h-full flex flex-col justify-center relative">
                       <div className="ps-7 w-full grid grid-cols-3">
@@ -291,7 +294,7 @@ function Pm2() {
                           <p className="">{data.nama_mesin}</p>
                         </div>
                         <div className="flex flex-col justify-center sticky left-2 ps-3 md:ps-0 bg-white">
-                        <p className="">
+                          <p className="">
                             {data.inspector != null ? data.inspector.nama : '-'}
                           </p>
                         </div>
