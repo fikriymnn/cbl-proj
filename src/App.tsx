@@ -179,6 +179,8 @@ import OsPPIC from './pages/PPIC/OutstandingPPIC/OutstandingPPIC';
 import Project from './pages/Maintenance/Project';
 import PengajuanJabatanKeHR from './pages/HR/PengajuanKeHR/PengajuanJabatanKeHR';
 import HistoryPengajuanJabatanKeHR from './pages/HR/PengajuanKeHR/HistoryPengajuanJabatanKeHR';
+import ResponJabatan from './pages/HR/Pengajuan/ResponJabatan';
+import HistoryResponJabatan from './pages/HR/Pengajuan/HistoryResponJabatan';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1695,7 +1697,7 @@ function App() {
           }
         />
         <Route
-          path="/hr/rp"
+          path="/hr/rp/respon"
           element={
             <>
               <ResponPengajuanHR />
@@ -1703,7 +1705,7 @@ function App() {
           }
         />
         <Route
-          path="/hr/rphistory"
+          path="/hr/rp/history"
           element={
             <>
               <HistoryResponPengajuan />
@@ -1731,6 +1733,22 @@ function App() {
           element={
             <>
               < HistoryPengajuanJabatanKeHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/rp/jabatan"
+          element={
+            <>
+              < ResponJabatan />
+            </>
+          }
+        />
+        <Route
+          path="/hr/rp/jabatanHistory"
+          element={
+            <>
+              < HistoryResponJabatan />
             </>
           }
         />

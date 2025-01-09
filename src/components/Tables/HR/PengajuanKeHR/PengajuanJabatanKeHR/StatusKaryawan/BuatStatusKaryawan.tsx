@@ -392,7 +392,7 @@ function BuatStatusKaryawan() {
                     </div>
                     <div className='grid grid-cols-8 w-full'>
                         <label>
-                            Peringatan Ke 2
+                            Peringatan Ke 3
                         </label>
                         <div className='col-span-4 flex gap-2'>
                             :<input
@@ -460,24 +460,7 @@ function BuatStatusKaryawan() {
 
                     <button
                         onClick={() => {
-                            console.log(
 
-                                idKaryawan,
-                                idPengaju,
-                                periodeAwal,
-                                periodeAkhir,
-                                jumlahAlpa,
-                                jumlahIzin,
-                                jumlahTanpaKeterangan,
-                                jumlahKeterlambatan,
-                                peringatanKe1,
-                                peringatanKe2,
-                                peringatanKe3,
-                                prestasiKerja,
-                                prestasiKerjaPoint,
-                                kesanPenilai,
-                                penilaian
-                            )
                             postPengajuanStatus()
                         }}
                         disabled={isLoading}
