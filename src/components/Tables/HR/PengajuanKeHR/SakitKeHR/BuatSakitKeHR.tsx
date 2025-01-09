@@ -49,7 +49,7 @@ function BuatSakitKeHR() {
             setOptions(
                 res.data.data.map((item: any) => ({
                     value: item.id_karyawan,
-                    label: item.nik + ' - ' + item.karyawan?.name,
+                    label: item.nik + ' - ' + item.karyawan?.name + ' - ' + item.bagian?.nama_bagian + ' - ' + item.jabatan
                 }))
             );
 
@@ -163,7 +163,7 @@ function BuatSakitKeHR() {
 
     return (
 
-        <main className="overflow-x-scroll">
+        <main className="overflow-x-scroll min-h-screen">
             {isLoading && <Loading />}
             <div className="min-w-[700px] bg-white rounded-xl ">
                 <div className='grid grid-cols-2 gap-5  border-b-8 border-[#D8EAFF] px-7 py-4 '>

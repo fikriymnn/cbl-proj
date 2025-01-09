@@ -57,7 +57,7 @@ function BuatSPLKeHR() {
             setOptions(
                 res.data.data.map((item: any) => ({
                     value: item.id_karyawan,
-                    label: item.nik + ' - ' + item.karyawan?.name,
+                    label: item.nik + ' - ' + item.karyawan?.name + ' - ' + item.bagian?.nama_bagian + ' - ' + item.jabatan
                 }))
             );
 
@@ -276,57 +276,6 @@ function BuatSPLKeHR() {
                         <label className="text-red-400 text-xs font-semibold pl-1">
                             {error}
                         </label>
-
-                        <div className='grid grid-cols-2'>
-                            <div className='flex  gap-1'>
-                                <label className="text-black text-sm font-bold pl-1">
-                                    Dengan Istirahat?
-                                </label>
-                                <input
-                                    onChange={(e) => handleCheckChange(e.target.checked)}
-                                    type="checkbox"
-                                    className=" h-6 w-6 border-2 border-stroke rounded-md"
-                                />
-                            </div>
-                            <div className='flex flex-col gap-1'>
-                                <label className="text-black text-sm font-bold pl-1">
-                                    Jumlah Makan
-                                </label>
-                                <input
-                                    onChange={(e) => setJumlahMakan(e.target.value)}
-                                    type="number"
-                                    className=" h-6 w-full border-2 border-stroke rounded-md"
-                                />
-                            </div>
-                        </div>
-                        <div className='grid grid-cols-3'>
-                            <div className='flex flex-col gap-3 px-2 py-1'>
-                                <label className="text-black text-sm font-bold  h-8">
-                                    Target Lembur
-                                </label>
-                                <label className="text-black text-sm font-bold  h-8">
-                                    Tipe Lembur
-                                </label>
-                            </div>
-                            <div className='flex flex-col gap-3 px-2 py-1 col-span-2'>
-                                <input
-                                    onChange={(e) => setTargetLembur(e.target.value)}
-                                    type="text"
-                                    className=" h-8 w-full border-2 border-stroke rounded-md col-span-2"
-                                />
-                                <select
-                                    onChange={(e) => setTipeLembur(e.target.value)}
-                                    className='`text-neutral-500  text-sm font-semibold relative z-20 w-full h-8  appearance-none rounded-md border-2 border-stroke  bg-transparent py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input'
-
-                                >
-                                    <option value="" disabled selected className='text-neutral-500  text-sm font-semibold'>Pilih Tipe</option>
-                                    <option value="libur" className='text-neutral-500  text-sm font-semibold'>Libur</option>
-                                    <option value="biasa" className='text-neutral-500  text-sm font-semibold'>Biasa</option>
-
-                                </select>
-                            </div>
-                        </div>
-
                     </div>
 
                     <div className="flex w-full flex-col">

@@ -177,6 +177,8 @@ import OsMTC from './pages/Maintenance/OutstandingMTC/OSMTC';
 import OsHR from './pages/HR/Outstanding/OsHR';
 import OsPPIC from './pages/PPIC/OutstandingPPIC/OutstandingPPIC';
 import Project from './pages/Maintenance/Project';
+import PengajuanJabatanKeHR from './pages/HR/PengajuanKeHR/PengajuanJabatanKeHR';
+import HistoryPengajuanJabatanKeHR from './pages/HR/PengajuanKeHR/HistoryPengajuanJabatanKeHR';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1713,6 +1715,22 @@ function App() {
           element={
             <>
               < PengajuanKeHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuanJabatan"
+          element={
+            <>
+              < PengajuanJabatanKeHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pengajuanJabatanHistory"
+          element={
+            <>
+              < HistoryPengajuanJabatanKeHR />
             </>
           }
         />

@@ -2064,6 +2064,25 @@ const Sidebar = ({
                               <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                 <li>
                                   <NavLink
+                                    to="/hr/pengajuanJabatan"
+                                    className={({ isActive }) =>
+                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                      (isActive &&
+                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                    }
+                                  >
+                                    Buat Pengajuan Jabatan
+                                  </NavLink>
+                                </li>
+                              </ul>
+                            </div>
+                            <div
+                              className={`translate transform overflow-hidden ${!open && 'hidden'
+                                }`}
+                            >
+                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                <li>
+                                  <NavLink
                                     to="/hr/pengajuanhistory"
                                     className={({ isActive }) =>
                                       'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
@@ -2076,7 +2095,25 @@ const Sidebar = ({
                                 </li>
                               </ul>
                             </div>
-
+                            <div
+                              className={`translate transform overflow-hidden ${!open && 'hidden'
+                                }`}
+                            >
+                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                <li>
+                                  <NavLink
+                                    to="/hr/pengajuanJabatanHistory"
+                                    className={({ isActive }) =>
+                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                      (isActive &&
+                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                    }
+                                  >
+                                    History Pengajuan Jabatan
+                                  </NavLink>
+                                </li>
+                              </ul>
+                            </div>
                             {/* <!-- Dropdown Menu End --> */}
                           </React.Fragment>
                         );
@@ -4641,6 +4678,25 @@ const Sidebar = ({
                               <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
                                 <li>
                                   <NavLink
+                                    to="/hr/pengajuanJabatan"
+                                    className={({ isActive }) =>
+                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                      (isActive &&
+                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                    }
+                                  >
+                                    Buat Pengajuan Jabatan
+                                  </NavLink>
+                                </li>
+                              </ul>
+                            </div>
+                            <div
+                              className={`translate transform overflow-hidden ${!open && 'hidden'
+                                }`}
+                            >
+                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                <li>
+                                  <NavLink
                                     to="/hr/pengajuanhistory"
                                     className={({ isActive }) =>
                                       'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
@@ -4649,6 +4705,25 @@ const Sidebar = ({
                                     }
                                   >
                                     History Pengajuan
+                                  </NavLink>
+                                </li>
+                              </ul>
+                            </div>
+                            <div
+                              className={`translate transform overflow-hidden ${!open && 'hidden'
+                                }`}
+                            >
+                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                <li>
+                                  <NavLink
+                                    to="/hr/pengajuanJabatanHistory"
+                                    className={({ isActive }) =>
+                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                      (isActive &&
+                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                    }
+                                  >
+                                    History Pengajuan Jabatan
                                   </NavLink>
                                 </li>
                               </ul>

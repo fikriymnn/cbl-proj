@@ -234,12 +234,17 @@ function IsiStatusKaryawan() {
                                             <label className="text-neutral-500 text-xs font-semibold  col-span-6">
                                                 {data.waktu_bulan}
                                             </label>
-                                            <button
+                                            {(data.nama_status == 'tetap' || data.nama_status == 'keluar') ? <></> :
 
-                                                onClick={() => openEdit(i)}
-                                                className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
-                                                EDIT
-                                            </button>
+                                                <>
+                                                    <button
+
+                                                        onClick={() => openEdit(i)}
+                                                        className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                        EDIT
+                                                    </button>
+                                                </>}
+
                                             {showEdit[i] == true && (
 
                                                 <ModalKosonganSmall
@@ -295,12 +300,16 @@ function IsiStatusKaryawan() {
                                                     </>
                                                 </ModalKosonganSmall>
                                             )}
-                                            <button
-                                                onClick={() => deleteMasterMesin(data.id)}
-                                                className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
-                                                DELETE
-                                            </button>
+                                            {(data.nama_status == 'tetap' || data.nama_status == 'keluar') ? <></> :
 
+                                                <>
+                                                    <button
+                                                        onClick={() => deleteMasterMesin(data.id)}
+                                                        className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                        DELETE
+                                                    </button>
+                                                </>
+                                            }
                                         </div>
                                     </>
                                 ))}

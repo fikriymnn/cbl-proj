@@ -49,7 +49,7 @@ function BuatPinjamanKeHR() {
             setOptions(
                 res.data.data.map((item: any) => ({
                     value: item.id_karyawan,
-                    label: item.nik + ' - ' + item.karyawan?.name,
+                    label: item.nik + ' - ' + item.karyawan?.name + ' - ' + item.bagian?.nama_bagian + ' - ' + item.jabatan
                 }))
             );
 

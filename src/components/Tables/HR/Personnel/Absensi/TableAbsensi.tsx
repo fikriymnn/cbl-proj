@@ -350,7 +350,7 @@ function TableAbsensi() {
                                                 {data.nama_department}
                                             </label>
                                             <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                                {data.tgl_masuk}
+                                                {data.hari}, {data.tgl_masuk}{(data.jenis_hari_masuk == 'Biasa' || data.jenis_hari_masuk == null) ? '' : '- L'}
                                             </label>
                                             <div className='col-span-2 flex flex-col gap-1 py-2'>
                                                 <label className="text-neutral-500 text-sm font-semibold  ">
