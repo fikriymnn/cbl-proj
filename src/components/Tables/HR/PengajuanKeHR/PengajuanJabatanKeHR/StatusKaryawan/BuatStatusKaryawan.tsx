@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import Select from 'react-select';
 import Loading from '../../../../../Loading';
+import convertTimeStampToDate from '../../../../../../utils/convertDate';
 
 function BuatStatusKaryawan() {
     const [options, setOptions] = useState([]);
@@ -38,7 +39,11 @@ function BuatStatusKaryawan() {
     ]);
 
     const [idKaryawan, setIdKaryawan] = useState<any>(null);
-
+    const [namaKaryawan, setnamaKaryawan] = useState<any>(null);
+    const [bagianKaryawan, setbagianKaryawan] = useState<any>(null);
+    const [jabatanKaryawan, setjabatanKaryawan] = useState<any>(null);
+    const [nikKaryawan, setnikKaryawan] = useState<any>(null);
+    const [tglMasukKerja, settglMasukKerja] = useState<any>(null);
 
     useEffect(() => {
         getMe()
@@ -100,18 +105,36 @@ function BuatStatusKaryawan() {
         console.log(filteredData?.id_karyawan);
 
         setIdKaryawan(filteredData?.id_karyawan)
-
+        setnamaKaryawan(filteredData?.karyawan?.name)
+        setbagianKaryawan(filteredData?.bagian?.nama_bagian)
+        setjabatanKaryawan(filteredData?.jabatan)
+        setnikKaryawan(filteredData?.nik)
+        settglMasukKerja(filteredData?.tgl_masuk)
     };
 
 
 
-    async function postIzin() {
-        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanIzin`;
+    async function postPengajuanStatus() {
+        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanPromosiStatusKaryawan`;
         try {
             setIsLoading(true)
             const res = await axios.post(url,
                 {
-
+                    id_karyawan: idKaryawan,
+                    id_pengaju: idPengaju,
+                    periode_awal: periodeAwal,
+                    periode_akhir: periodeAkhir,
+                    jumlah_alpa: jumlahAlpa,
+                    jumlah_izin: jumlahIzin,
+                    jumlah_tanpa_keterangan: jumlahTanpaKeterangan,
+                    jumlah_keterlambatan: jumlahKeterlambatan,
+                    peringatan_ke_1: peringatanKe1,
+                    peringatan_ke_2: peringatanKe2,
+                    peringatan_ke_3: peringatanKe3,
+                    prestasi_kerja: prestasiKerja,
+                    prestasi_kerja_point: prestasiKerjaPoint,
+                    kesan_penilai: kesanPenilai,
+                    penilaian: penilaian
                 },
                 {
 
@@ -168,6 +191,49 @@ function BuatStatusKaryawan() {
 
                 </div>
                 <div className='grid grid-cols-1 gap-1 px-7 py-4'>
+                    <div className='flex gap-1'>
+                        <p className='text-black font-bold'>
+                            Nama
+                        </p>
+                        <p className='text-black text-medium'>
+                            : {namaKaryawan} - {nikKaryawan}
+                        </p>
+                    </div>
+                    <div className='flex gap-1'>
+                        <p className='text-black font-bold'>
+                            Bagian
+                        </p>
+                        <p className='text-black text-medium'>
+                            : {bagianKaryawan}
+                        </p>
+                    </div>
+                    <div className='flex gap-1'>
+                        <p className='text-black font-bold'>
+                            Jabatan
+                        </p>
+                        <p className='text-black text-medium'>
+                            : {jabatanKaryawan}
+                        </p>
+                    </div>
+                    <div className='flex gap-1'>
+                        <p className='text-black font-bold'>
+                            Tgl masuk kerja
+                        </p>
+                        <p className='text-black text-medium'>
+                            : {convertTimeStampToDate(tglMasukKerja)}
+                        </p>
+                    </div>
+                    <div className='flex gap-1'>
+                        <p className='text-black font-bold'>
+                            Periode
+                        </p>
+                        :<input onChange={(e) => setPeriodeAwal(e.target.value)} type='month' className='text-black  border-2 border-stroke text-medium'>
+
+                        </input> s/d
+                        <input onChange={(e) => setPeriodeAkhir(e.target.value)} type='month' className='text-black  border-2 border-stroke text-medium'>
+
+                        </input>
+                    </div>
                     <p className='text-black text-medium'>
                         Lakukan analisa untuk kerja karyawan dengan hati-hati, pelajari faktor dan masing masing tingkat penilaian.
                     </p>
@@ -390,8 +456,38 @@ function BuatStatusKaryawan() {
                         className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                     ></textarea>
                 </div>
+                <div className='px-[3%] py-[3%]'>
+
+                    <button
+                        onClick={() => {
+                            console.log(
+
+                                idKaryawan,
+                                idPengaju,
+                                periodeAwal,
+                                periodeAkhir,
+                                jumlahAlpa,
+                                jumlahIzin,
+                                jumlahTanpaKeterangan,
+                                jumlahKeterlambatan,
+                                peringatanKe1,
+                                peringatanKe2,
+                                peringatanKe3,
+                                prestasiKerja,
+                                prestasiKerjaPoint,
+                                kesanPenilai,
+                                penilaian
+                            )
+                            postPengajuanStatus()
+                        }}
+                        disabled={isLoading}
+                        className='flex px-4 py-1 justify-center items-center bg-blue-600 text-white font-semibold rounded-md'
+                    >
+                        AJUKAN
+                    </button>
+                </div>
             </div>
-        </main>
+        </main >
 
     )
 }
