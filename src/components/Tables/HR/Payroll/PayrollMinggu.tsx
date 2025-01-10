@@ -36,6 +36,26 @@ function PayrollMinggu() {
             console.log(error);
         }
     }
+
+    async function postPayrollMingguan() {
+        const url = `${import.meta.env.VITE_API_LINK}/hr/payroll/bayarMingguanPeriode`;
+        try {
+            setIsLoading(true)
+            const res = await axios.post(url, {
+                data_payroll: payWeek
+            },
+                {
+
+                    withCredentials: true,
+                });
+            setIsLoading(false)
+            setPayWeek(res.data.data);
+            console.log(res.data);
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
     const [showEdit, setShowEdit] = useState<any>([]);
     const openEdit = (i: any) => {
         const onchangeVal: any = [...showEdit];
@@ -119,14 +139,25 @@ function PayrollMinggu() {
                         </div>
                     </div>
                 </div>
-                <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF] bg-white px-4 py-4 items-center flex">
+                <div className=" w-full h-full  border-b-8 border-[#D8EAFF] bg-white px-4 py-4 items-center justify-between flex">
+                    <div>
+                        <label className='text-xl text-blue-400 font-semibold  justify-center text-center'>
+                            {payWeek == null ? 'Periode Dari' : convertTimeStampToDate(payWeek?.periode_dari)} ~  {payWeek == null ? 'Periode Sampai' : convertTimeStampToDate(payWeek?.periode_sampai)}
+                        </label>
+                        <label className='text-xl text-blue-400 font-semibold  justify-center text-center'>
+                            {payWeek == null ? '' : 'Total Gaji Rp.' + formatInteger(payWeek?.total)}
+                        </label>
+                    </div>
+                    {payWeek && (
+                        <button
+                            title="button"
+                            onClick={() => postPayrollMingguan()}
+                            className="text-xs w-[20%] flex items-center justify-center font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
+                        >
+                            BAYAR
+                        </button>
+                    )}
 
-                    <label className='text-xl text-blue-400 font-semibold  justify-center text-center'>
-                        {payWeek == null ? 'Periode Dari' : convertTimeStampToDate(payWeek?.periode_dari)} ~  {payWeek == null ? 'Periode Sampai' : convertTimeStampToDate(payWeek?.periode_sampai)}
-                    </label>
-                    <label className='text-xl text-blue-400 font-semibold  justify-center text-center'>
-                        {payWeek == null ? '' : 'Total Gaji Rp.' + formatInteger(payWeek?.total)}
-                    </label>
                 </div>
                 <div className=" w-full h-full flex-col  bg-white">
                     <div className="grid grid-cols-8 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">

@@ -34,6 +34,9 @@ const TableUser = () => {
         const url = `${import.meta.env.VITE_API_LINK}/users`;
         try {
             const res = await axios.get(url, {
+                params: {
+                    status: 'aktif'
+                },
                 withCredentials: true,
             });
 
