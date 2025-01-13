@@ -5,32 +5,19 @@ import { Button } from '@mui/material';
 import Loading from '../../../Loading';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import TabPengajuanLangsung from '../../HR/Personnel/Absensi/TabPengajuanLangsung';
-
+import Polygon6 from '../../../../images/icon/Polygon6.svg';
 
 function TableAbsensiQC() {
     const [isLoading, setIsLoading] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-    const kosong: any = [];
     const today = new Date();
-    const month = today.getMonth() + 1;
+
     const year = today.getFullYear();
-    const date = today.getDate();
-    const currentDate = month + '/' + date + '/' + year;
-    const navigate = useNavigate();
-    const handleResize = () => {
-        setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
-    };
-    useEffect(() => {
-        handleResize();
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const day = String(today.getDate()).padStart(2, '0');
 
-        // Event listener for window resize
-        window.addEventListener('resize', handleResize);
+    const formattedDate = `${year}-${month}-${day}`;
 
-        // Cleanup on component unmount
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
 
     const [absen, setabsen] = useState<any>();
     const [idDepart, setIdDepart] = useState<any>();
@@ -38,7 +25,7 @@ function TableAbsensiQC() {
         const today = new Date();
         getDepartment()
         getMe()
-
+        getabsen(formattedDate, formattedDate, idDepart);
     }, []);
 
     async function getMe() {
@@ -115,14 +102,40 @@ function TableAbsensiQC() {
 
         setShowEdit(onchangeVal);
     };
+    const [sortOrder, setSortOrder] = useState('asc'); // State to track sort order
+
+    const handleSort = () => {
+        const sortedAbsen = [...absen].sort((a, b) => {
+            const waktuAMinus = new Date(a.waktu_masuk);
+            const waktuBMinus = new Date(b.waktu_masuk);
+
+            if (sortOrder === 'asc') {
+                // Sort in ascending order
+                if (waktuAMinus < waktuBMinus) return -1;
+                if (waktuAMinus > waktuBMinus) return 1;
+            } else {
+                // Sort in descending order
+                if (waktuAMinus > waktuBMinus) return -1;
+                if (waktuAMinus < waktuBMinus) return 1;
+            }
+            return 0;
+        });
+
+        setabsen(sortedAbsen);
+        setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'); // Toggle sort order
+    };
+    const [searchQuery, setSearchQuery] = useState('');
+    const filteredAbsen = absen?.filter((data: any) =>
+        data.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
     return (
         <>
             {!isMobile && (
                 <main className="overflow-x-scroll">
                     {isLoading && <Loading />}
                     <div className="bg-white rounded-md shadow-md md:w-12/12 mb-5 border-2 border-stroke">
-                        <div className="flex md:gap-4 gap-1 md:flex-row flex-col px-4 py-4 md:mt-0 ">
-                            <div className='flex flex-col gap-1'>
+                        <div className="grid md:gap-4 gap-1 md:flex-row grid-cols-12 items-center px-4 py-4 md:mt-0 ">
+                            <div className='flex flex-col gap-1 col-span-3'>
                                 <div className='flex flex-col'>
                                     <p className="my-auto text-sm text-primary font-semibold ">
                                         Pilih Tanggal
@@ -130,7 +143,7 @@ function TableAbsensiQC() {
 
                                 </div>
 
-                                <div className='flex gap-3'>
+                                <div className='flex gap-3 flex-col'>
                                     <div className="flex md:justify-center items-center gap-2">
                                         <p className="text-sm text-primary font-semibold md:w-3/12 w-2/12">
                                             Dari:
@@ -139,7 +152,10 @@ function TableAbsensiQC() {
                                         <input
                                             className='rounded-full bg-[#D8EAFF] px-2'
                                             type="date"
-                                            onChange={(e) => setDateFrom(e.target.value)}
+                                            onChange={(e) => {
+                                                setDateFrom(e.target.value)
+                                                console.log(e.target.value)
+                                            }}
                                         ></input>
 
                                     </div>
@@ -158,23 +174,35 @@ function TableAbsensiQC() {
                                 </div>
 
                             </div>
-
-
-                            <div className="flex justify-center my-5">
-                                <button
-                                    onClick={() => {
-                                        getabsen(dateFrom, dateTo, idDepart)
-                                    }}
-                                    className="bg-primary text-white px-5 py-2 rounded-md my-auto "
-                                >
-                                    Tampilkan
-                                </button>
+                            <div className='flex flex-col gap-1 col-span-2'>
                             </div>
-                            <div className="flex justify-center my-5">
+                            <div className="flex justify-center my-5 col-span-2">
+                                {(dateFrom == null || dateTo == null) ?
+                                    <>
+                                        <button
+
+                                            className="bg-red-600 text-white px-5 py-2 rounded-md my-auto "
+                                        >
+                                            Pilih Tanggal
+                                        </button>
+                                    </> :
+                                    <>
+                                        <button
+                                            onClick={() => {
+                                                getabsen(dateFrom, dateTo, idDepart)
+                                            }}
+                                            className="bg-primary text-white px-5 py-2 rounded-md my-auto "
+                                        >
+                                            Tampilkan
+                                        </button>
+                                    </>
+                                }
+                            </div>
+                            <div className="flex my-5 col-span-3">
                                 <button
                                     onClick={() => {
 
-                                        getabsen(today, today, idDepart)
+                                        getabsen(formattedDate, formattedDate, idDepart)
 
                                     }}
                                     className="bg-primary text-white px-5 py-2 rounded-md my-auto "
@@ -182,6 +210,20 @@ function TableAbsensiQC() {
                                     Hari Ini
                                 </button>
                             </div>
+                            <div className="flex justify-end my-5 col-span-2 items-end">
+
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Cari Nama Karyawan"
+                                    className="border p-2 rounded mb-4"
+                                />
+                            </div>
+
+
+
+
                         </div>
                     </div>
                     <div className="min-w-[700px] bg-white rounded-xl">
@@ -201,9 +243,10 @@ function TableAbsensiQC() {
                                 <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                     Tanggal
                                 </label>
-                                <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                    Waktu
-                                </label>
+                                <div className="flex gap-2  col-span-2">
+                                    <p className="text-xs font-bold ">Waktu </p>
+                                    <img className="w-2 hover:cursor-pointer" onClick={handleSort} src={Polygon6} alt="" />
+                                </div>
                                 <label className="text-neutral-500 text-sm font-semibold">
                                     Shift
                                 </label>
@@ -218,9 +261,10 @@ function TableAbsensiQC() {
                                 </label>
                             </div>
                             <div className="w-2 h-full "></div>
-                            {absen?.map((data: any, i: any) => {
+                            {filteredAbsen?.map((data: any, i: any) => {
 
                                 return (
+
                                     <>
                                         <div className={`grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center px-10 min-h-10  
                                             ${data.status_absen == 'cuti khusus' ? 'bg-orange-200' : ''} 

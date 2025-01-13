@@ -181,6 +181,7 @@ import PengajuanJabatanKeHR from './pages/HR/PengajuanKeHR/PengajuanJabatanKeHR'
 import HistoryPengajuanJabatanKeHR from './pages/HR/PengajuanKeHR/HistoryPengajuanJabatanKeHR';
 import ResponJabatan from './pages/HR/Pengajuan/ResponJabatan';
 import HistoryResponJabatan from './pages/HR/Pengajuan/HistoryResponJabatan';
+import AbsenMTC from './pages/Maintenance/AbsensiMTC/AbsenMTC';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1685,6 +1686,14 @@ function App() {
           element={
             <>
               <AbsenQC />
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/absensi"
+          element={
+            <>
+              <AbsenMTC />
             </>
           }
         />

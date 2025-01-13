@@ -1,13 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Button } from '@mui/material';
-import convertTimeStampToDate from '../../../../../utils/converDateTime';
-import convertTimeStampnoConvert from '../../../../../utils/convertdateNoConvert';
-import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 import Loading from '../../../../Loading';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
-import TabPengajuanKeHR from '../../PengajuanKeHR/TabPengajuanKeHR';
 import TabPengajuanLangsung from './TabPengajuanLangsung';
 import Polygon6 from '../../../../../images/icon/Polygon6.svg';
 

@@ -9,6 +9,7 @@ import Box from '@mui/material/Box';
 import OSHRAlllKendala from './OSHRAllKendala';
 import HistoryHRAllKendala from './HistoryHRAllKendala';
 import OsAbsensi from './OutstandingAbsensi';
+import OsKaryawan from './OsKaryawan';
 
 
 interface TabPanelProps {
@@ -159,7 +160,7 @@ export default function TabOSHR() {
                     <OsAbsensi />
                 </TabPanel>
                 <TabPanel value={value} index={2} dir={theme.direction}>
-                    <OsAbsensi />
+                    <OsKaryawan />
                 </TabPanel>
                 <TabPanel value={value} index={3} dir={theme.direction}>
                     <HistoryHRAllKendala />
