@@ -20,7 +20,7 @@ function TableAbsensiQC() {
 
 
     const [absen, setabsen] = useState<any>();
-    const [idDepart, setIdDepart] = useState<any>();
+    const [idDepart, setIdDepart] = useState<any>(0);
     useEffect(() => {
         const today = new Date();
         getDepartment()
@@ -31,15 +31,17 @@ function TableAbsensiQC() {
     async function getMe() {
         const url = `${import.meta.env.VITE_API_LINK}/me`;
         try {
+            setIsLoading(true)
             const res = await axios.get(url, {
                 withCredentials: true,
             });
 
-
+            setIsLoading(false)
             setIdDepart(res.data.karyawan.biodata_karyawan[0].id_department)
             getabsen(today, today, res.data.karyawan.biodata_karyawan[0].id_department);
             console.log('me', res.data.karyawan.biodata_karyawan[0].id_department)
         } catch (error: any) {
+            setIsLoading(false)
             console.log(error.data.msg);
         }
     }
