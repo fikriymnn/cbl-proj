@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import Loading from '../../../Loading';
-
+import Select from 'react-select';
 function AddMasterKaryawanIsi() {
     const [isLoading, setIsLoading] = useState(false);
 
@@ -10,7 +10,8 @@ function AddMasterKaryawanIsi() {
         getBagian();
         getDivisi();
         getGradeMaster();
-        getkaryawanStatus();
+        getkaryawanStatus(); getjabatanMaster()
+        getMasterMesin();
     }, []);
 
     const [department, setDepartment] = useState<any>();
@@ -30,6 +31,51 @@ function AddMasterKaryawanIsi() {
             setIsLoading(false)
             setDepartment(res.data)
             console.log(res.data)
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
+
+    async function getMasterMesin() {
+        const url = `${import.meta.env.VITE_API_LINK_P1
+            }/api/list-mesin`;
+        try {
+            const res = await axios.get(url, {
+
+            });
+            setMesinMaster(res.data.data)
+            console.log('mesin list', res.data.data)
+            setOptions(
+                res.data.data.map((item: any) => ({
+                    value: item.mesin,
+                    label: item.mesin
+                }))
+            );
+
+
+        } catch (error: any) {
+
+            console.log(error);
+        }
+    }
+    const [jabatanMaster, setjabatanMaster] = useState<any>();
+
+    async function getjabatanMaster() {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/master/hr/jabatan`;
+        try {
+            setIsLoading(true)
+            const res = await axios.get(
+                url,
+
+                {
+                    withCredentials: true,
+                },
+            );
+            setIsLoading(false)
+            setjabatanMaster(res.data)
+            console.log('jabatan Master', res.data)
         } catch (error: any) {
             setIsLoading(false)
             console.log(error);
@@ -82,6 +128,24 @@ function AddMasterKaryawanIsi() {
 
     const [bagian, setBagian] = useState<any>();
 
+    const [bagianMesin, setBagianMesin] = useState([
+        {
+            id_bagian_mesin: null,
+            nama_bagian_mesin: ""
+        },
+    ]);
+
+    const [mesinMaster, setMesinMaster] = useState<any[]>([]);
+    const [options, setOptions] = useState<any[]>([]);
+    const handleAddPoint = () => {
+        setBagianMesin([
+            ...bagianMesin,
+            {
+                id_bagian_mesin: null,
+                nama_bagian_mesin: ""
+            },
+        ]);
+    };
     async function getBagian() {
         const url = `${import.meta.env.VITE_API_LINK
             }/master/hr/bagian`;
@@ -158,12 +222,12 @@ function AddMasterKaryawanIsi() {
                     jenis_kelamin: jenisKelamin,
                     id_divisi: idDivisi,
                     id_department: idDepartment,
-                    id_bagian: idDagian,
+                    bagian_mesin: bagianMesin,
                     id_grade: grade,
                     tgl_masuk: tglMasuk,
                     tgl_keluar: tglKeluar,
                     tipe_penggajian: tipePenggajian,
-                    jabatan: jabatan,
+                    id_jabatan: jabatan,
                     status_pajak: statusPajak,
                     level: level,
                     sub_level: subLevel,
@@ -212,13 +276,25 @@ function AddMasterKaryawanIsi() {
             setglKeluar(recalculatedKeluar);
         }
     };
+    const handleChangePointDepartment = (selected: any, index: number) => {
+        const updatedBagianMesin = [...bagianMesin];
+        const { value } = selected;
+
+        updatedBagianMesin[index] = {
+            id_bagian_mesin: null,
+            nama_bagian_mesin: value
+        };
+
+        setBagianMesin(updatedBagianMesin);
+        console.log("Updated Bagian Mesin:", updatedBagianMesin);
+    };
     return (
         <main className="overflow-x-scroll">
             {isLoading && <Loading />}
-            <div className="min-w-[700px] bg-white rounded-t-md border-b-8 border-[#D8EAFF] h-12">
+            <div className="min-w-[700px]  bg-white rounded-t-md border-b-8 border-[#D8EAFF] h-12">
 
             </div>
-            <div className="min-w-[700px] bg-white  border-b-8 border-[#D8EAFF] ">
+            <div className="min-w-[700px] h-screen bg-white  border-b-8 border-[#D8EAFF] ">
                 <div className='flex w-full bg-[#eeeeee] px-6 py-3'>
                     <label className='text-[#0065de] text-sm font-semibold'>
                         BIODATA
@@ -710,8 +786,41 @@ function AddMasterKaryawanIsi() {
                         <div className='flex flex-col  '>
                             <div className='flex gap-3'>
                                 <div className='flex flex-col gap-1 w-[50%]'>
+                                    <div className='z-50'>
+                                        {bagianMesin?.map((item, index) => (
+                                            <div key={index} style={{ marginBottom: "10px" }}>
+                                                <Select
+                                                    options={options}
+                                                    onChange={(selected) => handleChangePointDepartment(selected, index)}
+                                                    value={
+                                                        item.nama_bagian_mesin
+                                                            ? options.find(
+                                                                (option) =>
+                                                                    option.value === item.nama_bagian_mesin
+                                                            )
+                                                            : null
+                                                    }
+                                                    placeholder="Select Mesin"
+                                                />
+                                            </div>
+                                        ))}
+
+                                        <button onClick={handleAddPoint}>+ Tambah Bagian</button>
+                                    </div>
+                                </div>
+                                <div className='flex flex-col gap-1 w-[50%]'>
                                     <label className=' text-sm font-semibold'>
-                                        Bagian<span className='text-red-600'>*</span>
+                                        Level
+                                    </label>
+                                    <input
+                                        onChange={(e) => setlevel(e.target.value)}
+                                        type='text' className='border-stroke border-2 rounded-md w-[50%]' />
+                                </div>
+                            </div>
+                            <div className='flex gap-3'>
+                                <div className='flex flex-col gap-1 w-[50%]'>
+                                    <label className=' text-sm font-semibold'>
+                                        Jabatan<span className='text-red-600'>*</span>
                                     </label>
                                     <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
                                         <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
@@ -727,21 +836,22 @@ function AddMasterKaryawanIsi() {
                                         </span>
 
                                         <select
-                                            onChange={(e) => setidDagian(e.target.value)}
+                                            onChange={(e) => sejabatan(e.target.value)}
                                             className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                         >
                                             <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                                PILIH BAGIAN
+                                                PILIH JABATAN
                                             </option>
-                                            {bagian?.data?.map((data: any, i: number) => {
+                                            {jabatanMaster?.data?.map((data: any, i: number) => {
 
                                                 return (
                                                     <option
                                                         value={data.id}
+
                                                         className="text-gray-800 text-xs font-light dark:text-bodydark"
                                                     >
-                                                        {data.nama_bagian}
+                                                        {data.nama_jabatan}
                                                     </option>
                                                 )
                                             }
@@ -772,24 +882,7 @@ function AddMasterKaryawanIsi() {
 
                                     </div>
                                 </div>
-                                <div className='flex flex-col gap-1 w-[50%]'>
-                                    <label className=' text-sm font-semibold'>
-                                        Level
-                                    </label>
-                                    <input
-                                        onChange={(e) => setlevel(e.target.value)}
-                                        type='text' className='border-stroke border-2 rounded-md w-[50%]' />
-                                </div>
-                            </div>
-                            <div className='flex gap-3'>
-                                <div className='flex flex-col gap-1 w-[50%]'>
-                                    <label className=' text-sm font-semibold'>
-                                        Jabatan<span className='text-red-600'>*</span>
-                                    </label>
-                                    <input
-                                        onChange={(e) => sejabatan(e.target.value)}
-                                        type='text' className='border-stroke border-2 rounded-md w-[50%]' />
-                                </div>
+
                                 <div className='flex flex-col gap-1 w-[50%]'>
                                     <label className=' text-sm font-semibold'>
                                         Sub-Level

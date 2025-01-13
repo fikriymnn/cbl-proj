@@ -78,9 +78,7 @@ function MasterKaryawanIsi() {
                                 <label className="text-neutral-500 text-xs font-semibold  ">
                                     Department
                                 </label>
-                                <label className="text-neutral-500 text-xs font-semibold  ">
-                                    Bagian
-                                </label>
+
                                 <label className="text-neutral-500 text-xs font-semibold  ">
                                     Jabatan
                                 </label>
@@ -126,11 +124,9 @@ function MasterKaryawanIsi() {
                                             <label className="text-neutral-500 text-xs font-semibold  ">
                                                 {data.biodata_karyawan[0]?.department?.nama_department}
                                             </label>
+
                                             <label className="text-neutral-500 text-xs font-semibold  ">
-                                                {data.biodata_karyawan[0]?.bagian?.nama_bagian}
-                                            </label>
-                                            <label className="text-neutral-500 text-xs font-semibold  ">
-                                                {data.biodata_karyawan[0]?.jabatan}
+                                                {data.biodata_karyawan[0]?.nama_jabatan}
                                             </label>
                                             <label className="text-neutral-500 text-xs font-semibold  ">
                                                 {data.biodata_karyawan[0]?.tipe_penggajian}
@@ -141,7 +137,7 @@ function MasterKaryawanIsi() {
                                             <label className="text-neutral-500 text-xs font-semibold  ">
                                                 {data.biodata_karyawan[0]?.tgl_keluar == null ? '-' : convertTimeStampToDateOnly(data.biodata_karyawan[0]?.tgl_keluar)}
                                             </label>
-                                            <label className="text-neutral-500 text-xs font-semibold  ">
+                                            <label className="text-neutral-500 text-xs font-semibold  col-span-2">
                                                 {(data.biodata_karyawan[0]?.status?.nama_status == null || data.biodata_karyawan[0]?.status?.nama_status == 0) ? '-' : data.biodata_karyawan[0]?.status?.nama_status}
                                             </label>
                                             <div className='lg:flex-col md:flex-col sm:flex  gap-1'>

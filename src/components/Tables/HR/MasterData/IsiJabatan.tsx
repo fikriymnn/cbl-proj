@@ -3,7 +3,7 @@ import axios from 'axios';
 import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 import Loading from '../../../Loading';
 
-function IsiBagian() {
+function IsiJabatan() {
     const [isLoading, setIsLoading] = useState(false);
     useEffect(() => {
         getKaryawan();
@@ -14,7 +14,7 @@ function IsiBagian() {
 
     async function getKaryawan() {
         const url = `${import.meta.env.VITE_API_LINK
-            }/master/hr/bagian`;
+            }/master/hr/jabatan`;
         try {
             setIsLoading(true)
             const res = await axios.get(
@@ -37,18 +37,15 @@ function IsiBagian() {
     const openModalHistory = () => setShowHistory(true);
     const closeModalHistory = () => setShowHistory(false);
 
-
-
-
     const [namaDepartment, setnamaDepartment] = useState<any>();
     async function postMasterMesin() {
 
-        const url = `${import.meta.env.VITE_API_LINK}/master/hr/bagian`;
+        const url = `${import.meta.env.VITE_API_LINK}/master/hr/jabatan`;
         try {
             setIsLoading(true)
             const res = await axios.post(url,
                 {
-                    nama_bagian: namaDepartment
+                    nama_jabatan: namaDepartment
 
                 },
                 {
@@ -82,12 +79,12 @@ function IsiBagian() {
     const [namaDepartmentEdit, setnamaDepartmentEdit] = useState<any>();
     async function editMasterMesin(id: number) {
 
-        const url = `${import.meta.env.VITE_API_LINK}/master/hr/bagian/${id}`;
+        const url = `${import.meta.env.VITE_API_LINK}/master/hr/jabatan/${id}`;
         try {
             setIsLoading(true)
             const res = await axios.put(url,
                 {
-                    nama_bagian: namaDepartmentEdit
+                    nama_jabatan: namaDepartmentEdit
 
                 },
                 {
@@ -103,59 +100,27 @@ function IsiBagian() {
             console.log(error);
         }
     }
-    async function deleteMasterMesin(id: number) {
-
-        const url = `${import.meta.env.VITE_API_LINK}/master/hr/bagian/${id}`;
-        try {
-            setIsLoading(true)
-            const res = await axios.delete(url,
-                {
-
-                    withCredentials: true,
-                });
-            setIsLoading(false)
-            window.location.reload();
-            getKaryawan()
-            console.log(res.data);
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
-        }
-    }
-
-    const [showDelete, setShowDelete] = useState<any>([]);
-    const openDelete = (i: any) => {
-        const onchangeVal: any = [...showDelete];
-        onchangeVal[i] = true;
-
-        setShowDelete(onchangeVal);
-    };
-    const closeDelete = (i: any) => {
-        const onchangeVal: any = [...showDelete];
-        onchangeVal[i] = false;
-
-        setShowDelete(onchangeVal);
-    };
 
     return (
         <div>
             <>
                 <main className="overflow-x-scroll">
                     {isLoading && <Loading />}
+
                     <div className="min-w-[700px] bg-white rounded-xl">
                         <div className='flex w-full  pr-8 border-b-8 border-[#D8EAFF] pb-2'>
                             <div className='px-2 py-1 flex w-full justify-end items-center'>
                                 <button
                                     onClick={() => openModalHistory()}
                                     className=' bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-2'>
-                                    TAMBAH BAGIAN
+                                    TAMBAH Jabatan
                                 </button>
                                 {showHistory == true && (
                                     <>
                                         <ModalKosonganSmall
                                             isOpen={showHistory}
                                             onClose={() => closeModalHistory()}
-                                            judul={'Tambah Bagian'}
+                                            judul={'Tambah Divisi'}
                                         >
                                             <>
                                                 <div className="grid   gap-3 w-full px-5 py-2">
@@ -166,12 +131,12 @@ function IsiBagian() {
                                                         }}>
                                                             <div className="flex w-full flex-col">
                                                                 <label className="text-black text-xs font-bold">
-                                                                    Nama Bagian
+                                                                    Nama Jabatan
                                                                 </label>
                                                                 <div className="flex w-full">
                                                                     <input
                                                                         required
-                                                                        name="nama_bagian"
+                                                                        name="nama_divisi"
                                                                         onChange={(e) => { setnamaDepartment(e.target.value) }}
                                                                         type="text"
                                                                         className=" w-[387px] h-10 border-2 border-stroke rounded-md"
@@ -209,7 +174,7 @@ function IsiBagian() {
                                     No
                                 </label>
                                 <label className="text-neutral-500 text-xs font-semibold  col-span-8">
-                                    Nama Bagian
+                                    Nama Jabatan
                                 </label>
 
                             </div>
@@ -223,9 +188,10 @@ function IsiBagian() {
                                                 {i + 1}
                                             </label>
                                             <label className="text-neutral-500 text-xs font-semibold  col-span-8">
-                                                {data.nama_bagian}
+                                                {data.nama_jabatan}
                                             </label>
                                             <button
+
                                                 onClick={() => openEdit(i)}
                                                 className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
                                                 EDIT
@@ -235,7 +201,7 @@ function IsiBagian() {
                                                 <ModalKosonganSmall
                                                     isOpen={showEdit[i]}
                                                     onClose={() => closeEdit(i)}
-                                                    judul={'Edit Bagian'}
+                                                    judul={'Edit Jabatan'}
                                                 >
                                                     <>
                                                         <div className="grid   gap-3 w-full px-5 py-2">
@@ -243,12 +209,12 @@ function IsiBagian() {
 
                                                                 <div className="flex w-full flex-col">
                                                                     <label className="text-black text-xs font-bold">
-                                                                        Nama Bagian
+                                                                        Nama Jabatan
                                                                     </label>
                                                                     <div className="flex w-full">
                                                                         <input
-                                                                            name="nama_bagian"
-                                                                            defaultValue={data.nama_bagian}
+                                                                            name="nama_divisi"
+                                                                            defaultValue={data.nama_jabatan}
                                                                             onChange={(e) => { setnamaDepartmentEdit(e.target.value) }}
                                                                             type="text"
                                                                             className=" w-[387px] h-10 border-2 border-stroke rounded-md"
@@ -272,37 +238,7 @@ function IsiBagian() {
                                                     </>
                                                 </ModalKosonganSmall>
                                             )}
-                                            <button
-                                                onClick={() => openDelete(i)}
-                                                className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
-                                                DELETE
-                                            </button>
-                                            {showDelete[i] == true && (
-                                                <>
-                                                    <ModalKosonganSmall
-                                                        isOpen={showDelete[i]}
-                                                        onClose={() => closeDelete(i)}
-                                                        judul={'Hapus Bagian'}
-                                                    >
-                                                        <>
-                                                            <div className="flex w-full flex-col pt-7 px-2 py-3 justify-center items-center">
-                                                                <>
-                                                                    <label className="text-black text-xl font-bold">
-                                                                        {data.nama_bagian}
-                                                                    </label>
-                                                                    <button
-                                                                        disabled={isLoading}
-                                                                        onClick={() => deleteMasterMesin(data.id)}
-                                                                        className='bg-red-600 h-7 w-full rounded-md text-white text-xs font-bold px-4 py-1'>
-                                                                        HAPUS BAGIAN
-                                                                    </button>
-                                                                </>
-                                                            </div>
-                                                        </>
-                                                    </ModalKosonganSmall>
-                                                </>
-                                            )
-                                            }
+
                                         </div>
                                     </>
                                 ))}
@@ -316,4 +252,4 @@ function IsiBagian() {
     )
 }
 
-export default IsiBagian
+export default IsiJabatan

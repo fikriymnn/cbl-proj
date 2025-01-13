@@ -10,6 +10,7 @@ import IsiDepartment from './IsiDepartment';
 import IsiDivisi from './IsiDivisi';
 import IsiBagian from './IsiBagian';
 import IsiStatusKaryawan from './IsiStatusKaryawan';
+import IsiJabatan from './IsiJabatan';
 
 
 
@@ -147,6 +148,7 @@ export default function TabDepartmentMaster() {
                             <Tab label="Divisi" {...a11yProps(1)} />
                             <Tab label="Bagian" {...a11yProps(2)} />
                             <Tab label="Status Karyawan" {...a11yProps(3)} />
+                            <Tab label="Jabatan" {...a11yProps(4)} />
                             <div className="flex w-full justify-end pr-4">
                                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                                     {tanggal}
@@ -167,6 +169,9 @@ export default function TabDepartmentMaster() {
                 </TabPanel>
                 <TabPanel value={value} index={3} dir={theme.direction}>
                     <IsiStatusKaryawan />
+                </TabPanel>
+                <TabPanel value={value} index={4} dir={theme.direction}>
+                    <IsiJabatan />
                 </TabPanel>
             </Box>
         </>

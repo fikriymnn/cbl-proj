@@ -290,12 +290,18 @@ export default function DetailMasterKaryawanIsi() {
                                     <div className='flex flex-col gap-1'>
 
                                         <label htmlFor="" className='text-black text-sm font-semibold'>Bagian</label>
-                                        <label htmlFor="" className='text-[#636363] text-xl font-normal '>{karyawan?.data?.biodata_karyawan[0]?.bagian?.nama_bagian}</label>
+                                        {karyawan?.data?.biodata_karyawan[0]?.bagian_mesin_karyawan?.map((dataBagian: any, i: any) =>
+                                            <>
+                                                <label key={i} htmlFor="" className='text-[#636363] text-xl font-normal '>- {dataBagian.nama_bagian_mesin}</label>
+                                            </>
+                                        )}
+
+
                                     </div>
                                     <div className='flex flex-col gap-1'>
 
                                         <label htmlFor="" className='text-black text-sm font-semibold'>Jabatan</label>
-                                        <label htmlFor="" className='text-[#636363] text-xl font-normal '>{karyawan?.data?.biodata_karyawan[0]?.jabatan}</label>
+                                        <label htmlFor="" className='text-[#636363] text-xl font-normal '>{karyawan?.data?.biodata_karyawan[0]?.nama_jabatan}</label>
                                     </div>
                                 </div>
                                 <div className='flex flex-col gap-2'>
