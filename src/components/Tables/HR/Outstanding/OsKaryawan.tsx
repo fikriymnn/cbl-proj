@@ -44,10 +44,27 @@ function OsKaryawan() {
     ]);
 
     useEffect(() => {
-
+        getMe()
         getLKH()
     }, []);
 
+    const [idPengaju, setIdPengaju] = useState<any>();
+
+    async function getMe() {
+        const url = `${import.meta.env.VITE_API_LINK}/me`;
+        try {
+            setIsLoading(true)
+            const res = await axios.get(url, {
+                withCredentials: true,
+            });
+            setIsLoading(false)
+            setIdPengaju(res.data.id_karyawan)
+            console.log('getme', res.data)
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error.data.msg);
+        }
+    }
 
     async function getLKH() {
         const url = `${import.meta.env.VITE_API_LINK}/outstandingKaryawan`;
@@ -56,7 +73,7 @@ function OsKaryawan() {
 
                 {
                     params: {
-                        status_tiket: 'incoming',
+                        status: 'incoming',
                         is_active: true
                     },
                     withCredentials: true,
@@ -85,6 +102,48 @@ function OsKaryawan() {
 
 
     };
+    async function postPengajuanStatus(idK: any, idd: any, index: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanPromosiStatusKaryawan`;
+        const url2 = `${import.meta.env.VITE_API_LINK}/outstandingKaryawan/done/${idd}`;
+
+        try {
+            setIsLoading(true);
+            const res1 = await axios.post(url, {
+                id_karyawan: idK,
+                id_pengaju: idPengaju,
+                periode_awal: periodeAwal,
+                periode_akhir: periodeAkhir,
+                jumlah_alpa: jumlahAlpa,
+                jumlah_izin: jumlahIzin,
+                jumlah_tanpa_keterangan: jumlahTanpaKeterangan,
+                jumlah_keterlambatan: jumlahKeterlambatan,
+                peringatan_ke_1: peringatanKe1,
+                peringatan_ke_2: peringatanKe2,
+                peringatan_ke_3: peringatanKe3,
+                prestasi_kerja: prestasiKerja,
+                prestasi_kerja_point: prestasiKerjaPoint,
+                kesan_penilai: kesanPenilai,
+                penilaian: penilaian,
+            }, {
+                withCredentials: true,
+            });
+
+            // Second API Call (Only if the first one succeeds)
+            const res2 = await axios.put(url2, {}, {
+                withCredentials: true,
+            });
+            const updatedModalStates = [...showModal];
+            updatedModalStates[index] = false;
+            setShowModal(updatedModalStates);
+            setIsLoading(false);
+            alert('Respon Berhasil');
+            getLKH(); // Refresh data or handle UI update
+        } catch (error: any) {
+            setIsLoading(false);
+            console.error(error);
+            alert('Terjadi kesalahan, silakan coba lagi.');
+        }
+    }
     const options2 = [
         { hasil_penilaian: 'Sangat Baik', point_penilaian: 45 },
         { hasil_penilaian: 'Baik', point_penilaian: 35 },
@@ -414,7 +473,7 @@ function OsKaryawan() {
 
                                                                 <button
                                                                     onClick={() => {
-
+                                                                        postPengajuanStatus(data.id_karyawan, data.id, i)
 
                                                                     }}
                                                                     disabled={isLoading}

@@ -182,6 +182,8 @@ import HistoryPengajuanJabatanKeHR from './pages/HR/PengajuanKeHR/HistoryPengaju
 import ResponJabatan from './pages/HR/Pengajuan/ResponJabatan';
 import HistoryResponJabatan from './pages/HR/Pengajuan/HistoryResponJabatan';
 import AbsenMTC from './pages/Maintenance/AbsensiMTC/AbsenMTC';
+import MasterUserPageQC from './pages/MasterData/QC/MasterUserPage';
+import MasterUserHR from './pages/HR/MasterDataHR/MasterUserHR';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1321,7 +1323,17 @@ function App() {
             </>
           }
         />
-
+        <Route
+          path="/masterdataqc/users"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterUserPageQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
         <Route
           path="/masterdataqc/outsourcing_bj"
           element={
@@ -1774,6 +1786,14 @@ function App() {
           element={
             <>
               <MasterSHiftHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/master/users"
+          element={
+            <>
+              <MasterUserHR />
             </>
           }
         />

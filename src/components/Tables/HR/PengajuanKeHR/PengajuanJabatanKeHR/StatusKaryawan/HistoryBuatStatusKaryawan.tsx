@@ -6,7 +6,7 @@ import dateOnly from '../../../../../../utils/convertDateOnly';
 import Loading from '../../../../../Loading';
 import ModalXL from '../../../../PPIC/JadwalProduksi/ModalXL';
 
-function IncomingStatusKaryawan() {
+function HistoryBuatStatusKaryawan() {
     const [isLoading, setIsLoading] = useState(false);
     const [izin, setIzin] = useState<any>();
     const [tglMasuk, setglMasuk] = useState<any>(null);
@@ -15,7 +15,7 @@ function IncomingStatusKaryawan() {
 
     useEffect(() => {
         getIzin();
-        getkaryawanStatus()
+
     }, []);
 
     async function getIzin() {
@@ -24,28 +24,13 @@ function IncomingStatusKaryawan() {
             setIsLoading(true);
             const res = await axios.get(url, {
                 params: {
-                    status_tiket: 'incoming',
+                    status_tiket: 'history',
                 },
                 withCredentials: true,
             });
             setIsLoading(false);
             setIzin(res.data);
-            console.log(res.data);
-            const biodataKaryawan = res?.data?.data?.karyawan?.biodata_karyawan;
-            if (biodataKaryawan && biodataKaryawan.length > 0) {
-                const tglKeluar = biodataKaryawan[0]?.tgl_keluar;
-                if (tglKeluar) {
-                    const newTglMasuk = new Date(tglKeluar);
-                    newTglMasuk.setDate(newTglMasuk.getDate() + 1); // Add 1 day
-
-                    const formattedTglMasuk = newTglMasuk.toISOString().split("T")[0];
-                    setglMasuk(formattedTglMasuk); // Update state with formatted date
-                } else {
-                    console.error("tgl_keluar is undefined in biodata_karyawan");
-                }
-            } else {
-                console.error("biodata_karyawan is undefined or empty in API response");
-            }
+            console.log(res.data)
             // Update state for tglMasuk
 
 
@@ -70,108 +55,8 @@ function IncomingStatusKaryawan() {
 
         setShowModal(onchangeVal);
     };
-    const [catatanHr, setcatatanHr] = useState<any>();
 
-    async function approveIzin(id: any, index: any) {
-        if (catatanHr == null) {
-            alert('Catatan Wajib Diisi');
-            return;
-        }
-        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanPromosiStatusKaryawan/approve/${id}`;
-        try {
-            setIsLoading(true)
-            const res = await axios.put(url,
-                {
-                    catatan_hr: catatanHr,
-                    id_status_karyawan_pengajuan: idStatusKaryawan,
-                    tgl_keluar: tglKeluar
-                },
-                {
 
-                    withCredentials: true,
-                });
-            setIsLoading(false)
-            getIzin();
-            console.log(res.data);
-            const updatedModalStates = [...showModal];
-            updatedModalStates[index] = false;
-            setShowModal(updatedModalStates);
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
-        }
-    }
-    const [karyawanStatus, setkaryawanStatus] = useState<any>();
-
-    async function getkaryawanStatus() {
-        const url = `${import.meta.env.VITE_API_LINK
-            }/master/statusKaryawan`;
-        try {
-            setIsLoading(true)
-            const res = await axios.get(
-                url,
-
-                {
-                    withCredentials: true,
-                },
-            );
-            setIsLoading(false)
-            setkaryawanStatus(res.data)
-
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
-        }
-    }
-    async function rejectIzin(id: any, index: number) {
-        if (catatanHr == null) {
-            alert('Catatan Wajib Diisi');
-            return;
-        }
-        if (window.confirm('Apakah Anda yakin ingin menolak pengajuan izin ini?')) {
-            const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanPromosiStatusKaryawan/reject/${id}`;
-            try {
-                setIsLoading(true)
-                const res = await axios.put(url,
-                    {
-                        catatan_hr: catatanHr
-                    },
-                    {
-
-                        withCredentials: true,
-                    });
-                setIsLoading(false)
-                getIzin();
-                console.log(res.data);
-                const updatedModalStates = [...showModal];
-                updatedModalStates[index] = false;
-                setShowModal(updatedModalStates);
-            } catch (error: any) {
-                setIsLoading(false)
-                console.log(error);
-            }
-        }
-    }
-    const recalculateWaktuKeluar = (masukDate: string, waktuBulan: number) => {
-        if (!masukDate || !waktuBulan) return null; // Ensure valid inputs
-        const date = new Date(masukDate);
-        date.setMonth(date.getMonth() + waktuBulan); // Add months to the date
-        return date.toISOString().split("T")[0]; // Return formatted date (YYYY-MM-DD)
-    };
-
-    // Handle status change to update tglKeluar dynamically
-    const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedId = parseInt(e.target.value);
-        setIdStatusKaryawan(selectedId);
-
-        const selectedStatus = karyawanStatus?.data?.find((data: any) => data.id === selectedId);
-        if (selectedStatus) {
-            const defaultTglMasuk = tglMasuk || new Date().toISOString().split("T")[0];
-            const recalculatedKeluar = recalculateWaktuKeluar(defaultTglMasuk, selectedStatus.waktu_bulan);
-            setglKeluar(recalculatedKeluar);
-
-        }
-    };
     return (
         <>
 
@@ -184,11 +69,14 @@ function IncomingStatusKaryawan() {
                                 No
                             </label>
 
-                            <label className="text-neutral-500 text-sm font-semibold col-span-3">
+                            <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                 Department
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold col-span-3">
                                 Personnel
+                            </label>
+                            <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                Status
                             </label>
                         </div>
                         <div className="w-2 h-full "></div>
@@ -206,20 +94,23 @@ function IncomingStatusKaryawan() {
                                             {i + 1}
                                         </label>
 
-                                        <label className="text-neutral-500 text-sm font-semibold col-span-3">
+                                        <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                             {data.karyawan_pengaju?.biodata_karyawan[0]?.department?.nama_department}
                                         </label>
                                         <label className="text-neutral-500 text-sm font-semibold col-span-3">
-                                            {data.karyawan?.name}
+                                            {data.karyawan?.name} - {data.karyawan_pengaju?.biodata_karyawan[0]?.nik}
                                         </label>
-                                        <div className="justify-end flex pr-2 col-span-4">
+                                        <label className="text-neutral-500 text-sm font-semibold col-span-3">
+                                            {data.status}
+                                        </label>
+                                        <div className="justify-end flex pr-2 col-span-3">
                                             <>
 
                                                 <button
                                                     onClick={() => openModalModal(i)}
                                                     className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                 >
-                                                    ACTION
+                                                    DETAIL
                                                 </button>
                                                 {showModal[i] == true && (
                                                     <>
@@ -247,7 +138,24 @@ function IncomingStatusKaryawan() {
                                                                             </label>
                                                                         </div>
                                                                     </div>
-
+                                                                    <div className='flex flex-col gap-2 '>
+                                                                        <div className='flex flex-col '>
+                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                                Yang Menyetujui
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                                {data.karyawan_hr?.name}
+                                                                            </label>
+                                                                        </div>
+                                                                        <div className='flex flex-col '>
+                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                                SUPERVISOR
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                                {data.karyawan_pengaju?.name}
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                                 <div className="min-w-[700px] bg-white rounded-xl ">
 
@@ -516,96 +424,19 @@ function IncomingStatusKaryawan() {
                                                                             className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                                                         ></textarea>
                                                                     </div>
-                                                                    <div className='flex flex-col w-full px-4 '>
-                                                                        <div className='flex flex-col gap-1 w-[50%]'>
-                                                                            <label className=' text-sm font-semibold'>
-                                                                                Status Karyawan Baru<span className='text-red-600'>*</span>
-                                                                            </label>
-                                                                            <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                                                                                <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                                                                    <svg
-                                                                                        width="20"
-                                                                                        height="20"
-                                                                                        viewBox="0 0 20 20"
-                                                                                        fill="none"
-                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                    >
 
-                                                                                    </svg>
-                                                                                </span>
-
-                                                                                <select
-                                                                                    name='nama_department'
-                                                                                    onChange={
-                                                                                        handleStatusChange
-                                                                                    }
-                                                                                    className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
-                                                                                >
-                                                                                    <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                                                                        PILIH STATUS KARYAWAN
-                                                                                    </option>
-                                                                                    {karyawanStatus?.data?.map((data: any, i: number) => {
-
-                                                                                        return (
-                                                                                            <option
-                                                                                                value={data.id}
-                                                                                                className="text-gray-800 text-xs font-light dark:text-bodydark"
-                                                                                            >
-                                                                                                {data.nama_status} - {data.waktu_bulan} Bulan
-                                                                                            </option>
-                                                                                        )
-                                                                                    }
-                                                                                    )}
-
-                                                                                </select>
-
-                                                                                <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
-                                                                                    <svg
-                                                                                        width="24"
-                                                                                        height="24"
-                                                                                        viewBox="0 0 24 24"
-                                                                                        fill="none"
-                                                                                        xmlns="http://www.w3.org/2000/svg"
-                                                                                    >
-                                                                                        <g opacity="0.8">
-                                                                                            <path
-                                                                                                fillRule="evenodd"
-                                                                                                clipRule="evenodd"
-                                                                                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                                                                                fill="#637381"
-                                                                                            ></path>
-                                                                                        </g>
-                                                                                    </svg>
-                                                                                </span>
-
-                                                                            </div>
-
-
-                                                                        </div>
-                                                                    </div>
                                                                     <div className='flex flex-col w-full px-4 '>
                                                                         <label htmlFor="" className='text-black text-xs font-bold'>
                                                                             RESPON HR<span className='text-red-600'>*</span>
                                                                         </label>
                                                                         <textarea
-                                                                            onChange={(e) => setcatatanHr(e.target.value)}
+
+                                                                            readOnly
+                                                                            value={data.catatan_hr}
                                                                             className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                                                         ></textarea>
                                                                     </div>
-                                                                    {idStatusKaryawan && (
 
-                                                                        <div className='flex gap-2 w-full px-4 pt-1'>
-                                                                            <button
-                                                                                disabled={isLoading}
-                                                                                onClick={() => approveIzin(data.id, i)}
-                                                                                className='bg-green-500 w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm'>
-                                                                                APPROVE
-                                                                            </button>
-                                                                        </div>
-                                                                    )
-
-                                                                    }
 
                                                                 </div>
 
@@ -628,4 +459,4 @@ function IncomingStatusKaryawan() {
     );
 }
 
-export default IncomingStatusKaryawan;
+export default HistoryBuatStatusKaryawan;

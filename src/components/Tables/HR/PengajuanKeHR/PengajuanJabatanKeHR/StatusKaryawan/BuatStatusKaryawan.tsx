@@ -56,13 +56,16 @@ function BuatStatusKaryawan() {
     async function getMe() {
         const url = `${import.meta.env.VITE_API_LINK}/me`;
         try {
+            setIsLoading(true)
             const res = await axios.get(url, {
                 withCredentials: true,
             });
+            setIsLoading(false)
             setIdPengaju(res.data.id_karyawan)
             getMasterUser(res?.data.karyawan.biodata_karyawan[0]?.id_department);
             console.log('getme', res.data)
         } catch (error: any) {
+            setIsLoading(false)
             console.log(error.data.msg);
         }
     }
@@ -84,7 +87,7 @@ function BuatStatusKaryawan() {
             setOptions(
                 res.data.data.map((item: any) => ({
                     value: item.id_karyawan,
-                    label: item.nik + ' - ' + item.karyawan?.name + ' - ' + item.bagian?.nama_bagian + ' - ' + item.jabatan
+                    label: item.nik + ' - ' + item.karyawan?.name + ' - ' + item.bagian?.nama_bagian + ' - ' + item.nama_jabatan
                 }))
             );
 
@@ -107,7 +110,7 @@ function BuatStatusKaryawan() {
         setIdKaryawan(filteredData?.id_karyawan)
         setnamaKaryawan(filteredData?.karyawan?.name)
         setbagianKaryawan(filteredData?.bagian?.nama_bagian)
-        setjabatanKaryawan(filteredData?.jabatan)
+        setjabatanKaryawan(filteredData?.nama_jabatan)
         setnikKaryawan(filteredData?.nik)
         settglMasukKerja(filteredData?.tgl_masuk)
     };
@@ -148,10 +151,6 @@ function BuatStatusKaryawan() {
             console.log(error);
         }
     }
-
-    useEffect(() => {
-
-    }, []);
     const options2 = [
         { hasil_penilaian: 'Sangat Baik', point_penilaian: 45 },
         { hasil_penilaian: 'Baik', point_penilaian: 35 },

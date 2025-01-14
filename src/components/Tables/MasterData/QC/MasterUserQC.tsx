@@ -1,12 +1,12 @@
 import axios from 'axios';
-import { MasterMachine } from '../../../types/master';
+import { MasterMachine } from '../../../../types/master';
 import { useEffect, useState } from 'react';
-import ModalEditSparepartMaster from '../../Modals/ModalEditSparepartMaster';
-import ModalTambahUser from '../../Modals/Master/User/ModalTambahUser';
-import ModalEditUser from '../../Modals/Master/User/ModalUpdateUserMaster';
-import ModalConfDelete from '../../Modals/Master/User/ModalConfDelete';
+import ModalEditSparepartMaster from '../../../Modals/ModalEditSparepartMaster';
+import ModalTambahUser from '../../../Modals/Master/User/ModalTambahUser';
+import ModalEditUser from '../../../Modals/Master/User/ModalUpdateUserMaster';
+import ModalConfDelete from '../../../Modals/Master/User/ModalConfDelete';
 
-const TableUser = () => {
+const MasterUserQC = () => {
 
     const [isMobile, setIsMobile] = useState(false);
     const handleResize = () => {
@@ -36,7 +36,7 @@ const TableUser = () => {
             const res = await axios.get(url, {
                 params: {
                     status: 'aktif',
-                    bagian: 'maintenance'
+                    bagian: 'quality control'
                 },
                 withCredentials: true,
             });
@@ -301,4 +301,4 @@ const TableUser = () => {
     );
 };
 
-export default TableUser;
+export default MasterUserQC;

@@ -1,0 +1,18 @@
+import React from 'react';
+import DefaultLayout from '../../../layout/DefaultLayout';
+import MasterUserQC from '../../../components/Tables/MasterData/QC/MasterUserQC';
+
+function MasterUserPageQC() {
+    return (
+        <DefaultLayout>
+            <>
+                <p className="font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]">
+                    Master Data QC&gt; User
+                </p>
+                <MasterUserQC />
+            </>
+        </DefaultLayout>
+    );
+}
+
+export default MasterUserPageQC;
