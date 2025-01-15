@@ -14,11 +14,15 @@ import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination/Pagination';
 import calculateTime from '../../../../utils/calculateTime';
 import ModalDetailValidasi from '../../../Modals/ModalDetailValidasi';
+import Loading from '../../../Loading';
 
 const TableHistory = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [ticketProsesHistory, setTicketProsesHistory] = useState<any>(null);
   const [showModalDetail, setShowModalDetail] = useState(null);
+  const [masterMesin, setmasterMesin] = useState<any>();
+
   const handleClickDetail = (index: any) => {
     setShowModalDetail((prevState: any) => {
       return prevState === index ? null : index;
@@ -27,8 +31,29 @@ const TableHistory = () => {
   const closeModalDetail = () => setShowModalDetail(null);
   useEffect(() => {
     getMTC();
+    getMasterMesin();
   }, [page]);
 
+  async function getMasterMesin() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
+    try {
+      setIsLoading(true)
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      setIsLoading(false)
+      setmasterMesin(res.data);
+
+    } catch (error: any) {
+      setIsLoading(false)
+      console.log(error.data.msg);
+    }
+  }
+  const [startDate, setStartDate] = useState<any>();
+  const [endDate, setEndDate] = useState<any>();
+  const [mesinNama, setMesinNama] = useState<any>();
+  const [statusTiket, setStatusTiket] = useState<any>();
+  const [noJo, setNoJo] = useState<any>();
   async function getMTC() {
     const url = `${import.meta.env.VITE_API_LINK}/prosessMtcHistoryQc`;
     try {
@@ -36,6 +61,11 @@ const TableHistory = () => {
         params: {
           page: page,
           limit: 10,
+          start_date: startDate,
+          end_date: endDate,
+          mesin: mesinNama,
+          status_qc: statusTiket,
+          no_jo: noJo,
         },
         withCredentials: true,
       });
@@ -49,6 +79,134 @@ const TableHistory = () => {
   }
   return (
     <div className="flex flex-col gap-2">
+      <div className="flex  gap-1 items-center bg-white ">
+        {isLoading && <Loading />}
+
+        <div className="grid md:grid-cols-12 grid-cols-6 px-4 py-1 gap-3">
+
+          <div className="flex flex-col gap-2 col-span-2">
+            <p className="text-sm text-primary font-semibold">
+              Dari:
+            </p>
+            <input
+              className='rounded-full bg-[#D8EAFF] px-2 h-8'
+              type="date"
+              onChange={(e) => setStartDate(e.target.value)}
+            ></input>
+
+          </div>
+          <div className="flex flex-col gap-2 col-span-2">
+            <p className=" my-auto text-sm text-primary font-semibold ">
+              Sampai:
+            </p>
+
+            <input
+              className='rounded-full bg-[#D8EAFF] px-2 h-8'
+              type="date"
+              onChange={(e) => setEndDate(e.target.value)}
+            ></input>
+
+          </div>
+          <div className="flex flex-col  gap-2 col-span-2">
+            <p className=" my-auto text-sm text-primary font-semibold ">
+              Pilih Mesin:
+            </p>
+
+            <select
+              onChange={(e) => {
+                setMesinNama(
+                  e.target.value,
+                );
+
+              }}
+              className={` z-20 w-full rounded-md bg-blue-200 items-center h-8`}
+            >
+              <option
+                selected
+                disabled>
+                Pilih Mesin
+              </option>
+              {masterMesin?.map(
+                (data: any, i: number) => {
+                  return (
+                    <option
+                      value={data.nama_mesin}
+                      className="text-gray-800 text-sm font-light dark:text-bodydark"
+                    >
+                      {data.nama_mesin}
+                    </option>
+                  );
+                },
+              )}
+            </select>
+          </div>
+          <div className="flex flex-col  gap-2 col-span-2">
+            <p className=" my-auto text-sm text-primary font-semibold ">
+              Pilih Status Tiket:
+            </p>
+            <select
+              onChange={(e) => {
+                setStatusTiket(
+                  e.target.value,
+                );
+
+              }}
+              className={` z-20 w-full rounded-md bg-blue-200 items-center h-8`}
+            >
+              <option
+                selected
+                disabled>
+                Pilih Status Tiket
+              </option>
+
+              <option
+                value={'approved'}
+                className="text-gray-800 text-sm font-light dark:text-bodydark"
+              >
+                approved
+              </option>
+              <option
+                value={'rejected'}
+                className="text-gray-800 text-sm font-light dark:text-bodydark"
+              >
+                rejected
+              </option>
+            </select>
+          </div>
+          <div className=" gap-2 flex flex-col col-span-2">
+            <p className=" my-auto text-sm text-primary font-semibold ">
+              No.Jo
+            </p>
+            <input
+              className='rounded-md h-8 bg-[#D8EAFF] px-2 w-full'
+              placeholder='Nomor JO'
+              type="text"
+              onChange={(e) => setNoJo(e.target.value)}
+            ></input>
+
+          </div>
+          <div className="flex ">
+            <button
+              onClick={() => {
+                getMTC()
+              }}
+              className="bg-primary text-white px-5 py-2 rounded-md my-auto "
+            >
+              Tampilkan
+            </button>
+
+          </div>
+
+        </div>
+
+        {/* <input
+          type="search"
+          placeholder="search"
+          name=""
+          id=""
+          className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
+        /> */}
+      </div>
       <div className="flex px-2 border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
         <p className="w-5 text-[14px] font-semibold mr-3">No</p>
         <div className="flex flex-col w-full">

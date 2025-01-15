@@ -19,8 +19,10 @@ function MasterKaryawanIsi() {
 
             const res = await axios.get(
                 url,
-
                 {
+                    params: {
+                        is_active: true
+                    },
                     withCredentials: true,
                 },
             );
