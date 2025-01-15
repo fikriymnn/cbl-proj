@@ -13,7 +13,19 @@ function ListJOProduksi() {
     const [isLoading, setIsLoading] = useState(false);
     const [listJO, setJo] = useState<any>();
     const [hasilKalkulasi, setHasilKalkulasi] = useState<any>();
+    const [startDate, setStartDate] = useState<any>();
+    const [endDate, setEndDate] = useState<any>();
+    const [map, setMap] = useState<any>();
+
+    const today = new Date();
+
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const day = String(today.getDate()).padStart(2, '0');
+
+    const formattedDate = `${year}-${month}-${day}`;
     useEffect(() => {
+        getJadwalView(formattedDate, formattedDate)
         getmasterKategori()
     }, []);
 
@@ -49,6 +61,29 @@ function ListJOProduksi() {
             console.log(error);
         }
     }
+
+
+
+    async function getJadwalView(tglAwal: any, tglAkhir: any) {
+        const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksiView`;
+        try {
+            setIsLoading(true)
+            const res = await axios.get(url, {
+                params: {
+                    start_date: tglAwal,
+                    end_date: tglAkhir,
+                },
+                withCredentials: true,
+            });
+            setMap(res.data)
+            setIsLoading(false)
+            console.log('JadwalView', res.data);
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
+
     const [activeComponent, setActiveComponent] = useState('component1');
 
     const showComponent1 = () => {
@@ -123,6 +158,7 @@ function ListJOProduksi() {
                                         ></input>
 
                                     </div>
+
                                 </div>
                                 <div className="flex justify-end col-span-2">
                                     <button
@@ -411,18 +447,96 @@ function ListJOProduksi() {
                                 className='flex w-[3%] hover:cursor-pointer bg-blue-600 rounded-l-lg max-h-[20%] flex-col text-xl font-extrabold text-white items-center justify-center'>
                                 {'>'}
                             </div>
-                            <div className='flex w-[97%] flex-col bg-[#D8EAFF]'>
-                                <div className='flex gap-2 w-full border-b-8 border-[#D8EAFF] bg-[#D8EAFF]'>
+                            <div className='flex w-[97%] flex-col'>
+                                <div className='flex flex-col gap-3 py-3'>
+                                    <div className="flex flex-col gap-2  w-[30%]">
+                                        <p className="text-sm text-primary font-semibold">
+                                            Tanggal:
+                                        </p>
+                                        <input
+                                            className='rounded-md bg-white px-2 h-8'
+                                            type="date"
+                                            onChange={(e) => {
+                                                setStartDate(e.target.value)
+                                                setEndDate(e.target.value)
+                                            }}
+                                        ></input>
 
+                                    </div>
+
+                                    <div className="flex ">
+                                        <button
+                                            onClick={() => {
+                                                getJadwalView(startDate, endDate)
+                                            }}
+                                            className="bg-primary text-white  rounded-md my-auto py-1 px-2"
+                                        >
+                                            Tampilkan
+                                        </button>
+
+                                    </div>
                                 </div>
-                                <div className='flex  bg-white  border-b-8 border-[#D8EAFF]'>
-                                    <p className='text-center text-[#0065de] text-[11px] w-[6%] font-semibold py-[1%] '>
+
+                                <div className='flex bg-white border-b-8 border-[#D8EAFF]'>
+                                    {/* Header Row for Time */}
+                                    <p className='text-center text-[#0065de] text-[11px] w-[6%] font-semibold py-[1%]'>
                                         TIME
                                     </p>
-
+                                    {map?.data
+                                        ?.filter((data: any, index: number, self: any[]) =>
+                                            self.findIndex(item => item.mesin === data.mesin) === index
+                                        )
+                                        .map((data: any, i1: number) => (
+                                            <div
+                                                key={i1}
+                                                className={`flex w-[6%] justify-center items-center ${i1 % 2 === 1 ? 'bg-white' : 'bg-[#eaf4ff]'}`}>
+                                                <p className='text-center text-[#0065de] text-[11px] font-semibold'>
+                                                    {data.mesin}
+                                                </p>
+                                            </div>
+                                        ))}
                                 </div>
-                                <div className='flex w-full bg-white  border-b-8 border-[#D8EAFF] flex-col '>
 
+                                <div className='flex w-full bg-white border-b-8 border-[#D8EAFF] flex-col border-x-2 '>
+                                    {/* Rows for Hours and Data */}
+                                    {map?.data
+                                        ?.filter((data: any, index: number, self: any[]) =>
+                                            self.findIndex(item => item.jam === data.jam) === index
+                                        )
+                                        .map((hourData: any, rowIndex: number) => (
+                                            <div key={rowIndex} className='flex border-b-8 border-[#D8EAFF]'>
+                                                {/* Hour Column */}
+                                                <div
+                                                    className={`flex w-[6%] py-[1%] justify-center items-center`}>
+                                                    <p className='text-center text-[#0065de] text-[11px] font-semibold'>
+                                                        {hourData.jam}
+                                                    </p>
+                                                </div>
+
+                                                {/* Data Columns */}
+                                                {map?.data
+                                                    ?.filter((data: any, index: number, self: any[]) =>
+                                                        self.findIndex(item => item.mesin === data.mesin) === index
+                                                    )
+                                                    .map((machineData: any, colIndex: number) => {
+                                                        // Find matching data for this hour and machine
+                                                        const matchingData = map.data.find(
+                                                            (d: any) =>
+                                                                d.jam === hourData.jam && d.mesin === machineData.mesin
+                                                        );
+
+                                                        return (
+                                                            <div
+                                                                key={colIndex}
+                                                                className={`flex w-[6%] justify-center items-center ${colIndex % 2 === 1 ? 'bg-white' : 'bg-[#eaf4ff]'}`}>
+                                                                <p className='text-center text-[#0065de] text-[11px] font-semibold'>
+                                                                    {matchingData ? matchingData.no_jo : ''}
+                                                                </p>
+                                                            </div>
+                                                        );
+                                                    })}
+                                            </div>
+                                        ))}
                                 </div>
                             </div>
 

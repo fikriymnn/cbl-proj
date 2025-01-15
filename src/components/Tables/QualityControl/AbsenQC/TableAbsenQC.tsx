@@ -74,7 +74,7 @@ function TableAbsensiQC() {
             setIsLoading(true)
             const res = await axios.get(url, {
                 params: {
-
+                    is_active: true,
                     startDate: dateFrom1,
                     endDate: dateTo1,
                     idDepartment: idDep

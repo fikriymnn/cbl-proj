@@ -33,6 +33,28 @@ function MasterKaryawanIsi() {
             console.log(error);
         }
     }
+
+    async function deleteKaryawan(id: any) {
+        if (window.confirm('Apakah Anda yakin ingin Menghapus Karyawan ini?')) {
+            const url = `${import.meta.env.VITE_API_LINK
+                }/hr/karyawan/${id}`;
+            try {
+
+                const res = await axios.delete(
+                    url,
+                    {
+
+                        withCredentials: true,
+                    },
+                );
+                getKaryawan()
+
+            } catch (error: any) {
+
+                console.log(error);
+            }
+        }
+    }
     const [searchQuery, setSearchQuery] = useState('');
     const filteredAbsen = karyawan?.data?.filter((data: any) =>
         data.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -167,6 +189,11 @@ function MasterKaryawanIsi() {
                                                         EDIT
                                                     </button>
                                                 </Link>
+                                                <button
+                                                    onClick={() => deleteKaryawan(data.userid)}
+                                                    className='bg-red-600 px-2 py-1 text-xs  items-center justify-center text-white font-semibold rounded-md  flex'>
+                                                    DELETE
+                                                </button>
                                             </div>
 
                                         </div>

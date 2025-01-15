@@ -47,6 +47,7 @@ function BuatSPLKeHR() {
 
             const res = await axios.get(url, {
                 params: {
+                    is_active: true,
                     id_department: id
                 },
                 withCredentials: true,
