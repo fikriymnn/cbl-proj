@@ -166,6 +166,11 @@ function CheckSheetBarangRS() {
     }
   }
   async function simpanBarangRusak(id: number, startTime: any, catatan: any, barangBagus: any) {
+    if (barangBagus == null) {
+      // Check if start time is available
+      alert('Barang Baik Aktual Belum Diisi');
+      return; // Exit function if no start time
+    }
     if (catatan == null) {
       // Check if start time is available
       alert('Catatan Belum Diisi Lengkap');
