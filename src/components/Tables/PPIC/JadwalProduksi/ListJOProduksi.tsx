@@ -7,6 +7,7 @@ import Loading from '../../../Loading';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
 import Arrow from '../../../../images/icon/icon-arrow-down.svg';
+import DragDropPopup from './DragAndDropPopUp';
 
 function ListJOProduksi() {
 
@@ -15,7 +16,7 @@ function ListJOProduksi() {
     const [hasilKalkulasi, setHasilKalkulasi] = useState<any>();
     const [startDate, setStartDate] = useState<any>();
     const [endDate, setEndDate] = useState<any>();
-    const [map, setMap] = useState<any>();
+    const [mapData, setMapData] = useState<any>([]);
 
     const today = new Date();
 
@@ -63,26 +64,36 @@ function ListJOProduksi() {
     }
 
 
-
-    async function getJadwalView(tglAwal: any, tglAkhir: any) {
+    // Fetch data from the API
+    const getJadwalView = async (tglAwal: string, tglAkhir: string) => {
         const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksiView`;
         try {
-            setIsLoading(true)
-            const res = await axios.get(url, {
+            setIsLoading(true);
+            const response = await axios.get(url, {
                 params: {
                     start_date: tglAwal,
                     end_date: tglAkhir,
                 },
                 withCredentials: true,
             });
-            setMap(res.data)
-            setIsLoading(false)
-            console.log('JadwalView', res.data);
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
+            setMapData(response.data);
+            setIsLoading(false);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setIsLoading(false);
         }
-    }
+    };
+
+    const handleSave = (updatedData: any[]) => {
+        console.log('Updated Data:', updatedData);
+        setMapData(updatedData); // Save updated data to state
+        // Optionally, you can make an API call to save this data to the server
+    };
+
+    // Handle closing the popup
+    const handleClose = () => {
+        console.log('Popup Closed');
+    };
 
     const [activeComponent, setActiveComponent] = useState('component1');
 
@@ -122,6 +133,9 @@ function ListJOProduksi() {
     const [showDetail, setShowDetail] = useState<boolean[]>(
         new Array(hasilKalkulasi != null && hasilKalkulasi.length).fill(false),
     );
+
+    const hours = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00:00`);
+
     return (
         <main className="overflow-x-scroll ' ">
             {isLoading && <Loading />}
@@ -447,7 +461,21 @@ function ListJOProduksi() {
                                 className='flex w-[3%] hover:cursor-pointer bg-blue-600 rounded-l-lg max-h-[20%] flex-col text-xl font-extrabold text-white items-center justify-center'>
                                 {'>'}
                             </div>
+
                             <div className='flex w-[97%] flex-col'>
+                                <div>
+                                    <h1 className="text-center text-2xl my-4">Drag and Drop Job Order</h1>
+
+                                    {isLoading ? (
+                                        <p className="text-center text-lg">Loading data...</p>
+                                    ) : (
+                                        <DragDropPopup
+                                            mapData={mapData}
+                                            onSave={handleSave}
+                                            onClose={handleClose}
+                                        />
+                                    )}
+                                </div>
                                 <div className='flex flex-col gap-3 py-3'>
                                     <div className="flex flex-col gap-2  w-[30%]">
                                         <p className="text-sm text-primary font-semibold">
@@ -482,7 +510,7 @@ function ListJOProduksi() {
                                     <p className='text-center text-[#0065de] text-[11px] w-[6%] font-semibold py-[1%]'>
                                         TIME
                                     </p>
-                                    {map?.data
+                                    {mapData?.data
                                         ?.filter((data: any, index: number, self: any[]) =>
                                             self.findIndex(item => item.mesin === data.mesin) === index
                                         )
@@ -497,46 +525,40 @@ function ListJOProduksi() {
                                         ))}
                                 </div>
 
-                                <div className='flex w-full bg-white border-b-8 border-[#D8EAFF] flex-col border-x-2 '>
+                                <div className='flex w-full bg-white border-b-8 border-[#D8EAFF] flex-col'>
                                     {/* Rows for Hours and Data */}
-                                    {map?.data
-                                        ?.filter((data: any, index: number, self: any[]) =>
-                                            self.findIndex(item => item.jam === data.jam) === index
-                                        )
-                                        .map((hourData: any, rowIndex: number) => (
-                                            <div key={rowIndex} className='flex border-b-8 border-[#D8EAFF]'>
-                                                {/* Hour Column */}
-                                                <div
-                                                    className={`flex w-[6%] py-[1%] justify-center items-center`}>
-                                                    <p className='text-center text-[#0065de] text-[11px] font-semibold'>
-                                                        {hourData.jam}
-                                                    </p>
-                                                </div>
-
-                                                {/* Data Columns */}
-                                                {map?.data
-                                                    ?.filter((data: any, index: number, self: any[]) =>
-                                                        self.findIndex(item => item.mesin === data.mesin) === index
-                                                    )
-                                                    .map((machineData: any, colIndex: number) => {
-                                                        // Find matching data for this hour and machine
-                                                        const matchingData = map.data.find(
-                                                            (d: any) =>
-                                                                d.jam === hourData.jam && d.mesin === machineData.mesin
-                                                        );
-
-                                                        return (
-                                                            <div
-                                                                key={colIndex}
-                                                                className={`flex w-[6%] justify-center items-center ${colIndex % 2 === 1 ? 'bg-white' : 'bg-[#eaf4ff]'}`}>
-                                                                <p className='text-center text-[#0065de] text-[11px] font-semibold'>
-                                                                    {matchingData ? matchingData.no_jo : ''}
-                                                                </p>
-                                                            </div>
-                                                        );
-                                                    })}
+                                    {hours.map((hour, rowIndex) => (
+                                        <div key={rowIndex} className='flex border-b-8 border-[#D8EAFF]'>
+                                            {/* Hour Column */}
+                                            <div className={`flex w-[6%] py-[1%] justify-center items-center`}>
+                                                <p className='text-center text-[#0065de] text-[11px] font-semibold'>
+                                                    {hour}
+                                                </p>
                                             </div>
-                                        ))}
+
+                                            {/* Data Columns */}
+                                            {mapData?.data
+                                                ?.filter((data: any, index: number, self: any[]) =>
+                                                    self.findIndex(item => item.mesin === data.mesin) === index
+                                                )
+                                                .map((machineData: any, colIndex: number) => {
+                                                    // Find matching data for this hour and machine
+                                                    const matchingData = mapData.data.find(
+                                                        (d: any) => d.jam === hour && d.mesin === machineData.mesin
+                                                    );
+
+                                                    return (
+                                                        <div
+                                                            key={colIndex}
+                                                            className={`flex w-[6%] justify-center items-center ${colIndex % 2 === 1 ? 'bg-white' : 'bg-[#eaf4ff]'}`}>
+                                                            <p className='text-center text-[#0065de] text-[11px] font-semibold'>
+                                                                {matchingData ? matchingData.no_jo : ''}
+                                                            </p>
+                                                        </div>
+                                                    );
+                                                })}
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 

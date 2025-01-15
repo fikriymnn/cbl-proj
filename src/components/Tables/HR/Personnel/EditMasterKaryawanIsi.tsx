@@ -4,6 +4,7 @@ import Loading from '../../../Loading';
 import Select from 'react-select';
 import { useParams } from 'react-router-dom';
 import convertTimeStampToDate from '../../../../utils/convertDate';
+import formatInteger from '../../../../utils/formaterInteger';
 
 function EditMasterKaryawanIsi() {
     const [isLoading, setIsLoading] = useState(false);
@@ -155,6 +156,7 @@ function EditMasterKaryawanIsi() {
 
     const [bagianMesin, setBagianMesin] = useState([
         {
+            id: null,
             id_bagian_mesin: null,
             nama_bagian_mesin: ""
         },
@@ -166,6 +168,7 @@ function EditMasterKaryawanIsi() {
         setBagianMesin([
             ...bagianMesin,
             {
+                id: null,
                 id_bagian_mesin: null,
                 nama_bagian_mesin: ""
             },
@@ -232,9 +235,9 @@ function EditMasterKaryawanIsi() {
     const [gaji, setGaji] = useState<any>(0);
     const [tipeKaryawan, seTipeKaryawan] = useState<any>();
 
-    async function tambahKaryawan() {
+    async function tambahKaryawan(iid: any) {
         const url = `${import.meta.env.VITE_API_LINK
-            }/hr/karyawan/${id}`;
+            }/hr/karyawan/${iid}`;
         try {
             setIsLoading(true)
             const res = await axios.put(
@@ -247,7 +250,7 @@ function EditMasterKaryawanIsi() {
                     jenis_kelamin: jenisKelamin,
                     id_divisi: idDivisi,
                     id_department: idDepartment,
-                    bagian_mesin: bagianMesin,
+                    // bagian_mesin: bagianMesin,
                     id_grade: grade,
                     tgl_masuk: tglMasuk,
                     tgl_keluar: tglKeluar,
@@ -306,6 +309,7 @@ function EditMasterKaryawanIsi() {
         const { value } = selected;
 
         updatedBagianMesin[index] = {
+            id: null,
             id_bagian_mesin: null,
             nama_bagian_mesin: value
         };
@@ -812,18 +816,31 @@ function EditMasterKaryawanIsi() {
 
                             <div className='flex flex-col gap-1 w-full'>
                                 <label className=' text-sm font-semibold'>
-                                    Gaji :: {karyawan?.biodata_karyawan[0]?.gaji}
+                                    Gaji :
                                 </label>
                                 <input
+                                    defaultValue={karyawan?.biodata_karyawan[0]?.gaji}
                                     onChange={(e) => setGaji(e.target.value)}
                                     type='text' className='border-stroke border-2 rounded-md w-full' />
                             </div>
                         </div>
 
                         <div className='flex flex-col  '>
+                            <label className=' text-sm font-semibold'>
+                                Bagian :
+                            </label>
+                            {karyawan?.biodata_karyawan[0]?.bagian_mesin_karyawan?.map((data4: any, i: any) => (
+                                <>
+                                    <label
+                                        key={i}
+                                        className=' text-sm font-semibold'>
+                                        - {data4.nama_bagian_mesin}
+                                    </label>
+                                </>
+                            ))}
                             <div className='flex gap-3'>
                                 <div className='flex flex-col gap-1 w-[50%]'>
-                                    <div className='z-50'>
+                                    {/* <div className='z-50'>
                                         {bagianMesin?.map((item, index) => (
                                             <div key={index} style={{ marginBottom: "10px" }}>
                                                 <Select
@@ -843,13 +860,14 @@ function EditMasterKaryawanIsi() {
                                         ))}
 
                                         <button onClick={handleAddPoint}>+ Tambah Bagian</button>
-                                    </div>
+                                    </div> */}
                                 </div>
                                 <div className='flex flex-col gap-1 w-[50%]'>
                                     <label className=' text-sm font-semibold'>
-                                        Level : : {karyawan?.biodata_karyawan[0]?.level}
+                                        Level
                                     </label>
                                     <input
+                                        defaultValue={karyawan?.biodata_karyawan[0]?.level}
                                         onChange={(e) => setlevel(e.target.value)}
                                         type='text' className='border-stroke border-2 rounded-md w-[50%]' />
                                 </div>
@@ -925,6 +943,7 @@ function EditMasterKaryawanIsi() {
                                         Sub-Level
                                     </label>
                                     <input
+                                        defaultValue={karyawan?.biodata_karyawan[0]?.sub_level}
                                         onChange={(e) => setsubLevel(e.target.value)}
                                         type='text' className='border-stroke border-2 rounded-md w-[50%]' />
                                 </div>
@@ -1165,7 +1184,7 @@ function EditMasterKaryawanIsi() {
                 <div className='flex w-full justify-end items-end px-8 py-5'>
                     <button
                         onClick={() => {
-                            tambahKaryawan()
+                            tambahKaryawan(karyawan?.userid)
                             console.log(tglKeluar)
                         }}
                         className='bg-blue-500 text-white text-md px-4 py-1 rounded-md font-semibold'>
