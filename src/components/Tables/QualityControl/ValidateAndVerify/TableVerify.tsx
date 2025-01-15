@@ -238,7 +238,7 @@ const TableVerifikasi = () => {
               </div>
               <div className="flex w-full text-[14px] justify-start ">
                 <p className="text-neutral-500 text-sm font-light ">
-                  {data.proses_mtcs[lengthProses].user_eksekutor.nama}
+                  {data.proses_mtcs[lengthProses]?.user_eksekutor?.nama}
                 </p>
               </div>
               <div className="flex flex-col items-center w-full text-[14px] justify-end col-span-2">

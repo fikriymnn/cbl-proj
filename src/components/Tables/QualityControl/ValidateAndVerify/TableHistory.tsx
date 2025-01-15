@@ -77,6 +77,19 @@ const TableHistory = () => {
       console.log(error.response);
     }
   }
+  function calculateResponTime2(startDate: any, endDate: any) {
+    const createdAtDate = new Date(startDate);
+    const waktuResponDate = new Date(endDate);
+    const millisecondsDiff = waktuResponDate.getTime() - createdAtDate.getTime();
+
+    const minutesDiff = Math.floor(millisecondsDiff / 1000 / 60); // Total minutes difference
+    return minutesDiff;
+  }
+  function formatMinutesToHoursMinutes(totalMinutes: number) {
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours ? hours + ' hours ' : ''}${minutes ? minutes + ' minutes' : ''}`.trim();
+  }
   return (
     <div className="flex flex-col gap-2">
       <div className="flex  gap-1 items-center bg-white ">
@@ -251,9 +264,38 @@ const TableHistory = () => {
         const tglTicket = convertTimeStampToDate(data.createdAt);
         const tglSelesaiTicket = convertTimeStampToDate(data.waktu_selesai_mtc);
         const waktuRespon = calculateTime(
-          data.waktu_selesai_mtc,
-          data.waktu_selesai,
+          data.tiket?.waktu_selesai_mtc,
+          data.tiket?.waktu_selesai,
         );
+        const waktuBreakdownMinutes = calculateResponTime2(
+          data.tiket?.createdAt,
+          data.tiket?.waktu_selesai,
+        );
+        const waktuBreakdownMTCMinutes = calculateResponTime2(
+          data.tiket?.waktu_respon_qc,
+          data.tiket?.waktu_selesai_mtc,
+        );
+        const waktuValidasiQCMinutes = calculateResponTime2(
+          data.tiket?.createdAt,
+          data.tiket?.waktu_respon_qc,
+        );
+        const waktuValidasiQC = formatMinutesToHoursMinutes(waktuValidasiQCMinutes);
+        const waktuBreakdown = formatMinutesToHoursMinutes(waktuBreakdownMinutes);
+        const waktuBreakdownMTC = formatMinutesToHoursMinutes(waktuBreakdownMTCMinutes);
+
+        const qcRespon = calculateResponTime2(
+          data.tiket?.createdAt,
+          data.tiket?.waktu_respon_qc,
+        );
+        const qcVerif = calculateResponTime2(
+          data.tiket?.waktu_selesai_mtc,
+          data.tiket?.waktu_selesai,
+        );
+        const waktuVerifikasiQCMinutes = calculateResponTime2(
+          data.tiket?.waktu_selesai_mtc,
+          data.tiket?.waktu_selesai,
+        );
+        const waktuVerifikasiQC = formatMinutesToHoursMinutes(waktuVerifikasiQCMinutes);
         return (
           <div
             key={index}
@@ -339,7 +381,12 @@ const TableHistory = () => {
                   validator={data.user_qc?.nama}
                   nojo={data.tiket.no_jo}
                   customer={data.tiket.nama_customer}
-                  masalah={data.tiket.nama_analisis_mtc}>
+                  masalah={data.tiket.nama_analisis_mtc}
+                  waktuValidasiQC={waktuValidasiQC}
+                  WaktuBreakdown={waktuBreakdown}
+                  waktuBreakdownMTC={waktuBreakdownMTC}
+                  waktuVerifikasiQC={waktuVerifikasiQC}
+                >
                   <></>
                 </ModalDetailValidasi>
               </>

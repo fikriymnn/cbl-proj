@@ -8,7 +8,12 @@ const ModalDetailValidasi = ({
   nama_mesin,
   operator,
   note, status,
-  unit, bagian, nojo, customer, masalah, validator
+  unit, bagian, nojo, customer, masalah, validator,
+  waktuValidasiQC,
+  WaktuBreakdown,
+  waktuBreakdownMTC,
+  waktuVerifikasiQC,
+
 
 }: {
   children: any;
@@ -24,7 +29,11 @@ const ModalDetailValidasi = ({
   nojo: any,
   customer: any,
   masalah: any,
-  validator: any
+  validator: any,
+  waktuValidasiQC: any,
+  WaktuBreakdown: any,
+  waktuBreakdownMTC: any,
+  waktuVerifikasiQC: any,
 }) => {
   if (isOpen == null) return null;
 
@@ -113,6 +122,19 @@ const ModalDetailValidasi = ({
         <div>
           <p className="md:text-sm text-xs font-semibold">Masalah Dari Kendala</p>
           <p className="md:text-base text-xs">{masalah}</p>
+        </div>
+        <div>
+          <p className="md:text-sm text-xs font-semibold">Breakdown Time</p>
+          <p className="md:text-base text-xs">{WaktuBreakdown}</p>
+        </div>
+
+        <div>
+          <p className="md:text-sm text-xs font-semibold">Waktu Breakdown MTC</p>
+          <p className="md:text-base text-xs">{waktuBreakdownMTC}</p>
+        </div>
+        <div>
+          <p className="md:text-sm text-xs font-semibold">Waktu Verifikasi QC</p>
+          <p className="md:text-base text-xs">{waktuVerifikasiQC}</p>
         </div>
         {/* <div>
           <p className="md:text-sm text-xs font-semibold">Kode Part</p>

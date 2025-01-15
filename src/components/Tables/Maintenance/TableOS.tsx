@@ -512,9 +512,14 @@ function TableOS() {
                     data.waktu_respon_qc,
                     data.waktu_selesai_mtc,
                   );
-
+                  const waktuValidasiQCMinutes = calculateResponTime2(
+                    data.createdAt,
+                    data.waktu_respon_qc,
+                  );
+                  const waktuValidasiQC = formatMinutesToHoursMinutes(waktuValidasiQCMinutes);
                   const waktuBreakdown = formatMinutesToHoursMinutes(waktuBreakdownMinutes);
                   const waktuBreakdownMTC = formatMinutesToHoursMinutes(waktuBreakdownMTCMinutes);
+
                   const qcRespon = calculateResponTime2(
                     data.createdAt,
                     data.waktu_respon_qc,
@@ -523,7 +528,11 @@ function TableOS() {
                     data.waktu_selesai_mtc,
                     data.waktu_selesai,
                   );
-
+                  const waktuVerifikasiQCMinutes = calculateResponTime2(
+                    data.waktu_selesai_mtc,
+                    data.waktu_selesai,
+                  );
+                  const waktuVerifikasiQC = formatMinutesToHoursMinutes(waktuVerifikasiQCMinutes);
                   // Combine qcRespon and qcVerif and format them
                   const waktuBreakdownQCMinutes: any = qcRespon + qcVerif;
                   const waktuBreakdownQC = formatMinutesToHoursMinutes(waktuBreakdownQCMinutes);
@@ -966,6 +975,12 @@ function TableOS() {
                                       {waktuBreakdown}
                                     </p>
                                   </div>
+                                  < div className='px-5 pt-1'>
+                                    <p className="text-xs font-bold">Waktu Validasi QC</p>
+                                    <p className="text-xs font-medium">
+                                      {waktuValidasiQC}
+                                    </p>
+                                  </div>
                                   <div className='px-5 pt-1'>
                                     <p className="text-xs font-bold">Waktu Breakdown MTC</p>
                                     <p className="text-xs font-medium">
@@ -973,9 +988,9 @@ function TableOS() {
                                     </p>
                                   </div>
                                   <div className='px-5 pt-1'>
-                                    <p className="text-xs font-bold">Waktu Breakdown QC</p>
+                                    <p className="text-xs font-bold">Waktu Verifikasi QC</p>
                                     <p className="text-xs font-medium">
-                                      {waktuBreakdownQC}
+                                      {waktuVerifikasiQC}
                                     </p>
                                   </div>
                                 </>

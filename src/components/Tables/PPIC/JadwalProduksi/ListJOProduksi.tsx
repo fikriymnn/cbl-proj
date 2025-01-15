@@ -6,8 +6,7 @@ import axios from 'axios';
 import Loading from '../../../Loading';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
-import Arrow from '../../../../images/icon/icon-arrow-down.svg';
-import DragDropPopup from './DragAndDropPopUp';
+import PopUpTable from './DragAndDropPopUp';
 
 function ListJOProduksi() {
 
@@ -19,7 +18,7 @@ function ListJOProduksi() {
     const [mapData, setMapData] = useState<any>([]);
 
     const today = new Date();
-
+    const [todayDate, setTodayDate] = useState<string>('');
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
     const day = String(today.getDate()).padStart(2, '0');
@@ -28,6 +27,8 @@ function ListJOProduksi() {
     useEffect(() => {
         getJadwalView(formattedDate, formattedDate)
         getmasterKategori()
+        const today = new Date();
+        setTodayDate(today.toISOString().split('T')[0]);
     }, []);
 
 
@@ -65,7 +66,7 @@ function ListJOProduksi() {
 
 
     // Fetch data from the API
-    const getJadwalView = async (tglAwal: string, tglAkhir: string) => {
+    const getJadwalView = async (tglAwal: any, tglAkhir: any) => {
         const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksiView`;
         try {
             setIsLoading(true);
@@ -76,7 +77,8 @@ function ListJOProduksi() {
                 },
                 withCredentials: true,
             });
-            setMapData(response.data);
+            console.log('jadwal view', response.data.data)
+            setMapData(response.data.data);
             setIsLoading(false);
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -84,16 +86,6 @@ function ListJOProduksi() {
         }
     };
 
-    const handleSave = (updatedData: any[]) => {
-        console.log('Updated Data:', updatedData);
-        setMapData(updatedData); // Save updated data to state
-        // Optionally, you can make an API call to save this data to the server
-    };
-
-    // Handle closing the popup
-    const handleClose = () => {
-        console.log('Popup Closed');
-    };
 
     const [activeComponent, setActiveComponent] = useState('component1');
 
@@ -136,6 +128,29 @@ function ListJOProduksi() {
 
     const hours = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00:00`);
 
+    const [showModal1, setShowModal1] = useState<any>([]);
+    const openModal1 = (i: any) => {
+        const onchangeVal: any = [...showModal1];
+
+        onchangeVal[i] = true;
+
+        setShowModal1(onchangeVal);
+    };
+    const closeModal1 = (i: any) => {
+        const onchangeVal: any = [...showModal1];
+        onchangeVal[i] = false;
+
+        setShowModal1(onchangeVal);
+    };
+    const handleNextPrev = (direction: string) => {
+        const currentDate = startDate ? new Date(startDate) : new Date(todayDate); // Use selected date or today
+        currentDate.setDate(currentDate.getDate() + (direction === 'next' ? 1 : -1)); // Increment or decrement by 1 day
+
+        const newDate = currentDate.toISOString().split('T')[0]; // Format the new date to YYYY-MM-DD
+        setStartDate(newDate);
+        setEndDate(newDate);
+        getJadwalView(newDate, newDate)
+    };
     return (
         <main className="overflow-x-scroll ' ">
             {isLoading && <Loading />}
@@ -312,14 +327,7 @@ function ListJOProduksi() {
                                                                         : {convertTimeStampToDate(data.tgl_kirim)}
                                                                     </label>
                                                                 </div>
-                                                                <div className='grid grid-cols-2 gap-2'>
-                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                        Tanggal Cetak
-                                                                    </label>
-                                                                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
-                                                                        : {convertTimeStampToDate(data.tgl_cetak)}
-                                                                    </label>
-                                                                </div>
+
                                                             </div>
                                                             <div className='flex flex-col '>
                                                                 <div className='grid grid-cols-2 gap-2'>
@@ -463,20 +471,8 @@ function ListJOProduksi() {
                             </div>
 
                             <div className='flex w-[97%] flex-col'>
-                                <div>
-                                    <h1 className="text-center text-2xl my-4">Drag and Drop Job Order</h1>
 
-                                    {isLoading ? (
-                                        <p className="text-center text-lg">Loading data...</p>
-                                    ) : (
-                                        <DragDropPopup
-                                            mapData={mapData}
-                                            onSave={handleSave}
-                                            onClose={handleClose}
-                                        />
-                                    )}
-                                </div>
-                                <div className='flex flex-col gap-3 py-3'>
+                                <div className='flex flex-col gap-3 w-full py-3'>
                                     <div className="flex flex-col gap-2  w-[30%]">
                                         <p className="text-sm text-primary font-semibold">
                                             Tanggal:
@@ -503,6 +499,25 @@ function ListJOProduksi() {
                                         </button>
 
                                     </div>
+                                    <div className="flex w-full justify-between">
+                                        <button
+                                            onClick={() => handleNextPrev('prev')}
+                                            className="bg-primary text-white rounded-md my-auto py-1 px-2"
+                                        >
+                                            Prev
+                                        </button>
+
+                                        <button
+                                            onClick={() => handleNextPrev('next')}
+                                            className="bg-primary text-white rounded-md my-auto py-1 px-2"
+                                        >
+                                            Next
+                                        </button>
+
+                                    </div>
+                                    <label className='text-xl text-blue-400 font-semibold w-full flex justify-center'>
+                                        {convertTimeStampToDate(startDate)}
+                                    </label>
                                 </div>
 
                                 <div className='flex bg-white border-b-8 border-[#D8EAFF]'>
@@ -510,8 +525,8 @@ function ListJOProduksi() {
                                     <p className='text-center text-[#0065de] text-[11px] w-[6%] font-semibold py-[1%]'>
                                         TIME
                                     </p>
-                                    {mapData?.data
-                                        ?.filter((data: any, index: number, self: any[]) =>
+                                    {mapData?.
+                                        filter((data: any, index: number, self: any[]) =>
                                             self.findIndex(item => item.mesin === data.mesin) === index
                                         )
                                         .map((data: any, i1: number) => (
@@ -537,13 +552,12 @@ function ListJOProduksi() {
                                             </div>
 
                                             {/* Data Columns */}
-                                            {mapData?.data
-                                                ?.filter((data: any, index: number, self: any[]) =>
-                                                    self.findIndex(item => item.mesin === data.mesin) === index
-                                                )
+                                            {mapData?.filter((data: any, index: number, self: any[]) =>
+                                                self.findIndex(item => item.mesin === data.mesin) === index
+                                            )
                                                 .map((machineData: any, colIndex: number) => {
                                                     // Find matching data for this hour and machine
-                                                    const matchingData = mapData.data.find(
+                                                    const matchingData = mapData.find(
                                                         (d: any) => d.jam === hour && d.mesin === machineData.mesin
                                                     );
 
@@ -551,9 +565,23 @@ function ListJOProduksi() {
                                                         <div
                                                             key={colIndex}
                                                             className={`flex w-[6%] justify-center items-center ${colIndex % 2 === 1 ? 'bg-white' : 'bg-[#eaf4ff]'}`}>
-                                                            <p className='text-center text-[#0065de] text-[11px] font-semibold'>
+                                                            <button
+                                                                onClick={() => openModal1(matchingData?.id)}
+                                                                className='text-center text-[#0065de] text-[11px] font-semibold'>
                                                                 {matchingData ? matchingData.no_jo : ''}
-                                                            </p>
+                                                            </button>
+
+                                                            {showModal1[matchingData?.id] === true && ( // Use matchingData.id to open the correct modal
+                                                                <ModalKosongan
+                                                                    isOpen={showModal1[matchingData?.id]}
+                                                                    onClose={() => closeModal1(matchingData?.id)}
+                                                                    judul={'Drag And Drop Edit'}
+                                                                >
+                                                                    <PopUpTable dataMap={mapData.find((data: any) => data.id === matchingData?.id)}
+                                                                        onClose={() => closeModal1(matchingData?.id)}
+                                                                        onFinish={() => getJadwalView(startDate, endDate)} />
+                                                                </ModalKosongan>
+                                                            )}
                                                         </div>
                                                     );
                                                 })}
