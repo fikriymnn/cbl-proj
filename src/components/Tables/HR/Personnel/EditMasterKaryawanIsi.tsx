@@ -16,8 +16,17 @@ function EditMasterKaryawanIsi() {
         getGradeMaster();
         getkaryawanStatus(); getjabatanMaster()
         getMasterMesin();
-        getKaryawan()
+        getKaryawan();
+
     }, []);
+    const convertTimeStampToDate2 = (timestamp: any) => {
+        if (!timestamp) return "";
+        const date = new Date(timestamp);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+    };
     const [karyawan, setKaryawan] = useState<any>(null);
 
     async function getKaryawan() {
@@ -32,6 +41,22 @@ function EditMasterKaryawanIsi() {
                 },
             );
             console.log('karyawan', res.data.data)
+            setjenisKelamin(res.data.data.biodata_karyawan[0]?.jenis_kelamin)
+            seTipeKaryawan(res.data.data.biodata_karyawan[0]?.tipe_karyawan)
+            seidDivisi(res.data.data.biodata_karyawan[0]?.divisi?.id)
+            setDepartment(res.data.data.biodata_karyawan[0]?.department?.id)
+            setgrade(res.data.data.biodata_karyawan[0]?.grade?.id)
+            sejabatan(res.data.data.biodata_karyawan[0]?.jabatan?.id)
+            setIdStatusKaryawan(res.data.data.biodata_karyawan[0]?.status?.id)
+            setglMasuk(res.data.data.biodata_karyawan[0]?.tgl_masuk == null ? null : convertTimeStampToDate2(res.data.data.biodata_karyawan[0]?.tgl_masuk))
+            setglKeluar(res.data.data.biodata_karyawan[0]?.tgl_keluar == null ? null : convertTimeStampToDate(res.data.data.biodata_karyawan[0]?.tgl_keluar))
+            sestatusPajak(res.data.data.biodata_karyawan[0]?.status_pajak)
+            settipePenggajian(res.data.data.biodata_karyawan[0]?.tipe_penggajian);
+            setBagianMesin(
+                res.data.data.biodata_karyawan[0]?.bagian_mesin_karyawan?.map((item: any) => ({
+                    nama_bagian_mesin: item.nama_bagian_mesin,
+                }))
+            );
             setKaryawan(res.data.data)
             setIsLoading(false)
 
@@ -40,6 +65,26 @@ function EditMasterKaryawanIsi() {
             console.log(error);
         }
     }
+    const handleChangePointBagianMesin = (selected: any, index: any) => {
+        const updatedBagianMesin = [...bagianMesin];
+        updatedBagianMesin[index].nama_bagian_mesin = selected.value;
+        setBagianMesin(updatedBagianMesin);
+    };
+    const handleAddPointBagian = () => {
+        setBagianMesin([
+            ...bagianMesin,
+            {
+                id: null,
+                id_bagian_mesin: null,
+                nama_bagian_mesin: ""
+            }, // Add new entry with empty nama_bagian_mesin
+        ]);
+    };
+
+    const handleDeletePointBagian = (index: any) => {
+        const updatedBagianMesin = bagianMesin.filter((_, i) => i !== index);
+        setBagianMesin(updatedBagianMesin);
+    };
     const [department, setDepartment] = useState<any>();
 
     async function getDepartment() {
@@ -143,6 +188,7 @@ function EditMasterKaryawanIsi() {
                     withCredentials: true,
                 },
             );
+
             setIsLoading(false)
             setDivisi(res.data)
 
@@ -341,21 +387,32 @@ function EditMasterKaryawanIsi() {
                                     defaultValue={karyawan?.biodata_karyawan[0]?.nik}
                                     onChange={(e) => setnik(e.target.value)}
                                     type='text' className='border-stroke border-2 rounded-md w-[40%]' />
-                                <div className='flex flex-col gap-1'>
+                                <div>
                                     <label className=' text-sm font-semibold'>
                                         Jenis Kelamin :
-                                        {karyawan?.biodata_karyawan[0]?.jenis_kelamin}
-                                    </label>
-                                    <div className='flex gap-1'>
-                                        <input
-                                            onChange={(e) => setjenisKelamin(e.target.value)}
-                                            type='radio' name='kelamin' id='kelamin1' value={'Laki-Laki'} />Laki-Laki
-                                    </div>
 
-                                    <div className='flex gap-1'>
+                                    </label>
+                                    <div className="flex gap-1">
                                         <input
                                             onChange={(e) => setjenisKelamin(e.target.value)}
-                                            type='radio' name='kelamin' id='kelamin2' value={'Perempuan'} />Perempuan
+                                            type="radio"
+                                            name="kelamin"
+                                            id="kelamin1"
+                                            value="Laki-Laki"
+                                            checked={jenisKelamin === "Laki-Laki"} // Controlled by state
+                                        />
+                                        Laki-Laki
+                                    </div>
+                                    <div className="flex gap-1">
+                                        <input
+                                            onChange={(e) => setjenisKelamin(e.target.value)}
+                                            type="radio"
+                                            name="kelamin"
+                                            id="kelamin2"
+                                            value="Perempuan"
+                                            checked={jenisKelamin === "Perempuan"} // Controlled by state
+                                        />
+                                        Perempuan
                                     </div>
                                 </div>
                             </div>
@@ -371,20 +428,24 @@ function EditMasterKaryawanIsi() {
                             <div className='flex flex-col gap-1 pt-2'>
                                 <label className=' text-sm font-semibold'>
                                     Tipe Karyawan :
-                                    {karyawan?.biodata_karyawan[0]?.tipe_karyawan}
+
                                 </label>
                                 <div className='flex w-full gap-7'>
 
                                     <div className='flex gap-1'>
                                         <input
                                             onChange={(e) => seTipeKaryawan(e.target.value)}
-                                            type='radio' name='tipeKryawan' id='tipeKryawan1' value={'produksi'} />Produksi
+                                            type='radio' name='tipeKryawan' id='tipeKryawan1' value={'produksi'}
+                                            checked={tipeKaryawan === "produksi"}
+                                        />Produksi
                                     </div>
 
                                     <div className='flex gap-1'>
                                         <input
                                             onChange={(e) => seTipeKaryawan(e.target.value)}
-                                            type='radio' name='tipeKryawan' id='tipeKryawan2' value={'staff'} />Staff
+                                            type='radio' name='tipeKryawan' id='tipeKryawan2' value={'staff'}
+                                            checked={tipeKaryawan === "staff"}
+                                        />Staff
                                     </div>
 
                                 </div>
@@ -394,7 +455,7 @@ function EditMasterKaryawanIsi() {
                             <div className='flex flex-col gap-1'>
                                 <label className=' text-sm font-semibold'>
                                     Divisi :
-                                    {karyawan?.biodata_karyawan[0]?.divisi?.nama_divisi}
+
                                 </label>
                                 <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
                                     <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
@@ -410,6 +471,7 @@ function EditMasterKaryawanIsi() {
                                     </span>
 
                                     <select
+                                        value={idDivisi}
                                         name='nama_divisi'
                                         onChange={(e) => seidDivisi(e.target.value)}
                                         className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
@@ -458,7 +520,7 @@ function EditMasterKaryawanIsi() {
                                 <div className='flex flex-col gap-1 w-[60%]'>
                                     <label className=' text-sm font-semibold'>
                                         Department :
-                                        {karyawan?.biodata_karyawan[0]?.department?.nama_department}
+
                                     </label>
                                     <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
                                         <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
@@ -474,6 +536,7 @@ function EditMasterKaryawanIsi() {
                                         </span>
 
                                         <select
+                                            value={idDepartment}
                                             name='nama_department'
                                             onChange={(e) => setidDepartment(e.target.value)}
                                             className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
@@ -534,9 +597,10 @@ function EditMasterKaryawanIsi() {
 
                                         <label className=' text-sm font-semibold'>
                                             Grade :
-                                            {karyawan?.biodata_karyawan[0]?.grade?.kategori}
+
                                         </label>
                                         <select
+                                            value={grade}
                                             name='grade'
                                             onChange={(e) => setgrade(e.target.value)}
                                             className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
@@ -588,9 +652,10 @@ function EditMasterKaryawanIsi() {
                             <div className='flex flex-col gap-1 w-[50%]'>
                                 <label className=' text-sm font-semibold'>
                                     Tanggal Masuk :
-                                    {convertTimeStampToDate(karyawan?.biodata_karyawan[0]?.tgl_masuk)}
+
                                 </label>
                                 <input
+                                    value={tglMasuk}
                                     onChange={handleTglMasukChange}
                                     type="date"
                                     className='border-2 border-stroke rounded-md'
@@ -598,7 +663,7 @@ function EditMasterKaryawanIsi() {
                             </div>
                             <div className='flex flex-col gap-1 w-[50%]'>
                                 <label className=' text-sm font-semibold'>
-                                    Status Karyawan :  {karyawan?.biodata_karyawan[0]?.status_karyawan}
+                                    Status Karyawan :
                                 </label>
                                 <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
                                     <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
@@ -614,6 +679,7 @@ function EditMasterKaryawanIsi() {
                                     </span>
 
                                     <select
+                                        value={idStatusKaryawan}
                                         name='nama_department'
                                         onChange={
                                             handleStatusChange
@@ -672,7 +738,7 @@ function EditMasterKaryawanIsi() {
 
                             <div className='flex flex-col gap-1 w-[50%]'>
                                 <label className=' text-sm font-semibold'>
-                                    Status Pajak : {karyawan?.biodata_karyawan[0]?.status_pajak}
+                                    Status Pajak :
                                 </label>
                                 <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
                                     <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
@@ -688,6 +754,7 @@ function EditMasterKaryawanIsi() {
                                     </span>
 
                                     <select
+                                        value={statusPajak}
                                         onChange={(e) => sestatusPajak(e.target.value)}
                                         className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
@@ -760,7 +827,7 @@ function EditMasterKaryawanIsi() {
                         <div className='grid grid-cols-2 gap-1 w-full'>
                             <div className='flex flex-col gap-1'>
                                 <label className=' text-sm font-semibold'>
-                                    Tipe Penggajian : {karyawan?.biodata_karyawan[0]?.tipe_penggajian}
+                                    Tipe Penggajian :
                                 </label>
                                 <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
                                     <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
@@ -776,6 +843,7 @@ function EditMasterKaryawanIsi() {
                                     </span>
 
                                     <select
+                                        value={tipePenggajian}
                                         onChange={(e) => settipePenggajian(e.target.value)}
                                         className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
@@ -819,25 +887,49 @@ function EditMasterKaryawanIsi() {
                                     Gaji :
                                 </label>
                                 <input
-                                    defaultValue={karyawan?.biodata_karyawan[0]?.gaji}
+                                    defaultValue={(karyawan?.biodata_karyawan[0]?.gaji == null || karyawan?.biodata_karyawan[0]?.gaji == 0) ? 0 : formatInteger(karyawan?.biodata_karyawan[0]?.gaji)}
                                     onChange={(e) => setGaji(e.target.value)}
                                     type='text' className='border-stroke border-2 rounded-md w-full' />
                             </div>
                         </div>
 
-                        <div className='flex flex-col  '>
+                        <div className='flex flex-col'>
                             <label className=' text-sm font-semibold'>
                                 Bagian :
                             </label>
-                            {karyawan?.biodata_karyawan[0]?.bagian_mesin_karyawan?.map((data4: any, i: any) => (
-                                <>
-                                    <label
-                                        key={i}
-                                        className=' text-sm font-semibold'>
-                                        - {data4.nama_bagian_mesin}
-                                    </label>
-                                </>
-                            ))}
+                            <div className='flex flex-col gap-1 w-[50%]'>
+                                <div className='z-50'>
+                                    {bagianMesin?.map((item, index) => (
+                                        <div key={index} style={{ marginBottom: "10px" }} className="flex gap-1">
+                                            <Select
+                                                options={options} // Options for the dropdown
+                                                onChange={(selected) => handleChangePointBagianMesin(selected, index)}
+                                                value={
+                                                    item.nama_bagian_mesin
+                                                        ? options.find((option) => option.value === item.nama_bagian_mesin)
+                                                        : null
+                                                }
+                                                placeholder="Select Mesin"
+                                                className={`w-[90%] ${index === 0 ? "font-bold" : "font-normal"}`}
+                                            />
+                                            <button
+                                                type="button"
+                                                className="px-1 text-white bg-red-500 hover:bg-red-600 rounded"
+                                                onClick={() => handleDeletePointBagian(index)}
+                                            >
+                                                X
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <button
+                                        type="button"
+                                        onClick={handleAddPointBagian}
+                                        className="mt-2 px-2 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded"
+                                    >
+                                        + Tambah Bagian
+                                    </button>
+                                </div>
+                            </div>
                             <div className='flex gap-3'>
                                 <div className='flex flex-col gap-1 w-[50%]'>
                                     {/* <div className='z-50'>
@@ -875,7 +967,7 @@ function EditMasterKaryawanIsi() {
                             <div className='flex gap-3'>
                                 <div className='flex flex-col gap-1 w-[50%]'>
                                     <label className=' text-sm font-semibold'>
-                                        Jabatan : {karyawan?.biodata_karyawan[0]?.jabatan?.nama_jabatan}
+                                        Jabatan :
                                     </label>
                                     <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
                                         <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
@@ -889,8 +981,8 @@ function EditMasterKaryawanIsi() {
 
                                             </svg>
                                         </span>
-
                                         <select
+                                            value={jabatan}
                                             onChange={(e) => sejabatan(e.target.value)}
                                             className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}

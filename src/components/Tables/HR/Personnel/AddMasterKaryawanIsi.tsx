@@ -818,8 +818,14 @@ function AddMasterKaryawanIsi() {
                                             </>
                                         ))}
 
-                                        <button onClick={handleAddPoint}>+ Tambah Bagian</button>
 
+                                        <button
+                                            type="button"
+                                            onClick={handleAddPoint}
+                                            className="mt-2 px-2 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded"
+                                        >
+                                            + Tambah Bagian
+                                        </button>
                                     </div>
                                 </div>
                                 <div className='flex flex-col gap-1 w-[50%]'>
