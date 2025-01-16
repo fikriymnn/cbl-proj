@@ -9,7 +9,8 @@ const ModalDetailValidasi = ({
   operator,
   note, status,
   unit, bagian, nojo, customer, masalah, validator,
-  waktuValidasiQC,
+  waktuMasuk,
+  waktuSelesai,
   WaktuBreakdown,
   waktuBreakdownMTC,
   waktuVerifikasiQC,
@@ -30,7 +31,8 @@ const ModalDetailValidasi = ({
   customer: any,
   masalah: any,
   validator: any,
-  waktuValidasiQC: any,
+  waktuMasuk: any,
+  waktuSelesai: any,
   WaktuBreakdown: any,
   waktuBreakdownMTC: any,
   waktuVerifikasiQC: any,
@@ -94,6 +96,14 @@ const ModalDetailValidasi = ({
         <div>
           <p className="md:text-sm text-xs font-semibold">Note Qc</p>
           <p className="md:text-base text-xs">{note}</p>
+        </div>
+        <div>
+          <p className="md:text-sm text-xs font-semibold">Waktu Masuk</p>
+          <p className="md:text-base text-xs">{waktuMasuk}</p>
+        </div>
+        <div>
+          <p className="md:text-sm text-xs font-semibold">Waktu Selesai</p>
+          <p className="md:text-base text-xs">{waktuSelesai}</p>
         </div>
         <div>
           <p className="md:text-sm text-xs font-semibold">Status Qc</p>

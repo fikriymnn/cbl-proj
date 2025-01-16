@@ -223,7 +223,7 @@ const TableHistory = () => {
       <div className="flex px-2 border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
         <p className="w-5 text-[14px] font-semibold mr-3">No</p>
         <div className="flex flex-col w-full">
-          <div className="grid grid-cols-12 gap-5 w-full dark:border-strokedark  ">
+          <div className="grid grid-cols-12 gap-2 w-full dark:border-strokedark  ">
             <div className="flex w-full justify-start col-span-2">
               <p className="text-slate-600  text-[14px] font-semibold  dark:text-white">
                 Kode Tiket
@@ -231,12 +231,12 @@ const TableHistory = () => {
             </div>
             <div className=" text-[14px] justify-start ">
               <p className="text-slate-600 font-semibold  dark:text-white">
-                Waktu Masuk
+                No Jo
               </p>
             </div>
-            <div className=" text-[14px] justify-start ">
+            <div className=" text-[14px] justify-start col-span-2">
               <p className="text-slate-600 font-semibold  dark:text-white">
-                Waktu Selesai
+                Item
               </p>
             </div>
             <div className=" text-[14px] justify-start ">
@@ -262,7 +262,7 @@ const TableHistory = () => {
       </div>
       {ticketProsesHistory?.data.map((data: any, index: number) => {
         const tglTicket = convertTimeStampToDate(data.createdAt);
-        const tglSelesaiTicket = convertTimeStampToDate(data.waktu_selesai_mtc);
+        const tglSelesaiTicket = (data.waktu_selesai_mtc == null ? '-' : convertTimeStampToDate(data.waktu_selesai_mtc));
         const waktuRespon = calculateTime(
           data.tiket?.waktu_selesai_mtc,
           data.tiket?.waktu_selesai,
@@ -306,7 +306,7 @@ const TableHistory = () => {
                 {index + 1}{' '}
               </p>
             </div>
-            <div className="grid grid-cols-12 gap-5 w-full items-center dark:border-strokedark">
+            <div className="grid grid-cols-12 gap-2 w-full items-center dark:border-strokedark">
               <div className="flex w-full justify-start col-span-2 gap-14">
                 <p className="text-neutral-500 text-sm font-light  dark:text-white break-all">
                   {' '}
@@ -314,13 +314,13 @@ const TableHistory = () => {
                 </p>
               </div>
               <div className="flex w-full  justify-start ">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white break-all">
-                  {tglTicket}
+                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                  {data.tiket.no_jo}
                 </p>
               </div>
-              <div className="flex w-full  justify-start ">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white break-all">
-                  {tglSelesaiTicket}
+              <div className="flex w-full  justify-start col-span-2">
+                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                  {data.tiket.nama_produk}
                 </p>
               </div>
               <div className="flex w-full  justify-start  ">
@@ -349,7 +349,7 @@ const TableHistory = () => {
                   {data.skor_mtc}
                 </p>
               </div>
-              <div className="flex w-full  justify-start col-span-2">
+              <div className="flex w-full  justify-start ">
                 <p className="text-neutral-500 text-sm font-light ">
                   {waktuRespon}
                 </p>
@@ -360,7 +360,7 @@ const TableHistory = () => {
                 </p>
               </div> */}
               <div className="flex w-full justify-end">
-                <button onClick={() => handleClickDetail(index)} className="text-xs font-bold bg-blue-700 py-2 px-10 text-white rounded-sm">
+                <button onClick={() => handleClickDetail(index)} className="text-xs font-bold bg-blue-700 py-2 px-3 text-white rounded-sm">
                   Detail
                 </button>
               </div>
@@ -382,7 +382,8 @@ const TableHistory = () => {
                   nojo={data.tiket.no_jo}
                   customer={data.tiket.nama_customer}
                   masalah={data.tiket.nama_analisis_mtc}
-                  waktuValidasiQC={waktuValidasiQC}
+                  waktuMasuk={tglTicket}
+                  waktuSelesai={tglSelesaiTicket}
                   WaktuBreakdown={waktuBreakdown}
                   waktuBreakdownMTC={waktuBreakdownMTC}
                   waktuVerifikasiQC={waktuVerifikasiQC}

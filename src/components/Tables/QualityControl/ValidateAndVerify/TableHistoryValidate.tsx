@@ -227,7 +227,7 @@ const TableHistoryValidate = () => {
       <div className="flex px-2 border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
         <p className="w-5 text-[14px] font-semibold mr-3">No</p>
         <div className="flex flex-col w-full">
-          <div className="grid grid-cols-7 gap-5 w-full dark:border-strokedark  ">
+          <div className="grid grid-cols-9 gap-2 w-full dark:border-strokedark  ">
             <div className="flex w-full justify-start ">
               <p className="text-slate-600  text-[14px] font-semibold  dark:text-white">
                 Kode Tiket
@@ -235,7 +235,12 @@ const TableHistoryValidate = () => {
             </div>
             <div className=" text-[14px] justify-start  ">
               <p className="text-slate-600 font-semibold  dark:text-white">
-                Waktu Masuk
+                No JO
+              </p>
+            </div>
+            <div className=" text-[14px] justify-start  col-span-2">
+              <p className="text-slate-600 font-semibold  dark:text-white">
+                Item
               </p>
             </div>
             <div className=" text-[14px] justify-start  ">
@@ -274,6 +279,7 @@ const TableHistoryValidate = () => {
           data.createdAt,
           data.waktu_respon_qc,
         );
+        const tglSelesaiTicket = (data.waktu_selesai_mtc == null ? '-' : convertTimeStampToDate(data.waktu_selesai_mtc));
         const waktuValidasiQC = formatMinutesToHoursMinutes(waktuValidasiQCMinutes);
         const waktuBreakdown = formatMinutesToHoursMinutes(waktuBreakdownMinutes);
         const waktuBreakdownMTC = formatMinutesToHoursMinutes(waktuBreakdownMTCMinutes);
@@ -301,7 +307,7 @@ const TableHistoryValidate = () => {
                 {index + 1}{' '}
               </p>
             </div>
-            <div className="grid grid-cols-7 gap-5 w-full items-center dark:border-strokedark">
+            <div className="grid grid-cols-9 gap-2 w-full items-center dark:border-strokedark">
               <div className="flex w-full justify-start  gap-14">
                 <p className="text-neutral-500 break-all text-sm font-light  dark:text-white">
                   {' '}
@@ -310,7 +316,12 @@ const TableHistoryValidate = () => {
               </div>
               <div className="flex w-full  justify-start ">
                 <p className="text-neutral-500 text-sm font-light  dark:text-white">
-                  {tglTicket}
+                  {data.no_jo}
+                </p>
+              </div>
+              <div className="flex w-full  justify-start col-span-2">
+                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                  {data.nama_produk}
                 </p>
               </div>
               <div className="flex w-full  justify-start ">
@@ -346,7 +357,7 @@ const TableHistoryValidate = () => {
                 </p>
               </div> */}
               <div className="flex w-full justify-end">
-                <button onClick={() => handleClickDetail(index)} className="text-xs font-bold bg-blue-700 py-2 px-10 text-white rounded-sm">
+                <button onClick={() => handleClickDetail(index)} className="text-xs font-bold bg-blue-700 py-2 px-3 text-white rounded-sm">
                   Detail
                 </button>
               </div>
@@ -368,7 +379,8 @@ const TableHistoryValidate = () => {
                   nojo={data.no_jo}
                   customer={data.nama_customer}
                   masalah={data.nama_analisis_mtc}
-                  waktuValidasiQC={waktuValidasiQC}
+                  waktuMasuk={tglTicket}
+                  waktuSelesai={tglSelesaiTicket}
                   WaktuBreakdown={waktuBreakdown}
                   waktuBreakdownMTC={waktuBreakdownMTC}
                   waktuVerifikasiQC={waktuVerifikasiQC}

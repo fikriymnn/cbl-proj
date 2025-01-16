@@ -146,6 +146,9 @@ function AddMasterKaryawanIsi() {
             },
         ]);
     };
+    const handleDeletePoint = (index: any) => {
+        setBagianMesin(bagianMesin.filter((_, i) => i !== index));
+    };
     async function getBagian() {
         const url = `${import.meta.env.VITE_API_LINK
             }/master/hr/bagian`;
@@ -788,24 +791,35 @@ function AddMasterKaryawanIsi() {
                                 <div className='flex flex-col gap-1 w-[50%]'>
                                     <div className='z-50'>
                                         {bagianMesin?.map((item, index) => (
-                                            <div key={index} style={{ marginBottom: "10px" }}>
-                                                <Select
-                                                    options={options}
-                                                    onChange={(selected) => handleChangePointDepartment(selected, index)}
-                                                    value={
-                                                        item.nama_bagian_mesin
-                                                            ? options.find(
-                                                                (option) =>
-                                                                    option.value === item.nama_bagian_mesin
-                                                            )
-                                                            : null
-                                                    }
-                                                    placeholder="Select Mesin"
-                                                />
-                                            </div>
+                                            <>
+                                                <div key={index} style={{ marginBottom: "10px" }} className='flex gap-1'>
+                                                    <Select
+                                                        options={options}
+                                                        onChange={(selected) => handleChangePointDepartment(selected, index)}
+                                                        value={
+                                                            item.nama_bagian_mesin
+                                                                ? options.find(
+                                                                    (option) =>
+                                                                        option.value === item.nama_bagian_mesin
+                                                                )
+                                                                : null
+                                                        }
+                                                        placeholder="Select Mesin"
+                                                        className={`w-[90%] ${index == 0 ? 'font-bold' : 'font-normal'}`}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className=" px-1 text-white bg-red-500 hover:bg-red-600 rounded"
+                                                        onClick={() => handleDeletePoint(index)}
+                                                    >
+                                                        X
+                                                    </button>
+                                                </div>
+                                            </>
                                         ))}
 
                                         <button onClick={handleAddPoint}>+ Tambah Bagian</button>
+
                                     </div>
                                 </div>
                                 <div className='flex flex-col gap-1 w-[50%]'>
