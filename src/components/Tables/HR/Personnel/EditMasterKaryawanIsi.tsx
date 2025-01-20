@@ -5,6 +5,7 @@ import Select from 'react-select';
 import { useParams } from 'react-router-dom';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
+import ModalAddPeriode from '../../../Modals/Qc/ModalAddPeriode';
 
 function EditMasterKaryawanIsi() {
     const [isLoading, setIsLoading] = useState(false);
@@ -75,30 +76,54 @@ function EditMasterKaryawanIsi() {
             console.log(error);
         }
     }
-    // const handleChangePointBagianMesin = (selected: any, index: any) => {
-    //     const updatedBagianMesin = [...bagianMesin];
-    //     updatedBagianMesin[index] = {
-    //         ...updatedBagianMesin[index],
-    //         nama_bagian_mesin: selected.value, // Update only nama_bagian_mesin
-    //     };
-    //     setBagianMesin(updatedBagianMesin);
-    //     console.log(updatedBagianMesin)
-    // };
-    // const handleAddPointBagian = () => {
-    //     setBagianMesin([
-    //         ...bagianMesin,
-    //         {
-    //             id: null,
-    //             id_bagian_mesin: null,
-    //             nama_bagian_mesin: ""
-    //         }, // Add new entry with empty nama_bagian_mesin
-    //     ]);
-    // };
 
-    // const handleDeletePointBagian = (index: any) => {
-    //     const updatedBagianMesin = bagianMesin.filter((_, i) => i !== index);
-    //     setBagianMesin(updatedBagianMesin);
-    // };
+    const [namaBagianMesin, setNamaBagianMesin] = useState<any>();
+    async function tambahBagian() {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/hr/karyawanBagianMesin`;
+        try {
+            setIsLoading(true)
+            const res = await axios.post(
+                url,
+                {
+                    id_biodata_karyawan: karyawan?.biodata_karyawan[0]?.id,
+                    id_karyawan: id,
+                    id_bagian_mesin: null,
+                    nama_bagian_mesin: namaBagianMesin
+                },
+                {
+                    withCredentials: true,
+                },
+            );
+            setIsLoading(false)
+            closeModal1()
+            getKaryawan()
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
+
+    async function deleteBagian(id: number) {
+        if (window.confirm('Apakah Anda yakin ingin Menghapus Bagian Karyawan ini?')) {
+            const url = `${import.meta.env.VITE_API_LINK}/hr/karyawanBagianMesin/${id}`;
+            try {
+                setIsLoading(true)
+                const res = await axios.delete(url,
+                    {
+
+                        withCredentials: true,
+                    });
+                setIsLoading(false)
+                alert('Data Berhasil Dihapus')
+                getKaryawan()
+                console.log(res.data);
+            } catch (error: any) {
+                setIsLoading(false)
+                console.log(error);
+            }
+        }
+    }
     const [department, setDepartment] = useState<any>();
 
     async function getDepartment() {
@@ -371,6 +396,19 @@ function EditMasterKaryawanIsi() {
         setBagianMesin(updatedBagianMesin);
     };
 
+    const [showModal1, setShowModal1] = useState(false);
+    const openModal1 = () => setShowModal1(true);
+    const closeModal1 = () => setShowModal1(false);
+
+    const handleChangePointDepatment = (selected: any) => {
+        const { value } = selected;
+        const filteredData = mesinMaster.find(
+            (item: any) => item.mesin == value,
+            // item.id.includes(parseInt(value));
+        );
+        setNamaBagianMesin(filteredData?.mesin);
+
+    };
     return (
         <main className="overflow-x-scroll">
             {isLoading && <Loading />}
@@ -907,7 +945,7 @@ function EditMasterKaryawanIsi() {
                             </label>
                             <div className='flex flex-col gap-1 w-[50%]'>
                                 <div className='z-50'>
-                                    {bagianMesin?.map((item, index) => (
+                                    {bagianMesin?.map((item: any, index: any) => (
                                         <div key={index} style={{ marginBottom: "10px" }} className="flex gap-1">
                                             <Select
                                                 options={options} // Options for the dropdown
@@ -920,22 +958,59 @@ function EditMasterKaryawanIsi() {
                                                 placeholder="Select Mesin"
                                                 className={`w-[90%] ${index === 0 ? "font-bold" : "font-normal"}`}
                                             />
-                                            {/* <button
+                                            <button
                                                 type="button"
-                                                className="px-1 text-white bg-red-500 hover:bg-red-600 rounded"
-                                                onClick={() => handleDeletePointBagian(index)}
+                                                className=" px-1 text-white bg-red-500 hover:bg-red-600 rounded"
+                                                onClick={() => deleteBagian(item.id)}
                                             >
                                                 X
-                                            </button> */}
+                                            </button>
                                         </div>
                                     ))}
-                                    {/* <button
+                                    <button
                                         type="button"
-                                        onClick={handleAddPointBagian}
+                                        onClick={openModal1}
                                         className="mt-2 px-2 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded"
                                     >
                                         + Tambah Bagian
-                                    </button> */}
+                                    </button>
+                                    {showModal1 && (
+                                        <ModalAddPeriode
+                                            isOpen={showModal1}
+                                            onClose={closeModal1}
+                                            judul={'TAMBAH BAGIAN MESIN'}
+                                        >
+                                            <>
+                                                <div className='flex flex-col gap-1 w-full'>
+                                                    <div className='z-50'>
+
+                                                        <>
+                                                            <div style={{ marginBottom: "10px" }} className='flex gap-1'>
+                                                                <Select
+                                                                    options={options}
+                                                                    onChange={(selected) => handleChangePointDepatment(selected)}
+
+                                                                    placeholder="Select Mesin"
+                                                                    className={`w-[90%]`}
+                                                                />
+
+                                                            </div>
+                                                        </>
+
+
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => tambahBagian()}
+                                                            className="mt-2 px-2 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded"
+                                                        >
+                                                            Tambah Bagian
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </>
+                                        </ModalAddPeriode>
+                                    )}
                                 </div>
                             </div>
                             <div className='flex gap-3'>
