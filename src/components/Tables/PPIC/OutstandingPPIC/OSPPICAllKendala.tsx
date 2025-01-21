@@ -31,7 +31,7 @@ function OSPPICAlllKendala() {
             const res = await axios.get(url, {
                 withCredentials: true,
             });
-            getLKH(res?.data.karyawan.biodata_karyawan[0]?.id_department)
+            getLKH(4)
             setIdDep(res?.data.karyawan.biodata_karyawan[0]?.id_department)
             setIdInspektor(res?.data.id)
             setNamaInspektor(res?.data.nama)

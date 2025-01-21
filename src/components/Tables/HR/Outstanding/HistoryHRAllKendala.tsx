@@ -28,7 +28,7 @@ function HistoryHRAllKendala() {
             const res = await axios.get(url, {
                 withCredentials: true,
             });
-            getLKH(res?.data.karyawan.biodata_karyawan[0]?.id_department)
+            getLKH(21)
             console.log('getme', res.data)
         } catch (error: any) {
             console.log(error.data.msg);
