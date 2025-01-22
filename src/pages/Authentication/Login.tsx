@@ -29,7 +29,7 @@ const Login: React.FC = () => {
           withCredentials: true,
         },
       );
-      console.log(response.data)
+      console.log(response.data);
       setIsLoading(false);
       // router.push("/");
       // push("/");
@@ -41,11 +41,9 @@ const Login: React.FC = () => {
         navigate('/qc/validatenverify');
       } else if (response.data.bagian == 'ppic') {
         navigate('/ppic/jadwalProduksi');
-      }
-      else {
+      } else {
         navigate('/dashboard');
       }
-
     } catch (error: any) {
       alert(error.response.data.msg);
       setIsLoading(false);
