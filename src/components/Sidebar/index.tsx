@@ -2696,6 +2696,35 @@ const Sidebar = ({
             }}
 
           </SidebarLinkGroup >
+          <>
+            <SidebarLinkGroup
+              activeCondition={pathname === '/masterHakAkses' || pathname.includes('masterHakAkses')}
+            >
+              {(handleClick, open) => {
+                return (
+                  <React.Fragment>
+                    <NavLink
+                      to="masterHakAkses"
+                      className={({ isActive }) =>
+                        `group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium !text-white duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4` +
+                        (isActive &&
+                          '!text-[#0065DE] bg-white text-primary py-3 px-1 text-[16px]')
+                      }
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate('/masterHakAkses')
+                        sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                      }}
+                    >
+                      <img src={QC} alt="Logo" />
+                      Master Hak Akses
+
+                    </NavLink>
+                  </React.Fragment>
+                )
+              }}
+            </SidebarLinkGroup>
+          </>
         </>
       </>
     );

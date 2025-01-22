@@ -21,6 +21,7 @@ function CheckSheetHasilRabut() {
 
   const [showModal2, setShowModal2] = useState(false);
   const [add, setAdd] = useState<any>();
+
   const [showDetail, setShowDetail] = useState<boolean[]>(
     new Array(add != null && add.length).fill(false),
   );

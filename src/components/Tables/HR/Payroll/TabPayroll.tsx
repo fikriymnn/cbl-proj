@@ -12,6 +12,7 @@ import HistoryPayroll from './HistoryPayroll';
 import HistoryPayrollBulanan from './HistoryPayrollBulanan';
 import PayrollMinggu from './PayrollMinggu';
 import HistoryMinggu from './HistoryMinggu';
+import PengajuanPayrollMinggu from './PengajuanPayrollMinggu';
 
 
 
@@ -140,14 +141,15 @@ export default function TabPayroll() {
                                 },
                             }}
                             textColor="inherit"
-                            variant="standard"
+                            variant="scrollable"
                             aria-label="full width tabs example"
                             className="bg-white text-[#00499F] font-semibold mb-2 flex w-full"
                         >
-                            <Tab label="Payroll Mingguan + Uang Makan" {...a11yProps(0)} />
-                            <Tab label="Payroll Bulanan" {...a11yProps(1)} />
-                            <Tab label="History Payroll Mingguan + Uang Makan" {...a11yProps(2)} />
-                            <Tab label="History Payroll Bulanan" {...a11yProps(3)} />
+                            <Tab label="Payroll Mingguan + Uang Hadir" {...a11yProps(0)} />
+                            <Tab label="Pengajuan Payroll Mingguan" {...a11yProps(1)} />
+                            {/* <Tab label="Payroll Bulanan" {...a11yProps(2)} /> */}
+                            <Tab label="History Payroll Mingguan + Uang Hadir" {...a11yProps(2)} />
+                            {/* <Tab label="History Payroll Bulanan" {...a11yProps(4)} /> */}
 
 
                         </Tabs>
@@ -157,14 +159,17 @@ export default function TabPayroll() {
                     <PayrollMinggu />
                 </TabPanel>
                 <TabPanel value={value} index={1} dir={theme.direction}>
-                    <PayrollBulanan />
+                    <PengajuanPayrollMinggu />
                 </TabPanel>
+                {/* <TabPanel value={value} index={2} dir={theme.direction}>
+                    <PayrollBulanan />
+                </TabPanel> */}
                 <TabPanel value={value} index={2} dir={theme.direction}>
                     <HistoryMinggu />
                 </TabPanel>
-                <TabPanel value={value} index={3} dir={theme.direction}>
+                {/* <TabPanel value={value} index={4} dir={theme.direction}>
                     <HistoryPayrollBulanan />
-                </TabPanel>
+                </TabPanel> */}
 
             </Box>
         </>
