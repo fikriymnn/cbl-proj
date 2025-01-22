@@ -29,8 +29,8 @@ function OSHRAlllKendala() {
       const res = await axios.get(url, {
         withCredentials: true,
       });
-      //   getLKH(res?.data.karyawan.biodata_karyawan[0]?.id_department);
-      //   setIdDep(res?.data.karyawan.biodata_karyawan[0]?.id_department);
+      getLKH(21);
+      setIdDep(res?.data.karyawan.biodata_karyawan[0]?.id_department);
       setIdInspektor(res?.data.id);
       setNamaInspektor(res?.data.nama);
       console.log('getme', res.data);

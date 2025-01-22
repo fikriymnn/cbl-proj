@@ -184,6 +184,7 @@ import HistoryResponJabatan from './pages/HR/Pengajuan/HistoryResponJabatan';
 import AbsenMTC from './pages/Maintenance/AbsensiMTC/AbsenMTC';
 import MasterUserPageQC from './pages/MasterData/QC/MasterUserPage';
 import MasterUserHR from './pages/HR/MasterDataHR/MasterUserHR';
+import MasterHakAkses from './pages/MasterData/MasterHakAkses';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1882,6 +1883,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterJadwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterHakAkses"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterHakAkses />
               </ProtectedRoute>
             </>
           }

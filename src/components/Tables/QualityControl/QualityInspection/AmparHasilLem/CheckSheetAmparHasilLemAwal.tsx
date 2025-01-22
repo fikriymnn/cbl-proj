@@ -15,12 +15,13 @@ function CheckSheetHasilRabut() {
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [RabutMesin, setRabutMesin] = useState<any>();
-  const [defectMaster, setDefectMaster] = useState<any>();
+
   const [Catatan, setCatatan] = useState<any>();
   const [idDefect, setIdDefect] = useState<any>();
 
   const [showModal2, setShowModal2] = useState(false);
   const [add, setAdd] = useState<any>();
+
   const [showDetail, setShowDetail] = useState<boolean[]>(
     new Array(add != null && add.length).fill(false),
   );
@@ -28,6 +29,7 @@ function CheckSheetHasilRabut() {
   useEffect(() => {
     getRabutMesin();
     getMasterDefect();
+    fetchMasterWaste();
   }, []);
 
   async function getRabutMesin() {
@@ -45,25 +47,106 @@ function CheckSheetHasilRabut() {
       console.log(error.data.msg);
     }
   }
-  const [options, setOptions] = useState([]);
+  const [options, setOptions] = useState<any>([]); // Options for the first dropdown
+  const [secondOptions, setSecondOptions] = useState<any>([]); // Filtered options for the second dropdown
+  const [defectMaster, setDefectMaster] = useState<any>([]); // Full data for the first dropdown
+  const [selectedOption, setSelectedOption] = useState<any>(null); // Selected option from the first dropdown
+  const [selectedSecondOption, setSelectedSecondOption] = useState<any>(null);
+  const [masterWaste, setMasterWaste] = useState<any>([]);
+  const [wasteSelectLkh, setwasteSelectLkh] = useState<any>([]);
+  const [wasteSelectCode, setwasteSelectCode] = useState<any>([]);
+  const [tujuanDepartment, settujuanDepartment] = useState<any>([]);
 
   async function getMasterDefect() {
     const url = `${import.meta.env.VITE_API_LINK_P1
       }/api/list-kendala?criteria=true`;
+
     try {
       const res = await axios.get(url);
-      setDefectMaster(res.data);
+      setDefectMaster(res.data); // Save raw data for filtering
       setOptions(
         res.data.map((item: any) => ({
-          value: item.i_id,
-          label: item.e_kode_produksi + ' - ' + item.nama_kendala,
+          value: item.e_kode_produksi,
+          label: `${item.e_kode_produksi} - ${item.nama_kendala}`,
         }))
       );
-      console.log(res.data);
+      console.log('master defect', res.data);
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
+  async function fetchMasterWaste() {
+    const url2 = `${import.meta.env.VITE_API_LINK_P1}/api/master-waste`;
+
+    try {
+      const res = await axios.get(url2);
+      setMasterWaste(res.data.waste); // Save raw data for filtering
+      console.log("Master Waste Data:", res.data.waste);
+    } catch (error: any) {
+      console.error("Error fetching master waste:", error);
+    }
+  }
+
+  const handleChangePointSelect1 = (selected: any) => {
+    const { value } = selected;
+
+    const filteredWaste = masterWaste.filter((item: any) => item.kode_waste === value);
+    const filteredDefect = defectMaster.filter((item: any) => item.e_kode_produksi === value);
+
+    const firstFilteredItemDefect = filteredDefect[0];
+    console.log(firstFilteredItemDefect.i_id)
+    setIdDefect(firstFilteredItemDefect);
+    console.log(firstFilteredItemDefect.target_department)
+    settujuanDepartment(firstFilteredItemDefect.target_department)
+    if (filteredWaste.length > 0) {
+      const firstFilteredItem = filteredWaste[0]; // Take the first item from filtered data
+
+      // Map waste items to dropdown options, ensuring waste exists
+      const allSecondOptions = firstFilteredItem.waste?.map((wasteItem: any) => ({
+        value: wasteItem.i_kendala,
+        label: `${wasteItem.kode_kendala} - ${wasteItem.kendala_desc}`,
+      })) || [];
+
+      console.log("All Second Options:", allSecondOptions);
+
+      // Handle the first waste item safely
+      if (firstFilteredItem.waste && firstFilteredItem.waste.length > 0) {
+        const firstWasteItem = firstFilteredItem.waste[0]; // Take the first waste item
+
+        const wasteLkh = firstWasteItem?.kendala_desc || ""; // Default to empty string if undefined
+        const wasteCode = firstWasteItem?.kode_kendala || ""; // Default to empty string if undefined
+
+        console.log("First Waste LKH:", wasteLkh);
+        console.log("First Waste Code:", wasteCode);
+
+        setwasteSelectLkh(wasteLkh);
+        setwasteSelectCode(wasteCode);
+      } else {
+        console.warn("No waste items found in the firstFilteredItem.");
+        setwasteSelectLkh("");
+        setwasteSelectCode("");
+      }
+
+      // Update states
+      setSelectedOption(selected);
+      setSecondOptions(allSecondOptions); // Set initial options to the first waste item
+      setSelectedSecondOption(null); // Reset the second dropdown selection
+    } else {
+      console.warn("No matching waste found for kode_waste:", value);
+      setSelectedOption(selected);
+      // Reset states when no data matches
+      setSecondOptions([]);
+      setSelectedSecondOption(null);
+      setwasteSelectLkh("");
+      setwasteSelectCode("");
+    }
+  };
+
+  const handleChangePointSelect2 = (selected: any) => {
+    console.log("Selected Second Option:", selected);
+    setSelectedSecondOption(selected);
+
+  };
 
   async function startTaskRabut(id: number) {
     const url = `${import.meta.env.VITE_API_LINK
@@ -92,6 +175,7 @@ function CheckSheetHasilRabut() {
     catatan: any,
     qty_pallet: any,
     data_defect: any,
+
   ) {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiAmparLemPoint/stop/${id}`;
@@ -187,6 +271,8 @@ function CheckSheetHasilRabut() {
     idDefect: number,
     idPoint: number,
     index: number,
+    kodeLkh: any,
+    masalahLkh: any
   ) {
     const url = `${import.meta.env.VITE_API_LINK
       }/qc/cs/inspeksiAmparLemPoint/createDefect`;
@@ -199,6 +285,9 @@ function CheckSheetHasilRabut() {
           id_inspeksi_ampar_lem: id,
           id_inspeksi_ampar_lem_point: idPoint,
           MasterDefect: idDefect,
+          target_department: tujuanDepartment,
+          kode_lkh: kodeLkh,
+          masalah_lkh: masalahLkh
         },
 
         {
@@ -524,6 +613,14 @@ function CheckSheetHasilRabut() {
                               <label className=" text-[#6c6b6b] text-sm font-semibold line-clamp-4">
                                 {data2.kode} - {data2.masalah}
                               </label>
+                              {(data2.kode_lkh == '' || data2.masalah_lkh == '') ? <>-</> :
+                                <>
+                                  <label className=" text-[#6c6b6b] text-sm font-semibold">
+                                    Dengan : {data2.kode_lkh} - {data2.masalah_lkh}
+                                  </label>
+
+                                </>
+                              }
                               {data.status == 'done' ? (
                                 <input
 
@@ -578,17 +675,18 @@ function CheckSheetHasilRabut() {
                               Master Defect
                             </label>
                             <Select
-                              placeholder='Cari...'
                               options={options}
-                              onChange={(selectedId) => {
-
-                                handleChangePointDepatment(selectedId, index)
-                              }}
-                              className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
-                  }`}
-                            >
-
-                            </Select>
+                              value={selectedOption}
+                              onChange={handleChangePointSelect1}
+                              placeholder="Select a Defect"
+                            />
+                            <Select
+                              options={secondOptions}
+                              value={selectedSecondOption}
+                              onChange={handleChangePointSelect2}
+                              placeholder="Select an Option"
+                              isDisabled={!selectedOption} // Disable until the first dropdown has a selection
+                            />
                             <button
                               type='button'
                               disabled={isLoading}
@@ -598,11 +696,15 @@ function CheckSheetHasilRabut() {
                                   idDefect,
                                   data.id,
                                   index,
+                                  wasteSelectCode,
+                                  wasteSelectLkh
                                 ),
                                   console.log(RabutMesin?.data?.id,
                                     idDefect,
                                     data.id,
-                                    index,);
+                                    index,
+                                    wasteSelectCode,
+                                    wasteSelectLkh);
                               }}
                               className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
                             >

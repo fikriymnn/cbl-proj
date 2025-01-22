@@ -6,15 +6,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import ListPayroll from './ListPayroll';
-import PayrollBulanan from './PayrollBulanan';
-import HistoryPayroll from './HistoryPayroll';
-import HistoryPayrollBulanan from './HistoryPayrollBulanan';
-import PayrollMinggu from './PayrollMinggu';
-import HistoryMinggu from './HistoryMinggu';
-import PengajuanPayrollMinggu from './PengajuanPayrollMinggu';
-
-
+import TableAbsensi from './TableAbsensi';
+import TableAbsenMentah from './AbsenMentah';
 
 
 interface TabPanelProps {
@@ -52,7 +45,7 @@ function a11yProps(index: number) {
     };
 }
 
-export default function TabPayroll() {
+export default function TabAbsenHR() {
     const theme = createTheme({
         palette: {
             primary: {
@@ -141,36 +134,29 @@ export default function TabPayroll() {
                                 },
                             }}
                             textColor="inherit"
-                            variant="scrollable"
+                            variant="standard"
                             aria-label="full width tabs example"
                             className="bg-white text-[#00499F] font-semibold mb-2 flex w-full"
                         >
-                            <Tab label="Payroll Mingguan + Uang Hadir" {...a11yProps(0)} />
-                            <Tab label="Pengajuan Payroll Mingguan" {...a11yProps(1)} />
-                            {/* <Tab label="Payroll Bulanan" {...a11yProps(2)} /> */}
-                            <Tab label="History Payroll Mingguan + Uang Hadir" {...a11yProps(2)} />
-                            {/* <Tab label="History Payroll Bulanan" {...a11yProps(4)} /> */}
+                            <Tab label="Absensi" {...a11yProps(0)} />
+                            <Tab label="Absen Data" {...a11yProps(1)} />
 
 
+                            <div className="flex w-full justify-end pr-4">
+                                <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
+                                    {tanggal}
+                                </p>
+                            </div>
                         </Tabs>
                     </ThemeProvider>
                 </AppBar>
                 <TabPanel value={value} index={0} dir={theme.direction}>
-                    <PayrollMinggu />
+                    <TableAbsensi />
                 </TabPanel>
-                <TabPanel value={value} index={1} dir={theme.direction}>
-                    <PengajuanPayrollMinggu />
-                </TabPanel>
-                {/* <TabPanel value={value} index={2} dir={theme.direction}>
-                    <PayrollBulanan />
-                </TabPanel> */}
-                <TabPanel value={value} index={2} dir={theme.direction}>
-                    <HistoryMinggu />
-                </TabPanel>
-                {/* <TabPanel value={value} index={4} dir={theme.direction}>
-                    <HistoryPayrollBulanan />
-                </TabPanel> */}
 
+                <TabPanel value={value} index={1} dir={theme.direction}>
+                    <TableAbsenMentah />
+                </TabPanel>
             </Box>
         </>
     );

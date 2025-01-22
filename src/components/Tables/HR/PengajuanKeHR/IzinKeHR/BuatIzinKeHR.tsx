@@ -10,7 +10,7 @@ function BuatIzinKeHR() {
 
     useEffect(() => {
         getMe()
-
+        getMasterUser()
     }, []);
 
     const [me, setMe] = useState<any>();
@@ -25,14 +25,14 @@ function BuatIzinKeHR() {
 
             setMe(res.data);
             setIdPengaju(res.data.id_karyawan)
-            getMasterUser(res?.data.karyawan.biodata_karyawan[0]?.id_department);
+
             console.log('getme', res.data)
         } catch (error: any) {
             console.log(error.data.msg);
         }
     }
 
-    async function getMasterUser(id: any) {
+    async function getMasterUser() {
         const url = `${import.meta.env.VITE_API_LINK
             }/hr/karyawan`;
         try {
@@ -40,7 +40,7 @@ function BuatIzinKeHR() {
             const res = await axios.get(url, {
                 params: {
                     is_active: true,
-                    id_department: id
+
                 },
                 withCredentials: true,
             });
@@ -49,11 +49,10 @@ function BuatIzinKeHR() {
             console.log('user list', res.data.data)
             setOptions(
                 res.data.data.map((item: any) => ({
-                    value: item.id_karyawan,
-                    label: item.nik + ' - ' + item.karyawan?.name + ' - ' + item.bagian?.nama_bagian + ' - ' + item.jabatan
+                    value: item.userid,
+                    label: item.biodata_karyawan[0]?.nik + ' - ' + item.name + ' - ' + item.biodata_karyawan[0]?.bagian?.nama_bagian + ' - ' + item.biodata_karyawan[0]?.nama_jabatan
                 }))
             );
-
 
         } catch (error: any) {
 

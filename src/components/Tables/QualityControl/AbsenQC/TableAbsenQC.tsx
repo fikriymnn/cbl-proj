@@ -25,7 +25,6 @@ function TableAbsensiQC() {
         const today = new Date();
         getDepartment()
         getMe()
-        getabsen(formattedDate, formattedDate, idDepart);
     }, []);
 
     async function getMe() {
@@ -37,12 +36,13 @@ function TableAbsensiQC() {
             });
 
             setIsLoading(false)
+            getabsen(formattedDate, formattedDate, res.data.karyawan.biodata_karyawan[0].id_department)
             setIdDepart(res.data.karyawan.biodata_karyawan[0].id_department)
             getabsen(today, today, res.data.karyawan.biodata_karyawan[0].id_department);
-            console.log('me', res.data.karyawan.biodata_karyawan[0].id_department)
+            console.log('me', res.data)
         } catch (error: any) {
             setIsLoading(false)
-            console.log(error.data.msg);
+            console.log(error);
         }
     }
 

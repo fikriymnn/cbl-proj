@@ -8,7 +8,7 @@ import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import formatInteger from '../../../../utils/formaterInteger';
 import ModalXL from '../../PPIC/JadwalProduksi/ModalXL';
 
-function HistoryMinggu() {
+function PengajuanPayrollMinggu() {
     const [isLoading, setIsLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [payWeek, setPayWeek] = useState<any>();
@@ -25,7 +25,6 @@ function HistoryMinggu() {
 
             const res = await axios.get(
                 url,
-
                 {
                     params: {
                         page: page,
@@ -73,7 +72,7 @@ function HistoryMinggu() {
             {isLoading && <Loading />}
             <div className='min-w-[700px] bg-white rounded-xl'>
                 <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
-                    <div className='grid grid-cols-7 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] '>
+                    <div className='grid grid-cols-8 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] '>
                         <label className="text-neutral-500 text-xs font-semibold col-span-2">
                             Yang Menyetujui
                         </label>
@@ -89,17 +88,18 @@ function HistoryMinggu() {
                         <label className="text-neutral-500 text-xs font-semibold ">
                             Total Upah
                         </label>
+                        <label className="text-neutral-500 text-xs font-semibold ">
+                            Status
+                        </label>
                         <div className='flex justify-center '>
 
                         </div>
                     </div>
 
                     {
-                        payWeek?.data?.map((data: any, i: number) => {
+                        payWeek?.data.map((data: any, i: number) => {
                             return (
-                                <div
-                                    key={i}
-                                    className='grid grid-cols-7 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] '>
+                                <div className='grid grid-cols-8 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] '>
                                     <label className="text-neutral-500 text-xs font-semibold col-span-2 ">
                                         {data.payroll_detail[0]?.karyawan_hr?.name}
                                     </label>
@@ -116,11 +116,14 @@ function HistoryMinggu() {
                                     <label className="text-neutral-500 text-xs font-semibold ">
                                         Rp. {formatInteger(data.total)}
                                     </label>
+                                    <label className="text-neutral-500 text-xs font-semibold  ">
+                                        {convertTimeStampToDate(data.status)}
+                                    </label>
                                     <div className='flex justify-center '>
                                         <button
                                             onClick={() => openEdit(i)}
                                             className='px-2 py-1  text-xs bg-blue-400 items-center justify-center text-white font-semibold rounded-md flex w-full '>
-                                            Detail
+                                            Bayar
                                         </button>
                                         {showEdit[i] == true && (
 
@@ -156,9 +159,7 @@ function HistoryMinggu() {
                                                     </div>
                                                     {data.payroll_detail?.map((data2: any, ii: any) => (
                                                         <>
-                                                            <div
-                                                                key={ii}
-                                                                className='grid grid-cols-5 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] '>
+                                                            <div className='grid grid-cols-5 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] '>
                                                                 <div className='flex gap-3'>
                                                                     <label className="text-black text-xs font-bold">
                                                                         {ii + 1}
@@ -308,9 +309,7 @@ function HistoryMinggu() {
                                                                                         </div>
                                                                                         {data2.detail_payroll?.filter((data3: any) => data3.tipe === 'bayaran').map((data3: any, iii: any) => (
                                                                                             <>
-                                                                                                <div
-                                                                                                    key={iii}
-                                                                                                    className='grid grid-cols-5 gap-1 px-1 py-4 border-b-8 border-[#D8EAFF] border-x-2'>
+                                                                                                <div className='grid grid-cols-5 gap-1 px-1 py-4 border-b-8 border-[#D8EAFF] border-x-2'>
                                                                                                     <div className='flex gap-3 col-span-3'>
                                                                                                         <label className="text-black text-xs font-bold">
                                                                                                             {iii + 1}
@@ -355,9 +354,7 @@ function HistoryMinggu() {
                                                                                         </div>
                                                                                         {data2.detail_payroll?.filter((data3: any) => data3.tipe === 'potongan').map((data3: any, iii: any) => (
                                                                                             <>
-                                                                                                <div
-                                                                                                    key={iii}
-                                                                                                    className='grid grid-cols-5 gap-1 px-1 py-4 border-b-8 border-[#D8EAFF] border-x-2'>
+                                                                                                <div className='grid grid-cols-5 gap-1 px-1 py-4 border-b-8 border-[#D8EAFF] border-x-2'>
                                                                                                     <div className='flex gap-3 col-span-3'>
                                                                                                         <label className="text-black text-xs font-bold">
                                                                                                             {iii + 1}
@@ -422,4 +419,4 @@ function HistoryMinggu() {
     )
 }
 
-export default HistoryMinggu
+export default PengajuanPayrollMinggu
