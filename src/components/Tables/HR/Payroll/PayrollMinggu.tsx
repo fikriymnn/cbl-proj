@@ -154,7 +154,7 @@ function PayrollMinggu() {
                             onClick={() => postPayrollMingguan()}
                             className="text-xs w-[20%] flex items-center justify-center font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
                         >
-                            BAYAR
+                            AJUKAN
                         </button>
                     )}
 

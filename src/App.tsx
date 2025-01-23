@@ -185,6 +185,7 @@ import AbsenMTC from './pages/Maintenance/AbsensiMTC/AbsenMTC';
 import MasterUserPageQC from './pages/MasterData/QC/MasterUserPage';
 import MasterUserHR from './pages/HR/MasterDataHR/MasterUserHR';
 import MasterHakAkses from './pages/MasterData/MasterHakAkses';
+import AccPayroll from './pages/HR/Payroll/AccPayroll';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1715,6 +1716,14 @@ function App() {
           element={
             <>
               <PayrollPage />
+            </>
+          }
+        />
+        <Route
+          path="/hr/accpayroll"
+          element={
+            <>
+              <AccPayroll />
             </>
           }
         />

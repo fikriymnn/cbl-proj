@@ -8,7 +8,7 @@ import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import formatInteger from '../../../../utils/formaterInteger';
 import ModalXL from '../../PPIC/JadwalProduksi/ModalXL';
 
-function PengajuanPayrollMinggu() {
+function ApprovePayroll() {
     const [isLoading, setIsLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [payWeek, setPayWeek] = useState<any>();
@@ -27,6 +27,7 @@ function PengajuanPayrollMinggu() {
                 url,
                 {
                     params: {
+
                         page: page,
                         limit: 10,
                     },
@@ -42,7 +43,7 @@ function PengajuanPayrollMinggu() {
     }
     async function putPayroll(id: any, index: any) {
         const url = `${import.meta.env.VITE_API_LINK
-            }/hr/payroll/bayarMingguanPeriode/bayar/${id}`;
+            }/hr/payroll/bayarMingguanPeriode/approve/${id}`;
         try {
             setIsLoading(true)
             const res = await axios.put(
@@ -54,7 +55,7 @@ function PengajuanPayrollMinggu() {
             );
             closeEdit(index)
             setIsLoading(false)
-            alert('Berhasil Bayar')
+            alert('Berhasil Approve')
             getPayroll()
         } catch (error: any) {
             setIsLoading(false)
@@ -93,10 +94,8 @@ function PengajuanPayrollMinggu() {
             {isLoading && <Loading />}
             <div className='min-w-[700px] bg-white rounded-xl'>
                 <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
-                    <div className='grid grid-cols-9 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] '>
-                        <label className="text-neutral-500 text-xs font-semibold col-span-2">
-                            Yang Menyetujui
-                        </label>
+                    <div className='grid grid-cols-8 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] '>
+
                         <label className="text-neutral-500 text-xs font-semibold  ">
                             Periode Dari
                         </label>
@@ -120,10 +119,8 @@ function PengajuanPayrollMinggu() {
                     {
                         payWeek?.data.map((data: any, i: number) => {
                             return (
-                                <div className='grid grid-cols-9 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] '>
-                                    <label className="text-neutral-500 text-xs font-semibold col-span-2 ">
-                                        {data.payroll_detail[0]?.karyawan_hr?.name}
-                                    </label>
+                                <div className='grid grid-cols-8 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] '>
+
                                     <label className="text-neutral-500 text-xs font-semibold  ">
                                         {convertTimeStampToDate(data.periode_dari)}
                                     </label>
@@ -141,7 +138,7 @@ function PengajuanPayrollMinggu() {
                                         {data.status}
                                     </label>
                                     <div className='flex justify-center '>
-                                        {data.status == 'incoming pay' ? <>
+                                        {data.status == 'incoming approved' ? <>
 
                                             <button
                                                 onClick={() => openEdit(i)}
@@ -149,14 +146,16 @@ function PengajuanPayrollMinggu() {
                                                 Action
                                             </button>
                                         </> : <></>}
+
                                         {showEdit[i] == true && (
 
                                             <ModalXL
                                                 isOpen={showEdit[i]}
                                                 onClose={() => closeEdit(i)}
-                                                judul={'Rincian History Payroll'}
+                                                judul={'Rincian Payroll'}
                                             >
                                                 <>
+
                                                     <div className='grid grid-cols-5 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] '>
                                                         <div className='flex gap-3'>
                                                             <label className="text-black text-xs font-bold">
@@ -416,7 +415,7 @@ function PengajuanPayrollMinggu() {
                                                         <button
                                                             onClick={() => putPayroll(data.id, i)}
                                                             className='px-2 py-4  text-xs bg-green-400 items-center justify-center text-white font-semibold rounded-md flex w-full '>
-                                                            Bayar
+                                                            Approve
                                                         </button>
                                                     </div>
                                                 </>
@@ -449,4 +448,4 @@ function PengajuanPayrollMinggu() {
     )
 }
 
-export default PengajuanPayrollMinggu
+export default ApprovePayroll
