@@ -371,7 +371,7 @@ const TableHistory = () => {
                   bagian={data.bagian_mesin}
                   unit={data.unit}
                   status={data.tiket.status_qc}
-                  note={data.tiket.note_qc}
+                  note={data.note_qc}
                   nama_kendala={data.tiket.nama_kendala}
                   nama_mesin={data.tiket.mesin}
                   operator={data.tiket.operator}

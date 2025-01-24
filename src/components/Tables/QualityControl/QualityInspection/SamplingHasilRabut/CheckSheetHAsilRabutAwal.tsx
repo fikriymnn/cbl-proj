@@ -46,7 +46,7 @@ function CheckSheetHasilRabut() {
       const res = await axios.get(url, {
         withCredentials: true,
       });
-
+      getKendalaByJO(res.data.data.no_jo)
       setRabutMesin(res.data);
       console.log(res.data);
     } catch (error: any) {
@@ -93,7 +93,19 @@ function CheckSheetHasilRabut() {
       console.error("Error fetching master waste:", error);
     }
   }
+  const [kendalaByJo, setkendalaByJo] = useState<any>([]);
+  async function getKendalaByJO(noJO: any) {
+    const url = `${import.meta.env.VITE_API_LINK_P1
+      }/api/get-kendala-by-jo/${noJO}`;
 
+    try {
+      const res = await axios.get(url);
+      setkendalaByJo(res.data.data)
+      console.log('kendala by jo', res.data.data);
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
   const handleChangePointSelect1 = (selected: any) => {
     const { value } = selected;
 
@@ -346,7 +358,12 @@ function CheckSheetHasilRabut() {
   const jam = convertDateToTime(RabutMesin?.data?.createdAt);
 
   const jumlahWaktuCheck = formatElapsedTime(RabutMesin?.data?.waktu_check);
-
+  const [openGuide, setOpenGuide] = useState(null);
+  const handleClickGuide = (index: any) => {
+    setOpenGuide((prevState: any) => {
+      return prevState === index ? null : index;
+    });
+  };
   return (
     <>
       <main className="overflow-x-hidden">
@@ -460,6 +477,71 @@ function CheckSheetHasilRabut() {
               const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
               return (
                 <>
+                  <label
+                    className="text-blue-400 text-sm font-semibold  w-full flex justify-end px-4 py-2"
+                    onClick={() => handleClickGuide(index)}
+                  >
+                    History Kendala JO
+                  </label>
+                  {openGuide == index ? (
+                    <div className="  rounded-md bg-[#F3F3F3] border-gray flex px-5 mx-5 py-6 justify-between">
+                      <div className="grid grid-cols-1">
+                        <div className="flex flex-col">
+                          <label className="text-blue-600 text-sm font-semibold pb-6">
+                            Daftar Kendala : {RabutMesin?.data?.no_jo}
+                          </label>
+                          <div className='grid grid-cols-12 gap-2'>
+                            <label
+                              className="text-stone-600 text-sm font-semibold ">
+                              No
+                            </label>
+
+                            <label
+                              className="text-stone-600 text-sm font-semibold col-span-3">
+                              Tanggal Produksi
+                            </label>
+                            <label
+                              className="text-stone-600 text-sm font-semibold col-span-2">
+                              Durasi
+                            </label>
+                            <label
+                              className="text-stone-600 text-sm font-semibold col-span-4">
+                              Kendala
+                            </label>
+
+                          </div>
+                          {kendalaByJo?.map((data: any, i: any) => (
+                            <>
+                              <div key={i} className='flex flex-col'>
+                                <div className='grid grid-cols-12 gap-2'>
+                                  <label
+                                    className="text-stone-600 text-sm  ">
+                                    {i + 1}.
+                                  </label>
+
+                                  <label
+                                    className="text-stone-600 text-sm  col-span-3">
+                                    {data.tgl_produksi}
+                                  </label>
+                                  <label
+                                    className="text-stone-600 text-sm  col-span-2">
+                                    {data.durasi}
+                                  </label>
+                                  <label
+                                    className="text-stone-600 text-sm  col-span-4">
+                                    {data.kode_kendala} - {data.nama_kendala}
+                                  </label>
+
+                                </div>
+                              </div>
+                            </>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <></>
+                  )}
                   <div className="flex flex-col py-6 px-10 ">
                     <div className=" grid grid-cols-6 w-full  gap-2">
                       <div className="w-11/12">
@@ -629,7 +711,7 @@ function CheckSheetHasilRabut() {
                               <label className=" text-[#6c6b6b] text-sm font-semibold">
                                 {data2.kode} - {data2.masalah}
                               </label>
-                              {(data2.kode_lkh == '' || data2.masalah_lkh == '') ? <></> :
+                              {(data2.kode_lkh == '' || data2.kode_lkh == null) ? <></> :
                                 <>
                                   <label className=" text-[#6c6b6b] text-sm font-semibold">
                                     Dengan : {data2.kode_lkh} - {data2.masalah_lkh}

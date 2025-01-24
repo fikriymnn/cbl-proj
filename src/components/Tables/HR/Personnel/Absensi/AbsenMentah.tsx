@@ -99,12 +99,18 @@ function TableAbsenMentah() {
             console.log(error);
         }
     }
+    const [hoursNewEdit, setHoursNewEdit] = useState<any>(null);
+    const [typeCheckEdit, setTypeCheckEdit] = useState<any>(null);
+
     const [showEdit, setShowEdit] = useState<any>([]);
-    const openEdit = (i: any) => {
+    const openEdit = (i: any, date: any, hour: any) => {
         const onchangeVal = [...showEdit];
         onchangeVal[i] = true; // Show popup for the selected index
         setTypeCheck(filteredAbsen[i].checkType === "Masuk" ? 0 : 1);
         setShowEdit(onchangeVal);
+        console.log(hour, date)
+        setHoursNewEdit(hour);
+        settglNewEdit(date);
     };
 
     const closeEdit = (i: any) => {
@@ -119,8 +125,6 @@ function TableAbsenMentah() {
     const [userList, setUserList] = useState<any>();
     const [idKaryawan, setIdKaryawan] = useState<any>();
     const [tglNewEdit, settglNewEdit] = useState<any>(null);
-    const [hoursNewEdit, setHoursNewEdit] = useState<any>(null);
-    const [typeCheckEdit, setTypeCheckEdit] = useState<any>(null);
 
     async function postAbsen() {
         const url = `${import.meta.env.VITE_API_LINK}/hr/absensiInOut`;
@@ -426,7 +430,7 @@ function TableAbsenMentah() {
                                                 {data.checkType}
                                             </label>
                                             <button
-                                                onClick={() => openEdit(i)}
+                                                onClick={() => openEdit(i, date, time)}
                                                 className="w-full bg-blue-600 text-white text-sm py-1 rounded-md"
                                             >
                                                 Edit
@@ -468,8 +472,8 @@ function TableAbsenMentah() {
                                                                 </label>
                                                                 <input type='date'
                                                                     className='px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke'
-                                                                    defaultValue={date}
-                                                                    onChange={(e) => settglNew(e.target.value)}
+                                                                    defaultValue={tglNewEdit}
+                                                                    onChange={(e) => settglNewEdit(e.target.value)}
                                                                 ></input>
                                                             </div>
                                                             <div className='flex flex-col'>
@@ -478,8 +482,8 @@ function TableAbsenMentah() {
                                                                 </label>
                                                                 <input type='time'
                                                                     className='px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke'
-                                                                    defaultValue={time}
-                                                                    onChange={(e) => setHoursNew(e.target.value)}
+                                                                    defaultValue={hoursNewEdit}
+                                                                    onChange={(e) => setHoursNewEdit(e.target.value)}
                                                                 ></input>
                                                             </div>
                                                             <div className='flex flex-col'>

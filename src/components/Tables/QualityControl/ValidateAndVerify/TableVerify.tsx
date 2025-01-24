@@ -23,7 +23,7 @@ const TableVerifikasi = () => {
   const [aksiOn, setAksiOn] = useState(null);
   const [showModal1, setShowModal1] = useState<any>([]);
   const [ticketVerifikasi, setTicketVerifikasi] = useState<any>(null);
-  const [note, setNote] = useState<any>('');
+  const [note, setNote] = useState<any>();
   const handleClick = (index: any) => {
     setAksiOn((prevState: any) => {
       return prevState === index ? null : index;
@@ -293,8 +293,8 @@ const TableVerifikasi = () => {
                       <textarea
                         onChange={(e) => setNote(e.target.value)}
                         className="w-full border border-neutral-600 h-56 p-2 rounded-sm"
-                        name=""
-                        id=""
+                        name="note_qc"
+
                       ></textarea>
                     </div>
                     <div className=" z-50 my-5 rounded-md">
