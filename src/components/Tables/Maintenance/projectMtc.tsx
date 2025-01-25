@@ -1,27 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
-import Filter from '../../../images/icon/filter.svg';
-import Burger from '../../../images/icon/burger.svg';
 import Arrow from '../../../images/icon/arrowDown.svg';
-
-import ModalStockCheck1 from '../../Modals/ModalStockCheck1';
-import Polygon6 from '../../../images/icon/Polygon6.svg';
-import X from '../../../images/icon/x.svg';
 import axios from 'axios';
-import ModalDetail from '../../Modals/ModalDetail';
+
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-import ModalMtcLightHeavy from '../../Modals/ModalMtcLightHeavy';
-import ModalSPBService from '../../Modals/ModalNewSPBService';
+
 import Loading from '../../Loading';
-import DefaultLayout from '../../../layout/DefaultLayout';
-import ModalProject from '../../Modals/ModalProject';
+
 import ModalKosongan from '../../Modals/Qc/NCR/NCRResponQC';
 import convertTimeStampToDate from '../../../utils/convertDate';
 
 // import moment from 'moment';
 
 function ProjectMtc() {
-    const [isMobile, setIsMobile] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [page, setPage] = useState(1);
     const [task, setTask] = useState<any>()
@@ -258,10 +249,7 @@ function ProjectMtc() {
 
         setShowModalEdit(onchangeVal);
     };
-    useEffect(() => {
-        getTiket();
 
-    }, [page]);
 
     const OpenTambah = () => {
 
@@ -273,11 +261,10 @@ function ProjectMtc() {
     };
     useEffect(() => {
         getTiket()
-    }, []);
-    const [masterMesin, setmasterMesin] = useState<any>();
-    useEffect(() => {
         getMasterMesin();
-    }, []);
+    }, [page]);
+
+    const [masterMesin, setmasterMesin] = useState<any>();
 
     async function getMasterMesin() {
         const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
