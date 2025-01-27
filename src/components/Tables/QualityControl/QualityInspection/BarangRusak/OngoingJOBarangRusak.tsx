@@ -35,7 +35,7 @@ function OngoingJOBarangRS() {
     }, []);
 
     async function getCetakMesin() {
-        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBarangrusak`;
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBarangRusakV2`;
         try {
             const res = await axios.get(url, {
                 params: {

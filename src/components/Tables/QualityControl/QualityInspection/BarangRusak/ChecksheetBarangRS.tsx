@@ -7,785 +7,1038 @@ import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
 import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import Loading from '../../../../Loading';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
-import formatInteger from '../../../../../utils/formaterInteger';
 import Select from 'react-select';
+import convertTimeStampToDateTime from '../../../../../utils/converDateTime';
+import formatInteger from '../../../../../utils/formaterInteger';
+import ModalKosonganSmall from '../../../../Modals/ModalKosonganSmall';
 
-function CheckSheetBarangRS() {
-  const { id } = useParams();
-  const [isMobile, setIsMobile] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [cetakMesinAwal, setCetakMesinAwal] = useState<any>();
-  const [total, setTotal] = useState<any>();
+function ChecksheetBarangRS() {
+    const { id } = useParams();
+    const [isMobile, setIsMobile] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [RabutMesin, setRabutMesin] = useState<any>();
 
-  useEffect(() => {
-    getCetakMesinAwal();
-    getMasterDefect();
-    console.log('11' + total?.defect[0].druk_awal);
-  }, []);
+    const [Catatan, setCatatan] = useState<any>();
+    const [idDefect, setIdDefect] = useState<any>();
 
-  async function getCetakMesinAwal() {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangrusak/${id}`;
-    try {
-      const res = await axios.get(url, {
-        withCredentials: true,
-      });
+    const [showModal2, setShowModal2] = useState(false);
+    const [add, setAdd] = useState<any>();
 
-      setCetakMesinAwal(res.data.data);
-      setTotal(res.data);
-      console.log(res.data);
-    } catch (error: any) {
-      console.log(error);
-    }
-  }
-
-  async function startTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangrusak/start/${id}`;
-    try {
-      const res = await axios.put(
-        url,
-        {},
-        {
-          withCredentials: true,
-        },
-      );
-
-      getCetakMesinAwal();
-    } catch (error: any) {
-      console.log(error);
-      alert(error.response.data.msg);
-    }
-  }
-  const [defectMaster, setDefectMaster] = useState<any>();
-  const [idDefect, setIdDefect] = useState<any>();
-  const [showModal1, setShowModal1] = useState(false);
-
-  const openModal1 = () => setShowModal1(true);
-  const closeModal1 = () => setShowModal1(false);
-
-  const [options, setOptions] = useState([]);
-
-  async function getMasterDefect() {
-    const url = `${import.meta.env.VITE_API_LINK_P1
-      }/api/list-kendala?criteria=true`;
-    try {
-      const res = await axios.get(url);
-
-      setDefectMaster(res.data);
-      setOptions(
-        res.data.map((item: any) => ({
-          value: item.i_id,
-          label: item.e_kode_produksi + ' - ' + item.nama_kendala,
-        }))
-      );
-      console.log(res.data);
-    } catch (error: any) {
-      console.log(error);
-    }
-  }
-
-  const [kode, setKode] = useState<any>();
-  const [masalah, setMasalah] = useState<any>();
-  const [asalTemuan, setAsalTemuan] = useState<any>();
-
-  async function tambahDefect(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangRusak/createDefect/${id}`;
-    try {
-      setIsLoading(true);
-      const res = await axios.post(
-        url,
-        {
-          kode: kode,
-          masalah: masalah,
-          asal_temuan: asalTemuan,
-        },
-        {
-          withCredentials: true,
-        },
-      );
-      setIsLoading(false);
-      setShowModal1(false);
-      setIsLoading(false);
-      getCetakMesinAwal();
-    } catch (error: any) {
-      setIsLoading(false);
-      console.log(error);
-    }
-  }
-  const handleChangePointDepatment = (selected: any) => {
-    const { value } = selected;
-    const filteredData = defectMaster.find(
-      (item: any) => item.i_id == value,
-      // item.id.includes(parseInt(value));
+    const [showDetail, setShowDetail] = useState<boolean[]>(
+        new Array(add != null && add.length).fill(false),
     );
 
-    console.log(filteredData?.i_id);
+    useEffect(() => {
+        getRabutMesin();
+        getMasterDefect();
+        fetchMasterWaste();
+    }, []);
 
-    setKode(filteredData?.e_kode_produksi);
-    setMasalah(filteredData?.nama_kendala);
-    setAsalTemuan(filteredData?.kategori_kendala);
-
-  };
-
-  const handleChangePoint = (e: any, i: number) => {
-    const { name, value } = e.target;
-    const onchangeVal: any = cetakMesinAwal;
-    onchangeVal.inspeksi_barang_rusak_defect[i][name] = value; // Assuming 'hasil' is the field you want to update
-    setCetakMesinAwal(onchangeVal);
-    console.log(cetakMesinAwal);
-  };
-
-  async function simpanDefect(
-    id: number,
-    catatan: any,
-    setting_awal: any,
-    druk_awal: any,
-  ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangRusak/save/${id}`;
-    try {
-      // setIsLoading(true);
-      const res = await axios.put(
-        url,
-        {
-          catatan: catatan,
-          setting_awal: setting_awal,
-          druk_awal: druk_awal,
-          file: '',
-        },
-        {
-          withCredentials: true,
-        },
-      );
-      // setIsLoading(false);
-      getCetakMesinAwal();
-    } catch (error: any) {
-      console.log(error);
+    async function getRabutMesin() {
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBarangRusakV2/${id}`;
+        try {
+            setIsLoading(true)
+            const res = await axios.get(url, {
+                withCredentials: true,
+            });
+            getKendalaByJO(res.data.data.no_jo)
+            setIsLoading(false)
+            setRabutMesin(res.data);
+            console.log(res.data);
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error.data.msg);
+        }
     }
-  }
-  async function simpanBarangRusak(id: number, startTime: any, catatan: any, barangBagus: any) {
-    if (barangBagus == null) {
-      // Check if start time is available
-      alert('Barang Baik Aktual Belum Diisi');
-      return; // Exit function if no start time
+    const [options, setOptions] = useState<any>([]); // Options for the first dropdown
+    const [secondOptions, setSecondOptions] = useState<any>([]); // Filtered options for the second dropdown
+    const [defectMaster, setDefectMaster] = useState<any>([]); // Full data for the first dropdown
+    const [selectedOption, setSelectedOption] = useState<any>(null); // Selected option from the first dropdown
+    const [selectedSecondOption, setSelectedSecondOption] = useState<any>(null);
+    const [masterWaste, setMasterWaste] = useState<any>([]);
+    const [wasteSelectLkh, setwasteSelectLkh] = useState<any>([]);
+    const [wasteSelectCode, setwasteSelectCode] = useState<any>([]);
+    const [tujuanDepartment, settujuanDepartment] = useState<any>([]);
+
+    async function getMasterDefect() {
+        const url = `${import.meta.env.VITE_API_LINK_P1
+            }/api/list-kendala?criteria=true`;
+
+        try {
+            const res = await axios.get(url);
+            setDefectMaster(res.data); // Save raw data for filtering
+            setOptions(
+                res.data.map((item: any) => ({
+                    value: item.e_kode_produksi,
+                    label: `${item.e_kode_produksi} - ${item.nama_kendala}`,
+                }))
+            );
+            //console.log('master defect', res.data);
+        } catch (error: any) {
+            console.log(error.data.msg);
+        }
     }
-    if (catatan == null) {
-      // Check if start time is available
-      alert('Catatan Belum Diisi Lengkap');
-      return; // Exit function if no start time
+
+    async function fetchMasterWaste() {
+        const url2 = `${import.meta.env.VITE_API_LINK_P1}/api/master-waste`;
+
+        try {
+            const res = await axios.get(url2);
+            setMasterWaste(res.data.waste); // Save raw data for filtering
+            //console.log("Master Waste Data:", res.data.waste);
+        } catch (error: any) {
+            console.error("Error fetching master waste:", error);
+        }
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangrusak/done/${id}`;
-    try {
-      const elapsedSeconds = calculateElapsedTime(startTime, new Date());
-      console.log(elapsedSeconds);
-      // setIsLoading(true);
-      const res = await axios.put(
-        url,
-        {
-          catatan: catatan,
-          barang_baik_aktual: barangBagus,
-          lama_pengerjaan: elapsedSeconds,
-        },
-        {
-          withCredentials: true,
-        },
-      );
-      // setIsLoading(false);
-      getCetakMesinAwal();
-    } catch (error: any) {
-      console.log(error);
+
+    const [kendalaByJo, setkendalaByJo] = useState<any>([]);
+    async function getKendalaByJO(noJO: any) {
+        const url = `${import.meta.env.VITE_API_LINK_P1
+            }/api/get-kendala-by-jo/${noJO}`;
+
+        try {
+            const res = await axios.get(url);
+            setkendalaByJo(res.data.data)
+            console.log('kendala by jo', res.data.data);
+        } catch (error: any) {
+            console.log(error);
+        }
     }
-  }
-  const tanggal = convertTimeStampToDateOnly(cetakMesinAwal?.createdAt);
-  const jam = convertDateToTime(cetakMesinAwal?.createdAt);
+    const handleChangePointSelect1 = (selected: any) => {
+        const { value } = selected;
 
-  // const jumlahWaktuCheck = formatElapsedTime(
-  //     cetakMesinAwal?.inspeksi_cetak_awal[0].waktu_check,
-  // );
-  const isOnprogres = cetakMesinAwal?.barang_rusak_defect?.some(
-    (data: { status: any }) => data?.status == 'incoming',
-  );
+        const filteredWaste = masterWaste.filter((item: any) => item.kode_waste === value);
+        const filteredDefect = defectMaster.filter((item: any) => item.e_kode_produksi === value);
 
-  const [catatan, setCatatan] = useState<any>();
-  const [bbAktual, setbbAktual] = useState<any>();
+        const firstFilteredItemDefect = filteredDefect[0];
+        console.log(firstFilteredItemDefect.i_id)
+        setIdDefect(firstFilteredItemDefect);
+        console.log(firstFilteredItemDefect.target_department)
+        settujuanDepartment(firstFilteredItemDefect.target_department)
+        if (filteredWaste.length > 0) {
+            const firstFilteredItem = filteredWaste[0]; // Take the first item from filtered data
 
-  return (
-    <>
-      {!isMobile && (
-        <main className="overflow-x-hidden">
-          <div className="min-w-[700px] bg-white rounded-xl">
-            <p className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z"
-                  fill="#0065DE"
-                />
-              </svg>{' '}
-              BARANG RUSAK SEBAGIAN
-            </p>
+            // Map waste items to dropdown options, ensuring waste exists
+            const allSecondOptions = firstFilteredItem.waste?.map((wasteItem: any) => ({
+                value: wasteItem.i_kendala,
+                label: `${wasteItem.kode_kendala} - ${wasteItem.kendala_desc}`,
+            })) || [];
 
-            <div className="flex w-full border-b-8 border-[#D8EAFF] px-8 py-8">
-              <div className="flex w-[30%] ">
-                <div className="flex flex-col gap-2 ">
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    Tanggal
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    No. JO
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    No. IO
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    Nama Produk
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    Customer
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    Status Jo
-                  </label>
-                </div>
-                <div className="flex flex-col gap-2 ">
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    : {tanggal}
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    : {cetakMesinAwal?.no_jo}
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    : {cetakMesinAwal?.no_io}
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    : {cetakMesinAwal?.nama_produk}
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    : {cetakMesinAwal?.customer}
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    : {cetakMesinAwal?.status_jo}
-                  </label>
-                </div>
-              </div>
+            console.log("All Second Options:", allSecondOptions);
 
-              <div className="flex w-[30%]">
-                <div className="flex flex-col gap-2">
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    Jam
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    QTY Rusak Sebagian
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    Waktu Sortir
-                  </label>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    : {jam}
-                  </label>
+            // Handle the first waste item safely
+            if (firstFilteredItem.waste && firstFilteredItem.waste.length > 0) {
+                const firstWasteItem = firstFilteredItem.waste[0]; // Take the first waste item
 
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    : {formatInteger(parseInt(cetakMesinAwal?.qty_rusak))}
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    : {tanggal}
-                  </label>
-                </div>
-              </div>
-              <div className="flex w-[20%]">
-                <div className="flex flex-col">
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    Inspector
-                  </label>
-                </div>
-                <div className="flex flex-col">
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    : {cetakMesinAwal?.inspektor?.nama}
-                  </label>
-                </div>
-              </div>
-              <div className="flex w-[20%] flex-col">
-                {cetakMesinAwal?.waktu_sortir == null ? (
-                  <>
-                    <p className="font-bold text-[#DE0000]">
-                      Task Belum Dimulai
-                    </p>
+                const wasteLkh = firstWasteItem?.kendala_desc || ""; // Default to empty string if undefined
+                const wasteCode = firstWasteItem?.kode_kendala || ""; // Default to empty string if undefined
 
-                    <button
-                      onClick={() => startTaskCekAwal(cetakMesinAwal?.id)}
-                      className="flex w-[60%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
-                    >
-                      <svg
-                        width="14"
-                        height="14"
-                        viewBox="0 0 14 14"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                          fill="white"
-                        />
-                      </svg>
-                    </button>
-                  </>
-                ) : cetakMesinAwal?.status == 'history' ? (
-                  <></>
-                ) : (
-                  <>
-                    <p className="md:text-[14px] text-[9px] text-[#00B81D] font-semibold">
-                      Task DiMulai
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-            {cetakMesinAwal?.waktu_sortir == null ? (
-              <>
-                <div className="flex px-2 py-4">
-                  <p className="md:text-[14px] text-[9px] text-[#00B81D] font-semibold">
-                    Mulai Task Untuk Memunculkan Checksheet
-                  </p>
-                </div>
-              </>
-            ) : (
-              <>
-                {cetakMesinAwal?.inspeksi_barang_rusak_defect?.map(
-                  (data: any, i: number) => {
-                    return (
-                      <>
-                        {cetakMesinAwal?.inspeksi_barang_rusak_defect[i]
-                          .status == 'done' ? (
-                          <>
-                            <div className=" border-b-8 border-[#D8EAFF] px-6 py-6">
-                              <div className="grid grid-cols-12  ">
-                                <div className="flex flex-col col-span-5">
-                                  <p className="text-blue-500 text-sm font-semibold">
-                                    KODE MASALAH
-                                  </p>
-                                  <p className="text-neutral-500 text-sm font-semibold">
-                                    {data?.kode}
-                                  </p>
+                console.log("First Waste LKH:", wasteLkh);
+                console.log("First Waste Code:", wasteCode);
+
+                setwasteSelectLkh(wasteLkh);
+                setwasteSelectCode(wasteCode);
+            } else {
+                console.warn("No waste items found in the firstFilteredItem.");
+                setwasteSelectLkh("");
+                setwasteSelectCode("");
+            }
+
+            // Update states
+            setSelectedOption(selected);
+            setSecondOptions(allSecondOptions); // Set initial options to the first waste item
+            setSelectedSecondOption(null); // Reset the second dropdown selection
+        } else {
+            console.warn("No matching waste found for kode_waste:", value);
+            setSelectedOption(selected);
+            // Reset states when no data matches
+            setSecondOptions([]);
+            setSelectedSecondOption(null);
+            setwasteSelectLkh("");
+            setwasteSelectCode("");
+        }
+    };
+
+    const handleChangePointSelect2 = (selected: any) => {
+        console.log("Selected Second Option:", selected);
+        setSelectedSecondOption(selected);
+
+    };
+
+    async function startTaskRabut(id: number) {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/qc/cs/inspeksiBarangRusakPointV2/start/${id}`;
+        try {
+            setIsLoading(true)
+            const res = await axios.put(
+                url,
+                {},
+                {
+                    withCredentials: true,
+                },
+            );
+            setIsLoading(false)
+            getRabutMesin();
+        } catch (error: any) {
+            console.log(error);
+            setIsLoading(false)
+            alert(error);
+        }
+    }
+
+    async function stopTaskRabut(
+        id: number,
+        startTime: any,
+        catatan: any,
+        totalDefect: any,
+
+    ) {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/qc/cs/inspeksiBarangRusakPointV2/stop/${id}`;
+        try {
+            setIsLoading(true)
+            const elapsedSeconds = calculateElapsedTime(startTime, new Date());
+            console.log(elapsedSeconds);
+            const res = await axios.put(
+                url,
+                {
+                    catatan: catatan,
+                    lama_pengerjaan: elapsedSeconds,
+                    jumlah_defect: totalDefect,
+
+                },
+                {
+                    withCredentials: true,
+                },
+            );
+            setIsLoading(false)
+            getRabutMesin();
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+
+        }
+    }
+
+    async function tambahTaskRabut(id: number, namaCek: any) {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/qc/cs/inspeksiBarangRusakPointV2/create`;
+        try {
+            setIsLoading(true);
+            const res = await axios.post(
+                url,
+                {
+                    id_inspeksi_barang_rusak_v2: id,
+                    nama_pengecekan: namaCek
+
+                },
+                {
+                    withCredentials: true,
+                },
+            );
+            closeModal1()
+            setIsLoading(false);
+            getRabutMesin();
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+
+
+    const [bbAktual, setbbAktual] = useState<any>();
+    async function doneRabut(id: number, bbak: any) {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/qc/cs/inspeksiBarangRusakV2/done/${id}`;
+        try {
+            setIsLoading(true)
+            const res = await axios.put(
+                url,
+                {
+                    catatan: Catatan,
+                    barang_baik_aktual: bbak,
+                },
+                {
+                    withCredentials: true,
+                },
+            );
+            setIsLoading(false)
+            getRabutMesin();
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
+
+    // async function pendingRabut(id: number) {
+    //   const url = `${
+    //     import.meta.env.VITE_API_LINK
+    //   }/qc/cs/inspeksiAmparLem/pending/${id}`;
+    //   try {
+    //     const res = await axios.put(
+    //       url,
+    //       {},
+    //       {
+    //         withCredentials: true,
+    //       },
+    //     );
+
+    //     getRabutMesin();
+    //   } catch (error: any) {
+    //     console.log(error.data.msg);
+    //   }
+    // }
+
+    async function tambahDefectPeriode(
+        id: number,
+        idDefect: number,
+        idPoint: number,
+        index: number,
+        kodeLkh: any,
+        masalahLkh: any
+    ) {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/qc/cs/inspeksiBarangRusakPointV2/createDefect`;
+        try {
+            setIsLoading(true)
+            const res = await axios.post(
+                url,
+
+                {
+                    id_barang_rusak_v2: id,
+                    id_barang_rusak_point_v2: idPoint,
+                    MasterDefect: idDefect,
+                    kode_lkh: kodeLkh,
+                    masalah_lkh: masalahLkh
+                },
+
+                {
+                    withCredentials: true,
+                },
+            );
+
+            setShowModal2(false);
+            handleClickAdd(index);
+            setIdDefect(null);
+            setIsLoading(false)
+            getRabutMesin();
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
+    const [jumlahDefect, setJumlahDefect] = useState<{ [key: number]: any }>({});
+
+    const handleSimpan = async (iid: any, index: number) => {
+        const defectValue = jumlahDefect[index] || 0; // Get defect value for the specific row
+
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBarangRusakPointV2/simpanDefect/${iid}`;
+        try {
+            setIsLoading(true);
+
+            // API call
+            await axios.put(
+                url,
+                { jumlah_defect: defectValue },
+                { withCredentials: true }
+            );
+
+            // Reset the specific field on successful submission
+            setJumlahDefect((prev) => ({
+                ...prev,
+                [index]: '',
+            }));
+
+            setIsLoading(false);
+            getRabutMesin(); // Refresh data
+        } catch (error) {
+            setIsLoading(false);
+            console.error(error);
+        }
+    };
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+        const value = e.target.value;
+        setJumlahDefect((prevState) => ({
+            ...prevState,
+            [index]: value,
+        }));
+    };
+    const handleChangePointDepatment = (selected: any, i: number) => {
+        const { value } = selected;
+        const filteredData = defectMaster.find(
+            (item: any) => item.i_id == value,
+            // item.id.includes(parseInt(value));
+        );
+
+        console.log(filteredData?.i_id);
+
+        setIdDefect(filteredData);
+    };
+    const handleClickAdd = (index: number) => {
+        setShowDetail((prevState) => {
+            const updatedShowDetail = [...prevState]; // Create a copy
+            updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
+            return updatedShowDetail;
+        });
+    };
+
+    const handleChangePoint = (e: any, i: number, ii: number) => {
+        const { name, value } = e.target;
+        const onchangeVal: any = RabutMesin;
+        onchangeVal.data.inspeksi_barang_rusak_point_v2[i].inspeksi_barang_rusak_defect_v2[ii][
+            name
+        ] = value;
+        setRabutMesin(onchangeVal);
+    };
+
+    const handleChangeRabutPoint = (e: any, i: number) => {
+        const { name, value } = e.target;
+        const onchangeVal: any = RabutMesin;
+        onchangeVal.data.inspeksi_barang_rusak_point_v2[i][name] = value;
+        setRabutMesin(onchangeVal);
+        console.log(onchangeVal);
+    };
+
+    const tanggal = convertTimeStampToDateOnly(RabutMesin?.data?.createdAt);
+    const jam = convertDateToTime(RabutMesin?.data?.createdAt);
+
+    const jumlahWaktuCheck = formatElapsedTime(RabutMesin?.data?.waktu_check);
+
+    const [openGuide, setOpenGuide] = useState(null);
+    const handleClickGuide = (index: any) => {
+        setOpenGuide((prevState: any) => {
+            return prevState === index ? null : index;
+        });
+    };
+    const [showModal1, setShowModal1] = useState(false);
+
+    const openModal1 = () => setShowModal1(true);
+    const closeModal1 = () => setShowModal1(false);
+
+    const calculateTotalHasil = (data: any[]) => {
+        return data
+            .filter((item: any) => item.status === 'done') // Only consider items with status 'done'
+            .reduce((sum: number, item: any) => sum + (parseFloat(item.jumlah_defect) || 0), 0); // Sum up 'hasil', default to 0 if invalid
+    };
+    return (
+        <>
+
+            <main className="overflow-x-hidden">
+                {isLoading && <Loading />}
+                <form action="" onSubmit={(e) => {
+                    e.preventDefault()
+                    console.log(RabutMesin);
+                    doneRabut(RabutMesin?.data.id, bbAktual)
+                }}>
+                    <div className="min-w-[700px] bg-white rounded-xl">
+                        <p className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
+                            <svg
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    fill-rule="evenodd"
+                                    clip-rule="evenodd"
+                                    d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z"
+                                    fill="#0065DE"
+                                />
+                            </svg>{' '}
+                            BARANG RUSAK SEBAGIAN
+                        </p>
+
+                        <div className="flex w-full border-b-8 border-[#D8EAFF] px-8 py-8">
+                            <div className="flex w-[50%] ">
+                                <div className="flex flex-col gap-2 ">
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        Tanggal
+                                    </label>
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        No. JO
+                                    </label>
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        No. IO
+                                    </label>
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        Nama Produk
+                                    </label>
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        Customer
+                                    </label>
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        Status Jo
+                                    </label>
                                 </div>
-                                <div className="flex flex-col col-span-4">
-                                  <p className="text-blue-500 text-sm font-semibold">
-                                    JENIS DEFECT YANG DITEMUKAN
-                                  </p>
-                                  <p className="text-neutral-500 text-sm font-semibold">
-                                    {data?.masalah}
-                                  </p>
+                                <div className="flex flex-col gap-2 ">
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        : {tanggal}
+                                    </label>
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        : {RabutMesin?.data?.no_jo}
+                                    </label>
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        : {RabutMesin?.data?.no_io}
+                                    </label>
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        : {RabutMesin?.data?.nama_produk}
+                                    </label>
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        : {RabutMesin?.data?.customer}
+                                    </label>
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        : {RabutMesin?.data?.status_jo}
+                                    </label>
                                 </div>
-                                <div className="flex flex-col col-span-3">
-                                  <>
-                                    <label className="form-label block  text-black text-xs font-extrabold ">
-                                      UPLOAD FOTO
+                            </div>
+
+                            <div className="flex w-[50%]">
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        Jam
+                                    </label>
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        QTY Rusak Sebagian
+                                    </label>
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        Waktu Sortir
+                                    </label>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        : {jam}
                                     </label>
 
-                                    <div className="flex  w-full mt-2 rounded-md border border-stroke px-2 py-2">
-                                      <label
-                                        htmlFor="formFile"
-                                        className="flex items-center px-8 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
-                                      >
-                                        Pilih File
-                                        <input
-                                          name="foto"
-                                          disabled
-                                          onChange={(e) =>
-                                            handleChangePoint(e, i)
-                                          }
-                                          type="file"
-                                          id="formFile"
-                                          accept="image/*"
-                                          className="hidden"
-                                        />
-                                      </label>
-
-                                      <span
-                                        id="formFile"
-                                        className="ml-2 text-sm"
-                                      ></span>
-                                    </div>
-                                  </>
-                                </div>
-                              </div>
-                              <p className="text-blue-500 text-sm font-semibold">
-                                QUANTITY TEMUAN
-                              </p>
-                              <div className="grid grid-cols-12  pt-2 gap-6">
-                                <div className="flex flex-col col-span-2 gap-1">
-                                  <p className="text-neutral-500 text-sm font-semibold">
-                                    SETTING AWAL
-                                  </p>
-                                  <input
-                                    name="setting_awal"
-                                    value={formatInteger(parseInt(data?.setting_awal))}
-                                    disabled
-                                    type="number"
-                                    className="w-full h-6 bg-white  rounded-sm  border-2 border-stroke"
-                                  ></input>
-                                </div>
-                                <div className="flex flex-col col-span-2 gap-1">
-                                  <p className="text-neutral-500 text-sm font-semibold">
-                                    DRUK AWAL
-                                  </p>
-                                  <input
-                                    name="druk_awal"
-                                    value={formatInteger(parseInt(data?.druk_awal))}
-                                    disabled
-                                    type="number"
-                                    className="w-full h-6 bg-white  rounded-sm  border-2 border-stroke"
-                                  ></input>
-                                </div>
-                                <div className="flex flex-col col-span-2 gap-1">
-                                  <p className="text-neutral-500 text-sm font-semibold">
-                                    SUB TOTAL
-                                  </p>
-                                  <input
-                                    value={formatInteger(parseInt(data?.sub_total))}
-                                    type="number"
-                                    disabled
-                                    className="w-full h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
-                                  ></input>
-                                </div>
-                                <div className="flex flex-col col-span-4 gap-1">
-                                  <p className="text-neutral-500 text-sm font-semibold">
-                                    CATATAN{' '}
-                                    <span className="text-red-500">*</span> :
-                                  </p>
-                                  <input
-                                    disabled
-                                    name="catatan"
-                                    value={data?.catatan}
-                                    type="text"
-                                    className="w-full h-6 bg-white  rounded-sm  border-2 border-stroke"
-                                  ></input>
-                                </div>
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className=" border-b-8 border-[#D8EAFF] px-6 py-6">
-                              <div className="grid grid-cols-12  ">
-                                <div className="flex flex-col col-span-5">
-                                  <p className="text-blue-500 text-sm font-semibold">
-                                    KODE MASALAH
-                                  </p>
-                                  <p className="text-neutral-500 text-sm font-semibold">
-                                    {data?.kode}
-                                  </p>
-                                </div>
-                                <div className="flex flex-col col-span-4">
-                                  <p className="text-blue-500 text-sm font-semibold">
-                                    JENIS DEFECT YANG DITEMUKAN
-                                  </p>
-                                  <p className="text-neutral-500 text-sm font-semibold">
-                                    {data?.masalah}
-                                  </p>
-                                </div>
-                                <div className="flex flex-col col-span-3">
-                                  <>
-                                    <label className="form-label block  text-black text-xs font-extrabold ">
-                                      UPLOAD FOTO
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        : {formatInteger(parseInt(RabutMesin?.data?.qty_rusak))}
                                     </label>
-
-                                    <div className="flex  w-full mt-2 rounded-md border border-stroke px-2 py-2">
-                                      <label
-                                        htmlFor="formFile"
-                                        className="flex items-center px-8 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
-                                      >
-                                        Pilih File
-                                        <input
-                                          name="foto"
-                                          onChange={(e) =>
-                                            handleChangePoint(e, i)
-                                          }
-                                          type="file"
-                                          id="formFile"
-                                          accept="image/*"
-                                          className="hidden"
-                                        />
-                                      </label>
-
-                                      <span
-                                        id="formFile"
-                                        className="ml-2 text-sm"
-                                      ></span>
-                                    </div>
-                                  </>
+                                    <label className="text-neutral-500 text-sm font-semibold">
+                                        : {tanggal}
+                                    </label>
                                 </div>
-                              </div>
-                              <p className="text-blue-500 text-sm font-semibold">
-                                QUANTITY TEMUAN
-                              </p>
-                              <div className="grid grid-cols-12  pt-2 gap-6">
-                                <div className="flex flex-col col-span-2 gap-1">
-                                  <p className="text-neutral-500 text-sm font-semibold">
-                                    SETTING AWAL
-                                  </p>
-                                  <input
-                                    name="setting_awal"
-                                    onChange={(e) => {
-                                      handleChangePoint(e, i);
-                                    }}
-                                    type="number"
-                                    className="w-full h-6 bg-white  rounded-sm  border-2 border-stroke"
-                                  ></input>
-                                </div>
-                                <div className="flex flex-col col-span-2 gap-1">
-                                  <p className="text-neutral-500 text-sm font-semibold">
-                                    DRUK AWAL
-                                  </p>
-                                  <input
-                                    name="druk_awal"
-                                    onChange={(e) => {
-                                      handleChangePoint(e, i);
-                                    }}
-                                    type="number"
-                                    className="w-full h-6 bg-white  rounded-sm  border-2 border-stroke"
-                                  ></input>
-                                </div>
-                                <div className="flex flex-col col-span-2 gap-1">
-                                  <p className="text-neutral-500 text-sm font-semibold">
-                                    SUB TOTAL
-                                  </p>
-                                  <input
-                                    value={
-                                      parseInt(data.setting_awal) +
-                                      parseInt(data.druk_awal)
-                                    }
-                                    onChange={(e) => handleChangePoint(e, i)}
-                                    type="number"
-                                    disabled
-                                    className="w-full h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
-                                  ></input>
-                                </div>
-
-                                <div className="flex flex-col col-span-4 gap-1">
-                                  <p className="text-neutral-500 text-sm font-semibold">
-                                    CATATAN{' '}
-                                    <span className="text-red-500">*</span> :
-                                  </p>
-                                  <input
-                                    name="catatan"
-                                    onChange={(e) => handleChangePoint(e, i)}
-                                    type="text"
-                                    className="w-full h-6 bg-white  rounded-sm  border-2 border-stroke"
-                                  ></input>
-                                </div>
-                                <div className="col-span-2 flex items-end">
-                                  <button
-                                    disabled={isLoading}
-                                    onClick={() =>
-                                      simpanDefect(
-                                        data?.id,
-                                        data?.catatan,
-                                        data?.setting_awal,
-                                        data?.druk_awal,
-                                      )
-                                    }
-                                    className="bg-blue-600 rounded-md w-full h-7 text-white font-semibold text-sm"
-                                  >
-                                    {isLoading ? 'Loading...' : 'SIMPAN'}
-                                  </button>
-                                  {isLoading && <Loading />}
-                                </div>
-                              </div>
                             </div>
-                          </>
+
+                        </div>
+                        {/* =============================chekcsheet========================= */}
+                        {RabutMesin?.data?.inspeksi_barang_rusak_point_v2?.map(
+                            (data: any, index: number) => {
+                                const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
+                                return (
+                                    <>
+                                        <label
+                                            className="text-blue-400 text-sm font-semibold  w-full flex justify-end px-4 py-2"
+                                            onClick={() => handleClickGuide(index)}
+                                        >
+                                            History Kendala JO
+                                        </label>
+                                        {openGuide == index ? (
+                                            <div className="  rounded-md bg-[#F3F3F3] border-gray flex px-5 mx-5 py-6 justify-between">
+                                                <div className="grid grid-cols-1">
+                                                    <div className="flex flex-col">
+                                                        <label className="text-blue-600 text-sm font-semibold pb-6">
+                                                            Daftar Kendala : {RabutMesin?.data?.no_jo}
+                                                        </label>
+                                                        <div className='grid grid-cols-12 gap-2'>
+                                                            <label
+                                                                className="text-stone-600 text-sm font-semibold ">
+                                                                No
+                                                            </label>
+
+                                                            <label
+                                                                className="text-stone-600 text-sm font-semibold col-span-3">
+                                                                Tanggal Produksi
+                                                            </label>
+                                                            <label
+                                                                className="text-stone-600 text-sm font-semibold col-span-2">
+                                                                Durasi
+                                                            </label>
+                                                            <label
+                                                                className="text-stone-600 text-sm font-semibold col-span-4">
+                                                                Kendala
+                                                            </label>
+
+                                                        </div>
+                                                        {kendalaByJo?.map((data: any, i: any) => (
+                                                            <>
+                                                                <div key={i} className='flex flex-col'>
+                                                                    <div className='grid grid-cols-12 gap-2'>
+                                                                        <label
+                                                                            className="text-stone-600 text-sm  ">
+                                                                            {i + 1}.
+                                                                        </label>
+
+                                                                        <label
+                                                                            className="text-stone-600 text-sm  col-span-3">
+                                                                            {data.tgl_produksi}
+                                                                        </label>
+                                                                        <label
+                                                                            className="text-stone-600 text-sm  col-span-2">
+                                                                            {data.durasi}
+                                                                        </label>
+                                                                        <label
+                                                                            className="text-stone-600 text-sm  col-span-4">
+                                                                            {data.kode_kendala} - {data.nama_kendala}
+                                                                        </label>
+
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <></>
+                                        )}
+                                        <div className="flex flex-col py-6 px-10 ">
+                                            <div className=" grid grid-cols-6 w-full  gap-2">
+                                                <div className="w-11/12">
+                                                    <label className="text-neutral-500 text-sm font-semibold w-10/12 uppercase">
+                                                        {data.nama_pengecekan}
+                                                    </label>
+                                                </div>
+                                                <div>
+                                                    <label className="text-neutral-500 text-sm font-semibold ">
+                                                        SUB TOTAL
+                                                    </label>
+                                                    {data.status == 'done' ? (
+                                                        <input
+                                                            name="jumlah_defect"
+                                                            value={calculateTotalHasil(data?.inspeksi_barang_rusak_defect_v2 || [])} // Calculate sum dynamically
+                                                            readOnly
+                                                            type="text"
+                                                            className="px-1 border rounded border-strokedark w-10/12"
+                                                        />
+                                                    ) : data.status == 'on progress' ? (
+                                                        <input
+                                                            required
+                                                            name="jumlah_defect"
+                                                            value={calculateTotalHasil(data?.inspeksi_barang_rusak_defect_v2 || [])} // Calculate sum dynamically
+                                                            readOnly
+                                                            type="text"
+                                                            className="px-1 border rounded border-strokedark w-10/12"
+                                                        />
+                                                    ) : null}
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <label className="text-neutral-500 text-sm font-semibold ">
+                                                        INSPEKTOR
+                                                    </label>
+                                                    <label className="text-neutral-500 text-sm font-semibold ">
+                                                        {data.inspektor?.nama}
+                                                    </label>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <label className="text-neutral-500 text-sm font-semibold ">
+                                                        WAKTU
+                                                    </label>
+                                                    <label className="text-neutral-500 text-sm font-semibold ">
+                                                        {lamaPengerjaan}
+                                                    </label>
+                                                </div>
+                                                <div className="flex flex-col">
+                                                    <label className="text-neutral-500 text-sm font-semibold ">
+                                                        Time :
+                                                    </label>
+                                                    <label className="text-neutral-500 text-sm font-semibold ">
+                                                        {convertTimeStampToDateTime(data.waktu_mulai)}
+                                                    </label>
+                                                </div>
+                                                <div className="flex flex-col ">
+                                                    <>
+                                                        <div className="flex flex-col ">
+                                                            <p className="md:text-[14px] text-[9px] font-semibold">
+                                                                Upload Foto (Optional):
+                                                            </p>
+
+                                                            <div className="">
+                                                                <input
+                                                                    disabled
+                                                                    type="file"
+                                                                    name=""
+                                                                    id=""
+                                                                    className="w-40"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                </div>
+                                                <div className="flex flex-col ">
+                                                    <>
+                                                        {data.status == 'incoming' ? (
+                                                            <>
+                                                                <p className="font-bold text-[#DE0000]">
+                                                                    Task Belum Dimulai
+                                                                </p>
+                                                                <button
+                                                                    disabled={isLoading}
+                                                                    onClick={() => {
+                                                                        startTaskRabut(data.id);
+                                                                    }}
+                                                                    className="flex w-full  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                                                >
+                                                                    <svg
+                                                                        width="14"
+                                                                        height="14"
+                                                                        viewBox="0 0 14 14"
+                                                                        fill="none"
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                    >
+                                                                        <path
+                                                                            d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                                                            fill="white"
+                                                                        />
+                                                                    </svg>
+                                                                </button>
+                                                            </>
+                                                        ) : data.status == 'on progress' ? (
+                                                            <>
+                                                                <p className="font-bold text-green-600">
+                                                                    Task Dimulai
+                                                                </p>
+                                                                <p className="font-semibold">
+                                                                    Time :  {convertTimeStampToDateTime(data.waktu_mulai)}
+                                                                </p>
+                                                                <button
+                                                                    type='button'
+                                                                    value='button'
+                                                                    disabled={isLoading}
+                                                                    onClick={() => {
+                                                                        console.log(data.id,
+                                                                            data.waktu_mulai,
+                                                                            data.catatan,
+                                                                            calculateTotalHasil(data?.inspeksi_barang_rusak_defect_v2),);
+                                                                        stopTaskRabut(
+                                                                            data.id,
+                                                                            data.waktu_mulai,
+                                                                            data.catatan,
+                                                                            calculateTotalHasil(data?.inspeksi_barang_rusak_defect_v2),
+                                                                        );
+                                                                    }}
+                                                                    className="flex w-full  rounded-md bg-red-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                                                >
+                                                                    <svg
+                                                                        width="14"
+                                                                        height="14"
+                                                                        viewBox="0 0 14 14"
+                                                                        fill="none"
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                    >
+                                                                        <path
+                                                                            d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                                                            fill="white"
+                                                                        />
+                                                                    </svg>
+                                                                </button>
+                                                            </>
+                                                        ) : null}
+                                                    </>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="flex">
+                                            {data?.inspeksi_barang_rusak_defect_v2?.map(
+                                                (data2: any, i: number) => {
+                                                    return (
+                                                        <div className="flex flex-col py-4 px-4 justify-between max-w-[15%]">
+                                                            <label className=" text-[#6c6b6b] text-sm font-semibold line-clamp-4">
+                                                                {data2.kode} - {data2.masalah}
+                                                            </label>
+                                                            {(data2.kode_lkh == '' || data2.kode_lkh == null) ? <></> :
+                                                                <>
+                                                                    <label className=" text-[#6c6b6b] text-sm font-semibold">
+                                                                        Dengan : {data2.kode_lkh} - {data2.masalah_lkh}
+                                                                    </label>
+
+                                                                </>
+                                                            }
+                                                            {data2.status == 'done' ? (
+                                                                <input
+
+                                                                    type="text"
+                                                                    name="hasil"
+                                                                    defaultValue={data2.jumlah_defect}
+                                                                    disabled
+
+                                                                    className="px-1 max-h-7 border rounded border-strokedark w-full"
+                                                                />
+                                                            ) : data2.status == 'incoming' ? (
+                                                                <div className='flex flex-col gap-2'>
+                                                                    <input
+                                                                        required
+                                                                        type="text"
+                                                                        name="hasil"
+                                                                        value={jumlahDefect[i] || ''} // Dynamically bind to the specific index
+                                                                        onChange={(e) => handleInputChange(e, i)}
+                                                                        className="px-1 max-h-7 border rounded border-strokedark w-full"
+                                                                    />
+                                                                    <button
+                                                                        type='button'
+                                                                        disabled={isLoading}
+                                                                        onClick={() => handleSimpan(data2.id, i)}
+                                                                        className="  rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
+                                                                    >
+                                                                        Simpan
+                                                                    </button>
+                                                                </div>
+                                                            ) : null}
+                                                        </div>
+                                                    );
+                                                },
+                                            )}
+                                            {data.status == 'on progress' ? (
+                                                <>
+                                                    <button
+                                                        type='button'
+                                                        disabled={isLoading}
+                                                        onClick={() => handleClickAdd(index)}
+                                                        className=" h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
+                                                    >
+                                                        Add
+                                                    </button>
+                                                </>
+                                            ) : null}
+                                        </div>
+
+                                        {showDetail[index] == true && (
+                                            <>
+                                                <ModalAddPeriode
+                                                    isOpen={showDetail[index]}
+                                                    onClose={() => handleClickAdd(index)}
+                                                    judul={'ADD PROBLEM CODE'}
+                                                >
+                                                    <div className="flex flex-col gap-2">
+
+                                                        <label className="text-black text-sm font-bold pt-4">
+                                                            Master Defect
+                                                        </label>
+                                                        <Select
+                                                            options={options}
+                                                            value={selectedOption}
+                                                            onChange={handleChangePointSelect1}
+                                                            placeholder="Select a Defect"
+                                                        />
+                                                        <Select
+                                                            options={secondOptions}
+                                                            value={selectedSecondOption}
+                                                            onChange={handleChangePointSelect2}
+                                                            placeholder="Select an Option"
+                                                            isDisabled={!selectedOption} // Disable until the first dropdown has a selection
+                                                        />
+                                                        <button
+                                                            type='button'
+                                                            disabled={isLoading}
+                                                            onClick={() => {
+                                                                tambahDefectPeriode(
+                                                                    RabutMesin?.data?.id,
+                                                                    idDefect,
+                                                                    data.id,
+                                                                    index,
+                                                                    wasteSelectCode,
+                                                                    wasteSelectLkh
+                                                                ),
+                                                                    console.log(RabutMesin?.data?.id,
+                                                                        idDefect,
+                                                                        data.id,
+                                                                        index,
+                                                                        wasteSelectCode,
+                                                                        wasteSelectLkh);
+                                                            }}
+                                                            className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
+                                                        >
+                                                            TAMBAH MASALAH
+                                                        </button>
+                                                    </div>
+                                                </ModalAddPeriode>
+                                            </>
+                                        )}
+
+                                        <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] px-4 py-4 gap-3">
+                                            <div className="grid col-span-8">
+                                                <label className=" text-[#6c6b6b] text-sm font-semibold">
+                                                    Catatan<span className="text-red-500">*</span> :
+                                                </label>
+                                                {data.status == 'on progress' ? (
+                                                    <textarea
+                                                        required
+                                                        name="catatan"
+                                                        defaultValue={data.catatan}
+                                                        onChange={(e) => handleChangeRabutPoint(e, index)}
+                                                        className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                    ></textarea>
+                                                ) : data.status == 'done' ? (
+                                                    <textarea
+                                                        name="catatan"
+                                                        disabled
+                                                        defaultValue={data.catatan}
+                                                        //onChange={(e) => handleChangeRabutPoint(e, index)}
+                                                        className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                                    ></textarea>
+                                                ) : null}
+                                            </div>
+                                            <div className="grid col-span-2 items-end justify-center"></div>
+                                        </div>
+                                    </>
+                                );
+                            },
                         )}
-                      </>
-                    );
-                  },
-                )}
-              </>
-            )}
-          </div>
-
-          {cetakMesinAwal?.waktu_sortir != null &&
-            cetakMesinAwal?.status == 'incoming' ? (
-            <>
-              <button
-                // disabled={isLoading}
-                onClick={openModal1}
-                className=" w-[13%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
-              >
-                {/* {isLoading ? 'Loading...' : ' */}+ Defect
-                {/* '} */}
-              </button>
-              {/* {isLoading && <Loading />} */}
-              {showModal1 && (
-                <ModalAddPeriode
-                  isOpen={showModal1}
-                  onClose={closeModal1}
-                  judul={'TAMBAH KODE MASALAH'}
-                >
-                  <>
-                    <div className="flex flex-col gap-2">
-                      <label className="text-black text-sm font-bold pt-4">
-                        Master Defect
-                      </label>
-
-                      <Select
-                        placeholder='Cari...'
-                        options={options}
-                        onChange={(selectedId) => {
-
-                          handleChangePointDepatment(selectedId)
-                        }}
-                        className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
-                  }`}
-                      >
-
-                      </Select>
-                      <button
-                        disabled={isLoading}
-                        onClick={() => {
-                          tambahDefect(cetakMesinAwal?.id);
-                          console.log(cetakMesinAwal?.id, kode, masalah);
-                        }}
-                        className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
-                      >
-                        {isLoading ? 'Loading...' : 'TAMBAH DEFECT'}
-                      </button>
-                      {isLoading && <Loading />}
                     </div>
-                  </>
-                </ModalAddPeriode>
-              )}
-            </>
-          ) : null}
+                    {RabutMesin?.data?.status == 'incoming' ||
+                        RabutMesin?.data?.status == 'pending' ? (
+                        <>
+                            <button
+                                type='button'
+                                value='button'
 
-          <div className=" border-b-8 items-center border-[#D8EAFF] px-4 py-4 gap-3 bg-white rounded-b-xl mt-2">
-            <div className="flex w-[80%] gap-4">
-              <div className="flex flex-col">
-                <p className="text-neutral-500 text-sm font-semibold">
-                  SETTING AWAL
-                </p>
+                                onClick={openModal1}
+                                className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 mb-2 hover:cursor-pointer"
+                            >
+                                +
+                            </button>
+                            {showModal1 && (
+                                <ModalKosonganSmall
+                                    isOpen={showModal1}
+                                    onClose={closeModal1}
+                                    judul={'PILIH SETTING ATAU DRUK'}
+                                >
+                                    <>
+                                        <div className='flex flex-col gap-2 px-[2%] py-[2%]'>
+                                            <div className='flex flex-col gap-2 w-full'>
+                                                <button
+                                                    type='button'
+                                                    value='button'
+                                                    disabled={isLoading}
+                                                    onClick={() => tambahTaskRabut(RabutMesin?.data?.id, 'setting awal')}
+                                                    className=" h-10 w-full rounded-md bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
+                                                >
+                                                    SETTING AWAL
+                                                </button>
+                                                <button
+                                                    type='button'
+                                                    value='button'
+                                                    disabled={isLoading}
+                                                    onClick={() => tambahTaskRabut(RabutMesin?.data?.id, 'druk awal')}
+                                                    className=" h-10 w-full rounded-md bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
+                                                >
+                                                    DRUK AWAL
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </>
+                                </ModalKosonganSmall>
+                            )}
+                        </>
+                    ) : null}
+                    <div className="bg-white ">
+                        <p className="text-sm font-semibold px-5 pt-5"> TOTAL</p>
+                        <div className='flex gap-2'>
+                            <div className="px-5 flex flex-col w-[20%]">
+                                <p className="font-semibold text-sm mt-5 ">
+                                    Setting Awal
+                                </p>
+                                <input
+                                    type="text"
+                                    disabled
+                                    defaultValue={RabutMesin?.settingAwal}
+                                    className="bg-[#e8e6e6] border rounded border-strokedark"
+                                />
+                            </div>
+                            <div className="px-5 flex flex-col w-[20%]">
+                                <p className="font-semibold text-sm mt-5 ">
+                                    Druk Awal
+                                </p>
+                                <input
+                                    type="text"
+                                    disabled
+                                    defaultValue={RabutMesin?.drukAwal}
+                                    className="bg-[#e8e6e6] border rounded border-strokedark"
+                                />
+                            </div>
+                            <div className="px-5 flex flex-col w-[20%]">
+                                <p className="font-semibold text-sm mt-5 ">
+                                    Sub Total
+                                </p>
+                                <input
+                                    type="text"
+                                    disabled
+                                    defaultValue={RabutMesin?.subTotal}
+                                    className="bg-[#e8e6e6] border rounded border-strokedark"
+                                />
+                            </div>
+                            <div className="px-5 flex flex-col w-[20%]">
+                                <p className="font-semibold text-sm mt-5 ">
+                                    Barang Baik
+                                </p>
+                                <input
+                                    type="text"
+                                    disabled
+                                    defaultValue={RabutMesin?.barangBaik}
+                                    className="bg-[#e8e6e6] border rounded border-strokedark"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex flex-col w-full px-4 py-4">
+                            <label className="form-label block  text-black text-xs font-extrabold mt-3">
+                                Barang Baik Aktual <span className="text-red-500">*</span> :
+                            </label>
+                            {RabutMesin?.data?.status == 'incoming' ? (
+                                <input
+                                    type='number'
+                                    onChange={(e) => setbbAktual(e.target.value)}
+                                    className="w-[20%] h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
+                                ></input>
+                            ) : (
+                                <>
+                                    <input
+                                        type='number'
+                                        readOnly
+                                        defaultValue={RabutMesin?.data?.barang_baik_aktual}
+                                        className="w-[20%] h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
+                                    ></input>
+                                </>
+                            )}
+                        </div>
+                        <div className="flex w-full justify-between gap-8 px-4 py-4">
+                            <div className="flex flex-col w-full">
+                                <label className="form-label block  text-black text-xs font-extrabold mt-3">
+                                    CATATAN <span className="text-red-500">*</span> :
+                                </label>
+                                {RabutMesin?.data?.status == 'incoming' ? (
+                                    <textarea
+                                        onChange={(e) => setCatatan(e.target.value)}
+                                        className="peer w-full min-h-[80px]  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                    ></textarea>
+                                ) : (
+                                    <>
+                                        <textarea
+                                            disabled
+                                            defaultValue={RabutMesin?.data?.catatan}
+                                            className="peer w-full min-h-[80px]  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                        ></textarea>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                        <div className='flex w-full justify-end px-4 py-4'>
+                            {RabutMesin?.data?.status == 'incoming' ||
+                                RabutMesin?.data?.status == 'pending' ? (
+                                <button
+                                    disabled={isLoading}
+                                    type='submit'
+                                    value='submit'
+                                    className=" col-span-2 w-[25%] h-10 rounded-md bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                                >
+                                    CHECKSHEET SELESAI
+                                </button>
+                            ) : null}
+                        </div>
+                    </div>
 
-                <input
-                  value={formatInteger(parseInt(total?.defect[0].setting_awal))}
-                  type="text"
-                  disabled
-                  className="w-full h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
-                ></input>
-              </div>
-              <div className="flex flex-col">
-                <p className="text-neutral-500 text-sm font-semibold">
-                  DRUK AWAL
-                </p>
-                <input
-                  value={formatInteger(parseInt(total?.defect[0].druk_awal))}
-                  type="text"
-                  disabled
-                  className="w-full h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
-                ></input>
-              </div>
-              <div className="flex flex-col">
-                <p className="text-neutral-500 text-sm font-semibold">
-                  SUB TOTAL
-                </p>
-                <input
-                  value={formatInteger(parseInt(total?.defect[0].sub_total))}
-                  type="text"
-                  disabled
-                  className="w-full h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
-                ></input>
-              </div>
-              <div className="flex flex-col">
-                <p className="text-neutral-500 text-sm font-semibold">
-                  BARANG BAIK
-                </p>
-                <input
-                  value={formatInteger(parseInt(total?.barangBaik))}
-                  type="text"
-                  disabled
-                  className="w-full h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
-                ></input>
-              </div>
-            </div>
-            <div className="flex flex-col w-full">
-              <label className="form-label block  text-black text-xs font-extrabold mt-3">
-                Barang Baik Aktual <span className="text-red-500">*</span> :
-              </label>
-              {cetakMesinAwal?.status == 'incoming' ? (
-                <input
-                  type='number'
-                  onChange={(e) => setbbAktual(e.target.value)}
-                  className="w-[20%] h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
-                ></input>
-              ) : (
-                <>
-                  <input
-                    type='number'
-                    readOnly
-                    defaultValue={cetakMesinAwal?.barang_baik_aktual}
-                    className="w-[20%] h-6 bg-neutral-300  rounded-sm  border-2 border-stroke"
-                  ></input>
-                </>
-              )}
-            </div>
-            <div className="flex w-full justify-between gap-8">
-              <div className="flex flex-col w-full">
-                <label className="form-label block  text-black text-xs font-extrabold mt-3">
-                  CATATAN <span className="text-red-500">*</span> :
-                </label>
-                {cetakMesinAwal?.status == 'incoming' ? (
-                  <textarea
-                    onChange={(e) => setCatatan(e.target.value)}
-                    className="peer w-full min-h-[80px]  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                  ></textarea>
-                ) : (
-                  <>
-                    <textarea
-                      disabled
-                      defaultValue={cetakMesinAwal?.catatan}
-                      className="peer w-full min-h-[80px]  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                    ></textarea>
-                  </>
-                )}
-              </div>
-              <div className="grid col-span-6 items-end justify-end gap-2">
-                {!isOnprogres && cetakMesinAwal?.status == 'incoming' ? (
-                  <>
-                    <button
-                      onClick={() =>
-                        simpanBarangRusak(
-                          cetakMesinAwal?.id,
-                          cetakMesinAwal?.waktu_sortir,
-                          catatan,
-                          bbAktual
-                        )
-                      }
-                      className=" w-full h-10 rounded-md bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
-                    >
-                      CHECKSHEET SELESAI
-                    </button>
-                  </>
-                ) : (
-                  <></>
-                )}
+                </form>
+            </main>
 
-                {/* ) : null} */}
-              </div>
-            </div>
-          </div>
-        </main>
-      )}
-    </>
-  );
+        </>
+    );
 }
 
-export default CheckSheetBarangRS;
+export default ChecksheetBarangRS;

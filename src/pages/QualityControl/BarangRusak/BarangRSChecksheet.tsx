@@ -1,6 +1,4 @@
 import CheckSheetBarangRS from "../../../components/Tables/QualityControl/QualityInspection/BarangRusak/ChecksheetBarangRS";
-import CheckSheetCetakAwal from "../../../components/Tables/QualityControl/QualityInspection/ProsesCetak/CheckSheetCetakAwal";
-import JenisCetakMesin from "../../../components/Tables/QualityControl/QualityInspection/ProsesCetak/JenisCetak";
 import DefaultLayout from "../../../layout/DefaultLayout";
 
 
