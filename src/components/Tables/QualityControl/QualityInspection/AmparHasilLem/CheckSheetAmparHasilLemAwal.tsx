@@ -124,23 +124,7 @@ function CheckSheetHasilRabut() {
 
       console.log("All Second Options:", allSecondOptions);
 
-      // Handle the first waste item safely
-      if (firstFilteredItem.waste && firstFilteredItem.waste.length > 0) {
-        const firstWasteItem = firstFilteredItem.waste[0]; // Take the first waste item
 
-        const wasteLkh = firstWasteItem?.kendala_desc || ""; // Default to empty string if undefined
-        const wasteCode = firstWasteItem?.kode_kendala || ""; // Default to empty string if undefined
-
-        console.log("First Waste LKH:", wasteLkh);
-        console.log("First Waste Code:", wasteCode);
-
-        setwasteSelectLkh(wasteLkh);
-        setwasteSelectCode(wasteCode);
-      } else {
-        console.warn("No waste items found in the firstFilteredItem.");
-        setwasteSelectLkh("");
-        setwasteSelectCode("");
-      }
 
       // Update states
       setSelectedOption(selected);
@@ -161,6 +145,15 @@ function CheckSheetHasilRabut() {
     console.log("Selected Second Option:", selected);
     setSelectedSecondOption(selected);
 
+    if (selected?.label) {
+      const [code, description] = selected.label.split(" - "); // Split the label into code and description
+      setwasteSelectCode(code?.trim() || ""); // Set the waste code
+      setwasteSelectLkh(description?.trim() || ""); // Set the waste description
+    } else {
+      console.warn("Invalid selection for handleChangePointSelect2:", selected);
+      setwasteSelectCode("");
+      setwasteSelectLkh("");
+    }
   };
 
   async function startTaskRabut(id: number) {
