@@ -74,7 +74,7 @@ function TableAbsensi() {
             setIsLoading(true)
             const res = await axios.get(url, {
                 params: {
-                    is_active: true,
+                    // is_active: true,
                     startDate: dateFrom1,
                     endDate: dateTo1,
                     idDepartment: idDepartment
