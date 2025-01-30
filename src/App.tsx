@@ -186,6 +186,7 @@ import MasterUserPageQC from './pages/MasterData/QC/MasterUserPage';
 import MasterUserHR from './pages/HR/MasterDataHR/MasterUserHR';
 import MasterHakAkses from './pages/MasterData/MasterHakAkses';
 import AccPayroll from './pages/HR/Payroll/AccPayroll';
+import MasterSettingHR from './pages/HR/MasterDataHR/MasterSettingHR';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1796,6 +1797,14 @@ function App() {
           element={
             <>
               <MasterSHiftHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/master/setting"
+          element={
+            <>
+              <MasterSettingHR />
             </>
           }
         />
