@@ -41,6 +41,8 @@ const Login: React.FC = () => {
         navigate('/qc/validatenverify');
       } else if (response.data.bagian == 'ppic') {
         navigate('/ppic/jadwalProduksi');
+      } else if (response.data.bagian == 'produksi') {
+        navigate('/produksi/breakdown');
       }
       else {
         navigate('/dashboard');

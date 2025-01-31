@@ -15,11 +15,12 @@ function RekapWasteQC() {
 
 
     useEffect(() => {
-        getWaste(null, null)
+        // getWaste(null, null)
         getWasteMaster()
     }, []);
 
     async function getWaste(dateFrom1: any, dateTo1: any) {
+        console.log(dateFrom1, dateTo1)
         const url2 = `${import.meta.env.VITE_API_LINK_P1}/api/waste-lkh`;
         const url = `${import.meta.env.VITE_API_LINK}/reportWaste`;
         try {
@@ -27,7 +28,7 @@ function RekapWasteQC() {
             const res2 = await axios.get(url2, {
                 params: {
                     first_date: dateFrom1,
-                    last_date: dateFrom1,
+                    last_date: dateTo1,
                 }
             })
             const res = await axios.post(url,
@@ -44,10 +45,11 @@ function RekapWasteQC() {
 
             setIsLoading(false)
             setWaste(res.data);
-            console.log('waste', res.data);
+            console.log('waste2', res2);
+            console.log('waste', res);
         } catch (error: any) {
             setIsLoading(false)
-            console.log('getwaste', error);
+            console.log('ada', error);
         }
     }
     async function getWasteMaster() {
@@ -63,7 +65,7 @@ function RekapWasteQC() {
             console.log('waste master', res.data);
         } catch (error: any) {
             setIsLoading(false)
-            console.log('getmaster', error);
+            console.log('master waste', error);
         }
     }
 
@@ -331,7 +333,6 @@ function RekapWasteQC() {
                                     </div>
                                 </div>
                                 <div className='grid grid-cols-2  px-5 pb-4'>
-
                                     {waste?.dataByKategori?.dataKendalaMesin?.map((kendala: any, i: any) => (
                                         <>
                                             <label className='flex text-sm  text-black'>
@@ -342,8 +343,6 @@ function RekapWasteQC() {
                                             </label>
                                         </>
                                     ))}
-
-
                                 </div>
                             </>
                         </ModalKosonganSmall>
@@ -369,7 +368,7 @@ function RekapWasteQC() {
                                                 <label className='  text-sm font-semibold text-black'>
                                                     Customer
                                                 </label>
-                                                <label className='  text-sm font-semibold text-black'>
+                                                <label className='  text-sm font-semibold text-black col-span-3'>
                                                     Produk
                                                 </label>
                                                 <div className='flex justify-center text-sm font-semibold text-black col-span-4'>
@@ -391,10 +390,10 @@ function RekapWasteQC() {
                                                 <label className='  text-sm  text-black'>
                                                     {data.no_io}
                                                 </label>
-                                                <label className='  text-sm  text-black'>
+                                                <label className='  text-sm  text-black '>
                                                     {data.customer}
                                                 </label>
-                                                <label className='  text-sm  text-black'>
+                                                <label className='  text-sm  text-black col-span-3'>
                                                     {data.nama_produk}
                                                 </label>
                                                 <button
@@ -483,7 +482,20 @@ function RekapWasteQC() {
                                                                         <label className='  text-sm font-semibold text-black'>
                                                                             TEMUAN HELPER
                                                                         </label>
-
+                                                                        {data.defectsByKategori?.CETAK?.data?.helper?.map((helper: any, i: any) => (
+                                                                            <>
+                                                                                <label key={i} className='  text-sm  text-black'>
+                                                                                    Inspector : {helper.inspektor}
+                                                                                </label>
+                                                                                {helper.wastes?.map((waste: any, ii: any) => (
+                                                                                    <>
+                                                                                        <label key={ii} className='  text-sm  text-black'>
+                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ))}
+                                                                            </>
+                                                                        ))}
 
                                                                     </div>
                                                                 </div>
@@ -577,7 +589,20 @@ function RekapWasteQC() {
                                                                         <label className='  text-sm font-semibold text-black'>
                                                                             TEMUAN HELPER
                                                                         </label>
-
+                                                                        {data.defectsByKategori?.COATING?.data?.helper?.map((helper: any, i: any) => (
+                                                                            <>
+                                                                                <label key={i} className='  text-sm  text-black'>
+                                                                                    Inspector : {helper.inspektor}
+                                                                                </label>
+                                                                                {helper.wastes?.map((waste: any, ii: any) => (
+                                                                                    <>
+                                                                                        <label key={ii} className='  text-sm  text-black'>
+                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ))}
+                                                                            </>
+                                                                        ))}
 
                                                                     </div>
                                                                 </div>
@@ -670,7 +695,20 @@ function RekapWasteQC() {
                                                                         <label className='  text-sm font-semibold text-black'>
                                                                             TEMUAN HELPER
                                                                         </label>
-
+                                                                        {data.defectsByKategori?.LEM?.data?.helper?.map((helper: any, i: any) => (
+                                                                            <>
+                                                                                <label key={i} className='  text-sm  text-black'>
+                                                                                    Inspector : {helper.inspektor}
+                                                                                </label>
+                                                                                {helper.wastes?.map((waste: any, ii: any) => (
+                                                                                    <>
+                                                                                        <label key={ii} className='  text-sm  text-black'>
+                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ))}
+                                                                            </>
+                                                                        ))}
 
                                                                     </div>
                                                                 </div>
@@ -764,7 +802,20 @@ function RekapWasteQC() {
                                                                             TEMUAN HELPER
                                                                         </label>
 
-
+                                                                        {data.defectsByKategori?.POND?.data?.helper?.map((helper: any, i: any) => (
+                                                                            <>
+                                                                                <label key={i} className='  text-sm  text-black'>
+                                                                                    Inspector : {helper.inspektor}
+                                                                                </label>
+                                                                                {helper.wastes?.map((waste: any, ii: any) => (
+                                                                                    <>
+                                                                                        <label key={ii} className='  text-sm  text-black'>
+                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ))}
+                                                                            </>
+                                                                        ))}
                                                                     </div>
                                                                 </div>
                                                             </>
@@ -930,7 +981,7 @@ function RekapWasteQC() {
                                                 <label className='  text-sm font-semibold text-black'>
                                                     Customer
                                                 </label>
-                                                <label className='  text-sm font-semibold text-black'>
+                                                <label className='  text-sm font-semibold text-black col-span-3'>
                                                     Produk
                                                 </label>
                                                 <div className='flex justify-center text-sm font-semibold text-black col-span-4'>
@@ -955,7 +1006,7 @@ function RekapWasteQC() {
                                                 <label className='  text-sm  text-black'>
                                                     {data.customer}
                                                 </label>
-                                                <label className='  text-sm  text-black'>
+                                                <label className='  text-sm  text-black col-span-3'>
                                                     {data.nama_produk}
                                                 </label>
                                                 <button
@@ -1044,7 +1095,20 @@ function RekapWasteQC() {
                                                                         <label className='  text-sm font-semibold text-black'>
                                                                             TEMUAN HELPER
                                                                         </label>
-
+                                                                        {data.defectsByKategori?.CETAK?.data?.helper?.map((helper: any, i: any) => (
+                                                                            <>
+                                                                                <label key={i} className='  text-sm  text-black'>
+                                                                                    Inspector : {helper.inspektor}
+                                                                                </label>
+                                                                                {helper.wastes?.map((waste: any, ii: any) => (
+                                                                                    <>
+                                                                                        <label key={ii} className='  text-sm  text-black'>
+                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ))}
+                                                                            </>
+                                                                        ))}
 
                                                                     </div>
                                                                 </div>
@@ -1138,7 +1202,20 @@ function RekapWasteQC() {
                                                                         <label className='  text-sm font-semibold text-black'>
                                                                             TEMUAN HELPER
                                                                         </label>
-
+                                                                        {data.defectsByKategori?.COATING?.data?.helper?.map((helper: any, i: any) => (
+                                                                            <>
+                                                                                <label key={i} className='  text-sm  text-black'>
+                                                                                    Inspector : {helper.inspektor}
+                                                                                </label>
+                                                                                {helper.wastes?.map((waste: any, ii: any) => (
+                                                                                    <>
+                                                                                        <label key={ii} className='  text-sm  text-black'>
+                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ))}
+                                                                            </>
+                                                                        ))}
 
                                                                     </div>
                                                                 </div>
@@ -1232,7 +1309,20 @@ function RekapWasteQC() {
                                                                             TEMUAN HELPER
                                                                         </label>
 
-
+                                                                        {data.defectsByKategori?.LEM?.data?.helper?.map((helper: any, i: any) => (
+                                                                            <>
+                                                                                <label key={i} className='  text-sm  text-black'>
+                                                                                    Inspector : {helper.inspektor}
+                                                                                </label>
+                                                                                {helper.wastes?.map((waste: any, ii: any) => (
+                                                                                    <>
+                                                                                        <label key={ii} className='  text-sm  text-black'>
+                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ))}
+                                                                            </>
+                                                                        ))}
                                                                     </div>
                                                                 </div>
                                                             </>
@@ -1324,7 +1414,20 @@ function RekapWasteQC() {
                                                                         <label className='  text-sm font-semibold text-black'>
                                                                             TEMUAN HELPER
                                                                         </label>
-
+                                                                        {data.defectsByKategori?.POND?.data?.helper?.map((helper: any, i: any) => (
+                                                                            <>
+                                                                                <label key={i} className='  text-sm  text-black'>
+                                                                                    Inspector : {helper.inspektor}
+                                                                                </label>
+                                                                                {helper.wastes?.map((waste: any, ii: any) => (
+                                                                                    <>
+                                                                                        <label key={ii} className='  text-sm  text-black'>
+                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ))}
+                                                                            </>
+                                                                        ))}
 
                                                                     </div>
                                                                 </div>

@@ -100,6 +100,39 @@ function StaffKalenderKerja() {
             console.log(error);
         }
     }
+    const [thn, setThn] = useState<any>(null);
+    const [jadwalName, setjadwalName] = useState<any>(null);
+    const [jeka, setJeka] = useState<any>(null);
+
+    async function deleteMingguJadwal(thn: any, namaJadwal: any, jenisKaryawan: any) {
+        if (window.confirm(`Apakah Anda yakin akan menghapus hari Minggu di Tahun ${thn} dengan keterangan ${namaJadwal} dengan tipe karyawan ${jenisKaryawan}`)) {
+            const url = `${import.meta.env.VITE_API_LINK
+                }/hr/jadwalKaryawanSatuTahun`;
+
+            try {
+                setIsLoading(true)
+
+                const res = await axios.delete(url, {
+                    data: {
+                        tahun: thn,
+                        nama_jadwal: namaJadwal,
+                        jenis_karyawan: jenisKaryawan,
+                    },
+                    withCredentials: true,
+                });
+                setThn(null)
+                setjadwalName(null)
+                setJeka(null)
+                setIsLoading(false)
+                getKaryawanJadwal()
+                closeModalDeleteMinggu()
+                console.log(res.data)
+            } catch (error: any) {
+                setIsLoading(false)
+                console.log(error);
+            }
+        }
+    }
     async function deleteBiasaJadwal(id: any, tgl: any, ket: any) {
         if (window.confirm(`Apakah Anda yakin akan menghapus hari libur di tanggal ${tgl} ini dengan keterangan ${ket}`)) {
             const url = `${import.meta.env.VITE_API_LINK
@@ -221,12 +254,80 @@ function StaffKalenderKerja() {
     const [showHistory3, setShowHistory3] = useState(false);
     const openModalHistory3 = () => setShowHistory3(true);
     const closeModalHistory3 = () => setShowHistory3(false);
+
+    const [showDeleteMinggu, setShowDeleteMinggu] = useState(false);
+    const openModalDeleteMinggu = () => setShowDeleteMinggu(true);
+    const closeModalDeleteMinggu = () => setShowDeleteMinggu(false);
     return (
         <>
             <main>
                 {isLoading && <Loading />}
                 <div className="bg-white w-full mb-5 rounded-md p-3 flex flex-col justify-center items-center gap-3">
                     <div className='flex  gap-1 w-full justify-end items-end'>
+                        <button
+                            onClick={() => openModalDeleteMinggu()}
+                            className='bg-primary w-[20%] text-white font-semibold text-md px-4 py-1 rounded-md'>
+                            Hapus Sabtu/Minggu
+                        </button>
+                        {showDeleteMinggu == true && (
+                            <>
+                                <ModalKosonganSmall
+                                    isOpen={showDeleteMinggu}
+                                    onClose={() => closeModalDeleteMinggu()}
+                                    judul={'Hapus Sabtu Minggu'}
+                                >
+                                    <>
+                                        <div className='flex flex-col gap-2 py-2 px-4'>
+                                            <div className="flex w-full flex-col py-1">
+                                                <label className="text-black text-xs font-bold">
+                                                    TAHUN
+                                                </label>
+                                                <div className="flex w-full">
+                                                    <input
+                                                        name="grade"
+                                                        onChange={(e) => { setThn(e.target.value) }}
+                                                        type="number"
+                                                        className=" w-full h-7 border-2 border-stroke rounded-md"
+                                                    />
+                                                </div>
+
+                                            </div>
+                                            <div className='flex gap-2'>
+                                                <div className='flex gap-1'>
+                                                    <input
+                                                        onChange={(e) => setjadwalName(e.target.value)}
+                                                        type='radio' name='jadwalName' id='jadwalName1' value={'Sabtu'} />Sabtu
+                                                </div>
+
+                                                <div className='flex gap-1'>
+                                                    <input
+                                                        onChange={(e) => setjadwalName(e.target.value)}
+                                                        type='radio' name='jadwalName' id='jadwalName2' value={'Minggu'} />Minggu
+                                                </div>
+                                            </div>
+                                            <div className='flex gap-2'>
+                                                <div className='flex gap-1'>
+                                                    <input
+                                                        onChange={(e) => setJeka(e.target.value)}
+                                                        type='radio' name='jeka' id='jeka1' value={'produksi'} />Produksi
+                                                </div>
+
+                                                <div className='flex gap-1'>
+                                                    <input
+                                                        onChange={(e) => setJeka(e.target.value)}
+                                                        type='radio' name='jeka' id='jeka2' value={'staff'} />Staff
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => deleteMingguJadwal(thn, jadwalName, jeka)}
+                                                className='bg-red-500 w-full text-white font-semibold text-md px-4 py-1 rounded-md'>
+                                                Hapus
+                                            </button>
+                                        </div>
+                                    </>
+                                </ModalKosonganSmall>
+                            </>
+                        )}
                         <button
                             onClick={() => openModalHistory3()}
                             className='bg-primary w-[20%] text-white font-semibold text-md px-4 py-1 rounded-md'>

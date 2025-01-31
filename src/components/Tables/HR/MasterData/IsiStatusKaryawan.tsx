@@ -12,6 +12,9 @@ function IsiStatusKaryawan() {
     }, []);
 
     const [karyawan, setKaryawan] = useState<any>();
+    const [namaStatusEdit, setnamaStatusEdit] = useState<any>();
+    const [waktuBulanEdit, setWaktuBulanEdit] = useState<any>();
+    const [typeEdit, setTypeEdit] = useState<any>();
 
     async function getKaryawan() {
         const url = `${import.meta.env.VITE_API_LINK
@@ -25,6 +28,7 @@ function IsiStatusKaryawan() {
                     withCredentials: true,
                 },
             );
+
             setIsLoading(false)
             setKaryawan(res.data)
             console.log(res.data)
@@ -39,7 +43,9 @@ function IsiStatusKaryawan() {
     const closeModalHistory = () => setShowHistory(false);
 
     const [namaStatus, setnamaStatus] = useState<any>();
-    const [waktuBulan, setWaktuBulan] = useState<any>();
+    const [waktuBulan, setWaktuBulan] = useState<any>(null);
+    const [type, setType] = useState<any>();
+
     async function postMasterMesin() {
 
         const url = `${import.meta.env.VITE_API_LINK}/master/statusKaryawan`;
@@ -48,7 +54,8 @@ function IsiStatusKaryawan() {
             const res = await axios.post(url,
                 {
                     nama_status: namaStatus,
-                    waktu_bulan: waktuBulan
+                    waktu_bulan: waktuBulan,
+                    type: type
                 },
                 {
 
@@ -56,7 +63,7 @@ function IsiStatusKaryawan() {
                 });
             setIsLoading(false)
 
-            window.location.reload();
+            closeModalHistory()
             getKaryawan()
             console.log(res.data);
         } catch (error: any) {
@@ -79,10 +86,9 @@ function IsiStatusKaryawan() {
         setShowEdit(onchangeVal);
     };
 
-    const [namaStatusEdit, setnamaStatusEdit] = useState<any>();
-    const [waktuBulanEdit, setWaktuBulanEdit] = useState<any>();
 
-    async function editMasterMesin(id: number) {
+
+    async function editMasterMesin(id: number, i: any) {
 
         const url = `${import.meta.env.VITE_API_LINK}/master/statusKaryawan/${id}`;
         try {
@@ -90,17 +96,24 @@ function IsiStatusKaryawan() {
             const res = await axios.put(url,
                 {
                     nama_status: namaStatusEdit,
-                    waktu_bulan: waktuBulanEdit
+                    waktu_bulan: waktuBulanEdit,
+                    type: typeEdit
 
                 },
                 {
 
                     withCredentials: true,
                 });
+
+
             setIsLoading(false)
             alert('Data Berhasil Diubah')
+            closeEdit(i)
+            setWaktuBulanEdit(null)
+            setTypeEdit(null)
+            setnamaStatusEdit(null)
             getKaryawan()
-            console.log(res.data);
+
         } catch (error: any) {
             setIsLoading(false)
             console.log(error);
@@ -127,7 +140,14 @@ function IsiStatusKaryawan() {
             }
         }
     }
-
+    const [selectedType, setSelectedType] = useState<any>({});
+    const handleTypeChange = (index: any, value: any) => {
+        setSelectedType((prev: any) => ({
+            ...prev,
+            [index]: value,
+        }));
+        setTypeEdit(value)
+    };
     return (
         <div>
             <>
@@ -169,8 +189,21 @@ function IsiStatusKaryawan() {
                                                                         className=" w-[387px] h-10 border-2 border-stroke rounded-md"
                                                                     />
                                                                 </div>
+                                                                <div className='flex gap-4'>
+                                                                    <div className='flex gap-1'>
+                                                                        <input
+                                                                            onChange={(e) => setType(e.target.value)}
+                                                                            type='radio' name='type' id='type1' value={'bulan'} />Bulan
+                                                                    </div>
+
+                                                                    <div className='flex gap-1'>
+                                                                        <input
+                                                                            onChange={(e) => setType(e.target.value)}
+                                                                            type='radio' name='type' id='type2' value={'hari'} />Hari
+                                                                    </div>
+                                                                </div>
                                                                 <label className="text-black text-xs font-bold">
-                                                                    Waktu Bulan
+                                                                    Waktu
                                                                 </label>
                                                                 <div className="flex w-full">
                                                                     <input
@@ -221,98 +254,123 @@ function IsiStatusKaryawan() {
                             </div>
                             <div className="w-2 h-full "></div>
                             {karyawan != null &&
-                                karyawan?.data?.map((data: any, i: any) => (
-                                    <>
-                                        <div className="grid grid-cols-11 gap-4 px-3 items-center py-2 border-b-8 border-[#D8EAFF] ">
+                                karyawan?.data?.map((data: any, i: any) => {
 
-                                            <label className="text-neutral-500 text-xs font-semibold  ">
-                                                {i + 1}
-                                            </label>
-                                            <label className="text-neutral-500 text-xs font-semibold  col-span-2">
-                                                {data.nama_status}
-                                            </label>
-                                            <label className="text-neutral-500 text-xs font-semibold  col-span-6">
-                                                {data.waktu_bulan}
-                                            </label>
-                                            {(data.nama_status == 'tetap' || data.nama_status == 'keluar') ? <></> :
 
-                                                <>
-                                                    <button
+                                    const selectWaktu = data.type;
+                                    const initialType = selectedType[i] || selectWaktu;
+                                    return (
+                                        <>
+                                            <div className="grid grid-cols-11 gap-4 px-3 items-center py-2 border-b-8 border-[#D8EAFF] ">
 
-                                                        onClick={() => openEdit(i)}
-                                                        className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
-                                                        EDIT
-                                                    </button>
-                                                </>}
+                                                <label className="text-neutral-500 text-xs font-semibold  ">
+                                                    {i + 1}
+                                                </label>
+                                                <label className="text-neutral-500 text-xs font-semibold  col-span-2">
+                                                    {data.nama_status}
+                                                </label>
+                                                <label className="text-neutral-500 text-xs font-semibold  col-span-6">
+                                                    {data.waktu_bulan}
+                                                </label>
+                                                {(data.nama_status == 'tetap' || data.nama_status == 'keluar') ? <></> :
 
-                                            {showEdit[i] == true && (
-
-                                                <ModalKosonganSmall
-                                                    isOpen={showEdit[i]}
-                                                    onClose={() => closeEdit(i)}
-                                                    judul={'Edit Status Karyawan'}
-                                                >
                                                     <>
-                                                        <div className="grid   gap-3 w-full px-5 py-2">
-                                                            <>
+                                                        <button
 
-                                                                <div className="flex w-full flex-col">
-                                                                    <label className="text-black text-xs font-bold">
-                                                                        Nama Status
-                                                                    </label>
-                                                                    <div className="flex w-full">
-                                                                        <input
-                                                                            required
-                                                                            name="nama_divisi"
-                                                                            defaultValue={data.nama_status}
-                                                                            onChange={(e) => { setnamaStatusEdit(e.target.value) }}
-                                                                            type="text"
-                                                                            className=" w-[387px] h-10 border-2 border-stroke rounded-md"
-                                                                        />
+                                                            onClick={() => openEdit(i)}
+                                                            className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                            EDIT
+                                                        </button>
+                                                    </>}
+
+                                                {showEdit[i] == true && (
+
+                                                    <ModalKosonganSmall
+                                                        isOpen={showEdit[i]}
+                                                        onClose={() => closeEdit(i)}
+                                                        judul={'Edit Status Karyawan'}
+                                                    >
+                                                        <>
+                                                            <div className="grid   gap-3 w-full px-5 py-2">
+                                                                <>
+
+                                                                    <div className="flex w-full flex-col">
+                                                                        <label className="text-black text-xs font-bold">
+                                                                            Nama Status
+                                                                        </label>
+                                                                        <div className="flex w-full">
+                                                                            <input
+                                                                                required
+                                                                                name="nama_divisi"
+                                                                                defaultValue={data.nama_status}
+                                                                                onChange={(e) => { setnamaStatusEdit(e.target.value) }}
+                                                                                type="text"
+                                                                                className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                                            />
+                                                                        </div>
+                                                                        <div className='flex gap-4'>
+                                                                            <div className='flex gap-1'>
+                                                                                <input
+                                                                                    onChange={(e) => handleTypeChange(i, e.target.value)}
+                                                                                    type='radio' name={`typeEdit${i}`}
+                                                                                    id={`typeEdit1${i}`} value={'bulan'}
+                                                                                    checked={initialType === "bulan"}
+                                                                                />Bulan
+                                                                            </div>
+
+                                                                            <div className='flex gap-1'>
+                                                                                <input
+                                                                                    onChange={(e) => handleTypeChange(i, e.target.value)}
+                                                                                    type='radio' name={`typeEdit${i}`}
+                                                                                    id={`typeEdit2${i}`} value={'hari'}
+                                                                                    checked={initialType === "hari"}
+                                                                                />Hari
+                                                                            </div>
+                                                                        </div>
+                                                                        <label className="text-black text-xs font-bold">
+                                                                            Waktu
+                                                                        </label>
+                                                                        <div className="flex w-full">
+                                                                            <input
+                                                                                required
+                                                                                name="nama_divisi"
+                                                                                defaultValue={data.waktu_bulan}
+                                                                                onChange={(e) => { setWaktuBulanEdit(e.target.value) }}
+                                                                                type="number"
+                                                                                className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                                                            />
+                                                                        </div>
                                                                     </div>
-                                                                    <label className="text-black text-xs font-bold">
-                                                                        Waktu Bulan
-                                                                    </label>
-                                                                    <div className="flex w-full">
-                                                                        <input
-                                                                            required
-                                                                            name="nama_divisi"
-                                                                            defaultValue={data.waktu_bulan}
-                                                                            onChange={(e) => { setWaktuBulanEdit(e.target.value) }}
-                                                                            type="number"
-                                                                            className=" w-[387px] h-10 border-2 border-stroke rounded-md"
-                                                                        />
+
+                                                                    <div className=" pt-3">
+                                                                        <button
+                                                                            disabled={isLoading}
+                                                                            onClick={() => editMasterMesin(data.id, i)}
+                                                                            className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
+                                                                        >
+                                                                            SIMPAN
+                                                                        </button>
                                                                     </div>
-                                                                </div>
 
-                                                                <div className=" pt-3">
-                                                                    <button
-                                                                        disabled={isLoading}
-                                                                        onClick={() => editMasterMesin(data.id)}
-                                                                        className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
-                                                                    >
-                                                                        SIMPAN
-                                                                    </button>
-                                                                </div>
+                                                                </>
+                                                            </div>
+                                                        </>
+                                                    </ModalKosonganSmall>
+                                                )}
+                                                {(data.nama_status == 'tetap' || data.nama_status == 'keluar') ? <></> :
 
-                                                            </>
-                                                        </div>
+                                                    <>
+                                                        <button
+                                                            onClick={() => deleteMasterMesin(data.id)}
+                                                            className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                            DELETE
+                                                        </button>
                                                     </>
-                                                </ModalKosonganSmall>
-                                            )}
-                                            {(data.nama_status == 'tetap' || data.nama_status == 'keluar') ? <></> :
-
-                                                <>
-                                                    <button
-                                                        onClick={() => deleteMasterMesin(data.id)}
-                                                        className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
-                                                        DELETE
-                                                    </button>
-                                                </>
-                                            }
-                                        </div>
-                                    </>
-                                ))}
+                                                }
+                                            </div>
+                                        </>
+                                    )
+                                })}
                         </div>
                     </div>
                 </main>
