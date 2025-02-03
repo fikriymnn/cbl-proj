@@ -939,16 +939,16 @@ function RekapOs2Mtc() {
                                             return (
                                                 <>
                                                     <label className='text-sm '>
-                                                        {data2.jumlah_waktu_menit}
+                                                        {parseFloat(data2.jumlah_waktu_jam).toFixed(2)}
                                                     </label>
                                                 </>
                                             )
                                         })}
                                         <label className='text-sm col-span-2 line-clamp-1'>
-                                            {data.jumlah_waktu_menit}
+                                            {parseFloat(data.jumlah_waktu_jam).toFixed(2)}
                                         </label>
                                         <label className='text-sm col-span-2 line-clamp-1'>
-                                            {data.rata_rata_waktu_menit.toFixed(2)}
+                                            {parseFloat(data.rata_rata_waktu_jam).toFixed(2)}
                                         </label>
 
                                     </div >
@@ -1060,7 +1060,7 @@ function RekapOs2Mtc() {
                                             return (
                                                 <>
                                                     <label className='text-xs '>
-                                                        {data2.jumlah_waktu_menit}
+                                                        {parseFloat(data2.jumlah_waktu_jam).toFixed(2)}
                                                     </label>
                                                 </>
                                             )
@@ -1206,16 +1206,16 @@ function RekapOs2Mtc() {
                                             return (
                                                 <>
                                                     <label className='text-sm '>
-                                                        {data2.jumlah_waktu_menit}
+                                                        {parseFloat(data2.jumlah_waktu_jam).toFixed(2)}
                                                     </label>
                                                 </>
                                             )
                                         })}
                                         <label className='text-sm col-span-2 line-clamp-1'>
-                                            {data.jumlah_waktu_menit}
+                                            {parseFloat(data.jumlah_waktu_jam).toFixed(2)}
                                         </label>
                                         <label className='text-sm col-span-2 line-clamp-1'>
-                                            {data.rata_rata_waktu_menit.toFixed(2)}
+                                            {parseFloat(data.rata_rata_waktu_jam).toFixed(2)}
                                         </label>
 
                                     </div >
@@ -1327,7 +1327,7 @@ function RekapOs2Mtc() {
                                             return (
                                                 <>
                                                     <label className='text-xs '>
-                                                        {data2.jumlah_waktu_menit}
+                                                        {parseFloat(data2.jumlah_waktu_jam).toFixed(2)}
                                                     </label>
                                                 </>
                                             )

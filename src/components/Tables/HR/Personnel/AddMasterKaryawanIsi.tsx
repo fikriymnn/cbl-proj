@@ -358,8 +358,9 @@ function AddMasterKaryawanIsi() {
                         </div>
                         <div>
                             <div className='flex flex-col gap-1'>
+
                                 <label className=' text-sm font-semibold'>
-                                    Divisi<span className='text-red-600'>*</span>
+                                    Department<span className='text-red-600'>*</span>
                                 </label>
                                 <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
                                     <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
@@ -375,22 +376,22 @@ function AddMasterKaryawanIsi() {
                                     </span>
 
                                     <select
-                                        name='nama_divisi'
-                                        onChange={(e) => seidDivisi(e.target.value)}
+                                        name='nama_department'
+                                        onChange={(e) => setidDepartment(e.target.value)}
                                         className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                     >
                                         <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                            PILIH DIVISI
+                                            PILIH DEPARTMENT
                                         </option>
-                                        {divisi?.data?.map((data: any, i: number) => {
+                                        {department?.data?.map((data: any, i: number) => {
 
                                             return (
                                                 <option
                                                     value={data.id}
                                                     className="text-gray-800 text-xs font-light dark:text-bodydark"
                                                 >
-                                                    {data.nama_divisi}
+                                                    {data.nama_department}
                                                 </option>
                                             )
                                         }
@@ -416,13 +417,13 @@ function AddMasterKaryawanIsi() {
                                             </g>
                                         </svg>
                                     </span>
-
                                 </div>
+
                             </div>
                             <div className='flex gap-4'>
                                 <div className='flex flex-col gap-1 w-[60%]'>
                                     <label className=' text-sm font-semibold'>
-                                        Department<span className='text-red-600'>*</span>
+                                        Divisi<span className='text-red-600'>*</span>
                                     </label>
                                     <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
                                         <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
@@ -438,22 +439,22 @@ function AddMasterKaryawanIsi() {
                                         </span>
 
                                         <select
-                                            name='nama_department'
-                                            onChange={(e) => setidDepartment(e.target.value)}
+                                            name='nama_divisi'
+                                            onChange={(e) => seidDivisi(e.target.value)}
                                             className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                         >
                                             <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                                PILIH DEPARTMENT
+                                                PILIH DIVISI
                                             </option>
-                                            {department?.data?.map((data: any, i: number) => {
+                                            {divisi?.data?.map((data: any, i: number) => {
 
                                                 return (
                                                     <option
                                                         value={data.id}
                                                         className="text-gray-800 text-xs font-light dark:text-bodydark"
                                                     >
-                                                        {data.nama_department}
+                                                        {data.nama_divisi}
                                                     </option>
                                                 )
                                             }
@@ -482,6 +483,7 @@ function AddMasterKaryawanIsi() {
 
                                     </div>
                                 </div>
+
                                 <div className='flex flex-col gap-1 w-[40%]'>
                                     <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
                                         <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">

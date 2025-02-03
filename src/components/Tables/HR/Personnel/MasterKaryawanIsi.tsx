@@ -55,6 +55,28 @@ function MasterKaryawanIsi() {
             }
         }
     }
+
+    async function cutOffKaryawan(id: any) {
+        if (window.confirm('Apakah Anda yakin ingin Cut-Off Karyawan ini?')) {
+            const url = `${import.meta.env.VITE_API_LINK
+                }/hr/karyawan/cutOff/${id}`;
+            try {
+
+                const res = await axios.put(
+                    url,
+                    {
+
+                        withCredentials: true,
+                    },
+                );
+                getKaryawan()
+
+            } catch (error: any) {
+
+                console.log(error);
+            }
+        }
+    }
     const [searchQuery, setSearchQuery] = useState('');
     const filteredAbsen = karyawan?.data?.filter((data: any) =>
         data.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -193,6 +215,11 @@ function MasterKaryawanIsi() {
                                                     onClick={() => deleteKaryawan(data.userid)}
                                                     className='bg-red-600 px-2 py-1 text-xs  items-center justify-center text-white font-semibold rounded-md  flex'>
                                                     DELETE
+                                                </button>
+                                                <button
+                                                    onClick={() => cutOffKaryawan(data.userid)}
+                                                    className='bg-orange-400 px-2 py-1 text-xs  items-center justify-center text-white font-semibold rounded-md  flex'>
+                                                    CUT-OFF
                                                 </button>
                                             </div>
 

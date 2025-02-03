@@ -173,6 +173,12 @@ function PayrollMinggu() {
                             Nama
                         </label>
                         <label className="text-neutral-500 text-xs font-semibold  ">
+                            Department
+                        </label>
+                        <label className="text-neutral-500 text-xs font-semibold  ">
+                            Divisi
+                        </label>
+                        <label className="text-neutral-500 text-xs font-semibold  ">
                             Total
                         </label>
                         <div className='flex justify-center '>
@@ -195,7 +201,13 @@ function PayrollMinggu() {
                                 <label className="text-neutral-500 text-xs font-semibold  ">
                                     {data.summaryPayroll?.nama_karyawan}
                                 </label>
-                                <label className="text-neutral-500 text-xs font-semibold col-span-4 ">
+                                <label className="text-neutral-500 text-xs font-semibold  ">
+                                    {data.summaryPayroll?.department}
+                                </label>
+                                <label className="text-neutral-500 text-xs font-semibold  ">
+                                    {data.summaryPayroll?.divisi}
+                                </label>
+                                <label className="text-neutral-500 text-xs font-semibold col-span-2 ">
                                     Rp.{formatInteger(data.summaryPayroll?.total)}
                                 </label>
                                 <div className='flex justify-center '>
@@ -228,6 +240,22 @@ function PayrollMinggu() {
                                                             </label>
                                                             <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
                                                                 {data.summaryPayroll?.nik}
+                                                            </label>
+                                                        </div>
+                                                        <div className='flex flex-col '>
+                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                Deparment
+                                                            </label>
+                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                {data.summaryPayroll?.department}
+                                                            </label>
+                                                        </div>
+                                                        <div className='flex flex-col '>
+                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                Divisi
+                                                            </label>
+                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                {data.summaryPayroll?.divisi}
                                                             </label>
                                                         </div>
 

@@ -8,6 +8,8 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import TableAbsensi from './TableAbsensi';
 import TableAbsenMentah from './AbsenMentah';
+import RekapAbsen from './RekapAbsenHR';
+import RekapAbsenHR from './RekapAbsenHR';
 
 
 interface TabPanelProps {
@@ -140,6 +142,7 @@ export default function TabAbsenHR() {
                         >
                             <Tab label="Absensi" {...a11yProps(0)} />
                             <Tab label="Absen Data" {...a11yProps(1)} />
+                            <Tab label="Rekap Absen" {...a11yProps(2)} />
 
 
                             <div className="flex w-full justify-end pr-4">
@@ -156,6 +159,10 @@ export default function TabAbsenHR() {
 
                 <TabPanel value={value} index={1} dir={theme.direction}>
                     <TableAbsenMentah />
+                </TabPanel>
+
+                <TabPanel value={value} index={2} dir={theme.direction}>
+                    <RekapAbsenHR />
                 </TabPanel>
             </Box>
         </>

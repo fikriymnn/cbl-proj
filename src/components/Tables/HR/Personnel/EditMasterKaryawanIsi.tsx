@@ -499,8 +499,9 @@ function EditMasterKaryawanIsi() {
                         </div>
                         <div>
                             <div className='flex flex-col gap-1'>
+
                                 <label className=' text-sm font-semibold'>
-                                    Divisi :
+                                    Department :
 
                                 </label>
                                 <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
@@ -517,23 +518,23 @@ function EditMasterKaryawanIsi() {
                                     </span>
 
                                     <select
-                                        value={idDivisi}
-                                        name='nama_divisi'
-                                        onChange={(e) => seidDivisi(e.target.value)}
+                                        value={idDepartment}
+                                        name='nama_department'
+                                        onChange={(e) => setidDepartment(e.target.value)}
                                         className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                     >
                                         <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                            PILIH DIVISI
+                                            PILIH DEPARTMENT
                                         </option>
-                                        {divisi?.data?.map((data: any, i: number) => {
+                                        {department?.data?.map((data: any, i: number) => {
 
                                             return (
                                                 <option
                                                     value={data.id}
                                                     className="text-gray-800 text-xs font-light dark:text-bodydark"
                                                 >
-                                                    {data.nama_divisi}
+                                                    {data.nama_department}
                                                 </option>
                                             )
                                         }
@@ -565,7 +566,7 @@ function EditMasterKaryawanIsi() {
                             <div className='flex gap-4'>
                                 <div className='flex flex-col gap-1 w-[60%]'>
                                     <label className=' text-sm font-semibold'>
-                                        Department :
+                                        Divisi :
 
                                     </label>
                                     <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
@@ -582,23 +583,23 @@ function EditMasterKaryawanIsi() {
                                         </span>
 
                                         <select
-                                            value={idDepartment}
-                                            name='nama_department'
-                                            onChange={(e) => setidDepartment(e.target.value)}
+                                            value={idDivisi}
+                                            name='nama_divisi'
+                                            onChange={(e) => seidDivisi(e.target.value)}
                                             className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
                                     }`}
                                         >
                                             <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                                PILIH DEPARTMENT
+                                                PILIH DIVISI
                                             </option>
-                                            {department?.data?.map((data: any, i: number) => {
+                                            {divisi?.data?.map((data: any, i: number) => {
 
                                                 return (
                                                     <option
                                                         value={data.id}
                                                         className="text-gray-800 text-xs font-light dark:text-bodydark"
                                                     >
-                                                        {data.nama_department}
+                                                        {data.nama_divisi}
                                                     </option>
                                                 )
                                             }
