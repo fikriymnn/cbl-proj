@@ -286,8 +286,8 @@ function ProjectMtc() {
             const res = await axios.get(url, {
                 params: {
 
-                    page: page,
-                    limit: 10,
+                    // page: page,
+                    // limit: 10,
 
                 },
                 withCredentials: true,
