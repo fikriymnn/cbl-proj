@@ -7,6 +7,7 @@ import Loading from '../../../Loading';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
 import PopUpTable from './DragAndDropPopUp';
+import ModalFull from './ModalFull';
 
 function ListJOProduksi() {
 
@@ -33,7 +34,7 @@ function ListJOProduksi() {
 
 
     async function getKalkulasi(id: any) {
-        const url = `${import.meta.env.VITE_API_LINK}/ppic/calculateJadwalProduksi/${id}`;
+        const url = `${import.meta.env.VITE_API_LINK}/ppic/calculateJadwalProduksiDua/${id}`;
         try {
             setIsLoading(true)
             const res = await axios.get(url, {
@@ -142,6 +143,21 @@ function ListJOProduksi() {
 
         setShowModal1(onchangeVal);
     };
+    const [selectedTahapan, setSelectedTahapan] = useState<string | null>(null);
+    const [showModalFull, setShowModalFull] = useState<any>([]);
+    const openModalFull = (i: any, tahapan: any) => {
+        const onchangeVal: any = [...showModalFull];
+
+        onchangeVal[i] = true;
+        setSelectedTahapan(tahapan)
+        setShowModalFull(onchangeVal);
+    };
+    const closeModalFull = (i: any) => {
+        const onchangeVal: any = [...showModalFull];
+        onchangeVal[i] = false;
+
+        setShowModalFull(onchangeVal);
+    };
     const handleNextPrev = (direction: string) => {
         const currentDate = startDate ? new Date(startDate) : new Date(todayDate); // Use selected date or today
         currentDate.setDate(currentDate.getDate() + (direction === 'next' ? 1 : -1)); // Increment or decrement by 1 day
@@ -151,6 +167,8 @@ function ListJOProduksi() {
         setEndDate(newDate);
         getJadwalView(newDate, newDate)
     };
+
+
     return (
         <main className="overflow-x-scroll ' ">
             {isLoading && <Loading />}
@@ -261,7 +279,6 @@ function ListJOProduksi() {
                                 <p className='text-[#646464] text-xs font-bold col-span-4'>
                                     Tanggal Kirim
                                 </p>
-
                             </div>
                             <div className='max-h-[500px] overflow-y-scroll'>
                                 {listJO?.data?.map((data: any, i: number) => (
@@ -270,7 +287,7 @@ function ListJOProduksi() {
                                             key={i}
                                             className='grid grid-cols-12  bg-white  border-b-8 border-[#D8EAFF] px-[1%] py-[1%] '>
                                             <p className='text-[#646464] text-sm  col-span-2'>
-                                                {data.jo}
+                                                {data.no_jo}
                                             </p>
                                             <p className='text-[#646464] text-sm  col-span-2'>
                                                 {data.item}
@@ -308,7 +325,7 @@ function ListJOProduksi() {
                                                                         Nomor JO
                                                                     </label>
                                                                     <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
-                                                                        : {data.jo}
+                                                                        : {data.no_jo}
                                                                     </label>
                                                                 </div>
                                                                 <div className='grid grid-cols-2 gap-2'>
@@ -327,7 +344,6 @@ function ListJOProduksi() {
                                                                         : {convertTimeStampToDate(data.tgl_kirim)}
                                                                     </label>
                                                                 </div>
-
                                                             </div>
                                                             <div className='flex flex-col '>
                                                                 <div className='grid grid-cols-2 gap-2'>
@@ -398,9 +414,35 @@ function ListJOProduksi() {
                                                                             <label htmlFor="" className='text-black text-xs justify-center  border-2 border-stroke flex items-center h-[50px]'>
                                                                                 {data2.tahapan}
                                                                             </label>
-                                                                            <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                {convertTimeStampToDate(data2.tgl_from)}
-                                                                            </label>
+                                                                            <div className=' justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                {hasilKalkulasi?.data?.jadwalPerJam?.length == 0 ? (
+                                                                                    <>
+                                                                                        <label htmlFor="" className='text-black text-xs justify-center  border-2 border-stroke flex items-center h-[50px]'>
+                                                                                            {data2.tgl_from}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ) : (
+                                                                                    <>
+                                                                                        <button
+                                                                                            onClick={() => openModalFull(ii, data2.tahapan)}
+                                                                                            className='text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400'>
+                                                                                            {data2.tgl_from}
+                                                                                        </button>
+                                                                                    </>
+                                                                                )}
+                                                                                {showModalFull[ii] == true && (
+
+                                                                                    <ModalFull
+                                                                                        isOpen={showModalFull[ii]}
+                                                                                        onClose={() => closeModalFull(ii)}
+                                                                                        judul={`Jadwal ${data2.tahapan} - ${data.jo}`}
+                                                                                    >
+                                                                                        <>
+                                                                                            <p>Detail for {selectedTahapan}</p>
+                                                                                        </>
+                                                                                    </ModalFull>
+                                                                                )}
+                                                                            </div>
                                                                             {showDetail[i] && (
                                                                                 <>
                                                                                     <label htmlFor="" className='text-black text-xs justify-center  border-2 border-stroke flex items-center h-[50px]'>
@@ -445,7 +487,24 @@ function ListJOProduksi() {
                                                                     DETAIL
                                                                 </button>
                                                             </div>
-                                                        </div>
+                                                        </div >
+                                                        {hasilKalkulasi?.data?.jadwalPerJam?.length == 0 ? (
+                                                            <>
+                                                                <div className='flex justify-center items-center'>
+                                                                    <button
+                                                                        title="button"
+
+                                                                        className="text-lg w-full flex justify-center  font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
+                                                                    >
+                                                                        SIMPAN
+                                                                    </button>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+
+                                                            </>
+                                                        )}
                                                     </>
                                                 </ModalXL>
                                             )}
@@ -453,7 +512,7 @@ function ListJOProduksi() {
                                     </>
                                 ))}
                             </div>
-                        </div>
+                        </div >
                         <div
                             onClick={showComponent2}
                             className='flex w-[3%] hover:cursor-pointer bg-blue-600 rounded-l-lg max-h-[20%] flex-col text-xl font-extrabold text-white items-center justify-center'>

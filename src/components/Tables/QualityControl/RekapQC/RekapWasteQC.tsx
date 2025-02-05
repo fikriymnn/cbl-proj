@@ -752,8 +752,6 @@ function RekapWasteQC() {
                                                                                 ))}
                                                                             </>
                                                                         ))}
-
-
                                                                     </div>
                                                                     <div className='flex flex-col gap-1'>
                                                                         <label className='  text-sm font-semibold text-black'>
@@ -937,12 +935,7 @@ function RekapWasteQC() {
                                                                     <label className='text-xs text-red-500 font-semibold '>
                                                                         {data2.calculated_defect}
                                                                     </label>
-                                                                    <label className='text-xs font-bold border-b-2 h-full w-full text-center text-black border-black uppercase bg-slate-200'>
-                                                                        {data2.operator}
-                                                                    </label>
-                                                                    <label className='text-xs font-bold border-b-2 h-full w-full text-center text-black border-black uppercase bg-slate-200'>
-                                                                        {data2.kategori}
-                                                                    </label>
+
                                                                 </div>
                                                             </>
                                                         )

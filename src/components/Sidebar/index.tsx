@@ -5710,6 +5710,7 @@ const Sidebar = ({
                 bagian === 'maintenance' &&
                 renderShift()}
               {role === 'admin' && bagian === 'quality control' && renderQC()}
+              {role === 'section head' && bagian === 'quality control' && renderQC()}
 
               {role === 'supervisor' && bagian === 'quality control' && renderQC()}
 
