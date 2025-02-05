@@ -8,14 +8,16 @@ import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
 import PopUpTable from './DragAndDropPopUp';
 import ModalFull from './ModalFull';
+import PopUpTable2 from './PopUpTable2';
 
 function ListJOProduksi() {
 
     const [isLoading, setIsLoading] = useState(false);
     const [listJO, setJo] = useState<any>();
+    const [listJO1, setJo1] = useState<any>();
     const [hasilKalkulasi, setHasilKalkulasi] = useState<any>();
-    const [startDate, setStartDate] = useState<any>();
-    const [endDate, setEndDate] = useState<any>();
+    const [startDate, setStartDate] = useState<any>(null);
+    const [endDate, setEndDate] = useState<any>(null);
     const [mapData, setMapData] = useState<any>([]);
 
     const today = new Date();
@@ -33,20 +35,42 @@ function ListJOProduksi() {
     }, []);
 
 
-    async function getKalkulasi(id: any) {
-        const url = `${import.meta.env.VITE_API_LINK}/ppic/calculateJadwalProduksiDua/${id}`;
+    async function getKalkulasi(id: any, jo: any, i: any) {
+        if (window.confirm(`Lakukan Kalkulasi pada ${jo}?`)) {
+            const url = `${import.meta.env.VITE_API_LINK}/ppic/calculateJadwalProduksiDua/${id}`;
+            try {
+                setIsLoading(true)
+                const res = await axios.get(url, {
+                    withCredentials: true,
+                });
+                setIsLoading(false)
+                openCalculate(i)
+                setHasilKalkulasi(res.data)
+                getmasterKategori()
+                console.log('Kalkulasi', res.data);
+            } catch (error: any) {
+                setIsLoading(false)
+                console.log(error);
+            }
+        }
+    }
+    async function get1Tiket(id: any, i: any) {
+
+        const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksi/${id}`;
         try {
             setIsLoading(true)
             const res = await axios.get(url, {
                 withCredentials: true,
             });
+            setJo1(res.data)
             setIsLoading(false)
-            setHasilKalkulasi(res.data)
-            console.log('Kalkulasi', res.data);
+            openCalculate(i)
+            console.log('listJO 1', res.data);
         } catch (error: any) {
             setIsLoading(false)
             console.log(error);
         }
+
     }
 
     async function getmasterKategori() {
@@ -86,16 +110,20 @@ function ListJOProduksi() {
             setIsLoading(false);
         }
     };
+    const putMasukJadwal = async (id: any) => {
+        const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksi/submit/${id}`;
+        try {
+            setIsLoading(true);
+            const response = await axios.put(url, {
 
-
-    const [activeComponent, setActiveComponent] = useState('component1');
-
-    const showComponent1 = () => {
-        setActiveComponent('component1');
-    };
-
-    const showComponent2 = () => {
-        setActiveComponent('component2');
+                withCredentials: true,
+            });
+            alert('berhasil')
+            setIsLoading(false);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            setIsLoading(false);
+        }
     };
 
     const [showListJo, setShowListJo] = useState(false);
@@ -143,6 +171,8 @@ function ListJOProduksi() {
 
         setShowModal1(onchangeVal);
     };
+
+
     const [selectedTahapan, setSelectedTahapan] = useState<string | null>(null);
     const [showModalFull, setShowModalFull] = useState<any>([]);
     const openModalFull = (i: any, tahapan: any) => {
@@ -158,500 +188,535 @@ function ListJOProduksi() {
 
         setShowModalFull(onchangeVal);
     };
-    const handleNextPrev = (direction: string) => {
-        const currentDate = startDate ? new Date(startDate) : new Date(todayDate); // Use selected date or today
-        currentDate.setDate(currentDate.getDate() + (direction === 'next' ? 1 : -1)); // Increment or decrement by 1 day
 
-        const newDate = currentDate.toISOString().split('T')[0]; // Format the new date to YYYY-MM-DD
-        setStartDate(newDate);
-        setEndDate(newDate);
-        getJadwalView(newDate, newDate)
+    const [selectedData, setSelectedData] = useState<any>(null);
+    const formatCustomDate = (dateString: string) => {
+        const months = [
+            "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+            "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        ];
+
+        const [datePart, timePart] = dateString.split(" ");
+        const [year, month, day] = datePart.split("-");
+
+        return `${parseInt(day)} / ${months[parseInt(month) - 1]} / ${year} - ${timePart.replace(/\./g, ":")}`;
     };
-
-
     return (
         <main className="overflow-x-scroll ' ">
             {isLoading && <Loading />}
-            <div className="min-w-[700px]  bg-[#D8EAFF] rounded-xl flex gap-1 ">
-                {activeComponent === 'component1' ? (
-                    <>
-                        <div className='flex w-[97%] flex-col bg-[#D8EAFF]'>
-                            <div className="grid grid-cols-10 w-full md:gap-4 gap-1  px-4 py-4 md:mt-0  rounded-md bg-[#D8EAFF] mb-2">
-                                <div className='col-span-8 gap-2 flex flex-col'>
-                                    <p className="my-auto text-sm text-primary font-semibold">
-                                        Pilih Tanggal
-                                    </p>
-                                    <div className="flex md:max-w-[30%] max-w-[60%] gap-2 justify-between">
-                                        <p className="text-sm text-primary font-semibold ">
-                                            Dari :
-                                        </p>
+            <div className="min-w-[700px]  bg-white rounded-xl flex gap-1 ">
 
-                                        <input
-                                            className='rounded-md bg-white px-2'
-                                            type="date"
+                <div className='flex w-full flex-col bg-[#D8EAFF]'>
+                    <div className="grid grid-cols-10 w-full md:gap-4 gap-1  px-4 py-4 md:mt-0  rounded-md bg-white mb-2">
+                        <div className='col-span-8 gap-2 flex flex-col'>
+                            <p className="my-auto text-sm text-primary font-semibold">
+                                Pilih Tanggal
+                            </p>
+                            <div className="flex md:max-w-[30%] max-w-[60%] gap-2 justify-between">
+                                <p className="text-sm text-primary font-semibold ">
+                                    Dari :
+                                </p>
 
-                                        ></input>
+                                <input
+                                    className='rounded-md bg-[#D8EAFF] px-2'
+                                    type="date"
 
-                                    </div>
-                                    <div className="flex  md:max-w-[30%] max-w-[60%] gap-2 justify-between">
-                                        <p className="text-sm text-primary font-semibold ">
-                                            Sampai :
-                                        </p>
+                                ></input>
 
-                                        <input
-                                            className='rounded-md bg-white px-2'
-                                            type="date"
+                            </div>
+                            <div className="flex  md:max-w-[30%] max-w-[60%] gap-2 justify-between">
+                                <p className="text-sm text-primary font-semibold ">
+                                    Sampai :
+                                </p>
 
-                                        ></input>
+                                <input
+                                    className='rounded-md bg-[#D8EAFF] px-2'
+                                    type="date"
 
-                                    </div>
+                                ></input>
 
-                                </div>
-                                <div className="flex justify-end col-span-2">
-                                    <button
-                                        onClick={() => openModalListJo()}
-                                        className="bg-primary text-white px-5 py-2 rounded-md my-auto "
+                            </div>
+
+                        </div>
+                        <div className="flex justify-end col-span-2">
+                            <button
+                                onClick={() => openModalListJo()}
+                                className="bg-primary text-white px-5 py-2 rounded-md my-auto "
+                            >
+                                Booking
+                            </button>
+                            {showListJo == true && (
+                                <>
+                                    <ModalKosonganSmall
+                                        isOpen={showListJo}
+                                        onClose={() => closeModalListJo()}
+                                        judul={'Booking'}
                                     >
-                                        Booking
-                                    </button>
-                                    {showListJo == true && (
                                         <>
-                                            <ModalKosonganSmall
-                                                isOpen={showListJo}
-                                                onClose={() => closeModalListJo()}
-                                                judul={'Booking'}
-                                            >
-                                                <>
-                                                    <div className="grid grid-cols-12 w-full md:gap-4 gap-1  px-4 py-4 md:mt-0   bg-white mb-2 ">
-                                                        <div className='gap-2 col-span-8 flex flex-col'>
-                                                            <p className="my-auto text-sm text-primary font-semibold">
-                                                                Pilih Tanggal
-                                                            </p>
-                                                            <div className="flex w-full gap-2 justify-between">
-                                                                <p className="text-sm text-primary font-semibold ">
-                                                                    Dari :
-                                                                </p>
+                                            <div className="grid grid-cols-12 w-full md:gap-4 gap-1  px-4 py-4 md:mt-0   bg-white mb-2 ">
+                                                <div className='gap-2 col-span-8 flex flex-col'>
+                                                    <p className="my-auto text-sm text-primary font-semibold">
+                                                        Pilih Tanggal
+                                                    </p>
+                                                    <div className="flex w-full gap-2 justify-between">
+                                                        <p className="text-sm text-primary font-semibold ">
+                                                            Dari :
+                                                        </p>
 
-                                                                <input
-                                                                    className='rounded-md bg-blue-200 px-2'
-                                                                    type="date"
+                                                        <input
+                                                            className='rounded-md bg-blue-200 px-2'
+                                                            type="date"
 
-                                                                ></input>
-
-                                                            </div>
-                                                            <div className="flex w-full   gap-2 justify-between">
-                                                                <p className="text-sm text-primary font-semibold ">
-                                                                    Sampai :
-                                                                </p>
-
-                                                                <input
-                                                                    className='rounded-md bg-blue-200 px-2'
-                                                                    type="date"
-
-                                                                ></input>
-
-                                                            </div>
-                                                        </div>
+                                                        ></input>
 
                                                     </div>
-                                                </>
-                                            </ModalKosonganSmall>
+                                                    <div className="flex w-full   gap-2 justify-between">
+                                                        <p className="text-sm text-primary font-semibold ">
+                                                            Sampai :
+                                                        </p>
+
+                                                        <input
+                                                            className='rounded-md bg-blue-200 px-2'
+                                                            type="date"
+
+                                                        ></input>
+
+                                                    </div>
+                                                </div>
+
+                                            </div>
                                         </>
-                                    )
-                                    }
-                                </div>
-                            </div>
+                                    </ModalKosonganSmall>
+                                </>
+                            )
+                            }
+                        </div>
+                    </div>
 
 
-                            <div className='grid grid-cols-12  bg-white  border-b-8 border-[#D8EAFF] px-[1%] py-[1%]'>
-                                <p className='text-[#646464] text-xs font-bold col-span-2'>
-                                    Job Order
-                                </p>
-                                <p className='text-[#646464] text-xs font-bold col-span-2'>
-                                    Nama Item
-                                </p>
-                                <p className='text-[#646464] text-xs font-bold '>
-                                    Qty Pcs
-                                </p>
-                                <p className='text-[#646464] text-xs font-bold '>
-                                    Qty Druk
-                                </p>
-                                <p className='text-[#646464] text-xs font-bold col-span-4'>
-                                    Tanggal Kirim
-                                </p>
-                            </div>
-                            <div className='max-h-[500px] overflow-y-scroll'>
-                                {listJO?.data?.map((data: any, i: number) => (
-                                    <>
-                                        <div
-                                            key={i}
-                                            className='grid grid-cols-12  bg-white  border-b-8 border-[#D8EAFF] px-[1%] py-[1%] '>
-                                            <p className='text-[#646464] text-sm  col-span-2'>
-                                                {data.no_jo}
-                                            </p>
-                                            <p className='text-[#646464] text-sm  col-span-2'>
-                                                {data.item}
-                                            </p>
-                                            <p className='text-[#646464] text-sm  '>
-                                                {formatInteger(data.qty_pcs)}
-                                            </p>
-                                            <p className='text-[#646464] text-sm  '>
-                                                {formatInteger(data.qty_druk)}
-                                            </p>
-                                            <p className='text-[#646464] text-sm  col-span-4'>
-                                                {data.tgl_kirim}
-                                            </p>
+                    <div className='grid grid-cols-12  bg-white  border-b-8 border-[#D8EAFF] px-[1%] py-[1%]'>
+                        <p className='text-[#646464] text-xs font-bold col-span-2'>
+                            Job Order
+                        </p>
+                        <p className='text-[#646464] text-xs font-bold col-span-2'>
+                            Nama Item
+                        </p>
+                        <p className='text-[#646464] text-xs font-bold '>
+                            Qty Pcs
+                        </p>
+                        <p className='text-[#646464] text-xs font-bold '>
+                            Qty Druk
+                        </p>
+                        <p className='text-[#646464] text-xs font-bold col-span-4'>
+                            Tanggal Kirim
+                        </p>
+                    </div>
+                    <div className='max-h-[500px] overflow-y-scroll'>
 
+                        {listJO?.data?.map((data: any, i: number) => (
+                            <>
+                                <div
+                                    key={i}
+                                    className='grid grid-cols-12  bg-white  border-b-8 border-[#D8EAFF] px-[1%] py-[1%] '>
+                                    <p className='text-[#646464] text-sm  col-span-2'>
+                                        {data.no_jo}
+                                    </p>
+                                    <p className='text-[#646464] text-sm  col-span-2'>
+                                        {data.item}
+                                    </p>
+                                    <p className='text-[#646464] text-sm  '>
+                                        {formatInteger(data.qty_pcs)}
+                                    </p>
+                                    <p className='text-[#646464] text-sm  '>
+                                        {formatInteger(data.qty_druk)}
+                                    </p>
+                                    <p className='text-[#646464] text-sm  col-span-4'>
+                                        {data.tgl_kirim}
+                                    </p>
+                                    <div className='col-span-2'>
+                                        {data.status == 'calculated' ? <>
                                             <button
                                                 onClick={() => {
-                                                    getKalkulasi(data.id)
-                                                    openCalculate(i)
+                                                    get1Tiket(data.id, i)
+
                                                 }}
                                                 className='text-[#0065de] text-sm  font-bold'>
+                                                VIEW
+                                            </button>
+                                        </> : <>
+                                            <button
+                                                onClick={() => {
+                                                    getKalkulasi(data.id, data.no_jo, i)
+
+                                                }}
+                                                className='text-[#0065de] text-sm   font-bold'>
                                                 CALCULATE
                                             </button>
-                                            {showCalculate[i] == true && (
+                                        </>}
+                                    </div>
 
-                                                <ModalXL
-                                                    isOpen={showCalculate[i]}
-                                                    onClose={() => closeCalculate(i)}
-                                                    judul={'Rumus Kalkulasi'}
-                                                >
-                                                    <>
-                                                        <div className='grid grid-cols-2 gap-2 px-4 py-4  border-b-8 border-[#D8EAFF]'>
-                                                            <div className='flex flex-col '>
-                                                                <div className='grid grid-cols-2 gap-2'>
-                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                        Nomor JO
-                                                                    </label>
-                                                                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
-                                                                        : {data.no_jo}
-                                                                    </label>
-                                                                </div>
-                                                                <div className='grid grid-cols-2 gap-2'>
-                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                        Item
-                                                                    </label>
-                                                                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
-                                                                        : {data.item}
-                                                                    </label>
-                                                                </div>
-                                                                <div className='grid grid-cols-2 gap-2'>
-                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                        Tanggal Kirim
-                                                                    </label>
-                                                                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
-                                                                        : {convertTimeStampToDate(data.tgl_kirim)}
-                                                                    </label>
-                                                                </div>
-                                                            </div>
-                                                            <div className='flex flex-col '>
-                                                                <div className='grid grid-cols-2 gap-2'>
-                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                        Qty Druk
-                                                                    </label>
-                                                                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
-                                                                        : {formatInteger(data.qty_druk)}
-                                                                    </label>
-                                                                </div>
-                                                                <div className='grid grid-cols-2 gap-2'>
-                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                        Qty Pcs
-                                                                    </label>
-                                                                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
-                                                                        : {formatInteger(data.qty_pcs)}
-                                                                    </label>
-                                                                </div>
-                                                            </div>
+                                    {showCalculate[i] == true && (
+
+                                        <ModalXL
+                                            isOpen={showCalculate[i]}
+                                            onClose={() => closeCalculate(i)}
+                                            judul={'Rumus Kalkulasi'}
+                                        >
+                                            <>
+                                                <div className='grid grid-cols-2 gap-2 px-4 py-4  border-b-8 border-[#D8EAFF]'>
+                                                    <div className='flex flex-col '>
+                                                        <div className='grid grid-cols-2 gap-2'>
+                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                Nomor JO
+                                                            </label>
+                                                            <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                : {data.no_jo}
+                                                            </label>
                                                         </div>
-                                                        <div className='flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF] gap-2 px-4 py-4'>
-                                                            <div className='w-[150px] flex flex-col '>
+                                                        <div className='grid grid-cols-2 gap-2'>
+                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                Item
+                                                            </label>
+                                                            <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                : {data.item}
+                                                            </label>
+                                                        </div>
+                                                        <div className='grid grid-cols-2 gap-2'>
+                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                Tanggal Kirim
+                                                            </label>
+                                                            <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                : {convertTimeStampToDate(data.tgl_kirim)}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div className='flex flex-col '>
+                                                        <div className='grid grid-cols-2 gap-2'>
+                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                Qty Druk
+                                                            </label>
+                                                            <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                : {formatInteger(data.qty_druk)}
+                                                            </label>
+                                                        </div>
+                                                        <div className='grid grid-cols-2 gap-2'>
+                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                Qty Pcs
+                                                            </label>
+                                                            <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                : {formatInteger(data.qty_pcs)}
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className='flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF] gap-2 px-4 py-4'>
+                                                    <div className='w-[150px] flex flex-col '>
+                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                            TAHAPAN
+                                                        </label>
+                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                            TANGGAL
+                                                        </label>
+                                                        {showDetail[i] && (
+                                                            <>
                                                                 <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                    TAHAPAN
+                                                                    KATEGORI
                                                                 </label>
                                                                 <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                    TANGGAL
+                                                                    DRYING TIME
                                                                 </label>
-                                                                {showDetail[i] && (
-                                                                    <>
-                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                            KATEGORI
-                                                                        </label>
-                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                            DRYING TIME
-                                                                        </label>
-                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                            MESIN
-                                                                        </label>
-                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                            KAPASITAS/JAM
-                                                                        </label>
-                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                            DRYING TIME (JAM)
-                                                                        </label>
-                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                            SETTING (JAM)
-                                                                        </label>
-                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                            KAPASITAS (JAM)
-                                                                        </label>
-                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                            TOLERANSI
-                                                                        </label>
-                                                                        <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
-                                                                            TOTAL WAKTU
-                                                                        </label>
-                                                                    </>
-                                                                )}
-                                                            </div>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    MESIN
+                                                                </label>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    KAPASITAS/JAM
+                                                                </label>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    DRYING TIME (JAM)
+                                                                </label>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    SETTING (JAM)
+                                                                </label>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    KAPASITAS (JAM)
+                                                                </label>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    TOLERANSI
+                                                                </label>
+                                                                <label htmlFor="" className='text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]'>
+                                                                    TOTAL WAKTU
+                                                                </label>
+                                                            </>
+                                                        )}
+                                                    </div>
 
-                                                            <div className='flex overflow-x-scroll max-w-screen'>
-                                                                {hasilKalkulasi?.data?.tahap?.map((data2: any, ii: number) => (
-                                                                    <>
-                                                                        <div
-                                                                            key={ii}
-                                                                            className='min-w-[150px] flex flex-col justify-center'>
-                                                                            <label htmlFor="" className='text-black text-xs justify-center  border-2 border-stroke flex items-center h-[50px]'>
-                                                                                {data2.tahapan}
-                                                                            </label>
-                                                                            <div className=' justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                {hasilKalkulasi?.data?.jadwalPerJam?.length == 0 ? (
-                                                                                    <>
-                                                                                        <label htmlFor="" className='text-black text-xs justify-center  border-2 border-stroke flex items-center h-[50px]'>
-                                                                                            {data2.tgl_from}
-                                                                                        </label>
-                                                                                    </>
-                                                                                ) : (
-                                                                                    <>
-                                                                                        <button
-                                                                                            onClick={() => openModalFull(ii, data2.tahapan)}
-                                                                                            className='text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400'>
-                                                                                            {data2.tgl_from}
-                                                                                        </button>
-                                                                                    </>
-                                                                                )}
-                                                                                {showModalFull[ii] == true && (
-
-                                                                                    <ModalFull
-                                                                                        isOpen={showModalFull[ii]}
-                                                                                        onClose={() => closeModalFull(ii)}
-                                                                                        judul={`Jadwal ${data2.tahapan} - ${data.jo}`}
-                                                                                    >
-                                                                                        <>
-                                                                                            <p>Detail for {selectedTahapan}</p>
-                                                                                        </>
-                                                                                    </ModalFull>
-                                                                                )}
-                                                                            </div>
-                                                                            {showDetail[i] && (
+                                                    <div className='flex overflow-x-scroll max-w-screen'>
+                                                        {listJO1 == null ? <>
+                                                            {hasilKalkulasi?.data?.tahap?.map((data2: any, ii: number) => (
+                                                                <>
+                                                                    <div
+                                                                        key={ii}
+                                                                        className='min-w-[150px] flex flex-col justify-center'>
+                                                                        <label htmlFor="" className='text-black text-xs justify-center  border-2 border-stroke flex items-center h-[50px]'>
+                                                                            {data2.tahapan}
+                                                                        </label>
+                                                                        <div className=' justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                            {data2?.jadwal_per_jam?.length == 0 ? (
                                                                                 <>
-                                                                                    <label htmlFor="" className='text-black text-xs justify-center  border-2 border-stroke flex items-center h-[50px]'>
-                                                                                        {data2.kategory}
-                                                                                    </label>
-                                                                                    <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                        {data2.kategory_drying_time}
-                                                                                    </label>
-                                                                                    <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                        {data2.mesin}
-                                                                                    </label>
-                                                                                    <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                        {data2.kapasitas_per_jam}
-                                                                                    </label>
-                                                                                    <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                        {data2.drying_time}
-                                                                                    </label>
-                                                                                    <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                        {data2.setting}
-                                                                                    </label>
-                                                                                    <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                        {data2.kapasitas}
-                                                                                    </label>
-                                                                                    <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                        {data2.toleransi}
-                                                                                    </label>
-                                                                                    <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
-                                                                                        {data2.total_waktu}
+                                                                                    <label htmlFor="" className='text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center'>
+                                                                                        {formatCustomDate(data2.tgl_from)}
                                                                                     </label>
                                                                                 </>
+                                                                            ) : (
+                                                                                <>
+                                                                                    <button
+                                                                                        onClick={() => openModalFull(ii, data2.tahapan)}
+                                                                                        className='text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center'>
+                                                                                        {convertTimeStampToDate(data2.jadwal_per_jam[0]?.tanggal)} - {data2.jadwal_per_jam[0]?.jam}
+                                                                                    </button>
+                                                                                </>
+                                                                            )}
+                                                                            {showModalFull[ii] == true && (
+
+                                                                                <ModalFull
+                                                                                    isOpen={showModalFull[ii]}
+                                                                                    onClose={() => {
+                                                                                        setSelectedData(null)
+                                                                                        closeModalFull(ii)
+                                                                                    }}
+                                                                                    judul={`Jadwal ${data2.tahapan} - ${data.jo}`}
+                                                                                >
+                                                                                    <>
+                                                                                        <label htmlFor="" className='text-black text-xl px-4 mt-4 flex font-semibold'>
+                                                                                            List Kepala
+                                                                                        </label>
+                                                                                        <div className='grid grid-cols-7 w-full bg-white border-b-8 border-[#D8EAFF] flex-col py-4 px-1'>
+                                                                                            <div className='flex flex-wrap gap-1 col-span-2'>
+                                                                                                {data2.jadwal_per_jam?.map((data3: any, iii: any) => (
+                                                                                                    <>
+                                                                                                        <div
+                                                                                                            key={iii}
+                                                                                                            className='border-2 border-stroke flex items-center h-[50px] px-4'>
+                                                                                                            <button onClick={() => setSelectedData(data3)} className='text-black text-xs '>
+                                                                                                                {convertTimeStampToDate(data3.tanggal)} - {data3.jam}
+                                                                                                            </button>
+                                                                                                        </div>
+
+
+                                                                                                        {showModal1[data3?.id] === true && ( // Use matchingData.id to open the correct modal
+
+                                                                                                            <PopUpTable dataMap={data3}
+                                                                                                                onClose={() => closeModal1(data3?.id)}
+                                                                                                                onFinish={() => get1Tiket(data.id, i)} />
+
+                                                                                                        )}
+                                                                                                    </>
+                                                                                                ))}
+                                                                                            </div>
+                                                                                            <div className="col-span-5 flex flex-col gap-1 ">
+                                                                                                {selectedData ? (
+                                                                                                    <PopUpTable dataMap={selectedData} onClose={() => setSelectedData(null)} onFinish={() => get1Tiket(data.id, i)} />
+                                                                                                ) : (
+                                                                                                    <p className="text-gray-500">Pilih Data</p>
+                                                                                                )}
+                                                                                            </div>
+                                                                                        </div>
+
+                                                                                    </>
+                                                                                </ModalFull>
                                                                             )}
                                                                         </div>
-                                                                    </>
-                                                                ))}
-                                                            </div>
-                                                            <div className=''>
-                                                                <button
-                                                                    title="button"
-                                                                    onClick={() => handleClickDetail(i)}
-                                                                    className="text-xs w-full flex  font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
-                                                                >
-                                                                    DETAIL
-                                                                </button>
-                                                            </div>
-                                                        </div >
-                                                        {hasilKalkulasi?.data?.jadwalPerJam?.length == 0 ? (
-                                                            <>
-                                                                <div className='flex justify-center items-center'>
-                                                                    <button
-                                                                        title="button"
+                                                                        {showDetail[i] && (
+                                                                            <>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center  border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.kategory}
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.kategory_drying_time}
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.mesin}
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.kapasitas_per_jam}
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.drying_time}
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.setting}
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.kapasitas}
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.toleransi}
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.total_waktu}
+                                                                                </label>
+                                                                            </>
+                                                                        )}
+                                                                    </div>
+                                                                </>
+                                                            ))}
+                                                        </> : <>
+                                                            {listJO1?.data?.tahap?.map((data2: any, ii: number) => (
+                                                                <>
+                                                                    <div
+                                                                        key={ii}
+                                                                        className='min-w-[150px] flex flex-col justify-center'>
+                                                                        <label htmlFor="" className='text-black text-xs justify-center  border-2 border-stroke flex items-center h-[50px]'>
+                                                                            {data2.tahapan}
+                                                                        </label>
+                                                                        <div className=' justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                            {data2?.jadwal_per_jam?.length == 0 ? (
+                                                                                <>
+                                                                                    <label htmlFor="" className='text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center'>
+                                                                                        {formatCustomDate(data2.tgl_from)}
+                                                                                    </label>
+                                                                                </>
+                                                                            ) : (
+                                                                                <>
+                                                                                    <button
+                                                                                        onClick={() => {
 
-                                                                        className="text-lg w-full flex justify-center  font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
-                                                                    >
-                                                                        SIMPAN
-                                                                    </button>
-                                                                </div>
-                                                            </>
+                                                                                            openModalFull(ii, data2.tahapan)
+                                                                                        }}
+                                                                                        className='text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center'>
+                                                                                        {data2.jadwal_per_jam?.length == 0 ? '-' : convertTimeStampToDate(data2.jadwal_per_jam[0]?.tanggal)} - {data2.jadwal_per_jam[0]?.jam}
+                                                                                    </button>
+                                                                                </>
+                                                                            )}
+                                                                            {showModalFull[ii] == true && (
+
+                                                                                <ModalFull
+                                                                                    isOpen={showModalFull[ii]}
+                                                                                    onClose={() => {
+                                                                                        setSelectedData(null)
+                                                                                        closeModalFull(ii)
+                                                                                    }}
+                                                                                    judul={`Jadwal ${data2.tahapan} - ${data.no_jo}`}
+                                                                                >
+                                                                                    <>
+                                                                                        <label htmlFor="" className='text-black text-xl px-4 mt-4 flex font-semibold'>
+                                                                                            List Kepala
+                                                                                        </label>
+                                                                                        <div className='grid grid-cols-7 w-full bg-white border-b-8 border-[#D8EAFF] flex-col py-4 px-1'>
+                                                                                            <div className='flex flex-wrap gap-1 col-span-2'>
+                                                                                                {data2.jadwal_per_jam?.map((data3: any, iii: any) => (
+                                                                                                    <>
+                                                                                                        <div
+                                                                                                            key={iii}
+                                                                                                            className='border-2 border-stroke flex items-center h-[50px] px-4'>
+                                                                                                            <button onClick={() => setSelectedData(data3)} className='text-black text-xs '>
+                                                                                                                {convertTimeStampToDate(data3.tanggal)} - {data3.jam}
+                                                                                                            </button>
+                                                                                                        </div>
+
+
+                                                                                                        {showModal1[data3?.id] === true && ( // Use matchingData.id to open the correct modal
+
+                                                                                                            <PopUpTable dataMap={data3}
+                                                                                                                onClose={() => closeModal1(data3?.id)}
+                                                                                                                onFinish={() => get1Tiket(data.id, i)} />
+
+                                                                                                        )}
+                                                                                                    </>
+                                                                                                ))}
+                                                                                            </div>
+                                                                                            <div className="col-span-5 flex flex-col gap-1 ">
+                                                                                                {selectedData ? (
+                                                                                                    <PopUpTable dataMap={selectedData} onClose={() => setSelectedData(null)} onFinish={() => get1Tiket(data.id, i)} />
+                                                                                                ) : (
+                                                                                                    <p className="text-gray-500">Pilih Data</p>
+                                                                                                )}
+                                                                                            </div>
+                                                                                        </div>
+
+                                                                                    </>
+                                                                                </ModalFull>
+                                                                            )}
+                                                                        </div>
+                                                                        {showDetail[i] && (
+                                                                            <>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center  border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.kategory}
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.kategory_drying_time}
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.mesin}
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.kapasitas_per_jam}
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.drying_time}
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.setting}
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.kapasitas}
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.toleransi}
+                                                                                </label>
+                                                                                <label htmlFor="" className='text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]'>
+                                                                                    {data2.total_waktu}
+                                                                                </label>
+                                                                            </>
+                                                                        )}
+                                                                    </div >
+                                                                </>
+                                                            ))}
+                                                        </>}
+
+
+
+                                                    </div>
+                                                    <div className=''>
+                                                        <button
+                                                            title="button"
+                                                            onClick={() => handleClickDetail(i)}
+                                                            className="text-xs w-full flex  font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
+                                                        >
+                                                            DETAIL
+                                                        </button>
+                                                    </div>
+                                                </div >
+                                                {/* {hasilKalkulasi?.data?.jadwalPerJam?.length == 0 ? (
+                                                            <> */}
+                                                <div className='flex justify-center items-center pt-1'>
+                                                    <button
+                                                        title="button"
+                                                        onClick={() => putMasukJadwal(data.id)}
+                                                        className="text-base w-full flex justify-center  font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
+                                                    >
+                                                        MASUK JADWAL
+                                                    </button>
+                                                </div>
+                                                {/* </>
                                                         ) : (
                                                             <>
 
                                                             </>
-                                                        )}
-                                                    </>
-                                                </ModalXL>
-                                            )}
-                                        </div>
-                                    </>
-                                ))}
-                            </div>
-                        </div >
-                        <div
-                            onClick={showComponent2}
-                            className='flex w-[3%] hover:cursor-pointer bg-blue-600 rounded-l-lg max-h-[20%] flex-col text-xl font-extrabold text-white items-center justify-center'>
-                            {'<'}
-                        </div>
+                                                        )}*/}
+                                            </>
+                                        </ModalXL>
+                                    )}
+                                </div >
+                            </>
+                        ))}
 
-                    </>
-                ) :
-                    (
-                        <>
-                            <div
-                                onClick={showComponent1}
-                                className='flex w-[3%] hover:cursor-pointer bg-blue-600 rounded-l-lg max-h-[20%] flex-col text-xl font-extrabold text-white items-center justify-center'>
-                                {'>'}
-                            </div>
+                    </div>
+                </div >
 
-                            <div className='flex w-[97%] flex-col'>
 
-                                <div className='flex flex-col gap-3 w-full py-3'>
-                                    <div className="flex flex-col gap-2  w-[30%]">
-                                        <p className="text-sm text-primary font-semibold">
-                                            Tanggal:
-                                        </p>
-                                        <input
-                                            className='rounded-md bg-white px-2 h-8'
-                                            type="date"
-                                            onChange={(e) => {
-                                                setStartDate(e.target.value)
-                                                setEndDate(e.target.value)
-                                            }}
-                                        ></input>
 
-                                    </div>
 
-                                    <div className="flex ">
-                                        <button
-                                            onClick={() => {
-                                                getJadwalView(startDate, endDate)
-                                            }}
-                                            className="bg-primary text-white  rounded-md my-auto py-1 px-2"
-                                        >
-                                            Tampilkan
-                                        </button>
-
-                                    </div>
-                                    <div className="flex w-full justify-between">
-                                        <button
-                                            onClick={() => handleNextPrev('prev')}
-                                            className="bg-primary text-white rounded-md my-auto py-1 px-2"
-                                        >
-                                            Prev
-                                        </button>
-
-                                        <button
-                                            onClick={() => handleNextPrev('next')}
-                                            className="bg-primary text-white rounded-md my-auto py-1 px-2"
-                                        >
-                                            Next
-                                        </button>
-
-                                    </div>
-                                    <label className='text-xl text-blue-400 font-semibold w-full flex justify-center'>
-                                        {convertTimeStampToDate(startDate)}
-                                    </label>
-                                </div>
-
-                                <div className='flex bg-white border-b-8 border-[#D8EAFF]'>
-                                    {/* Header Row for Time */}
-                                    <p className='text-center text-[#0065de] text-[11px] w-[6%] font-semibold py-[1%]'>
-                                        TIME
-                                    </p>
-                                    {mapData?.
-                                        filter((data: any, index: number, self: any[]) =>
-                                            self.findIndex(item => item.mesin === data.mesin) === index
-                                        )
-                                        .map((data: any, i1: number) => (
-                                            <div
-                                                key={i1}
-                                                className={`flex w-[6%] justify-center items-center ${i1 % 2 === 1 ? 'bg-white' : 'bg-[#eaf4ff]'}`}>
-                                                <p className='text-center text-[#0065de] text-[11px] font-semibold'>
-                                                    {data.mesin}
-                                                </p>
-                                            </div>
-                                        ))}
-                                </div>
-
-                                <div className='flex w-full bg-white border-b-8 border-[#D8EAFF] flex-col'>
-                                    {/* Rows for Hours and Data */}
-                                    {hours.map((hour, rowIndex) => (
-                                        <div key={rowIndex} className='flex border-b-8 border-[#D8EAFF]'>
-                                            {/* Hour Column */}
-                                            <div className={`flex w-[6%] py-[1%] justify-center items-center`}>
-                                                <p className='text-center text-[#0065de] text-[11px] font-semibold'>
-                                                    {hour}
-                                                </p>
-                                            </div>
-
-                                            {/* Data Columns */}
-                                            {mapData?.filter((data: any, index: number, self: any[]) =>
-                                                self.findIndex(item => item.mesin === data.mesin) === index
-                                            )
-                                                .map((machineData: any, colIndex: number) => {
-                                                    // Find matching data for this hour and machine
-                                                    const matchingData = mapData.find(
-                                                        (d: any) => d.jam === hour && d.mesin === machineData.mesin
-                                                    );
-
-                                                    return (
-                                                        <div
-                                                            key={colIndex}
-                                                            className={`flex w-[6%] justify-center items-center ${colIndex % 2 === 1 ? 'bg-white' : 'bg-[#eaf4ff]'}`}>
-                                                            <button
-                                                                onClick={() => openModal1(matchingData?.id)}
-                                                                className='text-center text-[#0065de] text-[11px] font-semibold'>
-                                                                {matchingData ? matchingData.no_jo : ''}
-                                                            </button>
-
-                                                            {showModal1[matchingData?.id] === true && ( // Use matchingData.id to open the correct modal
-                                                                <ModalKosongan
-                                                                    isOpen={showModal1[matchingData?.id]}
-                                                                    onClose={() => closeModal1(matchingData?.id)}
-                                                                    judul={'Drag And Drop Edit'}
-                                                                >
-                                                                    <PopUpTable dataMap={mapData.find((data: any) => data.id === matchingData?.id)}
-                                                                        onClose={() => closeModal1(matchingData?.id)}
-                                                                        onFinish={() => getJadwalView(startDate, endDate)} />
-                                                                </ModalKosongan>
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                        </>
-                    )
-                }
             </div>
 
         </main >

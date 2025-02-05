@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import DailyJadwalProduksi from './DailyJadwalProduksi';
 import ListJOProduksi from './ListJOProduksi';
+import TampilanDailyJO from './TampilanDailyJo';
 
 
 interface TabPanelProps {
@@ -124,6 +125,7 @@ export default function TabJadwalProduksi() {
                         className='bg-white text-[#00499F] font-semibold mb-2 '
                     >
                         <Tab label="List JO" {...a11yProps(0)} className='' />
+                        <Tab label="Overview Daily" {...a11yProps(1)} className='' />
 
 
                     </Tabs>
@@ -133,7 +135,7 @@ export default function TabJadwalProduksi() {
                 <ListJOProduksi />
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
-
+                <TampilanDailyJO />
             </TabPanel>
             <TabPanel value={value} index={2} dir={theme.direction}>
 

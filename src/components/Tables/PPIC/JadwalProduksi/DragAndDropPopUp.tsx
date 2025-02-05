@@ -4,14 +4,25 @@ import axios from 'axios';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
 
-const popUpTable = ({ dataMap, onClose, onFinish }: { dataMap: any, onClose: any, onFinish: any }) => {
-    // Initialize data with dataMap
+const PopUpTable = ({ dataMap, onClose, onFinish }: { dataMap: any, onClose: any, onFinish: any }) => {
+    // Ensure state updates when dataMap changes
     const [data, setData] = useState<any>(dataMap);
-    const startDate = new Date(data.tanggal);
 
+    useEffect(() => {
+        if (dataMap) {
+            setData(dataMap);
+        }
+        setStartDate(new Date(dataMap.tanggal));
+        setDaysList(generateDays(new Date(dataMap.tanggal), 7));
+    }, [dataMap]); // Dependency: updates when `dataMap` changes
+
+    if (!data) {
+        return <p className="text-gray-500">No Data Selected</p>;
+    }
+    const [startDate, setStartDate] = useState(new Date(dataMap?.tanggal));
     const [isLoading, setIsLoading] = useState(false);
-    // Generate a list of 7 days from startDate
-    const generateDays = (startDate: any, daysCount: any) => {
+    const [daysList, setDaysList] = useState(generateDays(startDate, 7));
+    function generateDays(startDate: Date, daysCount: number) {
         let days = [];
         for (let i = 0; i < daysCount; i++) {
             let day = new Date(startDate);
@@ -19,15 +30,22 @@ const popUpTable = ({ dataMap, onClose, onFinish }: { dataMap: any, onClose: any
             days.push(day);
         }
         return days;
+    }
+
+    // Handle Next & Prev Date Range
+    const handleChangeDateRange = (direction: 'next' | 'prev') => {
+        const newStartDate = new Date(startDate);
+        newStartDate.setDate(startDate.getDate() + (direction === 'next' ? 7 : -7)); // Move 7 days forward/backward
+
+        setStartDate(newStartDate);
+        setDaysList(generateDays(newStartDate, 7)); // Regenerate daysList
     };
 
-    const [daysList, setDaysList] = useState(generateDays(startDate, 7)); // Initial 7 days
     const hoursList = Array.from({ length: 24 }, (_, index) => `${index.toString().padStart(2, '0')}:00:00`);
 
-    // Handle the drop event to update the data (day and hour)
     const handleDrop = (event: any, newDay: any, newJam: any) => {
         event.preventDefault();
-        if (data.jam !== newJam || newDay.toISOString() !== new Date(data.tanggal).toISOString()) {
+        if (data?.jam !== newJam || newDay.toISOString() !== new Date(data?.tanggal).toISOString()) {
             setData((prevData: any) => ({
                 ...prevData,
                 tanggal: newDay.toISOString(),
@@ -36,76 +54,69 @@ const popUpTable = ({ dataMap, onClose, onFinish }: { dataMap: any, onClose: any
         }
     };
 
-    // Handle the drag start event to store the dragged item data
     const handleDragStart = (e: any) => {
         e.dataTransfer.setData('application/json', JSON.stringify(data));
     };
 
-    // Allow the drop by preventing the default event action
     const handleDragOver = (event: any) => {
         event.preventDefault();
     };
+
     const putJadwalView = async () => {
-        const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksiView/${data.id}`;
+        if (!data) return;
+        const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksi/${data.id}`;
         try {
             setIsLoading(true);
-            const response = await axios.put(url, {
-                data_jadwal: data
-            }, {
-
-                withCredentials: true,
-            });
-            setIsLoading(false);
+            await axios.put(url, { data_jadwal: data }, { withCredentials: true });
             onClose();
-            onFinish()
+            onFinish();
+            setIsLoading(false);
         } catch (error) {
-            console.error('Error fetching data:', error);
+            console.error('Error updating data:', error);
             setIsLoading(false);
         }
     };
-    useEffect(() => {
-        // Whenever data changes (due to drag and drop), we can call any function here if needed (e.g., to update the API).
-
-    }, []);
 
     return (
-        <div className="max-w-full mx-auto p-4">
+        <div className="max-w-full mx-auto">
             {isLoading && <Loading />}
-            <h2 className="text-2xl font-bold mb-4">Jadwal Mesin: {data.mesin}</h2>
+            <h2 className="text-2xl font-bold mb-4">Jadwal Mesin: {data?.mesin}</h2>
+            <div className="flex justify-between items-center mb-4">
+                <button
+                    onClick={() => handleChangeDateRange('prev')}
+                    className="bg-gray-200 text-black px-3 py-2 rounded-md"
+                >
+                    ⬅️ Prev 7 Days
+                </button>
+
+                <span className="text-lg font-semibold text-blue-600">
+                    {convertTimeStampToDate(startDate.toISOString())} - {convertTimeStampToDate(daysList[6].toISOString())}
+                </span>
+
+                <button
+                    onClick={() => handleChangeDateRange('next')}
+                    className="bg-gray-200 text-black px-3 py-2 rounded-md"
+                >
+                    Next 7 Days ➡️
+                </button>
+            </div>
             <div className='flex flex-col w-[50%]'>
                 <div className='grid grid-cols-2 gap-2'>
-                    <label htmlFor="" className='text-black text-xs font-bold'>
-                        Nomor JO
-                    </label>
-                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
-                        : {data.no_jo}
-                    </label>
+                    <label className='text-black text-xs font-bold'>Nomor JO</label>
+                    <label className='text-[#016ae6] uppercase text-xl font-normal'>: {data?.no_jo}</label>
                 </div>
                 <div className='grid grid-cols-2 gap-2'>
-                    <label htmlFor="" className='text-black text-xs font-bold'>
-                        Item
-                    </label>
-                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
-                        : {data.item}
-                    </label>
+                    <label className='text-black text-xs font-bold'>Item</label>
+                    <label className='text-[#016ae6] uppercase text-xl font-normal'>: {data?.item}</label>
                 </div>
                 <div className='grid grid-cols-2 gap-2'>
-                    <label htmlFor="" className='text-black text-xs font-bold'>
-                        Qty Druk
-                    </label>
-                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
-                        : {formatInteger(data.qty_druk)}
-                    </label>
+                    <label className='text-black text-xs font-bold'>Qty Druk</label>
+                    <label className='text-[#016ae6] uppercase text-xl font-normal'>: {formatInteger(data?.qty_druk)}</label>
                 </div>
                 <div className='grid grid-cols-2 gap-2'>
-                    <label htmlFor="" className='text-black text-xs font-bold'>
-                        Qty Pcs
-                    </label>
-                    <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
-                        : {formatInteger(data.qty_pcs)}
-                    </label>
+                    <label className='text-black text-xs font-bold'>Qty Pcs</label>
+                    <label className='text-[#016ae6] uppercase text-xl font-normal'>: {formatInteger(data?.qty_pcs)}</label>
                 </div>
-
             </div>
             <div className="overflow-x-auto">
                 <table className="table-auto w-full border-collapse border border-gray-300">
@@ -113,9 +124,7 @@ const popUpTable = ({ dataMap, onClose, onFinish }: { dataMap: any, onClose: any
                         <tr className="bg-gray-100">
                             <th className="px-4 py-2 text-left">Jam</th>
                             {daysList.map((day, index) => (
-                                <th key={index} className="px-4 py-2 text-left">
-                                    {day.toLocaleDateString()}
-                                </th>
+                                <th key={index} className="px-4 py-2 text-left">{day.toLocaleDateString()}</th>
                             ))}
                         </tr>
                     </thead>
@@ -126,8 +135,8 @@ const popUpTable = ({ dataMap, onClose, onFinish }: { dataMap: any, onClose: any
                                 {daysList.map((day, index) => (
                                     <td
                                         key={index}
-                                        className={`px-4 py-2 cursor-pointer ${data.jam === hour &&
-                                            new Date(data.tanggal).toLocaleDateString() === day.toLocaleDateString()
+                                        className={`px-4 py-2 cursor-pointer ${data?.jam === hour &&
+                                            new Date(data?.tanggal).toLocaleDateString() === day.toLocaleDateString()
                                             ? 'bg-green-200'
                                             : ''
                                             }`}
@@ -136,10 +145,9 @@ const popUpTable = ({ dataMap, onClose, onFinish }: { dataMap: any, onClose: any
                                         draggable
                                         onDragStart={handleDragStart}
                                     >
-                                        {data.jam === hour && new Date(data.tanggal).toLocaleDateString() === day.toLocaleDateString() ? (
+                                        {data?.jam === hour && new Date(data?.tanggal).toLocaleDateString() === day.toLocaleDateString() ? (
                                             <div className="p-2 bg-blue-100 border border-blue-300 rounded-md">
-                                                <h4 className="text-xs">No Jo: {data.no_jo}</h4>
-
+                                                <h4 className="text-xs">No Jo: {data?.no_jo}</h4>
                                             </div>
                                         ) : (
                                             <span className="text-sm text-gray-500">-</span>
@@ -152,7 +160,7 @@ const popUpTable = ({ dataMap, onClose, onFinish }: { dataMap: any, onClose: any
                 </table>
             </div>
             <button
-                onClick={() => putJadwalView()}
+                onClick={putJadwalView}
                 className="bg-primary text-white px-5 py-2 rounded-md my-auto mt-4"
             >
                 Simpan
@@ -161,6 +169,4 @@ const popUpTable = ({ dataMap, onClose, onFinish }: { dataMap: any, onClose: any
     );
 };
 
-export default popUpTable;
-
-
+export default PopUpTable;

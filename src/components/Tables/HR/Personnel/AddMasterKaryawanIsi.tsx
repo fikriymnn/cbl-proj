@@ -97,7 +97,7 @@ function AddMasterKaryawanIsi() {
             );
             setIsLoading(false)
             setkaryawanStatus(res.data)
-            console.log(res.data)
+            console.log('status karyawan', res.data)
         } catch (error: any) {
             setIsLoading(false)
             console.log(error);
@@ -250,10 +250,16 @@ function AddMasterKaryawanIsi() {
             console.log(error);
         }
     }
-    const recalculateWaktuKeluar = (masukDate: any, waktuBulan: any) => {
+    const recalculateWaktuKeluar = (masukDate: string, waktuBulan: number, type: string | null) => {
         if (!masukDate || !waktuBulan) return null; // If no input date or waktuBulan, return empty
         const date = new Date(masukDate);
-        date.setMonth(date.getMonth() + waktuBulan); // Add months
+
+        if (type === 'hari') {
+            date.setDate(date.getDate() + waktuBulan); // Add days if type is 'Hari'
+        } else {
+            date.setMonth(date.getMonth() + waktuBulan); // Add months otherwise
+        }
+
         return date.toISOString().split("T")[0]; // Format to YYYY-MM-DD
     };
 
@@ -265,17 +271,18 @@ function AddMasterKaryawanIsi() {
         if (selectedStatus) {
             // Use current or default tglMasuk if not set
             const defaultTglMasuk = tglMasuk || new Date().toISOString().split("T")[0];
-            const recalculatedKeluar = recalculateWaktuKeluar(defaultTglMasuk, selectedStatus.waktu_bulan);
+            const recalculatedKeluar = recalculateWaktuKeluar(defaultTglMasuk, selectedStatus.waktu_bulan, selectedStatus.type);
             setglKeluar(recalculatedKeluar);
         }
     };
+
     const handleTglMasukChange = (e: any) => {
         const inputDate = e.target.value;
         setglMasuk(inputDate);
 
         const selectedStatus = karyawanStatus.data.find((data: any) => data.id === parseInt(idStatusKaryawan));
         if (selectedStatus) {
-            const recalculatedKeluar = recalculateWaktuKeluar(inputDate, selectedStatus.waktu_bulan);
+            const recalculatedKeluar = recalculateWaktuKeluar(inputDate, selectedStatus.waktu_bulan, selectedStatus.type);
             setglKeluar(recalculatedKeluar);
         }
     };
@@ -595,7 +602,10 @@ function AddMasterKaryawanIsi() {
                                                     value={data.id}
                                                     className="text-gray-800 text-xs font-light dark:text-bodydark"
                                                 >
-                                                    {data.nama_status} - {data.waktu_bulan} Bulan
+                                                    {(data.nama_status === 'tetap' || data.nama_status === 'keluar')
+                                                        ? data.nama_status
+                                                        : `${data.nama_status} - ${data.waktu_bulan} - ${data.type === null ? 'Bulan' : data.type}`
+                                                    }
                                                 </option>
                                             )
                                         }
