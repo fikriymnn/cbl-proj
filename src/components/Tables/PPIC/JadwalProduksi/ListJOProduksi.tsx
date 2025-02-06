@@ -43,11 +43,10 @@ function ListJOProduksi() {
                 const res = await axios.get(url, {
                     withCredentials: true,
                 });
-                setIsLoading(false)
-                openCalculate(i)
-                setHasilKalkulasi(res.data)
                 getmasterKategori()
+                get1Tiket(id, i)
                 console.log('Kalkulasi', res.data);
+                setIsLoading(false)
             } catch (error: any) {
                 setIsLoading(false)
                 console.log(error);
@@ -463,7 +462,9 @@ function ListJOProduksi() {
                                                                         <div className=' justify-center border-2 border-stroke flex items-center h-[50px]'>
                                                                             {data2?.jadwal_per_jam?.length == 0 ? (
                                                                                 <>
-                                                                                    <label htmlFor="" className='text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center'>
+                                                                                    <label
+                                                                                        onClick={() => openModalFull(ii, data2.tahapan)}
+                                                                                        htmlFor="" className='text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center'>
                                                                                         {formatCustomDate(data2.tgl_from)}
                                                                                     </label>
                                                                                 </>
@@ -572,7 +573,9 @@ function ListJOProduksi() {
                                                                         <div className=' justify-center border-2 border-stroke flex items-center h-[50px]'>
                                                                             {data2?.jadwal_per_jam?.length == 0 ? (
                                                                                 <>
-                                                                                    <label htmlFor="" className='text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center'>
+                                                                                    <label
+                                                                                        onClick={() => openModalFull(ii, data2.tahapan)}
+                                                                                        htmlFor="" className='text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center'>
                                                                                         {formatCustomDate(data2.tgl_from)}
                                                                                     </label>
                                                                                 </>

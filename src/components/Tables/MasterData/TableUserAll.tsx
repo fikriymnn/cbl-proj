@@ -174,41 +174,41 @@ const TableUserAll = () => {
                                                 <div className="  text-[14px]justify-start  p-2.5 col-span-2">
                                                     <p className="text-neutral-500 text-sm font-light text-center">{data.role}</p>
                                                 </div>
-                                                {data.role == 'super admin' ? <></> : <>
-                                                    <div className="grid justify-end p-2.5 gap-2">
-                                                        <button
-                                                            onClick={() => openEdit(i)}
-                                                            className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
-                                                            EDIT
-                                                        </button>
-                                                        {showEdit && (
-                                                            <ModalEditUser
-                                                                children={undefined}
-                                                                isOpen={showEdit[i]}
-                                                                onClose={() => closeEdit(i)}
-                                                                id={data.uuid}
-                                                                data={data}
-                                                                onFinish={getuser}
-                                                            />
 
-                                                        )}
-                                                        <button
-                                                            onClick={() => openDelete(i)}
-                                                            className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
-                                                            DELETE
-                                                        </button>
-                                                        {showDelete[i] == true && (
-                                                            <ModalConfDelete
-                                                                children={undefined}
-                                                                isOpen={showDelete[i]}
-                                                                onClose={() => closeDelete(i)}
-                                                                idUser={data.uuid}
-                                                                onFinish={getuser}
-                                                            />
-                                                        )}
+                                                <div className="grid justify-end p-2.5 gap-2">
+                                                    <button
+                                                        onClick={() => openEdit(i)}
+                                                        className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                        EDIT
+                                                    </button>
+                                                    {showEdit && (
+                                                        <ModalEditUser
+                                                            children={undefined}
+                                                            isOpen={showEdit[i]}
+                                                            onClose={() => closeEdit(i)}
+                                                            id={data.uuid}
+                                                            data={data}
+                                                            onFinish={getuser}
+                                                        />
 
-                                                    </div>
-                                                </>}
+                                                    )}
+                                                    <button
+                                                        onClick={() => openDelete(i)}
+                                                        className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                        DELETE
+                                                    </button>
+                                                    {showDelete[i] == true && (
+                                                        <ModalConfDelete
+                                                            children={undefined}
+                                                            isOpen={showDelete[i]}
+                                                            onClose={() => closeDelete(i)}
+                                                            idUser={data.uuid}
+                                                            onFinish={getuser}
+                                                        />
+                                                    )}
+
+                                                </div>
+
                                             </div>
 
 
