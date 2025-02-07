@@ -318,7 +318,7 @@ export default function DetailMasterKaryawanIsi() {
                                     <div className='flex flex-col gap-1'>
 
                                         <label htmlFor="" className='text-black text-sm font-semibold'>Status Karyawan</label>
-                                        <label htmlFor="" className='text-[#636363] text-xl font-normal '>{karyawan?.data?.biodata_karyawan[0]?.status_karyawan}</label>
+                                        <label htmlFor="" className='text-[#636363] text-xl font-normal '>{karyawan?.data?.biodata_karyawan[0]?.status?.nama_status}</label>
                                     </div>
                                     <div className='flex flex-col gap-1'>
 

@@ -172,7 +172,7 @@ function MasterSettingHRD() {
                         </div >
                         <div className="grid grid-cols-5 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
                             <label className="text-neutral-500 text-sm font-semibold ">
-                                Outstanding Karyawan
+                                Reminder Status Karyawan
                             </label>
                             <input
                                 type='text'

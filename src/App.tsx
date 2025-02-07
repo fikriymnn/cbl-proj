@@ -189,6 +189,8 @@ import AccPayroll from './pages/HR/Payroll/AccPayroll';
 import MasterSettingHR from './pages/HR/MasterDataHR/MasterSettingHR';
 import MasterUserAll from './pages/MasterData/MasterUserAll';
 import ProduksiBreakdownTtime from './pages/Produksi/ProduksiBreakdown';
+import PengajuanAllDept from './pages/AllDept/PengajuanKeHrAll';
+import PengajuanAllDeptHistory from './pages/AllDept/PengajuanKeHrAllHistory';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1424,6 +1426,28 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterMonitoring />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/pengajuanallkehr"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanAllDept />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/pengajuanallkehrhistory"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanAllDeptHistory />
               </ProtectedRoute>
             </>
           }

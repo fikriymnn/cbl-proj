@@ -301,17 +301,17 @@ function RekapAbsenQC() {
 
                                                                             </div>
                                                                             <label className="text-neutral-500 text-sm font-semibold flex gap-1">
-                                                                                {(data.shift == null || data.shift == 0) ? ' ~' : data.shift}
+                                                                                {(data2.shift == null || data2.shift == 0) ? ' ~' : data2.shift}
                                                                             </label>
                                                                             <label className="text-neutral-500 text-sm font-semibold">
-                                                                                {(data.status_lembur == null || data.status_lembur == 0) ? ' ~' : data.status_lembur} {(data.jam_lembur == null || data.jam_lembur == 0) ? '' : '~ ' + data.jam_lembur + 'Jam'}
+                                                                                {(data2.status_lembur == null || data2.status_lembur == 0) ? ' ~' : data2.status_lembur} {(data2.jam_lembur == null || data2.jam_lembur == 0) ? '' : '~ ' + data2.jam_lembur + 'Jam'}
                                                                             </label>
                                                                             <div className='flex flex-col gap-1'>
                                                                                 <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                    {data.status_masuk}
+                                                                                    {data2.status_masuk}
                                                                                 </label>
                                                                                 <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                    {(data.menit_terlambat == null || data.menit_terlambat == 0) ? '~' : '~ ' + data.menit_terlambat + ' Menit'}
+                                                                                    {(data2.menit_terlambat == null || data2.menit_terlambat == 0) ? '~' : '~ ' + data2.menit_terlambat + ' Menit'}
                                                                                 </label>
                                                                             </div>
                                                                             <label className="text-neutral-500 text-sm font-semibold ">

@@ -242,7 +242,7 @@ function TableAbsensiQC() {
                                 <label className="text-neutral-500 text-sm font-semibold ">
                                     Department
                                 </label>
-                                <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                <label className="text-neutral-500 text-sm font-semibold col-span-2 flex pl-3">
                                     Tanggal
                                 </label>
                                 <div className="flex gap-2  col-span-2">
@@ -286,7 +286,7 @@ function TableAbsensiQC() {
                                             <label className="text-neutral-500 text-sm font-semibold">
                                                 {data.nama_department}
                                             </label>
-                                            <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                            <label className="text-neutral-500 text-sm font-semibold col-span-2 flex justify-center">
                                                 {data.tgl_masuk}
                                             </label>
                                             <div className='col-span-2 flex flex-col gap-1 py-2'>
