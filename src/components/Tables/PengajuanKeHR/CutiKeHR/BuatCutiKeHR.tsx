@@ -53,8 +53,8 @@ function BuatCutiKeHR() {
             console.log('user list', res.data.data)
             setOptions(
                 res.data.data.map((item: any) => ({
-                    value: item.userid,
-                    label: item.biodata_karyawan[0]?.nik + ' - ' + item.name + ' - ' + item.biodata_karyawan[0]?.bagian?.nama_bagian + ' - ' + item.biodata_karyawan[0]?.nama_jabatan
+                    value: item.id_karyawan,
+                    label: item.nik + ' - ' + item.karyawan.name + ' - ' + item.bagian?.nama_bagian + ' - ' + item.nama_jabatan
                 }))
             );
 
