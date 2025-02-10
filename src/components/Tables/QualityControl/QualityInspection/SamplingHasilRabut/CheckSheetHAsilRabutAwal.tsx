@@ -497,6 +497,10 @@ function CheckSheetHasilRabut() {
                               Durasi
                             </label>
                             <label
+                              className="text-stone-600 text-sm font-semibold col-span-2">
+                              Mesin
+                            </label>
+                            <label
                               className="text-stone-600 text-sm font-semibold col-span-4">
                               Kendala
                             </label>
@@ -518,6 +522,10 @@ function CheckSheetHasilRabut() {
                                   <label
                                     className="text-stone-600 text-sm  col-span-2">
                                     {data.durasi}
+                                  </label>
+                                  <label
+                                    className="text-stone-600 text-sm  col-span-2">
+                                    {data.mesin}
                                   </label>
                                   <label
                                     className="text-stone-600 text-sm  col-span-4">

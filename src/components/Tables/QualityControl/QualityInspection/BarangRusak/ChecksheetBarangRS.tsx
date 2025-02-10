@@ -57,6 +57,7 @@ function ChecksheetBarangRS() {
     const [selectedSecondOption, setSelectedSecondOption] = useState<any>(null);
     const [masterWaste, setMasterWaste] = useState<any>([]);
     const [wasteSelectLkh, setwasteSelectLkh] = useState<any>([]);
+    const [wasteSelectMesin, setwasteSelectMesin] = useState<any>([]);
     const [wasteSelectCode, setwasteSelectCode] = useState<any>([]);
     const [tujuanDepartment, settujuanDepartment] = useState<any>([]);
 
@@ -85,7 +86,7 @@ function ChecksheetBarangRS() {
         try {
             const res = await axios.get(url2);
             setMasterWaste(res.data.waste); // Save raw data for filtering
-            //console.log("Master Waste Data:", res.data.waste);
+            console.log("Master Waste Data:", res.data.waste);
         } catch (error: any) {
             console.error("Error fetching master waste:", error);
         }
@@ -289,6 +290,14 @@ function ChecksheetBarangRS() {
         kodeLkh: any,
         masalahLkh: any
     ) {
+        if (idDefect == null) {
+            alert('Waste Belum Dipilih');
+            return;
+        }
+        if (!wasteSelectCode || !wasteSelectLkh) {
+            alert('Kendala Belum Dipilih');
+            return;
+        }
         const url = `${import.meta.env.VITE_API_LINK
             }/qc/cs/inspeksiBarangRusakPointV2/createDefect`;
         try {
@@ -546,10 +555,13 @@ function ChecksheetBarangRS() {
                                                                 Durasi
                                                             </label>
                                                             <label
+                                                                className="text-stone-600 text-sm font-semibold col-span-2">
+                                                                Mesin
+                                                            </label>
+                                                            <label
                                                                 className="text-stone-600 text-sm font-semibold col-span-4">
                                                                 Kendala
                                                             </label>
-
                                                         </div>
                                                         {kendalaByJo?.map((data: any, i: any) => (
                                                             <>
@@ -567,6 +579,10 @@ function ChecksheetBarangRS() {
                                                                         <label
                                                                             className="text-stone-600 text-sm  col-span-2">
                                                                             {data.durasi}
+                                                                        </label>
+                                                                        <label
+                                                                            className="text-stone-600 text-sm  col-span-2">
+                                                                            {data.mesin}
                                                                         </label>
                                                                         <label
                                                                             className="text-stone-600 text-sm  col-span-4">
