@@ -5,6 +5,7 @@ import Loading from '../../../../Loading';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 import TabPengajuanLangsung from './TabPengajuanLangsung';
 import Polygon6 from '../../../../../images/icon/Polygon6.svg';
+import convertTimeStampToDate from '../../../../../utils/convertDate';
 
 function TableAbsensi() {
     const [isLoading, setIsLoading] = useState(false);
@@ -12,7 +13,8 @@ function TableAbsensi() {
     const kosong: any = [];
 
     const [absen, setabsen] = useState<any>();
-
+    const [idPengaju, setIdPengaju] = useState<any>();
+    const [tipeIzin, settipeIzin] = useState<any>();
     const today = new Date();
 
     const year = today.getFullYear();
@@ -20,27 +22,24 @@ function TableAbsensi() {
     const day = String(today.getDate()).padStart(2, '0');
 
     const formattedDate = `${year}-${month}-${day}`;
-    const handleResize = () => {
-        setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
-    };
-    useEffect(() => {
-        handleResize();
-
-        // Event listener for window resize
-        window.addEventListener('resize', handleResize);
-
-        // Cleanup on component unmount
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
-
 
     useEffect(() => {
-
+        getMe()
         getabsen(formattedDate, formattedDate);
         getDepartment()
     }, []);
+
+    async function getMe() {
+        const url = `${import.meta.env.VITE_API_LINK}/me`;
+        try {
+            const res = await axios.get(url, {
+                withCredentials: true,
+            });
+            setIdPengaju(res.data.id_karyawan)
+        } catch (error: any) {
+            console.log(error.data.msg);
+        }
+    }
 
 
     const [department, setDepartment] = useState<any>();
@@ -90,6 +89,33 @@ function TableAbsensi() {
         }
     }
 
+    async function postTerlambat(tglAbsen: any, id_KKaryawan: any, nama: any, index: any) {
+        if (window.confirm(`Apakah Anda yakin akan mengajukan Izin untuk karyawan ${nama}`)) {
+            const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanTerlambat`;
+            try {
+                setIsLoading(true)
+                const res = await axios.post(url,
+                    {
+                        id_karyawan: id_KKaryawan,
+                        id_pengaju: idPengaju,
+                        type_izin: tipeIzin,
+                        tanggal: tglAbsen
+                    },
+                    {
+
+                        withCredentials: true,
+                    });
+
+                setIsLoading(false)
+                alert("Berhasil Diaujukan")
+                closeAksi2(index)
+
+            } catch (error: any) {
+                setIsLoading(false)
+                console.log(error);
+            }
+        }
+    }
     const [showEdit, setShowEdit] = useState<any>([]);
     const openEdit = (i: any) => {
         const onchangeVal: any = [...showEdit];
@@ -102,6 +128,20 @@ function TableAbsensi() {
         onchangeVal[i] = false;
 
         setShowEdit(onchangeVal);
+    };
+
+    const [showAksi2, setShowAksi2] = useState<any>([]);
+    const openAksi2 = (i: any) => {
+        const onchangeVal: any = [...showAksi2];
+        onchangeVal[i] = true;
+
+        setShowAksi2(onchangeVal);
+    };
+    const closeAksi2 = (i: any) => {
+        const onchangeVal: any = [...showAksi2];
+        onchangeVal[i] = false;
+
+        setShowAksi2(onchangeVal);
     };
     const [sortOrder, setSortOrder] = useState('asc'); // State to track sort order
 
@@ -259,8 +299,6 @@ function TableAbsensi() {
                                         </button>
                                     </>
                                 }
-
-
                             </div>
                             <div className="flex my-5 col-span-3">
                                 <button
@@ -367,12 +405,87 @@ function TableAbsensi() {
                                                     {data.status_masuk}
                                                 </label>
                                                 <label className="text-neutral-500 text-sm font-semibold ">
-                                                    {(data.menit_terlambat == null || data.menit_terlambat == 0) ? '~' : '~ ' + data.menit_terlambat + ' Menit'}
+                                                    {(data.menit_terlambat == null || data.menit_terlambat == 0) ? '~' : '~ ' + data.menit_terlambat + ' Jam'}
                                                 </label>
                                             </div>
                                             <label className="text-neutral-500 text-sm font-semibold ">
                                                 {data.status_absen}
                                             </label>
+                                            {data.status_masuk == 'Terlambat ' ?
+                                                <>
+                                                    <button
+                                                        onClick={() => openAksi2(i)}
+                                                        className="w-full bg-green-600 text-white text-sm py-1 rounded-md"
+                                                    >
+                                                        Aksi
+                                                    </button>
+                                                    {showAksi2[i] == true && (
+
+                                                        <ModalKosongan
+                                                            isOpen={showAksi2[i]}
+                                                            onClose={() => closeAksi2(i)}
+                                                            judul={'Lapor Izin'}
+                                                        >
+                                                            <>
+                                                                <div className=" bg-white">
+                                                                    <div className='grid grid-cols-2 gap-5  px-7 py-4 '>
+                                                                        <div className='flex flex-col gap-1'>
+                                                                            <label className=' text-[#6c6b6b] text-sm font-semibold'>
+                                                                                Nama
+                                                                            </label>
+                                                                            <label className=' text-[#6c6b6b] text-sm'>
+                                                                                {data.name}
+                                                                            </label>
+                                                                        </div>
+                                                                        <div className='flex flex-col gap-1'>
+                                                                            <label className=' text-[#6c6b6b] text-sm font-semibold'>
+                                                                                Tipe Izin
+                                                                            </label>
+                                                                            <select
+                                                                                onChange={(e) => settipeIzin(e.target.value)}
+                                                                                className=' text-[#6c6b6b] h-8 text-sm border-2 border-stroke rounded-md'>
+                                                                                <option selected disabled>Pilih Tipe Izin</option>
+                                                                                <option value={'dinas'} >Dinas</option>
+                                                                                <option value={'pribadi'} >Pribadi</option>
+                                                                            </select>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className='grid grid-cols-2 gap-5 px-7 py-4'>
+                                                                        <div className='flex flex-col gap-3'>
+                                                                            <label className=' text-[#6c6b6b] text-sm font-semibold'>
+                                                                                Tanggal
+                                                                            </label>
+                                                                            <label className=' text-[#6c6b6b] text-sm '>
+                                                                                {convertTimeStampToDate(data.tgl_masuk)}
+                                                                            </label>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div className='flex w-full justify-end items-end px-7 py-4'>
+                                                                        {tipeIzin == null ? <>
+                                                                        </> :
+                                                                            <>
+
+                                                                                <button
+                                                                                    onClick={() => {
+                                                                                        console.log(data.tgl_absen, data.userid, data.name, i, tipeIzin)
+                                                                                        postTerlambat(data.tgl_absen, data.userid, data.name, i)
+                                                                                    }
+                                                                                    }
+                                                                                    disabled={isLoading}
+                                                                                    className='flex px-4 py-1 justify-center items-center bg-blue-600 text-white font-semibold rounded-md'
+                                                                                >
+                                                                                    AJUKAN
+                                                                                </button>
+                                                                            </>
+                                                                        }
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        </ModalKosongan>
+                                                    )}
+                                                </>
+                                                : <></>}
                                             {data.status_absen == 'Belum Masuk' ?
                                                 <>
                                                     <button

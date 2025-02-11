@@ -12,6 +12,7 @@ import DiprosesIzinHR from './Izin/DiprosesIzinHR';
 import DiprosesSakitHR from './Sakit/DiprosesSakitHR';
 import DiprosesPinjamanHR from './Pinjaman/DiprosesPinjamanHR';
 import DiprosesMangkirHR from './Mangkir/DiprosesMangkirHR';
+import HistoryTerlambat from './Terlambat/HistoryTerlambat';
 
 
 
@@ -139,7 +140,7 @@ export default function TabResponHistoryPengajuanHR() {
                                 },
                             }}
                             textColor="inherit"
-                            variant="standard"
+                            variant="scrollable"
                             aria-label="full width tabs example"
                             className="bg-white text-[#00499F] font-semibold mb-2 flex w-full"
                         >
@@ -149,9 +150,11 @@ export default function TabResponHistoryPengajuanHR() {
                             <Tab label="Sakit" {...a11yProps(3)} />
                             <Tab label="Mangkir" {...a11yProps(4)} />
                             <Tab label="Pinjaman" {...a11yProps(5)} />
-                            <Tab label="Dinas" {...a11yProps(6)} />
-                            <Tab label="SP" {...a11yProps(7)} />
-                            <Tab label="Penambahan Karyawan" {...a11yProps(8)} />
+                            <Tab label={`Terlambat`} {...a11yProps(6)} />
+                            <Tab label={`Dinas`} {...a11yProps(7)} />
+                            <Tab label="SP" {...a11yProps(8)} />
+                            <Tab label="Penambahan Karyawan" {...a11yProps(9)} />
+
                             <div className="flex w-full justify-end pr-4">
                                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                                     {tanggal}
@@ -185,12 +188,10 @@ export default function TabResponHistoryPengajuanHR() {
                 </TabPanel>
 
                 <TabPanel value={value} index={6} dir={theme.direction}>
-
+                    <HistoryTerlambat />
                 </TabPanel>
 
-                <TabPanel value={value} index={7} dir={theme.direction}>
 
-                </TabPanel>
             </Box>
         </>
     );

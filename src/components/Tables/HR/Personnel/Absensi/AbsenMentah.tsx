@@ -81,9 +81,9 @@ function TableAbsenMentah() {
             const res = await axios.put(url, {
                 id_karyawan: id,
                 checktime: checkTime,
-                date: tglNew,
-                jam: hoursNew,
-                type_check: typeCheck
+                date: tglNewEdit,
+                jam: hoursNewEdit,
+                type_check: typeCheckEdit
 
             }, {
 
@@ -106,7 +106,7 @@ function TableAbsenMentah() {
     const openEdit = (i: any, date: any, hour: any) => {
         const onchangeVal = [...showEdit];
         onchangeVal[i] = true; // Show popup for the selected index
-        setTypeCheck(filteredAbsen[i].checkType === "Masuk" ? 0 : 1);
+        setTypeCheckEdit(filteredAbsen[i].checkType === "Masuk" ? 0 : 1);
         setShowEdit(onchangeVal);
         console.log(hour, date)
         setHoursNewEdit(hour);
@@ -116,11 +116,11 @@ function TableAbsenMentah() {
     const closeEdit = (i: any) => {
         const onchangeVal: any = [...showEdit];
         onchangeVal[i] = false;
-        setTypeCheck(null)
+        setTypeCheckEdit(null)
         setShowEdit(onchangeVal);
     };
     const handleTypeCheckChange = (value: any) => {
-        setTypeCheck(parseInt(value)); // Update typeCheck to the selected value
+        setTypeCheckEdit(parseInt(value)); // Update typeCheck to the selected value
     };
     const [userList, setUserList] = useState<any>();
     const [idKaryawan, setIdKaryawan] = useState<any>();
@@ -132,9 +132,9 @@ function TableAbsenMentah() {
             setIsLoading(true)
             const res = await axios.post(url, {
                 id_karyawan: idKaryawan,
-                date: tglNewEdit,
-                jam: hoursNewEdit,
-                type_check: typeCheckEdit
+                date: tglNew,
+                jam: hoursNew,
+                type_check: typeCheck
 
             }, {
 
@@ -326,7 +326,7 @@ function TableAbsenMentah() {
                                                         <input type='date'
                                                             className='px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke'
 
-                                                            onChange={(e) => settglNewEdit(e.target.value)}
+                                                            onChange={(e) => settglNew(e.target.value)}
                                                         ></input>
                                                     </div>
                                                     <div className='flex flex-col'>
@@ -336,7 +336,7 @@ function TableAbsenMentah() {
                                                         <input type='time'
                                                             className='px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke'
 
-                                                            onChange={(e) => setHoursNewEdit(e.target.value)}
+                                                            onChange={(e) => setHoursNew(e.target.value)}
                                                         ></input>
                                                     </div>
                                                     <div className='flex flex-col'>
@@ -349,14 +349,14 @@ function TableAbsenMentah() {
                                                                 value={0}
 
                                                                 name={`tipecheck-1`}
-                                                                onChange={(e) => setTypeCheckEdit(e.target.value)}
+                                                                onChange={(e) => setTypeCheck(e.target.value)}
                                                             />Masuk
                                                             <input type='radio'
                                                                 className=' text-neutral-500 text-sm border-2 rounded-md border-stroke'
                                                                 value={1}
 
                                                                 name={`tipecheck-1`}
-                                                                onChange={(e) => setTypeCheckEdit(e.target.value)}
+                                                                onChange={(e) => setTypeCheck(e.target.value)}
                                                             />Keluar
                                                         </div>
                                                     </div>
@@ -494,16 +494,16 @@ function TableAbsenMentah() {
                                                                     <input type='radio'
                                                                         className=' text-neutral-500 text-sm border-2 rounded-md border-stroke'
                                                                         value={0}
-                                                                        checked={typeCheck === 0}
+                                                                        checked={typeCheckEdit === 0}
                                                                         name={`tipecheck-${i}`}
-                                                                        onChange={(e) => handleTypeCheckChange(e.target.value)}
+                                                                        onChange={(e) => setTypeCheckEdit(parseInt(e.target.value))}
                                                                     />Masuk
                                                                     <input type='radio'
                                                                         className=' text-neutral-500 text-sm border-2 rounded-md border-stroke'
                                                                         value={1}
-                                                                        checked={typeCheck === 1}
+                                                                        checked={typeCheckEdit === 1}
                                                                         name={`tipecheck-${i}`}
-                                                                        onChange={(e) => handleTypeCheckChange(e.target.value)}
+                                                                        onChange={(e) => setTypeCheckEdit(parseInt(e.target.value))}
                                                                     />Keluar
                                                                 </div>
                                                             </div>

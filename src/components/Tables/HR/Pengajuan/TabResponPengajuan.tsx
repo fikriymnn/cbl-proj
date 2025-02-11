@@ -17,6 +17,7 @@ import IncomingKaryawan from './Karyawan/IncomingKaryawan';
 import IncomingMangkirHR from './Mangkir/IncomingMangkirHR';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import IncomingTerlambat from './Terlambat/IncommingTerlambat';
 
 
 
@@ -165,7 +166,7 @@ export default function TabResponPengajuanHR() {
                                 },
                             }}
                             textColor="inherit"
-                            variant="standard"
+                            variant="scrollable"
                             aria-label="full width tabs example"
                             className="bg-white text-[#00499F] font-semibold mb-2 flex w-full"
                         >
@@ -175,9 +176,10 @@ export default function TabResponPengajuanHR() {
                             <Tab label={`Sakit ${task?.pengajuan_sakit == 0 ? '' : '(' + task?.pengajuan_sakit + ')'}`} {...a11yProps(3)} />
                             <Tab label={`Mangkir ${task?.pengajuan_mangkir == 0 ? '' : '(' + task?.pengajuan_mangkir + ')'}`} {...a11yProps(4)} />
                             <Tab label={`Pinjaman ${task?.pengajuan_pinjaman == 0 ? '' : '(' + task?.pengajuan_pinjaman + ')'}`} {...a11yProps(5)} />
-                            <Tab label={`Dinas`} {...a11yProps(6)} />
-                            <Tab label="SP" {...a11yProps(7)} />
-                            <Tab label="Penambahan Karyawan" {...a11yProps(8)} />
+                            <Tab label={`Terlambat`} {...a11yProps(6)} />
+                            <Tab label={`Dinas`} {...a11yProps(7)} />
+                            <Tab label="SP" {...a11yProps(8)} />
+                            <Tab label="Penambahan Karyawan" {...a11yProps(9)} />
 
                         </Tabs>
                     </ThemeProvider>
@@ -207,14 +209,18 @@ export default function TabResponPengajuanHR() {
                 </TabPanel>
 
                 <TabPanel value={value} index={6} dir={theme.direction}>
-                    <IncomingDinas />
+                    <IncomingTerlambat />
                 </TabPanel>
 
                 <TabPanel value={value} index={7} dir={theme.direction}>
-                    <IncomingSP />
+                    <IncomingDinas />
                 </TabPanel>
 
                 <TabPanel value={value} index={8} dir={theme.direction}>
+                    <IncomingSP />
+                </TabPanel>
+
+                <TabPanel value={value} index={9} dir={theme.direction}>
                     <IncomingKaryawan />
                 </TabPanel>
             </Box>
