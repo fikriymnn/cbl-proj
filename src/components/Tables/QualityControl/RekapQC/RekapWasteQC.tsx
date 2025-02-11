@@ -153,20 +153,40 @@ function RekapWasteQC() {
     };
 
     const [searchQuery, setSearchQuery] = useState('');
-    const filteredJo = waste?.dataWasteByJo?.filter((data: any) =>
-        data.no_jo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        data.nama_produk.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        data.no_io.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        data.customer.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
     const [searchQuery2, setSearchQuery2] = useState('');
-    const filteredJo2 = waste?.dataWasteByJoReplace?.filter((data: any) =>
-        data.no_jo.toLowerCase().includes(searchQuery2.toLowerCase()) ||
-        data.nama_produk.toLowerCase().includes(searchQuery2.toLowerCase()) ||
-        data.no_io.toLowerCase().includes(searchQuery2.toLowerCase()) ||
-        data.customer.toLowerCase().includes(searchQuery2.toLowerCase())
-    );
+
+    // Fungsi untuk menghandle data yang mungkin null atau undefined
+    const normalizeString = (str: any) => (str ? str.toString().toLowerCase() : '');
+
+    // Filter hanya berlaku jika searchQuery tidak kosong, jika kosong tampilkan semua data
+    const filteredJo = waste?.dataWasteByJo?.filter((data: any) => {
+        if (!data) return true; // Tetap tampilkan data meskipun null
+        if (!searchQuery) return true; // Jika tidak ada pencarian, tampilkan semua data
+
+        return (
+            normalizeString(data.no_jo).includes(searchQuery.toLowerCase()) ||
+            normalizeString(data.nama_produk).includes(searchQuery.toLowerCase()) ||
+            normalizeString(data.no_io).includes(searchQuery.toLowerCase()) ||
+            normalizeString(data.customer).includes(searchQuery.toLowerCase())
+        );
+    }) || [];
+
+    const filteredJo2 = waste?.dataWasteByJoReplace?.filter((data: any) => {
+        if (!data) return true; // Tetap tampilkan data meskipun null
+        if (!searchQuery2) return true; // Jika tidak ada pencarian, tampilkan semua data
+
+        return (
+            normalizeString(data.no_jo).includes(searchQuery2.toLowerCase()) ||
+            normalizeString(data.nama_produk).includes(searchQuery2.toLowerCase()) ||
+            normalizeString(data.no_io).includes(searchQuery2.toLowerCase()) ||
+            normalizeString(data.customer).includes(searchQuery2.toLowerCase())
+        );
+    }) || [];
+
+
+    // Menampilkan pesan jika tidak ada hasil pencarian
+    const displayedJo = filteredJo.length > 0 ? filteredJo : [{ no_jo: "Data tidak ada", nama_produk: "", no_io: "", customer: "" }];
+    const displayedJo2 = filteredJo2.length > 0 ? filteredJo2 : [{ no_jo: "Data tidak ada", nama_produk: "", no_io: "", customer: "" }];
 
     return (
         <div className='rounded-md'>
@@ -333,6 +353,11 @@ function RekapWasteQC() {
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className='border-2 border-stroke rounded-md w-[30%]  px-2 py-1 ' placeholder='Cari Jo, IO, Customer, Produk' />
                             </div>
+                            {filteredJo?.length === 0 && (
+                                <div className="text-red-500 text-center font-semibold mt-2">
+                                    Data tidak ditemukan
+                                </div>
+                            )}
                             {filteredJo?.map((data: any, i: any) => {
                                 return (
                                     <>
@@ -958,6 +983,11 @@ function RekapWasteQC() {
                                     onChange={(e) => setSearchQuery2(e.target.value)}
                                     className='border-2 border-stroke rounded-md w-[30%]  px-2 py-1 ' placeholder='Cari Jo, IO, Customer, Produk' />
                             </div>
+                            {filteredJo2?.length === 0 && (
+                                <div className="text-red-500 text-center font-semibold mt-2">
+                                    Data tidak ditemukan
+                                </div>
+                            )}
                             {filteredJo2?.map((data: any, i: any) => {
                                 return (
                                     <>
