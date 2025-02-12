@@ -121,7 +121,6 @@ function RekapAbsenHR() {
                                     <p className=" my-auto text-sm text-primary font-semibold md:w-3/12 w-2/12">
                                         Sampai:
                                     </p>
-
                                     <input
                                         className='rounded-full bg-[#D8EAFF] px-2'
                                         type="date"
@@ -335,7 +334,7 @@ function RekapAbsenHR() {
                                                                                 <>
                                                                                     <label className="text-neutral-500 text-sm">: {totalLembur} Jam</label>
                                                                                     <label className="text-neutral-500 text-sm">: {totalMenitPulcep} Menit</label>
-                                                                                    <label className="text-neutral-500 text-sm">: {totalMenitTerlambat} Menit</label>
+                                                                                    <label className="text-neutral-500 text-sm">: {totalMenitTerlambat} Jam</label>
                                                                                     <label className="text-neutral-500 text-sm">: {totalMasuk} Hari</label>
                                                                                     <label className="text-neutral-500 text-sm">: {totalIzin} Hari</label>
                                                                                     <label className="text-neutral-500 text-sm">: {totalSakit} Hari</label>
@@ -423,7 +422,7 @@ function RekapAbsenHR() {
                                                                                             {data2.status_masuk}
                                                                                         </label>
                                                                                         <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                            {(data2.menit_terlambat == null || data2.menit_terlambat == 0) ? '~' : '~ ' + data2.menit_terlambat + ' Menit'}
+                                                                                            {(data2.menit_terlambat == null || data2.menit_terlambat == 0) ? '~' : '~ ' + data2.menit_terlambat + ' Jam'}
                                                                                         </label>
                                                                                     </div>
                                                                                     <label className="text-neutral-500 text-sm font-semibold ">

@@ -6,11 +6,8 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
-import OSHRAlllKendala from './OSHRAllKendala';
-import HistoryHRAllKendala from './HistoryHRAllKendala';
-import OsAbsensi from './OutstandingAbsensi';
-import OsKaryawan from './OsKaryawan';
-import OsKetidaksesuaianSPL from './OSKetidaksesuaianSPL';
+import RekapWasteQC from '../../QualityControl/RekapQC/RekapWasteQC';
+
 
 
 interface TabPanelProps {
@@ -48,7 +45,7 @@ function a11yProps(index: number) {
     };
 }
 
-export default function TabOSHR() {
+export default function TabRekapPPIC() {
     const theme = createTheme({
         palette: {
             primary: {
@@ -137,16 +134,13 @@ export default function TabOSHR() {
                                 },
                             }}
                             textColor="inherit"
-                            variant="scrollable"
+                            variant="standard"
                             aria-label="full width tabs example"
                             className="bg-white text-[#00499F] font-semibold mb-2 flex w-full"
                         >
-                            <Tab label="All Kendala" {...a11yProps(0)} />
-                            <Tab label="Absensi" {...a11yProps(1)} />
-                            <Tab label="Status Karyawan" {...a11yProps(2)} />
-                            <Tab label="Ketidaksesuaian SPL" {...a11yProps(3)} />
-                            <Tab label="History All Kendala" {...a11yProps(4)} />
-                            {/* <Tab label="History Ketidaksesuaian SPL" {...a11yProps(5)} /> */}
+                            <Tab label="Waste" {...a11yProps(0)} />
+                            <Tab label="" {...a11yProps(1)} />
+
                             <div className="flex w-full justify-end pr-4">
                                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                                     {tanggal}
@@ -156,19 +150,10 @@ export default function TabOSHR() {
                     </ThemeProvider>
                 </AppBar>
                 <TabPanel value={value} index={0} dir={theme.direction}>
-                    <OSHRAlllKendala />
+                    <RekapWasteQC />
                 </TabPanel>
                 <TabPanel value={value} index={1} dir={theme.direction}>
-                    <OsAbsensi />
-                </TabPanel>
-                <TabPanel value={value} index={2} dir={theme.direction}>
-                    <OsKaryawan />
-                </TabPanel>
-                <TabPanel value={value} index={3} dir={theme.direction}>
-                    <OsKetidaksesuaianSPL />
-                </TabPanel>
-                <TabPanel value={value} index={4} dir={theme.direction}>
-                    <HistoryHRAllKendala />
+
                 </TabPanel>
 
             </Box>

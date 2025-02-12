@@ -191,6 +191,7 @@ import MasterUserAll from './pages/MasterData/MasterUserAll';
 import ProduksiBreakdownTtime from './pages/Produksi/ProduksiBreakdown';
 import PengajuanAllDept from './pages/AllDept/PengajuanKeHrAll';
 import PengajuanAllDeptHistory from './pages/AllDept/PengajuanKeHrAllHistory';
+import RekapPPIC from './pages/PPIC/RekapPPIC/RekapPPIC';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1916,6 +1917,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <OsPPIC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/ppic/rekap"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <RekapPPIC />
               </ProtectedRoute>
             </>
           }

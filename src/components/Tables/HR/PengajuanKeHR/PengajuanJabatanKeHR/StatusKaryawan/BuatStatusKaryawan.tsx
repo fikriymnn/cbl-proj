@@ -102,13 +102,13 @@ function BuatStatusKaryawan() {
     const handleChangePointDepatment = (selected: any) => {
         const { value } = selected;
         const filteredData = userList.find(
-            (item: any) => item.id_karyawan == value,
+            (item: any) => item.userid == value,
             // item.id.includes(parseInt(value));
         );
 
-        console.log(filteredData?.id_karyawan);
+        console.log(filteredData?.userid);
 
-        setIdKaryawan(filteredData?.id_karyawan)
+        setIdKaryawan(filteredData?.userid)
         setnamaKaryawan(filteredData?.karyawan?.name)
         setbagianKaryawan(filteredData?.bagian?.nama_bagian)
         setjabatanKaryawan(filteredData?.nama_jabatan)

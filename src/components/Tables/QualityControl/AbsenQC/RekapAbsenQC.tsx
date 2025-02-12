@@ -71,6 +71,16 @@ function RekapAbsenQC() {
 
         setShowModal(onchangeVal);
     };
+    const [showDetail, setShowDetail] = useState<boolean[]>(
+        new Array(absen != null && absen.length).fill(false),
+    );
+    const handleClickDetail = (index: number) => {
+        setShowDetail((prevState) => {
+            const updatedShowDetail = [...prevState]; // Create a copy
+            updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
+            return updatedShowDetail;
+        });
+    };
     return (
         <>
             <main className="overflow-x-scroll">
@@ -84,7 +94,6 @@ function RekapAbsenQC() {
                                 </p>
 
                             </div>
-
                             <div className='flex gap-3 flex-col'>
                                 <div className="flex md:justify-center items-center gap-2">
                                     <p className="text-sm text-primary font-semibold md:w-3/12 w-2/12">
@@ -224,102 +233,155 @@ function RekapAbsenQC() {
                                                                         <label className="text-neutral-500 text-sm  ">
                                                                             Nama
                                                                         </label>
-                                                                        <label className="text-neutral-500 text-sm  col-span-2">
+                                                                        <label className="text-neutral-500 text-sm  ">
                                                                             Department
                                                                         </label>
-                                                                        <label className="text-neutral-500 text-sm  col-span-5">
+                                                                        <label className="text-neutral-500 text-sm  ">
                                                                             Divisi
                                                                         </label>
+                                                                        <label className="text-neutral-500 text-sm  ">
+                                                                            Jam Lembur
+                                                                        </label>
+                                                                        <label className="text-neutral-500 text-sm  ">
+                                                                            Menit Pulang Cepat
+                                                                        </label>
+                                                                        <label className="text-neutral-500 text-sm  ">
+                                                                            Menit Terlambat
+                                                                        </label>
+                                                                        <label className="text-neutral-500 text-sm  ">
+                                                                            Masuk
+                                                                        </label>
+                                                                        <label className="text-neutral-500 text-sm  ">
+                                                                            Izin
+                                                                        </label>
+                                                                        <label className="text-neutral-500 text-sm  ">
+                                                                            Sakit
+                                                                        </label>
+
                                                                     </div>
                                                                     <div className='flex flex-col'>
                                                                         <label className="text-neutral-500 text-sm  ">
                                                                             : {data.nama_karyawan} - {data.nik}
                                                                         </label>
-                                                                        <label className="text-neutral-500 text-sm  col-span-2">
+                                                                        <label className="text-neutral-500 text-sm  ">
                                                                             : {data.department}
                                                                         </label>
-                                                                        <label className="text-neutral-500 text-sm  col-span-5">
+                                                                        <label className="text-neutral-500 text-sm  ">
                                                                             : {data.divisi}
                                                                         </label>
+                                                                        {(() => {
+                                                                            const totalMasuk = data.absensi?.reduce((sum: any, item: any) => sum + (item.status_absen === "masuk" ? 1 : 0), 0);
+                                                                            const totalIzin = data.absensi?.reduce((sum: any, item: any) => sum + (item.status_absen === "izin" ? 1 : 0), 0);
+                                                                            const totalSakit = data.absensi?.reduce((sum: any, item: any) => sum + (item.status_absen === "sakit" ? 1 : 0), 0);
+                                                                            const totalLembur = data.absensi?.reduce((sum: any, item: any) => sum + (item.jam_lembur || 0), 0);
+                                                                            const totalMenitTerlambat = data.absensi?.reduce((sum: any, item: any) => sum + (item.menit_terlambat || 0), 0);
+                                                                            const totalMenitPulcep = data.absensi?.reduce((sum: any, item: any) => sum + (item.menit_pulang_cepat || 0), 0);
+
+                                                                            return (
+                                                                                <>
+                                                                                    <label className="text-neutral-500 text-sm">: {totalLembur} Jam</label>
+                                                                                    <label className="text-neutral-500 text-sm">: {totalMenitPulcep} Menit</label>
+                                                                                    <label className="text-neutral-500 text-sm">: {totalMenitTerlambat} Jam</label>
+                                                                                    <label className="text-neutral-500 text-sm">: {totalMasuk} Hari</label>
+                                                                                    <label className="text-neutral-500 text-sm">: {totalIzin} Hari</label>
+                                                                                    <label className="text-neutral-500 text-sm">: {totalSakit} Hari</label>
+
+                                                                                </>
+                                                                            );
+                                                                        })()}
                                                                     </div>
                                                                 </div>
 
-                                                                <div className="grid grid-cols-10  py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-                                                                    <div className='flex col-span-2 gap-2'>
-                                                                        <label className="text-neutral-500 text-sm font-semibold ">
-                                                                            No.
-                                                                        </label>
-                                                                        <label className="text-neutral-500 text-sm font-semibold ">
-                                                                            Nama
-                                                                        </label>
-                                                                    </div>
 
-                                                                    <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                                                        Tanggal
-                                                                    </label>
-                                                                    <div className="flex gap-2  col-span-2">
-                                                                        <p className="text-neutral-500 text-sm font-semibold ">Waktu </p>
-
-                                                                    </div>
-                                                                    <label className="text-neutral-500 text-sm font-semibold flex gap-1">
-                                                                        Shift
-                                                                    </label>
-                                                                    <label className="text-neutral-500 text-sm font-semibold">
-                                                                        Lembur
-                                                                    </label>
-                                                                    <label className="text-neutral-500 text-sm font-semibold ">
-                                                                        Terlambat
-                                                                    </label>
-                                                                    <label className="text-neutral-500 text-sm font-semibold ">
-                                                                        Status
-                                                                    </label>
+                                                                <div className='flex w-full justify-end'>
+                                                                    <button
+                                                                        title="button"
+                                                                        onClick={() => handleClickDetail(i)}
+                                                                        className="text-xs w-[20%] flex items-center justify-center font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
+                                                                    >
+                                                                        DETAIL ABSENSI
+                                                                    </button>
                                                                 </div>
-                                                                <div className="w-2 h-full "></div>
-                                                                {data.absensi?.map((data2: any, ii: any) => (
+                                                                {showDetail[i] && (
                                                                     <>
-
                                                                         <div className="grid grid-cols-10  py-4 border-b-8 border-[#D8EAFF] gap-2 ">
                                                                             <div className='flex col-span-2 gap-2'>
                                                                                 <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                    {ii + 1}.
+                                                                                    No.
                                                                                 </label>
                                                                                 <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                    {data2.name}
+                                                                                    Nama
                                                                                 </label>
                                                                             </div>
 
                                                                             <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                                                                {data2.tgl_masuk}
+                                                                                Tanggal
                                                                             </label>
-                                                                            <div className="flex gap-2 flex-col col-span-2">
-                                                                                <label className="text-neutral-500 text-sm font-semibold  ">
-                                                                                    Masuk :  {(data2.jam_masuk == null || data2.jam_masuk == 0) ? ' ~' : data2.jam_masuk}
-                                                                                </label>
-                                                                                <label className="text-neutral-500 text-sm font-semibold  ">
-                                                                                    Keluar : {(data2.jam_keluar == null || data2.jam_keluar == 0) ? ' ~' : data2.jam_keluar}
-                                                                                </label>
+                                                                            <div className="flex gap-2  col-span-2">
+                                                                                <p className="text-neutral-500 text-sm font-semibold ">Waktu </p>
 
                                                                             </div>
                                                                             <label className="text-neutral-500 text-sm font-semibold flex gap-1">
-                                                                                {(data2.shift == null || data2.shift == 0) ? ' ~' : data2.shift}
+                                                                                Shift
                                                                             </label>
                                                                             <label className="text-neutral-500 text-sm font-semibold">
-                                                                                {(data2.status_lembur == null || data2.status_lembur == 0) ? ' ~' : data2.status_lembur} {(data2.jam_lembur == null || data2.jam_lembur == 0) ? '' : '~ ' + data2.jam_lembur + 'Jam'}
+                                                                                Lembur
                                                                             </label>
-                                                                            <div className='flex flex-col gap-1'>
-                                                                                <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                    {data2.status_masuk}
-                                                                                </label>
-                                                                                <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                    {(data2.menit_terlambat == null || data2.menit_terlambat == 0) ? '~' : '~ ' + data2.menit_terlambat + ' Menit'}
-                                                                                </label>
-                                                                            </div>
                                                                             <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                {data2.status_absen}
+                                                                                Terlambat
+                                                                            </label>
+                                                                            <label className="text-neutral-500 text-sm font-semibold ">
+                                                                                Status
                                                                             </label>
                                                                         </div>
+                                                                        <div className="w-2 h-full "></div>
+                                                                        {data.absensi?.map((data2: any, ii: any) => (
+                                                                            <>
+
+                                                                                <div className="grid grid-cols-10  py-4 border-b-8 border-[#D8EAFF] gap-2 ">
+                                                                                    <div className='flex col-span-2 gap-2'>
+                                                                                        <label className="text-neutral-500 text-sm font-semibold ">
+                                                                                            {ii + 1}.
+                                                                                        </label>
+                                                                                        <label className="text-neutral-500 text-sm font-semibold ">
+                                                                                            {data2.name}
+                                                                                        </label>
+                                                                                    </div>
+
+                                                                                    <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                                                                        {data2.tgl_masuk}
+                                                                                    </label>
+                                                                                    <div className="flex gap-2 flex-col col-span-2">
+                                                                                        <label className="text-neutral-500 text-sm font-semibold  ">
+                                                                                            Masuk :  {(data2.jam_masuk == null || data2.jam_masuk == 0) ? ' ~' : data2.jam_masuk}
+                                                                                        </label>
+                                                                                        <label className="text-neutral-500 text-sm font-semibold  ">
+                                                                                            Keluar : {(data2.jam_keluar == null || data2.jam_keluar == 0) ? ' ~' : data2.jam_keluar}
+                                                                                        </label>
+
+                                                                                    </div>
+                                                                                    <label className="text-neutral-500 text-sm font-semibold flex gap-1">
+                                                                                        {(data2.shift == null || data2.shift == 0) ? ' ~' : data2.shift}
+                                                                                    </label>
+                                                                                    <label className="text-neutral-500 text-sm font-semibold">
+                                                                                        {(data2.status_lembur == null || data2.status_lembur == 0) ? ' ~' : data2.status_lembur} {(data2.jam_lembur == null || data2.jam_lembur == 0) ? '' : '~ ' + data2.jam_lembur + 'Jam'}
+                                                                                    </label>
+                                                                                    <div className='flex flex-col gap-1'>
+                                                                                        <label className="text-neutral-500 text-sm font-semibold ">
+                                                                                            {data2.status_masuk}
+                                                                                        </label>
+                                                                                        <label className="text-neutral-500 text-sm font-semibold ">
+                                                                                            {(data2.menit_terlambat == null || data2.menit_terlambat == 0) ? '~' : '~ ' + data2.menit_terlambat + ' Jam'}
+                                                                                        </label>
+                                                                                    </div>
+                                                                                    <label className="text-neutral-500 text-sm font-semibold ">
+                                                                                        {data2.status_absen}
+                                                                                    </label>
+                                                                                </div>
+                                                                            </>
+                                                                        ))}
                                                                     </>
-                                                                ))}
+                                                                )}
                                                             </div>
                                                         </div>
                                                     </>
