@@ -10,10 +10,28 @@ function PayrollMinggu() {
     const [payWeek, setPayWeek] = useState<any>();
     const [dateFrom, setDateFrom] = useState<any>();
     const [dateTo, setDateTo] = useState<any>();
-
+    const [editedPayWeek, setEditedPayWeek] = useState(() =>
+        payWeek
+            ? {
+                ...payWeek,
+                detail: payWeek.detail.map((item: any) => ({
+                    ...item,
+                    originalSubTotal: item.summaryPayroll.sub_total, // Store initial sub_total
+                })),
+            }
+            : null
+    );
     useEffect(() => {
-
-    }, []);
+        if (payWeek) {
+            setEditedPayWeek({
+                ...payWeek,
+                detail: payWeek.detail.map((item: any) => ({
+                    ...item,
+                    originalSubTotal: item.summaryPayroll.sub_total, // Store initial sub_total
+                })),
+            });
+        }
+    }, [payWeek]);
 
     async function getPayrollMingguan(dateFrom1: any, dateTo1: any) {
         const url = `${import.meta.env.VITE_API_LINK}/hr/payrollAll`;
@@ -30,7 +48,7 @@ function PayrollMinggu() {
                 });
             setIsLoading(false)
             setPayWeek(res.data.data);
-            console.log(res.data);
+            console.log(res.data.data);
         } catch (error: any) {
             setIsLoading(false)
             console.log(error);
@@ -42,7 +60,7 @@ function PayrollMinggu() {
         try {
             setIsLoading(true)
             const res = await axios.post(url, {
-                data_payroll: payWeek
+                data_payroll: editedPayWeek
             },
                 {
 
@@ -50,12 +68,29 @@ function PayrollMinggu() {
                 });
             setIsLoading(false)
             setPayWeek(res.data.data);
-            console.log(res.data);
+            console.log(res.data.data);
         } catch (error: any) {
             setIsLoading(false)
             console.log(error);
         }
     }
+
+
+    const handleInputChange = (index: number, value: number) => {
+        const newDetail = [...editedPayWeek.detail];
+        newDetail[index].summaryPayroll.pengurangan_penambahan = value;
+        newDetail[index].summaryPayroll.sub_total = newDetail[index].originalSubTotal + value; // Update sub_total
+
+        // Recalculate total based on new sub_totals
+        const newTotal = newDetail.reduce((sum, item) => sum + item.summaryPayroll.sub_total, 0);
+
+        setEditedPayWeek({
+            ...editedPayWeek,
+            detail: newDetail,
+            total: newTotal, // Update total in payWeek
+        });
+    };
+
     const [showEdit, setShowEdit] = useState<any>([]);
     const openEdit = (i: any) => {
         const onchangeVal: any = [...showEdit];
@@ -91,6 +126,7 @@ function PayrollMinggu() {
     const [showDetail2, setShowDetail2] = useState<boolean[]>(
         new Array(payWeek != null && payWeek.length).fill(false),
     );
+    console.log(editedPayWeek)
     return (
         <main>
             {isLoading && <Loading />}
@@ -145,7 +181,7 @@ function PayrollMinggu() {
                             {payWeek == null ? 'Periode Dari' : convertTimeStampToDate(payWeek?.periode_dari)} ~  {payWeek == null ? 'Periode Sampai' : convertTimeStampToDate(payWeek?.periode_sampai)}
                         </label>
                         <label className='text-xl text-blue-400 font-semibold  justify-center text-center'>
-                            {payWeek == null ? '' : 'Total Gaji Rp.' + formatInteger(payWeek?.total)}
+                            {editedPayWeek == null ? '' : 'Total Gaji Rp.' + editedPayWeek?.total}
                         </label>
                     </div>
                     {payWeek && (
@@ -186,8 +222,8 @@ function PayrollMinggu() {
                         </div>
                     </div>
                 </div>
-                {payWeek != null &&
-                    payWeek?.detail?.map((data: any, i: any) => (
+                {
+                    editedPayWeek?.detail?.map((data: any, i: any) => (
                         <>
                             <div key={i} className="grid grid-cols-8 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
                                 <div className='flex gap-3'>
@@ -208,7 +244,7 @@ function PayrollMinggu() {
                                     {data.summaryPayroll?.divisi}
                                 </label>
                                 <label className="text-neutral-500 text-xs font-semibold col-span-2 ">
-                                    Rp.{formatInteger(data.summaryPayroll?.total)}
+                                    Rp.{formatInteger(data.summaryPayroll?.sub_total)}
                                 </label>
                                 <div className='flex justify-center '>
                                     <button
@@ -290,6 +326,23 @@ function PayrollMinggu() {
                                                                 Rp. {formatInteger(data.summaryPayroll?.total)}
                                                             </label>
                                                         </div>
+                                                        <input
+                                                            className='border-2 border-stroke rounded-md'
+                                                            type="number"
+                                                            value={data.summaryPayroll.penggurangan_penambahan}
+                                                            onChange={(e) => handleInputChange(i, Number(e.target.value))}
+                                                            placeholder='Masukkan Pengurangan atau Penambahan'
+                                                        />
+                                                        <div className='flex flex-col'>
+
+                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                TOTAL UPAH TERBARU
+                                                            </label>
+                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                Rp.  {formatInteger(data.summaryPayroll.sub_total)}
+                                                            </label>
+                                                        </div>
+
                                                     </div>
                                                 </div>
                                                 <button

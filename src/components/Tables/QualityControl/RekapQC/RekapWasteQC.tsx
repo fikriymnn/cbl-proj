@@ -272,70 +272,54 @@ function RekapWasteQC() {
                         </button>
                     </div>
 
-                    <div className='flex flex-col w-full'>
-                        <label className='px-5 flex text-sm font-bold text-blue-500'>
-                            Detail By Kendala
-                        </label>
-                        <div className='grid grid-cols-4 gap-2 px-5 pt-4'>
-                            <div className='flex flex-col'>
-                                <label className='flex text-sm font-bold text-black'>
-                                    Kendala
-                                </label>
-                            </div>
-                            <div className='flex flex-col'>
-                                <label className='flex text-sm font-bold text-black'>
-                                    Qty
-                                </label>
-                            </div>
-                            <div className='flex flex-col'>
-                                <label className='flex text-sm font-bold text-black'>
-                                    Frekuensi
-                                </label>
-                            </div>
-                            <div className='flex flex-col'>
-                                <label className='flex text-sm font-bold text-black'>
-                                    %
-                                </label>
-                            </div>
-                        </div>
-
-                        <div className='grid grid-cols-4 px-5 pb-4'>
+                    <table className="w-full border-collapse border-x border-y border-gray-300">
+                        <thead>
+                            <tr className="bg-blue-100 border-b border-gray-300">
+                                <th className="px-5 py-2 text-sm font-bold text-blue-500 text-left border-x border-gray-300">Detail By Kendala</th>
+                                <th className="px-5 py-2 text-sm font-bold text-black text-left border-x border-gray-300">Qty</th>
+                                <th className="px-5 py-2 text-sm font-bold text-black text-left border-x border-gray-300">Frekuensi</th>
+                                <th className="px-5 py-2 text-sm font-bold text-black text-left border-x border-gray-300">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
                             {(() => {
-                                // Calculate total of all total_calculated_defect
                                 const totalDefects = waste?.dataByKategori?.dataKendala?.reduce(
                                     (sum: number, kendala: any) => sum + (kendala.total_calculated_defect || 0),
                                     0
                                 ) || 0;
+
                                 const totalJoLength = waste?.dataByKategori?.dataKendala?.reduce(
                                     (sum: number, kendala: any) => sum + kendala.jo.length,
                                     0
                                 ) || 0;
-                                return waste?.dataByKategori?.dataKendala?.map((kendala: any, i: any) => {
+
+                                return waste?.dataByKategori?.dataKendala?.map((kendala: any, i: number) => {
                                     const qty = kendala.total_calculated_defect || 0;
                                     const percentage = totalDefects > 0 ? ((qty / totalDefects) * 100).toFixed(2) : '0';
                                     const joPercentage = totalJoLength > 0 ? ((kendala.jo.length / totalJoLength) * 100).toFixed(2) : '0';
+
                                     return (
-                                        <React.Fragment key={i}>
-                                            <label className='flex text-sm text-black'>
+                                        <tr key={i} className="border-b border-gray-300">
+                                            <td className="px-5 py-2 text-sm text-black border-x border-gray-300">
                                                 {(kendala.kategori_kendala == 0 || kendala.kategori_kendala == null) ? '0' : formatInteger(kendala.kategori_kendala)}
-                                            </label>
-                                            <label className='flex text-sm text-black'>
+                                            </td>
+                                            <td className="px-5 py-2 text-sm text-black border-x border-gray-300">
                                                 {qty === 0 ? '0' : formatInteger(qty.toFixed(0))}
-                                            </label>
-                                            <label className='flex text-sm text-black'>
+                                            </td>
+                                            <td className="px-5 py-2 text-sm text-black border-x border-gray-300">
                                                 {kendala.jo.length} - {joPercentage}%
-                                            </label>
-                                            <label className='flex text-sm text-black'>
+                                            </td>
+                                            <td className="px-5 py-2 text-sm text-black border-x border-gray-300">
                                                 {percentage}%
-                                            </label>
-                                        </React.Fragment>
+                                            </td>
+                                        </tr>
                                     );
                                 });
                             })()}
+                        </tbody>
+                    </table>
 
-                        </div>
 
-                    </div>
                 </div>
 
                 <div className='flex gap-3 w-full justify-center'>
