@@ -273,14 +273,17 @@ function RekapWasteQC() {
                     </div>
 
                     <table className="w-full border-collapse border-x border-y border-gray-300">
+
                         <thead>
                             <tr className="bg-blue-100 border-b border-gray-300">
-                                <th className="px-5 py-2 text-sm font-bold text-blue-500 text-left border-x border-gray-300">Detail By Kendala</th>
+                                <th className="px-5 py-2 text-sm font-bold text-blue-500 text-left border-x border-gray-300">Detail By Kategori</th>
                                 <th className="px-5 py-2 text-sm font-bold text-black text-left border-x border-gray-300">Qty</th>
+                                <th className="px-5 py-2 text-sm font-bold text-black text-left border-x border-gray-300">% Qty</th>
                                 <th className="px-5 py-2 text-sm font-bold text-black text-left border-x border-gray-300">Frekuensi</th>
-                                <th className="px-5 py-2 text-sm font-bold text-black text-left border-x border-gray-300">%</th>
+                                <th className="px-5 py-2 text-sm font-bold text-black text-left border-x border-gray-300">% Frekuensi</th>
                             </tr>
                         </thead>
+
                         <tbody>
                             {(() => {
                                 const totalDefects = waste?.dataByKategori?.dataKendala?.reduce(
@@ -307,16 +310,25 @@ function RekapWasteQC() {
                                                 {qty === 0 ? '0' : formatInteger(qty.toFixed(0))}
                                             </td>
                                             <td className="px-5 py-2 text-sm text-black border-x border-gray-300">
-                                                {kendala.jo.length} - {joPercentage}%
+                                                {percentage}%
                                             </td>
                                             <td className="px-5 py-2 text-sm text-black border-x border-gray-300">
-                                                {percentage}%
+                                                {kendala.jo.length}
+                                            </td>
+                                            <td className="px-5 py-2 text-sm text-black ">
+                                                {joPercentage}%
                                             </td>
                                         </tr>
                                     );
                                 });
                             })()}
                         </tbody>
+                        <thead>
+                            <tr className="bg-blue-100 border-b border-gray-300 border-x border-gray-300 ">
+                                <th colSpan={2} className="px-5 py-2 text-sm font-bold text-black text-left border-x border-gray-300 "> Total JO Waste: {waste?.dataWasteByJo?.length}</th>
+                                <th colSpan={2} className="px-5 py-2 text-sm font-bold text-black text-left border-x border-gray-300"> Total JO Kendala: {waste?.dataWasteByJoReplace?.length}</th>
+                            </tr>
+                        </thead>
                     </table>
 
 
@@ -325,7 +337,7 @@ function RekapWasteQC() {
                 <div className='flex gap-3 w-full justify-center'>
                     <div className='flex flex-col gap-2 border-2 w-[50%] justify-center border-white rounded-md'>
                         <label className='text-center justify-center  flex text-xl font-bold text-black px-[1%] '>
-                            Waste Ke Kendala.
+                            Waste
                         </label>
                         <div className='flex gap-2 justify-center'>
                             <button onClick={showComponent1} className='bg-blue-400 w-[50%] text-md font-semibold text-white border-2 rounded-md px-2 py-1'>
@@ -338,14 +350,14 @@ function RekapWasteQC() {
                     </div>
                     <div className='flex flex-col gap-2 border-2 w-[50%] justify-center border-white rounded-md'>
                         <label className='text-center justify-center  flex text-xl font-bold text-black px-[1%] '>
-                            Kendala Ke Waste.
+                            Kendala
                         </label>
                         <div className='flex gap-2 justify-center'>
                             <button onClick={showComponent3} className='bg-blue-400 w-[50%] text-md font-semibold text-white border-2 rounded-md px-2 py-1'>
-                                Waste By JO
+                                Kendala By JO
                             </button>
                             <button onClick={showComponent4} className='bg-blue-400 w-[50%]  text-md font-semibold text-white border-2 rounded-md px-2 py-1'>
-                                Waste All
+                                Kendala All
                             </button>
                         </div>
                     </div>
@@ -739,6 +751,109 @@ function RekapWasteQC() {
                                                             </>
                                                         </ModalKosongan>
                                                     )}
+                                                    {/* POND Section */}
+                                                    <div
+                                                        onClick={() => openModal3(i)}
+                                                        className='flex flex-col gap-1 hover:cursor-pointer'
+                                                    >
+                                                        <label className='text-sm text-black'>POND</label>
+                                                        <label className='text-sm text-blue-500 font-semibold'>
+                                                            {data.defectsByKategori?.POND?.total_defect}
+                                                        </label>
+                                                    </div>
+                                                    {showModal3[i] && (
+                                                        <ModalKosongan
+                                                            isOpen={showModal3[i]}
+                                                            onClose={() => closeModal3(i)}
+                                                            judul={`Detail POND ${data.no_jo}`}
+                                                        >
+                                                            <>
+                                                                <div className='grid grid-cols-4 px-4 py-4'>
+                                                                    <div className='flex flex-col gap-1'>
+                                                                        <label className='  text-sm font-semibold text-black'>
+                                                                            SORTIR RS
+                                                                        </label>
+                                                                        {data.defectsByKategori?.POND?.data?.sortir_RS?.map((sortir: any, i: any) => (
+                                                                            <>
+                                                                                <label key={i} className='  text-sm  text-black'>
+                                                                                    Inspector : {sortir.inspektor}
+                                                                                </label>
+                                                                                {sortir.wastes?.map((waste: any, ii: any) => (
+                                                                                    <>
+                                                                                        <label key={ii} className='  text-sm  text-black'>
+                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ))}
+                                                                            </>
+                                                                        ))}
+                                                                    </div>
+                                                                    <div className='flex flex-col gap-1'>
+                                                                        <label className='  text-sm font-semibold text-black'>
+                                                                            SAMPLING RABUT
+                                                                        </label>
+                                                                        {data.defectsByKategori?.POND?.data?.sampling_rabut?.map((sampling: any, i: any) => (
+                                                                            <>
+                                                                                <label key={i} className='  text-sm  text-black'>
+                                                                                    Inspector : {sampling.inspektor}
+                                                                                </label>
+                                                                                {sampling.wastes?.map((waste: any, ii: any) => (
+                                                                                    <>
+                                                                                        <label key={ii} className='  text-sm  text-black'>
+                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ))}
+                                                                            </>
+                                                                        ))}
+
+
+                                                                    </div>
+                                                                    <div className='flex flex-col gap-1'>
+                                                                        <label className='  text-sm font-semibold text-black'>
+                                                                            AMPAR LEM
+                                                                        </label>
+                                                                        {data.defectsByKategori?.POND?.data?.ampar_lem?.map((ampar: any, i: any) => (
+                                                                            <>
+                                                                                <label key={i} className='  text-sm  text-black'>
+                                                                                    Inspector : {ampar.inspektor}
+                                                                                </label>
+                                                                                {ampar.wastes?.map((waste: any, ii: any) => (
+                                                                                    <>
+                                                                                        <label key={ii} className='  text-sm  text-black'>
+                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ))}
+                                                                            </>
+                                                                        ))}
+
+
+                                                                    </div>
+                                                                    <div className='flex flex-col gap-1'>
+                                                                        <label className='  text-sm font-semibold text-black'>
+                                                                            TEMUAN HELPER
+                                                                        </label>
+
+                                                                        {data.defectsByKategori?.POND?.data?.helper?.map((helper: any, i: any) => (
+                                                                            <>
+                                                                                <label key={i} className='  text-sm  text-black'>
+                                                                                    Inspector : {helper.inspektor}
+                                                                                </label>
+                                                                                {helper.wastes?.map((waste: any, ii: any) => (
+                                                                                    <>
+                                                                                        <label key={ii} className='  text-sm  text-black'>
+                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ))}
+                                                                            </>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        </ModalKosongan>
+                                                    )}
                                                     {/* LEM Section */}
                                                     <div
                                                         onClick={() => openModal2(i)}
@@ -844,109 +959,7 @@ function RekapWasteQC() {
                                                             </>
                                                         </ModalKosongan>
                                                     )}
-                                                    {/* POND Section */}
-                                                    <div
-                                                        onClick={() => openModal3(i)}
-                                                        className='flex flex-col gap-1 hover:cursor-pointer'
-                                                    >
-                                                        <label className='text-sm text-black'>POND</label>
-                                                        <label className='text-sm text-blue-500 font-semibold'>
-                                                            {data.defectsByKategori?.POND?.total_defect}
-                                                        </label>
-                                                    </div>
-                                                    {showModal3[i] && (
-                                                        <ModalKosongan
-                                                            isOpen={showModal3[i]}
-                                                            onClose={() => closeModal3(i)}
-                                                            judul={`Detail POND ${data.no_jo}`}
-                                                        >
-                                                            <>
-                                                                <div className='grid grid-cols-4 px-4 py-4'>
-                                                                    <div className='flex flex-col gap-1'>
-                                                                        <label className='  text-sm font-semibold text-black'>
-                                                                            SORTIR RS
-                                                                        </label>
-                                                                        {data.defectsByKategori?.POND?.data?.sortir_RS?.map((sortir: any, i: any) => (
-                                                                            <>
-                                                                                <label key={i} className='  text-sm  text-black'>
-                                                                                    Inspector : {sortir.inspektor}
-                                                                                </label>
-                                                                                {sortir.wastes?.map((waste: any, ii: any) => (
-                                                                                    <>
-                                                                                        <label key={ii} className='  text-sm  text-black'>
-                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
-                                                                                        </label>
-                                                                                    </>
-                                                                                ))}
-                                                                            </>
-                                                                        ))}
-                                                                    </div>
-                                                                    <div className='flex flex-col gap-1'>
-                                                                        <label className='  text-sm font-semibold text-black'>
-                                                                            SAMPLING RABUT
-                                                                        </label>
-                                                                        {data.defectsByKategori?.POND?.data?.sampling_rabut?.map((sampling: any, i: any) => (
-                                                                            <>
-                                                                                <label key={i} className='  text-sm  text-black'>
-                                                                                    Inspector : {sampling.inspektor}
-                                                                                </label>
-                                                                                {sampling.wastes?.map((waste: any, ii: any) => (
-                                                                                    <>
-                                                                                        <label key={ii} className='  text-sm  text-black'>
-                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
-                                                                                        </label>
-                                                                                    </>
-                                                                                ))}
-                                                                            </>
-                                                                        ))}
 
-
-                                                                    </div>
-                                                                    <div className='flex flex-col gap-1'>
-                                                                        <label className='  text-sm font-semibold text-black'>
-                                                                            AMPAR LEM
-                                                                        </label>
-                                                                        {data.defectsByKategori?.POND?.data?.ampar_lem?.map((ampar: any, i: any) => (
-                                                                            <>
-                                                                                <label key={i} className='  text-sm  text-black'>
-                                                                                    Inspector : {ampar.inspektor}
-                                                                                </label>
-                                                                                {ampar.wastes?.map((waste: any, ii: any) => (
-                                                                                    <>
-                                                                                        <label key={ii} className='  text-sm  text-black'>
-                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
-                                                                                        </label>
-                                                                                    </>
-                                                                                ))}
-                                                                            </>
-                                                                        ))}
-
-
-                                                                    </div>
-                                                                    <div className='flex flex-col gap-1'>
-                                                                        <label className='  text-sm font-semibold text-black'>
-                                                                            TEMUAN HELPER
-                                                                        </label>
-
-                                                                        {data.defectsByKategori?.POND?.data?.helper?.map((helper: any, i: any) => (
-                                                                            <>
-                                                                                <label key={i} className='  text-sm  text-black'>
-                                                                                    Inspector : {helper.inspektor}
-                                                                                </label>
-                                                                                {helper.wastes?.map((waste: any, ii: any) => (
-                                                                                    <>
-                                                                                        <label key={ii} className='  text-sm  text-black'>
-                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
-                                                                                        </label>
-                                                                                    </>
-                                                                                ))}
-                                                                            </>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            </>
-                                                        </ModalKosongan>
-                                                    )}
                                                     {/* Lipat Section */}
                                                     <div
                                                         onClick={() => openModal4(i)}
@@ -1070,46 +1083,49 @@ function RekapWasteQC() {
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        {data.defects?.map((data2: any, ii: any) => (
-                                                            data2.kendala?.length > 0 ? (
-                                                                data2.kendala.map((data3: any, iii: any) => (
-                                                                    <tr key={`${ii}-${iii}`} className="border-b border-gray-300">
-                                                                        {/* Kode Waste & Total Defect hanya ditampilkan di baris pertama kendala */}
-                                                                        {iii === 0 && (
-                                                                            <>
-                                                                                <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
-                                                                                    {data2.kode_waste} - {data2.waste_desc}
-                                                                                </td>
-                                                                                <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
-                                                                                    {data2.total_defect}
-                                                                                </td>
-                                                                            </>
-                                                                        )}
-                                                                        {/* Kendala */}
+                                                        {data.defects
+                                                            ?.sort((a: any, b: any) => (a.kode_waste || "").localeCompare(b.kode_waste || ""))
+                                                            .map((data2: any, ii: any) => (
+
+                                                                data2.kendala?.length > 0 ? (
+                                                                    data2.kendala.map((data3: any, iii: any) => (
+                                                                        <tr key={`${ii}-${iii}`} className="border-b border-gray-300">
+                                                                            {/* Kode Waste & Total Defect hanya ditampilkan di baris pertama kendala */}
+                                                                            {iii === 0 && (
+                                                                                <>
+                                                                                    <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
+                                                                                        {data2.kode_waste} - {data2.waste_desc}
+                                                                                    </td>
+                                                                                    <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
+                                                                                        {data2.total_defect}
+                                                                                    </td>
+                                                                                </>
+                                                                            )}
+                                                                            {/* Kendala */}
+                                                                            <td className="border border-gray-300 px-4 py-2">
+                                                                                ✤ {data3.kategori_kendala} - {data3.kode_kendala} - {data3.kendala_desc}
+                                                                            </td>
+                                                                            {/* Calculated Defect */}
+                                                                            <td className="border border-gray-300 px-4 py-2">
+                                                                                {data3.calculated_defect}
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))
+                                                                ) : (
+                                                                    <tr key={ii} className="border-b border-gray-300">
+                                                                        {/* Jika tidak ada kendala, tetap tampilkan kode waste & total defect */}
                                                                         <td className="border border-gray-300 px-4 py-2">
-                                                                            ✤ {data3.kategori_kendala} - {data3.kode_kendala} - {data3.kendala_desc}
+                                                                            {data2.kode_waste} - {data2.waste_desc}
                                                                         </td>
-                                                                        {/* Calculated Defect */}
                                                                         <td className="border border-gray-300 px-4 py-2">
-                                                                            {data3.calculated_defect}
+                                                                            {data2.total_defect}
+                                                                        </td>
+                                                                        <td className="border border-gray-300 px-4 py-2 text-center" colSpan={2}>
+                                                                            -
                                                                         </td>
                                                                     </tr>
-                                                                ))
-                                                            ) : (
-                                                                <tr key={ii} className="border-b border-gray-300">
-                                                                    {/* Jika tidak ada kendala, tetap tampilkan kode waste & total defect */}
-                                                                    <td className="border border-gray-300 px-4 py-2">
-                                                                        {data2.kode_waste} - {data2.waste_desc}
-                                                                    </td>
-                                                                    <td className="border border-gray-300 px-4 py-2">
-                                                                        {data2.total_defect}
-                                                                    </td>
-                                                                    <td className="border border-gray-300 px-4 py-2 text-center" colSpan={2}>
-                                                                        -
-                                                                    </td>
-                                                                </tr>
-                                                            )
-                                                        ))}
+                                                                )
+                                                            ))}
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -1584,6 +1600,110 @@ function RekapWasteQC() {
                                                             </>
                                                         </ModalKosongan>
                                                     )}
+
+                                                    {/* POND Section */}
+                                                    <div
+                                                        onClick={() => openModal3(i)}
+                                                        className='flex flex-col gap-1 hover:cursor-pointer'
+                                                    >
+                                                        <label className='text-sm text-black'>POND</label>
+                                                        <label className='text-sm text-blue-500 font-semibold'>
+                                                            {data.defectsByKategori?.POND?.total_defect}
+                                                        </label>
+                                                    </div>
+                                                    {showModal3[i] && (
+                                                        <ModalKosongan
+                                                            isOpen={showModal3[i]}
+                                                            onClose={() => closeModal3(i)}
+                                                            judul={`Detail POND ${data.no_jo}`}
+                                                        >
+                                                            <>
+                                                                <div className='grid grid-cols-4 px-4 py-4'>
+                                                                    <div className='flex flex-col gap-1'>
+                                                                        <label className='  text-sm font-semibold text-black'>
+                                                                            SORTIR RS
+                                                                        </label>
+                                                                        {data.defectsByKategori?.POND?.data?.sortir_RS?.map((sortir: any, i: any) => (
+                                                                            <>
+                                                                                <label key={i} className='  text-sm  text-black'>
+                                                                                    Inspector : {sortir.inspektor}
+                                                                                </label>
+                                                                                {sortir.wastes?.map((waste: any, ii: any) => (
+                                                                                    <>
+                                                                                        <label key={ii} className='  text-sm  text-black'>
+                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ))}
+                                                                            </>
+                                                                        ))}
+                                                                    </div>
+                                                                    <div className='flex flex-col gap-1'>
+                                                                        <label className='  text-sm font-semibold text-black'>
+                                                                            SAMPLING RABUT
+                                                                        </label>
+                                                                        {data.defectsByKategori?.POND?.data?.sampling_rabut?.map((sampling: any, i: any) => (
+                                                                            <>
+                                                                                <label key={i} className='  text-sm  text-black'>
+                                                                                    Inspector : {sampling.inspektor}
+                                                                                </label>
+                                                                                {sampling.wastes?.map((waste: any, ii: any) => (
+                                                                                    <>
+                                                                                        <label key={ii} className='  text-sm  text-black'>
+                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ))}
+                                                                            </>
+                                                                        ))}
+
+
+                                                                    </div>
+                                                                    <div className='flex flex-col gap-1'>
+                                                                        <label className='  text-sm font-semibold text-black'>
+                                                                            AMPAR LEM
+                                                                        </label>
+                                                                        {data.defectsByKategori?.POND?.data?.ampar_lem?.map((ampar: any, i: any) => (
+                                                                            <>
+                                                                                <label key={i} className='  text-sm  text-black'>
+                                                                                    Inspector : {ampar.inspektor}
+                                                                                </label>
+                                                                                {ampar.wastes?.map((waste: any, ii: any) => (
+                                                                                    <>
+                                                                                        <label key={ii} className='  text-sm  text-black'>
+                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ))}
+                                                                            </>
+                                                                        ))}
+
+
+                                                                    </div>
+                                                                    <div className='flex flex-col gap-1'>
+                                                                        <label className='  text-sm font-semibold text-black'>
+                                                                            TEMUAN HELPER
+                                                                        </label>
+
+                                                                        {data.defectsByKategori?.POND?.data?.helper?.map((helper: any, i: any) => (
+                                                                            <>
+                                                                                <label key={i} className='  text-sm  text-black'>
+                                                                                    Inspector : {helper.inspektor}
+                                                                                </label>
+                                                                                {helper.wastes?.map((waste: any, ii: any) => (
+                                                                                    <>
+                                                                                        <label key={ii} className='  text-sm  text-black'>
+                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
+                                                                                        </label>
+                                                                                    </>
+                                                                                ))}
+                                                                            </>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        </ModalKosongan>
+                                                    )}
                                                     {/* LEM Section */}
                                                     <div
                                                         onClick={() => openModal2(i)}
@@ -1684,109 +1804,6 @@ function RekapWasteQC() {
                                                                             </>
                                                                         ))}
 
-                                                                    </div>
-                                                                </div>
-                                                            </>
-                                                        </ModalKosongan>
-                                                    )}
-                                                    {/* POND Section */}
-                                                    <div
-                                                        onClick={() => openModal3(i)}
-                                                        className='flex flex-col gap-1 hover:cursor-pointer'
-                                                    >
-                                                        <label className='text-sm text-black'>POND</label>
-                                                        <label className='text-sm text-blue-500 font-semibold'>
-                                                            {data.defectsByKategori?.POND?.total_defect}
-                                                        </label>
-                                                    </div>
-                                                    {showModal3[i] && (
-                                                        <ModalKosongan
-                                                            isOpen={showModal3[i]}
-                                                            onClose={() => closeModal3(i)}
-                                                            judul={`Detail POND ${data.no_jo}`}
-                                                        >
-                                                            <>
-                                                                <div className='grid grid-cols-4 px-4 py-4'>
-                                                                    <div className='flex flex-col gap-1'>
-                                                                        <label className='  text-sm font-semibold text-black'>
-                                                                            SORTIR RS
-                                                                        </label>
-                                                                        {data.defectsByKategori?.POND?.data?.sortir_RS?.map((sortir: any, i: any) => (
-                                                                            <>
-                                                                                <label key={i} className='  text-sm  text-black'>
-                                                                                    Inspector : {sortir.inspektor}
-                                                                                </label>
-                                                                                {sortir.wastes?.map((waste: any, ii: any) => (
-                                                                                    <>
-                                                                                        <label key={ii} className='  text-sm  text-black'>
-                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
-                                                                                        </label>
-                                                                                    </>
-                                                                                ))}
-                                                                            </>
-                                                                        ))}
-                                                                    </div>
-                                                                    <div className='flex flex-col gap-1'>
-                                                                        <label className='  text-sm font-semibold text-black'>
-                                                                            SAMPLING RABUT
-                                                                        </label>
-                                                                        {data.defectsByKategori?.POND?.data?.sampling_rabut?.map((sampling: any, i: any) => (
-                                                                            <>
-                                                                                <label key={i} className='  text-sm  text-black'>
-                                                                                    Inspector : {sampling.inspektor}
-                                                                                </label>
-                                                                                {sampling.wastes?.map((waste: any, ii: any) => (
-                                                                                    <>
-                                                                                        <label key={ii} className='  text-sm  text-black'>
-                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
-                                                                                        </label>
-                                                                                    </>
-                                                                                ))}
-                                                                            </>
-                                                                        ))}
-
-
-                                                                    </div>
-                                                                    <div className='flex flex-col gap-1'>
-                                                                        <label className='  text-sm font-semibold text-black'>
-                                                                            AMPAR LEM
-                                                                        </label>
-                                                                        {data.defectsByKategori?.POND?.data?.ampar_lem?.map((ampar: any, i: any) => (
-                                                                            <>
-                                                                                <label key={i} className='  text-sm  text-black'>
-                                                                                    Inspector : {ampar.inspektor}
-                                                                                </label>
-                                                                                {ampar.wastes?.map((waste: any, ii: any) => (
-                                                                                    <>
-                                                                                        <label key={ii} className='  text-sm  text-black'>
-                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
-                                                                                        </label>
-                                                                                    </>
-                                                                                ))}
-                                                                            </>
-                                                                        ))}
-
-
-                                                                    </div>
-                                                                    <div className='flex flex-col gap-1'>
-                                                                        <label className='  text-sm font-semibold text-black'>
-                                                                            TEMUAN HELPER
-                                                                        </label>
-
-                                                                        {data.defectsByKategori?.POND?.data?.helper?.map((helper: any, i: any) => (
-                                                                            <>
-                                                                                <label key={i} className='  text-sm  text-black'>
-                                                                                    Inspector : {helper.inspektor}
-                                                                                </label>
-                                                                                {helper.wastes?.map((waste: any, ii: any) => (
-                                                                                    <>
-                                                                                        <label key={ii} className='  text-sm  text-black'>
-                                                                                            {waste.kode_waste} - {waste.waste_desc} : {waste.total_defect}
-                                                                                        </label>
-                                                                                    </>
-                                                                                ))}
-                                                                            </>
-                                                                        ))}
                                                                     </div>
                                                                 </div>
                                                             </>
@@ -1908,56 +1925,56 @@ function RekapWasteQC() {
                                                 <table className="w-full border-collapse border border-gray-300">
                                                     <thead>
                                                         <tr className="bg-gray-200">
-                                                            <th className="border border-gray-300 px-4 py-2 text-left">Kode Waste</th>
+                                                            <th className="border border-gray-300 px-4 py-2 text-left">Kode Kendala</th>
                                                             <th className="border border-gray-300 px-4 py-2 text-left">Total Defect</th>
-                                                            <th className="border border-gray-300 px-4 py-2 text-left">Kendala</th>
-                                                            <th className="border border-gray-300 px-4 py-2 text-left">Defect By Kendala</th>
+                                                            <th className="border border-gray-300 px-4 py-2 text-left">Waste</th>
+                                                            <th className="border border-gray-300 px-4 py-2 text-left">Defect By Waste</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        {data.defects?.map((data2: any, ii: any) => (
-                                                            data2.kendala?.length > 0 ? (
-                                                                data2.kendala.map((data3: any, iii: any) => (
-                                                                    <tr key={`${ii}-${iii}`} className="border-b border-gray-300">
-                                                                        {/* Kode Waste & Total Defect hanya ditampilkan di baris pertama kendala */}
-                                                                        {iii === 0 && (
-                                                                            <>
-                                                                                <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
-                                                                                    <span className='font-semibold'>{data2.kategori_kendala}</span> - {data2.kode_kendala} - {data2.kendala_desc}
-                                                                                </td>
-                                                                                <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
-                                                                                    {data2.total_defect}
-                                                                                </td>
-                                                                            </>
-                                                                        )}
-                                                                        {/* Kendala */}
+                                                        {data.defects
+                                                            ?.sort((a: any, b: any) => (a.kode_kendala || "").localeCompare(b.kode_kendala || ""))
+                                                            .map((data2: any, ii: any) => (
+
+                                                                data2.kendala?.length > 0 ? (
+                                                                    data2.kendala.map((data3: any, iii: any) => (
+                                                                        <tr key={`${ii}-${iii}`} className="border-b border-gray-300">
+                                                                            {iii === 0 && (
+                                                                                <>
+                                                                                    <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
+                                                                                        <span className='font-semibold'>{data2.kategori_kendala}</span> - {data2.kode_kendala} - {data2.kendala_desc}
+                                                                                    </td>
+                                                                                    <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
+                                                                                        {data2.total_defect}
+                                                                                    </td>
+                                                                                </>
+                                                                            )}
+                                                                            <td className="border border-gray-300 px-4 py-2">
+                                                                                ✤ {data3.kode_waste} - {data3.waste_desc}
+                                                                            </td>
+                                                                            <td className="border border-gray-300 px-4 py-2">
+                                                                                {data3.calculated_defect}
+                                                                            </td>
+                                                                        </tr>
+                                                                    ))
+                                                                ) : (
+                                                                    <tr key={ii} className="border-b border-gray-300">
                                                                         <td className="border border-gray-300 px-4 py-2">
-                                                                            ✤  {data3.kode_waste} - {data3.waste_desc}
+                                                                            {data2.kode_waste} - {data2.waste_desc}
                                                                         </td>
-                                                                        {/* Calculated Defect */}
                                                                         <td className="border border-gray-300 px-4 py-2">
-                                                                            {data3.calculated_defect}
+                                                                            {data2.total_defect}
+                                                                        </td>
+                                                                        <td className="border border-gray-300 px-4 py-2 text-center" colSpan={2}>
+                                                                            -
                                                                         </td>
                                                                     </tr>
-                                                                ))
-                                                            ) : (
-                                                                <tr key={ii} className="border-b border-gray-300">
-                                                                    {/* Jika tidak ada kendala, tetap tampilkan kode waste & total defect */}
-                                                                    <td className="border border-gray-300 px-4 py-2">
-                                                                        {data2.kode_waste} - {data2.waste_desc}
-                                                                    </td>
-                                                                    <td className="border border-gray-300 px-4 py-2">
-                                                                        {data2.total_defect}
-                                                                    </td>
-                                                                    <td className="border border-gray-300 px-4 py-2 text-center" colSpan={2}>
-                                                                        -
-                                                                    </td>
-                                                                </tr>
-                                                            )
-                                                        ))}
+                                                                )
+                                                            ))}
                                                     </tbody>
                                                 </table>
                                             </div>
+
 
 
 
