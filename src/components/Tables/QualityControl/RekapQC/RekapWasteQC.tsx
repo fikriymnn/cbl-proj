@@ -211,10 +211,10 @@ function RekapWasteQC() {
         );
     }) || [];
 
+    const [showDetailMesin, setShowDetailMesin] = useState(false);
+    const openModalDetailMesin = () => setShowDetailMesin(true);
+    const closeModalDetailMesin = () => setShowDetailMesin(false);
 
-    // Menampilkan pesan jika tidak ada hasil pencarian
-    const displayedJo = filteredJo.length > 0 ? filteredJo : [{ no_jo: "Data tidak ada", nama_produk: "", no_io: "", customer: "" }];
-    const displayedJo2 = filteredJo2.length > 0 ? filteredJo2 : [{ no_jo: "Data tidak ada", nama_produk: "", no_io: "", customer: "" }];
 
     return (
         <div className='rounded-md'>
@@ -303,9 +303,107 @@ function RekapWasteQC() {
 
                                     return (
                                         <tr key={i} className="border-b border-gray-300">
-                                            <td className="px-5 py-2 text-sm text-black border-x border-gray-300">
-                                                {(kendala.kategori_kendala == 0 || kendala.kategori_kendala == null) ? '0' : formatInteger(kendala.kategori_kendala)}
-                                            </td>
+                                            {kendala.kategori_kendala == 'Mesin' ? <>
+                                                <td
+                                                    onClick={() => openModalDetailMesin()}
+                                                    className="px-5 py-2 text-sm text-blue-500 font-semibold border-x border-gray-300 hover:cursor-pointer">
+                                                    {(kendala.kategori_kendala == 0 || kendala.kategori_kendala == null) ? '0' : formatInteger(kendala.kategori_kendala)}
+                                                </td>
+                                                {showDetailMesin == true && (
+                                                    <>
+                                                        <ModalKosongan
+                                                            isOpen={showDetailMesin}
+                                                            onClose={() => closeModalDetailMesin()}
+                                                            judul={'Detail Kategori Mesin'}
+                                                        >
+                                                            <>
+                                                                <div className='flex  pt-4 font-bold text-black text-md'>
+                                                                    Rekap Mesin :
+                                                                </div>
+                                                                <div className="overflow-x-auto">
+                                                                    <table className="w-full border-collapse border border-gray-300 mt-2">
+
+                                                                        <thead className="bg-gray-100">
+                                                                            <tr>
+                                                                                <th colSpan={2} className="border border-gray-300 px-4 py-2 text-left">Mesin</th>
+                                                                                <th className="border border-gray-300 px-4 py-2 text-left">Total Defect</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            {waste?.dataByKategori?.dataKendalaMesin?.length > 0 ? (
+                                                                                [...waste.dataByKategori.dataKendalaMesin]
+                                                                                    .sort((a: any, b: any) => b.total_calculated_defect - a.total_calculated_defect) // Sort Descending
+                                                                                    .map((mesin: any, index: any) => (
+                                                                                        <tr key={index} className="border-b border-gray-300">
+                                                                                            <td colSpan={2} className="border border-gray-300 px-4 py-2">{mesin.mesin}</td>
+                                                                                            <td className="border border-gray-300 px-4 py-2">{mesin.total_calculated_defect}</td>
+                                                                                        </tr>
+                                                                                    ))
+                                                                            ) : (
+                                                                                <tr>
+                                                                                    <td className="border border-gray-300 px-4 py-2 text-center" colSpan={2}>
+                                                                                        Tidak Ada Data Mesin
+                                                                                    </td>
+                                                                                </tr>
+                                                                            )}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+
+                                                                <div className='flex  pt-4 font-bold text-black text-md'>
+                                                                    Rekap Mesin Per JO :
+                                                                </div>
+                                                                <div>
+                                                                    {/* Ensure kendala.jo exists and is an array before mapping */}
+                                                                    {Array.isArray(kendala.jo) && kendala.jo.length > 0 ? (
+                                                                        <div className="mt-3">
+                                                                            {kendala.jo.map((jo: any, index: any) => (
+                                                                                <div key={index} className="mb-5">
+                                                                                    <h3 className="font-semibold text-md">{index + 1}. {jo.no_jo}</h3>
+
+                                                                                    {/* Check if jo.mesin exists and is an array */}
+                                                                                    {Array.isArray(jo.mesin) && jo.mesin.length > 0 ? (
+                                                                                        <table className="w-full border-collapse border border-gray-300 mt-2">
+                                                                                            <thead className="bg-gray-100">
+                                                                                                <tr>
+                                                                                                    <th className="border border-gray-300 px-4 py-2 text-left">Mesin</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2 text-left">Defect</th>
+                                                                                                </tr>
+                                                                                            </thead>
+                                                                                            <tbody>
+                                                                                                {jo.mesin
+                                                                                                    .sort((a: any, b: any) => b.total_calculated_defect - a.total_calculated_defect) // Sort descending
+                                                                                                    .map((mesin: any, mesinIndex: any) => (
+                                                                                                        <tr key={mesinIndex} className="border border-gray-300">
+                                                                                                            <td className="border border-gray-300 px-4 py-2">{mesin.mesin}</td>
+                                                                                                            <td className="border border-gray-300 px-4 py-2">{mesin.total_calculated_defect}</td>
+                                                                                                        </tr>
+                                                                                                    ))}
+                                                                                            </tbody>
+                                                                                        </table>
+                                                                                    ) : (
+                                                                                        <p className="text-gray-500 mt-2">No Mesin Data Available</p>
+                                                                                    )}
+
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <p className="text-gray-500">No JO data available.</p>
+                                                                    )}
+                                                                </div>
+                                                            </>
+                                                        </ModalKosongan>
+                                                    </>
+                                                )}
+
+                                            </> : <>
+
+                                                <td className="px-5 py-2 text-sm text-black border-x border-gray-300">
+                                                    {(kendala.kategori_kendala == 0 || kendala.kategori_kendala == null) ? '0' : formatInteger(kendala.kategori_kendala)}
+                                                </td>
+                                            </>}
+
                                             <td className="px-5 py-2 text-sm text-black border-x border-gray-300">
                                                 {qty === 0 ? '0' : formatInteger(qty.toFixed(0))}
                                             </td>
@@ -1064,10 +1162,6 @@ function RekapWasteQC() {
                                                         </ModalKosongan>
                                                     )}
                                                 </div>
-
-
-
-
                                                 <label className='text-sm text-black'>
                                                     {data.total_defect}
                                                 </label>
@@ -1084,33 +1178,34 @@ function RekapWasteQC() {
                                                     </thead>
                                                     <tbody>
                                                         {data.defects
-                                                            ?.sort((a: any, b: any) => (a.kode_waste || "").localeCompare(b.kode_waste || ""))
+                                                            ?.sort((a: any, b: any) => (b.total_defect ?? 0) - (a.total_defect ?? 0)) // Sort by total_defect DESCENDING
                                                             .map((data2: any, ii: any) => (
-
-                                                                data2.kendala?.length > 0 ? (
-                                                                    data2.kendala.map((data3: any, iii: any) => (
-                                                                        <tr key={`${ii}-${iii}`} className="border-b border-gray-300">
-                                                                            {/* Kode Waste & Total Defect hanya ditampilkan di baris pertama kendala */}
-                                                                            {iii === 0 && (
-                                                                                <>
-                                                                                    <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
-                                                                                        {data2.kode_waste} - {data2.waste_desc}
-                                                                                    </td>
-                                                                                    <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
-                                                                                        {data2.total_defect}
-                                                                                    </td>
-                                                                                </>
-                                                                            )}
-                                                                            {/* Kendala */}
-                                                                            <td className="border border-gray-300 px-4 py-2">
-                                                                                ✤ {data3.kategori_kendala} - {data3.kode_kendala} - {data3.kendala_desc}
-                                                                            </td>
-                                                                            {/* Calculated Defect */}
-                                                                            <td className="border border-gray-300 px-4 py-2">
-                                                                                {data3.calculated_defect}
-                                                                            </td>
-                                                                        </tr>
-                                                                    ))
+                                                                Array.isArray(data2.kendala) && data2.kendala.length > 0 ? (
+                                                                    data2.kendala
+                                                                        .sort((a: any, b: any) => (b.calculated_defect ?? 0) - (a.calculated_defect ?? 0)) // Sort by calculated_defect DESCENDING
+                                                                        .map((data3: any, iii: any) => (
+                                                                            <tr key={`${ii}-${iii}`} className="border-b border-gray-300">
+                                                                                {/* Kode Waste & Total Defect hanya ditampilkan di baris pertama kendala */}
+                                                                                {iii === 0 && (
+                                                                                    <>
+                                                                                        <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
+                                                                                            {data2.kode_waste} - {data2.waste_desc}
+                                                                                        </td>
+                                                                                        <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
+                                                                                            {data2.total_defect ?? 0}
+                                                                                        </td>
+                                                                                    </>
+                                                                                )}
+                                                                                {/* Kendala */}
+                                                                                <td className="border border-gray-300 px-4 py-2">
+                                                                                    ✤ {data3.kategori_kendala} - {data3.kode_kendala} - {data3.kendala_desc}
+                                                                                </td>
+                                                                                {/* Calculated Defect */}
+                                                                                <td className="border border-gray-300 px-4 py-2">
+                                                                                    {data3.calculated_defect}
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))
                                                                 ) : (
                                                                     <tr key={ii} className="border-b border-gray-300">
                                                                         {/* Jika tidak ada kendala, tetap tampilkan kode waste & total defect */}
@@ -1118,7 +1213,7 @@ function RekapWasteQC() {
                                                                             {data2.kode_waste} - {data2.waste_desc}
                                                                         </td>
                                                                         <td className="border border-gray-300 px-4 py-2">
-                                                                            {data2.total_defect}
+                                                                            {data2.total_defect ?? 0}
                                                                         </td>
                                                                         <td className="border border-gray-300 px-4 py-2 text-center" colSpan={2}>
                                                                             -
@@ -1129,9 +1224,6 @@ function RekapWasteQC() {
                                                     </tbody>
                                                 </table>
                                             </div>
-
-
-
                                         </div>
 
                                     </>
@@ -1933,45 +2025,50 @@ function RekapWasteQC() {
                                                     </thead>
                                                     <tbody>
                                                         {data.defects
-                                                            ?.sort((a: any, b: any) => (a.kode_kendala || "").localeCompare(b.kode_kendala || ""))
+                                                            ?.filter((item: any) => !!item.kode_kendala) // Ensure kode_kendala exists
+                                                            .sort((a: any, b: any) => (b.total_defect ?? 0) - (a.total_defect ?? 0)) // Sort by total_defect DESCENDING
                                                             .map((data2: any, ii: any) => (
-
-                                                                data2.kendala?.length > 0 ? (
-                                                                    data2.kendala.map((data3: any, iii: any) => (
-                                                                        <tr key={`${ii}-${iii}`} className="border-b border-gray-300">
-                                                                            {iii === 0 && (
-                                                                                <>
-                                                                                    <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
-                                                                                        <span className='font-semibold'>{data2.kategori_kendala}</span> - {data2.kode_kendala} - {data2.kendala_desc}
-                                                                                    </td>
-                                                                                    <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
-                                                                                        {data2.total_defect}
-                                                                                    </td>
-                                                                                </>
-                                                                            )}
-                                                                            <td className="border border-gray-300 px-4 py-2">
-                                                                                ✤ {data3.kode_waste} - {data3.waste_desc}
-                                                                            </td>
-                                                                            <td className="border border-gray-300 px-4 py-2">
-                                                                                {data3.calculated_defect}
-                                                                            </td>
-                                                                        </tr>
-                                                                    ))
+                                                                Array.isArray(data2.kendala) && data2.kendala.length > 0 ? (
+                                                                    data2.kendala
+                                                                        .sort((a: any, b: any) => (b.calculated_defect ?? 0) - (a.calculated_defect ?? 0)) // Sort by calculated_defect DESCENDING
+                                                                        .map((data3: any, iii: any) => (
+                                                                            <tr key={`${ii}-${iii}`} className="border-b border-gray-300">
+                                                                                {iii === 0 && (
+                                                                                    <>
+                                                                                        <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
+                                                                                            <span className="font-semibold">{data2.kategori_kendala}</span> - {data2.kode_kendala || "No Kode"} - {data2.kendala_desc || "No Description"}
+                                                                                        </td>
+                                                                                        <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
+                                                                                            {data2.total_defect ?? 0}
+                                                                                        </td>
+                                                                                    </>
+                                                                                )}
+                                                                                <td className="border border-gray-300 px-4 py-2">
+                                                                                    ✤ {data3.kode_waste} - {data3.waste_desc}
+                                                                                </td>
+                                                                                <td className="border border-gray-300 px-4 py-2">
+                                                                                    {data3.calculated_defect}
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))
                                                                 ) : (
+                                                                    // Fallback if kendala is empty
                                                                     <tr key={ii} className="border-b border-gray-300">
                                                                         <td className="border border-gray-300 px-4 py-2">
-                                                                            {data2.kode_waste} - {data2.waste_desc}
+                                                                            <span className="font-semibold">{data2.kategori_kendala}</span> - {data2.kode_kendala || "Tidak ada Kode"} - {data2.kendala_desc || "Tidak ada Deskripsi"}
                                                                         </td>
                                                                         <td className="border border-gray-300 px-4 py-2">
-                                                                            {data2.total_defect}
+                                                                            {data2.total_defect ?? 0}
                                                                         </td>
                                                                         <td className="border border-gray-300 px-4 py-2 text-center" colSpan={2}>
-                                                                            -
+                                                                            Tidak ada data Kendala
                                                                         </td>
                                                                     </tr>
                                                                 )
                                                             ))}
                                                     </tbody>
+
+
                                                 </table>
                                             </div>
 
