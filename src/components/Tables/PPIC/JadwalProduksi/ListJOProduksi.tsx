@@ -574,7 +574,10 @@ function ListJOProduksi() {
                                                                             {data2?.jadwal_per_jam?.length == 0 ? (
                                                                                 <>
                                                                                     <label
-                                                                                        onClick={() => openModalFull(ii, data2.tahapan)}
+                                                                                        onClick={() => {
+                                                                                            openModalFull(ii, data2.tahapan)
+                                                                                            setSelectedData(data2.jadwal_per_jam[0]);
+                                                                                        }}
                                                                                         htmlFor="" className='text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center'>
                                                                                         {formatCustomDate(data2.tgl_from)}
                                                                                     </label>
@@ -583,7 +586,7 @@ function ListJOProduksi() {
                                                                                 <>
                                                                                     <button
                                                                                         onClick={() => {
-
+                                                                                            setSelectedData(data2.jadwal_per_jam[0]);
                                                                                             openModalFull(ii, data2.tahapan)
                                                                                         }}
                                                                                         className='text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center'>
@@ -602,40 +605,15 @@ function ListJOProduksi() {
                                                                                     judul={`Jadwal ${data2.tahapan} - ${data.no_jo}`}
                                                                                 >
                                                                                     <>
-                                                                                        <label htmlFor="" className='text-black text-xl px-4 mt-4 flex font-semibold'>
-                                                                                            List Kepala
-                                                                                        </label>
-                                                                                        <div className='grid grid-cols-7 w-full bg-white border-b-8 border-[#D8EAFF] flex-col py-4 px-1'>
-                                                                                            <div className='flex flex-wrap gap-1 col-span-2'>
-                                                                                                {data2.jadwal_per_jam?.map((data3: any, iii: any) => (
-                                                                                                    <>
-                                                                                                        <div
-                                                                                                            key={iii}
-                                                                                                            className='border-2 border-stroke flex items-center h-[50px] px-4'>
-                                                                                                            <button onClick={() => setSelectedData(data3)} className='text-black text-xs '>
-                                                                                                                {convertTimeStampToDate(data3.tanggal)} - {data3.jam}
-                                                                                                            </button>
-                                                                                                        </div>
 
-
-                                                                                                        {showModal1[data3?.id] === true && ( // Use matchingData.id to open the correct modal
-
-                                                                                                            <PopUpTable dataMap={data3}
-                                                                                                                onClose={() => closeModal1(data3?.id)}
-                                                                                                                onFinish={() => get1Tiket(data.id, i)} />
-
-                                                                                                        )}
-                                                                                                    </>
-                                                                                                ))}
-                                                                                            </div>
-                                                                                            <div className="col-span-5 flex flex-col gap-1 ">
-                                                                                                {selectedData ? (
-                                                                                                    <PopUpTable dataMap={selectedData} onClose={() => setSelectedData(null)} onFinish={() => get1Tiket(data.id, i)} />
-                                                                                                ) : (
-                                                                                                    <p className="text-gray-500">Pilih Data</p>
-                                                                                                )}
-                                                                                            </div>
+                                                                                        <div className="col-span-5 flex flex-col gap-1 ">
+                                                                                            {selectedData ? (
+                                                                                                <PopUpTable dataMap={selectedData} onClose={() => setSelectedData(null)} onFinish={() => get1Tiket(data.id, i)} />
+                                                                                            ) : (
+                                                                                                <p className="text-gray-500">Pilih Data</p>
+                                                                                            )}
                                                                                         </div>
+
 
                                                                                     </>
                                                                                 </ModalFull>

@@ -15,6 +15,7 @@ import Loading from '../../../Loading';
 import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
 import formatInteger from '../../../../utils/formaterInteger';
 import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
+import convertTimeStampToDate from '../../../../utils/convertDate';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -341,6 +342,33 @@ export default function DetailMasterKaryawanIsi() {
                                         <label htmlFor="" className='text-[#636363] text-xl font-normal '>L</label>
                                     </div> */}
                                 </div>
+                            </div>
+                            <div className='bg-[#eeeeee] px-6 py-2'>
+                                <label htmlFor="" className='text-blue-400 text-sm font-normal '>SP AKTIF</label>
+                            </div>
+                            <div className="px-6 py-3">
+                                <table className="w-full border-collapse border border-gray-300">
+                                    <thead>
+                                        <tr className="bg-gray-200">
+                                            <th className="border border-gray-300 px-4 py-2 text-left">SP Ke</th>
+                                            <th className="border border-gray-300 px-4 py-2 text-left">Dari</th>
+                                            <th className="border border-gray-300 px-4 py-2 text-left">Sampai</th>
+                                            <th className="border border-gray-300 px-4 py-2 text-left">Alasan SP</th>
+                                            <th className="border border-gray-300 px-4 py-2 text-left">Teguran</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {karyawan?.sp_aktif?.map((sp: any, index: number) => (
+                                            <tr key={index} className="hover:bg-gray-100">
+                                                <td className="border border-gray-300 px-4 py-2">{sp.sp_ke}</td>
+                                                <td className="border border-gray-300 px-4 py-2">{convertTimeStampToDate(sp.dari)}</td>
+                                                <td className="border border-gray-300 px-4 py-2">{convertTimeStampToDate(sp.sampai)}</td>
+                                                <td className="border border-gray-300 px-4 py-2">{sp.alasan_sp}</td>
+                                                <td className="border border-gray-300 px-4 py-2">{sp.teguran}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         </>
                     </DetailTabMasterKaryawan>
