@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import Select from 'react-select';
 import Loading from '../../../../Loading';
 
-function BuatSakitKeHR() {
+function BuatDinasKeHR() {
     const [options, setOptions] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [userList, setUserList] = useState<any>();
@@ -79,9 +79,9 @@ function BuatSakitKeHR() {
 
     const [tglDari, setTglDari] = useState<any>();
     const [tglSampai, setTglSampai] = useState<any>();
+    const [alasanIzin, setAlasanIzin] = useState<any>();
 
-
-    async function postSakit() {
+    async function postIzin() {
 
 
         if (tglDari == null) {
@@ -92,8 +92,11 @@ function BuatSakitKeHR() {
             alert('Tanggal Sampai Belum Diisi');
             return;
         }
-
-        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanSakit`;
+        if (alasanIzin == null) {
+            alert('Alasan Izin Belum Diisi');
+            return;
+        }
+        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanDinas`;
         try {
             setIsLoading(true)
             const res = await axios.post(url,
@@ -103,7 +106,7 @@ function BuatSakitKeHR() {
                     dari: tglDari,
                     sampai: tglSampai,
                     jumlah_hari: daysDifference,
-
+                    alasan_dinas: alasanIzin,
                 },
                 {
 
@@ -187,21 +190,6 @@ function BuatSakitKeHR() {
 
                 </div>
                 <div className='grid grid-cols-2 gap-5 px-7 py-4'>
-
-
-                    <div className="flex w-full flex-col">
-                        <label className="text-[#6c6b6b] text-sm font-semibold">
-                            Lampiran
-                        </label>
-                        <div className="flex w-full h-full">
-                            <input
-                                name="lampiran"
-                                type='file'
-
-                            />
-                        </div>
-
-                    </div>
                     <div className='flex flex-col gap-3'>
                         <div className='grid grid-cols-2 gap-2'>
                             <div className="flex flex-col  gap-2">
@@ -230,7 +218,7 @@ function BuatSakitKeHR() {
                             </div>
                         </div>
 
-                        {daysDifference !== null && !showError && (
+                        {daysDifference !== null && !showError && !showErrorEarlyDate && (
                             <label className=' text-[#6c6b6b] text-sm font-semibold'>
                                 Jumlah Hari: {daysDifference}
                             </label>
@@ -243,20 +231,34 @@ function BuatSakitKeHR() {
                         )}
 
                     </div>
+
+                    <div className="flex w-full flex-col">
+                        <label className="text-[#6c6b6b] text-sm font-semibold">
+                            Alasan Dinas
+                        </label>
+                        <div className="flex w-full h-full">
+                            <textarea
+                                name="alasan_cuti"
+
+                                onChange={(e) => { setAlasanIzin(e.target.value) }}
+
+                                className=" peer h-full min-h-[100px] w-full resize-none border-2 border-stroke rounded-md px-2"
+                            />
+                        </div>
+
+                    </div>
+
                 </div>
                 <div className='flex w-full justify-end items-end px-7 py-4'>
-                    {!(showError) ? (
-                        <>
-                            <button
-                                onClick={() => postSakit()}
-                                disabled={isLoading}
-                                className='flex px-4 py-1 justify-center items-center bg-blue-600 text-white font-semibold rounded-md'
-                            >
-                                AJUKAN
-                            </button>
-                        </>
-                    ) : null}
-
+                    <>
+                        <button
+                            onClick={() => postIzin()}
+                            disabled={isLoading}
+                            className='flex px-4 py-1 justify-center items-center bg-blue-600 text-white font-semibold rounded-md'
+                        >
+                            AJUKAN
+                        </button>
+                    </>
                 </div>
             </div>
         </main>
@@ -264,4 +266,4 @@ function BuatSakitKeHR() {
     )
 }
 
-export default BuatSakitKeHR
+export default BuatDinasKeHR

@@ -13,6 +13,10 @@ import DiprosesSakitHR from './Sakit/DiprosesSakitHR';
 import DiprosesPinjamanHR from './Pinjaman/DiprosesPinjamanHR';
 import DiprosesMangkirHR from './Mangkir/DiprosesMangkirHR';
 import HistoryTerlambat from './Terlambat/HistoryTerlambat';
+import HistoryDinasKeHR from '../PengajuanKeHR/DinasKeHR/HistoryDinasKeHR';
+import DiprosesSP from './SP/IncomingSP';
+import DiProsesDinasHR from './Dinas/DiprosesDinas';
+import DiProsesSPHR from './SP/DiprosesSP';
 
 
 
@@ -190,7 +194,12 @@ export default function TabResponHistoryPengajuanHR() {
                 <TabPanel value={value} index={6} dir={theme.direction}>
                     <HistoryTerlambat />
                 </TabPanel>
-
+                <TabPanel value={value} index={7} dir={theme.direction}>
+                    <DiProsesDinasHR />
+                </TabPanel>
+                <TabPanel value={value} index={8} dir={theme.direction}>
+                    <DiProsesSPHR />
+                </TabPanel>
 
             </Box>
         </>

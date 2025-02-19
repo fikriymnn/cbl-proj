@@ -11,7 +11,7 @@ function BuatSPLKeHR() {
     const [isLoading, setIsLoading] = useState(false);
     const [userList, setUserList] = useState<any>();
     const [joList, setJoList] = useState<any>();
-    const [idKaryawan, setIdKaryawan] = useState<any>();
+    const [idKaryawan, setIdKaryawan] = useState<any>([]);
     const [error, setError] = useState<string>('');
     const [isCheck, setIsCheck] = useState<boolean>(false);
 
@@ -94,18 +94,30 @@ function BuatSPLKeHR() {
     const [tglSampai, setTglSampai] = useState<any>();
     const [sisaCuti, setSisaCuti] = useState<any>();
 
-    const handleChangePointDepatment = (selected: any) => {
-        const { value } = selected;
-        const filteredData = userList.find(
-            (item: any) => item.userid == value,
-            // item.id.includes(parseInt(value));
+    const handleChangePointDepatment = (selectedOptions: any) => {
+        if (!selectedOptions || selectedOptions.length === 0) {
+            setSisaCuti(0); // Reset if nothing is selected
+            setIdKaryawan([]);
+            return;
+        }
+
+        // Extract selected IDs
+        const selectedIds = selectedOptions.map((option: any) => option.value);
+
+        // Find the corresponding user data in userList
+        const filteredData = userList.filter((item: any) =>
+            selectedIds.includes(item.userid)
         );
 
-        console.log(filteredData?.userid);
-        setSisaCuti(filteredData?.sisa_cuti);
-        setIdKaryawan(filteredData?.userid)
+        console.log("Selected Users:", filteredData);
 
+        // Extract the first user's sisa_cuti (assuming all selected users have the same)
+        setSisaCuti(filteredData.length > 0 ? filteredData[0].sisa_cuti : 0);
+
+        // Store the selected user IDs in an array
+        setIdKaryawan(filteredData.map((user: any) => user.userid));
     };
+
     const handleChangePointDepatmentNoJO = (selected: any) => {
         const { value } = selected;
         const filteredData = joList.find(
@@ -176,7 +188,7 @@ function BuatSPLKeHR() {
             console.log(tglDari, tglSampai)
             const res = await axios.post(url,
                 {
-                    id_karyawan: idKaryawan,
+                    karyawan: idKaryawan,
                     id_pengaju: idPengaju,
                     dari: tglDari,
                     sampai: tglSampai,
@@ -213,12 +225,10 @@ function BuatSPLKeHR() {
                             Nama
                         </label>
                         <Select
+                            isMulti
                             placeholder='Cari...'
                             options={options}
-                            onChange={(selectedId) => {
-
-                                handleChangePointDepatment(selectedId)
-                            }}
+                            onChange={handleChangePointDepatment}
                             className={`relative z-50 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
                   }`}
                         >

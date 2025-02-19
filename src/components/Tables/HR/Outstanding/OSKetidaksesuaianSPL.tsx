@@ -303,16 +303,16 @@ function OsKetidaksesuaianSPL() {
                                                                 <div className='flex gap-2 w-full px-4 pt-1'>
                                                                     <button
                                                                         disabled={isLoading}
-                                                                        onClick={() => approveTidakSesuai(data.id, i, 0)}
+                                                                        onClick={() => approveTidakSesuai(data.id, i, 1)}
                                                                         className='bg-green-500 w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm'>
-                                                                        SESUAI SPL
+                                                                        APPROVE
                                                                     </button>
                                                                     {isLoading && <Loading />}
                                                                     <button
                                                                         disabled={isLoading}
-                                                                        onClick={() => approveTidakSesuai(data.id, i, 1)}
+                                                                        onClick={() => approveTidakSesuai(data.id, i, 0)}
                                                                         className='bg-red-500 w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm'>
-                                                                        SESUAI ABSEN
+                                                                        REJECT
                                                                     </button>
                                                                     {isLoading && <Loading />}
 

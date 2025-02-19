@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import Select from 'react-select';
 import Loading from '../../../../Loading';
 
-function BuatSakitKeHR() {
+function BuatSPKeHR() {
     const [options, setOptions] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [userList, setUserList] = useState<any>();
@@ -79,9 +79,10 @@ function BuatSakitKeHR() {
 
     const [tglDari, setTglDari] = useState<any>();
     const [tglSampai, setTglSampai] = useState<any>();
+    const [alasanIzin, setAlasanIzin] = useState<any>();
+    const [teguran, setteguran] = useState<any>();
 
-
-    async function postSakit() {
+    async function postIzin() {
 
 
         if (tglDari == null) {
@@ -92,8 +93,15 @@ function BuatSakitKeHR() {
             alert('Tanggal Sampai Belum Diisi');
             return;
         }
-
-        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanSakit`;
+        if (alasanIzin == null) {
+            alert('Alasan SP Belum Diisi');
+            return;
+        }
+        if (teguran == null) {
+            alert('Teguran SP Belum Diisi');
+            return;
+        }
+        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanSP`;
         try {
             setIsLoading(true)
             const res = await axios.post(url,
@@ -102,8 +110,9 @@ function BuatSakitKeHR() {
                     id_pengaju: idPengaju,
                     dari: tglDari,
                     sampai: tglSampai,
-                    jumlah_hari: daysDifference,
-
+                    jumlah_bulan: daysDifference,
+                    alasan_sp: alasanIzin,
+                    teguran: teguran,
                 },
                 {
 
@@ -131,14 +140,22 @@ function BuatSakitKeHR() {
             if (tglDari <= tglSampai) {
                 if (tglDari <= threeDaysLater) {
                     setShowErrorEarlyDate(true);
-                } else if (tglDari <= today || (tglDari > today && tglDari >= threeDaysLater)) {
+                } else {
                     setShowErrorEarlyDate(false);
                 }
-                const diffInMs = Math.abs(tglSampai - tglDari);
-                const days = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
-                setDaysDifference(days + 1);
-                setShowError(false); // Hide error message
 
+                // Calculate the difference in months
+                const startDate = new Date(tglDari);
+                const endDate = new Date(tglSampai);
+
+                const yearDiff = endDate.getFullYear() - startDate.getFullYear();
+                const monthDiff = endDate.getMonth() - startDate.getMonth();
+
+                // Total months difference
+                const totalMonths = yearDiff * 12 + monthDiff + 1;
+
+                setDaysDifference(totalMonths);
+                setShowError(false); // Hide error message
             } else {
                 setDaysDifference(null);
                 setShowError(true); // Show error message
@@ -187,26 +204,11 @@ function BuatSakitKeHR() {
 
                 </div>
                 <div className='grid grid-cols-2 gap-5 px-7 py-4'>
-
-
-                    <div className="flex w-full flex-col">
-                        <label className="text-[#6c6b6b] text-sm font-semibold">
-                            Lampiran
-                        </label>
-                        <div className="flex w-full h-full">
-                            <input
-                                name="lampiran"
-                                type='file'
-
-                            />
-                        </div>
-
-                    </div>
                     <div className='flex flex-col gap-3'>
                         <div className='grid grid-cols-2 gap-2'>
                             <div className="flex flex-col  gap-2">
-                                <p className="text-sm text-[#6c6b6b] font-semibold md:w-3/12 w-2/12">
-                                    Dari
+                                <p className="text-sm text-[#6c6b6b] font-semibold ">
+                                    Berlaku Dari
                                 </p>
                                 <input
                                     className='rounded-md bg-[#D8EAFF] px-2'
@@ -217,8 +219,8 @@ function BuatSakitKeHR() {
 
                             </div>
                             <div className="flex flex-col  gap-2">
-                                <p className="text-sm text-[#6c6b6b] font-semibold md:w-3/12 w-2/12">
-                                    Sampai
+                                <p className="text-sm text-[#6c6b6b] font-semibold ">
+                                    Berlaku Sampai
                                 </p>
                                 <input
                                     className='rounded-md bg-[#D8EAFF] px-2'
@@ -230,9 +232,9 @@ function BuatSakitKeHR() {
                             </div>
                         </div>
 
-                        {daysDifference !== null && !showError && (
+                        {daysDifference !== null && (
                             <label className=' text-[#6c6b6b] text-sm font-semibold'>
-                                Jumlah Hari: {daysDifference}
+                                Masa Berlaku : {daysDifference} Bulan
                             </label>
                         )}
 
@@ -243,19 +245,52 @@ function BuatSakitKeHR() {
                         )}
 
                     </div>
+                    <div className='flex flex-col gap-1'>
+
+
+                        <div className="flex w-full flex-col">
+                            <label className="text-[#6c6b6b] text-sm font-semibold">
+                                Alasan SP
+                            </label>
+                            <div className="flex w-full h-full">
+                                <textarea
+                                    name="alasan_cuti"
+
+                                    onChange={(e) => { setAlasanIzin(e.target.value) }}
+
+                                    className=" peer h-full min-h-[100px] w-full resize-none border-2 border-stroke rounded-md px-2"
+                                />
+                            </div>
+
+                        </div>
+                        <div className="flex w-full flex-col">
+                            <label className="text-[#6c6b6b] text-sm font-semibold">
+                                Teguran
+                            </label>
+                            <div className="flex w-full h-full">
+                                <textarea
+                                    name="teguran"
+
+                                    onChange={(e) => { setteguran(e.target.value) }}
+
+                                    className=" peer h-full min-h-[100px] w-full resize-none border-2 border-stroke rounded-md px-2"
+                                />
+                            </div>
+
+                        </div>
+                    </div>
                 </div>
                 <div className='flex w-full justify-end items-end px-7 py-4'>
-                    {!(showError) ? (
-                        <>
-                            <button
-                                onClick={() => postSakit()}
-                                disabled={isLoading}
-                                className='flex px-4 py-1 justify-center items-center bg-blue-600 text-white font-semibold rounded-md'
-                            >
-                                AJUKAN
-                            </button>
-                        </>
-                    ) : null}
+                    <>
+                        <button
+                            onClick={() => postIzin()}
+                            disabled={isLoading}
+                            className='flex px-4 py-1 justify-center items-center bg-blue-600 text-white font-semibold rounded-md'
+                        >
+                            AJUKAN
+                        </button>
+                    </>
+
 
                 </div>
             </div>
@@ -264,4 +299,4 @@ function BuatSakitKeHR() {
     )
 }
 
-export default BuatSakitKeHR
+export default BuatSPKeHR

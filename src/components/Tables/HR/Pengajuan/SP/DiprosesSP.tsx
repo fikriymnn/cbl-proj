@@ -1,52 +1,34 @@
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import React, { useEffect, useState } from 'react'
-import Loading from '../../../../Loading';
+import { Button } from '@mui/material';
+import convertTimeStampToDate from '../../../../../utils/converDateTime';
+import dateOnly from '../../../../../utils/convertDateOnly';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
-import convertTimeStampToDateTime from '../../../../../utils/converDateTime';
-import convertTimeStampToDate from '../../../../../utils/convertDate';
+import Loading from '../../../../Loading';
 
-function HistoryKetidaksesuaianSPL() {
-
+function DiProsesSPHR() {
     const [isLoading, setIsLoading] = useState(false);
-    const [openButton, setOpenButton] = useState(null);
-    const [lkh, setLkh] = useState<any>();
-    const [idInspektor, setIdInspektor] = useState<any>();
-    const [namInspektor, setNamaInspektor] = useState<any>();
-
+    const [izin, setIzin] = useState<any>();
 
     useEffect(() => {
-        getMe()
-        getLKH()
+        getIzin();
+
     }, []);
 
-    async function getMe() {
-        const url = `${import.meta.env.VITE_API_LINK}/me`;
-        try {
-            const res = await axios.get(url, {
-                withCredentials: true,
-            });
-
-            setIdInspektor(res?.data.id)
-            setNamaInspektor(res?.data.nama)
-            console.log('getme', res.data)
-        } catch (error: any) {
-            console.log(error.data.msg);
-        }
-    }
-
-    async function getLKH() {
-        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanLembur`;
+    async function getIzin() {
+        const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanSP`;
         try {
             const res = await axios.get(url,
                 {
                     params: {
-                        status_ketidaksesuaian: 'approved',
+                        status_tiket: 'history'
                     },
                     withCredentials: true,
                 });
 
-            setLkh(res.data.data);
-            console.log('KetidakSesuaian', res.data.data);
+            setIzin(res.data);
+            console.log(res.data);
         } catch (error: any) {
             console.log(error);
         }
@@ -58,19 +40,17 @@ function HistoryKetidaksesuaianSPL() {
         onchangeVal[i] = true;
 
         setShowModal(onchangeVal);
-
     };
     const closeModalModal = (i: any) => {
         const onchangeVal: any = [...showModal];
         onchangeVal[i] = false;
 
         setShowModal(onchangeVal);
-
-
     };
 
     return (
         <>
+
             <main className="overflow-x-scroll">
                 {isLoading && <Loading />}
                 <div className="min-w-[700px] bg-white rounded-xl">
@@ -79,25 +59,30 @@ function HistoryKetidaksesuaianSPL() {
                             <label className="text-neutral-500 text-sm font-semibold ">
                                 No
                             </label>
-
                             <label className="text-neutral-500 text-sm font-semibold col-span-3">
                                 Tanggal
                             </label>
-                            <label className="text-neutral-500 text-sm font-semibold col-span-3">
-                                Lama Ketidaksesuaian
+                            <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                Masa Berlaku
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                Department
+                                Sumber
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                 Personnel
                             </label>
+                            <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                Status
+                            </label>
                         </div>
+                        <div className="w-2 h-full "></div>
+                        {izin?.data?.map((data: any, i: any) => {
+                            const tanggal = dateOnly(data.createdAt);
 
-                    </div>
-                    {lkh?.map(
-                        (data: any, i: number) => {
-
+                            // const endDate = new Date(data.sampai);
+                            // const Onedaylater = new Date();
+                            // Onedaylater.setDate(endDate.getDate() + 1);
+                            // const formattedDate = Onedaylater.toLocaleDateString();
                             return (
                                 <>
                                     <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center px-10">
@@ -105,35 +90,32 @@ function HistoryKetidaksesuaianSPL() {
                                         <label className="text-neutral-500 text-sm font-semibold ">
                                             {i + 1}
                                         </label>
-
                                         <div className='flex flex-col gap-1 col-span-3'>
                                             <label className="text-neutral-500 text-sm font-semibold ">
-                                                Dari : {convertTimeStampToDateTime(data.dari)}
+                                                Dari : {dateOnly(data.dari)}
                                             </label>
                                             <label className="text-neutral-500 text-sm font-semibold ">
-                                                Sampai :{convertTimeStampToDateTime(data.sampai)}
+                                                Sampai :{dateOnly(data.sampai)}
                                             </label>
                                         </div>
-                                        <div className='flex flex-col gap-1 col-span-3'>
-                                            <label className="text-neutral-500 text-sm font-semibold ">
-                                                Lama Lembur SPL  :{data.lama_lembur} Jam
-                                            </label>
-                                            <label className="text-neutral-500 text-sm font-semibold ">
-                                                Lama Lembur Absen  :{data.lama_lembur_absen} Jam
-                                            </label>
-                                        </div>
+                                        <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                            {data.jumlah_bulan} Bulan
+                                        </label>
                                         <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                             {data.karyawan_pengaju?.biodata_karyawan[0]?.department?.nama_department}
                                         </label>
                                         <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                             {data.karyawan?.name}
                                         </label>
-                                        <div className="justify-end flex pr-2 ">
+                                        <label className="text-neutral-500 text-sm font-semibold uppercase">
+                                            {data.status}
+                                        </label>
+                                        <div className="justify-end flex pr-2 col-span-1">
                                             <>
 
                                                 <button
                                                     onClick={() => openModalModal(i)}
-                                                    className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                                                    className={`uppercase px-1 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                 >
                                                     DETAIL
                                                 </button>
@@ -142,28 +124,27 @@ function HistoryKetidaksesuaianSPL() {
                                                         <ModalKosongan
                                                             isOpen={showModal[i]}
                                                             onClose={() => closeModalModal(i)}
-                                                            judul={'History Permohonan Ketidaksesuaian SPL'}>
+                                                            judul={'Permohonan Izin'}>
                                                             <>
                                                                 <div className='grid grid-cols-2 gap-2 px-4 py-4'>
-                                                                    <div className='flex flex-col gap-2 '>
-                                                                        <div className='flex flex-col '>
-                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                PENGAJU
-                                                                            </label>
-                                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                                {data.karyawan_pengaju_ketidaksesuaian?.biodata_karyawan[0]?.nik} - {data.karyawan_pengaju_ketidaksesuaian?.name} - {data.karyawan_pengaju_ketidaksesuaian?.biodata_karyawan[0]?.department?.nama_department}
-                                                                            </label>
-                                                                        </div>
-                                                                        <div className='flex flex-col '>
-                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                RESPONDEN
-                                                                            </label>
-                                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                                {data.karyawan_respon_ketidaksesuaian?.biodata_karyawan[0]?.nik} - {data.karyawan_respon_ketidaksesuaian?.name} - {data.karyawan_respon_ketidaksesuaian?.biodata_karyawan[0]?.department?.nama_department}
-                                                                            </label>
-                                                                        </div>
+                                                                    <div className='flex flex-col  '>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                            Status
+                                                                        </label>
+                                                                        <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                            {data.status}
+                                                                        </label>
+                                                                    </div>
+                                                                    <div className='flex flex-col  '>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                            Yang Menyetujui
+                                                                        </label>
+                                                                        <label htmlFor="" className='text-[#016ae6] uppercase text-xl font-normal'>
+                                                                            {data.karyawan_hr?.name}
+                                                                        </label>
                                                                     </div>
                                                                 </div>
+
                                                                 <div className='grid grid-cols-2 gap-2 px-4 py-4'>
                                                                     <div className='flex flex-col gap-2 '>
                                                                         <div className='flex flex-col '>
@@ -187,7 +168,7 @@ function HistoryKetidaksesuaianSPL() {
                                                                                 TANGGAL
                                                                             </label>
                                                                             <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                                {convertTimeStampToDate(data.createdAt)}
+                                                                                {dateOnly(data.createdAt)}
                                                                             </label>
                                                                         </div>
                                                                         <div className='flex flex-col '>
@@ -198,82 +179,76 @@ function HistoryKetidaksesuaianSPL() {
                                                                                 {data.karyawan_pengaju?.name}
                                                                             </label>
                                                                         </div>
-                                                                    </div>
-                                                                    <div className='flex flex-col gap-2 '>
 
-                                                                        <div className='flex flex-col '>
-                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                LAMA LEMBUR SPL
-                                                                            </label>
-                                                                            <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
-                                                                                {data.lama_lembur} JAM
-                                                                            </label>
-                                                                        </div>
-                                                                        <div className='flex flex-col '>
-                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                LAMA LEMBUR ABSEN
-                                                                            </label>
-                                                                            <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
-                                                                                {data.lama_lembur_absen} JAM
-                                                                            </label>
-                                                                        </div>
+                                                                    </div>
+                                                                    <div className='flex flex-col  '>
+
                                                                         <div className='flex flex-col '>
                                                                             <label htmlFor="" className='text-black text-xs font-bold'>
                                                                                 DARI
                                                                             </label>
                                                                             <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
-                                                                                {convertTimeStampToDateTime(data.dari)}
+                                                                                {convertTimeStampToDate(data.dari)}
                                                                             </label>
                                                                         </div>
-                                                                        <div className='flex flex-col '>
+                                                                        <div className='flex flex-col pt-1'>
                                                                             <label htmlFor="" className='text-black text-xs font-bold'>
                                                                                 SAMPAI
                                                                             </label>
                                                                             <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
-                                                                                {convertTimeStampToDateTime(data.sampai)}
+                                                                                {convertTimeStampToDate(data.sampai)}
                                                                             </label>
                                                                         </div>
-                                                                        <div className='flex flex-col '>
+                                                                        <div className='flex flex-col pt-1'>
                                                                             <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                NO. JO
+                                                                                Masa Berlaku
                                                                             </label>
                                                                             <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
-                                                                                {data.jo_lembur}
+                                                                                {data.jumlah_bulan} Bulan
                                                                             </label>
                                                                         </div>
-                                                                        <div className='flex flex-col '>
-                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                CATATAN KETIDAKSESUAIAN
-                                                                            </label>
-                                                                            <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
-                                                                                {data.catatan_ketidaksesuaian}
-                                                                            </label>
-                                                                        </div>
-                                                                        <div className='flex flex-col '>
-                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                TIPE KETIDAKSESUAIAN
-                                                                            </label>
-                                                                            <label htmlFor="" className='text-[#016ae6] text-xl font-normal uppercase'>
-                                                                                {data.type_ketidaksesuaian}
-                                                                            </label>
-                                                                        </div>
+
                                                                     </div>
                                                                 </div>
                                                                 <div className='flex flex-col w-full px-4'>
                                                                     <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                        ALASAN LEMBUR
+                                                                        ALASAN SP
                                                                     </label>
                                                                     <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                        {data.alasan_lembur}
+                                                                        {data.alasan_sp}
                                                                     </label>
+                                                                </div>
+                                                                <div className='flex flex-col w-full px-4'>
+                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                        TEGURAN
+                                                                    </label>
+                                                                    <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                        {data.teguran}
+                                                                    </label>
+                                                                </div>
+                                                                {/* <div className='px-4 py-2'>
+                                                                    <button className='bg-blue-600 rounded-md px-3 py-2 text-white font-semibold text-sm'>
+                                                                        CETAK SURAT
+                                                                    </button>
+                                                                </div> */}
+                                                                <div className='grid grid-cols-2 gap-2 px-4 py-2'>
+                                                                    {/* <div className='flex flex-col gap-1'>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                            TANGGAL MASUK KEMBALI
+                                                                        </label>
+                                                                        <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                            {dateOnly(formattedDate)}
+                                                                        </label>
+                                                                    </div> */}
+
                                                                 </div>
                                                                 <div className='flex flex-col w-full px-4 '>
                                                                     <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                        ALASAN KETIDAKSESUAIAN <span className='text-red-600'>*</span>
+                                                                        RESPON HR<span className='text-red-600'>*</span>
                                                                     </label>
                                                                     <textarea
                                                                         readOnly
-                                                                        defaultValue={data.alasan_ketidaksesuaian}
+                                                                        value={data.catatan_hr}
                                                                         className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                                                     ></textarea>
                                                                 </div>
@@ -285,17 +260,16 @@ function HistoryKetidaksesuaianSPL() {
                                                 }
                                             </>
                                         </div>
-
                                     </div>
                                 </>
-                            );
-                        },
-                    )}
+                            )
+                        })}
+                    </div>
                 </div>
             </main>
-        </>
 
-    )
+        </>
+    );
 }
 
-export default HistoryKetidaksesuaianSPL
+export default DiProsesSPHR;

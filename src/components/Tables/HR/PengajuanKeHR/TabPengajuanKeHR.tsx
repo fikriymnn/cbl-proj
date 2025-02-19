@@ -11,6 +11,8 @@ import BuatCutiKeHR from './CutiKeHR/BuatCutiKeHR';
 import BuatIzinKeHR from './IzinKeHR/BuatIzinKeHR';
 import BuatSakitKeHR from './SakitKeHR/BuatSakitKeHR';
 import BuatPinjamanKeHR from './PinjamanKeHR/BuatPinjamanKeHR';
+import BuatDinasKeHR from './DinasKeHR/BuatDinasKeHR';
+import BuatSPKeHR from './SPkeHR/BuatSPKeHR';
 
 
 
@@ -180,11 +182,11 @@ export default function TabPengajuanKeHR() {
                 </TabPanel>
 
                 <TabPanel value={value} index={5} dir={theme.direction}>
-
+                    <BuatDinasKeHR />
                 </TabPanel>
 
                 <TabPanel value={value} index={6} dir={theme.direction}>
-
+                    <BuatSPKeHR />
                 </TabPanel>
 
                 <TabPanel value={value} index={7} dir={theme.direction}>

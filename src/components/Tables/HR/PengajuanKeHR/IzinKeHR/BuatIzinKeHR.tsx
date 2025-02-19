@@ -166,7 +166,7 @@ function BuatIzinKeHR() {
 
     return (
 
-        <main className="overflow-x-scroll">
+        <main className="overflow-x-scroll min-h-screen">
             {isLoading && <Loading />}
             <div className="min-w-[700px] bg-white rounded-xl ">
                 <div className='grid grid-cols-2 gap-5  border-b-8 border-[#D8EAFF] px-7 py-4 '>
@@ -194,7 +194,7 @@ function BuatIzinKeHR() {
                         <div className='grid grid-cols-2 gap-2'>
                             <div className="flex flex-col  gap-2">
                                 <p className="text-sm text-[#6c6b6b] font-semibold md:w-3/12 w-2/12">
-                                    Dari :
+                                    Dari
                                 </p>
                                 <input
                                     className='rounded-md bg-[#D8EAFF] px-2'
@@ -206,7 +206,7 @@ function BuatIzinKeHR() {
                             </div>
                             <div className="flex flex-col  gap-2">
                                 <p className="text-sm text-[#6c6b6b] font-semibold md:w-3/12 w-2/12">
-                                    Sampai :
+                                    Sampai
                                 </p>
                                 <input
                                     className='rounded-md bg-[#D8EAFF] px-2'

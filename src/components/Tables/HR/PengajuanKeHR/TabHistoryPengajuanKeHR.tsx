@@ -11,6 +11,8 @@ import HistoryCutikeHR from './CutiKeHR/HistoryCutiKeHR';
 import HistoryIzinKeHR from './IzinKeHR/HistoryIzinKeHR';
 import HistorySakitKeHR from './SakitKeHR/HistorySakitKeHR';
 import HistoryPinjamanKeHR from './PinjamanKeHR/HistoryPinjamanKeHR';
+import HistoryDinasKeHR from './DinasKeHR/HistoryDinasKeHR';
+import HistorySPKeHR from './SPkeHR/HistorySPKeHR';
 
 
 interface TabPanelProps {
@@ -178,11 +180,11 @@ export default function TabHistoryPengajuanKeHR() {
                 </TabPanel>
 
                 <TabPanel value={value} index={5} dir={theme.direction}>
-
+                    <HistoryDinasKeHR />
                 </TabPanel>
 
                 <TabPanel value={value} index={6} dir={theme.direction}>
-
+                    <HistorySPKeHR />
                 </TabPanel>
 
                 <TabPanel value={value} index={7} dir={theme.direction}>
