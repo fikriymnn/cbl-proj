@@ -37,7 +37,7 @@ function ListJOProduksi() {
 
     async function getKalkulasi(id: any, jo: any, i: any) {
         if (window.confirm(`Lakukan Kalkulasi pada ${jo}?`)) {
-            const url = `${import.meta.env.VITE_API_LINK}/ppic/calculateJadwalProduksiDua/${id}`;
+            const url = `${import.meta.env.VITE_API_LINK}/ppic/calculateJadwalProduksi/${id}`;
             try {
                 setIsLoading(true)
                 const res = await axios.get(url, {
