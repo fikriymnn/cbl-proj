@@ -387,6 +387,7 @@ const TableHistory = () => {
                   WaktuBreakdown={waktuBreakdown}
                   waktuBreakdownMTC={waktuBreakdownMTC}
                   waktuVerifikasiQC={waktuVerifikasiQC}
+                  data={data}
                 >
                   <></>
                 </ModalDetailValidasi>

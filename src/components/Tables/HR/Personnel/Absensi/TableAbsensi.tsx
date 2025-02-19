@@ -127,7 +127,9 @@ function TableAbsensi() {
                         catatan_ketidaksesuaian: catatan,
                         type_ketidaksesuaian: type,
                         lama_lembur_absen: lama,
-                        id_pengaju_ketidaksesuaian: idPengaju
+                        id_pengaju_ketidaksesuaian: idPengaju,
+                        alasan_ketidaksesuaian: '',
+                        penanganan: ''
                     },
                     {
 
@@ -637,7 +639,8 @@ function TableAbsensi() {
                                                             </ModalKosongan>
                                                         )}
                                                     </>
-                                                    : <></>}
+                                                    : <>
+                                                    </>}
                                                 {data.status_absen == 'Belum Masuk' ?
                                                     <>
                                                         <button

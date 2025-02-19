@@ -381,6 +381,8 @@ function ChecksheetBarangRS() {
             updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
             return updatedShowDetail;
         });
+        setSelectedOption(null)
+        setSelectedSecondOption(null)
     };
 
     const handleChangePoint = (e: any, i: number, ii: number) => {
@@ -834,29 +836,31 @@ function ChecksheetBarangRS() {
                                                             placeholder="Select an Option"
                                                             isDisabled={!selectedOption} // Disable until the first dropdown has a selection
                                                         />
-                                                        <button
-                                                            type='button'
-                                                            disabled={isLoading}
-                                                            onClick={() => {
-                                                                tambahDefectPeriode(
-                                                                    RabutMesin?.data?.id,
-                                                                    idDefect,
-                                                                    data.id,
-                                                                    index,
-                                                                    wasteSelectCode,
-                                                                    wasteSelectLkh
-                                                                ),
-                                                                    console.log(RabutMesin?.data?.id,
+                                                        {selectedOption && selectedSecondOption && (
+                                                            <button
+                                                                type='button'
+                                                                disabled={isLoading}
+                                                                onClick={() => {
+                                                                    tambahDefectPeriode(
+                                                                        RabutMesin?.data?.id,
                                                                         idDefect,
                                                                         data.id,
                                                                         index,
                                                                         wasteSelectCode,
-                                                                        wasteSelectLkh);
-                                                            }}
-                                                            className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
-                                                        >
-                                                            TAMBAH MASALAH
-                                                        </button>
+                                                                        wasteSelectLkh
+                                                                    ),
+                                                                        console.log(RabutMesin?.data?.id,
+                                                                            idDefect,
+                                                                            data.id,
+                                                                            index,
+                                                                            wasteSelectCode,
+                                                                            wasteSelectLkh);
+                                                                }}
+                                                                className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
+                                                            >
+                                                                TAMBAH MASALAH
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </ModalAddPeriode>
                                             </>

@@ -215,6 +215,36 @@ function RekapWasteQC() {
     const openModalDetailMesin = () => setShowDetailMesin(true);
     const closeModalDetailMesin = () => setShowDetailMesin(false);
 
+    const [showModalWaste, setShowModalWaste] = useState<{ [key: number]: { [key: number]: boolean } }>({});
+
+    const openModalWaste = (i: number, ii: number) => {
+        setShowModalWaste((prev) => ({
+            ...prev,
+            [i]: { ...(prev[i] || {}), [ii]: true },
+        }));
+    };
+
+    const closeModalWaste = (i: number, ii: number) => {
+        setShowModalWaste((prev) => ({
+            ...prev,
+            [i]: { ...(prev[i] || {}), [ii]: false },
+        }));
+    };
+    const [showModalKendala, setShowModalKendala] = useState<{ [key: number]: { [key: number]: boolean } }>({});
+
+    const openModalKendala = (i: number, ii: number) => {
+        setShowModalKendala((prev) => ({
+            ...prev,
+            [i]: { ...(prev[i] || {}), [ii]: true },
+        }));
+    };
+
+    const closeModalKendala = (i: number, ii: number) => {
+        setShowModalKendala((prev) => ({
+            ...prev,
+            [i]: { ...(prev[i] || {}), [ii]: false },
+        }));
+    };
 
     return (
         <div className='rounded-md'>
@@ -368,22 +398,48 @@ function RekapWasteQC() {
                                                                                                 <tr>
                                                                                                     <th className="border border-gray-300 px-4 py-2 text-left">Mesin</th>
                                                                                                     <th className="border border-gray-300 px-4 py-2 text-left">Defect</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2 text-left">Inspector</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2 text-left">Operator</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2 text-left">Temuan</th>
                                                                                                 </tr>
                                                                                             </thead>
                                                                                             <tbody>
                                                                                                 {jo.mesin
                                                                                                     .sort((a: any, b: any) => b.total_calculated_defect - a.total_calculated_defect) // Sort descending
                                                                                                     .map((mesin: any, mesinIndex: any) => (
-                                                                                                        <tr key={mesinIndex} className="border border-gray-300">
-                                                                                                            <td className="border border-gray-300 px-4 py-2">{mesin.mesin}</td>
-                                                                                                            <td className="border border-gray-300 px-4 py-2">{mesin.total_calculated_defect}</td>
-                                                                                                        </tr>
+                                                                                                        mesin.operator_inspektor && mesin.operator_inspektor.length > 0 ? (
+                                                                                                            mesin.operator_inspektor.map((kendala: any, kendalaIndex: any) => (
+                                                                                                                <tr key={`${mesinIndex}-${kendalaIndex}`} className="border border-gray-300">
+                                                                                                                    {kendalaIndex === 0 && ( // Only show Mesin & Defect for the first row
+                                                                                                                        <>
+                                                                                                                            <td rowSpan={mesin.operator_inspektor.length} className="border border-gray-300 px-4 py-2">{mesin.mesin}</td>
+                                                                                                                            <td rowSpan={mesin.operator_inspektor.length} className="border border-gray-300 px-4 py-2">{mesin.total_calculated_defect}</td>
+                                                                                                                        </>
+                                                                                                                    )}
+                                                                                                                    <td className="border border-gray-300 px-4 py-2">{kendala.inspektor || "-"}</td>
+                                                                                                                    <td className="border border-gray-300 px-4 py-2">{kendala.operator || "-"}</td>
+                                                                                                                    <td className="border border-gray-300 px-4 py-2">
+                                                                                                                        {kendala.temuan
+                                                                                                                            ? kendala.temuan
+                                                                                                                                .split("_") // Split by underscore
+                                                                                                                                .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize each word
+                                                                                                                                .join(" ") // Join back with space
+                                                                                                                            : "-"
+                                                                                                                        }
+                                                                                                                    </td>
+                                                                                                                </tr>
+                                                                                                            ))
+                                                                                                        ) : (
+                                                                                                            <tr key={mesinIndex} className="border border-gray-300">
+                                                                                                                <td className="border border-gray-300 px-4 py-2">{mesin.mesin}</td>
+                                                                                                                <td className="border border-gray-300 px-4 py-2">{mesin.total_calculated_defect}</td>
+                                                                                                                <td className="border border-gray-300 px-4 py-2" colSpan={3}>No Kendala</td>
+                                                                                                            </tr>
+                                                                                                        )
                                                                                                     ))}
                                                                                             </tbody>
                                                                                         </table>
-                                                                                    ) : (
-                                                                                        <p className="text-gray-500 mt-2">No Mesin Data Available</p>
-                                                                                    )}
+                                                                                    ) : null}
 
                                                                                 </div>
                                                                             ))}
@@ -1179,48 +1235,115 @@ function RekapWasteQC() {
                                                     <tbody>
                                                         {data.defects
                                                             ?.sort((a: any, b: any) => (b.total_defect ?? 0) - (a.total_defect ?? 0)) // Sort by total_defect DESCENDING
-                                                            .map((data2: any, ii: any) => (
-                                                                Array.isArray(data2.kendala) && data2.kendala.length > 0 ? (
-                                                                    data2.kendala
-                                                                        .sort((a: any, b: any) => (b.calculated_defect ?? 0) - (a.calculated_defect ?? 0)) // Sort by calculated_defect DESCENDING
-                                                                        .map((data3: any, iii: any) => (
-                                                                            <tr key={`${ii}-${iii}`} className="border-b border-gray-300">
-                                                                                {/* Kode Waste & Total Defect hanya ditampilkan di baris pertama kendala */}
-                                                                                {iii === 0 && (
-                                                                                    <>
-                                                                                        <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
-                                                                                            {data2.kode_waste} - {data2.waste_desc}
-                                                                                        </td>
-                                                                                        <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
-                                                                                            {data2.total_defect ?? 0}
-                                                                                        </td>
-                                                                                    </>
+                                                            .map((data2: any, ii: number) => (
+                                                                <React.Fragment key={ii}>
+                                                                    {Array.isArray(data2.kendala) && data2.kendala.length > 0 ? (
+                                                                        data2.kendala
+                                                                            .sort((a: any, b: any) => (b.calculated_defect ?? 0) - (a.calculated_defect ?? 0)) // Sort by calculated_defect DESCENDING
+                                                                            .map((data3: any, iii: number) => (
+                                                                                <tr key={`${data2.kode_waste}-${iii}`} className="border-b border-gray-300">
+                                                                                    {/* Kode Waste & Total Defect hanya ditampilkan di baris pertama kendala */}
+                                                                                    {iii === 0 && (
+                                                                                        <>
+                                                                                            <td
+                                                                                                onClick={() => openModalWaste(i, ii)}
+                                                                                                rowSpan={data2.kendala.length}
+                                                                                                className="border text-blue-500 border-gray-300 px-4 py-2 cursor-pointer hover:underline"
+                                                                                            >
+                                                                                                {data2.kode_waste} - {data2.waste_desc}
+                                                                                            </td>
+                                                                                            <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
+                                                                                                {data2.total_defect ?? 0}
+                                                                                            </td>
+                                                                                        </>
+                                                                                    )}
+                                                                                    {/* Kendala */}
+                                                                                    <td className="border border-gray-300 px-4 py-2">
+                                                                                        ✤ {data3.kategori_kendala} - {data3.kode_kendala} - {data3.kendala_desc}
+                                                                                    </td>
+                                                                                    {/* Calculated Defect */}
+                                                                                    <td className="border border-gray-300 px-4 py-2">
+                                                                                        {data3.calculated_defect}
+                                                                                    </td>
+                                                                                </tr>
+                                                                            ))
+                                                                    ) : (
+                                                                        <tr key={ii} className="border-b border-gray-300">
+                                                                            {/* Jika tidak ada kendala, tetap tampilkan kode waste & total defect */}
+                                                                            <td
+                                                                                onClick={() => openModalWaste(i, ii)}
+                                                                                className="border border-gray-300 text-blue-500 px-4 py-2 cursor-pointer hover:underline"
+                                                                            >
+                                                                                {data2.kode_waste} - {data2.waste_desc}
+                                                                            </td>
+                                                                            <td className="border border-gray-300 px-4 py-2">
+                                                                                {data2.total_defect ?? 0}
+                                                                            </td>
+                                                                            <td className="border border-gray-300 px-4 py-2 text-center" colSpan={2}>
+                                                                                Tidak ada Data Kendala
+                                                                            </td>
+                                                                        </tr>
+                                                                    )}
+
+                                                                    {/* Modal Rendering for the Clicked Item */}
+                                                                    {showModalWaste[i]?.[ii] && (
+                                                                        <ModalKosongan
+                                                                            isOpen={showModalWaste[i]?.[ii]}
+                                                                            onClose={() => closeModalWaste(i, ii)}
+                                                                            judul={`Detail ${data.no_jo} ~ ${data2.kode_waste} - ${data2.waste_desc}`}
+                                                                        >
+                                                                            <>
+                                                                                <p><strong>Kode Waste:</strong> {data2.kode_waste}</p>
+                                                                                <p><strong>Deskripsi:</strong> {data2.waste_desc}</p>
+                                                                                <p><strong>Total Defect:</strong> {data2.total_defect}</p>
+
+                                                                                {Array.isArray(data2.operator_inspektor) && data2.operator_inspektor.length > 0 ? (
+                                                                                    <div className="mt-4">
+                                                                                        <h3 className="font-semibold mb-2">Detail</h3>
+                                                                                        <table className="w-full border-collapse border border-gray-300">
+                                                                                            <thead>
+                                                                                                <tr className="bg-gray-100">
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Inspektor</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Operator</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Mesin</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Kode LKH</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Masalah LKH</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Temuan</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Defect</th>
+                                                                                                </tr>
+                                                                                            </thead>
+                                                                                            <tbody>
+                                                                                                {data2.operator_inspektor.map((inspektor: any, index: number) => (
+                                                                                                    <tr key={index} className="border-b border-gray-300">
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.inspektor || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.operator || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.mesin || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.kode_lkh || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.masalah_lkh || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">
+                                                                                                            {inspektor.temuan
+                                                                                                                ? inspektor.temuan
+                                                                                                                    .split("_") // Split by underscore
+                                                                                                                    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize each word
+                                                                                                                    .join(" ") // Join back with space
+                                                                                                                : "-"
+                                                                                                            }
+                                                                                                        </td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.calculated_defect || '-'}</td>
+                                                                                                    </tr>
+                                                                                                ))}
+                                                                                            </tbody>
+                                                                                        </table>
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    <p className="mt-4 text-gray-500">Tidak ada data inspektor</p>
                                                                                 )}
-                                                                                {/* Kendala */}
-                                                                                <td className="border border-gray-300 px-4 py-2">
-                                                                                    ✤ {data3.kategori_kendala} - {data3.kode_kendala} - {data3.kendala_desc}
-                                                                                </td>
-                                                                                {/* Calculated Defect */}
-                                                                                <td className="border border-gray-300 px-4 py-2">
-                                                                                    {data3.calculated_defect}
-                                                                                </td>
-                                                                            </tr>
-                                                                        ))
-                                                                ) : (
-                                                                    <tr key={ii} className="border-b border-gray-300">
-                                                                        {/* Jika tidak ada kendala, tetap tampilkan kode waste & total defect */}
-                                                                        <td className="border border-gray-300 px-4 py-2">
-                                                                            {data2.kode_waste} - {data2.waste_desc}
-                                                                        </td>
-                                                                        <td className="border border-gray-300 px-4 py-2">
-                                                                            {data2.total_defect ?? 0}
-                                                                        </td>
-                                                                        <td className="border border-gray-300 px-4 py-2 text-center" colSpan={2}>
-                                                                            -
-                                                                        </td>
-                                                                    </tr>
-                                                                )
+                                                                            </>
+                                                                        </ModalKosongan>
+                                                                    )}
+                                                                </React.Fragment>
                                                             ))}
+
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -1264,7 +1387,9 @@ function RekapWasteQC() {
                                                         {/* Kode Waste & Total Defect hanya ditampilkan di baris pertama kendala */}
                                                         {ii === 0 && (
                                                             <>
-                                                                <td rowSpan={data.kendala.length} className="border border-gray-300 px-4 py-2  font-semibold text-center">
+                                                                <td rowSpan={data.kendala.length}
+
+                                                                    className="border  border-gray-300 px-4 py-2  font-semibold text-center">
                                                                     {data.kode_waste} - {data.waste_desc}
                                                                 </td>
                                                                 <td rowSpan={data.kendala.length} className="border border-gray-300 px-4 py-2 font-semibold text-center">
@@ -1290,7 +1415,9 @@ function RekapWasteQC() {
                                             ) : (
                                                 <tr key={i} className="border-b border-gray-300">
                                                     {/* Jika tidak ada kendala, tetap tampilkan kode waste & total defect */}
-                                                    <td className="border border-gray-300 px-4 py-2  font-semibold text-center">
+                                                    <td
+
+                                                        className="border text-blue-500  border-gray-300 px-4 py-2  font-semibold text-center">
                                                         {data.kode_waste} - {data.waste_desc}
                                                     </td>
                                                     <td className="border border-gray-300 px-4 py-2  font-semibold text-center">
@@ -2027,44 +2154,111 @@ function RekapWasteQC() {
                                                         {data.defects
                                                             ?.filter((item: any) => !!item.kode_kendala) // Ensure kode_kendala exists
                                                             .sort((a: any, b: any) => (b.total_defect ?? 0) - (a.total_defect ?? 0)) // Sort by total_defect DESCENDING
-                                                            .map((data2: any, ii: any) => (
-                                                                Array.isArray(data2.kendala) && data2.kendala.length > 0 ? (
-                                                                    data2.kendala
-                                                                        .sort((a: any, b: any) => (b.calculated_defect ?? 0) - (a.calculated_defect ?? 0)) // Sort by calculated_defect DESCENDING
-                                                                        .map((data3: any, iii: any) => (
-                                                                            <tr key={`${ii}-${iii}`} className="border-b border-gray-300">
-                                                                                {iii === 0 && (
-                                                                                    <>
-                                                                                        <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
-                                                                                            <span className="font-semibold">{data2.kategori_kendala}</span> - {data2.kode_kendala || "No Kode"} - {data2.kendala_desc || "No Description"}
-                                                                                        </td>
-                                                                                        <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
-                                                                                            {data2.total_defect ?? 0}
-                                                                                        </td>
-                                                                                    </>
+                                                            .map((data2: any, ii: number) => (
+                                                                <React.Fragment key={ii}>
+                                                                    {Array.isArray(data2.kendala) && data2.kendala.length > 0 ? (
+                                                                        data2.kendala
+                                                                            .sort((a: any, b: any) => (b.calculated_defect ?? 0) - (a.calculated_defect ?? 0)) // Sort by calculated_defect DESCENDING
+                                                                            .map((data3: any, iii: number) => (
+                                                                                <tr key={`${i}-${ii}-${iii}`} className="border-b border-gray-300">
+                                                                                    {/* Display kategori kendala in the first row only */}
+                                                                                    {iii === 0 && (
+                                                                                        <>
+                                                                                            <td
+                                                                                                onClick={() => openModalKendala(i, ii)}
+                                                                                                rowSpan={data2.kendala.length}
+                                                                                                className="border border-gray-300 px-4 py-2 cursor-pointer hover:underline text-blue-600"
+                                                                                            >
+                                                                                                <span className="font-semibold">{data2.kategori_kendala}</span> - {data2.kode_kendala || "No Kode"} - {data2.kendala_desc || "No Description"}
+                                                                                            </td>
+                                                                                            <td rowSpan={data2.kendala.length} className="border border-gray-300 px-4 py-2">
+                                                                                                {data2.total_defect ?? 0}
+                                                                                            </td>
+                                                                                        </>
+                                                                                    )}
+                                                                                    {/* Waste details */}
+                                                                                    <td className="border border-gray-300 px-4 py-2">
+                                                                                        ✤ {data3.kode_waste} - {data3.waste_desc}
+                                                                                    </td>
+                                                                                    <td className="border border-gray-300 px-4 py-2">
+                                                                                        {data3.calculated_defect}
+                                                                                    </td>
+                                                                                </tr>
+                                                                            ))
+                                                                    ) : (
+                                                                        // Fallback if kendala is empty
+                                                                        <tr key={`${i}-${ii}`} className="border-b border-gray-300">
+                                                                            <td
+                                                                                onClick={() => openModalKendala(i, ii)}
+                                                                                className="border border-gray-300 px-4 py-2 cursor-pointer hover:underline text-blue-600"
+                                                                            >
+                                                                                <span className="font-semibold">{data2.kategori_kendala}</span> - {data2.kode_kendala || "Tidak ada Kode"} - {data2.kendala_desc || "Tidak ada Deskripsi"}
+                                                                            </td>
+                                                                            <td className="border border-gray-300 px-4 py-2">
+                                                                                {data2.total_defect ?? 0}
+                                                                            </td>
+                                                                            <td className="border border-gray-300 px-4 py-2 text-center" colSpan={2}>
+                                                                                Tidak ada data Waste
+                                                                            </td>
+                                                                        </tr>
+                                                                    )
+                                                                    }
+                                                                    {showModalKendala[i]?.[ii] && (
+                                                                        <ModalKosongan
+                                                                            isOpen={showModalKendala[i]?.[ii]}
+                                                                            onClose={() => closeModalKendala(i, ii)}
+                                                                            judul={`Detail ${data.no_jo} ~ ${data2.kode_kendala} - ${data2.kendala_desc}`}
+                                                                        >
+                                                                            <>
+                                                                                <p><strong>Kode Kendala:</strong> {data2.kode_kendala}</p>
+                                                                                <p><strong>Deskripsi:</strong> {data2.kendala_desc}</p>
+                                                                                <p><strong>Total Defect:</strong> {data2.total_defect}</p>
+
+                                                                                {Array.isArray(data2.operator_inspektor) && data2.operator_inspektor.length > 0 ? (
+                                                                                    <div className="mt-4">
+                                                                                        <h3 className="font-semibold mb-2">Detail</h3>
+                                                                                        <table className="w-full border-collapse border border-gray-300">
+                                                                                            <thead>
+                                                                                                <tr className="bg-gray-100">
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Inspektor</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Operator</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Mesin</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Kode Waste</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Masalah Waste</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Temuan</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Defect</th>
+                                                                                                </tr>
+                                                                                            </thead>
+                                                                                            <tbody>
+                                                                                                {data2.operator_inspektor.map((inspektor: any, index: number) => (
+                                                                                                    <tr key={index} className="border-b border-gray-300">
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.inspektor || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.operator || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.mesin || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.kode_waste || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.masalah || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">
+                                                                                                            {inspektor.temuan
+                                                                                                                ? inspektor.temuan
+                                                                                                                    .split("_") // Split by underscore
+                                                                                                                    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize each word
+                                                                                                                    .join(" ") // Join back with space
+                                                                                                                : "-"
+                                                                                                            }
+                                                                                                        </td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.calculated_defect || '-'}</td>
+                                                                                                    </tr>
+                                                                                                ))}
+                                                                                            </tbody>
+                                                                                        </table>
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    <p className="mt-4 text-gray-500">Tidak ada data inspektor</p>
                                                                                 )}
-                                                                                <td className="border border-gray-300 px-4 py-2">
-                                                                                    ✤ {data3.kode_waste} - {data3.waste_desc}
-                                                                                </td>
-                                                                                <td className="border border-gray-300 px-4 py-2">
-                                                                                    {data3.calculated_defect}
-                                                                                </td>
-                                                                            </tr>
-                                                                        ))
-                                                                ) : (
-                                                                    // Fallback if kendala is empty
-                                                                    <tr key={ii} className="border-b border-gray-300">
-                                                                        <td className="border border-gray-300 px-4 py-2">
-                                                                            <span className="font-semibold">{data2.kategori_kendala}</span> - {data2.kode_kendala || "Tidak ada Kode"} - {data2.kendala_desc || "Tidak ada Deskripsi"}
-                                                                        </td>
-                                                                        <td className="border border-gray-300 px-4 py-2">
-                                                                            {data2.total_defect ?? 0}
-                                                                        </td>
-                                                                        <td className="border border-gray-300 px-4 py-2 text-center" colSpan={2}>
-                                                                            Tidak ada data Kendala
-                                                                        </td>
-                                                                    </tr>
-                                                                )
+                                                                            </>
+                                                                        </ModalKosongan>
+                                                                    )}
+                                                                </React.Fragment>
                                                             ))}
                                                     </tbody>
 

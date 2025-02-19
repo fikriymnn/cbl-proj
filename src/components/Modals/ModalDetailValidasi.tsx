@@ -1,4 +1,5 @@
 import React from 'react';
+import convertTimeStampToDateTime from '../../utils/converDateTime';
 
 const ModalDetailValidasi = ({
   children,
@@ -14,7 +15,7 @@ const ModalDetailValidasi = ({
   WaktuBreakdown,
   waktuBreakdownMTC,
   waktuVerifikasiQC,
-
+  data,
 
 }: {
   children: any;
@@ -36,6 +37,7 @@ const ModalDetailValidasi = ({
   WaktuBreakdown: any,
   waktuBreakdownMTC: any,
   waktuVerifikasiQC: any,
+  data: any
 }) => {
   if (isOpen == null) return null;
 
@@ -98,11 +100,11 @@ const ModalDetailValidasi = ({
           <p className="md:text-base text-xs">{note}</p>
         </div>
         <div>
-          <p className="md:text-sm text-xs font-semibold">Waktu Masuk</p>
+          <p className="md:text-sm text-xs font-semibold">Waktu Tiket Dibuat</p>
           <p className="md:text-base text-xs">{waktuMasuk}</p>
         </div>
         <div>
-          <p className="md:text-sm text-xs font-semibold">Waktu Selesai</p>
+          <p className="md:text-sm text-xs font-semibold">Waktu Selesai MTC</p>
           <p className="md:text-base text-xs">{waktuSelesai}</p>
         </div>
         <div>
@@ -145,6 +147,10 @@ const ModalDetailValidasi = ({
         <div>
           <p className="md:text-sm text-xs font-semibold">Waktu Verifikasi QC</p>
           <p className="md:text-base text-xs">{waktuVerifikasiQC}</p>
+        </div>
+        <div>
+          <p className="md:text-sm text-xs font-semibold">Jam Verifikasi QC</p>
+          <p className="md:text-base text-xs">{convertTimeStampToDateTime(data.waktu_selesai)}</p>
         </div>
         {/* <div>
           <p className="md:text-sm text-xs font-semibold">Kode Part</p>

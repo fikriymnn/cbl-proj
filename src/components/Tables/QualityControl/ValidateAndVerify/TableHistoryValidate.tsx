@@ -265,7 +265,7 @@ const TableHistoryValidate = () => {
         </div>
       </div>
       {ticket?.data.map((data: any, index: number) => {
-        const tglTicket = convertTimeStampToDate(data.createdAt);
+        const tglTicket = convertTimeStampToDate(data.tiket.createdAt);
         const waktuRespon = calculateTime(data.createdAt, data.waktu_respon_qc);
         const waktuBreakdownMinutes = calculateResponTime2(
           data.createdAt,
@@ -383,8 +383,7 @@ const TableHistoryValidate = () => {
                   waktuSelesai={tglSelesaiTicket}
                   WaktuBreakdown={waktuBreakdown}
                   waktuBreakdownMTC={waktuBreakdownMTC}
-                  waktuVerifikasiQC={waktuVerifikasiQC}
-                >
+                  waktuVerifikasiQC={waktuVerifikasiQC} data={data}                >
                   <></>
                 </ModalDetailValidasi>
               </>
