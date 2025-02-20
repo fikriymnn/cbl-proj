@@ -265,7 +265,7 @@ const TableHistoryValidate = () => {
         </div>
       </div>
       {ticket?.data.map((data: any, index: number) => {
-        const tglTicket = convertTimeStampToDate(data.tiket.createdAt);
+        const tglTicket = convertTimeStampToDate(data.createdAt);
         const waktuRespon = calculateTime(data.createdAt, data.waktu_respon_qc);
         const waktuBreakdownMinutes = calculateResponTime2(
           data.createdAt,
@@ -275,12 +275,12 @@ const TableHistoryValidate = () => {
           data.waktu_respon_qc,
           data.waktu_selesai_mtc,
         );
-        const waktuValidasiQCMinutes = calculateResponTime2(
-          data.createdAt,
-          data.waktu_respon_qc,
-        );
+        // const waktuValidasiQCMinutes = calculateResponTime2(
+        //   data.createdAt,
+        //   data.waktu_respon_qc,
+        // );
         const tglSelesaiTicket = (data.waktu_selesai_mtc == null ? '-' : convertTimeStampToDate(data.waktu_selesai_mtc));
-        const waktuValidasiQC = formatMinutesToHoursMinutes(waktuValidasiQCMinutes);
+        // const waktuValidasiQC = formatMinutesToHoursMinutes(waktuValidasiQCMinutes);
         const waktuBreakdown = formatMinutesToHoursMinutes(waktuBreakdownMinutes);
         const waktuBreakdownMTC = formatMinutesToHoursMinutes(waktuBreakdownMTCMinutes);
 

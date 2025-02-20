@@ -488,11 +488,11 @@ function ListJOProduksi() {
                                                                                     judul={`Jadwal ${data2.tahapan} - ${data.jo}`}
                                                                                 >
                                                                                     <>
-                                                                                        <label htmlFor="" className='text-black text-xl px-4 mt-4 flex font-semibold'>
+                                                                                        {/* <label htmlFor="" className='text-black text-xl px-4 mt-4 flex font-semibold'>
                                                                                             List Kepala
-                                                                                        </label>
+                                                                                        </label> */}
                                                                                         <div className='grid grid-cols-7 w-full bg-white border-b-8 border-[#D8EAFF] flex-col py-4 px-1'>
-                                                                                            <div className='flex flex-wrap gap-1 col-span-2'>
+                                                                                            {/* <div className='flex flex-wrap gap-1 col-span-2'>
                                                                                                 {data2.jadwal_per_jam?.map((data3: any, iii: any) => (
                                                                                                     <>
                                                                                                         <div
@@ -513,13 +513,17 @@ function ListJOProduksi() {
                                                                                                         )}
                                                                                                     </>
                                                                                                 ))}
-                                                                                            </div>
+                                                                                            </div> */}
                                                                                             <div className="col-span-5 flex flex-col gap-1 ">
-                                                                                                {selectedData ? (
-                                                                                                    <PopUpTable dataMap={selectedData} onClose={() => setSelectedData(null)} onFinish={() => get1Tiket(data.id, i)} />
-                                                                                                ) : (
-                                                                                                    <p className="text-gray-500">Pilih Data</p>
-                                                                                                )}
+
+                                                                                                <PopUpTable dataMap={selectedData} onClose={() => {
+                                                                                                    setSelectedData(null)
+                                                                                                    closeModalFull(ii)
+                                                                                                }} onFinish={() => {
+                                                                                                    closeModalFull(ii)
+                                                                                                    get1Tiket(data.id, i)
+                                                                                                }} />
+
                                                                                             </div>
                                                                                         </div>
 
@@ -608,7 +612,10 @@ function ListJOProduksi() {
 
                                                                                         <div className="col-span-5 flex flex-col gap-1 ">
                                                                                             {selectedData ? (
-                                                                                                <PopUpTable dataMap={selectedData} onClose={() => setSelectedData(null)} onFinish={() => get1Tiket(data.id, i)} />
+                                                                                                <PopUpTable dataMap={selectedData} onClose={() => setSelectedData(null)} onFinish={() => {
+                                                                                                    get1Tiket(data.id, i)
+                                                                                                    closeModalFull(ii)
+                                                                                                }} />
                                                                                             ) : (
                                                                                                 <p className="text-gray-500">Pilih Data</p>
                                                                                             )}

@@ -1417,7 +1417,7 @@ function RekapWasteQC() {
                                                     {/* Jika tidak ada kendala, tetap tampilkan kode waste & total defect */}
                                                     <td
 
-                                                        className="border text-blue-500  border-gray-300 px-4 py-2  font-semibold text-center">
+                                                        className="border   border-gray-300 px-4 py-2  font-semibold text-center">
                                                         {data.kode_waste} - {data.waste_desc}
                                                     </td>
                                                     <td className="border border-gray-300 px-4 py-2  font-semibold text-center">

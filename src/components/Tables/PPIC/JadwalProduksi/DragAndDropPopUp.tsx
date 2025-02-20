@@ -17,7 +17,7 @@ const PopUpTable = ({ dataMap, onClose, onFinish }: { dataMap: any, onClose: any
     }, [dataMap]); // Dependency: updates when `dataMap` changes
 
     if (!data) {
-        return <p className="text-gray-500">No Data Selected</p>;
+        return;
     }
     const [startDate, setStartDate] = useState(new Date(dataMap?.tanggal));
     const [isLoading, setIsLoading] = useState(false);
@@ -68,9 +68,9 @@ const PopUpTable = ({ dataMap, onClose, onFinish }: { dataMap: any, onClose: any
         try {
             setIsLoading(true);
             await axios.put(url, { data_jadwal: data }, { withCredentials: true });
+            setIsLoading(false);
             onClose();
             onFinish();
-            setIsLoading(false);
         } catch (error) {
             console.error('Error updating data:', error);
             setIsLoading(false);

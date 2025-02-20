@@ -13,6 +13,7 @@ import Stack from '@mui/material/Stack';
 import ModalMtcLightHeavy from '../../Modals/ModalMtcLightHeavy';
 import ModalSPBService from '../../Modals/ModalNewSPBService';
 import Loading from '../../Loading';
+import convertTimeStampToDateTime from '../../../utils/converDateTime';
 
 // import moment from 'moment';
 
@@ -238,14 +239,18 @@ function TableOS() {
     const waktuResponDate = new Date(endDate);
     const millisecondsDiff = waktuResponDate.getTime() - createdAtDate.getTime();
 
-    const minutesDiff = Math.floor(millisecondsDiff / 1000 / 60); // Total minutes difference
-    return minutesDiff;
+    const secondsDiff = Math.floor(millisecondsDiff / 1000); // Total seconds difference
+    return secondsDiff;
   }
-  function formatMinutesToHoursMinutes(totalMinutes: number) {
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return `${hours ? hours + ' hours ' : ''}${minutes ? minutes + ' minutes' : ''}`.trim();
+
+  function formatMinutesToHoursMinutesSeconds(totalSeconds: number) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${hours ? hours + ' hours ' : ''}${minutes ? minutes + ' minutes ' : ''}${seconds ? seconds + ' seconds' : ''}`.trim();
   }
+
   const [showTwoButtonsMobile, setShowTwoButtonsMobile] = useState<boolean[]>(
     new Array(tiket != null && tiket.length).fill(false),
   );
@@ -516,9 +521,9 @@ function TableOS() {
                     data.createdAt,
                     data.waktu_respon_qc,
                   );
-                  const waktuValidasiQC = formatMinutesToHoursMinutes(waktuValidasiQCMinutes);
-                  const waktuBreakdown = formatMinutesToHoursMinutes(waktuBreakdownMinutes);
-                  const waktuBreakdownMTC = formatMinutesToHoursMinutes(waktuBreakdownMTCMinutes);
+                  const waktuValidasiQC = formatMinutesToHoursMinutesSeconds(waktuValidasiQCMinutes);
+                  const waktuBreakdown = formatMinutesToHoursMinutesSeconds(waktuBreakdownMinutes);
+                  const waktuBreakdownMTC = formatMinutesToHoursMinutesSeconds(waktuBreakdownMTCMinutes);
 
                   const qcRespon = calculateResponTime2(
                     data.createdAt,
@@ -532,12 +537,12 @@ function TableOS() {
                     data.waktu_selesai_mtc,
                     data.waktu_selesai,
                   );
-                  const waktuVerifikasiQC = formatMinutesToHoursMinutes(waktuVerifikasiQCMinutes);
+                  const waktuVerifikasiQC = formatMinutesToHoursMinutesSeconds(waktuVerifikasiQCMinutes);
                   // Combine qcRespon and qcVerif and format them
                   const waktuBreakdownQCMinutes: any = qcRespon + qcVerif;
-                  const waktuBreakdownQC = formatMinutesToHoursMinutes(waktuBreakdownQCMinutes);
+                  const waktuBreakdownQC = formatMinutesToHoursMinutesSeconds(waktuBreakdownQCMinutes);
 
-
+                  let indexNama = data.proces_mtcs?.length - 1;
                   return (
                     <>
                       <div className="my-2">
@@ -978,7 +983,7 @@ function TableOS() {
                                   < div className='px-5 pt-1'>
                                     <p className="text-xs font-bold">Waktu Validasi QC</p>
                                     <p className="text-xs font-medium">
-                                      {waktuValidasiQC}
+                                      {data.user_respon_qc?.nama} ~ {convertTimeStampToDateTime(data.waktu_respon_qc)} ~ {waktuValidasiQC}
                                     </p>
                                   </div>
                                   <div className='px-5 pt-1'>
@@ -990,7 +995,7 @@ function TableOS() {
                                   <div className='px-5 pt-1'>
                                     <p className="text-xs font-bold">Waktu Verifikasi QC</p>
                                     <p className="text-xs font-medium">
-                                      {waktuVerifikasiQC}
+                                      {data.proses_mtcs?.at(-1)?.user_qc?.nama} ~ {convertTimeStampToDateTime(data.proses_mtcs?.at(-1)?.waktu_selesai)} ~ {waktuVerifikasiQC}
                                     </p>
                                   </div>
                                 </>
