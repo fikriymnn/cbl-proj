@@ -76,6 +76,7 @@ function BuatCutiKeHR() {
         );
 
         console.log(filteredData?.id_karyawan);
+        console.log(filteredData?.sisa_cuti)
         setSisaCuti(filteredData?.sisa_cuti);
         setIdKaryawan(filteredData?.id_karyawan)
 

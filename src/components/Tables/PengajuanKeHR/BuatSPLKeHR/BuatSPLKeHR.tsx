@@ -106,7 +106,7 @@ function BuatSPLKeHR() {
 
         // Find the corresponding user data in userList
         const filteredData = userList.filter((item: any) =>
-            selectedIds.includes(item.userid)
+            selectedIds.includes(item.id_karyawan)
         );
 
         console.log("Selected Users:", filteredData);
@@ -115,7 +115,7 @@ function BuatSPLKeHR() {
         setSisaCuti(filteredData.length > 0 ? filteredData[0].sisa_cuti : 0);
 
         // Store the selected user IDs in an array
-        setIdKaryawan(filteredData.map((user: any) => user.userid));
+        setIdKaryawan(filteredData.map((user: any) => user.id_karyawan));
     };
     const handleChangePointDepatmentNoJO = (selected: any) => {
         const { value } = selected;
@@ -205,7 +205,7 @@ function BuatSPLKeHR() {
                 });
             setIsLoading(false)
             console.log(res)
-            window.location.reload();
+            //window.location.reload();
 
         } catch (error: any) {
             setIsLoading(false)

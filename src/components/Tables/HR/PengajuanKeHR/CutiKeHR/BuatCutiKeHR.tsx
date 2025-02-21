@@ -76,7 +76,8 @@ function BuatCutiKeHR() {
         );
 
         console.log(filteredData?.userid);
-        setSisaCuti(filteredData?.sisa_cuti);
+        console.log(filteredData?.biodata_karyawan[0]?.sisa_cuti);
+        setSisaCuti(filteredData?.biodata_karyawan[0]?.sisa_cuti);
         setIdKaryawan(filteredData?.userid)
 
     };
