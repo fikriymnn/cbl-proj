@@ -15,6 +15,7 @@ import Pagination from '@mui/material/Pagination/Pagination';
 import calculateTime from '../../../../utils/calculateTime';
 import ModalDetailValidasi from '../../../Modals/ModalDetailValidasi';
 import Loading from '../../../Loading';
+import convertTimeStampToDateOnly from '../../../../utils/convertDate';
 
 const TableHistory = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -78,18 +79,35 @@ const TableHistory = () => {
     }
   }
   function calculateResponTime2(startDate: any, endDate: any) {
+    if (!startDate || !endDate) {
+      return -1; // Return -1 if any of the values are null or empty
+    }
+
     const createdAtDate = new Date(startDate);
     const waktuResponDate = new Date(endDate);
-    const millisecondsDiff = waktuResponDate.getTime() - createdAtDate.getTime();
 
-    const minutesDiff = Math.floor(millisecondsDiff / 1000 / 60); // Total minutes difference
-    return minutesDiff;
+    if (isNaN(createdAtDate.getTime()) || isNaN(waktuResponDate.getTime())) {
+      return -1; // Return -1 if the date conversion fails
+    }
+
+    const millisecondsDiff = waktuResponDate.getTime() - createdAtDate.getTime();
+    const secondsDiff = Math.floor(millisecondsDiff / 1000); // Total seconds difference
+
+    return secondsDiff;
   }
-  function formatMinutesToHoursMinutes(totalMinutes: number) {
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return `${hours ? hours + ' hours ' : ''}${minutes ? minutes + ' minutes' : ''}`.trim();
+
+  function formatMinutesToHoursMinutesSeconds(totalSeconds: number) {
+    if (totalSeconds === -1) {
+      return '-'; // Return '-' if the input is -1
+    }
+
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${hours ? hours + ' hours ' : ''}${minutes ? minutes + ' minutes ' : ''}${seconds ? seconds + ' seconds' : ''}`.trim();
   }
+
   return (
     <div className="flex flex-col gap-2">
       <div className="flex  gap-1 items-center bg-white ">
@@ -224,9 +242,14 @@ const TableHistory = () => {
         <p className="w-5 text-[14px] font-semibold mr-3">No</p>
         <div className="flex flex-col w-full">
           <div className="grid grid-cols-12 gap-2 w-full dark:border-strokedark  ">
-            <div className="flex w-full justify-start col-span-2">
+            <div className="flex w-full justify-start ">
               <p className="text-slate-600  text-[14px] font-semibold  dark:text-white">
                 Kode Tiket
+              </p>
+            </div>
+            <div className=" text-[14px] justify-start ">
+              <p className="text-slate-600 font-semibold  dark:text-white">
+                Tanggal Tiket
               </p>
             </div>
             <div className=" text-[14px] justify-start ">
@@ -240,10 +263,15 @@ const TableHistory = () => {
               </p>
             </div>
             <div className=" text-[14px] justify-start ">
-              <p className="text-slate-600 font-semibold ">Nama Mesin</p>
+              <p className="text-slate-600 font-semibold "> Mesin</p>
             </div>
-            <div className=" text-[14px] justify-start col-span-2 ">
+            <div className=" text-[14px] justify-start  ">
               <p className="text-slate-600 font-semibold ">Kendala</p>
+            </div>
+            <div className=" text-[14px] justify-start ">
+              <p className="text-slate-600 font-semibold  dark:text-white">
+                Jam Tiket
+              </p>
             </div>
             <div className=" text-[14px] justify-start ">
               <p className="text-slate-600 font-semibold ">status</p>
@@ -251,7 +279,7 @@ const TableHistory = () => {
             <div className=" text-[14px] justify-start mx-auto">
               <p className="text-slate-600 font-semibold ">Skor</p>
             </div>
-            <div className=" text-[14px] justify-start col-span-2">
+            <div className=" text-[14px] justify-start ">
               <p className="text-slate-600 font-semibold ">Waktu Respon</p>
             </div>
             {/* <div className=" text-[14px] justify-center ">
@@ -261,9 +289,9 @@ const TableHistory = () => {
         </div>
       </div>
       {ticketProsesHistory?.data.map((data: any, index: number) => {
-        const tglTicket = convertTimeStampToDate(data.createdAt);
+        const tglTicket = convertTimeStampToDateOnly(data.createdAt);
         const tglSelesaiTicket = (data.waktu_selesai_mtc == null ? '-' : convertTimeStampToDate(data.waktu_selesai_mtc));
-        const waktuRespon = calculateTime(
+        const waktuRespon = calculateResponTime2(
           data.tiket?.waktu_selesai_mtc,
           data.tiket?.waktu_selesai,
         );
@@ -279,9 +307,9 @@ const TableHistory = () => {
           data.tiket?.createdAt,
           data.tiket?.waktu_respon_qc,
         );
-        const waktuValidasiQC = formatMinutesToHoursMinutes(waktuValidasiQCMinutes);
-        const waktuBreakdown = formatMinutesToHoursMinutes(waktuBreakdownMinutes);
-        const waktuBreakdownMTC = formatMinutesToHoursMinutes(waktuBreakdownMTCMinutes);
+        const waktuRespon2 = formatMinutesToHoursMinutesSeconds(waktuRespon);
+        const waktuBreakdown = formatMinutesToHoursMinutesSeconds(waktuBreakdownMinutes);
+        const waktuBreakdownMTC = formatMinutesToHoursMinutesSeconds(waktuBreakdownMTCMinutes);
 
         const qcRespon = calculateResponTime2(
           data.tiket?.createdAt,
@@ -295,7 +323,7 @@ const TableHistory = () => {
           data.tiket?.waktu_selesai_mtc,
           data.tiket?.waktu_selesai,
         );
-        const waktuVerifikasiQC = formatMinutesToHoursMinutes(waktuVerifikasiQCMinutes);
+        const waktuVerifikasiQC = formatMinutesToHoursMinutesSeconds(waktuVerifikasiQCMinutes);
         return (
           <div
             key={index}
@@ -307,10 +335,15 @@ const TableHistory = () => {
               </p>
             </div>
             <div className="grid grid-cols-12 gap-2 w-full items-center dark:border-strokedark">
-              <div className="flex w-full justify-start col-span-2 gap-14">
+              <div className="flex w-full justify-start ">
                 <p className="text-neutral-500 text-sm font-light  dark:text-white break-all">
                   {' '}
                   {data.tiket.kode_ticket}
+                </p>
+              </div>
+              <div className="flex w-full  justify-start ">
+                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                  {tglTicket}
                 </p>
               </div>
               <div className="flex w-full  justify-start ">
@@ -328,9 +361,14 @@ const TableHistory = () => {
                   {data.tiket.mesin}
                 </p>
               </div>
-              <div className="flex w-full  justify-start col-span-2 ">
+              <div className="flex w-full  justify-start ">
                 <p className="text-neutral-500 text-sm font-light ">
                   {data.tiket.kode_lkh + ' - ' + data.tiket.nama_kendala}
+                </p>
+              </div>
+              <div className="flex w-full  justify-start ">
+                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                  {tglTicket}
                 </p>
               </div>
               <div className="flex w-full  justify-start  ">
@@ -351,7 +389,7 @@ const TableHistory = () => {
               </div>
               <div className="flex w-full  justify-start ">
                 <p className="text-neutral-500 text-sm font-light ">
-                  {waktuRespon}
+                  {waktuRespon2}
                 </p>
               </div>
               {/* <div className="flex w-full  justify-start col-span-3">

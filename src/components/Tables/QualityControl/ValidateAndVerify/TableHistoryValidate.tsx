@@ -10,11 +10,13 @@ import Modal from '../../../Modals/ModalDetailPopup';
 import Logo from '../../images/logo/logo-cbl 1.svg';
 import axios from 'axios';
 import convertTimeStampToDate from '../../../../utils/converDateTime';
+import convertTimeStampToDateOnly from '../../../../utils/convertDate';
 import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination/Pagination';
 import calculateTime from '../../../../utils/calculateTime';
 import ModalDetailValidasi from '../../../Modals/ModalDetailValidasi';
 import Loading from '../../../Loading';
+import convertDateToTime from '../../../../utils/converDateToTime';
 
 const TableHistoryValidate = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -85,13 +87,15 @@ const TableHistoryValidate = () => {
     const waktuResponDate = new Date(endDate);
     const millisecondsDiff = waktuResponDate.getTime() - createdAtDate.getTime();
 
-    const minutesDiff = Math.floor(millisecondsDiff / 1000 / 60); // Total minutes difference
-    return minutesDiff;
+    const secondsDiff = Math.floor(millisecondsDiff / 1000); // Total seconds difference
+    return secondsDiff;
   }
-  function formatMinutesToHoursMinutes(totalMinutes: number) {
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return `${hours ? hours + ' hours ' : ''}${minutes ? minutes + ' minutes' : ''}`.trim();
+  function formatMinutesToHoursMinutesSeconds(totalSeconds: number) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${hours ? hours + ' hours ' : ''}${minutes ? minutes + ' minutes ' : ''}${seconds ? seconds + ' seconds' : ''}`.trim();
   }
   return (
     <div className="flex flex-col gap-2">
@@ -227,10 +231,15 @@ const TableHistoryValidate = () => {
       <div className="flex px-2 border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
         <p className="w-5 text-[14px] font-semibold mr-3">No</p>
         <div className="flex flex-col w-full">
-          <div className="grid grid-cols-9 gap-2 w-full dark:border-strokedark  ">
+          <div className="grid grid-cols-11 gap-2 w-full dark:border-strokedark  ">
             <div className="flex w-full justify-start ">
               <p className="text-slate-600  text-[14px] font-semibold  dark:text-white">
                 Kode Tiket
+              </p>
+            </div>
+            <div className=" text-[14px] justify-start  ">
+              <p className="text-slate-600 font-semibold  dark:text-white">
+                Tanggal Tiket
               </p>
             </div>
             <div className=" text-[14px] justify-start  ">
@@ -241,6 +250,11 @@ const TableHistoryValidate = () => {
             <div className=" text-[14px] justify-start  col-span-2">
               <p className="text-slate-600 font-semibold  dark:text-white">
                 Item
+              </p>
+            </div>
+            <div className=" text-[14px] justify-start  ">
+              <p className="text-slate-600 font-semibold  dark:text-white">
+                Jam Tiket
               </p>
             </div>
             <div className=" text-[14px] justify-start  ">
@@ -266,7 +280,8 @@ const TableHistoryValidate = () => {
       </div>
       {ticket?.data.map((data: any, index: number) => {
         const tglTicket = convertTimeStampToDate(data.createdAt);
-        const waktuRespon = calculateTime(data.createdAt, data.waktu_respon_qc);
+        const waktuRespon = calculateResponTime2(data.createdAt, data.waktu_respon_qc);
+        const waktuResponSecond = formatMinutesToHoursMinutesSeconds(waktuRespon);
         const waktuBreakdownMinutes = calculateResponTime2(
           data.createdAt,
           data.waktu_selesai,
@@ -281,8 +296,8 @@ const TableHistoryValidate = () => {
         // );
         const tglSelesaiTicket = (data.waktu_selesai_mtc == null ? '-' : convertTimeStampToDate(data.waktu_selesai_mtc));
         // const waktuValidasiQC = formatMinutesToHoursMinutes(waktuValidasiQCMinutes);
-        const waktuBreakdown = formatMinutesToHoursMinutes(waktuBreakdownMinutes);
-        const waktuBreakdownMTC = formatMinutesToHoursMinutes(waktuBreakdownMTCMinutes);
+        const waktuBreakdown = formatMinutesToHoursMinutesSeconds(waktuBreakdownMinutes);
+        const waktuBreakdownMTC = formatMinutesToHoursMinutesSeconds(waktuBreakdownMTCMinutes);
 
         const qcRespon = calculateResponTime2(
           data.createdAt,
@@ -296,7 +311,7 @@ const TableHistoryValidate = () => {
           data.waktu_selesai_mtc,
           data.waktu_selesai,
         );
-        const waktuVerifikasiQC = formatMinutesToHoursMinutes(waktuVerifikasiQCMinutes);
+        const waktuVerifikasiQC = formatMinutesToHoursMinutesSeconds(waktuVerifikasiQCMinutes);
         return (
           <div
             key={index}
@@ -307,11 +322,16 @@ const TableHistoryValidate = () => {
                 {index + 1}{' '}
               </p>
             </div>
-            <div className="grid grid-cols-9 gap-2 w-full items-center dark:border-strokedark">
+            <div className="grid grid-cols-11 gap-2 w-full items-center dark:border-strokedark">
               <div className="flex w-full justify-start  gap-14">
                 <p className="text-neutral-500 break-all text-sm font-light  dark:text-white">
                   {' '}
                   {data.kode_ticket}
+                </p>
+              </div>
+              <div className="flex w-full  justify-start ">
+                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                  {convertTimeStampToDateOnly(data.createdAt)}
                 </p>
               </div>
               <div className="flex w-full  justify-start ">
@@ -322,6 +342,11 @@ const TableHistoryValidate = () => {
               <div className="flex w-full  justify-start col-span-2">
                 <p className="text-neutral-500 text-sm font-light  dark:text-white">
                   {data.nama_produk}
+                </p>
+              </div>
+              <div className="flex w-full  justify-start ">
+                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                  {convertDateToTime(data.createdAt)}
                 </p>
               </div>
               <div className="flex w-full  justify-start ">
@@ -348,7 +373,7 @@ const TableHistoryValidate = () => {
 
               <div className="flex w-full  justify-start ">
                 <p className="text-neutral-500 text-sm font-light ">
-                  {waktuRespon}
+                  {waktuResponSecond}
                 </p>
               </div>
               {/* <div className="flex w-full  justify-start col-span-3">

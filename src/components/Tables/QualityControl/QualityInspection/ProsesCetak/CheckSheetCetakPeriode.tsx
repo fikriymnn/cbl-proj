@@ -38,6 +38,15 @@ function CheckSheetCetakPeriode() {
     },
   ]);
 
+  const [sample1Value, setSample1Value] = useState<any>();
+  const [result1, setResult1] = useState<any>();
+
+  const [sample2Value, setSample2Value] = useState<any>();
+  const [result2, setResult2] = useState<any>();
+
+  const [sample3Value, setSample3Value] = useState<any>();
+  const [result3, setResult3] = useState<any>();
+
   const [masterKodeCetak, setMasterKodeCetak] = useState<any>();
   const [masterKodeCetak2, setMasterKodeCetak2] = useState<any>();
   const [openGuide, setOpenGuide] = useState(null);
@@ -339,7 +348,12 @@ function CheckSheetCetakPeriode() {
       setIsLoading(true);
       const res = await axios.put(
         url,
-        { catatan: catatan },
+        {
+          catatan: catatan,
+          sample_1: sample1Value,
+          sample_2: sample2Value,
+          sample_3: sample3Value
+        },
         {
           withCredentials: true,
         },
@@ -438,7 +452,7 @@ function CheckSheetCetakPeriode() {
   const jamHistory = convertDateToTime(cetakMesinPeriodeHistory?.createdAt);
 
   const jumlahWaktuCheck = formatElapsedTime(
-    cetakMesinPeriode?.inspeksi_cetak_awal[0].waktu_check,
+    cetakMesinPeriode?.inspeksi_cetak_awal[0]?.waktu_check,
   );
 
   const [filling, setFilling] = useState(false);
@@ -1604,7 +1618,7 @@ function CheckSheetCetakPeriode() {
                     disabled={isLoading}
                     onClick={() =>
                       tambahTaskCekPeriode(
-                        cetakMesinPeriode?.inspeksi_cetak_periode[0].id,
+                        cetakMesinPeriode?.inspeksi_cetak_periode[0]?.id,
                       )
                     }
                     className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
@@ -1634,7 +1648,7 @@ function CheckSheetCetakPeriode() {
                         <label className=" text-[#6c6b6b] text-sm font-semibold col-span-2">
                             Waktu Check : {jumlahWaktuCheck}
                         </label> */}
-            <div className="grid col-span-8">
+            <div className="grid col-span-6">
               <label className=" text-[#6c6b6b] text-sm font-semibold">
                 Catatan<span className="text-red-500">*</span> :
               </label>
@@ -1651,13 +1665,192 @@ function CheckSheetCetakPeriode() {
               ) : (
                 <textarea
                   defaultValue={
-                    cetakMesinPeriode?.inspeksi_cetak_periode[0].catatan
+                    cetakMesinPeriode?.inspeksi_cetak_periode[0]?.catatan
                   }
                   disabled
                   className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                 ></textarea>
               )}
             </div>
+            {(!isOnprogres &&
+              cetakMesinPeriode?.status == 'incoming' &&
+              cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status ==
+              'incoming') ||
+              cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status ==
+              'pending' ? (
+              <div className='text-neutral-500 gap-2 items-start justify-start flex flex-col text-sm font-semibold col-span-2'>
+                <div className='flex flex-col gap-2'>
+                  <div className='flex gap-2'>
+                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                      Sample 1
+                    </label>
+                    <input
+                      required
+                      onChange={(e) => {
+                        const newValue = parseFloat(e.target.value);
+                        setSample1Value(newValue);
+                        const result = (newValue / 100) * 10000;
+                        setResult1(result);
+                      }}
+                      type="text"
+                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                    />
+                    <div>
+                      gr
+                    </div>
+                  </div>
+                  <div>
+                    = <input
+                      name="hasilsample1"
+                      disabled
+                      value={result1}
+                      type="text"
+                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                    /> g/m<sup className=''>2</sup>
+                  </div>
+                </div>
+                <div className='flex gap-2 flex-col'>
+                  <div className='flex gap-2'>
+                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                      Sample 2
+                    </label>
+                    <input
+                      required
+                      onChange={(e) => {
+                        const newValue = parseFloat(e.target.value);
+                        setSample2Value(newValue);
+                        const result = (newValue / 100) * 10000;
+                        setResult2(result);
+                      }}
+                      type="text"
+                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                    />
+                    <div>
+                      gr
+                    </div>
+                  </div>
+                  <div>
+                    =  <input
+                      name="hasilsample2"
+                      disabled
+                      value={result2}
+                      type="text"
+                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                    /> g/m<sup className=''>2</sup>
+                  </div>
+                </div>
+                <div className='flex gap-2 flex-col'>
+                  <div className='flex gap-2'>
+                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                      Sample 3
+                    </label>
+                    <input
+                      required
+                      onChange={(e) => {
+                        const newValue = parseFloat(e.target.value);
+                        setSample3Value(newValue);
+
+                        const result = (newValue / 100) * 10000;
+                        setResult3(result);
+                      }}
+                      type="text"
+                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                    />
+                    <div>
+                      gr
+                    </div>
+                  </div>
+                  <div>
+                    =  <input
+                      name="hasilsample3"
+                      disabled
+                      value={result3}
+                      type="text"
+                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                    /> g/m<sup className=''>2</sup>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className='text-neutral-500 gap-2 items-start justify-start flex flex-col text-sm font-semibold col-span-2'>
+                <div className='flex flex-col gap-2'>
+                  <div className='flex gap-2'>
+                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                      Sample 1
+                    </label>
+                    <input
+                      readOnly
+                      value={cetakMesinPeriode?.inspeksi_cetak_periode[0]?.sample_1}
+                      type="text"
+                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                    />
+                    <div>
+                      gr
+                    </div>
+                  </div>
+                  <div>
+                    = <input
+                      name="hasilsample1"
+                      disabled
+                      value={cetakMesinPeriode?.inspeksi_cetak_periode[0]?.hasil_sample_1}
+                      type="text"
+                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                    /> g/m<sup className=''>2</sup>
+                  </div>
+                </div>
+                <div className='flex gap-2 flex-col'>
+                  <div className='flex gap-2'>
+                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                      Sample 2
+                    </label>
+                    <input
+                      readOnly
+                      value={cetakMesinPeriode?.inspeksi_cetak_periode[0]?.sample_2}
+                      type="text"
+                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                    />
+                    <div>
+                      gr
+                    </div>
+                  </div>
+                  <div>
+                    =  <input
+                      name="hasilsample2"
+                      disabled
+                      value={cetakMesinPeriode?.inspeksi_cetak_periode[0]?.hasil_sample_2}
+                      type="text"
+                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                    /> g/m<sup className=''>2</sup>
+                  </div>
+                </div>
+                <div className='flex gap-2 flex-col'>
+                  <div className='flex gap-2'>
+                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                      Sample 3
+                    </label>
+                    <input
+                      readOnly
+                      value={cetakMesinPeriode?.inspeksi_cetak_periode[0]?.sample_3}
+
+                      type="text"
+                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                    />
+                    <div>
+                      gr
+                    </div>
+                  </div>
+                  <div>
+                    =  <input
+                      name="hasilsample3"
+                      disabled
+                      value={cetakMesinPeriode?.inspeksi_cetak_periode[0]?.sample_3}
+                      type="text"
+                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                    /> g/m<sup className=''>2</sup>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="grid col-span-2 items-end justify-end gap-2">
               {!isOnprogres && cetakMesinPeriode?.status == 'incoming' ? (
                 <button

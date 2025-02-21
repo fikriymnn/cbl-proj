@@ -64,9 +64,8 @@ function IncomingInspection() {
     }
   }
   async function startTask(id: any) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBahan/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBahan/start/${id}`;
 
     try {
       const res = await axios.get(url, {
@@ -101,9 +100,8 @@ function IncomingInspection() {
     }
     const stopTime = new Date();
     const timestamp = convertDatetimeToDate(new Date());
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBahan/stop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBahan/stop/${id}`;
 
     try {
       const elapsedSeconds = await calculateElapsedTime(start, stopTime);
@@ -136,9 +134,8 @@ function IncomingInspection() {
     }
   }
   async function sumbitPoint(objek: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${
-      objek.id
-    }`;
+    const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${objek.id
+      }`;
     try {
       const res = await axios.put(
         url,
@@ -164,9 +161,8 @@ function IncomingInspection() {
       alert('Point 1 Belum Terisi Semua');
       return;
     }
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -199,9 +195,8 @@ function IncomingInspection() {
       alert('Point 2 Belum Terisi Semua');
       return;
     }
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -237,9 +232,8 @@ function IncomingInspection() {
       alert('Point 3 Belum Terisi Semua');
       return;
     }
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -269,9 +263,8 @@ function IncomingInspection() {
       alert('Point 4 Belum Terisi Semua');
       return;
     }
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -299,9 +292,8 @@ function IncomingInspection() {
       alert('Point 5 Belum Terisi Semua');
       return;
     }
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -330,9 +322,8 @@ function IncomingInspection() {
       alert('Point 6 Belum Terisi Semua');
       return;
     }
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -359,9 +350,8 @@ function IncomingInspection() {
       alert('Point 7 Belum Terisi Semua');
       return;
     }
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -387,9 +377,8 @@ function IncomingInspection() {
       alert('Point 8 Belum Terisi Semua');
       return;
     }
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -415,9 +404,8 @@ function IncomingInspection() {
       alert('Point 9 Belum Terisi Semua');
       return;
     }
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -454,9 +442,8 @@ function IncomingInspection() {
       return; // Exit function if no start time
     }
 
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBahan/update/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBahan/update/${id}`;
     try {
       setIsLoading(true);
       if (verifikasi == 'Diterima') {
