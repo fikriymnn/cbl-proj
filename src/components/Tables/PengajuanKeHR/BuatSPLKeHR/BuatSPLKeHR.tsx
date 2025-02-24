@@ -205,7 +205,7 @@ function BuatSPLKeHR() {
                 });
             setIsLoading(false)
             console.log(res)
-            //window.location.reload();
+            window.location.reload();
 
         } catch (error: any) {
             setIsLoading(false)

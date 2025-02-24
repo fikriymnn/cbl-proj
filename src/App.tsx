@@ -192,6 +192,7 @@ import ProduksiBreakdownTtime from './pages/Produksi/ProduksiBreakdown';
 import PengajuanAllDept from './pages/AllDept/PengajuanKeHrAll';
 import PengajuanAllDeptHistory from './pages/AllDept/PengajuanKeHrAllHistory';
 import RekapPPIC from './pages/PPIC/RekapPPIC/RekapPPIC';
+import IncomingChem from './pages/QualityControl/Incoming/IncomingChem';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -714,6 +715,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <IncomingIns />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspectionChemical/list/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingChem />
               </ProtectedRoute>
             </>
           }

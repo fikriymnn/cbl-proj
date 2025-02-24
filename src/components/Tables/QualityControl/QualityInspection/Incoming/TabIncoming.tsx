@@ -8,6 +8,7 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import ListIncoming2 from './ListIncoming';
 import ListHistory from './ListHistory';
+import ListHistoryChemical from './ListHistoryChemical';
 
 
 
@@ -129,6 +130,7 @@ export default function TabIncoming() {
                     >
                         <Tab label="Incoming" {...a11yProps(0)} className='' />
                         <Tab label="History" {...a11yProps(1)} />
+                        <Tab label="History Chemical" {...a11yProps(2)} />
 
                     </Tabs>
                 </ThemeProvider>
@@ -139,7 +141,9 @@ export default function TabIncoming() {
             <TabPanel value={value} index={1} dir={theme.direction}>
                 <ListHistory />
             </TabPanel>
-
+            <TabPanel value={value} index={2} dir={theme.direction}>
+                <ListHistoryChemical />
+            </TabPanel>
         </Box>
     );
 }

@@ -16,6 +16,7 @@ import formatInteger from '../../../../../utils/formaterInteger';
 
 function CheckSheetCetakPeriode() {
   const [selectedECs, setSelectedECs] = useState<string[]>([]);
+  const [cttPeriode, setcttPeriode] = useState<any>();
   const { id } = useParams();
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -254,7 +255,7 @@ function CheckSheetCetakPeriode() {
           withCredentials: true,
         },
       );
-
+      setcttPeriode(null)
       getCetakMesinPeriode();
       setIsLoading(false)
     } catch (error: any) {
@@ -1129,7 +1130,7 @@ function CheckSheetCetakPeriode() {
                                     stopTaskCekPeriode(
                                       data.id,
                                       data.waktu_mulai,
-                                      data.catatan,
+                                      cttPeriode,
                                       data.numerator,
                                       data.jumlah_sampling,
                                       data.inspeksi_cetak_periode_defect,
@@ -1598,6 +1599,32 @@ function CheckSheetCetakPeriode() {
                         </>
                       )}
                     </div>
+                    {data.status == 'done' ? (<>
+                      <div className='border-b-8 border-[#D8EAFF]'>
+                        <div className='px-[1%] py-[1%]'>
+                          <label className="text-black text-sm font-bold pt-4 ">
+                            Catatan Periode {index + 1}
+                          </label>
+                          <textarea
+                            readOnly
+                            value={data.catatan}
+                            className=" peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                          ></textarea>
+                        </div>
+                      </div>
+                    </>) : (<>
+                      <div className='border-b-8 border-[#D8EAFF]'>
+                        <div className='px-[1%] py-[1%]'>
+                          <label className="text-black text-sm font-bold pt-4">
+                            Catatan Periode {index + 1}
+                          </label>
+                          <textarea
+                            onChange={(e) => setcttPeriode(e.target.value)}
+                            className="peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                          ></textarea>
+                        </div>
+                      </div>
+                    </>)}
                   </>
                 );
               },

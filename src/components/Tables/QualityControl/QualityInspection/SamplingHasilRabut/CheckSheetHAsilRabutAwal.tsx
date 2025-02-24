@@ -21,6 +21,15 @@ function CheckSheetHasilRabut() {
   const [Catatan, setCatatan] = useState<any>();
   const [idDefect, setIdDefect] = useState<any>();
 
+  const [sample1Value, setSample1Value] = useState<any>();
+  const [result1, setResult1] = useState<any>();
+
+  const [sample2Value, setSample2Value] = useState<any>();
+  const [result2, setResult2] = useState<any>();
+
+  const [sample3Value, setSample3Value] = useState<any>();
+  const [result3, setResult3] = useState<any>();
+
   const [details, setDetails] = useState<any>(null);
 
   const [showModal2, setShowModal2] = useState(false);
@@ -269,6 +278,9 @@ function CheckSheetHasilRabut() {
       const res = await axios.put(
         url,
         {
+          sample_1: sample1Value,
+          sample_2: sample2Value,
+          sample_3: sample3Value,
           catatan: Catatan,
         },
         {
@@ -889,6 +901,7 @@ function CheckSheetHasilRabut() {
                   },
                 )}
               </div>
+
               <div className=" gap-10 p-5">
                 <div className="w-4/12">
                   <label className=" text-[#6c6b6b] text-sm font-semibold">
@@ -902,10 +915,13 @@ function CheckSheetHasilRabut() {
                   />
                 </div>
 
-                <div className="w-full mt-10">
-                  {RabutMesin?.data?.status != 'history' ? (
-                    <>
-                      <div className="grid grid-cols-1">
+                <div className="w-full  flex gap-10">
+                  <div className='grid w-[80%]'>
+
+
+                    {RabutMesin?.data?.status != 'history' ? (
+                      <>
+
                         <label className=" text-[#6c6b6b] text-sm font-semibold">
                           KETERANGAN
                         </label>
@@ -913,11 +929,11 @@ function CheckSheetHasilRabut() {
                           onChange={(e) => setCatatan(e.target.value)}
                           className="border rounded h-44 w-12/12 resize-none"
                         ></textarea>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="grid grid-cols-1">
+
+                      </>
+                    ) : (
+                      <>
+
                         <label className=" text-[#6c6b6b] text-sm font-semibold">
                           KETERANGAN
                         </label>
@@ -926,8 +942,185 @@ function CheckSheetHasilRabut() {
                           disabled
                           className="border rounded h-44 w-12/12 resize-none"
                         ></textarea>
+
+                      </>
+                    )}
+                  </div>
+
+                  {RabutMesin?.data?.status == 'incoming' ||
+                    RabutMesin?.data?.status == 'pending' ? (
+                    <div className='text-neutral-500 gap-2 items-start justify-start flex flex-col text-sm font-semibold '>
+                      <div className='flex flex-col gap-2'>
+                        <div className='flex gap-2'>
+                          <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                            Sample 1
+                          </label>
+                          <input
+                            required
+                            onChange={(e) => {
+                              const newValue = parseFloat(e.target.value);
+                              setSample1Value(newValue);
+                              const result = (newValue / 16) * 10000;
+                              setResult1(result);
+                            }}
+                            type="text"
+                            className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                          />
+                          <div>
+                            gr
+                          </div>
+                        </div>
+                        <div>
+                          = <input
+                            name="hasilsample1"
+                            disabled
+                            value={result1}
+                            type="text"
+                            className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                          /> g/m<sup className=''>2</sup>
+                        </div>
                       </div>
-                    </>
+                      <div className='flex gap-2 flex-col'>
+                        <div className='flex gap-2'>
+                          <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                            Sample 2
+                          </label>
+                          <input
+                            required
+                            onChange={(e) => {
+                              const newValue = parseFloat(e.target.value);
+                              setSample2Value(newValue);
+                              const result = (newValue / 16) * 10000;
+                              setResult2(result);
+                            }}
+                            type="text"
+                            className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                          />
+                          <div>
+                            gr
+                          </div>
+                        </div>
+                        <div>
+                          =  <input
+                            name="hasilsample2"
+                            disabled
+                            value={result2}
+                            type="text"
+                            className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                          /> g/m<sup className=''>2</sup>
+                        </div>
+                      </div>
+                      <div className='flex gap-2 flex-col'>
+                        <div className='flex gap-2'>
+                          <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                            Sample 3
+                          </label>
+                          <input
+                            required
+                            onChange={(e) => {
+                              const newValue = parseFloat(e.target.value);
+                              setSample3Value(newValue);
+
+                              const result = (newValue / 16) * 10000;
+                              setResult3(result);
+                            }}
+                            type="text"
+                            className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                          />
+                          <div>
+                            gr
+                          </div>
+                        </div>
+                        <div>
+                          =  <input
+                            name="hasilsample3"
+                            disabled
+                            value={result3}
+                            type="text"
+                            className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                          /> g/m<sup className=''>2</sup>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className='text-neutral-500 gap-2 items-start justify-start flex flex-col text-sm font-semibold col-span-2'>
+                      <div className='flex flex-col gap-2'>
+                        <div className='flex gap-2'>
+                          <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                            Sample 1
+                          </label>
+                          <input
+                            readOnly
+                            value={RabutMesin?.data?.sample_1}
+                            type="text"
+                            className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                          />
+                          <div>
+                            gr
+                          </div>
+                        </div>
+                        <div>
+                          = <input
+                            name="hasilsample1"
+                            disabled
+                            value={RabutMesin?.data?.hasil_sample_1}
+                            type="text"
+                            className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                          /> g/m<sup className=''>2</sup>
+                        </div>
+                      </div>
+                      <div className='flex gap-2 flex-col'>
+                        <div className='flex gap-2'>
+                          <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                            Sample 2
+                          </label>
+                          <input
+                            readOnly
+                            value={RabutMesin?.data?.sample_2}
+                            type="text"
+                            className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                          />
+                          <div>
+                            gr
+                          </div>
+                        </div>
+                        <div>
+                          =  <input
+                            name="hasilsample2"
+                            disabled
+                            value={RabutMesin?.data?.hasil_sample_2}
+                            type="text"
+                            className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                          /> g/m<sup className=''>2</sup>
+                        </div>
+                      </div>
+                      <div className='flex gap-2 flex-col'>
+                        <div className='flex gap-2'>
+                          <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                            Sample 3
+                          </label>
+                          <input
+                            readOnly
+                            value={RabutMesin?.data?.sample_3}
+
+                            type="text"
+                            className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                          />
+                          <div>
+                            gr
+                          </div>
+                        </div>
+                        <div>
+                          =  <input
+                            name="hasilsample3"
+                            disabled
+                            value={RabutMesin?.data?.sample_3}
+                            type="text"
+                            className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                          /> g/m<sup className=''>2</sup>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>

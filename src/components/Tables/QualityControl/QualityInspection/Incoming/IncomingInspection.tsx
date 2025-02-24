@@ -17,6 +17,13 @@ function IncomingInspection() {
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
   };
+
+  const [result1, setResult1] = useState<any>();
+
+  const [result2, setResult2] = useState<any>();
+
+  const [result3, setResult3] = useState<any>();
+
   useEffect(() => {
     handleResize();
 
@@ -204,7 +211,6 @@ function IncomingInspection() {
           hasil_kiri: hasilkiri,
           hasil_tengah: hasiltengah,
           hasil_kanan: hasilkanan,
-          hasil_rata_rata: hasilRata,
           keterangan_hasil: kh2,
         },
         {
@@ -426,6 +432,7 @@ function IncomingInspection() {
   }
 
   const [no_lot, setNo_lot] = useState<any>();
+  const [jumlahPallet, setjumlahPallet] = useState<any>();
   const [hasil_rumus, setHasil_rumus] = useState<any>();
   const [verifikasi, setVerifikasi] = useState<any>();
   const [ctt, setCtt] = useState<any>();
@@ -435,7 +442,8 @@ function IncomingInspection() {
       no_lot == null ||
       hasil_rumus == null ||
       verifikasi == null ||
-      ctt == null
+      ctt == null ||
+      jumlahPallet == null
     ) {
       // Check if start time is available
       alert('Data Tidak Lengkap');
@@ -462,6 +470,7 @@ function IncomingInspection() {
         const res = await axios.put(
           url,
           {
+            jumlah_pallet: jumlahPallet,
             catatan: ctt,
             no_lot: no_lot,
             hasil_rumus: hasil_rumus,
@@ -476,6 +485,7 @@ function IncomingInspection() {
         const res = await axios.put(
           url,
           {
+            jumlah_pallet: jumlahPallet,
             catatan: ctt,
             no_lot: no_lot,
             hasil_rumus: hasil_rumus,
@@ -629,7 +639,20 @@ function IncomingInspection() {
                   )}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {incoming?.jumlah_pallet}
+                  {incoming?.status == 'incoming' ? (
+                    <>
+                      :{' '}
+                      <input
+                        type="text"
+                        onChange={(e) => {
+                          setjumlahPallet(e.target.value);
+                        }}
+                        className="rounded-[3px]  border border-zinc-300"
+                      />
+                    </>
+                  ) : (
+                    <>: {incoming?.jumlah_pallet}</>
+                  )}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {incoming?.no_surat_jalan}
@@ -1069,10 +1092,22 @@ function IncomingInspection() {
                                     sethhasilkiri(e.target.value);
                                     setKiri(parseInt(e.target.value));
                                     // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                    const newValue = parseFloat(e.target.value);
+                                    const result = (newValue / 10) * 10000;
+                                    setResult1(result);
                                   }}
                                   type="number"
                                   className="border-2 border-stroke w-[80%] rounded-sm"
                                 />
+                                <div>
+                                  = <input
+                                    name="hasilsample1"
+                                    disabled
+                                    value={result1}
+                                    type="text"
+                                    className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                  /> g/m<sup className=''>2</sup>
+                                </div>
                                 <label className="text-neutral-500 text-sm font-semibold pt-1">
                                   Tengah
                                 </label>
@@ -1085,11 +1120,23 @@ function IncomingInspection() {
                                     sethhasiltengah(e.target.value);
                                     setTengah(parseInt(e.target.value));
                                     // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                    const newValue = parseFloat(e.target.value);
+                                    const result = (newValue / 10) * 10000;
+                                    setResult2(result);
                                   }}
                                   className="border-2 border-stroke w-[80%] rounded-sm"
                                 />
+                                <div>
+                                  = <input
+                                    name="hasilsample2"
+                                    disabled
+                                    value={result2}
+                                    type="text"
+                                    className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                  /> g/m<sup className=''>2</sup>
+                                </div>
                                 <label className="text-neutral-500 text-sm font-semibold pt-1">
-                                  Kanan
+                                  Bawah
                                 </label>
                                 <input
                                   type="number"
@@ -1100,13 +1147,23 @@ function IncomingInspection() {
                                     sethhasilkanan(e.target.value);
                                     setKanan(parseInt(e.target.value));
                                     // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                    const newValue = parseFloat(e.target.value);
+                                    const result = (newValue / 10) * 10000;
+                                    setResult3(result);
                                   }}
                                   className="border-2 border-stroke w-[80%] rounded-sm"
                                 />
-                                <label className="text-neutral-500 text-sm font-semibold pt-1">
-                                  Rata-Rata
-                                </label>
+                                <div>
+                                  = <input
+                                    name="hasilsample3"
+                                    disabled
+                                    value={result3}
+                                    type="text"
+                                    className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                  /> g/m<sup className=''>2</sup>
+                                </div>
                                 <input
+                                  hidden
                                   type="number"
                                   value={hasilRata}
                                   onChange={() => {
@@ -1137,6 +1194,16 @@ function IncomingInspection() {
                                     }{' '}
                                     gr
                                   </label>
+                                  <div>
+                                    = <input
+                                      name="hasilsample3"
+                                      disabled
+                                      value={incoming?.inspeksi_bahan_result[1]
+                                        .hasil_rumus_kiri}
+                                      type="text"
+                                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                    /> g/m<sup className=''>2</sup>
+                                  </div>
                                   <label className="text-neutral-500 text-sm font-semibold pt-1">
                                     Tengah
                                   </label>
@@ -1147,26 +1214,36 @@ function IncomingInspection() {
                                     }{' '}
                                     gr
                                   </label>
+                                  <div>
+                                    = <input
+                                      name="hasilsample3"
+                                      disabled
+                                      value={incoming?.inspeksi_bahan_result[1]
+                                        .hasil_rumus_tengah}
+                                      type="text"
+                                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                    /> g/m<sup className=''>2</sup>
+                                  </div>
                                   <label className="text-neutral-500 text-sm font-semibold pt-1">
-                                    Kanan
+                                    Bawah
                                   </label>
                                   <label className="text-neutral-500 text-sm font-semibold ">
                                     {
                                       incoming?.inspeksi_bahan_result[1]
-                                        .hasil_kanan
+                                        .hasil_bawah
                                     }{' '}
                                     gr
                                   </label>
-                                  <label className="text-neutral-500 text-sm font-semibold pt-1">
-                                    Rata-Rata
-                                  </label>
-                                  <label className="text-neutral-500 text-sm font-semibold ">
-                                    {
-                                      incoming?.inspeksi_bahan_result[1]
-                                        .hasil_rata_rata
-                                    }{' '}
-                                    gr
-                                  </label>
+                                  <div>
+                                    = <input
+                                      name="hasilsample3"
+                                      disabled
+                                      value={incoming?.inspeksi_bahan_result[1]
+                                        .hasil_rumus_kanan}
+                                      type="text"
+                                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                    /> g/m<sup className=''>2</sup>
+                                  </div>
                                 </div>
                               </>
                             )}

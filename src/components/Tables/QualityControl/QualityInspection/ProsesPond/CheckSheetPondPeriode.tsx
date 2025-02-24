@@ -16,6 +16,7 @@ import formatInteger from '../../../../../utils/formaterInteger';
 
 function CheckSheetPondPeriode() {
   const { id } = useParams();
+  const [cttPeriode, setcttPeriode] = useState<any>();
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [pondMesinPeriode, setPondMesinPeriode] = useState<any>();
@@ -194,7 +195,7 @@ function CheckSheetPondPeriode() {
           withCredentials: true,
         },
       );
-
+      setcttPeriode(null)
       getPondMesinPeriode();
       setIsLoading(false)
     } catch (error: any) {
@@ -989,7 +990,7 @@ function CheckSheetPondPeriode() {
                                   stopTaskCekPeriode(
                                     data.id,
                                     data.waktu_mulai,
-                                    data.catatan,
+                                    cttPeriode,
                                     data.numerator,
                                     data.jumlah_sampling,
                                     data.inspeksi_pond_periode_defect,
@@ -1403,33 +1404,32 @@ function CheckSheetPondPeriode() {
                         </>
                       )}
                     </div>
-                    <div className="flex flex-col w-full px-3 py-2">
-                      {data.status == 'done' ? (
-                        <>
-                          <label className="text-black font-semibold text-sm ">
-                            Catatan <span className="text-red-600">*</span>
+                    {data.status == 'done' ? (<>
+                      <div className='border-b-8 border-[#D8EAFF]'>
+                        <div className='px-[1%] py-[1%]'>
+                          <label className="text-black text-sm font-bold pt-4 ">
+                            Catatan Periode {index + 1}
                           </label>
                           <textarea
-                            disabled
-                            defaultValue={data.catatan}
-                            name="catatan"
-                            onChange={(e) => handleChangePoint(e, index)}
-                            className="text-sm font-semibold w-full border-stroke border h-12"
+                            readOnly
+                            value={data.catatan}
+                            className=" peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                           ></textarea>
-                        </>
-                      ) : data.status == 'on progress' ? (
-                        <>
-                          <label className="text-black font-semibold text-sm ">
-                            Catatan <span className="text-red-600">*</span>
+                        </div>
+                      </div>
+                    </>) : (<>
+                      <div className='border-b-8 border-[#D8EAFF]'>
+                        <div className='px-[1%] py-[1%]'>
+                          <label className="text-black text-sm font-bold pt-4">
+                            Catatan Periode {index + 1}
                           </label>
                           <textarea
-                            name="catatan"
-                            onChange={(e) => handleChangePoint(e, index)}
-                            className="text-sm font-semibold w-full border-stroke border  h-12"
+                            onChange={(e) => setcttPeriode(e.target.value)}
+                            className="peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                           ></textarea>
-                        </>
-                      ) : null}
-                    </div>
+                        </div>
+                      </div>
+                    </>)}
                   </>
                 );
               },

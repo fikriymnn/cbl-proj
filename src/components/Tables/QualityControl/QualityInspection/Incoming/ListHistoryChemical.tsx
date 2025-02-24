@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '@mui/material';
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
 import convertTimeStampToDate from '../../../../../utils/converDateTime';
 
-function ListIncoming2() {
+function ListHistoryChemical() {
     const [isMobile, setIsMobile] = useState(false);
     const kosong: any = []
     const today = new Date();
@@ -13,6 +15,9 @@ function ListIncoming2() {
     const date = today.getDate();
     const currentDate = month + "/" + date + "/" + year;
     const navigate = useNavigate();
+
+    const [page, setPage] = useState(1);
+
     const handleResize = () => {
         setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
     };
@@ -34,27 +39,24 @@ function ListIncoming2() {
     useEffect(() => {
 
         getInspection();
-    }, []);
-
+    }, [page]);
+    const [noJo, setNoJo] = useState<any>();
     async function getInspection() {
-        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahan?status=incoming`;
-        const url2 = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiChemical?status=incoming`;
+        const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiChemical?status=history`;
         try {
             const res = await axios.get(url, {
-
+                params: {
+                    search: noJo,
+                    page: page,
+                    limit: 15,
+                },
                 withCredentials: true,
             });
-            const res2 = await axios.get(url2, {
 
-                withCredentials: true,
-            });
-            let dataIncoming = [];
-            dataIncoming.push(...res.data.data)
-            dataIncoming.push(...res2.data.data)
-            setIncoming(dataIncoming);
-            console.log(dataIncoming);
+            setIncoming(res.data);
+            console.log(res.data);
         } catch (error: any) {
-            console.log(error);
+            console.log(error.data.msg);
         }
     }
 
@@ -88,6 +90,7 @@ function ListIncoming2() {
             {!isMobile && (
                 <main className='overflow-x-scroll'>
                     <div className='min-w-[700px] bg-white rounded-xl'>
+
                         <p className='text-[14px] font-semibold w-full  border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>{tanggal}</p>
                         <div className=' w-full h-full flex-col border-b-8 border-[#D8EAFF]'>
 
@@ -95,7 +98,6 @@ function ListIncoming2() {
 
                             </div>
                             <section className=' grid grid-cols-12 px-4 py-4 items-center  border-b-8 border-[#D8EAFF] text-[14px]  text-black'>
-
                                 <div className='flex gap-4 col-span-2 text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
                                     <p className=''>No</p>
                                     <p className=''>Supplier</p>
@@ -110,25 +112,20 @@ function ListIncoming2() {
                                 <div className='flex flex-col   text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
                                     <p className=''>Gramatur</p>
                                 </div>
-                                <div className='flex flex-col   text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
+                                <div className='flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
                                     <p className=''>No. JO</p>
                                 </div>
                                 <div className='flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
                                     <p className=''>Tanggal</p>
                                 </div>
-                                <div className='flex flex-col   text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
-                                    <p className=''>Tipe</p>
-                                </div>
                                 <div className='flex flex-col  justify-end  items-end'>
                                 </div>
                             </section>
-                            {incoming
-                                ?.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                                .map((data: any, i: any) => {
-                                    const tglTicket = convertTimeStampToDate(data.createdAt);
-                                    return (
-                                        <section className=' grid grid-cols-12 px-4 items-center gap-2 border-b-8 border-[#D8EAFF] '>
-
+                            {incoming?.data?.map((data: any, i: any) => {
+                                const tglTicket = convertTimeStampToDate(data.createdAt);
+                                return (
+                                    <>
+                                        <section className=' grid grid-cols-12 px-4 items-center  gap-2 border-b-8 border-[#D8EAFF] '>
                                             <div className='flex  gap-4  col-span-2   bg-white'>
                                                 <p className='text-stone-500 text-sm font-medium'>{i + 1}</p>
                                                 <p className='text-stone-500 text-sm font-medium '>{data.supplier}</p>
@@ -142,49 +139,47 @@ function ListIncoming2() {
                                             <div className='flex flex-col     bg-white'>
                                                 <p className='text-stone-500 text-sm font-medium '>{data.gramatur}</p>
                                             </div>
-                                            <div className='flex flex-col    bg-white'>
+                                            <div className='flex flex-col  col-span-2  bg-white'>
                                                 <p className='text-stone-500 text-sm font-medium '>{data.no_jo}</p>
                                             </div>
                                             <div className='flex flex-col col-span-2   bg-white'>
                                                 <p className='text-stone-500 text-sm font-medium '>{tglTicket}</p>
                                             </div>
-                                            <div className='flex flex-col    bg-white'>
-                                                <p className='text-stone-500 text-sm font-medium '>{data.tipe == 'chemical' ? 'Chemical' : 'Bahan'}</p>
-                                            </div>
                                             <div className='flex flex-col  justify-end  items-end'>
-                                                {data.tipe == 'chemical' ?
-                                                    <>
-                                                        <Link to={`/qc/qualityinspectionChemical/list/${data.id}`}>
-                                                            <button
-                                                                className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-green-600 border-blue-600  justify-center`} // Dynamic class assignment
-                                                            >
-                                                                PILIH
-                                                            </button>
-                                                        </Link>
-                                                    </> : <>
+                                                <Link to={`/qc/qualityinspectionChemical/list/${data.id}`}>
 
-                                                        <Link to={`/qc/qualityinspection/list/${data.id}`}>
-                                                            <button
-                                                                className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
-                                                            >
-                                                                PILIH
-                                                            </button>
-                                                        </Link>
-                                                    </>}
+                                                    <button
+                                                        className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                                                    >
+                                                        PILIH
+
+                                                    </button>
+                                                </Link>
 
                                             </div>
                                         </section>
-
-                                    );
-                                })}
+                                    </>
+                                )
+                            })}
                         </div>
                     </div>
-                </main >
-            )
-            }
+                    <div className="w-full flex justify-center mt-5 ">
+                        <Stack spacing={2}>
+                            <Pagination
+                                count={incoming?.total_page}
+                                color="primary"
+                                onChange={(e, i) => {
+                                    setPage(i);
+                                    console.log(i);
+                                }}
+                            />
+                        </Stack>
+                    </div>
+                </main>
+            )}
 
         </>
     )
 }
 
-export default ListIncoming2
+export default ListHistoryChemical

@@ -30,6 +30,8 @@ function CheckSheetLemPeriode() {
   const [openGuide, setOpenGuide] = useState(null);
   const [LemMesinPeriodeHistory, setLemMesinPeriodeHistory] = useState<any>();
   const [DataDepartment, setDataDepartment] = useState<any>();
+  const [cttPeriode, setcttPeriode] = useState<any>();
+
 
   const [Department, setDepartment] = useState([
     {
@@ -211,7 +213,7 @@ function CheckSheetLemPeriode() {
           withCredentials: true,
         },
       );
-
+      setcttPeriode((null))
       getLemMesinPeriode();
       setIsLoading(false)
     } catch (error: any) {
@@ -676,7 +678,7 @@ function CheckSheetLemPeriode() {
               </div>
             </div>
 
-            <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
+            <div className="grid grid-cols-12  ">
               <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">
                 <label className="text-neutral-500 text-sm font-semibold">
                   Tanggal
@@ -1011,7 +1013,7 @@ function CheckSheetLemPeriode() {
                                     stopTaskCekPeriode(
                                       data.id,
                                       data.waktu_mulai,
-                                      data.catatan,
+                                      cttPeriode,
                                       data.numerator,
                                       data.jumlah_sampling,
                                       data.inspeksi_lem_periode_defect,
@@ -1434,6 +1436,33 @@ function CheckSheetLemPeriode() {
                           </>
                         )}
                       </div>
+                      {data.status == 'done' ? (<>
+                        <div className='border-b-8 border-[#D8EAFF]'>
+                          <div className='px-[1%] py-[1%]'>
+                            <label className="text-black text-sm font-bold pt-4 ">
+                              Catatan Periode {index + 1}
+                            </label>
+                            <textarea
+                              readOnly
+                              value={data.catatan}
+                              className=" peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                            ></textarea>
+                          </div>
+                        </div>
+                      </>) : (<>
+                        <div className='border-b-8 border-[#D8EAFF]'>
+                          <div className='px-[1%] py-[1%]'>
+                            <label className="text-black text-sm font-bold pt-4">
+                              Catatan Periode {index + 1}
+                            </label>
+                            <textarea
+                              onChange={(e) => setcttPeriode(e.target.value)}
+                              className="peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                            ></textarea>
+                          </div>
+                        </div>
+                      </>)}
+
                     </>
                   );
                 },
