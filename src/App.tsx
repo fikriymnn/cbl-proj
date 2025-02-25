@@ -193,6 +193,7 @@ import PengajuanAllDept from './pages/AllDept/PengajuanKeHrAll';
 import PengajuanAllDeptHistory from './pages/AllDept/PengajuanKeHrAllHistory';
 import RekapPPIC from './pages/PPIC/RekapPPIC/RekapPPIC';
 import IncomingChem from './pages/QualityControl/Incoming/IncomingChem';
+import MasterSPTeguran from './pages/HR/MasterDataHR/MasterSPTeguran';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1836,6 +1837,14 @@ function App() {
           element={
             <>
               <MasterSHiftHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/master/spteguran"
+          element={
+            <>
+              <MasterSPTeguran />
             </>
           }
         />

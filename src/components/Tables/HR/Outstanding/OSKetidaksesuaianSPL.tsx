@@ -291,6 +291,14 @@ function OsKetidaksesuaianSPL() {
                                                                         {data.alasan_lembur}
                                                                     </label>
                                                                 </div>
+                                                                <div className='flex flex-col w-full px-4'>
+                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                        PENANGANAN
+                                                                    </label>
+                                                                    <label htmlFor="" className={`text-xl font-normal uppercase ${data.penanganan === 'Sesuai absen' ? 'text-red-500' : 'text-green-500'}`}>
+                                                                        {data.penanganan}
+                                                                    </label>
+                                                                </div>
                                                                 <div className='flex flex-col w-full px-4 '>
                                                                     <label htmlFor="" className='text-black text-xs font-bold'>
                                                                         ALASAN KETIDAKSESUAIAN <span className='text-red-600'>*</span>

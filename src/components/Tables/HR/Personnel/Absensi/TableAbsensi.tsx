@@ -209,9 +209,18 @@ function TableAbsensi() {
         setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc'); // Toggle sort order
     };
     const [searchQuery, setSearchQuery] = useState('');
-    const filteredAbsen = absen?.filter((data: any) =>
-        data.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+
+    const [selectedTipeKaryawan, setSelectedTipeKaryawan] = useState('');
+    const [selectedTipePenggajian, setSelectedTipePenggajian] = useState('');
+
+    const filteredAbsen = absen?.filter((data: any) => {
+        return (
+            data.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+            (selectedTipeKaryawan === '' || data.tipe_karyawan === selectedTipeKaryawan) &&
+            (selectedTipePenggajian === '' || data.tipe_penggajian === selectedTipePenggajian)
+        );
+    });
+
     return (
         <>
             {!isMobile && (
@@ -365,6 +374,42 @@ function TableAbsensi() {
                                     className="border p-2 rounded mb-4"
                                 />
                             </div>
+                            <div className="flex gap-4 ">
+                                {/* Dropdown untuk Tipe Karyawan */}
+                                <select
+                                    className="border  rounded-md py-2"
+                                    value={selectedTipeKaryawan}
+                                    onChange={(e) => setSelectedTipeKaryawan(e.target.value)}
+                                >
+                                    <option value="">Pilih Tipe Karyawan</option>
+                                    <option value="staff">Staff</option>
+                                    <option value="produksi">Produksi</option>
+                                </select>
+
+                                {/* Dropdown untuk Tipe Penggajian */}
+                                <select
+                                    className="border  rounded-md"
+                                    value={selectedTipePenggajian}
+                                    onChange={(e) => setSelectedTipePenggajian(e.target.value)}
+                                >
+                                    <option value="">Pilih Tipe Penggajian</option>
+                                    <option value="mingguan">Mingguan</option>
+                                    <option value="bulanan">Bulanan</option>
+                                </select>
+
+                                {/* Tombol Reset */}
+                                <button
+                                    className="bg-red-500 text-white px-10 rounded-md hover:bg-red-700"
+                                    onClick={() => {
+                                        setSearchQuery('');
+                                        setSelectedTipeKaryawan('');
+                                        setSelectedTipePenggajian('');
+                                    }}
+                                >
+                                    RESET
+                                </button>
+                            </div>
+
                         </div>
                     </div>
                     <div className="min-w-[700px] bg-white rounded-xl">
