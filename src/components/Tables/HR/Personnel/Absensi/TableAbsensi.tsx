@@ -522,12 +522,12 @@ function TableAbsensi() {
                                             <div className='flex flex-col gap-1'>
                                                 {(data.status_lembur_spl == 'dengan SPL' && data.status_ketidaksesuaian == 'none' && tipe_lembur != null) ?
                                                     <>
-                                                        <button
+                                                        {/* <button
                                                             onClick={() => openSPL(i)}
                                                             className="w-full bg-yellow-600 text-white text-sm py-1 rounded-md"
                                                         >
                                                             SPL
-                                                        </button>
+                                                        </button> */}
                                                         {showSPL[i] == true && (
 
                                                             <ModalKosongan

@@ -5753,6 +5753,523 @@ const Sidebar = ({
 
     );
   };
+  const renderPayroll = () => {
+    return (
+      <>
+        <SidebarLinkGroup
+          activeCondition={pathname === '/hr' || pathname.includes('hr')}
+        >
+          {(handleClick, open) => {
+            return (
+              <React.Fragment>
+                <NavLink
+                  to="/hr"
+                  className={({ isActive }) =>
+                    `group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium !text-white duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4` +
+                    (isActive &&
+                      '!text-[#0065DE] bg-white text-primary py-3 px-1 text-[16px]')
+                  }
+                  onClick={(e) => {
+                    e.preventDefault();
+
+                    sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                  }}
+                >
+                  <img src={QC} alt="Logo" />
+                  Human Resource
+                  <svg
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
+                      }`}
+                    width="7"
+                    height="8"
+                    viewBox="0 0 7 8"
+                    fill=""
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z"
+                      fill=""
+                    />
+                  </svg>
+                </NavLink>
+                {/* <!-- Dropdown Menu Start --> */}
+
+
+                <div
+                  className={`translate  pl-3  transform overflow-hidden ${!open && 'hidden'
+                    }`}
+                >
+
+                  <li>
+                    <SidebarLinkGroup
+                      activeCondition={
+                        pathname === '/pengajuan' || pathname.includes('pengajuan')
+                      }
+                    >
+                      {(handleClick, open) => {
+                        return (
+                          <React.Fragment>
+                            <NavLink
+                              to="#"
+                              className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${(pathname === '/hr/pengajuan' ||
+                                pathname.includes('/hr/pengajuan')) &&
+                                ' dark:bg-meta-4'
+                                }`}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                sidebarExpanded
+                                  ? handleClick()
+                                  : setSidebarExpanded1(true);
+                              }}
+                            >
+                              <img src={Inspect} alt="Logo" />
+                              PENGAJUAN
+                              <svg
+                                className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
+                                  }`}
+                                width="7"
+                                height="8"
+                                viewBox="0 0 7 8"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z"
+                                  fill="white"
+                                />
+                              </svg>
+                            </NavLink>
+                            {/* <!-- Dropdown Menu Start --> */}
+                            <div
+                              className={`translate transform overflow-hidden ${!open && 'hidden'
+                                }`}
+                            >
+                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                <li>
+                                  <NavLink
+                                    to="/hr/pengajuan"
+                                    className={({ isActive }) =>
+                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                      (isActive &&
+                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                    }
+                                  >
+                                    Buat Pengajuan
+                                  </NavLink>
+                                </li>
+                              </ul>
+                            </div>
+                            <div
+                              className={`translate transform overflow-hidden ${!open && 'hidden'
+                                }`}
+                            >
+                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                <li>
+                                  <NavLink
+                                    to="/hr/pengajuanJabatan"
+                                    className={({ isActive }) =>
+                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                      (isActive &&
+                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                    }
+                                  >
+                                    Buat Pengajuan Jabatan
+                                  </NavLink>
+                                </li>
+                              </ul>
+                            </div>
+                            <div
+                              className={`translate transform overflow-hidden ${!open && 'hidden'
+                                }`}
+                            >
+                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                <li>
+                                  <NavLink
+                                    to="/hr/pengajuanhistory"
+                                    className={({ isActive }) =>
+                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                      (isActive &&
+                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                    }
+                                  >
+                                    History Pengajuan
+                                  </NavLink>
+                                </li>
+                              </ul>
+                            </div>
+                            <div
+                              className={`translate transform overflow-hidden ${!open && 'hidden'
+                                }`}
+                            >
+                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                <li>
+                                  <NavLink
+                                    to="/hr/pengajuanJabatanHistory"
+                                    className={({ isActive }) =>
+                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                      (isActive &&
+                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                    }
+                                  >
+                                    History Pengajuan Jabatan
+                                  </NavLink>
+                                </li>
+                              </ul>
+                            </div>
+                            {/* <!-- Dropdown Menu End --> */}
+                          </React.Fragment>
+                        );
+                      }}
+                    </SidebarLinkGroup>
+                  </li>
+
+
+                </div>
+                <div
+                  className={`translate  pl-3  transform overflow-hidden ${!open && 'hidden'
+                    }`}
+                >
+                  <li>
+                    <>
+                      <SidebarLinkGroup
+                        activeCondition={pathname === '/hr/payroll' || pathname.includes('/hr/payroll')}
+                      >
+                        {(handleClick, open) => {
+                          return (
+                            <React.Fragment>
+                              <NavLink
+                                to="/hr/payroll"
+                                className={({ isActive }) =>
+                                  `group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium !text-white duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4` +
+                                  (isActive &&
+                                    '!text-[#0065DE] bg-white text-primary py-3 px-1 text-[16px]')
+                                }
+                                onClick={(e) => {
+                                  e.preventDefault();
+
+                                  sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                                  navigate('/hr/payroll');
+                                }}
+                              >
+                                <img src={QC} alt="Logo" />
+                                Payroll
+
+                              </NavLink>
+                            </React.Fragment>
+                          )
+                        }}
+                      </SidebarLinkGroup>
+                    </>
+                  </li>
+                </div>
+
+                <div
+                  className={`translate  pl-3  transform overflow-hidden ${!open && 'hidden'
+                    }`}
+                >
+                  <li>
+                    <SidebarLinkGroup
+                      activeCondition={
+                        pathname === '/lapor' || pathname.includes('lapor')
+                      }
+                    >
+                      {(handleClick, open) => {
+                        return (
+                          <React.Fragment>
+                            <NavLink
+                              to="#"
+                              className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${(pathname === '/qc/lapor' ||
+                                pathname.includes('/qc/lapor')) &&
+                                ' dark:bg-meta-4'
+                                }`}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                sidebarExpanded
+                                  ? handleClick()
+                                  : setSidebarExpanded1(true);
+                              }}
+                            >
+                              <img src={Inspect} alt="Logo" />
+                              LAPOR
+                              <svg
+                                className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
+                                  }`}
+                                width="7"
+                                height="8"
+                                viewBox="0 0 7 8"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z"
+                                  fill="white"
+                                />
+                              </svg>
+                            </NavLink>
+                            {/* <!-- Dropdown Menu Start --> */}
+                            <div
+                              className={`translate transform overflow-hidden ${!open && 'hidden'
+                                }`}
+                            >
+                              <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                                <li>
+                                  <NavLink
+                                    to="/hr/lapor/ncr"
+                                    className={({ isActive }) =>
+                                      'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                      (isActive &&
+                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                    }
+                                  >
+                                    NCR
+                                  </NavLink>
+                                </li>
+                              </ul>
+                            </div>
+                            <div
+                              className={`translate transform overflow-hidden ${!open && 'hidden'
+                                }`}
+                            >
+                              <ul className=" flex flex-col gap-5  md:pl-12 pl-6 py-3">
+                                <li>
+                                  <NavLink
+                                    to="/hr/lapor/capa"
+                                    className={({ isActive }) =>
+                                      'group relative flex items-center gap-5 py-2 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                      (isActive &&
+                                        '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                    }
+                                  >
+                                    CAPA
+                                  </NavLink>
+                                </li>
+                              </ul>
+                            </div>
+
+                            {/* <!-- Dropdown Menu End --> */}
+                          </React.Fragment>
+                        );
+                      }}
+                    </SidebarLinkGroup>
+                  </li>
+                </div>
+                <div
+                  className={`translate  pl-3  transform overflow-hidden ${!open && 'hidden'
+                    }`}
+                >
+
+
+                  <SidebarLinkGroup
+                    activeCondition={
+                      pathname === '/hr/master' || pathname.includes('hr/master')
+                    }
+                  >
+                    {(handleClick, open) => {
+                      return (
+                        <React.Fragment>
+                          <NavLink
+                            to="#"
+                            className={`group relative flex items-center gap-5 mb-2 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out  ${(pathname === '/hr/master' ||
+                              pathname.includes('/hr/master')) &&
+                              ' dark:bg-meta-4'
+                              }`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              sidebarExpanded
+                                ? handleClick()
+                                : setSidebarExpanded1(true);
+                            }}
+                          >
+                            <img src={QC} alt="Logo" />
+                            MASTER DATA HR
+                            <svg
+                              className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${open && 'rotate-90'
+                                }`}
+                              width="7"
+                              height="8"
+                              viewBox="0 0 7 8"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M6.5 3.13397C7.16667 3.51887 7.16667 4.48113 6.5 4.86603L2 7.4641C1.33334 7.849 0.500001 7.36788 0.500001 6.59808L0.500001 1.40193C0.500001 0.632125 1.33333 0.150999 2 0.535899L6.5 3.13397Z"
+                                fill="white"
+                              />
+                            </svg>
+                          </NavLink>
+                          {/* <!-- Dropdown Menu Start --> */}
+                          <div
+                            className={`translate transform overflow-hidden ${!open && 'hidden'
+                              }`}
+                          >
+                            <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                              <li>
+                                <NavLink
+                                  to="/hr/master/shift"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                    (isActive &&
+                                      '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                  }
+                                >
+                                  Shift
+                                </NavLink>
+                              </li>
+                            </ul>
+                          </div>
+                          <div
+                            className={`translate transform overflow-hidden ${!open && 'hidden'
+                              }`}
+                          >
+                            <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                              <li>
+                                <NavLink
+                                  to="/hr/master/spteguran"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                    (isActive &&
+                                      '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                  }
+                                >
+                                  SP & Teguran
+                                </NavLink>
+                              </li>
+                            </ul>
+                          </div>
+                          <div
+                            className={`translate transform overflow-hidden ${!open && 'hidden'
+                              }`}
+                          >
+                            <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                              <li>
+                                <NavLink
+                                  to="/hr/master/setting"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                    (isActive &&
+                                      '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                  }
+                                >
+                                  Setting
+                                </NavLink>
+                              </li>
+                            </ul>
+                          </div>
+                          <div
+                            className={`translate transform overflow-hidden ${!open && 'hidden'
+                              }`}
+                          >
+                            <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                              <li>
+                                <NavLink
+                                  to="/hr/master/department"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                    (isActive &&
+                                      '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                  }
+                                >
+                                  Department
+                                </NavLink>
+                              </li>
+                            </ul>
+                          </div>
+                          <div
+                            className={`translate transform overflow-hidden ${!open && 'hidden'
+                              }`}
+                          >
+                            <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                              <li>
+                                <NavLink
+                                  to="/hr/master/cutikhusus"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                    (isActive &&
+                                      '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                  }
+                                >
+                                  Cuti Khusus
+                                </NavLink>
+                              </li>
+                            </ul>
+                          </div>
+                          <div
+                            className={`translate transform overflow-hidden ${!open && 'hidden'
+                              }`}
+                          >
+                            <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                              <li>
+                                <NavLink
+                                  to="/hr/master/grade"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                    (isActive &&
+                                      '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                  }
+                                >
+                                  Grade HR
+                                </NavLink>
+                              </li>
+                            </ul>
+                          </div>
+                          <div
+                            className={`translate transform overflow-hidden ${!open && 'hidden'
+                              }`}
+                          >
+                            <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                              <li>
+                                <NavLink
+                                  to="/hr/master/payroll"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                    (isActive &&
+                                      '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                  }
+                                >
+                                  Payroll
+                                </NavLink>
+                              </li>
+                            </ul>
+                          </div>
+                          <div
+                            className={`translate transform overflow-hidden ${!open && 'hidden'
+                              }`}
+                          >
+                            <ul className=" flex flex-col gap-5 md:pl-12 pl-6 py-3">
+                              <li>
+                                <NavLink
+                                  to="/hr/master/users"
+                                  className={({ isActive }) =>
+                                    'group relative flex items-center gap-5 py-3 rounded-sm px-4 font-medium text-white duration-300 ease-in-out hover:text-white ' +
+                                    (isActive &&
+                                      '!text-[#0065DE] bg-white py-3 px-1 text-[16px]')
+                                  }
+                                >
+                                  User
+                                </NavLink>
+                              </li>
+                            </ul>
+                          </div>
+                          {/* <!-- Dropdown Menu End --> */}
+                        </React.Fragment>
+                      );
+                    }}
+                  </SidebarLinkGroup>
+
+
+
+                </div>
+                {/* <!-- Dropdown Menu End --> */}
+              </React.Fragment>
+            );
+          }}
+
+        </SidebarLinkGroup >
+
+      </>
+
+    );
+  };
   const renderPPIC = () => {
     return (
       <>
@@ -6205,6 +6722,8 @@ const Sidebar = ({
               {role === 'admin' && bagian === 'hr' && renderHRs()}
 
               {role === 'supervisor' && bagian === 'hr' && renderHRs()}
+
+              {role === 'payroll' && bagian === 'hr' && renderPayroll()}
 
               {role === 'admin' && bagian === 'ppic' && renderPPIC()}
 

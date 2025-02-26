@@ -989,7 +989,7 @@ function TableOS() {
                                   <div className='px-5 pt-1'>
                                     <p className="text-xs font-bold">Waktu Breakdown MTC</p>
                                     <p className="text-xs font-medium">
-                                      {waktuBreakdownMTC}
+                                      {convertTimeStampToDateTime(data.waktu_mulai_mtc)} ~ {waktuBreakdownMTC}
                                     </p>
                                   </div>
                                   <div className='px-5 pt-1'>

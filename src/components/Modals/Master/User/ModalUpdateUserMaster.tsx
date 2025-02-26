@@ -265,6 +265,12 @@ const ModalEditUser = ({
                 >
                   HR
                 </option>
+                <option
+                  value="ppic"
+                  className="text-body dark:text-bodydark"
+                >
+                  PPIC
+                </option>
               </select>
               <label className="text-black text-xs font-bold pt-4">ROLE</label>
               <select
@@ -323,6 +329,12 @@ const ModalEditUser = ({
                   className="text-body dark:text-bodydark"
                 >
                   Pre-Press
+                </option>
+                <option
+                  value="payroll"
+                  className="text-body dark:text-bodydark"
+                >
+                  Payroll
                 </option>
               </select>
               <label className="text-black text-xs font-bold pt-4">

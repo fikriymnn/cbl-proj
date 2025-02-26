@@ -270,6 +270,7 @@ const ModalTambahUser = ({
               >
                 Produksi
               </option>
+
             </select>
             <label className="text-black text-xs font-bold pt-4">ROLE</label>
             <select
@@ -327,6 +328,12 @@ const ModalTambahUser = ({
                 className="text-body dark:text-bodydark"
               >
                 Pre-Press
+              </option>
+              <option
+                value="payroll"
+                className="text-body dark:text-bodydark"
+              >
+                Payroll
               </option>
             </select>
             <label className="text-black text-xs font-bold pt-4">

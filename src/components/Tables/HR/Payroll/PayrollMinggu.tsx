@@ -356,38 +356,86 @@ function PayrollMinggu() {
                                                     <>
                                                         <div className='grid grid-cols-2 gap-2 px-4 py-4'>
                                                             <div className='flex flex-col gap-2 '>
-                                                                <div className='flex flex-col '>
-                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                        DETAIL POTONGAN
-                                                                    </label>
+                                                                {/* DETAIL POTONGAN */}
+                                                                {data.summaryPayroll?.potongan?.length > 0 && (
+                                                                    <div className='flex flex-col '>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                            DETAIL POTONGAN
+                                                                        </label>
 
-                                                                    {data.summaryPayroll?.potongan?.map((data2: any, ii: any) => (
-                                                                        <>
+                                                                        {data.summaryPayroll.potongan.map((data2: any, ii: any) => (
                                                                             <label
-                                                                                key={ii} htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                                key={ii}
+                                                                                htmlFor=""
+                                                                                className='text-[#7a7a7a] text-xl font-normal'
+                                                                            >
                                                                                 - {data2.label} : Rp. {formatInteger(data2.total)}
                                                                             </label>
-                                                                        </>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                            <div className='flex flex-col gap-2 '>
-                                                                <div className='flex flex-col '>
-                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                        RINCIAN PAYROLL
-                                                                    </label>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
 
-                                                                    {data.summaryPayroll?.rincian?.map((data2: any, ii: any) => (
-                                                                        <>
+                                                                {/* POTONGAN TERLAMBAT */}
+                                                                {data.summaryPayroll?.potongan_terlambat?.length > 0 && (
+                                                                    <div className='flex flex-col '>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                            POTONGAN TERLAMBAT
+                                                                        </label>
+
+                                                                        {data.summaryPayroll.potongan_terlambat.map((data2: any, ii: any) => (
                                                                             <label
-                                                                                key={ii} htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                                key={ii}
+                                                                                htmlFor=""
+                                                                                className='text-[#7a7a7a] text-xl font-normal'
+                                                                            >
+                                                                                - {data2.label} x {data2.jumlah} : Rp. {formatInteger(data2.total)}
+                                                                            </label>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            <div className='flex flex-col gap-2 '>
+                                                                {/* RINCIAN PAYROLL */}
+                                                                {data.summaryPayroll?.rincian?.length > 0 && (
+                                                                    <div className='flex flex-col '>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                            RINCIAN PAYROLL
+                                                                        </label>
+
+                                                                        {data.summaryPayroll.rincian.map((data2: any, ii: any) => (
+                                                                            <label
+                                                                                key={ii}
+                                                                                htmlFor=""
+                                                                                className='text-[#7a7a7a] text-xl font-normal'
+                                                                            >
                                                                                 - {data2.label} x {data2.jumlah}: Rp. {formatInteger(data2.total)}
                                                                             </label>
-                                                                        </>
-                                                                    ))}
-                                                                </div>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
+
+                                                                {/* UPAH HARIAN SAKIT */}
+                                                                {data.summaryPayroll?.upahHarianSakit?.length > 0 && (
+                                                                    <div className='flex flex-col '>
+                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                            UPAH HARIAN SAKIT
+                                                                        </label>
+
+                                                                        {data.summaryPayroll.upahHarianSakit.map((data2: any, ii: any) => (
+                                                                            <label
+                                                                                key={ii}
+                                                                                htmlFor=""
+                                                                                className='text-[#7a7a7a] text-xl font-normal'
+                                                                            >
+                                                                                - {data2.label} = {data2.jumlah} x {data2.nilai} : Rp. {formatInteger(data2.total)}
+                                                                            </label>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
+
                                                     </>
                                                 )}
                                                 <button

@@ -10,6 +10,8 @@ import BarChartResponMonth from '../../../../pages/UiElements/BarchartResponMont
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import BarChartProductionQuality from '../../../../pages/UiElements/BarchartProductionQuality';
 import BarChartMesinOnly from '../../../../pages/UiElements/BarchartMesinOnly';
+import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
+import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 
 function RekapOs2Mtc() {
     const [bulan, setBulan] = useState(0);
@@ -253,6 +255,49 @@ function RekapOs2Mtc() {
             console.log(error);
         }
     }
+    // Initialize as a 2D array
+    const initializeModalState = () => {
+        const initialState: any = [];
+        if (breakDownMonth?.data) {
+            for (let i = 0; i < breakDownMonth.data.length; i++) {
+                initialState[i] = [];
+                if (breakDownMonth.data[i]?.data) {
+                    for (let k = 0; k < breakDownMonth.data[i].data.length; k++) {
+                        initialState[i][k] = false;
+                    }
+                }
+            }
+        }
+        return initialState;
+    };
+
+    const [showModal1, setShowModal1] = useState<any>(initializeModalState());
+
+    const openModal1 = (i: any, k: any) => {
+
+
+        const newModalState = JSON.parse(JSON.stringify(showModal1)); // Deep clone to avoid reference issues
+
+        // Make sure the arrays are initialized
+        if (!newModalState[i]) {
+            newModalState[i] = [];
+        }
+
+        newModalState[i][k] = true;
+
+        setShowModal1(newModalState);
+    };
+
+    const closeModal1 = (i: any, k: any) => {
+
+
+        const newModalState = JSON.parse(JSON.stringify(showModal1)); // Deep clone
+
+        if (newModalState[i]) {
+            newModalState[i][k] = false;
+            setShowModal1(newModalState);
+        }
+    };
     return (
         <div>
 
@@ -1323,14 +1368,58 @@ function RekapOs2Mtc() {
                                     <div className='grid grid-cols-12 border-x-2 py-1 px-2  border-b-2 border-black  justify-center gap-4'>
 
 
-                                        {data.data?.map((data2: any, i: any) => {
+                                        {data.data?.map((data2: any, k: any) => {
+                                            // Debug log to check this specific iteration
+
                                             return (
-                                                <>
-                                                    <label className='text-xs '>
+                                                <div key={`value-${i}-${k}`}>
+                                                    <button
+                                                        className="text-xs text-blue-500 hover:underline"
+                                                        onClick={() => openModal1(i, k)}
+                                                    >
                                                         {parseFloat(data2.jumlah_waktu_jam).toFixed(2)}
-                                                    </label>
-                                                </>
-                                            )
+                                                    </button>
+
+                                                    {/* More explicit check for modal visibility */}
+                                                    {showModal1[i] && showModal1[i][k] === true && (
+                                                        <ModalKosongan
+                                                            isOpen={true}
+                                                            onClose={() => closeModal1(i, k)}
+                                                            judul={'Detail Data'}
+                                                        >
+                                                            <div className="overflow-x-auto pt-4">
+                                                                <label className='text-sm  font-semibold'>
+                                                                    {data.mesin} - {data2.nama_bulan}
+                                                                </label>
+                                                                <table className="min-w-full divide-y divide-gray-200 border border-blue-200 rounded-lg overflow-hidden">
+                                                                    <thead className="bg-blue-600 text-white font-semibold ">
+                                                                        <tr>
+                                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">No JO</th>
+                                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Operator</th>
+                                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Verifikator</th>
+                                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Eksekutor</th>
+                                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Kode</th>
+                                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nama Kendala</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody className="bg-white divide-y divide-gray-200">
+                                                                        {data2.details?.map((data3: any, index: any) => (
+                                                                            <tr key={index} className={index % 2 === 0 ? "bg-blue-50" : "bg-white"}>
+                                                                                <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.no_jo}</td>
+                                                                                <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.operator}</td>
+                                                                                <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.verifikator}</td>
+                                                                                <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.eksekutor}</td>
+                                                                                <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.kode_lkh}</td>
+                                                                                <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.nama_kendala}</td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </ModalKosongan>
+                                                    )}
+                                                </div>
+                                            );
                                         })}
 
                                     </div >

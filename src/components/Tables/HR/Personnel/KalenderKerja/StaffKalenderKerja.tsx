@@ -191,6 +191,7 @@ function StaffKalenderKerja() {
     const [namaJadwal, setNamaJadwal] = useState<any>();
     const [produksi, setProduksi] = useState<any>(false);
     const [staff, setStaff] = useState<any>(false);
+    const [potongCuti, setpotongCuti] = useState<any>(false);
 
     async function postSatuHari() {
 
@@ -205,7 +206,8 @@ function StaffKalenderKerja() {
                         tanggal: tgl,
                         nama_jadwal: namaJadwal,
                         produksi: produksi,
-                        staff: staff
+                        staff: staff,
+                        potong_cuti_tahunan: potongCuti
                     },
                     {
                         withCredentials: true,
@@ -408,8 +410,9 @@ function StaffKalenderKerja() {
                                             <p className='text-[#646464] text-xs font-bold col-span-2'>
                                                 Tanggal
                                             </p>
-
-
+                                            <p className='text-[#646464] text-xs font-bold col-span-2'>
+                                                Potong Cuti
+                                            </p>
                                         </div>
 
                                         <div className='max-h-[500px] overflow-y-scroll'>
@@ -427,10 +430,12 @@ function StaffKalenderKerja() {
                                                         <p className='text-[#646464] text-sm  col-span-3'>
                                                             {data.nama_jadwal}
                                                         </p>
-                                                        <p className='text-[#646464] text-sm  col-span-4'>
+                                                        <p className='text-[#646464] text-sm  col-span-2'>
                                                             {convertTimeStampToDate(data.tanggal)}
                                                         </p>
-
+                                                        <p className='text-[#646464] text-sm  col-span-2'>
+                                                            {data.potong_cuti_tahunan == true ? 'YA' : 'TIDAK'}
+                                                        </p>
                                                         <button
                                                             onClick={() => deleteBiasaJadwal(data.id, convertTimeStampToDate(data.tanggal), data.nama_jadwal)}
                                                             className='text-red-400 text-sm  font-bold'>
@@ -657,6 +662,31 @@ function StaffKalenderKerja() {
                                                     onChange={handleCheckboxChangeP}
                                                 />
                                             </label>
+                                            <label className="text-black text-xs font-bold pt-3">
+                                                POTONG CUTI TAHUNAN:
+                                            </label>
+                                            <div className="flex gap-4 py-2">
+                                                <label className="flex items-center gap-2 text-neutral-500 text-sm font-semibold">
+                                                    <input
+                                                        type="radio"
+                                                        name="potongCuti"
+                                                        value="true"
+                                                        onChange={() => setpotongCuti(true)}
+                                                        className="accent-primary"
+                                                    />
+                                                    YA
+                                                </label>
+                                                <label className="flex items-center gap-2 text-neutral-500 text-sm font-semibold">
+                                                    <input
+                                                        type="radio"
+                                                        name="potongCuti"
+                                                        value="false"
+                                                        onChange={() => setpotongCuti(false)}
+                                                        className="accent-primary"
+                                                    />
+                                                    TIDAK
+                                                </label>
+                                            </div>
 
                                             <button
                                                 disabled={isLoading}

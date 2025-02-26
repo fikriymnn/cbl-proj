@@ -257,6 +257,14 @@ function HistoryKetidaksesuaianSPL() {
                                                                                 {data.type_ketidaksesuaian}
                                                                             </label>
                                                                         </div>
+                                                                        <div className='flex flex-col '>
+                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                                PENANGANAN
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-[#016ae6] text-xl font-normal uppercase'>
+                                                                                {data.penanganan}
+                                                                            </label>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
                                                                 <div className='flex flex-col w-full px-4'>
