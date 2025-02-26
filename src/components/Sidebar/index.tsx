@@ -2972,6 +2972,7 @@ const Sidebar = ({
                   );
                 }}
               </SidebarLinkGroup>
+
             </li>
 
           </div>
@@ -6064,6 +6065,33 @@ const Sidebar = ({
                   >
                     <img src={QC} alt="Logo" />
                     Breakdown Time
+
+                  </NavLink>
+                </React.Fragment>
+              )
+            }}
+          </SidebarLinkGroup>
+          <SidebarLinkGroup
+            activeCondition={pathname === '/produksi/waste' || pathname.includes('produksi/waste')}
+          >
+            {(handleClick, open) => {
+              return (
+                <React.Fragment>
+                  <NavLink
+                    to="produksi/waste"
+                    className={({ isActive }) =>
+                      `group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium !text-white duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4` +
+                      (isActive &&
+                        '!text-[#0065DE] bg-white text-primary py-3 px-1 text-[16px]')
+                    }
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate('/produksi/waste')
+                      sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                    }}
+                  >
+                    <img src={QC} alt="Logo" />
+                    Rekap
 
                   </NavLink>
                 </React.Fragment>

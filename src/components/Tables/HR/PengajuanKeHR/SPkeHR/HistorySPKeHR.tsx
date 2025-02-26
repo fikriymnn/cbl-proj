@@ -99,7 +99,7 @@ function HistorySPKeHR() {
                                             </label>
                                         </div>
                                         <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                            {data.jumlah_bulan} Bulan
+                                            {data.masa_berlaku} Hari
                                         </label>
                                         <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                             {data.karyawan_pengaju?.biodata_karyawan[0]?.department?.nama_department}
@@ -205,7 +205,7 @@ function HistorySPKeHR() {
                                                                                 Masa Berlaku
                                                                             </label>
                                                                             <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
-                                                                                {data.jumlah_bulan} Bulan
+                                                                                {data.masa_berlaku} Hari
                                                                             </label>
                                                                         </div>
 
@@ -213,20 +213,13 @@ function HistorySPKeHR() {
                                                                 </div>
                                                                 <div className='flex flex-col w-full px-4'>
                                                                     <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                        ALASAN SP
+                                                                        ALASAN
                                                                     </label>
                                                                     <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                        {data.alasan_sp}
+                                                                        {data.alasan}
                                                                     </label>
                                                                 </div>
-                                                                <div className='flex flex-col w-full px-4'>
-                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                        TEGURAN
-                                                                    </label>
-                                                                    <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                        {data.teguran}
-                                                                    </label>
-                                                                </div>
+
                                                                 {/* <div className='px-4 py-2'>
                                                                     <button className='bg-blue-600 rounded-md px-3 py-2 text-white font-semibold text-sm'>
                                                                         CETAK SURAT

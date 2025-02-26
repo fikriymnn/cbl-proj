@@ -77,6 +77,9 @@ function ListJOProduksi() {
         try {
             setIsLoading(true)
             const res = await axios.get(url, {
+                params: {
+                    status_tiket: 'incoming'
+                },
                 withCredentials: true,
             });
             setIsLoading(false)

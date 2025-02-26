@@ -53,8 +53,8 @@ function BuatCutiKeHR() {
             console.log('user list', res.data.data)
             setOptions(
                 res.data.data.map((item: any) => ({
-                    value: item.id_karyawan,
-                    label: item.nik + ' - ' + item.karyawan.name + ' - ' + item.bagian?.nama_bagian + ' - ' + item.nama_jabatan
+                    value: item.userid,
+                    label: item.biodata_karyawan[0]?.nik + ' - ' + item.name + ' - ' + item.biodata_karyawan[0]?.bagian?.nama_bagian + ' - ' + item.biodata_karyawan[0]?.nama_jabatan
                 }))
             );
 
@@ -71,14 +71,14 @@ function BuatCutiKeHR() {
     const handleChangePointDepatment = (selected: any) => {
         const { value } = selected;
         const filteredData = userList.find(
-            (item: any) => item.id_karyawan == value,
+            (item: any) => item.userid == value,
             // item.id.includes(parseInt(value));
         );
 
-        console.log(filteredData?.id_karyawan);
-        console.log(filteredData?.sisa_cuti)
-        setSisaCuti(filteredData?.sisa_cuti);
-        setIdKaryawan(filteredData?.id_karyawan)
+        console.log(filteredData?.userid);
+        console.log(filteredData?.biodata_karyawan[0]?.sisa_cuti);
+        setSisaCuti(filteredData?.biodata_karyawan[0]?.sisa_cuti);
+        setIdKaryawan(filteredData?.userid)
 
     };
     const handleChangePointCuti = (selected: any) => {

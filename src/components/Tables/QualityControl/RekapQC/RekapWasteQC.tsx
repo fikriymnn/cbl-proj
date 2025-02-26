@@ -1296,13 +1296,48 @@ function RekapWasteQC() {
                                                                                 <p><strong>Kode Waste:</strong> {data2.kode_waste}</p>
                                                                                 <p><strong>Deskripsi:</strong> {data2.waste_desc}</p>
                                                                                 <p><strong>Total Defect:</strong> {data2.total_defect}</p>
+                                                                                {Array.isArray(data2.verifikator_inspektor) && data2.verifikator_inspektor.length > 0 ? (
+                                                                                    <div className="mt-4">
+                                                                                        <h3 className="font-semibold mb-2">Detail Teknisi QC / Verifikator QC</h3>
+                                                                                        <table className="w-full border-collapse border border-gray-300">
+                                                                                            <thead>
+                                                                                                <tr className="bg-gray-100">
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Teknisi MTC</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Verifikator QC</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Operator</th>
 
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Kode </th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Masalah </th>
+
+                                                                                                </tr>
+                                                                                            </thead>
+                                                                                            <tbody>
+                                                                                                {data2.verifikator_inspektor?.map((inspektor: any, index: number) => (
+                                                                                                    <tr key={index} className="border-b border-gray-300">
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor?.inspektor_mtc || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor?.verifikator_qc || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor?.operator || '-'}</td>
+
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor?.kode_lkh || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor?.nama_kendala || '-'}</td>
+
+                                                                                                    </tr>
+                                                                                                ))}
+                                                                                            </tbody>
+                                                                                        </table>
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    <>
+                                                                                        <p className="mt-4 text-gray-500">Tidak ada data Teknisi MTC / Verifikator QC</p>
+                                                                                    </>
+                                                                                )}
                                                                                 {Array.isArray(data2.operator_inspektor) && data2.operator_inspektor.length > 0 ? (
                                                                                     <div className="mt-4">
                                                                                         <h3 className="font-semibold mb-2">Detail</h3>
                                                                                         <table className="w-full border-collapse border border-gray-300">
                                                                                             <thead>
                                                                                                 <tr className="bg-gray-100">
+                                                                                                    <th className="border border-gray-300 px-4 py-2">No</th>
                                                                                                     <th className="border border-gray-300 px-4 py-2">Inspektor</th>
                                                                                                     <th className="border border-gray-300 px-4 py-2">Operator</th>
                                                                                                     <th className="border border-gray-300 px-4 py-2">Mesin</th>
@@ -1314,26 +1349,58 @@ function RekapWasteQC() {
                                                                                             </thead>
                                                                                             <tbody>
                                                                                                 {data2.operator_inspektor.map((inspektor: any, index: number) => (
-                                                                                                    <tr key={index} className="border-b border-gray-300">
-                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.inspektor || '-'}</td>
-                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.operator || '-'}</td>
-                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.mesin || '-'}</td>
-                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.kode_lkh || '-'}</td>
-                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.masalah_lkh || '-'}</td>
-                                                                                                        <td className="border border-gray-300 px-4 py-2">
-                                                                                                            {inspektor.temuan
-                                                                                                                ? inspektor.temuan
-                                                                                                                    .split("_") // Split by underscore
-                                                                                                                    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize each word
-                                                                                                                    .join(" ") // Join back with space
-                                                                                                                : "-"
-                                                                                                            }
-                                                                                                        </td>
-                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.calculated_defect || '-'}</td>
-                                                                                                    </tr>
+                                                                                                    <>
+                                                                                                        {/* 🔹 Row Utama */}
+                                                                                                        <tr key={index} className="border-b border-gray-300">
+                                                                                                            <td className="border border-gray-300 px-4 py-2">{index + 1}</td>
+                                                                                                            <td className="border border-gray-300 px-4 py-2">{inspektor.inspektor || '-'}</td>
+                                                                                                            <td className="border border-gray-300 px-4 py-2">{inspektor.operator || '-'}</td>
+                                                                                                            <td className="border border-gray-300 px-4 py-2">{inspektor.mesin || '-'}</td>
+                                                                                                            <td className="border border-gray-300 px-4 py-2">{inspektor.kode_lkh || '-'}</td>
+                                                                                                            <td className="border border-gray-300 px-4 py-2">{inspektor.masalah_lkh || '-'}</td>
+                                                                                                            <td className="border border-gray-300 px-4 py-2">
+                                                                                                                {inspektor.temuan
+                                                                                                                    ? inspektor.temuan
+                                                                                                                        .split("_")
+                                                                                                                        .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                                                                                                                        .join(" ")
+                                                                                                                    : "-"}
+                                                                                                            </td>
+                                                                                                            <td className="border border-gray-300 px-4 py-2">{inspektor.calculated_defect || '-'}</td>
+                                                                                                        </tr>
+
+                                                                                                        {/* 🔹 Row Detail (Tabel) */}
+                                                                                                        <tr key={`detail-${index}`} className="border-b border-gray-300 bg-gray-50">
+                                                                                                            <td colSpan={8} className="border border-gray-300">
+                                                                                                                {/* Tabel Detail */}
+                                                                                                                <table className="w-full border-collapse border border-gray-200">
+                                                                                                                    <thead>
+                                                                                                                        <tr className="bg-gray-100">
+                                                                                                                            <th className="border border-gray-300 px-4 py-2">Inspektor MTC</th>
+                                                                                                                            <th className="border border-gray-300 px-4 py-2">Verifikator QC</th>
+                                                                                                                            <th className="border border-gray-300 px-4 py-2">Kode</th>
+                                                                                                                            <th className="border border-gray-300 px-4 py-2">Masalah</th>
+                                                                                                                        </tr>
+                                                                                                                    </thead>
+                                                                                                                    <tbody>
+                                                                                                                        {inspektor?.verifikator_inspektor?.map((verif: any, verifIndex: number) => (
+                                                                                                                            <tr key={verifIndex} className="border-b border-gray-300">
+                                                                                                                                <td className="border border-gray-300 px-4 py-2"> {verif.inspektor_mtc || '-'} </td>
+                                                                                                                                <td className="border border-gray-300 px-4 py-2">{verif.verifikator_qc || '-'}</td>
+                                                                                                                                <td className="border border-gray-300 px-4 py-2">{verif.kode_lkh || '-'}</td>
+                                                                                                                                <td className="border border-gray-300 px-4 py-2">{verif.nama_kendala || '-'}</td>
+                                                                                                                            </tr>
+                                                                                                                        ))}
+                                                                                                                    </tbody>
+                                                                                                                </table>
+                                                                                                            </td>
+                                                                                                        </tr>
+                                                                                                    </>
                                                                                                 ))}
                                                                                             </tbody>
                                                                                         </table>
+
+
                                                                                     </div>
                                                                                 ) : (
                                                                                     <p className="mt-4 text-gray-500">Tidak ada data inspektor</p>
@@ -1347,7 +1414,7 @@ function RekapWasteQC() {
                                                     </tbody>
                                                 </table>
                                             </div>
-                                        </div>
+                                        </div >
 
                                     </>
                                 )
@@ -2213,7 +2280,41 @@ function RekapWasteQC() {
                                                                                 <p><strong>Kode Kendala:</strong> {data2.kode_kendala}</p>
                                                                                 <p><strong>Deskripsi:</strong> {data2.kendala_desc}</p>
                                                                                 <p><strong>Total Defect:</strong> {data2.total_defect}</p>
+                                                                                {Array.isArray(data2.verifikator_inspektor) && data2.verifikator_inspektor.length > 0 ? (
+                                                                                    <div className="mt-4">
+                                                                                        <h3 className="font-semibold mb-2">Detail Teknisi QC / Verifikator QC</h3>
+                                                                                        <table className="w-full border-collapse border border-gray-300">
+                                                                                            <thead>
+                                                                                                <tr className="bg-gray-100">
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Teknisi MTC</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Verifikator QC</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Operator</th>
 
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Kode </th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Masalah </th>
+
+                                                                                                </tr>
+                                                                                            </thead>
+                                                                                            <tbody>
+                                                                                                {data2.verifikator_inspektor?.map((inspektor: any, index: number) => (
+                                                                                                    <tr key={index} className="border-b border-gray-300">
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor?.inspektor_mtc || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor?.verifikator_qc || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor?.operator || '-'}</td>
+
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor?.kode_lkh || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor?.nama_kendala || '-'}</td>
+
+                                                                                                    </tr>
+                                                                                                ))}
+                                                                                            </tbody>
+                                                                                        </table>
+                                                                                    </div>
+                                                                                ) : (
+                                                                                    <>
+                                                                                        <p className="mt-4 text-gray-500">Tidak ada data Teknisi MTC / Verifikator QC</p>
+                                                                                    </>
+                                                                                )}
                                                                                 {Array.isArray(data2.operator_inspektor) && data2.operator_inspektor.length > 0 ? (
                                                                                     <div className="mt-4">
                                                                                         <h3 className="font-semibold mb-2">Detail</h3>
@@ -2227,30 +2328,63 @@ function RekapWasteQC() {
                                                                                                     <th className="border border-gray-300 px-4 py-2">Masalah Waste</th>
                                                                                                     <th className="border border-gray-300 px-4 py-2">Temuan</th>
                                                                                                     <th className="border border-gray-300 px-4 py-2">Defect</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Detail</th>
                                                                                                 </tr>
                                                                                             </thead>
                                                                                             <tbody>
                                                                                                 {data2.operator_inspektor.map((inspektor: any, index: number) => (
-                                                                                                    <tr key={index} className="border-b border-gray-300">
-                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.inspektor || '-'}</td>
-                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.operator || '-'}</td>
-                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.mesin || '-'}</td>
-                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.kode_waste || '-'}</td>
-                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.masalah || '-'}</td>
-                                                                                                        <td className="border border-gray-300 px-4 py-2">
-                                                                                                            {inspektor.temuan
-                                                                                                                ? inspektor.temuan
-                                                                                                                    .split("_") // Split by underscore
-                                                                                                                    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize each word
-                                                                                                                    .join(" ") // Join back with space
-                                                                                                                : "-"
-                                                                                                            }
-                                                                                                        </td>
-                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor.calculated_defect || '-'}</td>
-                                                                                                    </tr>
+                                                                                                    <>
+                                                                                                        {/* 🔹 Row Utama */}
+                                                                                                        <tr key={index} className="border-b border-gray-300">
+                                                                                                            <td className="border border-gray-300 px-4 py-2">{inspektor.inspektor || '-'}</td>
+                                                                                                            <td className="border border-gray-300 px-4 py-2">{inspektor.operator || '-'}</td>
+                                                                                                            <td className="border border-gray-300 px-4 py-2">{inspektor.mesin || '-'}</td>
+                                                                                                            <td className="border border-gray-300 px-4 py-2">{inspektor.kode_waste || '-'}</td>
+                                                                                                            <td className="border border-gray-300 px-4 py-2">{inspektor.masalah || '-'}</td>
+                                                                                                            <td className="border border-gray-300 px-4 py-2">
+                                                                                                                {inspektor.temuan
+                                                                                                                    ? inspektor.temuan
+                                                                                                                        .split("_")
+                                                                                                                        .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+                                                                                                                        .join(" ")
+                                                                                                                    : "-"}
+                                                                                                            </td>
+                                                                                                            <td className="border border-gray-300 px-4 py-2">{inspektor.calculated_defect || '-'}</td>
+
+                                                                                                        </tr>
+
+                                                                                                        {/* 🔹 Row Detail (Sub-table) */}
+                                                                                                        <tr className="border-b border-gray-300 bg-gray-50">
+                                                                                                            <td colSpan={8} className="border border-gray-300 px-4 py-2">
+                                                                                                                {/* Sub-table for Inspektor MTC and Verifikator QC */}
+                                                                                                                <table className="w-full border-collapse border border-gray-200">
+                                                                                                                    <thead>
+                                                                                                                        <tr className="bg-gray-100">
+                                                                                                                            <th className="border border-gray-300 px-4 py-2">Inspektor MTC</th>
+                                                                                                                            <th className="border border-gray-300 px-4 py-2">Verifikator QC</th>
+                                                                                                                            <th className="border border-gray-300 px-4 py-2">Kode</th>
+                                                                                                                            <th className="border border-gray-300 px-4 py-2">Masalah</th>
+                                                                                                                        </tr>
+                                                                                                                    </thead>
+                                                                                                                    <tbody>
+                                                                                                                        {inspektor?.verifikator_inspektor?.map((verif: any, verifIndex: number) => (
+                                                                                                                            <tr key={verifIndex} className="border-b border-gray-300">
+                                                                                                                                <td className="border border-gray-300 px-4 py-2">{verif.inspektor_mtc || '-'}</td>
+                                                                                                                                <td className="border border-gray-300 px-4 py-2">{verif.verifikator_qc || '-'}</td>
+                                                                                                                                <td className="border border-gray-300 px-4 py-2">{verif.kode_lkh || '-'}</td>
+                                                                                                                                <td className="border border-gray-300 px-4 py-2">{verif.nama_kendala || '-'}</td>
+                                                                                                                            </tr>
+                                                                                                                        ))}
+                                                                                                                    </tbody>
+                                                                                                                </table>
+                                                                                                            </td>
+                                                                                                        </tr>
+                                                                                                    </>
                                                                                                 ))}
                                                                                             </tbody>
                                                                                         </table>
+
+
                                                                                     </div>
                                                                                 ) : (
                                                                                     <p className="mt-4 text-gray-500">Tidak ada data inspektor</p>

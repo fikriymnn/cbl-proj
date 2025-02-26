@@ -2,15 +2,18 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import Select from 'react-select';
 import Loading from '../../../../Loading';
+import convertTimeStampToDate from '../../../../../utils/convertDate';
 
 function BuatSPKeHR() {
     const [options, setOptions] = useState([]);
+    const [options2, setOptions2] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [userList, setUserList] = useState<any>();
 
     useEffect(() => {
         getMe()
         getMasterUser()
+        getSP()
     }, []);
 
     const [me, setMe] = useState<any>();
@@ -31,7 +34,34 @@ function BuatSPKeHR() {
             console.log(error.data.msg);
         }
     }
+    const [sp, setSP] = useState<any>();
+    const [detailsp, setdetailSP] = useState<any>();
+    async function getSP() {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/master/sp`;
+        try {
+            setIsLoading(true)
+            const res = await axios.get(
+                url,
 
+                {
+                    withCredentials: true,
+                },
+            );
+            setIsLoading(false)
+            setSP(res.data.data)
+            setOptions2(
+                res.data.data.map((item: any) => ({
+                    value: item.id,
+                    label: item.nama + ' - ' + item.masa_berlaku + ' Hari ',
+                }))
+            );
+            console.log(res.data.data)
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
     async function getMasterUser() {
         const url = `${import.meta.env.VITE_API_LINK
             }/hr/karyawan`;
@@ -70,37 +100,26 @@ function BuatSPKeHR() {
         );
 
         console.log(filteredData?.userid);
-
+        setdetailSP(filteredData?.sp_karyawan)
         setIdKaryawan(filteredData?.userid)
 
     };
 
     const [idKaryawan, setIdKaryawan] = useState<any>();
-
-    const [tglDari, setTglDari] = useState<any>();
-    const [tglSampai, setTglSampai] = useState<any>();
     const [alasanIzin, setAlasanIzin] = useState<any>();
-    const [teguran, setteguran] = useState<any>();
-
+    const [namasp, setnamaSP] = useState<any>();
+    const [masaBerlaku, setmasaBerlaku] = useState<any>();
     async function postIzin() {
 
-
-        if (tglDari == null) {
-            alert('Tanggal Dari Belum Diisi');
-            return;
-        }
-        if (tglSampai == null) {
-            alert('Tanggal Sampai Belum Diisi');
-            return;
-        }
         if (alasanIzin == null) {
             alert('Alasan SP Belum Diisi');
             return;
         }
-        if (teguran == null) {
-            alert('Teguran SP Belum Diisi');
-            return;
-        }
+        // console.log(idKaryawan,
+        //     idPengaju,
+        //     masaBerlaku,
+        //     alasanIzin,
+        //     namasp,)
         const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanSP`;
         try {
             setIsLoading(true)
@@ -108,14 +127,11 @@ function BuatSPKeHR() {
                 {
                     id_karyawan: idKaryawan,
                     id_pengaju: idPengaju,
-                    dari: tglDari,
-                    sampai: tglSampai,
-                    jumlah_bulan: daysDifference,
-                    alasan_sp: alasanIzin,
-                    teguran: teguran,
+                    masa_berlaku: masaBerlaku,
+                    alasan: alasanIzin,
+                    nama_sp_teguran: namasp,
                 },
                 {
-
                     withCredentials: true,
                 });
             setIsLoading(false)
@@ -127,59 +143,36 @@ function BuatSPKeHR() {
         }
     }
 
-    const [daysDifference, setDaysDifference] = useState<any>();
-    const [showError, setShowError] = useState(false);
-    const [showErrorEarlyDate, setShowErrorEarlyDate] = useState(false);
-
     useEffect(() => {
         const today = new Date();
         const threeDaysLater = new Date();
         threeDaysLater.setDate(today.getDate() + 2);
+    }, []);
+    const [labelText, setLabelText] = useState("Alasan SP / Teguran");
 
-        if (tglDari && tglSampai) {
-            if (tglDari <= tglSampai) {
-                if (tglDari <= threeDaysLater) {
-                    setShowErrorEarlyDate(true);
-                } else {
-                    setShowErrorEarlyDate(false);
-                }
+    const handleChangePointSP = (selected: any) => {
+        const { value } = selected;
+        const filteredData = sp.find(
+            (item: any) => item.id == value,
+            // item.id.includes(parseInt(value));
+        );
+        console.log(filteredData?.nama, filteredData?.masa_berlaku)
+        if (filteredData) {
+            setnamaSP(filteredData?.nama);
+            setmasaBerlaku(filteredData?.masa_berlaku);
 
-                // Calculate the difference in months
-                const startDate = new Date(tglDari);
-                const endDate = new Date(tglSampai);
-
-                const yearDiff = endDate.getFullYear() - startDate.getFullYear();
-                const monthDiff = endDate.getMonth() - startDate.getMonth();
-
-                // Total months difference
-                const totalMonths = yearDiff * 12 + monthDiff + 1;
-
-                setDaysDifference(totalMonths);
-                setShowError(false); // Hide error message
+            // Menentukan label berdasarkan nama SP
+            if (filteredData.nama?.toLowerCase().includes("teguran")) {
+                setLabelText("Teguran");
+            } else if (filteredData.nama?.toLowerCase().includes("sp")) {
+                setLabelText("Alasan SP");
             } else {
-                setDaysDifference(null);
-                setShowError(true); // Show error message
-                setShowErrorEarlyDate(false);
+                setLabelText("Alasan SP / Teguran");
             }
-        } else {
-            setDaysDifference(null);
-            setShowError(false); // Hide error message
-            setShowErrorEarlyDate(false);
         }
-    }, [tglDari, tglSampai]);
-
-
-    const handleStartDateChange = (event: any) => {
-        setTglDari(new Date(event.target.value));
-    };
-
-    const handleEndDateChange = (event: any) => {
-        setTglSampai(new Date(event.target.value));
-
     };
 
     return (
-
         <main className="overflow-x-scroll min-h-screen">
             {isLoading && <Loading />}
             <div className="min-w-[700px] bg-white rounded-xl ">
@@ -198,85 +191,69 @@ function BuatSPKeHR() {
                             className={`relative z-50 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
                   }`}
                         >
+                        </Select>
+                    </div>
+                    <div className='flex flex-col gap-2'>
+                        <label className=' text-[#6c6b6b] text-sm font-semibold'>
+                            Pilih SP / Teguran
+                        </label>
+                        <Select
+                            placeholder='Cari...'
+                            options={options2}
+                            onChange={(selectedId) => {
+
+                                handleChangePointSP(selectedId)
+                            }}
+                            className={`relative z-50 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
+                  }`}
+                        >
 
                         </Select>
                     </div>
+                </div>
+                <div className='grid grid-cols-2 gap-5 px-7 py-4'>
 
                 </div>
                 <div className='grid grid-cols-2 gap-5 px-7 py-4'>
                     <div className='flex flex-col gap-3'>
-                        <div className='grid grid-cols-2 gap-2'>
-                            <div className="flex flex-col  gap-2">
-                                <p className="text-sm text-[#6c6b6b] font-semibold ">
-                                    Berlaku Dari
-                                </p>
-                                <input
-                                    className='rounded-md bg-[#D8EAFF] px-2'
-                                    type="date"
-                                    //onChange={(e) => setDateFrom4(e.target.value)}
-                                    onChange={handleStartDateChange}
-                                ></input>
-
-                            </div>
-                            <div className="flex flex-col  gap-2">
-                                <p className="text-sm text-[#6c6b6b] font-semibold ">
-                                    Berlaku Sampai
-                                </p>
-                                <input
-                                    className='rounded-md bg-[#D8EAFF] px-2'
-                                    type="date"
-                                    onChange={handleEndDateChange}
-                                //onChange={(e) => setDateFrom4(e.target.value)}
-                                ></input>
-
-                            </div>
-                        </div>
-
-                        {daysDifference !== null && (
-                            <label className=' text-[#6c6b6b] text-sm font-semibold'>
-                                Masa Berlaku : {daysDifference} Bulan
-                            </label>
-                        )}
-
-                        {showError && (
-                            <div className="text-red-500">
-                                Tanggal dari tidak boleh kurang dari Tanggal Sampai
-                            </div>
-                        )}
-
+                        <label className=' text-[#6c6b6b] text-sm font-semibold'>
+                            SP Aktif
+                        </label>
+                        <table className="w-auto border-collapse border border-gray-300 text-sm">
+                            <thead>
+                                <tr className="bg-gray-200">
+                                    <th className="border border-gray-300 px-2 py-1">No</th>
+                                    <th className="border border-gray-300 px-2 py-1">Nama SP Teguran</th>
+                                    <th className="border border-gray-300 px-2 py-1">Dari</th>
+                                    <th className="border border-gray-300 px-2 py-1">Sampai</th>
+                                    <th className="border border-gray-300 px-2 py-1">Masa Berlaku</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {detailsp?.map((detailSP: any, index: any) => (
+                                    <tr key={index} className="text-center border-b">
+                                        <td className="border border-gray-300 px-2 py-1">{index + 1}</td>
+                                        <td className="border border-gray-300 px-2 py-1">{detailSP.nama_sp_teguran}</td>
+                                        <td className="border border-gray-300 px-2 py-1">{convertTimeStampToDate(detailSP.dari)}</td>
+                                        <td className="border border-gray-300 px-2 py-1">{convertTimeStampToDate(detailSP.sampai)}</td>
+                                        <td className="border border-gray-300 px-2 py-1">{detailSP.masa_berlaku}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                     <div className='flex flex-col gap-1'>
-
-
                         <div className="flex w-full flex-col">
                             <label className="text-[#6c6b6b] text-sm font-semibold">
-                                Alasan SP
+                                {labelText}
                             </label>
                             <div className="flex w-full h-full">
                                 <textarea
                                     name="alasan_cuti"
-
                                     onChange={(e) => { setAlasanIzin(e.target.value) }}
-
                                     className=" peer h-full min-h-[100px] w-full resize-none border-2 border-stroke rounded-md px-2"
                                 />
                             </div>
-
-                        </div>
-                        <div className="flex w-full flex-col">
-                            <label className="text-[#6c6b6b] text-sm font-semibold">
-                                Teguran
-                            </label>
-                            <div className="flex w-full h-full">
-                                <textarea
-                                    name="teguran"
-
-                                    onChange={(e) => { setteguran(e.target.value) }}
-
-                                    className=" peer h-full min-h-[100px] w-full resize-none border-2 border-stroke rounded-md px-2"
-                                />
-                            </div>
-
                         </div>
                     </div>
                 </div>

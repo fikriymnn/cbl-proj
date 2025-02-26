@@ -10,6 +10,31 @@ import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 function IncomingSP() {
     const [isLoading, setIsLoading] = useState(false);
     const [lembur, seLembur] = useState<any>();
+    const [sampaiDate, setSampaiDate] = useState("");
+    const [masaBerlakuValue, setMasaBerlakuValue] = useState<number | null>(null);
+    const [showModal, setShowModal] = useState<boolean[]>([]);
+    const openModalModal = (i: any, masaBerlakuValue: number) => {
+        const onchangeVal: any = [...showModal];
+        onchangeVal[i] = true;
+        const today = new Date();
+        today.setDate(today.getDate() + masaBerlakuValue);
+
+        const formattedDate = today.toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+        });
+        setSampaiDate(formattedDate);
+        setShowModal(onchangeVal);
+        setMasaBerlakuValue(masaBerlakuValue);
+    };
+
+    const closeModalModal = (i: any) => {
+        const onchangeVal: any = [...showModal];
+        onchangeVal[i] = false;
+
+        setShowModal(onchangeVal);
+    };
 
     useEffect(() => {
         getIzin();
@@ -93,19 +118,7 @@ function IncomingSP() {
             }
         }
     }
-    const [showModal, setShowModal] = useState<boolean[]>([]);
-    const openModalModal = (i: any) => {
-        const onchangeVal: any = [...showModal];
-        onchangeVal[i] = true;
 
-        setShowModal(onchangeVal);
-    };
-    const closeModalModal = (i: any) => {
-        const onchangeVal: any = [...showModal];
-        onchangeVal[i] = false;
-
-        setShowModal(onchangeVal);
-    };
 
     return (
         <>
@@ -145,11 +158,9 @@ function IncomingSP() {
 
                                         <div className='flex flex-col gap-1 col-span-3'>
                                             <label className="text-neutral-500 text-sm font-semibold ">
-                                                Dari : {convertTimeStampToDateTime(data.dari)}
+                                                {convertTimeStampToDateTime(data.createdAt)}
                                             </label>
-                                            <label className="text-neutral-500 text-sm font-semibold ">
-                                                Sampai :{convertTimeStampToDateTime(data.sampai)}
-                                            </label>
+
                                         </div>
                                         <label className="text-neutral-500 text-sm font-semibold col-span-2">
                                             {data.jumlah_bulan} Bulan
@@ -165,7 +176,7 @@ function IncomingSP() {
                                             <>
 
                                                 <button
-                                                    onClick={() => openModalModal(i)}
+                                                    onClick={() => openModalModal(i, data.masa_berlaku)}
                                                     className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                                                 >
                                                     ACTION
@@ -213,47 +224,42 @@ function IncomingSP() {
                                                                         </div>
                                                                     </div>
                                                                     <div className='flex flex-col  '>
-                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                            MASA BERLAKU :
-                                                                        </label>
-
                                                                         <div className='flex flex-col '>
                                                                             <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                DARI
+                                                                                NAMA SP / TEGURAN
                                                                             </label>
                                                                             <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
-                                                                                {convertTimeStampToDate(data.dari)}
+                                                                                {data.nama_sp_teguran}
                                                                             </label>
                                                                         </div>
                                                                         <div className='flex flex-col pt-1'>
                                                                             <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                SAMPAI
+                                                                                MASA BERLAKU
                                                                             </label>
                                                                             <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
-                                                                                {convertTimeStampToDate(data.sampai)}
+                                                                                {data.masa_berlaku} Hari
                                                                             </label>
                                                                         </div>
-
-
+                                                                        <div className='flex flex-col pt-1'>
+                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                                Sampai
+                                                                            </label>
+                                                                            <label htmlFor="" className='text-[#016ae6] text-xl font-normal'>
+                                                                                {sampaiDate}
+                                                                            </label>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
 
                                                                 <div className='flex flex-col w-full px-4'>
                                                                     <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                        ALASAN SP
+                                                                        ALASAN
                                                                     </label>
                                                                     <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                        {data.alasan_sp}
+                                                                        {data.alasan}
                                                                     </label>
                                                                 </div>
-                                                                <div className='flex flex-col w-full px-4'>
-                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                        TEGURAN
-                                                                    </label>
-                                                                    <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                        {data.teguran}
-                                                                    </label>
-                                                                </div>
+
                                                                 {/* <div className='px-4 py-2'>
                                                                     <button className='bg-blue-600 rounded-md px-3 py-2 text-white font-semibold text-sm'>
                                                                         CETAK SURAT
