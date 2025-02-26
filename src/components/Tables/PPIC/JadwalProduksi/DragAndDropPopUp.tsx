@@ -40,7 +40,13 @@ const PopUpTable = ({ dataMap, onClose, onFinish }: { dataMap: any, onClose: any
         setStartDate(newStartDate);
         setDaysList(generateDays(newStartDate, 7)); // Regenerate daysList
     };
+    const handleChangeDate1Day = (direction: 'next' | 'prev') => {
+        const newStartDate = new Date(startDate);
+        newStartDate.setDate(startDate.getDate() + (direction === 'next' ? 1 : -1)); // Move 7 days forward/backward
 
+        setStartDate(newStartDate);
+        setDaysList(generateDays(newStartDate, 7)); // Regenerate daysList
+    };
     const hoursList = Array.from({ length: 24 }, (_, index) => `${index.toString().padStart(2, '0')}:00:00`);
 
     const handleDrop = (event: any, newDay: any, newJam: any) => {
@@ -82,23 +88,37 @@ const PopUpTable = ({ dataMap, onClose, onFinish }: { dataMap: any, onClose: any
             {isLoading && <Loading />}
             <h2 className="text-2xl font-bold mb-4">Jadwal Mesin: {data?.mesin}</h2>
             <div className="flex justify-between items-center mb-4">
-                <button
-                    onClick={() => handleChangeDateRange('prev')}
-                    className="bg-gray-200 text-black px-3 py-2 rounded-md"
-                >
-                    ⬅️ Prev 7 Days
-                </button>
-
+                <div className='flex flex-col '>
+                    <button
+                        onClick={() => handleChangeDateRange('prev')}
+                        className="bg-gray-200 text-black px-3 py-2 rounded-md"
+                    >
+                        ⬅️ Prev 7 Days
+                    </button>
+                    <button
+                        onClick={() => handleChangeDate1Day('prev')}
+                        className="bg-gray-200 text-black px-3 py-2 rounded-md"
+                    >
+                        ⬅️ Prev 1 Day
+                    </button>
+                </div>
                 <span className="text-lg font-semibold text-blue-600">
                     {convertTimeStampToDate(startDate.toISOString())} - {convertTimeStampToDate(daysList[6].toISOString())}
                 </span>
-
-                <button
-                    onClick={() => handleChangeDateRange('next')}
-                    className="bg-gray-200 text-black px-3 py-2 rounded-md"
-                >
-                    Next 7 Days ➡️
-                </button>
+                <div className='flex flex-col '>
+                    <button
+                        onClick={() => handleChangeDateRange('next')}
+                        className="bg-gray-200 text-black px-3 py-2 rounded-md"
+                    >
+                        Next 7 Days ➡️
+                    </button>
+                    <button
+                        onClick={() => handleChangeDate1Day('next')}
+                        className="bg-gray-200 text-black px-3 py-2 rounded-md"
+                    >
+                        Next 1 Day ➡️
+                    </button>
+                </div>
             </div>
             <div className='flex flex-col w-[50%]'>
                 <div className='grid grid-cols-2 gap-2'>

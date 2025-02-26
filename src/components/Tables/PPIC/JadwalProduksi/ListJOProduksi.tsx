@@ -112,7 +112,7 @@ function ListJOProduksi() {
             setIsLoading(false);
         }
     };
-    const putMasukJadwal = async (id: any) => {
+    const putMasukJadwal = async (id: any, i: any) => {
         const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksi/submit/${id}`;
         try {
             setIsLoading(true);
@@ -120,8 +120,10 @@ function ListJOProduksi() {
 
                 withCredentials: true,
             });
-            alert('berhasil')
+            getmasterKategori()
+            closeCalculate(i)
             setIsLoading(false);
+            alert('berhasil masuk jadwal')
         } catch (error) {
             console.error('Error fetching data:', error);
             setIsLoading(false);
@@ -683,7 +685,7 @@ function ListJOProduksi() {
                                                 <div className='flex justify-center items-center pt-1'>
                                                     <button
                                                         title="button"
-                                                        onClick={() => putMasukJadwal(data.id)}
+                                                        onClick={() => putMasukJadwal(data.id, i)}
                                                         className="text-base w-full flex justify-center  font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
                                                     >
                                                         MASUK JADWAL

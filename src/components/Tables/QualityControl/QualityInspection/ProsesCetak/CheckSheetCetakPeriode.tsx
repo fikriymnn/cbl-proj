@@ -1870,7 +1870,7 @@ function CheckSheetCetakPeriode() {
                     =  <input
                       name="hasilsample3"
                       disabled
-                      value={cetakMesinPeriode?.inspeksi_cetak_periode[0]?.sample_3}
+                      value={cetakMesinPeriode?.inspeksi_cetak_periode[0]?.hasil_sample_3}
                       type="text"
                       className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
                     /> g/m<sup className=''>2</sup>
