@@ -137,7 +137,7 @@ const MasterKategori = () => {
         }
     }
     async function getMasterMesin() {
-        const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
+        const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-mesin`;
         try {
             setIsLoading(true)
             const res = await axios.get(url, {
