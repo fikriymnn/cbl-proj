@@ -1298,10 +1298,12 @@ function RekapWasteQC() {
                                                                                 <p><strong>Total Defect:</strong> {data2.total_defect}</p>
                                                                                 {Array.isArray(data2.verifikator_inspektor) && data2.verifikator_inspektor.length > 0 ? (
                                                                                     <div className="mt-4">
-                                                                                        <h3 className="font-semibold mb-2">Detail Teknisi QC / Verifikator QC</h3>
+                                                                                        <h3 className="font-semibold mb-2">Detail Teknisi QC / Verifikator QC Berdasarkan Kode Waste</h3>
                                                                                         <table className="w-full border-collapse border border-gray-300">
                                                                                             <thead>
                                                                                                 <tr className="bg-gray-100">
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Kode MR</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Tanggal Tiket</th>
                                                                                                     <th className="border border-gray-300 px-4 py-2">Teknisi MTC</th>
                                                                                                     <th className="border border-gray-300 px-4 py-2">Verifikator QC</th>
                                                                                                     <th className="border border-gray-300 px-4 py-2">Operator</th>
@@ -1314,6 +1316,8 @@ function RekapWasteQC() {
                                                                                             <tbody>
                                                                                                 {data2.verifikator_inspektor?.map((inspektor: any, index: number) => (
                                                                                                     <tr key={index} className="border-b border-gray-300">
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor?.kode_mr || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{convertTimeStampToDate(inspektor?.tanggal_tiket) || '-'}</td>
                                                                                                         <td className="border border-gray-300 px-4 py-2">{inspektor?.inspektor_mtc || '-'}</td>
                                                                                                         <td className="border border-gray-300 px-4 py-2">{inspektor?.verifikator_qc || '-'}</td>
                                                                                                         <td className="border border-gray-300 px-4 py-2">{inspektor?.operator || '-'}</td>
@@ -1333,7 +1337,7 @@ function RekapWasteQC() {
                                                                                 )}
                                                                                 {Array.isArray(data2.operator_inspektor) && data2.operator_inspektor.length > 0 ? (
                                                                                     <div className="mt-4">
-                                                                                        <h3 className="font-semibold mb-2">Detail</h3>
+                                                                                        <h3 className="font-semibold mb-2">Detail Kendala</h3>
                                                                                         <table className="w-full border-collapse border border-gray-300">
                                                                                             <thead>
                                                                                                 <tr className="bg-gray-100">
@@ -1376,6 +1380,8 @@ function RekapWasteQC() {
                                                                                                                 <table className="w-full border-collapse border border-gray-200">
                                                                                                                     <thead>
                                                                                                                         <tr className="bg-gray-100">
+                                                                                                                            <th className="border border-gray-300 px-4 py-2">Kode MR</th>
+                                                                                                                            <th className="border border-gray-300 px-4 py-2">Tanggal Tiket</th>
                                                                                                                             <th className="border border-gray-300 px-4 py-2">Inspektor MTC</th>
                                                                                                                             <th className="border border-gray-300 px-4 py-2">Verifikator QC</th>
                                                                                                                             <th className="border border-gray-300 px-4 py-2">Kode</th>
@@ -1385,6 +1391,8 @@ function RekapWasteQC() {
                                                                                                                     <tbody>
                                                                                                                         {inspektor?.verifikator_inspektor?.map((verif: any, verifIndex: number) => (
                                                                                                                             <tr key={verifIndex} className="border-b border-gray-300">
+                                                                                                                                <td className="border border-gray-300 px-4 py-2">{verif?.kode_mr || '-'}</td>
+                                                                                                                                <td className="border border-gray-300 px-4 py-2">{convertTimeStampToDate(verif?.tanggal_tiket) || '-'}</td>
                                                                                                                                 <td className="border border-gray-300 px-4 py-2"> {verif.inspektor_mtc || '-'} </td>
                                                                                                                                 <td className="border border-gray-300 px-4 py-2">{verif.verifikator_qc || '-'}</td>
                                                                                                                                 <td className="border border-gray-300 px-4 py-2">{verif.kode_lkh || '-'}</td>
@@ -2282,10 +2290,12 @@ function RekapWasteQC() {
                                                                                 <p><strong>Total Defect:</strong> {data2.total_defect}</p>
                                                                                 {Array.isArray(data2.verifikator_inspektor) && data2.verifikator_inspektor.length > 0 ? (
                                                                                     <div className="mt-4">
-                                                                                        <h3 className="font-semibold mb-2">Detail Teknisi QC / Verifikator QC</h3>
+                                                                                        <h3 className="font-semibold mb-2">Detail Teknisi QC / Verifikator QC Berdasarkan Kendala</h3>
                                                                                         <table className="w-full border-collapse border border-gray-300">
                                                                                             <thead>
                                                                                                 <tr className="bg-gray-100">
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Kode MR</th>
+                                                                                                    <th className="border border-gray-300 px-4 py-2">Tanggal Tiket</th>
                                                                                                     <th className="border border-gray-300 px-4 py-2">Teknisi MTC</th>
                                                                                                     <th className="border border-gray-300 px-4 py-2">Verifikator QC</th>
                                                                                                     <th className="border border-gray-300 px-4 py-2">Operator</th>
@@ -2298,6 +2308,8 @@ function RekapWasteQC() {
                                                                                             <tbody>
                                                                                                 {data2.verifikator_inspektor?.map((inspektor: any, index: number) => (
                                                                                                     <tr key={index} className="border-b border-gray-300">
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{inspektor?.kode_mr || '-'}</td>
+                                                                                                        <td className="border border-gray-300 px-4 py-2">{convertTimeStampToDate(inspektor?.tanggal_tiket) || '-'}</td>
                                                                                                         <td className="border border-gray-300 px-4 py-2">{inspektor?.inspektor_mtc || '-'}</td>
                                                                                                         <td className="border border-gray-300 px-4 py-2">{inspektor?.verifikator_qc || '-'}</td>
                                                                                                         <td className="border border-gray-300 px-4 py-2">{inspektor?.operator || '-'}</td>
@@ -2317,7 +2329,7 @@ function RekapWasteQC() {
                                                                                 )}
                                                                                 {Array.isArray(data2.operator_inspektor) && data2.operator_inspektor.length > 0 ? (
                                                                                     <div className="mt-4">
-                                                                                        <h3 className="font-semibold mb-2">Detail</h3>
+                                                                                        <h3 className="font-semibold mb-2">Detail Waste</h3>
                                                                                         <table className="w-full border-collapse border border-gray-300">
                                                                                             <thead>
                                                                                                 <tr className="bg-gray-100">
@@ -2360,6 +2372,8 @@ function RekapWasteQC() {
                                                                                                                 <table className="w-full border-collapse border border-gray-200">
                                                                                                                     <thead>
                                                                                                                         <tr className="bg-gray-100">
+                                                                                                                            <th className="border border-gray-300 px-4 py-2">Kode MR</th>
+                                                                                                                            <th className="border border-gray-300 px-4 py-2">Tanggal Tiket</th>
                                                                                                                             <th className="border border-gray-300 px-4 py-2">Inspektor MTC</th>
                                                                                                                             <th className="border border-gray-300 px-4 py-2">Verifikator QC</th>
                                                                                                                             <th className="border border-gray-300 px-4 py-2">Kode</th>
@@ -2369,6 +2383,8 @@ function RekapWasteQC() {
                                                                                                                     <tbody>
                                                                                                                         {inspektor?.verifikator_inspektor?.map((verif: any, verifIndex: number) => (
                                                                                                                             <tr key={verifIndex} className="border-b border-gray-300">
+                                                                                                                                <td className="border border-gray-300 px-4 py-2">{verif?.kode_mr || '-'}</td>
+                                                                                                                                <td className="border border-gray-300 px-4 py-2">{convertTimeStampToDate(verif?.tanggal_tiket) || '-'}</td>
                                                                                                                                 <td className="border border-gray-300 px-4 py-2">{verif.inspektor_mtc || '-'}</td>
                                                                                                                                 <td className="border border-gray-300 px-4 py-2">{verif.verifikator_qc || '-'}</td>
                                                                                                                                 <td className="border border-gray-300 px-4 py-2">{verif.kode_lkh || '-'}</td>

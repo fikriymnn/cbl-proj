@@ -56,7 +56,7 @@ const MasterKategori = () => {
         try {
             setIsLoading(true)
             const res = await axios.post(url, {
-                id_mesin: selectedID,
+                mesin: selectedID,
                 nama_kategori: namaKategori,
                 setting_a: settingA,
                 setting_b: settingB,
@@ -83,12 +83,12 @@ const MasterKategori = () => {
             console.log(error);
         }
     }
-    async function putMasterKategori(id: any, id_mesin: any) {
+    async function putMasterKategori(id: any, mesin: any, i: any) {
         const url = `${import.meta.env.VITE_API_LINK}/master/ppic/settingKapasitas/${id}`;
         try {
             setIsLoading(true)
             const res = await axios.put(url, {
-                id_mesin: id_mesin,
+                mesin: mesin,
                 nama_kategori: namaKategoriEdit,
                 setting_a: settingAEdit,
                 setting_b: settingBEdit,
@@ -110,7 +110,7 @@ const MasterKategori = () => {
             setkapasitasBEdit(0)
             setkapasitasCEdit(0)
             getmasterKategori();
-
+            closeEdit(i)
         } catch (error: any) {
             setIsLoading(false)
             console.log(error);
@@ -141,20 +141,21 @@ const MasterKategori = () => {
         try {
             setIsLoading(true)
             const res = await axios.get(url, {
-                withCredentials: true,
+
             });
+            console.log('mesin', res.data.data);
             setIsLoading(false)
-            setmasterMesin(res.data)
+            setmasterMesin(res.data.data)
             setOptions(
-                res.data?.map((item: any) => ({
-                    value: item.id,
-                    label: item.nama_mesin,
+                res.data?.data?.map((item: any) => ({
+                    value: item.mesin,
+                    label: item.mesin,
                 }))
             );
-            console.log(res.data);
+
         } catch (error: any) {
             setIsLoading(false)
-            console.log(error.data.msg);
+            console.log(error);
         }
     }
 
@@ -179,13 +180,13 @@ const MasterKategori = () => {
     const handleChangePointDepatment = (selected: any) => {
         const { value } = selected;
         const filteredData = masterMesin.find(
-            (item: any) => item.id == value,
+            (item: any) => item.mesin == value,
             // item.id.includes(parseInt(value));
         );
 
-        console.log(filteredData?.id);
+        console.log(filteredData?.mesin);
 
-        setSelectedID(filteredData?.id);
+        setSelectedID(filteredData?.mesin);
 
 
     };
@@ -437,7 +438,7 @@ const MasterKategori = () => {
                                                     <div className="pt-4">
                                                         <button
                                                             disabled={isLoading}
-                                                            onClick={() => putMasterKategori(data.id, data.id_mesin)}
+                                                            onClick={() => putMasterKategori(data.id, data.mesin, i)}
                                                             className="rounded-md justify-center items-center w-full h-10 bg-blue-600 text-white font-semibold text-sm"
                                                         >
                                                             {isLoading ? 'Loading...' : 'SIMPAN'}
