@@ -12,6 +12,7 @@ import BarChartProductionQuality from '../../../../pages/UiElements/BarchartProd
 import BarChartMesinOnly from '../../../../pages/UiElements/BarchartMesinOnly';
 import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
+import ModalXL from '../../PPIC/JadwalProduksi/ModalXL';
 
 function RekapOs2Mtc() {
     const [bulan, setBulan] = useState(0);
@@ -1382,7 +1383,7 @@ function RekapOs2Mtc() {
 
                                                     {/* More explicit check for modal visibility */}
                                                     {showModal1[i] && showModal1[i][k] === true && (
-                                                        <ModalKosongan
+                                                        <ModalXL
                                                             isOpen={true}
                                                             onClose={() => closeModal1(i, k)}
                                                             judul={'Detail Data'}
@@ -1400,23 +1401,56 @@ function RekapOs2Mtc() {
                                                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Eksekutor</th>
                                                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Kode</th>
                                                                             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Nama Kendala</th>
+                                                                            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Breakdown Time</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody className="bg-white divide-y divide-gray-200">
-                                                                        {data2.details?.map((data3: any, index: any) => (
-                                                                            <tr key={index} className={index % 2 === 0 ? "bg-blue-50" : "bg-white"}>
-                                                                                <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.no_jo}</td>
-                                                                                <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.operator}</td>
-                                                                                <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.verifikator}</td>
-                                                                                <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.eksekutor}</td>
-                                                                                <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.kode_lkh}</td>
-                                                                                <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.nama_kendala}</td>
-                                                                            </tr>
-                                                                        ))}
+
+                                                                        {data2.details?.slice()
+                                                                            .map((data3: any) => {
+                                                                                // Calculate breakdown time for sorting
+                                                                                let breakdownTimeMs = 0;
+                                                                                if (data3.createdAt && data3.waktu_selesai) {
+                                                                                    const startTime = new Date(data3.createdAt);
+                                                                                    const endTime = new Date(data3.waktu_selesai);
+                                                                                    // Calculate difference in milliseconds
+                                                                                    const timeDiff = endTime.getTime() - startTime.getTime();
+                                                                                    if (!isNaN(timeDiff) && timeDiff > 0) {
+                                                                                        breakdownTimeMs = timeDiff;
+                                                                                    }
+                                                                                }
+                                                                                // Add the calculated milliseconds to each item for sorting
+                                                                                return { ...data3, breakdownTimeMs };
+                                                                            })
+                                                                            // Sort by breakdown time (descending)
+                                                                            .sort((a: any, b: any) => b.breakdownTimeMs - a.breakdownTimeMs)
+                                                                            .map((data3: any, index: any) => {
+                                                                                // Format the breakdown time for display
+                                                                                let breakdownTime = "-";
+                                                                                if (data3.breakdownTimeMs > 0) {
+                                                                                    const hours = Math.floor(data3.breakdownTimeMs / (1000 * 60 * 60));
+                                                                                    const minutes = Math.floor((data3.breakdownTimeMs % (1000 * 60 * 60)) / (1000 * 60));
+                                                                                    const seconds = Math.floor((data3.breakdownTimeMs % (1000 * 60)) / 1000);
+                                                                                    breakdownTime = `${hours}h ${minutes}m ${seconds}s`;
+                                                                                }
+
+                                                                                return (
+                                                                                    <tr key={index} className={index % 2 === 0 ? "bg-blue-50" : "bg-white"}>
+                                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.no_jo}</td>
+                                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.operator}</td>
+                                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.verifikator}</td>
+                                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.eksekutor}</td>
+                                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.kode_lkh}</td>
+                                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm">{data3.nama_kendala}</td>
+                                                                                        <td className="px-6 py-4 whitespace-nowrap text-sm">{breakdownTime}</td>
+                                                                                    </tr>
+                                                                                );
+                                                                            })}
+
                                                                     </tbody>
                                                                 </table>
                                                             </div>
-                                                        </ModalKosongan>
+                                                        </ModalXL>
                                                     )}
                                                 </div>
                                             );
