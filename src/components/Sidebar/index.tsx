@@ -5446,6 +5446,7 @@ const Sidebar = ({
                     </>
                   </li>
                 </div>
+
                 <div
                   className={`translate  pl-3  transform overflow-hidden ${!open && 'hidden'
                     }`}
