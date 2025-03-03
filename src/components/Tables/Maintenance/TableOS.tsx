@@ -483,7 +483,7 @@ function TableOS() {
                     return `${year}/${month}/${day}  ${hours}:${minutes}`; // Example format (YYYY-MM-DD)
                   }
 
-                  const dateMtc = convertDatetimeToDate(data.createdAt);
+                  const dateMtc = convertTimeStampToDateTime(data.createdAt);
                   const waktuRespon = calculateResponTime(
                     data.waktu_respon_qc == null
                       ? data.createdAt
@@ -973,13 +973,13 @@ function TableOS() {
                               </div>
                               {data.waktu_selesai == null ? '' :
                                 <>
-
                                   < div className='px-5 pt-1'>
-                                    <p className="text-xs font-bold">Waktu Breakdown</p>
+                                    <p className="text-xs font-bold">Waktu Tiket Masuk</p>
                                     <p className="text-xs font-medium">
-                                      {waktuBreakdown}
+                                      {dateMtc}
                                     </p>
                                   </div>
+
                                   < div className='px-5 pt-1'>
                                     <p className="text-xs font-bold">Waktu Validasi QC</p>
                                     <p className="text-xs font-medium">
@@ -996,6 +996,12 @@ function TableOS() {
                                     <p className="text-xs font-bold">Waktu Verifikasi QC</p>
                                     <p className="text-xs font-medium">
                                       {data.proses_mtcs?.at(-1)?.user_qc?.nama} ~ {convertTimeStampToDateTime(data.proses_mtcs?.at(-1)?.waktu_selesai)} ~ {waktuVerifikasiQC}
+                                    </p>
+                                  </div>
+                                  < div className='px-5 pt-1'>
+                                    <p className="text-xs font-bold">Waktu Breakdown</p>
+                                    <p className="text-xs font-medium">
+                                      {waktuBreakdown}
                                     </p>
                                   </div>
                                 </>

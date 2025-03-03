@@ -131,148 +131,155 @@ function Stockmaster() {
           </div>
         </div>
 
-        {stokSparepart?.map((data: any, i: number) => {
-          return (
-            <>
-              <div className="flex bg-white py-2 px-1 text-center">
-                <p className="text-xs w-[2%]">{i + 1}</p>
-                <div className="grid grid-cols-12 w-[98%] text-center">
-                  <p className="text-xs">{data.kode}</p>
-                  <p className="text-xs">{data.part_number}</p>
-                  <p className="text-xs col-span-2">{data.nama_sparepart} </p>
-                  <p className="text-xs">{data.mesin.nama_mesin}</p>
-                  <p className="text-xs">{data.lokasi}</p>
-                  <p className="text-xs">{formatInteger(data.umur_sparepart)}</p>
-                  <p className="text-xs">{data.grade}</p>
-                  <p className="text-xs">{data.stok}</p>
-                  <p className="text-xs">{data.type_part}</p>
-                  <p className="text-xs">{data.limit_stok}</p>
-                  <div className='flex flex-col gap-1'>
-                    <button onClick={() => openEdit(i)} className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
-                      EDIT
-                    </button>
-                    {showEdit[i] == true && (
+        {stokSparepart
+          ?.slice() // Make a shallow copy to avoid mutating original data
+          .sort((a: any, b: any) => {
+            const numA = parseInt(a.kode.match(/\d+/)?.[0] || "0", 10);
+            const numB = parseInt(b.kode.match(/\d+/)?.[0] || "0", 10);
+            return numA - numB;
+          })
+          .map((data: any, i: number) => {
+            return (
+              <>
+                <div className="flex bg-white py-2 px-1 text-center">
+                  <p className="text-xs w-[2%]">{i + 1}</p>
+                  <div className="grid grid-cols-12 w-[98%] text-center">
+                    <p className="text-xs">{data.kode}</p>
+                    <p className="text-xs">{data.part_number}</p>
+                    <p className="text-xs col-span-2">{data.nama_sparepart} </p>
+                    <p className="text-xs">{data.mesin.nama_mesin}</p>
+                    <p className="text-xs">{data.lokasi}</p>
+                    <p className="text-xs">{formatInteger(data.umur_sparepart)}</p>
+                    <p className="text-xs">{data.grade}</p>
+                    <p className={`text-xs ${data.stok <= 0 ? "text-red-500 font-bold" : ""}`}>
+                      {data.stok}
+                    </p>
+                    <p className="text-xs">{data.type_part}</p>
+                    <p className="text-xs">{data.limit_stok}</p>
+                    <div className='flex flex-col gap-1'>
+                      <button onClick={() => openEdit(i)} className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                        EDIT
+                      </button>
+                      {showEdit[i] == true && (
 
-                      <ModalKosonganSmall
-                        isOpen={showEdit[i]}
-                        onClose={() => closeEdit(i)}
-                        judul={'Edit Stok Master'}
-                      >
-                        <>
-                          <div className="grid   gap-3 w-full px-5 py-2">
-                            <>
+                        <ModalKosonganSmall
+                          isOpen={showEdit[i]}
+                          onClose={() => closeEdit(i)}
+                          judul={'Edit Stok Master'}
+                        >
+                          <>
+                            <div className="grid   gap-3 w-full px-5 py-2">
+                              <>
 
-                              <div className="flex w-full flex-col">
-                                <label className="text-black text-xs font-bold">
-                                  Kode
-                                </label>
-                                <div className="flex w-full">
-                                  <input
-                                    name="kode"
-                                    defaultValue={data.kode}
-                                    onChange={(e) => { setKode(e.target.value) }}
-                                    type="text"
-                                    className=" w-[387px] h-10 border-2 border-stroke rounded-md"
-                                  />
+                                <div className="flex w-full flex-col">
+                                  <label className="text-black text-xs font-bold">
+                                    Kode
+                                  </label>
+                                  <div className="flex w-full">
+                                    <input
+                                      name="kode"
+                                      defaultValue={data.kode}
+                                      onChange={(e) => { setKode(e.target.value) }}
+                                      type="text"
+                                      className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                    />
+                                  </div>
                                 </div>
+                                <div className="flex w-full flex-col">
+                                  <label className="text-black text-xs font-bold">
+                                    Part Number
+                                  </label>
+                                  <div className="flex w-full">
+                                    <input
+                                      name="part_number"
+                                      defaultValue={data.part_number}
+                                      onChange={(e) => { setPartNumber(e.target.value) }}
+                                      type="text"
+                                      className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                    />
+                                  </div>
 
-                              </div>
-                              <div className="flex w-full flex-col">
-
-                                <label className="text-black text-xs font-bold">
-                                  Part Number
-                                </label>
-                                <div className="flex w-full">
-                                  <input
-                                    name="part_number"
-                                    defaultValue={data.part_number}
-                                    onChange={(e) => { setPartNumber(e.target.value) }}
-                                    type="text"
-                                    className=" w-[387px] h-10 border-2 border-stroke rounded-md"
-                                  />
                                 </div>
+                                <div className="flex w-full flex-col">
 
-                              </div>
-                              <div className="flex w-full flex-col">
+                                  <label className="text-black text-xs font-bold">
+                                    Nama SparePart
+                                  </label>
+                                  <div className="flex w-full">
+                                    <input
+                                      name="nama_sparepart"
+                                      defaultValue={data.nama_sparepart}
+                                      onChange={(e) => { setNamaSparePart(e.target.value) }}
+                                      type="text"
+                                      className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                    />
+                                  </div>
 
-                                <label className="text-black text-xs font-bold">
-                                  Nama SparePart
-                                </label>
-                                <div className="flex w-full">
-                                  <input
-                                    name="nama_sparepart"
-                                    defaultValue={data.nama_sparepart}
-                                    onChange={(e) => { setNamaSparePart(e.target.value) }}
-                                    type="text"
-                                    className=" w-[387px] h-10 border-2 border-stroke rounded-md"
-                                  />
                                 </div>
+                                <div className="flex w-full flex-col">
 
-                              </div>
-                              <div className="flex w-full flex-col">
+                                  <label className="text-black text-xs font-bold">
+                                    Lokasi
+                                  </label>
+                                  <div className="flex w-full">
+                                    <input
+                                      name="lokasi"
+                                      defaultValue={data.lokasi}
+                                      onChange={(e) => { setLokasi(e.target.value) }}
+                                      type="text"
+                                      className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                    />
+                                  </div>
 
-                                <label className="text-black text-xs font-bold">
-                                  Lokasi
-                                </label>
-                                <div className="flex w-full">
-                                  <input
-                                    name="lokasi"
-                                    defaultValue={data.lokasi}
-                                    onChange={(e) => { setLokasi(e.target.value) }}
-                                    type="text"
-                                    className=" w-[387px] h-10 border-2 border-stroke rounded-md"
-                                  />
                                 </div>
-
-                              </div>
-                              <div className="flex w-full flex-col">
-                                <label className="text-black text-xs font-bold">
-                                  Mesin
-                                </label>
-                                <select
-                                  name="id_mesin"
-                                  onChange={(e) => { setMesinEdit(e.target.value) }}
-                                  className={`w-[387px] h-10 border-2 border-stroke rounded-md' 
+                                <div className="flex w-full flex-col">
+                                  <label className="text-black text-xs font-bold">
+                                    Mesin
+                                  </label>
+                                  <select
+                                    name="id_mesin"
+                                    onChange={(e) => { setMesinEdit(e.target.value) }}
+                                    className={`w-[387px] h-10 border-2 border-stroke rounded-md' 
                                             }`}
-                                >
-                                  <option value="" className="text-body dark:text-bodydark">
-                                    Select Mesin
-                                  </option>
-                                  {mesin?.map((data: any, index: number) => {
-                                    return (
-                                      <option
-                                        key={index}
-                                        value={data.id}
-                                        className="text-body dark:text-bodydark"
-                                      >
-                                        {data.nama_mesin}
-                                      </option>
-                                    );
-                                  })}
+                                  >
+                                    <option value="" className="text-body dark:text-bodydark">
+                                      Select Mesin
+                                    </option>
+                                    {mesin?.map((data: any, index: number) => {
+                                      return (
+                                        <option
+                                          key={index}
+                                          value={data.id}
+                                          className="text-body dark:text-bodydark"
+                                        >
+                                          {data.nama_mesin}
+                                        </option>
+                                      );
+                                    })}
 
-                                </select>
-                              </div>
+                                  </select>
+                                </div>
 
-                              <div className=" pt-3">
-                                <button
-                                  onClick={() => editStock(data.id)}
-                                  className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
-                                >
-                                  SIMPAN
-                                </button>
-                              </div>
+                                <div className=" pt-3">
+                                  <button
+                                    onClick={() => editStock(data.id)}
+                                    className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
+                                  >
+                                    SIMPAN
+                                  </button>
+                                </div>
 
-                            </>
-                          </div>
-                        </>
-                      </ModalKosonganSmall>
-                    )}
+                              </>
+                            </div>
+                          </>
+                        </ModalKosonganSmall>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </>
-          );
-        })}
+              </>
+            );
+          })}
       </>
     </DefaultLayout>
   );
