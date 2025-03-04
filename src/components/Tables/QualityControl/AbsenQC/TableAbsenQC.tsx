@@ -32,19 +32,27 @@ function TableAbsensiQC() {
     async function getMe() {
         const url = `${import.meta.env.VITE_API_LINK}/me`;
         try {
-            setIsLoading(true)
+            setIsLoading(true);
             const res = await axios.get(url, {
                 withCredentials: true,
             });
 
-            setIsLoading(false)
-            getabsen(formattedDate, formattedDate, res.data.karyawan.biodata_karyawan[0].id_department)
-            setIdDepart(res.data.karyawan.biodata_karyawan[0].id_department)
-            setIdPengaju(res.data.id_karyawan)
+            setIsLoading(false);
 
-            console.log('me', res.data)
+            const userRole = res.data.role; // Adjust this based on the actual API response
+            const userIdDep = res.data.karyawan.biodata_karyawan[0].id_department;
+            const userIdPengaju = res.data.id_karyawan;
+
+            setIdDepart(userIdDep);
+            setIdPengaju(userIdPengaju);
+
+            // If the role is 'super admin', set idDep to null
+            const idDep = userRole === 'super admin' ? null : userIdDep;
+            getabsen(formattedDate, formattedDate, idDep);
+
+            console.log('me', res.data);
         } catch (error: any) {
-            setIsLoading(false)
+            setIsLoading(false);
             console.log(error);
         }
     }
