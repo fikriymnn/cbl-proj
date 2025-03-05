@@ -9,6 +9,8 @@ import Box from '@mui/material/Box';
 import DailyJadwalProduksi from './DailyJadwalProduksi';
 import ListJOProduksi from './ListJOProduksi';
 import TampilanDailyJO from './TampilanDailyJo';
+import TampilanWeeklyJO from './TampilanWeeklyJo';
+import TampilanMonthlyJO from './TampilanMonthlyJo';
 
 
 interface TabPanelProps {
@@ -126,6 +128,8 @@ export default function TabJadwalProduksi() {
                     >
                         <Tab label="List JO" {...a11yProps(0)} className='' />
                         <Tab label="Overview Daily" {...a11yProps(1)} className='' />
+                        <Tab label="Overview Weekly" {...a11yProps(2)} className='' />
+                        <Tab label="Overview Monthly" {...a11yProps(3)} className='' />
 
 
                     </Tabs>
@@ -138,9 +142,11 @@ export default function TabJadwalProduksi() {
                 <TampilanDailyJO />
             </TabPanel>
             <TabPanel value={value} index={2} dir={theme.direction}>
-
+                <TampilanWeeklyJO />
             </TabPanel>
-
+            <TabPanel value={value} index={3} dir={theme.direction}>
+                <TampilanMonthlyJO />
+            </TabPanel>
         </Box>
     );
 }

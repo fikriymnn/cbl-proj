@@ -1,20 +1,24 @@
 import React, { useEffect, useState } from 'react'
 import ModalXL from './ModalXL';
-import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
-import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 import axios from 'axios';
 import Loading from '../../../Loading';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
-import PopUpTable from './DragAndDropPopUp';
-import ModalFull from './ModalFull';
-import PopUpTable2 from './PopUpTable2';
+import { Tooltip } from 'react-tooltip'
 
-function TampilanDailyJO() {
+function TampilanMonthlyJO() {
 
     const [isLoading, setIsLoading] = useState(false);
-    const [startDate, setStartDate] = useState<any>(null);
-    const [endDate, setEndDate] = useState<any>(null);
+    const [startDate, setStartDate] = useState<string>(() => {
+        const today = new Date();
+        return today.toISOString().split('T')[0];
+    });
+
+    const [endDate, setEndDate] = useState<string>(() => {
+        const today = new Date();
+        today.setDate(today.getDate() + 6);
+        return today.toISOString().split('T')[0];
+    });
     const [mapData, setMapData] = useState<any>([]);
 
     const today = new Date();
@@ -22,14 +26,23 @@ function TampilanDailyJO() {
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
     const day = String(today.getDate()).padStart(2, '0');
-
+    const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+        const today = new Date();
+        return today.toISOString().slice(0, 7); // YYYY-MM format
+    });
     const formattedDate = `${year}-${month}-${day}`;
     useEffect(() => {
-        getJadwalView(formattedDate, formattedDate)
-        const today = new Date();
-        setTodayDate(today.toISOString().split('T')[0]);
+
         getmasterKategori()
-    }, []);
+        const today = new Date(selectedMonth + '-01');
+        setTodayDate(today.toISOString().split('T')[0]);
+        const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+        getJadwalView(
+            today.toISOString().slice(0, 10),
+            lastDayOfMonth.toISOString().slice(0, 10)
+        );
+    }, [selectedMonth]);
     const [listJO1, setJo1] = useState<any>();
     async function get1Tiket(id: any, i: any) {
 
@@ -40,7 +53,7 @@ function TampilanDailyJO() {
                 withCredentials: true,
             });
             setJo1(res.data)
-            openCalculate(i)
+
             setIsLoading(false)
             console.log('listJO 1', res.data);
         } catch (error: any) {
@@ -49,21 +62,9 @@ function TampilanDailyJO() {
         }
 
     }
-    const [showCalculate, setShowCalculate] = useState<any>([]);
-    const openCalculate = (i: any) => {
-        const onchangeVal: any = [...showCalculate];
-        onchangeVal[i] = true;
 
-        setShowCalculate(onchangeVal);
-    };
-    const closeCalculate = (i: any) => {
-        const onchangeVal: any = [...showCalculate];
-        onchangeVal[i] = false;
-
-        setShowCalculate(onchangeVal);
-    };
-    const getJadwalView = async (tglAwal: any, tglAkhir: any) => {
-        const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksiView`;
+    const getJadwalView = async (tglAwal: string, tglAkhir: string) => {
+        const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksiWeekView`;
         try {
             setIsLoading(true);
             const response = await axios.get(url, {
@@ -101,50 +102,25 @@ function TampilanDailyJO() {
             console.log(error);
         }
     }
+    const generateMonthDates = () => {
+        const year = parseInt(selectedMonth.split('-')[0]);
+        const month = parseInt(selectedMonth.split('-')[1]) - 1;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-    const putMasukJadwal = async (id: any) => {
-        const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksi/submit/${id}`;
-        try {
-            setIsLoading(true);
-            const response = await axios.put(url, {
-
-                withCredentials: true,
-            });
-            alert('berhasil')
-            setIsLoading(false);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            setIsLoading(false);
-        }
+        return Array.from({ length: daysInMonth }, (_, i) =>
+            new Date(year, month, i + 1)
+        );
     };
 
-    const hours = Array.from({ length: 24 }, (_, i) => `${i.toString().padStart(2, '0')}:00:00`);
+    // Color palette for job orders
+    const jobOrderColors = [
+        'bg-blue-500 text-white',
+        'bg-green-500 text-white',
+        'bg-purple-500 text-white',
+        'bg-orange-500 text-white',
+        'bg-teal-500 text-white',
+    ];
 
-
-
-    const [showModal3, setShowModal3] = useState<any>([]);
-    const openModal3 = (i: any) => {
-        const onchangeVal: any = [...showModal3];
-
-        onchangeVal[i] = true;
-
-        setShowModal3(onchangeVal);
-    };
-    const closeModal3 = (i: any) => {
-        const onchangeVal: any = [...showModal3];
-        onchangeVal[i] = false;
-
-        setShowModal3(onchangeVal);
-    };
-    const handleNextPrev = (direction: string) => {
-        const currentDate = startDate ? new Date(startDate) : new Date(todayDate); // Use selected date or today
-        currentDate.setDate(currentDate.getDate() + (direction === 'next' ? 1 : -1)); // Increment or decrement by 1 day
-
-        const newDate = currentDate.toISOString().split('T')[0]; // Format the new date to YYYY-MM-DD
-        setStartDate(newDate);
-        setEndDate(newDate);
-        getJadwalView(newDate, newDate)
-    };
     const [isDetailVisible, setIsDetailVisible] = useState(false);
     const machineList = [
         "R700", "SM", "GTO", "HOCK", "WB MANUAL", "BAODER", "KSB", "M1", "M2", "M3",
@@ -174,158 +150,205 @@ function TampilanDailyJO() {
     const [selectedJO, setSelectedJO] = useState<any>(null);
     const [selectedIndex, setSelectedIndex] = useState<any>();
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // State for month and year selection
+
+    // Function to handle month navigation
+    const handleMonthChange = (direction: 'next' | 'prev') => {
+        const currentDate = new Date(selectedMonth + '-01');
+        currentDate.setMonth(
+            currentDate.getMonth() + (direction === 'next' ? 1 : -1)
+        );
+
+        setSelectedMonth(currentDate.toISOString().slice(0, 7));
+        getJadwalView(
+            currentDate.toISOString().slice(0, 7) + '-01',
+            new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).toISOString().slice(0, 10)
+        );
+    };
+
+
+    const getFormattedDate = (date: any) => {
+        return date.toISOString().split("T")[0]; // Format YYYY-MM-DD
+    };
+    const normalizeMesin = (mesin: string) => {
+        const lowerMesin = mesin.toLowerCase().replace(/\s|-/g, ""); // Remove spaces & dashes
+
+        if (lowerMesin.includes("manual1") || lowerMesin === "manual") return "M1";
+        if (lowerMesin.includes("manual2")) return "M2";
+        if (lowerMesin.includes("manual3")) return "M3";
+
+        return lowerMesin.toUpperCase(); // Ensure it's in uppercase for consistency
+    };
     const [hoveredJobOrder, setHoveredJobOrder] = useState<any>(null);
+    function calculateRowHeight(machine: string) {
+        const machineData = mapData.filter((d: any) => normalizeMesin(d.mesin) === normalizeMesin(machine));
+        const baseHeight = 30; // Default row height
+        const additionalHeightPerJob = 4; // Height for each additional job
+        return baseHeight + (Math.max(machineData.length - 1, 0) * additionalHeightPerJob);
+    }
+
     return (
         <main className="overflow-x-scroll ' ">
             {isLoading && <Loading />}
             <div className="min-w-[700px]  bg-white rounded-xl flex gap-1  px-4 py-4">
                 <>
                     <div className='flex w-full flex-col '>
-
+                        <div className='flex w-full justify-end'>
+                            <button
+                                onClick={() => setIsDetailVisible(!isDetailVisible)}
+                                className=" bg-primary text-white font-semibold text-md flex justify-center w-[10%] rounded-md"
+                            >
+                                {isDetailVisible ? "Hide JO Terjadwal " : "Show JO Terjadwal"}
+                            </button>
+                        </div>
                         <div className='flex flex-col gap-3 w-full py-3 border-b-4 border-stroke'>
-                            <div className='flex w-full justify-end'>
+                            <div className="flex w-full justify-between items-center">
                                 <button
-                                    onClick={() => setIsDetailVisible(!isDetailVisible)}
-                                    className=" bg-primary text-white font-semibold text-md flex justify-center w-[10%] rounded-md"
-                                >
-                                    {isDetailVisible ? "Hide JO Terjadwal " : "Show JO Terjadwal"}
-                                </button>
-                            </div>
-                            <div className="flex flex-col gap-2  w-[30%]">
-                                <p className="text-sm text-primary font-semibold">
-                                    Tanggal:
-                                </p>
-                                <input
-                                    className='rounded-md bg-[#D8EAFF] px-2 h-8'
-                                    type="date"
-                                    onChange={(e) => {
-                                        setStartDate(e.target.value)
-                                        setEndDate(e.target.value)
-                                    }}
-                                ></input>
-
-                            </div>
-
-                            <div className="flex ">
-                                <button
-                                    onClick={() => {
-                                        getJadwalView(startDate, endDate)
-                                    }}
-                                    className="bg-primary text-white  rounded-md my-auto py-1 px-2"
-                                >
-                                    Tampilkan
-                                </button>
-
-                            </div>
-                            <div className="flex w-full justify-between">
-                                <button
-                                    onClick={() => handleNextPrev('prev')}
-                                    className="bg-primary text-white rounded-md my-auto py-1 px-2"
+                                    onClick={() => handleMonthChange('prev')}
+                                    className="bg-primary text-white rounded-md py-1 px-2"
                                 >
                                     Prev
                                 </button>
 
+                                <input
+                                    type="month"
+                                    value={selectedMonth}
+                                    onChange={(e) => {
+                                        setSelectedMonth(e.target.value);
+                                        const lastDay = new Date(
+                                            parseInt(e.target.value.split('-')[0]),
+                                            parseInt(e.target.value.split('-')[1]),
+                                            0
+                                        );
+                                        getJadwalView(
+                                            e.target.value + '-01',
+                                            lastDay.toISOString().slice(0, 10)
+                                        );
+                                    }}
+                                    className='rounded-md bg-[#D8EAFF] px-2 h-8'
+                                />
+
                                 <button
-                                    onClick={() => handleNextPrev('next')}
-                                    className="bg-primary text-white rounded-md my-auto py-1 px-2"
+                                    onClick={() => handleMonthChange('next')}
+                                    className="bg-primary text-white rounded-md py-1 px-2"
                                 >
                                     Next
                                 </button>
-
                             </div>
-                            <label className='text-xl text-blue-400 font-semibold w-full flex justify-center'>
-                                {convertTimeStampToDate(startDate)}
-                            </label>
+
                         </div>
 
-                        <div className="flex w-full flex-col">
-                            {/* Header Row (Ensures All Machines Are Always Visible) */}
-                            <div className="flex bg-white border-b-8 border-[#D8EAFF]">
-                                <p className="text-center text-[#0065de] text-[11px] w-[6%] font-semibold py-[1%]">
-                                    TIME
-                                </p>
-                                {machineList.map((machine, i1) => (
-                                    <div
-                                        key={i1}
-                                        className={`flex w-[6%] justify-center items-center ${i1 % 2 === 1 ? "bg-white" : "bg-[#eaf4ff]"}`}
-                                    >
-                                        <p className="text-center text-[#0065de] text-[11px] font-semibold">
-                                            {machine}
-                                        </p>
+                        <div className="overflow-x-auto">
+                            <div className="flex">
+                                {/* Machine Columns */}
+                                <div className="flex flex-col w-[12%] border-r border-[#D8EAFF]">
+                                    <div className="h-10 border-b border-[#D8EAFF] bg-[#eaf4ff] flex items-center justify-center">
+                                        <p className="text-[#0065de] text-[11px] font-semibold">Machines</p>
                                     </div>
-                                ))}
-                            </div>
-
-                            {/* Rows for Hours and Data */}
-                            <div className="flex w-full bg-white border-b-8 border-[#D8EAFF] flex-col">
-                                {hours.map((hour, rowIndex) => (
-                                    <div key={rowIndex} className="flex border-b-8 border-[#D8EAFF]">
-                                        {/* Hour Column */}
-                                        <div className="flex w-[6%] py-[1%] justify-center items-center">
-                                            <p className="text-center text-[#0065de] text-[11px] font-semibold">
-                                                {hour}
-                                            </p>
+                                    {machineList.map((machine, index) => (
+                                        <div
+                                            key={index}
+                                            className={`flex items-center justify-center ${index % 2 === 0 ? 'bg-[#F0F7FF]' : 'bg-white'}`}
+                                            style={{
+                                                height: `${calculateRowHeight(machine)}px`
+                                            }}
+                                        >
+                                            <p className="text-[#0065de] text-[11px] font-semibold">{machine}</p>
                                         </div>
+                                    ))}
+                                </div>
 
-                                        {/* Machine Columns (Ensures Data Matches Mesin & Hour) */}
-                                        {machineList.map((machine, colIndex) => {
-                                            // Normalize mesin name for flexible matching
-                                            const normalizeMesin = (mesin: string) => {
-                                                const lowerMesin = mesin.toLowerCase().replace(/\s|-/g, ""); // Remove spaces & dashes
-
-                                                if (lowerMesin.includes("manual1") || lowerMesin === "manual") return "M1";
-                                                if (lowerMesin.includes("manual2")) return "M2";
-                                                if (lowerMesin.includes("manual3")) return "M3";
-
-                                                return lowerMesin.toUpperCase(); // Ensure it's in uppercase for consistency
-                                            };
-
-                                            // Find matching data
-                                            const matchingData = mapData.find(
-                                                (d: any) =>
-                                                    d.jam === hour &&
-                                                    normalizeMesin(d.mesin) === machine // Direct comparison
-                                            );
-
-                                            return (
-                                                <div
-                                                    key={colIndex}
-                                                    className={`flex w-[6%] justify-center items-center ${colIndex % 2 === 1 ? "bg-white" : "bg-[#eaf4ff]"
-                                                        }`}
-                                                >
-                                                    {matchingData ? (
-                                                        <button
-                                                            onClick={() => openModal3(matchingData?.id)}
-                                                            onMouseEnter={() => setHoveredJobOrder(matchingData)}
-                                                            onMouseLeave={() => setHoveredJobOrder(null)}
-                                                            className="text-center text-[#0065de] text-[11px] font-semibold"
-                                                        >
-                                                            {matchingData.no_jo}
-                                                        </button>
-                                                    ) : (
-                                                        <p className="text-[#bbb] text-[11px]">-</p> // Placeholder for empty slot
-                                                    )}
-
-                                                    {matchingData && showModal3[matchingData?.id] && (
-                                                        <ModalKosongan
-                                                            isOpen={showModal3[matchingData?.id]}
-                                                            onClose={() => closeModal3(matchingData?.id)}
-                                                            judul={"Drag And Drop Edit"}
-                                                        >
-                                                            <PopUpTable2
-                                                                dataMap={mapData.find((data: any) => data.id === matchingData?.id)}
-                                                                onClose={() => closeModal3(matchingData?.id)}
-                                                                onFinish={() => getJadwalView(startDate, endDate)}
-                                                            />
-                                                        </ModalKosongan>
-                                                    )}
+                                {/* Date Columns */}
+                                <div className="flex flex-grow overflow-x-auto">
+                                    <div className="flex">
+                                        {generateMonthDates().map((date, dateIndex) => (
+                                            <div
+                                                key={dateIndex}
+                                                className="flex flex-col w-[50px] border-r border-[#D8EAFF]"
+                                            >
+                                                {/* Date Header */}
+                                                <div className="h-10 border-b border-[#D8EAFF] bg-[#eaf4ff] flex items-center justify-center">
+                                                    <p className="text-[#0065de] text-[11px] font-semibold">
+                                                        {date.getDate()}
+                                                    </p>
                                                 </div>
-                                            );
-                                        })}
+
+                                                {/* Machine Cells */}
+                                                {machineList.map((machine, machineIndex) => {
+                                                    const normalizedMachine = normalizeMesin(machine);
+
+                                                    // Filter data for this specific date and machine
+                                                    const matchingData = mapData.filter((d: any) => {
+                                                        const dateTanggal = new Date(d.tanggal);
+                                                        return (
+                                                            dateTanggal.getFullYear() === date.getFullYear() &&
+                                                            dateTanggal.getMonth() === date.getMonth() &&
+                                                            dateTanggal.getDate() === date.getDate() &&
+                                                            normalizeMesin(d.mesin) === normalizedMachine
+                                                        );
+                                                    });
+
+                                                    // Unique job orders tracking
+                                                    const uniqueJobOrders: string[] = [];
+
+                                                    return (
+                                                        <div
+                                                            key={machineIndex}
+                                                            className={`flex items-center justify-center ${machineIndex % 2 === 0 ? 'bg-[#F0F7FF]' : 'bg-white'}`}
+                                                            style={{
+                                                                height: `${calculateRowHeight(machine)}px`
+                                                            }}
+                                                        >
+                                                            {matchingData.length > 0 && (
+                                                                <div className="flex flex-col items-center gap-1">
+                                                                    {matchingData.map((data: any, index: number) => {
+                                                                        // Color assignment logic
+                                                                        let jobOrderColorClass = '';
+                                                                        const existingIndex = uniqueJobOrders.indexOf(data.no_jo);
+
+                                                                        if (existingIndex !== -1) {
+                                                                            jobOrderColorClass = jobOrderColors[existingIndex % jobOrderColors.length];
+                                                                        } else {
+                                                                            uniqueJobOrders.push(data.no_jo);
+                                                                            jobOrderColorClass = jobOrderColors[uniqueJobOrders.length - 1 % jobOrderColors.length];
+                                                                        }
+
+                                                                        return (
+
+                                                                            <button
+                                                                                onMouseEnter={() => setHoveredJobOrder(data)}
+                                                                                onMouseLeave={() => setHoveredJobOrder(null)}
+                                                                                className={`text-[8px] font-semibold border border-opacity-50 p-0.5 rounded-sm ${jobOrderColorClass}`}
+                                                                            >
+                                                                                {data.no_jo}
+
+                                                                            </button>
+
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
+                                </div>
                             </div>
+
+                            {/* Optional: Detailed Hover Card */}
+                            {hoveredJobOrder && (
+                                <div className="fixed bottom-4 right-4 bg-white s p-4 rounded-md border-2 border-black">
+                                    <h3 className="font-bold text-sm mb-2">Job Order Details</h3>
+                                    <p>Job Order: {hoveredJobOrder.no_jo}</p>
+                                    <p>Item: {hoveredJobOrder.item}</p>
+                                    {/* Add more details as needed */}
+                                </div>
+                            )}
                         </div>
+
                         {isDetailVisible && (
                             <div className="fixed right-0 top-7 h-full w-[70%] bg-white shadow-lg p-4 overflow-y-auto rounded-xl ">
                                 <h2 className="text-lg font-bold mb-4">Job Order List</h2>
@@ -398,14 +421,7 @@ function TampilanDailyJO() {
 
                             </div>
                         )}
-                        {hoveredJobOrder && (
-                            <div className="fixed bottom-4 right-4 bg-white s p-4 rounded-md border-2 border-black">
-                                <h3 className="font-bold text-sm mb-2">Job Order Details</h3>
-                                <p>Job Order: {hoveredJobOrder.no_jo}</p>
-                                <p>Item: {hoveredJobOrder.item}</p>
-                                {/* Add more details as needed */}
-                            </div>
-                        )}
+
                     </div>
                     {isModalOpen && selectedJO && (
                         <ModalXL
@@ -594,4 +610,4 @@ function TampilanDailyJO() {
     )
 }
 
-export default TampilanDailyJO
+export default TampilanMonthlyJO
