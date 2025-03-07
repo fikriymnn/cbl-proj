@@ -5,6 +5,7 @@ import axios from 'axios';
 import formatInteger from '../../../utils/formaterInteger';
 import ModalKosonganSmall from '../../../components/Modals/ModalKosonganSmall';
 import Loading from '../../../components/Loading';
+import ModalKosongan from '../../../components/Modals/Qc/NCR/NCRResponQC';
 
 function Stockmaster() {
   const [stokSparepart, setStokSparepart] = useState<any>(null);
@@ -12,6 +13,7 @@ function Stockmaster() {
   useEffect(() => {
     getStokSparepart();
     getMesin();
+    getMasterGrade();
   }, []);
 
   async function getStokSparepart() {
@@ -63,7 +65,7 @@ function Stockmaster() {
   const [lokasi, setLokasi] = useState<any>();
   const [mesinEdit, setMesinEdit] = useState<any>();
 
-  async function editStock(id: any) {
+  async function editStock(id: any, i: any) {
     const url = `${import.meta.env.VITE_API_LINK}/stokSparepart/${id}`;
     try {
       setIsLoading(true)
@@ -81,6 +83,7 @@ function Stockmaster() {
         },
       );
       setIsLoading(false)
+      closeEdit(i)
       getStokSparepart()
       alert('Edit Success');
       console.log(res.data);
@@ -90,6 +93,96 @@ function Stockmaster() {
       console.log(error.response);
     }
   }
+  const [addItem, setAddItem] = useState({
+    kode: '',
+    nama_sparepart: '',
+    id_mesin: 0,
+    part_number: '',
+    lokasi: '',
+    limit_stok: 0,
+    id_grade: '',
+    type_part: '',
+    foto: '',
+    keterangan: '',
+    umur_sparepart: 0,
+    stok: 0,
+  });
+  const [masterGrade, setmasterGrade] = useState<any>();;
+
+  async function getMasterGrade() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/grade`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+
+      setmasterGrade(res.data);
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
+
+
+
+  async function addStok() {
+    const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
+    try {
+      const res = await axios.post(
+        url,
+        {
+          kode: addItem.kode,
+          nama_sparepart: addItem.nama_sparepart,
+          id_mesin: addItem.id_mesin,
+          part_number: addItem.part_number,
+          lokasi: addItem.lokasi,
+          limit_stok: addItem.limit_stok,
+          id_grade: addItem.id_grade,
+          type_part: addItem.type_part,
+          stok: addItem.stok,
+          foto: addItem.foto,
+          keterangan: addItem.keterangan,
+          umur_sparepart: addItem.umur_sparepart,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+      alert('Add Success');
+      getStokSparepart()
+      closeModalHistory()
+      console.log(res.data);
+    } catch (error: any) {
+      alert(error.response.data.msg);
+      console.log(error.response);
+    }
+  }
+
+  //change value Data
+  const handleChangeData = (e: any) => {
+    const { name, value } = e.target;
+    const onchangeVal: any = addItem;
+    onchangeVal[name] = value;
+    setAddItem(onchangeVal);
+  };
+  const [showHistory, setShowHistory] = useState(false);
+  const openModalHistory = () => setShowHistory(true);
+  const closeModalHistory = () => setShowHistory(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredData = stokSparepart
+    ?.filter((data: any) =>
+      [data.kode, data.mesin.nama_mesin, data.part_number, data.nama_sparepart]
+        .some((field) =>
+          field?.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+    )
+    .slice()
+    .sort((a: any, b: any) => {
+      const numA = parseInt(a.kode.match(/\d+/)?.[0] || "0", 10);
+      const numB = parseInt(b.kode.match(/\d+/)?.[0] || "0", 10);
+      return numA - numB;
+    });
   return (
     <DefaultLayout>
       <>
@@ -99,18 +192,299 @@ function Stockmaster() {
         </p>
         <div className="w-full py-2 rounded-md bg-white p-3 flex gap-5">
           <div className="flex justify-between w-full">
-            <input
-              type="text"
-              placeholder="Cari Barang"
-              className="w-4/12 bg-[#D8EAFF] rounded-sm px-2"
-            />
+            <div className='w-[50%] flex text-sm'>
+              <input
+                type="text"
+                placeholder="Cari Berdasarkan kode, mesin, part number, atau nama sparepart"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="border p-2 mb-4 w-full"
+              />
+            </div>
             <div className="flex gap-5">
-              <Link
-                to={'addStock'}
+              <button
+                onClick={() => openModalHistory()}
                 className="px-3 py-2 bg-green-600 text-white  font-semibold text-xs rounded-md"
               >
                 ADD ITEM
-              </Link>
+              </button>
+              {showHistory == true && (
+                <>
+                  <ModalKosongan
+                    isOpen={showHistory}
+                    onClose={() => closeModalHistory()}
+                    judul={'Tambah Item'}
+                  >
+                    <>
+                      <div className="grid md:grid-cols-3 gap-5 p-3 bg-white text-black">
+                        <div className="mt-5 flex flex-col justify-center px-2">
+                          <p className="text-xs font-semibold">Kode barang</p>
+                          <div className="flex justify-center items-center">
+                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                              <input
+                                name="kode"
+                                onChange={(e) => handleChangeData(e)}
+                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                                }`}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-5 flex flex-col justify-center px-2">
+                          <p className="text-xs font-semibold">Part Number</p>
+                          <div className="flex justify-center items-center">
+                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                              <input
+                                name="part_number"
+                                onChange={(e) => handleChangeData(e)}
+                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                                }`}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-5 flex flex-col justify-center px-2">
+                          <p className="text-xs font-semibold">Nama Barang</p>
+                          <div className="flex justify-center items-center">
+                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                              <input
+                                name="nama_sparepart"
+                                onChange={(e) => handleChangeData(e)}
+                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                                }`}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-5 flex flex-col justify-center px-2">
+                          <p className="text-xs font-semibold">Nama Mesin</p>
+                          <div className="flex justify-center items-center">
+                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                              <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                <svg
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 20 20"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                ></svg>
+                              </span>
+
+                              <select
+                                name="id_mesin"
+                                onChange={(e) => handleChangeData(e)}
+                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                            }`}
+                              >
+                                <option value="" className="text-body dark:text-bodydark">
+                                  Select Mesin
+                                </option>
+                                {mesin?.map((data: any, index: number) => {
+                                  return (
+                                    <option
+                                      key={index}
+                                      value={data.id}
+                                      className="text-body dark:text-bodydark"
+                                    >
+                                      {data.nama_mesin}
+                                    </option>
+                                  );
+                                })}
+
+                              </select>
+
+                              <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
+                                <svg
+                                  width="24"
+                                  height="24"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <g opacity="0.8">
+                                    <path
+                                      fillRule="evenodd"
+                                      clipRule="evenodd"
+                                      d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                      fill="#637381"
+                                    ></path>
+                                  </g>
+                                </svg>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-5 flex flex-col justify-center px-2">
+                          <p className="text-xs font-semibold">Lokasi</p>
+                          <div className="flex justify-center items-center">
+                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                              <input
+                                name="lokasi"
+                                onChange={(e) => handleChangeData(e)}
+                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                            }`}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-5 flex flex-col justify-center px-2">
+                          <p className="text-xs font-semibold">Quantity Stok</p>
+                          <div className="flex justify-center items-center">
+                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                              <input
+                                name="stok"
+                                onChange={(e) => handleChangeData(e)}
+                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                            }`}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-5 flex flex-col justify-center px-2">
+                          <p className="text-xs font-semibold">Umur Original</p>
+                          <div className="flex justify-center items-center">
+                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                              <input
+                                name="umur_sparepart"
+                                onChange={(e) => handleChangeData(e)}
+                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                                }`}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-5 flex flex-col justify-center px-2">
+                          <p className="text-xs font-semibold">Grade (keperluan awal)</p>
+                          <div className="flex justify-center items-center">
+                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                              <select
+                                name="id_grade"
+                                onChange={(e) => handleChangeData(e)}
+                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                                }`}
+                              >
+                                <option value="" className="text-body dark:text-bodydark">
+                                  Select Grade
+                                </option>
+                                {masterGrade?.map((data: any, index: number) => {
+                                  return (
+                                    <option
+                                      key={index}
+                                      value={data.id}
+                                      className="text-body dark:text-bodydark"
+                                    >
+                                      {data.grade} - {data.percent}
+                                    </option>
+                                  );
+                                })}
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-5 flex flex-col justify-center px-2">
+                          <p className="text-xs font-semibold">Type Part </p>
+                          <div className="flex justify-center items-center">
+                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                              <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
+                                <svg
+                                  width="20"
+                                  height="20"
+                                  viewBox="0 0 20 20"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                ></svg>
+                              </span>
+
+                              <select
+                                name="type_part"
+                                onChange={(e) => handleChangeData(e)}
+                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                            }`}
+                              >
+                                <option
+                                  value=""
+                                  selected
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  SELECT DATA
+                                </option>
+                                <option
+                                  value="CONSUMABLE"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  CONSUMABLE
+                                </option>
+                                <option
+                                  value="NON CONSUMABLE"
+                                  className="text-body dark:text-bodydark"
+                                >
+                                  NON CONSUMABLE
+                                </option>
+                              </select>
+
+                              <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
+                                <svg
+                                  width="24"
+                                  height="24"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <g opacity="0.8">
+                                    <path
+                                      fillRule="evenodd"
+                                      clipRule="evenodd"
+                                      d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
+                                      fill="#637381"
+                                    ></path>
+                                  </g>
+                                </svg>
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-5 flex flex-col justify-center px-2">
+                          <p className="text-xs font-semibold">
+                            Set Buffer Stock (Khusus Consumable)
+                          </p>
+                          <div className="flex justify-center items-center">
+                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                              <input
+                                name="limit_stok"
+                                onChange={(e) => handleChangeData(e)}
+                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                                }`}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-5 flex flex-col justify-center px-2">
+                          <p className="text-xs font-semibold">Foto</p>
+                          <div className="flex justify-center items-center">
+                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
+                              <input
+                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
+                                                }`}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex justify-end items-end ">
+                          <button
+                            onClick={() => {
+                              addStok(), console.log(addItem);
+                            }}
+                            className="bg-green-500 h-9 w-full text-white font-semibold rounded-md text-xs"
+                          >
+                            SAVE
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  </ModalKosongan>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -131,7 +505,7 @@ function Stockmaster() {
           </div>
         </div>
 
-        {stokSparepart
+        {filteredData
           ?.slice() // Make a shallow copy to avoid mutating original data
           .sort((a: any, b: any) => {
             const numA = parseInt(a.kode.match(/\d+/)?.[0] || "0", 10);
@@ -262,7 +636,7 @@ function Stockmaster() {
 
                                 <div className=" pt-3">
                                   <button
-                                    onClick={() => editStock(data.id)}
+                                    onClick={() => editStock(data.id, i)}
                                     className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
                                   >
                                     SIMPAN

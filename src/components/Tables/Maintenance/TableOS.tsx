@@ -971,39 +971,55 @@ function TableOS() {
                                   )}
                                 </div>
                               </div>
+                              {data.proses_mtcs?.map((proses: any, index: any) => (
+                                proses.status_proses === 'qc rejected' && (
+                                  <tr key={index} className=" text-sm px-4 py-4">
+                                    <td className=" p-2 text-red-400 font-bold">QC Rejected</td>
+                                    <td className=" p-2 text-center font-medium">
+                                      {proses.user_qc?.nama} - {proses.note_qc}
+                                    </td>
+
+                                  </tr>
+                                )
+                              ))}
                               {data.waktu_selesai == null ? '' :
                                 <>
-                                  < div className='px-5 pt-1'>
-                                    <p className="text-xs font-bold">Waktu Tiket Masuk</p>
-                                    <p className="text-xs font-medium">
-                                      {dateMtc}
-                                    </p>
-                                  </div>
-
-                                  < div className='px-5 pt-1'>
-                                    <p className="text-xs font-bold">Waktu Validasi QC</p>
-                                    <p className="text-xs font-medium">
-                                      {data.user_respon_qc?.nama} ~ {convertTimeStampToDateTime(data.waktu_respon_qc)} ~ {waktuValidasiQC}
-                                    </p>
-                                  </div>
-                                  <div className='px-5 pt-1'>
-                                    <p className="text-xs font-bold">Waktu Breakdown MTC</p>
-                                    <p className="text-xs font-medium">
-                                      {convertTimeStampToDateTime(data.waktu_mulai_mtc)} ~ {waktuBreakdownMTC}
-                                    </p>
-                                  </div>
-                                  <div className='px-5 pt-1'>
-                                    <p className="text-xs font-bold">Waktu Verifikasi QC</p>
-                                    <p className="text-xs font-medium">
-                                      {data.proses_mtcs?.at(-1)?.user_qc?.nama} ~ {convertTimeStampToDateTime(data.proses_mtcs?.at(-1)?.waktu_selesai)} ~ {waktuVerifikasiQC}
-                                    </p>
-                                  </div>
-                                  < div className='px-5 pt-1'>
-                                    <p className="text-xs font-bold">Waktu Breakdown</p>
-                                    <p className="text-xs font-medium">
-                                      {waktuBreakdown}
-                                    </p>
-                                  </div>
+                                  <table className="w-full border-collapse font-sans text-xs mx-auto">
+                                    <thead>
+                                      <tr className="bg-gray-200">
+                                        <th className="border border-gray-300 p-2 text-left">Keterangan</th>
+                                        <th className="border border-gray-300 p-2 text-left">Detail</th>
+                                        <th className="border border-gray-300 p-2 text-left">Waktu</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      <tr className="border-b border-gray-300">
+                                        <td className="border border-gray-300 p-2">Waktu Tiket Masuk</td>
+                                        <td className="border border-gray-300 p-2">{dateMtc}</td>
+                                        <td className="border border-gray-300 p-2">-</td>
+                                      </tr>
+                                      <tr className="border-b border-gray-300">
+                                        <td className="border border-gray-300 p-2">Waktu Validasi QC</td>
+                                        <td className="border border-gray-300 p-2">{data.user_respon_qc?.nama} ~ {convertTimeStampToDateTime(data.waktu_respon_qc)}</td>
+                                        <td className="border border-gray-300 p-2">{waktuValidasiQC}</td>
+                                      </tr>
+                                      <tr className="border-b border-gray-300">
+                                        <td className="border border-gray-300 p-2">Waktu Breakdown MTC</td>
+                                        <td className="border border-gray-300 p-2">{convertTimeStampToDateTime(data.waktu_mulai_mtc)} - {convertTimeStampToDateTime(data.waktu_selesai_mtc)} </td>
+                                        <td className="border border-gray-300 p-2"> {waktuBreakdownMTC}</td>
+                                      </tr>
+                                      <tr className="border-b border-gray-300">
+                                        <td className="border border-gray-300 p-2">Waktu Verifikasi QC</td>
+                                        <td className="border border-gray-300 p-2">{data.proses_mtcs?.at(-1)?.user_qc?.nama} ~ {convertTimeStampToDateTime(data.proses_mtcs?.at(-1)?.waktu_selesai)} </td>
+                                        <td className="border border-gray-300 p-2"> {waktuVerifikasiQC}</td>
+                                      </tr>
+                                      <tr className="border-b border-gray-300">
+                                        <td className="border border-gray-300 p-2">Waktu Breakdown</td>
+                                        <td className="border border-gray-300 p-2">-</td>
+                                        <td className="border border-gray-300 p-2">{waktuBreakdown}</td>
+                                      </tr>
+                                    </tbody>
+                                  </table>
                                 </>
                               }
                             </div>
