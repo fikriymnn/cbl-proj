@@ -53,7 +53,7 @@ function IsiJabatan() {
                     withCredentials: true,
                 });
             setIsLoading(false)
-            window.location.reload();
+            closeModalHistory()
             getKaryawan()
             console.log(res.data);
         } catch (error: any) {
@@ -77,7 +77,7 @@ function IsiJabatan() {
     };
 
     const [namaDepartmentEdit, setnamaDepartmentEdit] = useState<any>();
-    async function editMasterMesin(id: number) {
+    async function editMasterMesin(id: number, i: any) {
 
         const url = `${import.meta.env.VITE_API_LINK}/master/hr/jabatan/${id}`;
         try {
@@ -92,7 +92,7 @@ function IsiJabatan() {
                     withCredentials: true,
                 });
             setIsLoading(false)
-            window.location.reload();
+            closeEdit(i)
             getKaryawan()
             console.log(res.data);
         } catch (error: any) {
@@ -100,7 +100,26 @@ function IsiJabatan() {
             console.log(error);
         }
     }
+    async function deleteMasterMesin(id: number, jbt: any) {
+        if (window.confirm(`Apakah Anda yakin ingin Menghapus Jabatan ${jbt}`)) {
+            const url = `${import.meta.env.VITE_API_LINK}/master/hr/jabatan/${id}`;
+            try {
+                setIsLoading(true)
+                const res = await axios.delete(url,
+                    {
 
+                        withCredentials: true,
+                    });
+                setIsLoading(false)
+
+                getKaryawan()
+                console.log(res.data);
+            } catch (error: any) {
+                setIsLoading(false)
+                console.log(error);
+            }
+        }
+    }
     return (
         <div>
             <>
@@ -120,7 +139,7 @@ function IsiJabatan() {
                                         <ModalKosonganSmall
                                             isOpen={showHistory}
                                             onClose={() => closeModalHistory()}
-                                            judul={'Tambah Divisi'}
+                                            judul={'Tambah Jabatan'}
                                         >
                                             <>
                                                 <div className="grid   gap-3 w-full px-5 py-2">
@@ -226,7 +245,7 @@ function IsiJabatan() {
                                                                 <div className=" pt-3">
                                                                     <button
                                                                         disabled={isLoading}
-                                                                        onClick={() => editMasterMesin(data.id)}
+                                                                        onClick={() => editMasterMesin(data.id, i)}
                                                                         className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
                                                                     >
                                                                         SIMPAN
@@ -238,7 +257,11 @@ function IsiJabatan() {
                                                     </>
                                                 </ModalKosonganSmall>
                                             )}
-
+                                            {/* <button
+                                                onClick={() => deleteMasterMesin(i, data.nama_jabatan)}
+                                                className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                                                DELETE
+                                            </button> */}
                                         </div>
                                     </>
                                 ))}
