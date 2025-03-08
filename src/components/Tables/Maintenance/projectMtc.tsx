@@ -9,6 +9,8 @@ import Loading from '../../Loading';
 
 import ModalKosongan from '../../Modals/Qc/NCR/NCRResponQC';
 import convertTimeStampToDate from '../../../utils/convertDate';
+import ModalXL from '../PPIC/JadwalProduksi/ModalXL';
+import ModalFull from '../PPIC/JadwalProduksi/ModalFull';
 
 // import moment from 'moment';
 
@@ -84,15 +86,24 @@ function ProjectMtc() {
                     withCredentials: true,
                 }
             );
+            setTask('')
+            setStart('')
+            setEnd('')
+            setDays('')
+            setDone('')
+            setWork_days('')
+            setLead('')
+            setQty('')
+            setProblem('')
             CloseTambah();
             getTiket();
-            console.log(res.data);
+
         } catch (error) {
             console.log(error);
         }
     }
 
-    async function putTask(id: any) {
+    async function putTask(id: any, i: any) {
 
         try {
             const url = `${import.meta.env.VITE_API_LINK}/mtc/ProjectMtc/${id}`;
@@ -117,10 +128,11 @@ function ProjectMtc() {
             setDaysEdit('')
             setDoneEdit('')
             setWork_daysEdit('')
+            closeModalEditPJ(i)
             alert('Data Berhasil Di-Update')
             getTiket()
 
-            console.log(res.data);
+
         } catch (error: any) {
             console.log(error);
         }
@@ -148,9 +160,19 @@ function ProjectMtc() {
 
                     withCredentials: true,
                 });
+            setTask('')
+            setStart('')
+            setEnd('')
+            setDays('')
+            setDone('')
+            setWork_days('')
+            setLead('')
+            setQty('')
+            setProblem('')
             getTiket()
             closeModal1(i)
-            console.log(res.data);
+
+
         } catch (error: any) {
             console.log(error);
         }
@@ -303,7 +325,7 @@ function ProjectMtc() {
             });
 
             setmasterMesin(res.data);
-            console.log(res.data);
+
         } catch (error: any) {
             console.log(error.data.msg);
         }
@@ -335,7 +357,7 @@ function ProjectMtc() {
             }
             setShowModal1(data);
             setShowModalEdit(data)
-            console.log(data)
+
 
 
         } catch (error: any) {
@@ -348,10 +370,188 @@ function ProjectMtc() {
     const [showDetail, setShowDetail] = useState<boolean[]>(
         new Array(tiket != null && tiket.length).fill(false),
     );
+    const [showView, setShowView] = useState<any>(false)
+    const OpenView = () => {
+
+        setShowView(true);
+    };
+    const CloseView = () => {
+
+        setShowView(false);
+    };
+    const calculateTimeProgress = (start: any, end: any) => {
+        if (!start || !end) {
+            console.error("Invalid timestamps:", { start, end });
+            return { progress: 0 };
+        }
+
+        // Convert to JavaScript Date objects directly (since they are already in ISO format)
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        const today = new Date();
+
+        // Ensure startDate and endDate are valid
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+            console.error("Invalid Date conversion:", { startDate, endDate });
+            return { progress: 0 };
+        }
+
+        // Reset time (hours, minutes, seconds) for accurate date-based calculations
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(23, 59, 59, 999);
+        today.setHours(0, 0, 0, 0);
+
+        // If today is before the start date, progress is 0%
+        if (today < startDate) return { progress: 0 };
+
+        // If today is after the end date, progress is 100%
+        if (today > endDate) return { progress: 100 };
+
+        // Calculate progress based on elapsed days
+        const totalDays = Math.max(1, (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        const elapsedDays = (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+
+        // Ensure percentage stays within range
+        const progress = Math.min(100, Math.max(0, Math.round((elapsedDays / totalDays) * 100)));
+
+        return { progress };
+    };
+
+
+
+
     return (
         <main>
             <div className="flex  gap-1 items-center bg-white ">
                 {isLoading && <Loading />}
+                <div className='w-full flex  p-3'>
+
+                    <div className="flex ">
+                        <button
+                            onClick={() => OpenView()}
+                            className="bg-primary text-white px-5 py-2 rounded-md my-auto font-semibold"
+                        >
+                            Open Overview Progress
+                        </button>
+
+                    </div>
+                    {showView == true && (
+                        <>
+                            <ModalFull
+                                isOpen={showView}
+                                onClose={() => CloseView()}
+                                judul={'View Task'}
+                            >
+                                <>
+                                    <div className="w-full px-4 py-6 bg-white rounded-lg shadow-md">
+                                        <h2 className="text-xl font-bold mb-6 text-gray-800">Task Progress Overview</h2>
+
+                                        {tiket != null && tiket.data.map((data: any, i: any) => {
+                                            const mainTimelineStatus = calculateTimeProgress(data.start, data.end);
+
+                                            return (
+                                                <div key={i} className="mb-8">
+                                                    <div className="flex justify-between mb-1">
+                                                        <span className="text-sm font-semibold text-black">{data.task}</span>
+                                                        <span className="text-sm font-bold">{data.done}%</span>
+                                                    </div>
+
+                                                    {/* Date range display for main task */}
+                                                    <div className="flex justify-between mb-1">
+                                                        <span className="text-xs text-gray-600">
+                                                            Done Progress :
+                                                        </span>
+                                                        <span className="text-xs text-gray-600">
+                                                            {data.days} days | {data.work_days} work days
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Main Task Progress Bar (Completion %) */}
+                                                    <div className="w-full bg-gray-200 rounded-full h-4 mb-1">
+                                                        <div
+                                                            className="bg-blue-600 h-4 rounded-full"
+                                                            style={{ width: `${Math.min(100, Math.max(0, data.done))}%` }}
+                                                        ></div>
+                                                    </div>
+
+                                                    {/* Timeline Progress Bar for Main Task */}
+                                                    <div className="flex justify-between mb-1">
+                                                        <span className="text-xs text-gray-600">Timeline progress : {convertTimeStampToDate(data.start)} - {convertTimeStampToDate(data.end)}</span>
+                                                        <span className="text-xs text-gray-600">{mainTimelineStatus.progress}%</span>
+                                                    </div>
+                                                    <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                                                        <div
+                                                            className="h-2 rounded-full bg-orange-400"
+                                                            style={{ width: `${Math.min(100, Math.max(0, mainTimelineStatus.progress))}%` }}
+                                                        ></div>
+                                                    </div>
+
+                                                    {/* Subtasks Section */}
+                                                    <div className="pl-4 border-l-2 border-gray-300">
+                                                        {data.sub_project && data.sub_project.map((data2: any, ii: any) => {
+                                                            const subTimelineStatus = calculateTimeProgress(data2.start, data2.end);
+
+                                                            return (
+                                                                <div key={ii} className="mb-4">
+                                                                    <div className="flex justify-between mb-1">
+                                                                        <span className="text-sm font-semibold text-black">{data2.task}</span>
+                                                                        <span className="text-sm font-medium">{data2.done}%</span>
+                                                                    </div>
+
+                                                                    {/* Date range display for subtask */}
+                                                                    <div className="flex justify-between mb-1">
+                                                                        <span className="text-xs text-gray-600">
+                                                                            Done Progress :
+                                                                        </span>
+                                                                        <span className="text-xs text-gray-600">
+                                                                            Lead: {data2.lead || 'N/A'} | Qty: {data2.qty || 'N/A'}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    {/* Subtask Progress Bar (Completion %) */}
+                                                                    <div className="w-full bg-gray-200 rounded-full h-3 mb-1">
+                                                                        <div
+                                                                            className="bg-green-500 h-3 rounded-full"
+                                                                            style={{ width: `${Math.min(100, Math.max(0, data2.done))}%` }}
+                                                                        ></div>
+                                                                    </div>
+
+                                                                    {/* Timeline Progress Bar for Subtask */}
+                                                                    <div className="flex justify-between mb-1">
+                                                                        <span className="text-xs text-gray-600">Timeline progress :  {convertTimeStampToDate(data2.start)} - {convertTimeStampToDate(data2.end)}</span>
+
+                                                                        <span className="text-xs text-gray-600">{subTimelineStatus.progress}%</span>
+
+                                                                    </div>
+                                                                    <div className="w-full bg-gray-200 rounded-full h-1.5 mb-1">
+                                                                        <div
+                                                                            className="h-1.5 rounded-full bg-yellow-400"
+                                                                            style={{ width: `${Math.min(100, Math.max(0, subTimelineStatus.progress))}%` }}
+                                                                        ></div>
+                                                                    </div>
+
+                                                                    {/* Problem display if present */}
+                                                                    {data2.problem && (
+                                                                        <div className="mt-1">
+                                                                            <span className="text-xs text-red-600">
+                                                                                Problem: {data2.problem}
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                </>
+                            </ModalFull>
+                        </>
+                    )}
+                </div>
                 <div className='w-full flex justify-end p-3'>
 
                     <div className="flex ">
@@ -492,15 +692,7 @@ function ProjectMtc() {
                         <div className="flex gap-2 col-span-2">
                             <p className="text-xs font-bold ">TASK</p>
                         </div>
-                        <div className="flex gap-2 ">
-                            <p className="text-xs font-bold ">LEAD</p>
-                        </div>
-                        <div className="flex gap-2 ">
-                            <p className="text-xs font-bold ">QTY</p>
-
-                        </div>
-                        <div className="flex gap-2 col-span-2">
-                            <p className="text-xs font-bold ">PROBLEM</p>
+                        <div className="flex gap-2 col-span-4">
 
                         </div>
                         <div className="flex gap-2">
@@ -633,113 +825,88 @@ function ProjectMtc() {
                                                                     <>
 
 
-                                                                        <div className="grid grid-cols-2 px-[1%] py-[1%] gap-2">
-                                                                            <div className="flex w-full gap-2 flex-row">
-                                                                                <label className="text-black text-xs font-bold w-10">
-                                                                                    Task
-                                                                                </label>
-                                                                                <div className="flex w-full">
-                                                                                    <input
-                                                                                        defaultValue={data.task}
-                                                                                        name="serial_number"
-                                                                                        onChange={(e) => { setTaskEdit(e.target.value) }}
-                                                                                        type="text"
-                                                                                        className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                                                    />
-                                                                                </div>
-
+                                                                        <div className="grid grid-cols-2 gap-4 px-4 py-3">
+                                                                            <div className="flex flex-col w-full">
+                                                                                <label className="text-black text-xs font-bold mb-1">Task</label>
+                                                                                <input
+                                                                                    defaultValue={data.task}
+                                                                                    name="serial_number"
+                                                                                    onChange={(e) => setTaskEdit(e.target.value)}
+                                                                                    type="text"
+                                                                                    className="w-full h-10 px-3 py-2 border-2 border-stroke rounded-md"
+                                                                                />
                                                                             </div>
 
-                                                                            <div className="flex w-full flex-row gap-2">
+                                                                            <div className="flex flex-col w-full">
 
-                                                                                <label className="text-black text-xs font-bold w-10">
-                                                                                    Start
-                                                                                </label>
-
-                                                                                <div className="flex w-full flex-col">
-                                                                                    <label className="text-black text-xs font-bold ">
-                                                                                        {(data.start == null || data.start == 0) ? '-' : convertTimeStampToDate(data.start)}
-                                                                                    </label>
-                                                                                    <input
-                                                                                        name="nama_mesin"
-                                                                                        onChange={(e) => { setStartEdit(e.target.value) }}
-                                                                                        type="date"
-                                                                                        className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                                                    />
-                                                                                </div>
-
+                                                                                <span className="text-black text-xs font-bold mb-1">
+                                                                                    Start : {data.start == null || data.start == 0 ? '-' : convertTimeStampToDate(data.start)}
+                                                                                </span>
+                                                                                <input
+                                                                                    name="nama_mesin"
+                                                                                    onChange={(e) => setStartEdit(e.target.value)}
+                                                                                    type="date"
+                                                                                    className="w-full h-10 px-3 py-2 border-2 border-stroke rounded-md"
+                                                                                />
                                                                             </div>
-                                                                            <div className="flex w-full flex-row gap-2">
-                                                                                <label className="text-black text-xs font-bold w-10">
-                                                                                    End
-                                                                                </label>
-                                                                                <div className="flex w-full flex-col">
-                                                                                    <label className="text-black text-xs font-bold">
-                                                                                        {(data.end == null || data.end == 0) ? '-' : convertTimeStampToDate(data.end)}
-                                                                                    </label>
-                                                                                    <input
-                                                                                        name="kode_mesin"
-                                                                                        onChange={(e) => { setEndEdit(e.target.value) }}
-                                                                                        type="date"
-                                                                                        className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                                                    />
-                                                                                </div>
 
+                                                                            <div className="flex flex-col w-full">
+
+                                                                                <span className="text-black text-xs font-bold mb-1">
+                                                                                    End : {data.end == null || data.end == 0 ? '-' : convertTimeStampToDate(data.end)}
+                                                                                </span>
+                                                                                <input
+                                                                                    name="kode_mesin"
+                                                                                    onChange={(e) => setEndEdit(e.target.value)}
+                                                                                    type="date"
+                                                                                    className="w-full h-10 px-3 py-2 border-2 border-stroke rounded-md"
+                                                                                />
                                                                             </div>
-                                                                            <div className="flex w-full flex-row gap-2">
-                                                                                <label className="text-black text-xs font-bold w-10">
-                                                                                    Days
-                                                                                </label>
-                                                                                <div className="flex w-full">
-                                                                                    <input
-                                                                                        defaultValue={data.days}
-                                                                                        name="lokasi_mesin"
-                                                                                        onChange={(e) => { setDaysEdit(e.target.value) }}
-                                                                                        type="text"
-                                                                                        className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                                                    />
-                                                                                </div>
 
+                                                                            <div className="flex flex-col w-full">
+                                                                                <label className="text-black text-xs font-bold mb-1">Days</label>
+                                                                                <input
+                                                                                    defaultValue={data.days}
+                                                                                    name="lokasi_mesin"
+                                                                                    onChange={(e) => setDaysEdit(e.target.value)}
+                                                                                    type="text"
+                                                                                    className="w-full h-10 px-3 py-2 border-2 border-stroke rounded-md"
+                                                                                />
                                                                             </div>
-                                                                            <div className="flex w-full flex-row gap-2">
-                                                                                <label className="text-black text-xs font-bold w-10">
-                                                                                    Done
-                                                                                </label>
-                                                                                <div className="flex w-full">
-                                                                                    <input
-                                                                                        defaultValue={data.done}
-                                                                                        name="bagian_mesin"
-                                                                                        onChange={(e) => { setDoneEdit(e.target.value) }}
-                                                                                        type="text"
-                                                                                        className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                                                    />
-                                                                                </div>
 
+                                                                            <div className="flex flex-col w-full">
+                                                                                <label className="text-black text-xs font-bold mb-1">Done</label>
+                                                                                <input
+                                                                                    defaultValue={data.done}
+                                                                                    name="bagian_mesin"
+                                                                                    onChange={(e) => setDoneEdit(e.target.value)}
+                                                                                    type="text"
+                                                                                    className="w-full h-10 px-3 py-2 border-2 border-stroke rounded-md"
+                                                                                />
                                                                             </div>
-                                                                            <div className="flex w-full flex-row gap-2">
-                                                                                <label className="text-black text-xs font-bold w-10">
-                                                                                    Work Days
-                                                                                </label>
-                                                                                <div className="flex w-full">
-                                                                                    <input
-                                                                                        defaultValue={data.work_days}
-                                                                                        name="bagian_mesin"
-                                                                                        onChange={(e) => { setWork_daysEdit(e.target.value) }}
-                                                                                        type="text"
-                                                                                        className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                                                    />
-                                                                                </div>
 
+                                                                            <div className="flex flex-col w-full">
+                                                                                <label className="text-black text-xs font-bold mb-1">Work Days</label>
+                                                                                <input
+                                                                                    defaultValue={data.work_days}
+                                                                                    name="bagian_mesin"
+                                                                                    onChange={(e) => setWork_daysEdit(e.target.value)}
+                                                                                    type="text"
+                                                                                    className="w-full h-10 px-3 py-2 border-2 border-stroke rounded-md"
+                                                                                />
                                                                             </div>
                                                                         </div>
-                                                                        <div className="flex w-full justify-end">
+
+                                                                        <div className="flex w-full justify-end pt-4">
                                                                             <button
-                                                                                onClick={() => putTask(data.id)}
-                                                                                className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
+                                                                                onClick={() => putTask(data.id, i)}
+                                                                                className="bg-[#0065DE] text-white text-xs font-bold px-6 py-3 rounded-md shadow-md hover:bg-[#0055C4] transition"
                                                                             >
                                                                                 EDIT PROJECT
                                                                             </button>
                                                                         </div>
+
+
 
                                                                     </>
 
@@ -780,7 +947,7 @@ function ProjectMtc() {
                                                                             key={ii}
                                                                             className=" py-3 w-10 px-3 flex justify-center items-center"
                                                                         >
-                                                                            {data2.id_project}.{ii + 1}
+                                                                            {i + 1}.{ii + 1}
                                                                         </div>
                                                                         <div className="grid grid-cols-12 w-full gap-2 ">
                                                                             <div className="flex flex-col md:gap-5 gap-1 w-full col-span-2">
@@ -829,21 +996,21 @@ function ProjectMtc() {
                                                                             <div className="flex flex-col md:gap-5 gap-1 ">
                                                                                 <div className="my-auto">
                                                                                     <p className="text-xs font-medium">
-                                                                                        {data2.days}
+                                                                                        {data2.days} Hari
                                                                                     </p>
                                                                                 </div>
                                                                             </div>
                                                                             <div className="flex items-center md:gap-5 gap-1  p-2">
                                                                                 <div className="my-auto">
                                                                                     <p className="text-xs font-medium">
-                                                                                        {data2.done}
+                                                                                        {data2.done} %
                                                                                     </p>
                                                                                 </div>
                                                                             </div>
                                                                             <div className="flex flex-col md:gap-5 gap-1">
                                                                                 <div className="my-auto">
                                                                                     <p className="text-xs font-medium">
-                                                                                        {data2.work_days}
+                                                                                        {data2.work_days} Hari
                                                                                     </p>
                                                                                 </div>
                                                                             </div>
@@ -866,136 +1033,124 @@ function ProjectMtc() {
                                                                                                     judul={'Edit Sub-Task'}
                                                                                                 >
                                                                                                     <>
-                                                                                                        <div className="grid grid-cols-3 gap-2 px-[1%] py-[1%]">
-
-                                                                                                            <div>
-                                                                                                                <div className='flex flex-col '>
-                                                                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                                                        NAMA TASK
-                                                                                                                    </label>
+                                                                                                        <div className="grid grid-cols-3 gap-4 px-4 py-4">
+                                                                                                            <div className="space-y-4">
+                                                                                                                <div className="flex flex-col">
+                                                                                                                    <label className="text-black text-xs font-bold">NAMA TASK</label>
                                                                                                                     <input
                                                                                                                         name="task"
                                                                                                                         defaultValue={data2.task}
-                                                                                                                        onChange={(e) => { setTaskEdit(e.target.value) }}
+                                                                                                                        onChange={(e) => setTaskEdit(e.target.value)}
                                                                                                                         type="text"
-                                                                                                                        className=" w-full  border-2 border-stroke rounded-md"
+                                                                                                                        className="w-full border-2 border-stroke rounded-md p-2"
                                                                                                                     />
                                                                                                                 </div>
-                                                                                                                <div className='flex flex-col '>
-                                                                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                                                        TANGGAL MULAI
-                                                                                                                    </label>
-                                                                                                                    <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                                                                <div className="flex flex-col">
+                                                                                                                    <label className="text-black text-xs font-bold">TANGGAL MULAI</label>
+                                                                                                                    <label className="text-[#7a7a7a] text-sm">
                                                                                                                         {(data2.start == null || data2.start == 0) ? '-' : convertTimeStampToDate(data2.start)}
                                                                                                                     </label>
                                                                                                                     <input
                                                                                                                         name="start"
-                                                                                                                        onChange={(e) => { setStartEdit(e.target.value) }}
+
+                                                                                                                        onChange={(e) => setStartEdit(e.target.value)}
                                                                                                                         type="date"
-                                                                                                                        className=" w-full  border-2 border-stroke rounded-md"
+                                                                                                                        className="w-full border-2 border-stroke rounded-md p-2"
                                                                                                                     />
                                                                                                                 </div>
-                                                                                                                <div className='flex flex-col '>
-                                                                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                                                        TANGGAL SELESAI
-                                                                                                                    </label>
-                                                                                                                    <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+
+                                                                                                                <div className="flex flex-col">
+                                                                                                                    <label className="text-black text-xs font-bold">TANGGAL SELESAI</label>
+                                                                                                                    <label className="text-[#7a7a7a] text-sm">
                                                                                                                         {(data2.end == null || data2.end == 0) ? '-' : convertTimeStampToDate(data2.end)}
                                                                                                                     </label>
                                                                                                                     <input
                                                                                                                         name="end"
-                                                                                                                        onChange={(e) => { setEndEdit(e.target.value) }}
+
+                                                                                                                        onChange={(e) => setEndEdit(e.target.value)}
                                                                                                                         type="date"
-                                                                                                                        className=" w-full  border-2 border-stroke rounded-md"
+                                                                                                                        className="w-full border-2 border-stroke rounded-md p-2"
                                                                                                                     />
                                                                                                                 </div>
+
                                                                                                             </div>
-                                                                                                            <div>
-                                                                                                                <div className='flex flex-col '>
-                                                                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                                                        LEAD
-                                                                                                                    </label>
+
+                                                                                                            <div className="space-y-4">
+                                                                                                                <div className="flex flex-col">
+                                                                                                                    <label className="text-black text-xs font-bold">LEAD</label>
                                                                                                                     <input
                                                                                                                         name="lead"
                                                                                                                         defaultValue={data2.lead}
-                                                                                                                        onChange={(e) => { setLeadEdit(e.target.value) }}
+                                                                                                                        onChange={(e) => setLeadEdit(e.target.value)}
                                                                                                                         type="text"
-                                                                                                                        className=" w-full  border-2 border-stroke rounded-md"
+                                                                                                                        className="w-full border-2 border-stroke rounded-md p-2"
                                                                                                                     />
                                                                                                                 </div>
-                                                                                                                <div className='flex flex-col '>
-                                                                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                                                        QTY
-                                                                                                                    </label>
+                                                                                                                <div className="flex flex-col">
+                                                                                                                    <label className="text-black text-xs font-bold">QTY</label>
                                                                                                                     <input
                                                                                                                         name="qty"
                                                                                                                         defaultValue={data2.qty}
-                                                                                                                        onChange={(e) => { setQtyEdit(e.target.value) }}
+                                                                                                                        onChange={(e) => setQtyEdit(e.target.value)}
                                                                                                                         type="text"
-                                                                                                                        className=" w-full  border-2 border-stroke rounded-md"
+                                                                                                                        className="w-full border-2 border-stroke rounded-md p-2"
                                                                                                                     />
                                                                                                                 </div>
-                                                                                                                <div className='flex flex-col '>
-                                                                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                                                        PROBLEM
-                                                                                                                    </label>
+                                                                                                                <div className="flex flex-col">
+                                                                                                                    <label className="text-black text-xs font-bold">PROBLEM</label>
                                                                                                                     <input
                                                                                                                         name="problem"
                                                                                                                         defaultValue={data2.problem}
-                                                                                                                        onChange={(e) => { setProblemEdit(e.target.value) }}
+                                                                                                                        onChange={(e) => setProblemEdit(e.target.value)}
                                                                                                                         type="text"
-                                                                                                                        className=" w-full  border-2 border-stroke rounded-md"
+                                                                                                                        className="w-full border-2 border-stroke rounded-md p-2"
                                                                                                                     />
                                                                                                                 </div>
                                                                                                             </div>
-                                                                                                            <div>
-                                                                                                                <div className='flex flex-col '>
-                                                                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                                                        DAYS
-                                                                                                                    </label>
+
+                                                                                                            <div className="space-y-4">
+                                                                                                                <div className="flex flex-col">
+                                                                                                                    <label className="text-black text-xs font-bold">DAYS</label>
                                                                                                                     <input
                                                                                                                         name="days"
                                                                                                                         defaultValue={data2.days}
-                                                                                                                        onChange={(e) => { setDaysEdit(e.target.value) }}
+                                                                                                                        onChange={(e) => setDaysEdit(e.target.value)}
                                                                                                                         type="text"
-                                                                                                                        className=" w-full  border-2 border-stroke rounded-md"
+                                                                                                                        className="w-full border-2 border-stroke rounded-md p-2"
                                                                                                                     />
                                                                                                                 </div>
-                                                                                                                <div className='flex flex-col '>
-                                                                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                                                        %DONE
-                                                                                                                    </label>
+                                                                                                                <div className="flex flex-col">
+                                                                                                                    <label className="text-black text-xs font-bold">%DONE</label>
                                                                                                                     <input
                                                                                                                         name="done"
                                                                                                                         defaultValue={data2.done}
-                                                                                                                        onChange={(e) => { setDoneEdit(e.target.value) }}
+                                                                                                                        onChange={(e) => setDoneEdit(e.target.value)}
                                                                                                                         type="text"
-                                                                                                                        className=" w-full  border-2 border-stroke rounded-md"
+                                                                                                                        className="w-full border-2 border-stroke rounded-md p-2"
                                                                                                                     />
                                                                                                                 </div>
-                                                                                                                <div className='flex flex-col '>
-                                                                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                                                        WORK DAYS
-                                                                                                                    </label>
+                                                                                                                <div className="flex flex-col">
+                                                                                                                    <label className="text-black text-xs font-bold">WORK DAYS</label>
                                                                                                                     <input
                                                                                                                         name="work_days"
                                                                                                                         defaultValue={data2.work_days}
-                                                                                                                        onChange={(e) => { setWork_daysEdit(e.target.value) }}
+                                                                                                                        onChange={(e) => setWork_daysEdit(e.target.value)}
                                                                                                                         type="text"
-                                                                                                                        className=" w-full  border-2 border-stroke rounded-md"
+                                                                                                                        className="w-full border-2 border-stroke rounded-md p-2"
                                                                                                                     />
                                                                                                                 </div>
                                                                                                             </div>
                                                                                                         </div>
 
-                                                                                                        <div className="flex w-full justify-end">
+                                                                                                        <div className="flex w-full justify-end mt-4">
                                                                                                             <button
                                                                                                                 onClick={() => PutSubTask(data2.id)}
-                                                                                                                className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
+                                                                                                                className="bg-[#0065DE] text-white text-xs font-bold px-6 py-3 rounded-md transition duration-200 hover:bg-[#0051b3]"
                                                                                                             >
                                                                                                                 SIMPAN
                                                                                                             </button>
                                                                                                         </div>
+
 
                                                                                                     </>
                                                                                                 </ModalKosongan>
@@ -1033,199 +1188,200 @@ function ProjectMtc() {
                                                         judul={'Tambah Sub-Task'}
                                                     >
                                                         <>
-                                                            <form onSubmit={(e) => {
-                                                                e.preventDefault()
-                                                                TambahSubTask(data.id, i)
-                                                            }}>
-                                                                <div className="grid grid-cols-2 gap-2 px-[1%] py-[1%]">
-                                                                    <div>
-                                                                        <div className='flex flex-col '>
-                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                NAMA TASK
+                                                            <form
+                                                                onSubmit={(e) => {
+                                                                    e.preventDefault();
+                                                                    TambahSubTask(data.id, i);
+                                                                }}
+                                                                className="bg-white rounded-lg shadow-md p-4"
+                                                            >
+                                                                {/* Parent Task Information */}
+                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 bg-gray-50 p-4 rounded-md">
+                                                                    <div className="space-y-3">
+                                                                        <div className="flex flex-col">
+                                                                            <label className="text-gray-700 text-xs font-bold uppercase">
+                                                                                Main Task
                                                                             </label>
-                                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                            <span className="text-gray-600 text-lg font-medium">
                                                                                 {data.task}
-                                                                            </label>
+                                                                            </span>
                                                                         </div>
-                                                                        <div className='flex flex-col '>
-                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                TANGGAL MULAI
+                                                                        <div className="flex flex-col">
+                                                                            <label className="text-gray-700 text-xs font-bold uppercase">
+                                                                                Start Date
                                                                             </label>
-                                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                            <span className="text-gray-600 text-lg font-medium">
                                                                                 {(data.start == null || data.start == 0) ? '-' : convertTimeStampToDate(data.start)}
-                                                                            </label>
+                                                                            </span>
                                                                         </div>
-                                                                        <div className='flex flex-col '>
-                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                TANGGAL SELESAI
+                                                                        <div className="flex flex-col">
+                                                                            <label className="text-gray-700 text-xs font-bold uppercase">
+                                                                                End Date
                                                                             </label>
-                                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                            <span className="text-gray-600 text-lg font-medium">
                                                                                 {(data.end == null || data.end == 0) ? '-' : convertTimeStampToDate(data.end)}
-                                                                            </label>
+                                                                            </span>
                                                                         </div>
                                                                     </div>
-                                                                    <div>
-                                                                        <div className='flex flex-col '>
-                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                DAYS
+                                                                    <div className="space-y-3">
+                                                                        <div className="flex flex-col">
+                                                                            <label className="text-gray-700 text-xs font-bold uppercase">
+                                                                                Total Days
                                                                             </label>
-                                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                            <span className="text-gray-600 text-lg font-medium">
                                                                                 {data.days}
-                                                                            </label>
+                                                                            </span>
                                                                         </div>
-                                                                        <div className='flex flex-col '>
-                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                %DONE
+                                                                        <div className="flex flex-col">
+                                                                            <label className="text-gray-700 text-xs font-bold uppercase">
+                                                                                Completion
                                                                             </label>
-                                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                            <span className="text-gray-600 text-lg font-medium">
                                                                                 {data.done} %
-                                                                            </label>
+                                                                            </span>
                                                                         </div>
-                                                                        <div className='flex flex-col '>
-                                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                                WORK DAYS
+                                                                        <div className="flex flex-col">
+                                                                            <label className="text-gray-700 text-xs font-bold uppercase">
+                                                                                Work Days
                                                                             </label>
-                                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                                            <span className="text-gray-600 text-lg font-medium">
                                                                                 {data.work_days}
-                                                                            </label>
+                                                                            </span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <div className="grid grid-cols-2 gap-2 px-[1%] py-[1%]">
-                                                                    <div className="flex w-full gap-2 flex-row  ">
-                                                                        <label className="text-black text-xs font-bold w-13">
-                                                                            Task
-                                                                        </label>
-                                                                        <div className="flex w-full">
-                                                                            <input
-                                                                                name="serial_number"
-                                                                                onChange={(e) => { setTask(e.target.value) }}
-                                                                                type="text"
-                                                                                className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                                            />
-                                                                        </div>
 
-                                                                    </div>
-                                                                    <div className="flex w-full flex-row gap-2  ">
-                                                                        <label className="text-black text-xs font-bold w-13">
-                                                                            Start
-                                                                        </label>
-                                                                        <div className="flex w-full">
-                                                                            <input
-                                                                                name="nama_mesin"
-                                                                                onChange={(e) => { setStart(e.target.value) }}
-                                                                                type="date"
-                                                                                className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                                            />
-                                                                        </div>
+                                                                {/* Subtask Form Fields */}
+                                                                <h3 className="text-lg font-bold text-gray-800 mb-4">Add Subtask</h3>
 
-                                                                    </div>
-                                                                    <div className="flex w-full flex-row gap-2  ">
-                                                                        <label className="text-black text-xs font-bold w-13">
-                                                                            End
+                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                                                    {/* Task Name */}
+                                                                    <div className="space-y-1">
+                                                                        <label className="block text-sm font-semibold text-gray-700">
+                                                                            Task Name
                                                                         </label>
-                                                                        <div className="flex w-full">
-                                                                            <input
-                                                                                name="kode_mesin"
-                                                                                onChange={(e) => { setEnd(e.target.value) }}
-                                                                                type="date"
-                                                                                className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                                            />
-                                                                        </div>
-
+                                                                        <input
+                                                                            type="text"
+                                                                            onChange={(e) => setTask(e.target.value)}
+                                                                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                                                            required
+                                                                        />
                                                                     </div>
-                                                                    <div className="flex w-full flex-row gap-2  ">
-                                                                        <label className="text-black text-xs font-bold w-13">
-                                                                            Days
+
+                                                                    {/* Start Date */}
+                                                                    <div className="space-y-1">
+                                                                        <label className="block text-sm font-semibold text-gray-700">
+                                                                            Start Date
                                                                         </label>
-                                                                        <div className="flex w-full">
-                                                                            <input
-                                                                                name="lokasi_mesin"
-                                                                                onChange={(e) => { setDays(e.target.value) }}
-                                                                                type="text"
-                                                                                className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                                            />
-                                                                        </div>
-
+                                                                        <input
+                                                                            type="date"
+                                                                            onChange={(e) => setStart(e.target.value)}
+                                                                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                                                            required
+                                                                        />
                                                                     </div>
-                                                                    <div className="flex w-full flex-row gap-2  ">
-                                                                        <label className="text-black text-xs font-bold w-13">
-                                                                            Done
+
+                                                                    {/* End Date */}
+                                                                    <div className="space-y-1">
+                                                                        <label className="block text-sm font-semibold text-gray-700">
+                                                                            End Date
                                                                         </label>
-                                                                        <div className="flex w-full">
-                                                                            <input
-                                                                                name="bagian_mesin"
-                                                                                onChange={(e) => { setDone(e.target.value) }}
-                                                                                type="text"
-                                                                                className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                                            />
-                                                                        </div>
-
+                                                                        <input
+                                                                            type="date"
+                                                                            onChange={(e) => setEnd(e.target.value)}
+                                                                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                                                            required
+                                                                        />
                                                                     </div>
-                                                                    <div className="flex w-full flex-row gap-2  ">
-                                                                        <label className="text-black text-xs font-bold w-13">
-                                                                            Work Days
+
+                                                                    {/* Days (Auto-calculated) */}
+                                                                    <div className="space-y-1">
+                                                                        <label className="block text-sm font-semibold text-gray-700">
+                                                                            Total Days
                                                                         </label>
-                                                                        <div className="flex w-full">
-                                                                            <input
-                                                                                name="bagian_mesin"
-                                                                                onChange={(e) => { setWork_days(e.target.value) }}
-                                                                                type="text"
-                                                                                className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                                            />
-                                                                        </div>
-
+                                                                        <input
+                                                                            type="text"
+                                                                            value={days}
+                                                                            className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm focus:outline-none transition-all"
+                                                                            readOnly
+                                                                        />
+                                                                        <p className="text-xs text-gray-500">Auto-calculated</p>
                                                                     </div>
-                                                                    <div className="flex w-full flex-row gap-2  ">
-                                                                        <label className="text-black text-xs font-bold w-13">
+
+                                                                    {/* Done Percentage */}
+                                                                    <div className="space-y-1">
+                                                                        <label className="block text-sm font-semibold text-gray-700">
+                                                                            Completion (%)
+                                                                        </label>
+                                                                        <input
+                                                                            type="number"
+                                                                            min="0"
+                                                                            max="100"
+                                                                            onChange={(e) => setDone(e.target.value)}
+                                                                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                                                            placeholder="0-100"
+                                                                            required
+                                                                        />
+                                                                    </div>
+
+                                                                    {/* Work Days (Auto-calculated) */}
+                                                                    <div className="space-y-1">
+                                                                        <label className="block text-sm font-semibold text-gray-700">
+                                                                            Work Days (Mon-Fri)
+                                                                        </label>
+                                                                        <input
+                                                                            type="text"
+                                                                            value={work_days}
+                                                                            className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm focus:outline-none transition-all"
+                                                                            readOnly
+                                                                        />
+                                                                        <p className="text-xs text-gray-500">Auto-calculated</p>
+                                                                    </div>
+
+                                                                    {/* Lead */}
+                                                                    <div className="space-y-1">
+                                                                        <label className="block text-sm font-semibold text-gray-700">
                                                                             Lead
                                                                         </label>
-                                                                        <div className="flex w-full">
-                                                                            <input
-                                                                                name="bagian_mesin"
-                                                                                onChange={(e) => { setLead(e.target.value) }}
-                                                                                type="text"
-                                                                                className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                                            />
-                                                                        </div>
-
+                                                                        <input
+                                                                            type="text"
+                                                                            onChange={(e) => setLead(e.target.value)}
+                                                                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                                                        />
                                                                     </div>
-                                                                    <div className="flex w-full flex-row gap-2  ">
-                                                                        <label className="text-black text-xs font-bold w-13">
-                                                                            QTY
-                                                                        </label>
-                                                                        <div className="flex w-full">
-                                                                            <input
-                                                                                name="bagian_mesin"
-                                                                                onChange={(e) => { setQty(e.target.value) }}
-                                                                                type="text"
-                                                                                className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                                            />
-                                                                        </div>
 
+                                                                    {/* QTY */}
+                                                                    <div className="space-y-1">
+                                                                        <label className="block text-sm font-semibold text-gray-700">
+                                                                            Quantity
+                                                                        </label>
+                                                                        <input
+                                                                            type="number"
+                                                                            onChange={(e) => setQty(e.target.value)}
+                                                                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                                                        />
                                                                     </div>
-                                                                    <div className="flex w-full flex-row gap-2  ">
-                                                                        <label className="text-black text-xs font-bold w-13 ">
-                                                                            Problem
-                                                                        </label>
-                                                                        <div className="flex w-full">
-                                                                            <input
-                                                                                name="bagian_mesin"
-                                                                                onChange={(e) => { setProblem(e.target.value) }}
-                                                                                type="text"
-                                                                                className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                                            />
-                                                                        </div>
 
+                                                                    {/* Problem */}
+                                                                    <div className="space-y-1 md:col-span-2">
+                                                                        <label className="block text-sm font-semibold text-gray-700">
+                                                                            Problem Description
+                                                                        </label>
+                                                                        <input
+                                                                            type="text"
+                                                                            onChange={(e) => setProblem(e.target.value)}
+                                                                            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                                                        />
                                                                     </div>
                                                                 </div>
-                                                                <div className="flex w-full justify-end">
+
+                                                                {/* Submit Button */}
+                                                                <div className="flex justify-end mt-4">
                                                                     <button
-                                                                        type='submit'
-                                                                        value='submit'
-                                                                        className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
+                                                                        type="submit"
+                                                                        className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                                                                     >
-                                                                        SIMPAN
+                                                                        Save Subtask
                                                                     </button>
                                                                 </div>
                                                             </form>
@@ -1246,7 +1402,7 @@ function ProjectMtc() {
                             color="primary"
                             onChange={(e, i) => {
                                 setPage(i);
-                                console.log(i);
+
                             }}
                         />
                     </Stack>
