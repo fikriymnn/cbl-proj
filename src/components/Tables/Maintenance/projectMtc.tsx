@@ -34,31 +34,60 @@ function ProjectMtc() {
     const [LeadEdit, setLeadEdit] = useState<any>()
     const [QtyEdit, setQtyEdit] = useState<any>()
     const [ProblemEdit, setProblemEdit] = useState<any>()
+    useEffect(() => {
+        if (start && end) {
+            // Calculate total days between dates
+            const startDate = new Date(start);
+            const endDate = new Date(end);
 
-    async function TambahTask() {
+            // Calculate total days (including start and end days)
+            const diffTime = Math.abs(endDate.getTime() - startDate.getTime());
+            const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            setDays(totalDays.toString());
 
+            // Calculate work days (Monday to Friday)
+            let workDaysCount = 0;
+            const currentDate = new Date(startDate);
+
+            while (currentDate <= endDate) {
+                // 0 = Sunday, 1-5 = Monday-Friday, 6 = Saturday
+                const dayOfWeek = currentDate.getDay();
+                if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+                    workDaysCount++;
+                }
+                // Move to next day
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            setWork_days(workDaysCount.toString());
+        } else {
+            setDays('');
+            setWork_days('');
+        }
+    }, [start, end]);
+
+    async function TambahTask(e: any) {
+        e.preventDefault();
         try {
             const url = `${import.meta.env.VITE_API_LINK}/mtc/ProjectMtc`;
-            const res = await axios.post(url,
+            const res = await axios.post(
+                url,
                 {
-
                     task: task,
                     start: start,
                     end: end,
                     days: days,
                     done: done,
                     work_days: work_days,
-
-
                 },
                 {
-
                     withCredentials: true,
-                });
-            window.location.reload();
-
+                }
+            );
+            CloseTambah();
+            getTiket();
             console.log(res.data);
-        } catch (error: any) {
+        } catch (error) {
             console.log(error);
         }
     }
@@ -96,7 +125,7 @@ function ProjectMtc() {
             console.log(error);
         }
     }
-    async function TambahSubTask(id: any) {
+    async function TambahSubTask(id: any, i: any) {
 
         try {
             const url = `${import.meta.env.VITE_API_LINK}/mtc/subProjectMtc`;
@@ -119,8 +148,8 @@ function ProjectMtc() {
 
                     withCredentials: true,
                 });
-
-            window.location.reload();
+            getTiket()
+            closeModal1(i)
             console.log(res.data);
         } catch (error: any) {
             console.log(error);
@@ -344,122 +373,109 @@ function ProjectMtc() {
                             judul={'Tambah Task'}
                         >
                             <>
-                                <form onSubmit={(e) => {
-                                    e.preventDefault()
-                                    TambahTask()
-                                }}>
-                                    <div className="grid grid-cols-2 px-[1%] py-[1%] gap-2">
-                                        <div className="flex w-full gap-2 flex-row">
-                                            <label className="text-black text-xs font-bold w-10">
-                                                Task
-                                            </label>
+                                <form onSubmit={TambahTask} className="bg-white rounded-lg shadow-md p-6">
+                                    <h2 className="text-xl font-bold text-gray-800 mb-4">Add New Task</h2>
 
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                        {/* Task Selection */}
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Machine
+                                            </label>
                                             <select
-                                                onChange={(e) => {
-                                                    setTask(e.target.value);
-                                                    // changeTextColor();
-                                                }}
-                                                className={`relative z-20 w-full  appearance-none rounded-md  text-xs bg-blue-100 py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${'text-gray-800 dark:text-white'}`}
+                                                onChange={(e) => setTask(e.target.value)}
+                                                className="w-full px-3 py-2 bg-blue-50 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                                required
                                             >
-                                                <option
-                                                    value={''}
-                                                    selected
-                                                    disabled
-                                                    className="text-gray-800 text-xs font-light dark:text-bodydark"
-                                                >
-                                                    Select Mesin
+                                                <option value="" disabled selected>
+                                                    Select Machine
                                                 </option>
-                                                {masterMesin?.map((data: any, i: number) => {
-                                                    return (
-                                                        <option
-                                                            value={data.nama_mesin}
-                                                            className="text-gray-800 text-xs font-light dark:text-bodydark"
-                                                        >
-                                                            {data.nama_mesin}
-                                                        </option>
-                                                    );
-                                                })}
+                                                {masterMesin?.map((data: any, i: any) => (
+                                                    <option key={i} value={data.nama_mesin}>
+                                                        {data.nama_mesin}
+                                                    </option>
+                                                ))}
                                             </select>
-
                                         </div>
-                                        <div className="flex w-full flex-row gap-2">
-                                            <label className="text-black text-xs font-bold w-10">
-                                                Start
-                                            </label>
-                                            <div className="flex w-full">
-                                                <input
-                                                    name="nama_mesin"
-                                                    onChange={(e) => { setStart(e.target.value) }}
-                                                    type="date"
-                                                    className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                />
-                                            </div>
 
+                                        {/* Start Date */}
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Start Date
+                                            </label>
+                                            <input
+                                                type="date"
+                                                onChange={(e) => setStart(e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                                required
+                                            />
                                         </div>
-                                        <div className="flex w-full flex-row gap-2">
-                                            <label className="text-black text-xs font-bold w-10">
-                                                End
-                                            </label>
-                                            <div className="flex w-full">
-                                                <input
-                                                    name="kode_mesin"
-                                                    onChange={(e) => { setEnd(e.target.value) }}
-                                                    type="date"
-                                                    className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                />
-                                            </div>
 
+                                        {/* End Date */}
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                End Date
+                                            </label>
+                                            <input
+                                                type="date"
+                                                onChange={(e) => setEnd(e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                                required
+                                            />
                                         </div>
-                                        <div className="flex w-full flex-row gap-2">
-                                            <label className="text-black text-xs font-bold w-10">
-                                                Days
-                                            </label>
-                                            <div className="flex w-full">
-                                                <input
-                                                    name="lokasi_mesin"
-                                                    onChange={(e) => { setDays(e.target.value) }}
-                                                    type="text"
-                                                    className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                />
-                                            </div>
 
+                                        {/* Done Percentage */}
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Completion (%)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="100"
+                                                onChange={(e) => setDone(e.target.value)}
+                                                className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                                placeholder="0-100"
+                                                required
+                                            />
                                         </div>
-                                        <div className="flex w-full flex-row gap-2">
-                                            <label className="text-black text-xs font-bold w-10">
-                                                Done
-                                            </label>
-                                            <div className="flex w-full">
-                                                <input
-                                                    name="bagian_mesin"
-                                                    onChange={(e) => { setDone(e.target.value) }}
-                                                    type="text"
-                                                    className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                />
-                                            </div>
 
+                                        {/* Total Days (Calculated) */}
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Total Days
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={days}
+                                                className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm focus:outline-none transition-all"
+                                                readOnly
+                                            />
+                                            <p className="text-xs text-gray-500">Automatically calculated</p>
                                         </div>
-                                        <div className="flex w-full flex-row gap-2">
-                                            <label className="text-black text-xs font-bold w-10">
-                                                Work Days
-                                            </label>
-                                            <div className="flex w-full">
-                                                <input
-                                                    name="bagian_mesin"
-                                                    onChange={(e) => { setWork_days(e.target.value) }}
-                                                    type="text"
-                                                    className=" w-full h-10 border-2 border-stroke rounded-md"
-                                                />
-                                            </div>
 
+                                        {/* Work Days (Calculated) */}
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium text-gray-700">
+                                                Work Days (Mon-Fri)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={work_days}
+                                                className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md text-sm focus:outline-none transition-all"
+                                                readOnly
+                                            />
+                                            <p className="text-xs text-gray-500">Automatically calculated</p>
                                         </div>
                                     </div>
-                                    <div className="flex w-full justify-end">
+
+                                    {/* Submit Button */}
+                                    <div className="flex justify-end mt-6">
                                         <button
-                                            type='submit'
-                                            value='submit'
-                                            className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
+                                            type="submit"
+                                            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                                         >
-                                            TAMBAH PROJECT
+                                            Add Project
                                         </button>
                                     </div>
                                 </form>
@@ -572,21 +588,21 @@ function ProjectMtc() {
                                                     <div className="flex flex-col md:gap-5 gap-1 ">
                                                         <div className="my-auto">
                                                             <p className="text-xs font-bold">
-                                                                {data.days}
+                                                                {data.days} Hari
                                                             </p>
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center md:gap-5 gap-1  p-2">
                                                         <div className="my-auto ">
                                                             <p className="text-xs font-bold ">
-                                                                {data.done}
+                                                                {data.done} %
                                                             </p>
                                                         </div>
                                                     </div>
                                                     <div className="flex flex-col md:gap-5 gap-1">
                                                         <div className="my-auto ">
                                                             <p className="text-xs font-bold">
-                                                                {data.work_days}
+                                                                {data.work_days} Hari
 
                                                             </p>
                                                         </div>
@@ -1019,7 +1035,7 @@ function ProjectMtc() {
                                                         <>
                                                             <form onSubmit={(e) => {
                                                                 e.preventDefault()
-                                                                TambahSubTask(data.id)
+                                                                TambahSubTask(data.id, i)
                                                             }}>
                                                                 <div className="grid grid-cols-2 gap-2 px-[1%] py-[1%]">
                                                                     <div>
