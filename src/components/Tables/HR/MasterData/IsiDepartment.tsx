@@ -27,7 +27,7 @@ function IsiDepartment() {
             });
             setIsLoading(false)
             setKaryawan(res.data)
-            console.log(res.data)
+            console.log('department', res.data)
         } catch (error: any) {
             setIsLoading(false)
             console.log(error);

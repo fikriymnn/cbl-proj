@@ -1696,7 +1696,7 @@ const Sidebar = ({
                   </svg>
                 </NavLink>
                 {/* <!-- Dropdown Menu Start --> */}
-                <div
+                {/* <div
                   className={`translate transform overflow-hidden ${!open && 'hidden'
                     }`}
                 >
@@ -1714,7 +1714,7 @@ const Sidebar = ({
                       </NavLink>
                     </li>
                   </ul>
-                </div>
+                </div> */}
                 <div
                   className={`translate transform overflow-hidden ${!open && 'hidden'
                     }`}
@@ -4880,7 +4880,7 @@ const Sidebar = ({
                   </svg>
                 </NavLink>
                 {/* <!-- Dropdown Menu Start --> */}
-                <div
+                {/* <div
                   className={`translate transform overflow-hidden ${!open && 'hidden'
                     }`}
                 >
@@ -4898,7 +4898,7 @@ const Sidebar = ({
                       </NavLink>
                     </li>
                   </ul>
-                </div>
+                </div> */}
                 <div
                   className={`translate transform overflow-hidden ${!open && 'hidden'
                     }`}

@@ -21,16 +21,15 @@ function AddMasterKaryawanIsi() {
             }/master/hr/department`;
         try {
             setIsLoading(true)
-            const res = await axios.get(
-                url,
-
-                {
-                    withCredentials: true,
+            const res = await axios.get(url, {
+                params: {
+                    is_active: true,
                 },
-            );
+                withCredentials: true,
+            });
             setIsLoading(false)
             setDepartment(res.data)
-            console.log(res.data)
+            console.log('department', res.data)
         } catch (error: any) {
             setIsLoading(false)
             console.log(error);
