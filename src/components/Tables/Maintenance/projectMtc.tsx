@@ -694,116 +694,133 @@ function ProjectMtc() {
                 )}
             </div>
             <>
-                <div className="flex bg-white mt-2 py-2">
-                    <p className="w-10 px-3 text-xs font-bold ">No</p>
+                {/* Header Row */}
+                <div className="flex bg-gray-100 mt-2 py-3 rounded-t-lg shadow-sm">
+                    <p className="w-10 px-3 text-xs font-bold text-gray-700 my-auto">No</p>
                     <div className="grid grid-cols-12 w-full gap-2">
                         <div className="flex gap-2 col-span-2">
-                            <p className="text-xs font-bold ">TASK</p>
+                            <p className="text-xs font-bold text-gray-700">TASK</p>
                         </div>
                         <div className="flex gap-2 col-span-4">
-
+                            {/* Empty column */}
                         </div>
                         <div className="flex gap-2">
-                            <p className="text-xs font-bold ">START</p>
-
+                            <p className="text-xs font-bold text-gray-700">START</p>
                         </div>
                         <div className="flex gap-2">
-                            <p className="text-xs font-bold ">END</p>
-
+                            <p className="text-xs font-bold text-gray-700">END</p>
                         </div>
-                        <div className="flex gap-2 ">
-                            <p className="text-xs font-bold ">DAYS</p>
-
+                        <div className="flex gap-2">
+                            <p className="text-xs font-bold text-gray-700">DAYS</p>
                         </div>
-                        <div className="flex gap-2 ">
-                            <p className="text-xs font-bold ">% DONE</p>
-
+                        <div className="flex gap-2">
+                            <p className="text-xs font-bold text-gray-700">% DONE</p>
                         </div>
-                        <div className="flex gap-2  ">
-                            <p className="text-xs font-bold ">WORK DAYS</p>
-
+                        <div className="flex gap-2">
+                            <p className="text-xs font-bold text-gray-700">WORK DAYS</p>
                         </div>
-                        <div className="flex gap-2 ">
-                            <p className="text-xs font-bold ">ACTION</p>
+                        <div className="flex gap-2">
+                            <p className="text-xs font-bold text-gray-700">ACTION</p>
                         </div>
                     </div>
                 </div>
-                <div className="">
+
+                {/* Task Items Container */}
+                <div className="bg-white rounded-b-lg shadow-sm mb-6">
                     <div className="min-w-screen">
                         {tiket != null &&
                             tiket.data.map((data: any, i: any) => {
                                 return (
                                     <>
-                                        <div className="my-2">
-                                            <section className="flex  bg-white  rounded-lg">
+                                        <div className="my-1">
+                                            <section className="flex bg-white hover:bg-gray-50 transition-colors duration-150 py-2 border-2 border-blue-400 rounded-md">
                                                 <div
                                                     key={i}
-                                                    className=" py-3 w-10 px-3 flex justify-center items-center"
+                                                    className="py-3 w-10 px-3 flex justify-center items-center"
                                                 >
-                                                    {i + 1 + (page - 1) * 10}
+                                                    <span className="text-xs font-medium text-gray-700">{i + 1 + (page - 1) * 10}</span>
                                                 </div>
-                                                <div className="grid grid-cols-12 w-full gap-2 ">
+                                                <div className="grid grid-cols-12 w-full gap-2">
+                                                    {/* Task Name */}
                                                     <div className="flex flex-col md:gap-5 gap-1 w-full col-span-2">
-                                                        <div className="my-auto  ">
-                                                            <p className="text-xs font-bold break-all">
+                                                        <div className="my-auto">
+                                                            <p className="text-xs font-bold text-gray-800 break-all">
                                                                 {data.task}
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex flex-col md:gap-5 gap-1 ">
-                                                        <div className="my-auto">
-                                                            <p className="text-xs font-bold">
 
-                                                            </p>
+                                                    {/* Empty columns */}
+                                                    <div className="flex flex-col md:gap-5 gap-1">
+                                                        <div className="my-auto">
+                                                            <p className="text-xs font-bold"></p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex flex-col md:gap-5 gap-1 ">
+                                                    <div className="flex flex-col md:gap-5 gap-1">
                                                         <div className="my-auto">
-                                                            <p className="text-xs font-bold">
-
-                                                            </p>
+                                                            <p className="text-xs font-bold"></p>
                                                         </div>
                                                     </div>
                                                     <div className="flex flex-col md:gap-5 gap-1 col-span-2">
                                                         <div className="my-auto w-full">
-                                                            <p className="text-xs font-bold">
-
-                                                            </p>
+                                                            <p className="text-xs font-bold"></p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex flex-col md:gap-5 gap-1 ">
+
+                                                    {/* Start Date */}
+                                                    <div className="flex flex-col md:gap-5 gap-1">
                                                         <div className="my-auto">
-                                                            <p className="text-xs font-bold">
+                                                            <p className="text-xs font-medium text-gray-700">
                                                                 {(data.start == null || data.start == 0) ? '-' : convertTimeStampToDate(data.start)}
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center md:gap-5 gap-1 ">
-                                                        <div className="flex text-xs font-bold">
 
+                                                    {/* End Date */}
+                                                    <div className="flex items-center md:gap-5 gap-1">
+                                                        <div className="flex text-xs font-medium text-gray-700">
                                                             {(data.end == null || data.end == 0) ? '-' : convertTimeStampToDate(data.end)}
-
                                                         </div>
                                                     </div>
-                                                    <div className="flex flex-col md:gap-5 gap-1 ">
+
+                                                    {/* Days */}
+                                                    <div className="flex flex-col md:gap-5 gap-1">
                                                         <div className="my-auto">
-                                                            <p className="text-xs font-bold">
+                                                            <p className="text-xs font-medium text-gray-700">
                                                                 {data.days} Hari
                                                             </p>
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center md:gap-5 gap-1  p-2">
-                                                        <div className="my-auto ">
-                                                            <p className="text-xs font-bold ">
-                                                                {data.done} %
-                                                            </p>
+
+                                                    {/* Completion Percentage */}
+                                                    <div className="flex items-center md:gap-5 gap-1 p-2">
+                                                        <div className="my-auto">
+                                                            <div className="flex flex-col items-center gap-2">
+                                                                <div className="w-16 bg-gray-200 rounded-full h-2">
+                                                                    <div
+                                                                        className={`h-2 rounded-full ${data.done >= 100
+                                                                            ? 'bg-green-500'
+                                                                            : data.done >= 70
+                                                                                ? 'bg-blue-500'
+                                                                                : data.done >= 30
+                                                                                    ? 'bg-yellow-500'
+                                                                                    : 'bg-red-500'
+                                                                            }`}
+                                                                        style={{ width: `${Math.min(100, Math.max(0, data.done))}%` }}
+                                                                    ></div>
+                                                                </div>
+                                                                <p className="text-xs font-bold text-gray-700">
+                                                                    {data.done}%
+                                                                </p>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <div className="flex flex-col md:gap-5 gap-1">
-                                                        <div className="my-auto ">
-                                                            <p className="text-xs font-bold">
-                                                                {data.work_days} Hari
 
+                                                    {/* Work Days */}
+                                                    <div className="flex flex-col md:gap-5 gap-1">
+                                                        <div className="my-auto">
+                                                            <p className="text-xs font-medium text-gray-700">
+                                                                {data.work_days} Hari
                                                             </p>
                                                         </div>
                                                     </div>
@@ -943,81 +960,110 @@ function ProjectMtc() {
 
                                             {showDetail[i] && (
                                                 <>
-                                                    <div className="w-full flex flex-col bg-[#accdf7]  rounded-lg">
+                                                    <div className="w-full flex flex-col bg-white border-2 border-blue-500  rounded-lg">
                                                         {data.sub_project.map((data2: any, ii: any) => {
 
                                                             return (
 
                                                                 <>
 
-                                                                    <div className="flex py-2">
+                                                                    <div className="flex py-2 rounded-lg hover:bg-gray-50 transition-colors duration-150 border-b border-gray">
                                                                         <div
                                                                             key={ii}
-                                                                            className=" py-3 w-10 px-3 flex justify-center items-center"
+                                                                            className="py-3 w-10 px-3 flex justify-center items-center font-medium text-gray-700"
                                                                         >
                                                                             {i + 1}.{ii + 1}
                                                                         </div>
-                                                                        <div className="grid grid-cols-12 w-full gap-2 ">
+                                                                        <div className="grid grid-cols-12 w-full gap-2">
+                                                                            {/* Task Name */}
                                                                             <div className="flex flex-col md:gap-5 gap-1 w-full col-span-2">
-                                                                                <div className="my-auto  ">
-                                                                                    <p className="text-xs font-medium break-all">
+                                                                                <div className="my-auto">
+                                                                                    <p className="text-xs font-semibold text-gray-800 break-all">
                                                                                         {data2.task}
+                                                                                    </p>
+                                                                                </div>
+                                                                            </div>
 
-                                                                                    </p>
-                                                                                </div>
-                                                                            </div>
-                                                                            <div className="flex flex-col md:gap-5 gap-1 ">
+                                                                            {/* Lead */}
+                                                                            <div className="flex flex-col md:gap-5 gap-1">
                                                                                 <div className="my-auto">
-                                                                                    <p className="text-xs font-medium">
-                                                                                        {data2.lead}
+                                                                                    <p className="text-xs font-medium text-gray-700">
+                                                                                        {data2.lead || '-'}
                                                                                     </p>
                                                                                 </div>
                                                                             </div>
-                                                                            <div className="flex flex-col md:gap-5 gap-1 ">
+
+                                                                            {/* Quantity */}
+                                                                            <div className="flex flex-col md:gap-5 gap-1">
                                                                                 <div className="my-auto">
-                                                                                    <p className="text-xs font-medium">
-                                                                                        {data2.qty}
+                                                                                    <p className="text-xs font-medium text-gray-700">
+                                                                                        {data2.qty || '-'}
                                                                                     </p>
                                                                                 </div>
                                                                             </div>
+
+                                                                            {/* Problem */}
                                                                             <div className="flex flex-col md:gap-5 gap-1 col-span-2">
                                                                                 <div className="my-auto w-full">
-                                                                                    <p className="text-xs font-medium">
-                                                                                        {data2.problem}
+                                                                                    <p className={`text-xs font-medium ${data2.problem ? 'text-red-600' : 'text-gray-400'}`}>
+                                                                                        {data2.problem || 'No issues'}
                                                                                     </p>
                                                                                 </div>
                                                                             </div>
-                                                                            <div className="flex flex-col md:gap-5 gap-1 ">
+
+                                                                            {/* Start Date */}
+                                                                            <div className="flex flex-col md:gap-5 gap-1">
                                                                                 <div className="my-auto">
-                                                                                    <p className="text-xs font-medium">
+                                                                                    <p className="text-xs font-medium text-gray-700">
                                                                                         {(data2.start == null || data2.start == 0) ? '-' : convertTimeStampToDate(data2.start)}
                                                                                     </p>
                                                                                 </div>
                                                                             </div>
-                                                                            <div className="flex items-center md:gap-5 gap-1 ">
-                                                                                <div className="flex text-xs font-medium">
 
+                                                                            {/* End Date */}
+                                                                            <div className="flex items-center md:gap-5 gap-1">
+                                                                                <div className="flex text-xs font-medium text-gray-700">
                                                                                     {(data2.end == null || data2.end == 0) ? '-' : convertTimeStampToDate(data2.end)}
-
                                                                                 </div>
                                                                             </div>
-                                                                            <div className="flex flex-col md:gap-5 gap-1 ">
+
+                                                                            {/* Days */}
+                                                                            <div className="flex flex-col md:gap-5 gap-1">
                                                                                 <div className="my-auto">
-                                                                                    <p className="text-xs font-medium">
+                                                                                    <p className="text-xs font-medium text-gray-700">
                                                                                         {data2.days} Hari
                                                                                     </p>
                                                                                 </div>
                                                                             </div>
-                                                                            <div className="flex items-center md:gap-5 gap-1  p-2">
-                                                                                <div className="my-auto">
-                                                                                    <p className="text-xs font-medium">
-                                                                                        {data2.done} %
-                                                                                    </p>
+
+                                                                            {/* Completion Percentage */}
+                                                                            <div className="flex items-center md:gap-5 gap-1 p-2">
+                                                                                <div className="my-auto ">
+                                                                                    <div className="flex flex-col items-center gap-2">
+                                                                                        <div className="w-16 bg-gray-200 rounded-full h-2">
+                                                                                            <div
+                                                                                                className={`h-2 rounded-full ${data2.done >= 100
+                                                                                                    ? 'bg-green-500'
+                                                                                                    : data2.done >= 70
+                                                                                                        ? 'bg-blue-500'
+                                                                                                        : data2.done >= 30
+                                                                                                            ? 'bg-yellow-500'
+                                                                                                            : 'bg-red-500'
+                                                                                                    }`}
+                                                                                                style={{ width: `${Math.min(100, Math.max(0, data2.done))}%` }}
+                                                                                            ></div>
+                                                                                        </div>
+                                                                                        <p className="text-xs font-bold text-gray-700">
+                                                                                            {data2.done}%
+                                                                                        </p>
+                                                                                    </div>
                                                                                 </div>
                                                                             </div>
+
+                                                                            {/* Work Days */}
                                                                             <div className="flex flex-col md:gap-5 gap-1">
                                                                                 <div className="my-auto">
-                                                                                    <p className="text-xs font-medium">
+                                                                                    <p className="text-xs font-medium text-gray-700">
                                                                                         {data2.work_days} Hari
                                                                                     </p>
                                                                                 </div>
