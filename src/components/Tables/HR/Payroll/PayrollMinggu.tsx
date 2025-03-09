@@ -4,7 +4,7 @@ import axios from 'axios';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
-
+import EmployeeFilter from './EmployeeFilter';
 function PayrollMinggu() {
     const [isLoading, setIsLoading] = useState(false);
     const [payWeek, setPayWeek] = useState<any>();
@@ -31,8 +31,15 @@ function PayrollMinggu() {
                 })),
             });
         }
+        getDepartment()
+        getdivisi()
     }, [payWeek]);
-
+    const [filteredData, setFilteredData] = useState<any[]>([]);
+    useEffect(() => {
+        if (editedPayWeek?.detail) {
+            setFilteredData(editedPayWeek.detail);
+        }
+    }, [editedPayWeek]);
     async function getPayrollMingguan(dateFrom1: any, dateTo1: any) {
         const url = `${import.meta.env.VITE_API_LINK}/hr/payrollAll`;
         try {
@@ -126,7 +133,50 @@ function PayrollMinggu() {
     const [showDetail2, setShowDetail2] = useState<boolean[]>(
         new Array(payWeek != null && payWeek.length).fill(false),
     );
-    console.log(editedPayWeek)
+    const [department, setDepartment] = useState<any>();
+
+    async function getDepartment() {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/master/hr/department`;
+        try {
+            setIsLoading(true)
+            const res = await axios.get(url, {
+                params: {
+                    is_active: true,
+                },
+                withCredentials: true,
+            });
+            setIsLoading(false)
+            setDepartment(res.data)
+            console.log('department', res.data)
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
+    const [divisi, setdivisi] = useState<any>();
+
+    async function getdivisi() {
+        const url = `${import.meta.env.VITE_API_LINK
+            }/master/hr/divisi`;
+        try {
+            setIsLoading(true)
+            const res = await axios.get(
+                url,
+
+                {
+                    withCredentials: true,
+                },
+            );
+            setIsLoading(false)
+            setdivisi(res.data)
+            console.log('divisi', res.data)
+        } catch (error: any) {
+            setIsLoading(false)
+            console.log(error);
+        }
+    }
+
     return (
         <main>
             {isLoading && <Loading />}
@@ -175,13 +225,19 @@ function PayrollMinggu() {
                         </div>
                     </div>
                 </div>
+                <EmployeeFilter
+                    editedPayWeek={editedPayWeek}
+                    department={department?.data}
+                    divisi={divisi?.data}
+                    setFilteredData={setFilteredData}
+                />
                 <div className=" w-full h-full  border-b-8 border-[#D8EAFF] bg-white px-4 py-4 items-center justify-between flex">
                     <div>
                         <label className='text-xl text-blue-400 font-semibold  justify-center text-center'>
                             {payWeek == null ? 'Periode Dari' : convertTimeStampToDate(payWeek?.periode_dari)} ~  {payWeek == null ? 'Periode Sampai' : convertTimeStampToDate(payWeek?.periode_sampai)}
                         </label>
                         <label className='text-xl text-blue-400 font-semibold  justify-center text-center'>
-                            {editedPayWeek == null ? '' : 'Total Gaji Rp.' + editedPayWeek?.total}
+                            {editedPayWeek == null ? '' : 'Total Gaji Rp.' + formatInteger(editedPayWeek?.total)}
                         </label>
                     </div>
                     {payWeek && (
@@ -196,7 +252,7 @@ function PayrollMinggu() {
 
                 </div>
                 <div className=" w-full h-full flex-col  bg-white">
-                    <div className="grid grid-cols-8 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
+                    <div className="grid grid-cols-7 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
                         <div className='flex gap-3'>
                             <label className="text-black text-xs font-bold">
                                 No
@@ -222,323 +278,322 @@ function PayrollMinggu() {
                         </div>
                     </div>
                 </div>
-                {
-                    editedPayWeek?.detail?.map((data: any, i: any) => (
-                        <>
-                            <div key={i} className="grid grid-cols-8 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
-                                <div className='flex gap-3'>
-                                    <label className="text-black text-xs font-bold">
-                                        {i + 1}
-                                    </label>
-                                    <label className="text-neutral-500 text-xs font-semibold ">
-                                        {data.summaryPayroll?.nik}
-                                    </label>
-                                </div>
-                                <label className="text-neutral-500 text-xs font-semibold  ">
-                                    {data.summaryPayroll?.nama_karyawan}
+                {filteredData?.map((data: any, i: any) => (
+                    <>
+                        <div key={i} className="grid grid-cols-7 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
+                            <div className='flex gap-3'>
+                                <label className="text-black text-xs font-bold">
+                                    {i + 1}
                                 </label>
-                                <label className="text-neutral-500 text-xs font-semibold  ">
-                                    {data.summaryPayroll?.department}
+                                <label className="text-neutral-500 text-xs font-semibold ">
+                                    {data.summaryPayroll?.nik}
                                 </label>
-                                <label className="text-neutral-500 text-xs font-semibold  ">
-                                    {data.summaryPayroll?.divisi}
-                                </label>
-                                <label className="text-neutral-500 text-xs font-semibold col-span-2 ">
-                                    Rp.{formatInteger(data.summaryPayroll?.sub_total)}
-                                </label>
-                                <div className='flex justify-center '>
-                                    <button
-                                        onClick={() => openEdit(i)}
-                                        className='px-2 py-1  text-xs bg-blue-400 items-center justify-center text-white font-semibold rounded-md flex w-full '>
-                                        Detail
-                                    </button>
-                                    {showEdit[i] == true && (
+                            </div>
+                            <label className="text-neutral-500 text-xs font-semibold  ">
+                                {data.summaryPayroll?.nama_karyawan}
+                            </label>
+                            <label className="text-neutral-500 text-xs font-semibold  ">
+                                {data.summaryPayroll?.department}
+                            </label>
+                            <label className="text-neutral-500 text-xs font-semibold  ">
+                                {data.summaryPayroll?.divisi}
+                            </label>
+                            <label className="text-neutral-500 text-xs font-semibold col-span-2 ">
+                                Rp.{formatInteger(data.summaryPayroll?.sub_total)}
+                            </label>
+                            <div className='flex justify-center '>
+                                <button
+                                    onClick={() => openEdit(i)}
+                                    className='px-2 py-1  text-xs bg-blue-400 items-center justify-center text-white font-semibold rounded-md flex w-full '>
+                                    Detail
+                                </button>
+                                {showEdit[i] == true && (
 
-                                        <ModalKosongan
-                                            isOpen={showEdit[i]}
-                                            onClose={() => closeEdit(i)}
-                                            judul={'Detail Payroll'}
-                                        >
-                                            <>
-                                                <div className='grid grid-cols-2 gap-2 px-4 py-4'>
-                                                    <div className='flex flex-col gap-2 '>
-                                                        <div className='flex flex-col '>
-                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                NAMA PERSONNEL
-                                                            </label>
-                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                {data.summaryPayroll?.nama_karyawan}
-                                                            </label>
-                                                        </div>
-                                                        <div className='flex flex-col '>
-                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                NIK
-                                                            </label>
-                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                {data.summaryPayroll?.nik}
-                                                            </label>
-                                                        </div>
-                                                        <div className='flex flex-col '>
-                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                Deparment
-                                                            </label>
-                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                {data.summaryPayroll?.department}
-                                                            </label>
-                                                        </div>
-                                                        <div className='flex flex-col '>
-                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                Divisi
-                                                            </label>
-                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                {data.summaryPayroll?.divisi}
-                                                            </label>
-                                                        </div>
-
+                                    <ModalKosongan
+                                        isOpen={showEdit[i]}
+                                        onClose={() => closeEdit(i)}
+                                        judul={'Detail Payroll'}
+                                    >
+                                        <>
+                                            <div className='grid grid-cols-2 gap-2 px-4 py-4'>
+                                                <div className='flex flex-col gap-2 '>
+                                                    <div className='flex flex-col '>
+                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                            NAMA PERSONNEL
+                                                        </label>
+                                                        <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                            {data.summaryPayroll?.nama_karyawan}
+                                                        </label>
                                                     </div>
-                                                    <div className='flex flex-col gap-2'>
-                                                        <div className='flex flex-col'>
-                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                PERIODE
-                                                            </label>
-                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                {convertTimeStampToDate(payWeek?.periode_dari)}
-                                                            </label>
-                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                ~   {convertTimeStampToDate(payWeek?.periode_sampai)}
-                                                            </label>
-                                                        </div>
-                                                        <div className='flex flex-col'>
-
-                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                TOTAL POTONGAN
-                                                            </label>
-                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                Rp. {formatInteger(data.summaryPayroll?.total_potongan)}
-                                                            </label>
-                                                        </div>
-                                                        <div className='flex flex-col'>
-
-                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                TOTAL UPAH
-                                                            </label>
-                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                Rp. {formatInteger(data.summaryPayroll?.total)}
-                                                            </label>
-                                                        </div>
-                                                        <input
-                                                            className='border-2 border-stroke rounded-md'
-                                                            type="number"
-                                                            value={data.summaryPayroll.penggurangan_penambahan}
-                                                            onChange={(e) => handleInputChange(i, Number(e.target.value))}
-                                                            placeholder='Masukkan Pengurangan atau Penambahan'
-                                                        />
-                                                        <div className='flex flex-col'>
-
-                                                            <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                TOTAL UPAH TERBARU
-                                                            </label>
-                                                            <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                Rp.  {formatInteger(data.summaryPayroll.sub_total)}
-                                                            </label>
-                                                        </div>
-
+                                                    <div className='flex flex-col '>
+                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                            NIK
+                                                        </label>
+                                                        <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                            {data.summaryPayroll?.nik}
+                                                        </label>
                                                     </div>
+                                                    <div className='flex flex-col '>
+                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                            Deparment
+                                                        </label>
+                                                        <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                            {data.summaryPayroll?.department}
+                                                        </label>
+                                                    </div>
+                                                    <div className='flex flex-col '>
+                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                            Divisi
+                                                        </label>
+                                                        <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                            {data.summaryPayroll?.divisi}
+                                                        </label>
+                                                    </div>
+
                                                 </div>
-                                                <button
-                                                    title="button"
-                                                    onClick={() => handleClickDetail(i)}
-                                                    className="text-xs w-[20%] flex items-center justify-center font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
-                                                >
-                                                    RINCIAN
-                                                </button>
-                                                {showDetail[i] && (
-                                                    <>
-                                                        <div className='grid grid-cols-2 gap-2 px-4 py-4'>
-                                                            <div className='flex flex-col gap-2 '>
-                                                                {/* DETAIL POTONGAN */}
-                                                                {data.summaryPayroll?.potongan?.length > 0 && (
-                                                                    <div className='flex flex-col '>
-                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                            DETAIL POTONGAN
+                                                <div className='flex flex-col gap-2'>
+                                                    <div className='flex flex-col'>
+                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                            PERIODE
+                                                        </label>
+                                                        <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                            {convertTimeStampToDate(payWeek?.periode_dari)}
+                                                        </label>
+                                                        <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                            ~   {convertTimeStampToDate(payWeek?.periode_sampai)}
+                                                        </label>
+                                                    </div>
+                                                    <div className='flex flex-col'>
+
+                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                            TOTAL POTONGAN
+                                                        </label>
+                                                        <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                            Rp. {formatInteger(data.summaryPayroll?.total_potongan)}
+                                                        </label>
+                                                    </div>
+                                                    <div className='flex flex-col'>
+
+                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                            TOTAL UPAH
+                                                        </label>
+                                                        <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                            Rp. {formatInteger(data.summaryPayroll?.total)}
+                                                        </label>
+                                                    </div>
+                                                    <input
+                                                        className='border-2 border-stroke rounded-md'
+                                                        type="number"
+                                                        value={data.summaryPayroll.penggurangan_penambahan}
+                                                        onChange={(e) => handleInputChange(i, Number(e.target.value))}
+                                                        placeholder='Masukkan Pengurangan atau Penambahan'
+                                                    />
+                                                    <div className='flex flex-col'>
+
+                                                        <label htmlFor="" className='text-black text-xs font-bold'>
+                                                            TOTAL UPAH TERBARU
+                                                        </label>
+                                                        <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
+                                                            Rp.  {formatInteger(data.summaryPayroll.sub_total)}
+                                                        </label>
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                            <button
+                                                title="button"
+                                                onClick={() => handleClickDetail(i)}
+                                                className="text-xs w-[20%] flex items-center justify-center font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
+                                            >
+                                                RINCIAN
+                                            </button>
+                                            {showDetail[i] && (
+                                                <>
+                                                    <div className='grid grid-cols-2 gap-2 px-4 py-4'>
+                                                        <div className='flex flex-col gap-2 '>
+                                                            {/* DETAIL POTONGAN */}
+                                                            {data.summaryPayroll?.potongan?.length > 0 && (
+                                                                <div className='flex flex-col '>
+                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                        DETAIL POTONGAN
+                                                                    </label>
+
+                                                                    {data.summaryPayroll.potongan.map((data2: any, ii: any) => (
+                                                                        <label
+                                                                            key={ii}
+                                                                            htmlFor=""
+                                                                            className='text-[#7a7a7a] text-xl font-normal'
+                                                                        >
+                                                                            - {data2.label} : Rp. {formatInteger(data2.total)}
                                                                         </label>
+                                                                    ))}
+                                                                </div>
+                                                            )}
 
-                                                                        {data.summaryPayroll.potongan.map((data2: any, ii: any) => (
-                                                                            <label
-                                                                                key={ii}
-                                                                                htmlFor=""
-                                                                                className='text-[#7a7a7a] text-xl font-normal'
-                                                                            >
-                                                                                - {data2.label} : Rp. {formatInteger(data2.total)}
-                                                                            </label>
-                                                                        ))}
-                                                                    </div>
-                                                                )}
+                                                            {/* POTONGAN TERLAMBAT */}
+                                                            {data.summaryPayroll?.potongan_terlambat?.length > 0 && (
+                                                                <div className='flex flex-col '>
+                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                        POTONGAN TERLAMBAT
+                                                                    </label>
 
-                                                                {/* POTONGAN TERLAMBAT */}
-                                                                {data.summaryPayroll?.potongan_terlambat?.length > 0 && (
-                                                                    <div className='flex flex-col '>
-                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                            POTONGAN TERLAMBAT
+                                                                    {data.summaryPayroll.potongan_terlambat.map((data2: any, ii: any) => (
+                                                                        <label
+                                                                            key={ii}
+                                                                            htmlFor=""
+                                                                            className='text-[#7a7a7a] text-xl font-normal'
+                                                                        >
+                                                                            - {data2.label} x {data2.jumlah} : Rp. {formatInteger(data2.total)}
                                                                         </label>
-
-                                                                        {data.summaryPayroll.potongan_terlambat.map((data2: any, ii: any) => (
-                                                                            <label
-                                                                                key={ii}
-                                                                                htmlFor=""
-                                                                                className='text-[#7a7a7a] text-xl font-normal'
-                                                                            >
-                                                                                - {data2.label} x {data2.jumlah} : Rp. {formatInteger(data2.total)}
-                                                                            </label>
-                                                                        ))}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-
-                                                            <div className='flex flex-col gap-2 '>
-                                                                {/* RINCIAN PAYROLL */}
-                                                                {data.summaryPayroll?.rincian?.length > 0 && (
-                                                                    <div className='flex flex-col '>
-                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                            RINCIAN PAYROLL
-                                                                        </label>
-
-                                                                        {data.summaryPayroll.rincian.map((data2: any, ii: any) => (
-                                                                            <label
-                                                                                key={ii}
-                                                                                htmlFor=""
-                                                                                className='text-[#7a7a7a] text-xl font-normal'
-                                                                            >
-                                                                                - {data2.label} x {data2.jumlah}: Rp. {formatInteger(data2.total)}
-                                                                            </label>
-                                                                        ))}
-                                                                    </div>
-                                                                )}
-
-                                                                {/* UPAH HARIAN SAKIT */}
-                                                                {data.summaryPayroll?.upahHarianSakit?.length > 0 && (
-                                                                    <div className='flex flex-col '>
-                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                            UPAH HARIAN SAKIT
-                                                                        </label>
-
-                                                                        {data.summaryPayroll.upahHarianSakit.map((data2: any, ii: any) => (
-                                                                            <label
-                                                                                key={ii}
-                                                                                htmlFor=""
-                                                                                className='text-[#7a7a7a] text-xl font-normal'
-                                                                            >
-                                                                                - {data2.label} = {data2.jumlah} x {data2.nilai} : Rp. {formatInteger(data2.total)}
-                                                                            </label>
-                                                                        ))}
-                                                                    </div>
-                                                                )}
-                                                            </div>
+                                                                    ))}
+                                                                </div>
+                                                            )}
                                                         </div>
 
-                                                    </>
-                                                )}
-                                                <button
-                                                    title="button"
-                                                    onClick={() => handleClickDetail2(i)}
-                                                    className="text-xs w-[20%] mt-2 flex items-center justify-center font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
-                                                >
-                                                    RINCIAN ABSENSI
-                                                </button>
-                                                {showDetail2[i] && (
-                                                    <>
-                                                        <div className='flex flex-col gap-2  py-4'>
-                                                            <div className='flex flex-col '>
-                                                                <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                    DETAIL ABSENSI
-                                                                </label>
-                                                                <div className="grid grid-cols-12  py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-                                                                    <div className='flex col-span-2 gap-2'>
-                                                                        <label className="text-neutral-500 text-sm font-semibold ">
-                                                                            No.
-                                                                        </label>
-                                                                        <label className="text-neutral-500 text-sm font-semibold ">
-                                                                            Nama
-                                                                        </label>
-                                                                    </div>
+                                                        <div className='flex flex-col gap-2 '>
+                                                            {/* RINCIAN PAYROLL */}
+                                                            {data.summaryPayroll?.rincian?.length > 0 && (
+                                                                <div className='flex flex-col '>
+                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                        RINCIAN PAYROLL
+                                                                    </label>
 
-                                                                    <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                                                        Tanggal
-                                                                    </label>
-                                                                    <div className="flex gap-2  col-span-2">
-                                                                        <p className="text-xs font-bold ">Waktu </p>
+                                                                    {data.summaryPayroll.rincian.map((data2: any, ii: any) => (
+                                                                        <label
+                                                                            key={ii}
+                                                                            htmlFor=""
+                                                                            className='text-[#7a7a7a] text-xl font-normal'
+                                                                        >
+                                                                            - {data2.label} x {data2.jumlah}: Rp. {formatInteger(data2.total)}
+                                                                        </label>
+                                                                    ))}
+                                                                </div>
+                                                            )}
 
-                                                                    </div>
-                                                                    <label className="text-neutral-500 text-sm font-semibold flex gap-1">
-                                                                        Shift
+                                                            {/* UPAH HARIAN SAKIT */}
+                                                            {data.summaryPayroll?.upahHarianSakit?.length > 0 && (
+                                                                <div className='flex flex-col '>
+                                                                    <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                        UPAH HARIAN SAKIT
                                                                     </label>
-                                                                    <label className="text-neutral-500 text-sm font-semibold">
-                                                                        Lembur
-                                                                    </label>
-                                                                    <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                                                        Terlambat
+
+                                                                    {data.summaryPayroll.upahHarianSakit.map((data2: any, ii: any) => (
+                                                                        <label
+                                                                            key={ii}
+                                                                            htmlFor=""
+                                                                            className='text-[#7a7a7a] text-xl font-normal'
+                                                                        >
+                                                                            - {data2.label} = {data2.jumlah} x {data2.nilai} : Rp. {formatInteger(data2.total)}
+                                                                        </label>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                </>
+                                            )}
+                                            <button
+                                                title="button"
+                                                onClick={() => handleClickDetail2(i)}
+                                                className="text-xs w-[20%] mt-2 flex items-center justify-center font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
+                                            >
+                                                RINCIAN ABSENSI
+                                            </button>
+                                            {showDetail2[i] && (
+                                                <>
+                                                    <div className='flex flex-col gap-2  py-4'>
+                                                        <div className='flex flex-col '>
+                                                            <label htmlFor="" className='text-black text-xs font-bold'>
+                                                                DETAIL ABSENSI
+                                                            </label>
+                                                            <div className="grid grid-cols-12  py-4 border-b-8 border-[#D8EAFF] gap-2 ">
+                                                                <div className='flex col-span-2 gap-2'>
+                                                                    <label className="text-neutral-500 text-sm font-semibold ">
+                                                                        No.
                                                                     </label>
                                                                     <label className="text-neutral-500 text-sm font-semibold ">
-                                                                        Status
+                                                                        Nama
                                                                     </label>
                                                                 </div>
-                                                                <div className="w-2 h-full "></div>
-                                                                {data.detailAbsensi?.map((data2: any, ii: any) => (
-                                                                    <>
 
-                                                                        <div className="grid grid-cols-12  py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-                                                                            <div className='flex col-span-2 gap-2'>
-                                                                                <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                    {ii + 1}.
-                                                                                </label>
-                                                                                <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                    {data2.name}
-                                                                                </label>
-                                                                            </div>
+                                                                <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                                                    Tanggal
+                                                                </label>
+                                                                <div className="flex gap-2  col-span-2">
+                                                                    <p className="text-xs font-bold ">Waktu </p>
 
-                                                                            <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                                                                {data2.tgl_masuk}
-                                                                            </label>
-                                                                            <div className="flex gap-2 flex-col col-span-2">
-                                                                                <label className="text-neutral-500 text-sm font-semibold  ">
-                                                                                    Masuk :  {(data2.jam_masuk == null || data2.jam_masuk == 0) ? ' ~' : data2.jam_masuk}
-                                                                                </label>
-                                                                                <label className="text-neutral-500 text-sm font-semibold  ">
-                                                                                    Keluar : {(data2.jam_keluar == null || data2.jam_keluar == 0) ? ' ~' : data2.jam_keluar}
-                                                                                </label>
+                                                                </div>
+                                                                <label className="text-neutral-500 text-sm font-semibold flex gap-1">
+                                                                    Shift
+                                                                </label>
+                                                                <label className="text-neutral-500 text-sm font-semibold">
+                                                                    Lembur
+                                                                </label>
+                                                                <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                                                    Terlambat
+                                                                </label>
+                                                                <label className="text-neutral-500 text-sm font-semibold ">
+                                                                    Status
+                                                                </label>
+                                                            </div>
+                                                            <div className="w-2 h-full "></div>
+                                                            {data.detailAbsensi?.map((data2: any, ii: any) => (
+                                                                <>
 
-                                                                            </div>
-                                                                            <label className="text-neutral-500 text-sm font-semibold flex gap-1">
-                                                                                {(data2.shift == null || data2.shift == 0) ? ' ~' : data2.shift}
-                                                                            </label>
-                                                                            <label className="text-neutral-500 text-sm font-semibold">
-                                                                                {(data2.status_lembur == null || data2.status_lembur == 0) ? ' ~' : data2.status_lembur} {(data2.jam_lembur == null || data2.jam_lembur == 0) ? '' : '~ ' + data2.jam_lembur + 'Jam'}
-                                                                            </label>
-                                                                            <div className='flex flex-col gap-1 col-span-2'>
-                                                                                <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                    {data2.status_masuk}
-                                                                                </label>
-                                                                                <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                    {(data2.menit_terlambat == null || data2.menit_terlambat == 0) ? '~' : '~ ' + data2.menit_terlambat + ' Jam'}
-                                                                                </label>
-                                                                            </div>
+                                                                    <div className="grid grid-cols-12  py-4 border-b-8 border-[#D8EAFF] gap-2 ">
+                                                                        <div className='flex col-span-2 gap-2'>
                                                                             <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                {data2.status_absen}
+                                                                                {ii + 1}.
+                                                                            </label>
+                                                                            <label className="text-neutral-500 text-sm font-semibold ">
+                                                                                {data2.name}
                                                                             </label>
                                                                         </div>
-                                                                    </>
-                                                                ))}
-                                                            </div>
+
+                                                                        <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                                                                            {data2.tgl_masuk}
+                                                                        </label>
+                                                                        <div className="flex gap-2 flex-col col-span-2">
+                                                                            <label className="text-neutral-500 text-sm font-semibold  ">
+                                                                                Masuk :  {(data2.jam_masuk == null || data2.jam_masuk == 0) ? ' ~' : data2.jam_masuk}
+                                                                            </label>
+                                                                            <label className="text-neutral-500 text-sm font-semibold  ">
+                                                                                Keluar : {(data2.jam_keluar == null || data2.jam_keluar == 0) ? ' ~' : data2.jam_keluar}
+                                                                            </label>
+
+                                                                        </div>
+                                                                        <label className="text-neutral-500 text-sm font-semibold flex gap-1">
+                                                                            {(data2.shift == null || data2.shift == 0) ? ' ~' : data2.shift}
+                                                                        </label>
+                                                                        <label className="text-neutral-500 text-sm font-semibold">
+                                                                            {(data2.status_lembur == null || data2.status_lembur == 0) ? ' ~' : data2.status_lembur} {(data2.jam_lembur == null || data2.jam_lembur == 0) ? '' : '~ ' + data2.jam_lembur + 'Jam'}
+                                                                        </label>
+                                                                        <div className='flex flex-col gap-1 col-span-2'>
+                                                                            <label className="text-neutral-500 text-sm font-semibold ">
+                                                                                {data2.status_masuk}
+                                                                            </label>
+                                                                            <label className="text-neutral-500 text-sm font-semibold ">
+                                                                                {(data2.menit_terlambat == null || data2.menit_terlambat == 0) ? '~' : '~ ' + data2.menit_terlambat + ' Jam'}
+                                                                            </label>
+                                                                        </div>
+                                                                        <label className="text-neutral-500 text-sm font-semibold ">
+                                                                            {data2.status_absen}
+                                                                        </label>
+                                                                    </div>
+                                                                </>
+                                                            ))}
                                                         </div>
-                                                    </>
-                                                )}
-                                            </>
-                                        </ModalKosongan>
-                                    )}
-                                </div>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </>
+                                    </ModalKosongan>
+                                )}
                             </div>
-                        </>
-                    ))}
+                        </div>
+                    </>
+                ))}
             </div>
         </main>
     )
