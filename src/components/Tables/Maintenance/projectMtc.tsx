@@ -379,10 +379,10 @@ function ProjectMtc() {
 
         setShowView(false);
     };
-    const calculateTimeProgress = (start: any, end: any) => {
+    const calculateTimeProgress = (start: any, end: any, done: number) => {
         if (!start || !end) {
             console.error("Invalid timestamps:", { start, end });
-            return { progress: 0 };
+            return { progress: 0, overdue: false };
         }
 
         // Convert to JavaScript Date objects directly (since they are already in ISO format)
@@ -393,7 +393,7 @@ function ProjectMtc() {
         // Ensure startDate and endDate are valid
         if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
             console.error("Invalid Date conversion:", { startDate, endDate });
-            return { progress: 0 };
+            return { progress: 0, overdue: false };
         }
 
         // Reset time (hours, minutes, seconds) for accurate date-based calculations
@@ -401,11 +401,14 @@ function ProjectMtc() {
         endDate.setHours(23, 59, 59, 999);
         today.setHours(0, 0, 0, 0);
 
-        // If today is before the start date, progress is 0%
-        if (today < startDate) return { progress: 0 };
+        // Calculate if task is overdue - end date has passed and task is not 100% complete
+        const overdue = today > endDate && done < 100;
 
-        // If today is after the end date, progress is 100%
-        if (today > endDate) return { progress: 100 };
+        // If today is before the start date, progress is 0%
+        if (today < startDate) return { progress: 0, overdue };
+
+        // If today is after the end date, progress is 100% (for timeline calculation only)
+        if (today > endDate) return { progress: 100, overdue };
 
         // Calculate progress based on elapsed days
         const totalDays = Math.max(1, (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -414,11 +417,8 @@ function ProjectMtc() {
         // Ensure percentage stays within range
         const progress = Math.min(100, Math.max(0, Math.round((elapsedDays / totalDays) * 100)));
 
-        return { progress };
+        return { progress, overdue };
     };
-
-
-
 
     return (
         <main>
@@ -447,7 +447,7 @@ function ProjectMtc() {
                                         <h2 className="text-xl font-bold mb-6 text-gray-800">Task Progress Overview</h2>
 
                                         {tiket != null && tiket.data.map((data: any, i: any) => {
-                                            const mainTimelineStatus = calculateTimeProgress(data.start, data.end);
+                                            const mainTimelineStatus = calculateTimeProgress(data.start, data.end, data.done);
 
                                             return (
                                                 <div key={i} className="mb-8">
@@ -476,12 +476,17 @@ function ProjectMtc() {
 
                                                     {/* Timeline Progress Bar for Main Task */}
                                                     <div className="flex justify-between mb-1">
-                                                        <span className="text-xs text-gray-600">Timeline progress : {convertTimeStampToDate(data.start)} - {convertTimeStampToDate(data.end)}</span>
+                                                        <div className="flex items-center">
+                                                            <span className="text-xs text-gray-600">Timeline progress : {convertTimeStampToDate(data.start)} - {convertTimeStampToDate(data.end)}</span>
+                                                            {mainTimelineStatus.overdue && (
+                                                                <span className="ml-2 px-2 py-0.5 text-xs font-medium text-white bg-red-600 rounded">Overdue</span>
+                                                            )}
+                                                        </div>
                                                         <span className="text-xs text-gray-600">{mainTimelineStatus.progress}%</span>
                                                     </div>
                                                     <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
                                                         <div
-                                                            className="h-2 rounded-full bg-orange-400"
+                                                            className={`h-2 rounded-full ${mainTimelineStatus.overdue ? 'bg-red-600' : 'bg-orange-400'}`}
                                                             style={{ width: `${Math.min(100, Math.max(0, mainTimelineStatus.progress))}%` }}
                                                         ></div>
                                                     </div>
@@ -489,7 +494,7 @@ function ProjectMtc() {
                                                     {/* Subtasks Section */}
                                                     <div className="pl-4 border-l-2 border-gray-300">
                                                         {data.sub_project && data.sub_project.map((data2: any, ii: any) => {
-                                                            const subTimelineStatus = calculateTimeProgress(data2.start, data2.end);
+                                                            const subTimelineStatus = calculateTimeProgress(data2.start, data2.end, data2.done);
 
                                                             return (
                                                                 <div key={ii} className="mb-4">
@@ -518,14 +523,17 @@ function ProjectMtc() {
 
                                                                     {/* Timeline Progress Bar for Subtask */}
                                                                     <div className="flex justify-between mb-1">
-                                                                        <span className="text-xs text-gray-600">Timeline progress :  {convertTimeStampToDate(data2.start)} - {convertTimeStampToDate(data2.end)}</span>
-
+                                                                        <div className="flex items-center">
+                                                                            <span className="text-xs text-gray-600">Timeline progress : {convertTimeStampToDate(data2.start)} - {convertTimeStampToDate(data2.end)}</span>
+                                                                            {subTimelineStatus.overdue && (
+                                                                                <span className="ml-2 px-2 py-0.5 text-xs font-medium text-white bg-red-600 rounded">Overdue</span>
+                                                                            )}
+                                                                        </div>
                                                                         <span className="text-xs text-gray-600">{subTimelineStatus.progress}%</span>
-
                                                                     </div>
                                                                     <div className="w-full bg-gray-200 rounded-full h-1.5 mb-1">
                                                                         <div
-                                                                            className="h-1.5 rounded-full bg-yellow-400"
+                                                                            className={`h-1.5 rounded-full ${subTimelineStatus.overdue ? 'bg-red-600' : 'bg-yellow-400'}`}
                                                                             style={{ width: `${Math.min(100, Math.max(0, subTimelineStatus.progress))}%` }}
                                                                         ></div>
                                                                     </div>
