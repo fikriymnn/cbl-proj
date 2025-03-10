@@ -2933,32 +2933,62 @@ function IncomingInspection() {
                               Kiri
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold ">
-                              {incoming?.inspeksi_bahan_result[1].hasil_kiri} gr
+                              {
+                                incoming?.inspeksi_bahan_result[1]
+                                  .hasil_kiri
+                              }{' '}
+                              gr
                             </label>
+                            <div>
+                              = <input
+                                name="hasilsample3"
+                                disabled
+                                value={incoming?.inspeksi_bahan_result[1]
+                                  .hasil_rumus_kiri}
+                                type="text"
+                                className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                              /> g/m<sup className=''>2</sup>
+                            </div>
                             <label className="text-neutral-500 text-sm font-semibold pt-1">
                               Tengah
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold ">
-                              {incoming?.inspeksi_bahan_result[1].hasil_tengah}{' '}
+                              {
+                                incoming?.inspeksi_bahan_result[1]
+                                  .hasil_tengah
+                              }{' '}
                               gr
                             </label>
+                            <div>
+                              = <input
+                                name="hasilsample3"
+                                disabled
+                                value={incoming?.inspeksi_bahan_result[1]
+                                  .hasil_rumus_tengah}
+                                type="text"
+                                className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                              /> g/m<sup className=''>2</sup>
+                            </div>
                             <label className="text-neutral-500 text-sm font-semibold pt-1">
-                              Kanan
-                            </label>
-                            <label className="text-neutral-500 text-sm font-semibold ">
-                              {incoming?.inspeksi_bahan_result[1].hasil_kanan}{' '}
-                              gr
-                            </label>
-                            <label className="text-neutral-500 text-sm font-semibold pt-1">
-                              Rata-Rata
+                              Bawah
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold ">
                               {
                                 incoming?.inspeksi_bahan_result[1]
-                                  .hasil_rata_rata
+                                  .hasil_bawah
                               }{' '}
                               gr
                             </label>
+                            <div>
+                              = <input
+                                name="hasilsample3"
+                                disabled
+                                value={incoming?.inspeksi_bahan_result[1]
+                                  .hasil_rumus_kanan}
+                                type="text"
+                                className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                              /> g/m<sup className=''>2</sup>
+                            </div>
                           </div>
                         </div>
 

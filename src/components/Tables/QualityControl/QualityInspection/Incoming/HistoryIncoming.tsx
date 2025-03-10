@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-
+import ptcbl from '../../../../../images/ptcbl.png';
 
 
 function HistoryIncoming() {
@@ -86,19 +86,550 @@ function HistoryIncoming() {
     }
     const waktuMulai = convertDatetimeToDate(incoming != null && incoming?.waktu_mulai);
     const waktuSelesai = convertDatetimeToDate(incoming != null && incoming?.waktu_selesai);
+    const [isOpen, setIsOpen] = useState(false);
 
+    const openPreview = () => {
+        setIsOpen(true);
+    };
+
+    const closePreview = () => {
+        setIsOpen(false);
+    };
+
+    const printChecksheet = () => {
+        const printArea = document.getElementById('print-area');
+        const printContents = printArea ? printArea.innerHTML : '';
+        const originalContents = document.body.innerHTML;
+
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = originalContents;
+
+        // Re-initialize the component after printing
+        setTimeout(() => {
+            setIsOpen(true);
+        }, 100);
+    };
     return (
         <>
+            <div>
+                {/* Button to open the preview popup */}
 
+
+                {/* Modal overlay */}
+                {isOpen && (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-start overflow-y-auto pt-10">
+                        <div className="bg-white rounded-lg shadow-lg w-full max-w-7xl">
+                            {/* Modal header */}
+                            <div className="border-b px-4 py-3 flex items-center justify-between">
+                                <h3 className="text-lg font-semibold text-gray-900">Print Preview</h3>
+                                <div className="flex space-x-2">
+                                    <button
+                                        onClick={printChecksheet}
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+                                    >
+                                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        </svg>
+                                        Print Checksheet
+                                    </button>
+                                    <button
+                                        onClick={closePreview}
+                                        className="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-gray-300"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Print area content */}
+                            <div className="p-4 overflow-auto max-h-[80vh]">
+                                <div id="print-area" className="bg-white shadow-none">
+                                    {/* Checksheet table based on the image format */}
+                                    <table className="border-collapse border w-full text-sm">
+                                        <thead>
+                                            <tr>
+                                                <td colSpan={3} className="border border-black p-2">
+                                                    <div className="flex items-center">
+                                                        <div className="w-24 flex justify-center">
+                                                            <img src={ptcbl} />
+                                                        </div>
+                                                        <div className="flex-grow text-center font-bold text-lg">
+                                                            QUALITY ASSURANCE DEPARTMENT
+                                                        </div>
+                                                        <div className="w-24 flex justify-center">
+                                                            {'  '}
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colSpan={3} className="border border-black p-2 text-center font-bold">
+                                                    INCOMING INSPECTION CHECKSHEET (IIC)
+                                                </td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td className="border border-black p-2 w-1/3">
+                                                    <div className="grid grid-cols-3 gap-2">
+                                                        <div className="font-semibold">TANGGAL</div>
+                                                        <div className="col-span-2">: {incoming?.tanggal}</div>
+
+                                                        <div className="font-semibold">NO. LOT</div>
+                                                        <div className="col-span-2">: {incoming?.no_lot}</div>
+
+                                                        <div className="font-semibold">NO. SURAT JALAN</div>
+                                                        <div className="col-span-2">: {incoming?.no_surat_jalan}</div>
+
+                                                        <div className="font-semibold">SUPPLIER</div>
+                                                        <div className="col-span-2">: {incoming?.supplier}</div>
+
+                                                        <div className="font-semibold">JENIS KERTAS</div>
+                                                        <div className="col-span-2">: {incoming?.jenis_kertas}</div>
+
+                                                        <div className="font-semibold">UKURAN</div>
+                                                        <div className="col-span-2">: {incoming?.ukuran}</div>
+                                                    </div>
+                                                </td>
+
+                                                <td className="border border-black p-2 w-1/3">
+                                                    <div className="grid grid-cols-3 gap-2">
+                                                        <div className="font-semibold">JAM</div>
+                                                        <div className="col-span-2">: {incoming?.jam}</div>
+
+                                                        <div className="font-semibold mt-4 col-span-3">STANDAR PEMERIKSAAN</div>
+                                                        <div className="col-span-3"></div>
+
+                                                        <div className="font-semibold">Status JO</div>
+                                                        <div className="col-span-2">: {incoming?.status_jo}</div>
+
+                                                        <div className="font-semibold">Jumlah kedatangan</div>
+                                                        <div className="col-span-2">: {incoming?.jumlah}</div>
+
+                                                        <div className="font-semibold">√N + 1</div>
+                                                        <div className="col-span-2">: {incoming?.hasil_rumus}</div>
+                                                    </div>
+                                                </td>
+                                                <td className="border border-black p-2 w-1/3 bg-gray-100">
+                                                    <p className={` uppercase font-semibold text-lg  ${incoming?.verifikasi == 'Diterima' ? 'text-green-500' : 'text-red-500'}`}>
+                                                        {incoming?.verifikasi}
+                                                    </p>
+                                                    <p className={` uppercase font-semibold text-lg `}>
+                                                        Total skor : {incoming?.total_skor}
+                                                    </p>
+                                                    <div className='text-sm gap-1 flex flex-col'>
+                                                        <p>
+                                                            Waktu Mulai :
+                                                        </p>
+                                                        <p>
+                                                            {waktuMulai}
+                                                        </p>
+                                                        <p>
+                                                            Waktu Selesai :
+                                                        </p>
+                                                        <p>
+                                                            {waktuSelesai}
+                                                        </p>
+                                                        <p>
+                                                            Time :
+                                                        </p>
+                                                        <p>
+                                                            {formatElapsedTime(incoming?.lama_pengerjaan)} Detik
+                                                        </p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+                                            <tr className="bg-gray-100">
+                                                <td colSpan={3} className="border border-black p-2">
+                                                    <div className="grid grid-cols-7 gap-2 font-semibold">
+                                                        <div>KRITERIA PEMERIKSAAN</div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td colSpan={3} className="border border-black p-0">
+                                                    <table className="border-collapse w-full">
+                                                        <thead>
+                                                            <tr className="bg-gray-100">
+                                                                <th className="border border-black p-2 w-10 text-center">NO</th>
+                                                                <th className="border border-black p-2 text-center">KETERANGAN</th>
+                                                                <th className="border border-black p-2 text-center">ALAT UKUR</th>
+                                                                <th className="border border-black p-2 text-center">METODE</th>
+                                                                <th className="border border-black p-2 text-center">TARGET</th>
+                                                                <th className="border border-black p-2 text-center">HASIL</th>
+                                                                <th className="border border-black p-2 text-center">KETERANGAN</th>
+                                                                <th className="border border-black p-2 text-center w-16">% BOBOT</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {/* Row 1 */}
+                                                            <tr>
+                                                                <td className="border border-black p-2 text-center">1</td>
+                                                                <td className="border border-black p-2">JENIS KERTAS</td>
+                                                                <td className="border border-black p-2">-</td>
+                                                                <td className="border border-black p-2">VISUAL</td>
+                                                                <td className="border border-black p-2">SESUAI SURAT JALAN</td>
+                                                                <td className="border border-black p-2">
+                                                                    <label className='text-neutral-500 text-sm font-semibold'>
+                                                                        {incoming?.inspeksi_bahan_result[0]?.hasil}
+                                                                    </label>
+                                                                </td>
+                                                                <td className="border border-black p-2">
+                                                                    <div className='text-neutral-500 text-sm font-semibold'>
+                                                                        {incoming?.inspeksi_bahan_result[0].keterangan_hasil}
+                                                                    </div>
+                                                                </td>
+                                                                <td className="border border-black p-2 text-center">25</td>
+                                                            </tr>
+
+                                                            {/* Row 2 */}
+                                                            <tr>
+                                                                <td className="border border-black p-2 text-center">2</td>
+                                                                <td className="border border-black p-2">GRAMATUR</td>
+                                                                <td className="border border-black p-2">TIMBANGAN DIGITAL</td>
+                                                                <td className="border border-black p-2">
+                                                                    <div>• Potong kertas ukuran 10x10 cm di area KIRI, TENGAH, KANAN</div>
+                                                                    <div>• Timbang masing-masing beratnya</div>
+                                                                    <div>• Jumlahkan dan hitung nilai rata-ratanya</div>
+                                                                </td>
+                                                                <td className="border border-black p-2">
+                                                                    <div>• GRAMATUR SESUAI SURAT JALAN</div>
+                                                                    <div>• TOLERANSI ± 4%</div>
+                                                                </td>
+                                                                <td className="border border-black p-2">
+                                                                    <div className='flex flex-col  w-full'>
+
+                                                                        <div className="flex flex-col gap-1">
+                                                                            <label className="text-neutral-500 text-sm font-semibold ">
+                                                                                Kiri
+                                                                            </label>
+                                                                            <label className="text-neutral-500 text-sm font-semibold ">
+                                                                                {
+                                                                                    incoming?.inspeksi_bahan_result[1]
+                                                                                        .hasil_kiri
+                                                                                }{' '}
+                                                                                gr
+                                                                            </label>
+                                                                            <div>
+                                                                                = <input
+                                                                                    name="hasilsample3"
+                                                                                    disabled
+                                                                                    value={incoming?.inspeksi_bahan_result[1]
+                                                                                        .hasil_rumus_kiri}
+                                                                                    type="text"
+                                                                                    className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                                                /> g/m<sup className=''>2</sup>
+                                                                            </div>
+                                                                            <label className="text-neutral-500 text-sm font-semibold pt-1">
+                                                                                Tengah
+                                                                            </label>
+                                                                            <label className="text-neutral-500 text-sm font-semibold ">
+                                                                                {
+                                                                                    incoming?.inspeksi_bahan_result[1]
+                                                                                        .hasil_tengah
+                                                                                }{' '}
+                                                                                gr
+                                                                            </label>
+                                                                            <div>
+                                                                                = <input
+                                                                                    name="hasilsample3"
+                                                                                    disabled
+                                                                                    value={incoming?.inspeksi_bahan_result[1]
+                                                                                        .hasil_rumus_tengah}
+                                                                                    type="text"
+                                                                                    className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                                                /> g/m<sup className=''>2</sup>
+                                                                            </div>
+                                                                            <label className="text-neutral-500 text-sm font-semibold pt-1">
+                                                                                Bawah
+                                                                            </label>
+                                                                            <label className="text-neutral-500 text-sm font-semibold ">
+                                                                                {
+                                                                                    incoming?.inspeksi_bahan_result[1]
+                                                                                        .hasil_bawah
+                                                                                }{' '}
+                                                                                gr
+                                                                            </label>
+                                                                            <div>
+                                                                                = <input
+                                                                                    name="hasilsample3"
+                                                                                    disabled
+                                                                                    value={incoming?.inspeksi_bahan_result[1]
+                                                                                        .hasil_rumus_kanan}
+                                                                                    type="text"
+                                                                                    className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                                                /> g/m<sup className=''>2</sup>
+                                                                            </div>
+                                                                        </div>
+
+                                                                    </div>
+
+
+                                                                </td>
+                                                                <td className="border border-black p-2">
+                                                                    <p className='text-neutral-500 text-sm font-semibold'>
+                                                                        {incoming?.inspeksi_bahan_result[1].keterangan_hasil}
+                                                                    </p>
+                                                                </td>
+                                                                <td className="border border-black p-2 text-center">20</td>
+                                                            </tr>
+
+                                                            {/* Row 3 */}
+                                                            <tr>
+                                                                <td className="border border-black p-2 text-center">3</td>
+                                                                <td className="border border-black p-2">THICKNESS / KETEBALAN</td>
+                                                                <td className="border border-black p-2">THICKNESS GAUGE</td>
+                                                                <td className="border border-black p-2">UKUR KETEBALAN MASING-MASING KERTAS YANG SUDAH DIPOTONG DI POINT-2</td>
+                                                                <td className="border border-black p-2">-</td>
+                                                                <td className="border border-black p-2">
+                                                                    <div className='flex flex-col  w-full'>
+
+                                                                        <div className='flex flex-col gap-1'>
+                                                                            <label className='text-neutral-500 text-sm font-semibold '>
+                                                                                Kiri
+                                                                            </label>
+                                                                            <label className='text-neutral-500 text-sm font-semibold '>
+                                                                                {incoming?.inspeksi_bahan_result[2].hasil_kiri}
+                                                                            </label>
+                                                                            <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                                                Tengah
+                                                                            </label>
+                                                                            <label className='text-neutral-500 text-sm font-semibold '>
+                                                                                {incoming?.inspeksi_bahan_result[2].hasil_tengah}
+                                                                            </label>
+                                                                            <label className='text-neutral-500 text-sm font-semibold pt-1'>
+                                                                                Kanan
+                                                                            </label>
+                                                                            <label className='text-neutral-500 text-sm font-semibold '>
+                                                                                {incoming?.inspeksi_bahan_result[2].hasil_kanan}
+                                                                            </label>
+
+                                                                        </div>
+
+                                                                    </div>
+
+                                                                </td>
+                                                                <td className="border border-black p-2">
+                                                                    <p className='text-neutral-500 text-sm font-semibold'>
+                                                                        {incoming?.inspeksi_bahan_result[2].keterangan_hasil}
+                                                                    </p>
+                                                                </td>
+                                                                <td className="border border-black p-2 text-center">15</td>
+                                                            </tr>
+
+                                                            {/* Additional rows would be added similarly */}
+                                                            <tr>
+                                                                <td className="border border-black p-2 text-center">4</td>
+                                                                <td className="border border-black p-2">ARAH SERAT</td>
+                                                                <td className="border border-black p-2">LABEL TERCANTUM</td>
+                                                                <td className="border border-black p-2">LIHAT UKURAN</td>
+                                                                <td className="border border-black p-2">SESUAI ARAH SERAT DI SURAT JALAN</td>
+                                                                <td className="border border-black p-2">
+
+                                                                    <p className='text-neutral-500 text-sm font-semibold'>
+                                                                        {incoming?.inspeksi_bahan_result[3].hasil}
+                                                                    </p>
+
+                                                                </td>
+                                                                <td className="border border-black p-2">
+                                                                    <p className='text-neutral-500 text-sm font-semibold'>
+                                                                        {incoming?.inspeksi_bahan_result[3].keterangan_hasil}
+                                                                    </p>
+                                                                </td>
+                                                                <td className="border border-black p-2 text-center">10</td>
+                                                            </tr>
+
+                                                            <tr>
+                                                                <td className="border border-black p-2 text-center">5</td>
+                                                                <td className="border border-black p-2">COATING DEPAN : BERMINYAK JENDOR TITIK-TITIK DLL</td>
+                                                                <td className="border border-black p-2">KACA PEMBESAR</td>
+                                                                <td className="border border-black p-2">VISUAL</td>
+                                                                <td className="border border-black p-2">PERMUKAAN BERSIH</td>
+                                                                <td className="border border-black p-2">
+
+                                                                    <p className='text-neutral-500 text-sm font-semibold'>
+                                                                        {incoming?.inspeksi_bahan_result[4].hasil}
+                                                                    </p>
+
+
+                                                                </td>
+                                                                <td className="border border-black p-2">
+                                                                    <label className='text-neutral-500 text-sm font-semibold'>
+
+                                                                        <div className='flex flex-col gap-1'>
+                                                                            <p>
+                                                                                {incoming?.inspeksi_bahan_result[4]?.coating}
+                                                                            </p>
+
+                                                                        </div>
+                                                                    </label>
+
+                                                                    <p className='text-neutral-500 text-sm font-semibold'>
+                                                                        {incoming?.inspeksi_bahan_result[4].keterangan_hasil}
+                                                                    </p>
+                                                                </td>
+                                                                <td className="border border-black p-2 text-center">10</td>
+                                                            </tr>
+
+                                                            <tr>
+                                                                <td className="border border-black p-2 text-center">6</td>
+                                                                <td className="border border-black p-2">UKURAN</td>
+                                                                <td className="border border-black p-2">MISTAR/PENGGARIS</td>
+                                                                <td className="border border-black p-2">DIUKUR PANJANG & LEBAR</td>
+                                                                <td className="border border-black p-2">
+                                                                    <div>SESUAI SIZE DI SURAT JALAN,</div>
+                                                                    <div>TOLERANSI TIDAK BOLEH {'<'} 2mm</div>
+                                                                </td>
+                                                                <td className="border border-black p-2">
+
+
+                                                                    <div className='flex flex-col gap-1 font-semibold text-sm'>
+                                                                        <p>
+                                                                            {incoming?.inspeksi_bahan_result[5]?.hasil_panjang} mm
+                                                                        </p>
+                                                                        <p>
+                                                                            {incoming?.inspeksi_bahan_result[5]?.hasil_lebar} mm
+                                                                        </p>
+                                                                    </div>
+
+
+                                                                </td>
+                                                                <td className="border border-black p-2">
+                                                                    <p className='text-neutral-500 text-sm font-semibold'>
+                                                                        {incoming?.inspeksi_bahan_result[5].keterangan_hasil}
+                                                                    </p>
+                                                                </td>
+                                                                <td className="border border-black p-2 text-center">5</td>
+                                                            </tr>
+
+                                                            <tr>
+                                                                <td className="border border-black p-2 text-center">7</td>
+                                                                <td className="border border-black p-2">GELOMBANG</td>
+                                                                <td className="border border-black p-2">PENGGARIS</td>
+                                                                <td className="border border-black p-2">TOLERANSI MELENGKUNG/ GELOMBANG = ± 8mm</td>
+                                                                <td className="border border-black p-2">-</td>
+                                                                <td className="border border-black p-2 text-center">
+
+                                                                    <p className='text-neutral-500 text-sm font-semibold'>
+                                                                        {incoming?.inspeksi_bahan_result[6].hasil}
+                                                                    </p>
+
+                                                                </td>
+                                                                <td className="border border-black p-2">
+                                                                    <p className='text-neutral-500 text-sm font-semibold'>
+                                                                        {incoming?.inspeksi_bahan_result[6].keterangan_hasil}
+                                                                    </p>
+
+                                                                </td>
+                                                                <td className="border border-black p-2 text-center">5</td>
+                                                            </tr>
+
+                                                            <tr>
+                                                                <td className="border border-black p-2 text-center">8</td>
+                                                                <td className="border border-black p-2">WARNA</td>
+                                                                <td className="border border-black p-2">COLOR TOLERANCE / SAMPLE</td>
+                                                                <td className="border border-black p-2">VISUAL</td>
+                                                                <td className="border border-black p-2">WARNA DASAR SESUAI</td>
+                                                                <td className="border border-black p-2 text-center">
+
+                                                                    <p className='text-neutral-500 text-sm font-semibold'>
+                                                                        {incoming?.inspeksi_bahan_result[7].hasil}
+                                                                    </p>
+
+                                                                </td>
+                                                                <td className="border border-black p-2">
+                                                                    <p className='text-neutral-500 text-sm font-semibold'>
+                                                                        {incoming?.inspeksi_bahan_result[7].keterangan_hasil}
+                                                                    </p>
+                                                                </td>
+                                                                <td className="border border-black p-2 text-center">5</td>
+                                                            </tr>
+
+                                                            <tr>
+                                                                <td className="border border-black p-2 text-center">9</td>
+                                                                <td className="border border-black p-2">QUANTITY</td>
+                                                                <td className="border border-black p-2">HITUNG MANUAL</td>
+                                                                <td className="border border-black p-2">SAMPLING SESUAI STANDAR AQL</td>
+                                                                <td className="border border-black p-2">SESUAI PER PACK</td>
+                                                                <td className="border border-black p-2 text-center">
+
+                                                                    <p className='text-neutral-500 text-sm font-semibold'>
+                                                                        {incoming?.inspeksi_bahan_result[8].hasil}
+                                                                    </p>
+
+                                                                </td>
+                                                                <td className="border border-black p-2">
+                                                                    <p className='text-neutral-500 text-sm font-semibold'>
+                                                                        {incoming?.inspeksi_bahan_result[8].keterangan_hasil}
+                                                                    </p>
+                                                                </td>
+                                                                <td className="border border-black p-2 text-center">5</td>
+                                                            </tr>
+
+                                                            <tr>
+                                                                <td colSpan={7} className="border border-black p-2">
+                                                                    <div className="font-semibold">Catatan: {incoming?.catatan}</div>
+                                                                </td>
+                                                                <td className="border border-black p-2 text-center font-bold">{incoming?.total_skor}</td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td colSpan={3} className="border border-black p-2">
+                                                    <div className="grid grid-cols-3 gap-2">
+                                                        <div className="text-center flex flex-col gap-1">
+                                                            <label>
+                                                                Inspector QA
+                                                            </label>
+                                                            <label>
+                                                                {incoming?.inspector}
+                                                            </label>
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <p className={` uppercase font-semibold text-lg  ${incoming?.verifikasi == 'Diterima' ? 'text-green-500' : 'text-red-500'}`}>
+                                                                {incoming?.verifikasi}
+                                                            </p>
+                                                        </div>
+
+                                                    </div>
+
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
             {!isMobile && (
                 <main className='overflow-x-scroll'>
                     <div className='min-w-[700px] bg-white rounded-xl'>
 
-                        <p className='text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z" fill="#0065DE" />
-                            </svg>
-                            {" "} Incoming Inspection Checksheet
+                        <p className='text-[14px] font-semibold w-full justify-between flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12'>
+                            <div className='flex gap-1'>
+
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z" fill="#0065DE" />
+                                </svg>
+                                {" "} Incoming Inspection Checksheet
+                            </div>
+                            <button
+                                onClick={openPreview}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+                            >
+                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                </svg>
+                                Preview Checksheet
+                            </button>
                         </p>
 
                         <div className='grid grid-cols-12  border-b-8 border-[#D8EAFF]'>
@@ -358,42 +889,80 @@ function HistoryIncoming() {
 
                                 <div className='flex justify-between  col-span-3'>
 
-                                    <div className='flex flex-col  w-[60%]'>
-
-                                        <div className='flex flex-col gap-1'>
-                                            <label className='text-neutral-500 text-sm font-semibold '>
-                                                Kiri
-                                            </label>
-                                            <label className='text-neutral-500 text-sm font-semibold '>
-                                                {incoming?.inspeksi_bahan_result[1].hasil_kiri} gr
-                                            </label>
-                                            <label className='text-neutral-500 text-sm font-semibold pt-1'>
-                                                Tengah
-                                            </label>
-                                            <label className='text-neutral-500 text-sm font-semibold '>
-                                                {incoming?.inspeksi_bahan_result[1].hasil_tengah} gr
-                                            </label>
-                                            <label className='text-neutral-500 text-sm font-semibold pt-1'>
-                                                Kanan
-                                            </label>
-                                            <label className='text-neutral-500 text-sm font-semibold '>
-                                                {incoming?.inspeksi_bahan_result[1].hasil_kanan} gr
-                                            </label>
-                                            <label className='text-neutral-500 text-sm font-semibold pt-1'>
-                                                Rata-Rata
-                                            </label>
-                                            <label className='text-neutral-500 text-sm font-semibold '>
-                                                {incoming?.inspeksi_bahan_result[1].hasil_rata_rata} gr
-                                            </label>
+                                    <div className="flex justify-between  col-span-3">
+                                        <div className="flex flex-col  w-[60%]">
+                                            <div className="flex flex-col gap-1">
+                                                <label className="text-neutral-500 text-sm font-semibold ">
+                                                    Kiri
+                                                </label>
+                                                <label className="text-neutral-500 text-sm font-semibold ">
+                                                    {
+                                                        incoming?.inspeksi_bahan_result[1]
+                                                            .hasil_kiri
+                                                    }{' '}
+                                                    gr
+                                                </label>
+                                                <div>
+                                                    = <input
+                                                        name="hasilsample3"
+                                                        disabled
+                                                        value={incoming?.inspeksi_bahan_result[1]
+                                                            .hasil_rumus_kiri}
+                                                        type="text"
+                                                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                    /> g/m<sup className=''>2</sup>
+                                                </div>
+                                                <label className="text-neutral-500 text-sm font-semibold pt-1">
+                                                    Tengah
+                                                </label>
+                                                <label className="text-neutral-500 text-sm font-semibold ">
+                                                    {
+                                                        incoming?.inspeksi_bahan_result[1]
+                                                            .hasil_tengah
+                                                    }{' '}
+                                                    gr
+                                                </label>
+                                                <div>
+                                                    = <input
+                                                        name="hasilsample3"
+                                                        disabled
+                                                        value={incoming?.inspeksi_bahan_result[1]
+                                                            .hasil_rumus_tengah}
+                                                        type="text"
+                                                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                    /> g/m<sup className=''>2</sup>
+                                                </div>
+                                                <label className="text-neutral-500 text-sm font-semibold pt-1">
+                                                    Bawah
+                                                </label>
+                                                <label className="text-neutral-500 text-sm font-semibold ">
+                                                    {
+                                                        incoming?.inspeksi_bahan_result[1]
+                                                            .hasil_bawah
+                                                    }{' '}
+                                                    gr
+                                                </label>
+                                                <div>
+                                                    = <input
+                                                        name="hasilsample3"
+                                                        disabled
+                                                        value={incoming?.inspeksi_bahan_result[1]
+                                                            .hasil_rumus_kanan}
+                                                        type="text"
+                                                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                                    /> g/m<sup className=''>2</sup>
+                                                </div>
+                                            </div>
                                         </div>
 
-                                    </div>
-
-                                    <div className='flex flex-col gap-1  w-[50%]'>
-
-                                        <p className='text-neutral-500 text-sm font-semibold'>
-                                            {incoming?.inspeksi_bahan_result[1].keterangan_hasil}
-                                        </p>
+                                        <div className="flex flex-col gap-1  w-[50%]">
+                                            <p className="text-neutral-500 text-sm font-semibold">
+                                                {
+                                                    incoming?.inspeksi_bahan_result[1]
+                                                        .keterangan_hasil
+                                                }
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                                 <label className='text-neutral-500 text-sm font-semibold flex justify-center'>
