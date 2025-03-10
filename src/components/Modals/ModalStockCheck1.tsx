@@ -219,6 +219,10 @@ const ModalStockCheck1 = ({
       }/ticket/analisis/${idTiket}`;
     const urlPending = `${import.meta.env.VITE_API_LINK
       }/ticket/pending/${idTiket}`;
+    if (noteMaintenance == null) {
+      alert('Catatan Wajib Diisi');
+      return;
+    }
     try {
       if (typePost === 'normal') {
         setIsLoading(true);
