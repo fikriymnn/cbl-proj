@@ -42,6 +42,7 @@ function ChecksheetBarangRS() {
                 withCredentials: true,
             });
             getKendalaByJO(res.data.data.no_jo)
+            getmesinByJo(res.data.data.no_jo)
             setIsLoading(false)
             setRabutMesin(res.data);
             console.log(res.data);
@@ -93,6 +94,7 @@ function ChecksheetBarangRS() {
     }
 
     const [kendalaByJo, setkendalaByJo] = useState<any>([]);
+    const [selectedMesinJO, setselectedMesinJO] = useState<any>([]);
     async function getKendalaByJO(noJO: any) {
         const url = `${import.meta.env.VITE_API_LINK_P1
             }/api/get-kendala-by-jo/${noJO}`;
@@ -105,6 +107,23 @@ function ChecksheetBarangRS() {
             console.log(error);
         }
     }
+
+    const [mesinByJo, setmesinByJo] = useState<any>([]);
+
+
+    async function getmesinByJo(noJO: any) {
+        const url = `${import.meta.env.VITE_API_LINK_P1
+            }/api/get-mesin-by-jo/${noJO}`;
+
+        try {
+            const res = await axios.get(url);
+            setmesinByJo(res.data.data)
+            console.log('Mesin by jo', res.data.data);
+        } catch (error: any) {
+            console.log(error);
+        }
+    }
+    // First dropdown handler
     const handleChangePointSelect1 = (selected: any) => {
         const { value } = selected;
 
@@ -112,31 +131,72 @@ function ChecksheetBarangRS() {
         const filteredDefect = defectMaster.filter((item: any) => item.e_kode_produksi === value);
 
         const firstFilteredItemDefect = filteredDefect[0];
-        console.log(firstFilteredItemDefect.i_id)
+        console.log(firstFilteredItemDefect.i_id);
         setIdDefect(firstFilteredItemDefect);
-        console.log(firstFilteredItemDefect.target_department)
-        settujuanDepartment(firstFilteredItemDefect.target_department)
-        if (filteredWaste.length > 0) {
-            const firstFilteredItem = filteredWaste[0]; // Take the first item from filtered data
+        console.log(firstFilteredItemDefect.target_department);
+        settujuanDepartment(firstFilteredItemDefect.target_department);
 
-            // Map waste items to dropdown options, ensuring waste exists
+        // Priority 1: Always check kendalaByJo first
+        const matchingKendala = kendalaByJo.find((kendala: any) =>
+            kendala.kode_kendala === value
+        );
+
+        // If a match is found in kendalaByJo, always use that machine
+        if (matchingKendala) {
+            setselectedMesinJO(matchingKendala.mesin);
+            console.log(`Using machine from kendalaByJo: ${matchingKendala.mesin} for kode_kendala: ${value}`);
+        }
+        // Fallback to process-based logic only if not found in kendalaByJo
+        else {
+            let targetProcess = "";
+
+            if (value.startsWith("CO")) {
+                targetProcess = "coating";
+            } else if (value.startsWith("PT")) {
+                targetProcess = "potong";
+            } else if (value.startsWith("C")) {
+                targetProcess = "cetak";
+            } else if (value.startsWith("P")) {
+                targetProcess = "pond";
+            } else if (value.startsWith("LP")) {
+                targetProcess = "lipat";
+
+            } else if (value.startsWith("L")) {
+                targetProcess = "lem";
+            }
+
+            if (targetProcess && mesinByJo.length > 0) {
+                const matchingMachine = mesinByJo.find((mesin: any) =>
+                    mesin.proses.toLowerCase() === targetProcess
+                );
+
+                if (matchingMachine) {
+                    setselectedMesinJO(matchingMachine.mesin);
+                    console.log(`Selected machine: ${matchingMachine.mesin} for process: ${targetProcess}`);
+                } else {
+                    console.warn(`No machine found for process: ${targetProcess}`);
+                    setselectedMesinJO([]);
+                }
+            } else {
+                console.warn(`No valid process identified for kode_waste: ${value} or mesinByJo is empty`);
+                setselectedMesinJO([]);
+            }
+        }
+
+        if (filteredWaste.length > 0) {
+            const firstFilteredItem = filteredWaste[0];
             const allSecondOptions = firstFilteredItem.waste?.map((wasteItem: any) => ({
                 value: wasteItem.i_kendala,
                 label: `${wasteItem.kode_kendala} - ${wasteItem.kendala_desc}`,
             })) || [];
 
             console.log("All Second Options:", allSecondOptions);
-
-
-
-            // Update states
             setSelectedOption(selected);
-            setSecondOptions(allSecondOptions); // Set initial options to the first waste item
-            setSelectedSecondOption(null); // Reset the second dropdown selection
+            setSecondOptions(allSecondOptions);
+            setSelectedSecondOption(null);
         } else {
             console.warn("No matching waste found for kode_waste:", value);
             setSelectedOption(selected);
-            // Reset states when no data matches
             setSecondOptions([]);
             setSelectedSecondOption(null);
             setwasteSelectLkh("");
@@ -144,14 +204,30 @@ function ChecksheetBarangRS() {
         }
     };
 
+    // Second dropdown handler
     const handleChangePointSelect2 = (selected: any) => {
         console.log("Selected Second Option:", selected);
         setSelectedSecondOption(selected);
 
         if (selected?.label) {
-            const [code, description] = selected.label.split(" - "); // Split the label into code and description
-            setwasteSelectCode(code?.trim() || ""); // Set the waste code
-            setwasteSelectLkh(description?.trim() || ""); // Set the waste description
+            const [code, description] = selected.label.split(" - ");
+            const selectedCode = code?.trim() || "";
+            const selectedDescription = description?.trim() || "";
+
+            setwasteSelectCode(selectedCode);
+            setwasteSelectLkh(selectedDescription);
+
+            // Priority 1: Always check kendalaByJo first for the second dropdown as well
+            const matchingKendala = kendalaByJo.find((kendala: any) =>
+                kendala.kode_kendala === selectedCode
+            );
+
+            // If found in kendalaByJo, always use that machine (overriding any previous selection)
+            if (matchingKendala) {
+                setselectedMesinJO(matchingKendala.mesin);
+                console.log(`Updated machine from second selection: ${matchingKendala.mesin} for kode_kendala: ${selectedCode}`);
+            }
+            // Otherwise keep the machine that was set in the first dropdown
         } else {
             console.warn("Invalid selection for handleChangePointSelect2:", selected);
             setwasteSelectCode("");
@@ -288,7 +364,8 @@ function ChecksheetBarangRS() {
         idPoint: number,
         index: number,
         kodeLkh: any,
-        masalahLkh: any
+        masalahLkh: any,
+        mesin: any
     ) {
         if (idDefect == null) {
             alert('Waste Belum Dipilih');
@@ -310,7 +387,8 @@ function ChecksheetBarangRS() {
                     id_barang_rusak_point_v2: idPoint,
                     MasterDefect: idDefect,
                     kode_lkh: kodeLkh,
-                    masalah_lkh: masalahLkh
+                    masalah_lkh: masalahLkh,
+                    mesin: mesin
                 },
 
                 {
@@ -847,14 +925,16 @@ function ChecksheetBarangRS() {
                                                                         data.id,
                                                                         index,
                                                                         wasteSelectCode,
-                                                                        wasteSelectLkh
+                                                                        wasteSelectLkh,
+                                                                        selectedMesinJO
                                                                     ),
                                                                         console.log(RabutMesin?.data?.id,
                                                                             idDefect,
                                                                             data.id,
                                                                             index,
                                                                             wasteSelectCode,
-                                                                            wasteSelectLkh);
+                                                                            wasteSelectLkh,
+                                                                            selectedMesinJO);
                                                                 }}
                                                                 className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
                                                             >
