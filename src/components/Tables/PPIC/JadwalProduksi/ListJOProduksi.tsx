@@ -348,14 +348,24 @@ function ListJOProduksi() {
                                                 VIEW
                                             </button>
                                         </> : <>
-                                            <button
-                                                onClick={() => {
-                                                    getKalkulasi(data.id, data.no_jo, i)
+                                            <div className='flex flex-col gap-1'>
+                                                <button
+                                                    onClick={() => {
+                                                        getKalkulasi(data.id, data.no_jo, i)
 
-                                                }}
-                                                className='text-[#0065de] text-sm   font-bold'>
-                                                CALCULATE
-                                            </button>
+                                                    }}
+                                                    className='text-[#0065de] text-sm   font-bold'>
+                                                    CALCULATE
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        getKalkulasi(data.id, data.no_jo, i)
+
+                                                    }}
+                                                    className='text-[#0065de] text-sm   font-bold'>
+                                                    LEMBUR
+                                                </button>
+                                            </div>
                                         </>}
                                     </div>
 

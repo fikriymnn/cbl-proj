@@ -35,9 +35,8 @@ function ChecksheetBarangRS() {
   }, []);
 
   async function getRabutMesin() {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBarangRusakV2/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBarangRusakV2/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.get(url, {
@@ -65,9 +64,8 @@ function ChecksheetBarangRS() {
   const [tujuanDepartment, settujuanDepartment] = useState<any>([]);
 
   async function getMasterDefect() {
-    const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/list-kendala?criteria=true`;
+    const url = `${import.meta.env.VITE_API_LINK_P1
+      }/api/list-kendala?criteria=true`;
 
     try {
       const res = await axios.get(url);
@@ -97,11 +95,10 @@ function ChecksheetBarangRS() {
   }
 
   const [kendalaByJo, setkendalaByJo] = useState<any>([]);
-  const [selectedMesinJO, setselectedMesinJO] = useState<any>([]);
+  const [selectedMesinJO, setselectedMesinJO] = useState<any>(null);
   async function getKendalaByJO(noJO: any) {
-    const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/get-kendala-by-jo/${noJO}`;
+    const url = `${import.meta.env.VITE_API_LINK_P1
+      }/api/get-kendala-by-jo/${noJO}`;
 
     try {
       const res = await axios.get(url);
@@ -115,9 +112,8 @@ function ChecksheetBarangRS() {
   const [mesinByJo, setmesinByJo] = useState<any>([]);
 
   async function getmesinByJo(noJO: any) {
-    const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/get-mesin-by-jo/${noJO}`;
+    const url = `${import.meta.env.VITE_API_LINK_P1
+      }/api/get-mesin-by-jo/${noJO}`;
 
     try {
       const res = await axios.get(url);
@@ -127,73 +123,103 @@ function ChecksheetBarangRS() {
       console.log(error);
     }
   }
+
   // First dropdown handler
   const handleChangePointSelect1 = (selected: any) => {
-    const { value } = selected;
 
-    const filteredWaste = masterWaste.filter(
-      (item: any) => item.kode_waste === value,
-    );
-    const filteredDefect = defectMaster.filter(
-      (item: any) => item.e_kode_produksi === value,
-    );
-
-    const firstFilteredItemDefect = filteredDefect[0];
-    console.log(firstFilteredItemDefect.i_id);
-    setIdDefect(firstFilteredItemDefect);
-    console.log(firstFilteredItemDefect.target_department);
-    settujuanDepartment(firstFilteredItemDefect.target_department);
-
-    // Priority 1: Always check kendalaByJo first
-    const matchingKendala = kendalaByJo.find(
-      (kendala: any) => kendala.kode_kendala === value,
-    );
-
-    // If a match is found in kendalaByJo, always use that machine
-    if (matchingKendala) {
-      setselectedMesinJO(matchingKendala.mesin);
-      console.log(
-        `Using machine from kendalaByJo: ${matchingKendala.mesin} for kode_kendala: ${value}`,
-      );
+    if (!selected) {
+      console.warn("No selection provided to handleChangePointSelect1");
+      return;
     }
-    // Fallback to process-based logic only if not found in kendalaByJo
-    else {
-      let targetProcess = '';
 
-      if (value.startsWith('CO')) {
-        targetProcess = 'coating';
-      } else if (value.startsWith('PT')) {
-        targetProcess = 'potong';
-      } else if (value.startsWith('C')) {
-        targetProcess = 'cetak';
-      } else if (value.startsWith('P')) {
-        targetProcess = 'pond';
-      } else if (value.startsWith('LP')) {
-        targetProcess = 'lipat';
-      } else if (value.startsWith('L')) {
-        targetProcess = 'lem';
-      }
+    const { value } = selected;
+    console.log(`Processing selection: ${value}`);
 
-      if (targetProcess && mesinByJo.length > 0) {
-        const matchingMachine = mesinByJo.find((mesin: any) =>
-          mesin.proses.toLowerCase().includes(targetProcess.toLowerCase()),
+    // Log data availability
+    console.log("Data available for processing:", {
+      masterWasteAvailable: Array.isArray(masterWaste) && masterWaste.length > 0,
+      defectMasterAvailable: Array.isArray(defectMaster) && defectMaster.length > 0,
+      kendalaByJoAvailable: Array.isArray(kendalaByJo) && kendalaByJo.length > 0
+    });
+
+
+    // Check if masterWaste is defined before filtering
+    const filteredWaste = Array.isArray(masterWaste)
+      ? masterWaste.filter((item: any) => item.kode_waste === value)
+      : [];
+
+    // Check if defectMaster is defined before filtering
+    const filteredDefect = Array.isArray(defectMaster)
+      ? defectMaster.filter((item: any) => item.e_kode_produksi === value)
+      : [];
+
+    // Only proceed if filteredDefect has items
+    if (filteredDefect.length > 0) {
+      const firstFilteredItemDefect = filteredDefect[0];
+      console.log(firstFilteredItemDefect.i_id);
+      setIdDefect(firstFilteredItemDefect);
+      console.log(firstFilteredItemDefect.target_department);
+      settujuanDepartment(firstFilteredItemDefect.target_department);
+    }
+
+    // Check if kendalaByJo is defined before using find
+    if (Array.isArray(kendalaByJo)) {
+      // Priority 1: Always check kendalaByJo first
+      const matchingKendala = kendalaByJo.find(
+        (kendala: any) => kendala.kode_kendala === value,
+      );
+
+      // If a match is found in kendalaByJo, always use that machine
+      if (matchingKendala) {
+        setselectedMesinJO(matchingKendala.mesin);
+        console.log(
+          `Using machine from kendalaByJo: ${matchingKendala.mesin} for kode_kendala: ${value}`,
         );
+      }
+      // Fallback to process-based logic only if not found in kendalaByJo
+      else {
+        let targetProcess = '';
 
-        if (matchingMachine) {
-          setselectedMesinJO(matchingMachine.mesin);
-          console.log(
-            `Selected machine: ${matchingMachine.mesin} for process: ${targetProcess}`,
+        if (value.startsWith('CO')) {
+          targetProcess = 'coating';
+        } else if (value.startsWith('PT')) {
+          targetProcess = 'potong';
+        } else if (value.startsWith('C')) {
+          targetProcess = 'cetak';
+        } else if (value.startsWith('P')) {
+          targetProcess = 'pond';
+        } else if (value.startsWith('LP')) {
+          targetProcess = 'lipat';
+        } else if (value.startsWith('L')) {
+          targetProcess = 'lem';
+        }
+
+        // Check if mesinByJo is defined and has items before using find
+        if (targetProcess && Array.isArray(mesinByJo) && mesinByJo.length > 0) {
+          const matchingMachine = mesinByJo.find((mesin: any) =>
+            mesin.proses.toLowerCase().includes(targetProcess.toLowerCase()),
           );
+
+          if (matchingMachine) {
+            setselectedMesinJO(matchingMachine.mesin);
+            console.log(
+              `Selected machine: ${matchingMachine.mesin} for process: ${targetProcess}`,
+            );
+          } else {
+            console.warn(`No machine found for process: ${targetProcess}`);
+            setselectedMesinJO(null);
+          }
         } else {
-          console.warn(`No machine found for process: ${targetProcess}`);
+          console.warn(
+            `No valid process identified for kode_waste: ${value} or mesinByJo is empty`,
+          );
           setselectedMesinJO(null);
         }
-      } else {
-        console.warn(
-          `No valid process identified for kode_waste: ${value} or mesinByJo is empty`,
-        );
-        setselectedMesinJO([]);
       }
+    } else {
+      console.warn('kendalaByJo is undefined or not an array');
+      // Use null instead of empty array
+      setselectedMesinJO(null);
     }
 
     if (filteredWaste.length > 0) {
@@ -231,19 +257,25 @@ function ChecksheetBarangRS() {
       setwasteSelectCode(selectedCode);
       setwasteSelectLkh(selectedDescription);
 
-      // Priority 1: Always check kendalaByJo first for the second dropdown as well
-      const matchingKendala = kendalaByJo.find(
-        (kendala: any) => kendala.kode_kendala === selectedCode,
-      );
-
-      // If found in kendalaByJo, always use that machine (overriding any previous selection)
-      if (matchingKendala) {
-        setselectedMesinJO(matchingKendala.mesin);
-        console.log(
-          `Updated machine from second selection: ${matchingKendala.mesin} for kode_kendala: ${selectedCode}`,
+      // Check if kendalaByJo is defined before using find
+      if (Array.isArray(kendalaByJo)) {
+        // Priority 1: Always check kendalaByJo first for the second dropdown as well
+        const matchingKendala = kendalaByJo.find(
+          (kendala: any) => kendala.kode_kendala === selectedCode,
         );
+
+        // If found in kendalaByJo, always use that machine (overriding any previous selection)
+        if (matchingKendala) {
+          setselectedMesinJO(matchingKendala.mesin);
+          console.log(
+            `Updated machine from second selection: ${matchingKendala.mesin} for kode_kendala: ${selectedCode}`,
+          );
+        }
+        // Otherwise keep the machine that was set in the first dropdown
+      } else {
+        console.warn('kendalaByJo is undefined or not an array in second dropdown handler');
+        // No need to set anything here as we want to keep the previous selection
       }
-      // Otherwise keep the machine that was set in the first dropdown
     } else {
       console.warn('Invalid selection for handleChangePointSelect2:', selected);
       setwasteSelectCode('');
@@ -251,10 +283,10 @@ function ChecksheetBarangRS() {
     }
   };
 
+
   async function startTaskRabut(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBarangRusakPointV2/start/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBarangRusakPointV2/start/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.put(
@@ -279,9 +311,8 @@ function ChecksheetBarangRS() {
     catatan: any,
     totalDefect: any,
   ) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBarangRusakPointV2/stop/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBarangRusakPointV2/stop/${id}`;
     try {
       setIsLoading(true);
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
@@ -306,9 +337,8 @@ function ChecksheetBarangRS() {
   }
 
   async function tambahTaskRabut(id: number, namaCek: any) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBarangRusakPointV2/create`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBarangRusakPointV2/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -331,9 +361,8 @@ function ChecksheetBarangRS() {
 
   const [bbAktual, setbbAktual] = useState<any>();
   async function doneRabut(id: number, bbak: any) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBarangRusakV2/done/${id}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBarangRusakV2/done/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.put(
@@ -390,9 +419,8 @@ function ChecksheetBarangRS() {
       alert('Kendala Belum Dipilih');
       return;
     }
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBarangRusakPointV2/createDefect`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBarangRusakPointV2/createDefect`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -427,9 +455,8 @@ function ChecksheetBarangRS() {
   const handleSimpan = async (iid: any, index: number) => {
     const defectValue = jumlahDefect[index] || 0; // Get defect value for the specific row
 
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/qc/cs/inspeksiBarangRusakPointV2/simpanDefect/${iid}`;
+    const url = `${import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiBarangRusakPointV2/simpanDefect/${iid}`;
     try {
       setIsLoading(true);
 
@@ -463,17 +490,7 @@ function ChecksheetBarangRS() {
       [index]: value,
     }));
   };
-  const handleChangePointDepatment = (selected: any, i: number) => {
-    const { value } = selected;
-    const filteredData = defectMaster.find(
-      (item: any) => item.i_id == value,
-      // item.id.includes(parseInt(value));
-    );
 
-    console.log(filteredData?.i_id);
-
-    setIdDefect(filteredData);
-  };
   const handleClickAdd = (index: number) => {
     setShowDetail((prevState) => {
       const updatedShowDetail = [...prevState]; // Create a copy
@@ -484,14 +501,7 @@ function ChecksheetBarangRS() {
     setSelectedSecondOption(null);
   };
 
-  const handleChangePoint = (e: any, i: number, ii: number) => {
-    const { name, value } = e.target;
-    const onchangeVal: any = RabutMesin;
-    onchangeVal.data.inspeksi_barang_rusak_point_v2[
-      i
-    ].inspeksi_barang_rusak_defect_v2[ii][name] = value;
-    setRabutMesin(onchangeVal);
-  };
+
 
   const handleChangeRabutPoint = (e: any, i: number) => {
     const { name, value } = e.target;
@@ -525,6 +535,14 @@ function ChecksheetBarangRS() {
         0,
       ); // Sum up 'hasil', default to 0 if invalid
   };
+  useEffect(() => {
+    console.log("Data check:", {
+      masterWaste: !!masterWaste && masterWaste.length,
+      defectMaster: !!defectMaster && defectMaster.length,
+      kendalaByJo: !!kendalaByJo && kendalaByJo.length,
+      mesinByJo: !!mesinByJo && mesinByJo.length
+    });
+  }, [masterWaste, defectMaster, kendalaByJo, mesinByJo]);
   return (
     <>
       <main className="overflow-x-hidden">
@@ -859,7 +877,7 @@ function ChecksheetBarangRS() {
                                 {data2.kode} - {data2.masalah}
                               </label>
                               {data2.kode_lkh == '' ||
-                              data2.kode_lkh == null ? (
+                                data2.kode_lkh == null ? (
                                 <></>
                               ) : (
                                 <>
@@ -1004,7 +1022,7 @@ function ChecksheetBarangRS() {
             )}
           </div>
           {RabutMesin?.data?.status == 'incoming' ||
-          RabutMesin?.data?.status == 'pending' ? (
+            RabutMesin?.data?.status == 'pending' ? (
             <>
               <button
                 type="button"
@@ -1139,7 +1157,7 @@ function ChecksheetBarangRS() {
             </div>
             <div className="flex w-full justify-end px-4 py-4">
               {RabutMesin?.data?.status == 'incoming' ||
-              RabutMesin?.data?.status == 'pending' ? (
+                RabutMesin?.data?.status == 'pending' ? (
                 <button
                   disabled={isLoading}
                   type="submit"
