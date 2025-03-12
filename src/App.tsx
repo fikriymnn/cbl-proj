@@ -196,6 +196,7 @@ import IncomingChem from './pages/QualityControl/Incoming/IncomingChem';
 import MasterSPTeguran from './pages/HR/MasterDataHR/MasterSPTeguran';
 import ProduksiWaste from './pages/Produksi/ProduksiWaste';
 import RekapHRPage from './pages/HR/Rekap/RekapHR';
+import PayrollBulanPage from './pages/HR/Payroll/PayrollBulanPage';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1759,6 +1760,14 @@ function App() {
           element={
             <>
               <PayrollPage />
+            </>
+          }
+        />
+        <Route
+          path="/hr/payrollbulan"
+          element={
+            <>
+              <PayrollBulanPage />
             </>
           }
         />

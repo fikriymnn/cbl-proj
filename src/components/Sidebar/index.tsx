@@ -2246,6 +2246,43 @@ const Sidebar = ({
                   <li>
                     <>
                       <SidebarLinkGroup
+                        activeCondition={pathname === '/hr/payrollbulan' || pathname.includes('/hr/payrollbulan')}
+                      >
+                        {(handleClick, open) => {
+                          return (
+                            <React.Fragment>
+                              <NavLink
+                                to="/hr/payrollbulan"
+                                className={({ isActive }) =>
+                                  `group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium !text-white duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4` +
+                                  (isActive &&
+                                    '!text-[#0065DE] bg-white text-primary py-3 px-1 text-[16px]')
+                                }
+                                onClick={(e) => {
+                                  e.preventDefault();
+
+                                  sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                                  navigate('/hr/payrollbulan');
+                                }}
+                              >
+                                <img src={QC} alt="Logo" />
+                                Payroll Bulanan
+
+                              </NavLink>
+                            </React.Fragment>
+                          )
+                        }}
+                      </SidebarLinkGroup>
+                    </>
+                  </li>
+                </div>
+                <div
+                  className={`translate  pl-3  transform overflow-hidden ${!open && 'hidden'
+                    }`}
+                >
+                  <li>
+                    <>
+                      <SidebarLinkGroup
                         activeCondition={pathname === '/hr/accpayroll' || pathname.includes('/hr/accpayroll')}
                       >
                         {(handleClick, open) => {
@@ -5446,7 +5483,43 @@ const Sidebar = ({
                     </>
                   </li>
                 </div>
+                <div
+                  className={`translate  pl-3  transform overflow-hidden ${!open && 'hidden'
+                    }`}
+                >
+                  <li>
+                    <>
+                      <SidebarLinkGroup
+                        activeCondition={pathname === '/hr/payrollbulan' || pathname.includes('/hr/payrollbulan')}
+                      >
+                        {(handleClick, open) => {
+                          return (
+                            <React.Fragment>
+                              <NavLink
+                                to="/hr/payrollbulan"
+                                className={({ isActive }) =>
+                                  `group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium !text-white duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4` +
+                                  (isActive &&
+                                    '!text-[#0065DE] bg-white text-primary py-3 px-1 text-[16px]')
+                                }
+                                onClick={(e) => {
+                                  e.preventDefault();
 
+                                  sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                                  navigate('/hr/payrollbulan');
+                                }}
+                              >
+                                <img src={QC} alt="Logo" />
+                                Payroll Bulanan
+
+                              </NavLink>
+                            </React.Fragment>
+                          )
+                        }}
+                      </SidebarLinkGroup>
+                    </>
+                  </li>
+                </div>
                 <div
                   className={`translate  pl-3  transform overflow-hidden ${!open && 'hidden'
                     }`}
@@ -6146,7 +6219,43 @@ const Sidebar = ({
                     </>
                   </li>
                 </div>
+                <div
+                  className={`translate  pl-3  transform overflow-hidden ${!open && 'hidden'
+                    }`}
+                >
+                  <li>
+                    <>
+                      <SidebarLinkGroup
+                        activeCondition={pathname === '/hr/payrollbulan' || pathname.includes('/hr/payrollbulan')}
+                      >
+                        {(handleClick, open) => {
+                          return (
+                            <React.Fragment>
+                              <NavLink
+                                to="/hr/payrollbulan"
+                                className={({ isActive }) =>
+                                  `group relative flex items-center mb-4 gap-5 rounded-sm py-2 px-4 font-medium !text-white duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4` +
+                                  (isActive &&
+                                    '!text-[#0065DE] bg-white text-primary py-3 px-1 text-[16px]')
+                                }
+                                onClick={(e) => {
+                                  e.preventDefault();
 
+                                  sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                                  navigate('/hr/payrollbulan');
+                                }}
+                              >
+                                <img src={QC} alt="Logo" />
+                                Payroll Bulanan
+
+                              </NavLink>
+                            </React.Fragment>
+                          )
+                        }}
+                      </SidebarLinkGroup>
+                    </>
+                  </li>
+                </div>
                 <div
                   className={`translate  pl-3  transform overflow-hidden ${!open && 'hidden'
                     }`}
