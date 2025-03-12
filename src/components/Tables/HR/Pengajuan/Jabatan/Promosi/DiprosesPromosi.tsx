@@ -5,6 +5,7 @@ import convertTimeStampToDate from '../../../../../../utils/converDateTime';
 import dateOnly from '../../../../../../utils/convertDateOnly';
 import Loading from '../../../../../Loading';
 import ModalXL from '../../../../PPIC/JadwalProduksi/ModalXL';
+import convertTimeStampToDateOnly from '../../../../../../utils/convertDateOnly';
 
 function DiprosesPromosi() {
     const [isLoading, setIsLoading] = useState(false);
@@ -207,6 +208,13 @@ function DiprosesPromosi() {
 
                                                     {/* Right Column */}
                                                     <div className='flex flex-col gap-2'>
+                                                        <div className='flex flex-col'>
+                                                            <label className='text-black text-xs font-bold'>MASA PROBATION</label>
+                                                            <label className='text-[#7a7a7a] text-xl font-normal'>
+                                                                Dari: {convertTimeStampToDateOnly(data.tanggal_from)} <br />
+                                                                Sampai: {convertTimeStampToDateOnly(data.tanggal_to)}
+                                                            </label>
+                                                        </div>
                                                         {/* Department */}
                                                         <div className='flex flex-col'>
                                                             <label className='text-black text-xs font-bold'>DEPARTEMEN</label>

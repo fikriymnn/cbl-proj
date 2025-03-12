@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import convertTimeStampToDate from '../../../../../../utils/converDateTime';
+import convertTimeStampToDateOnly from '../../../../../../utils/convertDate';
 import dateOnly from '../../../../../../utils/convertDateOnly';
 import Loading from '../../../../../Loading';
 import ModalXL from '../../../../PPIC/JadwalProduksi/ModalXL';
@@ -239,6 +239,13 @@ function IncomingPromosi() {
 
                                                     {/* Right Column */}
                                                     <div className='flex flex-col gap-2'>
+                                                        <div className='flex flex-col'>
+                                                            <label className='text-black text-xs font-bold'>MASA PROBATION</label>
+                                                            <label className='text-[#7a7a7a] text-xl font-normal'>
+                                                                Dari: {convertTimeStampToDateOnly(data.tanggal_from)} <br />
+                                                                Sampai: {convertTimeStampToDateOnly(data.tanggal_to)}
+                                                            </label>
+                                                        </div>
                                                         {/* Department */}
                                                         <div className='flex flex-col'>
                                                             <label className='text-black text-xs font-bold'>DEPARTEMEN</label>

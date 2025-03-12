@@ -256,7 +256,9 @@ function BuatPromosiHR() {
                     gaji_promosi: gajiRaw,
                     masa_kerja: masaKerja,
                     alasan_promosi: alasanIzin,
-                    type: type
+                    type: type,
+                    tanggal_to: tanggalSampai,
+                    tanggal_from: tanggalDari
                 },
                 {
 
