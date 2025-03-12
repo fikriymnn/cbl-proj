@@ -99,17 +99,123 @@ function HistoryIncoming() {
 
   const printChecksheet = () => {
     const printArea = document.getElementById('print-area');
-    const printContents = printArea ? printArea.innerHTML : '';
-    const originalContents = document.body.innerHTML;
 
-    document.body.innerHTML = printContents;
-    window.print();
-    document.body.innerHTML = originalContents;
+    if (!printArea) return;
 
-    // Re-initialize the component after printing
-    setTimeout(() => {
-      setIsOpen(true);
-    }, 100);
+    // Store the current page
+    const currentPage = window.location.href;
+
+    // Create a new window for printing with your domain still in URL
+    const printWindow = window.open(currentPage, '_blank', 'toolbar=0,location=1,menubar=0');
+
+    if (!printWindow) {
+      alert("Please allow pop-ups for printing functionality");
+      return;
+    }
+
+    // Get all styles from the current document
+    const styles = Array.from(document.styleSheets)
+      .map(styleSheet => {
+        try {
+          return Array.from(styleSheet.cssRules)
+            .map(rule => rule.cssText)
+            .join('');
+        } catch (e) {
+          // Likely a CORS issue with external stylesheet
+          if (styleSheet.href) {
+            return `<link rel="stylesheet" href="${styleSheet.href}">`;
+          }
+          return '';
+        }
+      })
+      .filter(Boolean);
+
+    // Clear the new window and insert content with styles
+    printWindow.document.open();
+    printWindow.document.write(`
+      <html>
+        <head>
+          
+          <style>
+            ${styles.join('')}
+            
+            /* Additional styles to fit on one page */
+            @page {
+              size: A4;
+              margin: 10mm;
+            }
+            
+            body {
+              margin: 0;
+              padding: 0;
+            }
+            
+            .print-container {
+              width: 100%;
+              max-width: 100%;
+              box-sizing: border-box;
+              transform: scale(0.95);
+              transform-origin: top left;
+            }
+            
+            /* Adjust font sizes for print */
+            .print-container * {
+              font-size: 10px !important;
+            }
+            
+            .print-container h3, 
+            .print-container .text-lg, 
+            .print-container .font-semibold {
+              font-size: 12px !important;
+            }
+            
+            /* Adjust row heights */
+            .print-container table td {
+              padding: 2px !important;
+            }
+            
+            /* Ensure table fits */
+            .print-container table {
+              width: 100% !important;
+              table-layout: fixed;
+            }
+            
+            /* Force to fit on one page */
+            @media print {
+              html, body {
+                width: 210mm;
+                height: 297mm;
+                overflow: hidden;
+              }
+              
+              .print-container {
+                page-break-inside: avoid;
+                page-break-after: avoid;
+                page-break-before: avoid;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-container">
+            ${printArea.innerHTML}
+          </div>
+          <script>
+            window.onload = function() {
+              // Small delay to ensure styles are applied
+              setTimeout(function() {
+                window.print();
+                window.onafterprint = function() {
+                  window.close();
+                }
+              }, 500);
+            }
+          </script>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
   };
   return (
     <>
@@ -251,11 +357,10 @@ function HistoryIncoming() {
                         </td>
                         <td className="border border-black p-2 w-1/3 bg-gray-100">
                           <p
-                            className={` uppercase font-semibold text-lg  ${
-                              incoming?.verifikasi == 'Diterima'
-                                ? 'text-green-500'
-                                : 'text-red-500'
-                            }`}
+                            className={` uppercase font-semibold text-lg  ${incoming?.verifikasi == 'Diterima'
+                              ? 'text-green-500'
+                              : 'text-red-500'
+                              }`}
                           >
                             {incoming?.verifikasi}
                           </p>
@@ -783,11 +888,10 @@ function HistoryIncoming() {
                             </div>
                             <div className="text-center">
                               <p
-                                className={` uppercase font-semibold text-lg  ${
-                                  incoming?.verifikasi == 'Diterima'
-                                    ? 'text-green-500'
-                                    : 'text-red-500'
-                                }`}
+                                className={` uppercase font-semibold text-lg  ${incoming?.verifikasi == 'Diterima'
+                                  ? 'text-green-500'
+                                  : 'text-red-500'
+                                  }`}
                               >
                                 {incoming?.verifikasi}
                               </p>
@@ -933,11 +1037,10 @@ function HistoryIncoming() {
                 className={`flex flex-col h-full w-full  gap-2  py-4 col-span-2  font-semibold  bg-[#F6FAFF]`}
               >
                 <p
-                  className={` uppercase font-semibold text-lg bg-[#F6FAFF] ${
-                    incoming?.verifikasi == 'Diterima'
-                      ? 'text-green-500'
-                      : 'text-red-500'
-                  }`}
+                  className={` uppercase font-semibold text-lg bg-[#F6FAFF] ${incoming?.verifikasi == 'Diterima'
+                    ? 'text-green-500'
+                    : 'text-red-500'
+                    }`}
                 >
                   {incoming?.verifikasi}
                 </p>
