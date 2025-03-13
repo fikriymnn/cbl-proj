@@ -695,7 +695,7 @@ function CheckSheetHasilRabut() {
                         colSpan={3}
                         className="border border-black p-2 text-center font-bold"
                       >
-                        INCOMING INSPECTION CHECKSHEET (IIC)
+                        AMPAR LEM CHECKSHEET
                       </td>
                     </tr>
                   </thead>
