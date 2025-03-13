@@ -1,6 +1,6 @@
 import React from 'react'
 import DefaultLayout from '../../layout/DefaultLayout'
-import TabPengajuanKeHR from '../../components/Tables/PengajuanKeHR/TabPengajuanKeHR'
+import TabHistoryPengajuanKeHR from '../../components/Tables/PengajuanKeHR/TabHistoryPengajuanKeHR'
 
 
 
@@ -10,7 +10,7 @@ function PengajuanAllDeptHistory() {
         <DefaultLayout>
             <>
                 <p className='font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]'>History Pengajuan</p>
-                <TabPengajuanKeHR />
+                <TabHistoryPengajuanKeHR />
             </>
         </DefaultLayout>
     )
