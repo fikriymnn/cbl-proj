@@ -11,6 +11,7 @@ import Select from 'react-select';
 import convertTimeStampToDateTime from '../../../../../utils/converDateTime';
 import formatInteger from '../../../../../utils/formaterInteger';
 import ModalKosonganSmall from '../../../../Modals/ModalKosonganSmall';
+import ptcbl from '../../../../../images/ptcbl.png';
 
 function ChecksheetBarangRS() {
   const { id } = useParams();
@@ -35,8 +36,9 @@ function ChecksheetBarangRS() {
   }, []);
 
   async function getRabutMesin() {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangRusakV2/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBarangRusakV2/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.get(url, {
@@ -64,8 +66,9 @@ function ChecksheetBarangRS() {
   const [tujuanDepartment, settujuanDepartment] = useState<any>([]);
 
   async function getMasterDefect() {
-    const url = `${import.meta.env.VITE_API_LINK_P1
-      }/api/list-kendala?criteria=true`;
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true`;
 
     try {
       const res = await axios.get(url);
@@ -98,8 +101,9 @@ function ChecksheetBarangRS() {
   const [selectedMesinJO, setselectedMesinJO] = useState<any>(null);
   const [selectedOperatorJO, setselectedOperatorJO] = useState<any>(null);
   async function getKendalaByJO(noJO: any) {
-    const url = `${import.meta.env.VITE_API_LINK_P1
-      }/api/get-kendala-by-jo/${noJO}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/get-kendala-by-jo/${noJO}`;
 
     try {
       const res = await axios.get(url);
@@ -113,8 +117,9 @@ function ChecksheetBarangRS() {
   const [mesinByJo, setmesinByJo] = useState<any>([]);
 
   async function getmesinByJo(noJO: any) {
-    const url = `${import.meta.env.VITE_API_LINK_P1
-      }/api/get-mesin-by-jo/${noJO}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/get-mesin-by-jo/${noJO}`;
 
     try {
       const res = await axios.get(url);
@@ -294,8 +299,9 @@ function ChecksheetBarangRS() {
   };
 
   async function startTaskRabut(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangRusakPointV2/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBarangRusakPointV2/start/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.put(
@@ -320,8 +326,9 @@ function ChecksheetBarangRS() {
     catatan: any,
     totalDefect: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangRusakPointV2/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBarangRusakPointV2/stop/${id}`;
     try {
       setIsLoading(true);
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
@@ -346,8 +353,9 @@ function ChecksheetBarangRS() {
   }
 
   async function tambahTaskRabut(id: number, namaCek: any) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangRusakPointV2/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBarangRusakPointV2/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -370,8 +378,9 @@ function ChecksheetBarangRS() {
 
   const [bbAktual, setbbAktual] = useState<any>();
   async function doneRabut(id: number, bbak: any) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangRusakV2/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBarangRusakV2/done/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.put(
@@ -429,8 +438,9 @@ function ChecksheetBarangRS() {
       alert('Kendala Belum Dipilih');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangRusakPointV2/createDefect`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBarangRusakPointV2/createDefect`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -466,8 +476,9 @@ function ChecksheetBarangRS() {
   const handleSimpan = async (iid: any, index: number) => {
     const defectValue = jumlahDefect[index] || 0; // Get defect value for the specific row
 
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBarangRusakPointV2/simpanDefect/${iid}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBarangRusakPointV2/simpanDefect/${iid}`;
     try {
       setIsLoading(true);
 
@@ -552,8 +563,427 @@ function ChecksheetBarangRS() {
       mesinByJo: !!mesinByJo && mesinByJo.length,
     });
   }, [masterWaste, defectMaster, kendalaByJo, mesinByJo]);
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const openPreview = () => {
+    setIsOpen(true);
+  };
+
+  const closePreview = () => {
+    setIsOpen(false);
+  };
+
+  const printChecksheet = () => {
+    const printArea = document.getElementById('print-area');
+
+    if (!printArea) return;
+
+    // Store the current page
+    const currentPage = window.location.href;
+
+    // Create a new window for printing with your domain still in URL
+    const printWindow = window.open(
+      currentPage,
+      '_blank',
+      'toolbar=0,location=1,menubar=0',
+    );
+
+    if (!printWindow) {
+      alert('Please allow pop-ups for printing functionality');
+      return;
+    }
+
+    // Get all styles from the current document
+    const styles = Array.from(document.styleSheets)
+      .map((styleSheet) => {
+        try {
+          return Array.from(styleSheet.cssRules)
+            .map((rule) => rule.cssText)
+            .join('');
+        } catch (e) {
+          // Likely a CORS issue with external stylesheet
+          if (styleSheet.href) {
+            return `<link rel="stylesheet" href="${styleSheet.href}">`;
+          }
+          return '';
+        }
+      })
+      .filter(Boolean);
+
+    // Clear the new window and insert content with styles
+    printWindow.document.open();
+    printWindow.document.write(`
+        <html>
+          <head>
+            <style>
+              ${styles.join('')}
+              
+              /* Additional styles to fit on one page */
+              @page {
+                size: A4;
+                margin: 10mm;
+              }
+              
+              body {
+                margin: 0;
+                padding: 0;
+              }
+              
+              .print-container {
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+                transform: scale(0.95);
+                transform-origin: top left;
+              }
+              
+              /* Adjust font sizes for print */
+              .print-container * {
+                font-size: 10px !important;
+              }
+              
+              .print-container h3, 
+              .print-container .text-lg, 
+              .print-container .font-semibold {
+                font-size: 12px !important;
+              }
+              
+              /* Adjust row heights */
+              .print-container table td {
+                padding: 2px !important;
+              }
+              
+              /* Ensure table fits */
+              .print-container table {
+                width: 100% !important;
+                table-layout: fixed;
+              }
+              
+              /* Force to fit on one page */
+              @media print {
+                html, body {
+                  width: 210mm;
+                  height: 297mm;
+                  overflow: hidden;
+                }
+                
+                .print-container {
+                  page-break-inside: avoid;
+                  page-break-after: avoid;
+                  page-break-before: avoid;
+                }
+              }
+            </style>
+          </head>
+          <body>
+            <div class="print-container">
+              ${printArea.innerHTML}
+            </div>
+            <script>
+              window.onload = function() {
+                // Small delay to ensure styles are applied
+                setTimeout(function() {
+                  window.print();
+                  window.onafterprint = function() {
+                    window.close();
+                  }
+                }, 500);
+              }
+            </script>
+          </body>
+        </html>
+      `);
+
+    printWindow.document.close();
+  };
   return (
     <>
+      {isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-start overflow-y-auto pt-10">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-7xl">
+            {/* Modal header */}
+            <div className="border-b px-4 py-3 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Print Preview
+              </h3>
+              <div className="flex space-x-2">
+                <button
+                  onClick={printChecksheet}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+                >
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                    />
+                  </svg>
+                  Print Checksheet
+                </button>
+                <button
+                  onClick={closePreview}
+                  className="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-gray-300"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+
+            {/* Print area content */}
+            <div
+              id="print-area"
+              className="p-6 overflow-auto max-h-[calc(100vh-150px)]"
+            >
+              <table className="border-collapse border w-full text-sm">
+                <thead>
+                  <tr>
+                    <td colSpan={3} className="border border-black p-2">
+                      <div className="flex items-center">
+                        <div className="w-24 flex justify-center">
+                          <img src={ptcbl} alt="logo" />
+                        </div>
+                        <div className="flex-grow text-center font-bold text-lg">
+                          QUALITY ASSURANCE DEPARTMENT
+                        </div>
+                        <div className="w-24 flex justify-center">{'  '}</div>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      colSpan={3}
+                      className="border border-black p-2 text-center font-bold"
+                    >
+                      BARANG RUSAK SEBAGIAN CHECKSHEET
+                    </td>
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Job Order Information */}
+                  <tr>
+                    <td colSpan={3} className="border border-black p-2">
+                      <div className="grid grid-cols-2 gap-4">
+                        <table className="w-full">
+                          <tbody>
+                            <tr>
+                              <td className="font-semibold w-32">No. JO</td>
+                              <td>: {RabutMesin?.data?.no_jo}</td>
+                            </tr>
+                            <tr>
+                              <td className="font-semibold w-32">No. IO</td>
+                              <td>: {RabutMesin?.data?.no_io}</td>
+                            </tr>
+                            <tr>
+                              <td className="font-semibold w-32">
+                                Nama Barang
+                              </td>
+                              <td>: {RabutMesin?.data?.nama_produk}</td>
+                            </tr>
+                            <tr>
+                              <td className="font-semibold w-32">Customer</td>
+                              <td>: {RabutMesin?.data?.customer}</td>
+                            </tr>
+                            <tr>
+                              <td className="font-semibold w-32">Status JO</td>
+                              <td>: {RabutMesin?.data?.status_jo}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+
+                        <table className="w-full">
+                          <tbody>
+                            <tr>
+                              <td className="font-semibold w-32">Tanggal</td>
+                              <td>: {tanggal}</td>
+                            </tr>
+                            <tr>
+                              <td className="font-semibold w-32">Jam</td>
+                              <td>: {jam}</td>
+                            </tr>
+                            <tr>
+                              <td className="font-semibold w-32">QTY Rusak</td>
+                              <td>
+                                :{' '}
+                                {formatInteger(
+                                  parseInt(RabutMesin?.data?.qty_rusak),
+                                )}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="font-semibold w-32">
+                                Waktu Sortir
+                              </td>
+                              <td>: {tanggal}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </td>
+                  </tr>
+
+                  {/* Inspection Points */}
+                  {RabutMesin?.data?.inspeksi_barang_rusak_point_v2?.map(
+                    (data: any, index: any) => (
+                      <React.Fragment key={index}>
+                        <tr>
+                          <td
+                            colSpan={3}
+                            className="border border-black p-2 bg-gray-100"
+                          >
+                            <div className="grid grid-cols-6 w-full gap-2">
+                              <div className="col-span-2">
+                                <span className="font-semibold uppercase">
+                                  {data.nama_pengecekan}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="font-semibold">
+                                  SUB TOTAL{' '}
+                                </span>
+                                <span>
+                                  :
+                                  {calculateTotalHasil(
+                                    data?.inspeksi_barang_rusak_defect_v2 || [],
+                                  )}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="font-semibold">
+                                  INSPEKTOR{' '}
+                                </span>
+                                <span>:{data.inspektor?.nama}</span>
+                              </div>
+                              <div>
+                                <span className="font-semibold">WAKTU </span>
+                                <span>
+                                  :{formatElapsedTime(data.lama_pengerjaan)}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="font-semibold">TIME </span>
+                                <span>
+                                  :
+                                  {convertTimeStampToDateTime(data.waktu_mulai)}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* Defects */}
+                        <tr>
+                          <td colSpan={3} className="border border-black p-2">
+                            <div className="flex flex-wrap">
+                              {data?.inspeksi_barang_rusak_defect_v2?.map(
+                                (defect: any, i: any) => (
+                                  <div key={i} className="w-1/6 p-2">
+                                    <div className="border p-2 h-full flex flex-col">
+                                      <div className="font-semibold mb-1">
+                                        {defect.kode} - {defect.masalah}
+                                      </div>
+                                      {defect.kode_lkh &&
+                                        defect.kode_lkh !== '' && (
+                                          <div className="text-xs mb-1">
+                                            Dengan: {defect.kode_lkh} -{' '}
+                                            {defect.masalah_lkh}
+                                          </div>
+                                        )}
+                                      <div className="mt-auto text-center border-t pt-1 font-semibold">
+                                        {defect.jumlah_defect}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ),
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+
+                        {/* Notes */}
+                        <tr>
+                          <td colSpan={3} className="border border-black p-2">
+                            <div className="font-semibold">Catatan:</div>
+                            <div className="p-2 min-h-[60px] border border-gray-300 rounded mt-1">
+                              {data.catatan}
+                            </div>
+                          </td>
+                        </tr>
+                      </React.Fragment>
+                    ),
+                  )}
+
+                  {/* Totals Section */}
+                  <tr>
+                    <td colSpan={3} className="border border-black p-2">
+                      <div className="font-bold mb-2">TOTAL</div>
+                      <div className="grid grid-cols-4 gap-4">
+                        <div>
+                          <div className="font-semibold">Setting Awal</div>
+                          <div className="border p-1">
+                            {RabutMesin?.settingAwal}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-semibold">Druk Awal</div>
+                          <div className="border p-1">
+                            {RabutMesin?.drukAwal}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-semibold">Sub Total</div>
+                          <div className="border p-1">
+                            {RabutMesin?.subTotal}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-semibold">Barang Baik</div>
+                          <div className="border p-1">
+                            {RabutMesin?.barangBaik}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+
+                  {/* Barang Baik Aktual */}
+                  <tr>
+                    <td colSpan={3} className="border border-black p-2">
+                      <div className="flex">
+                        <div className="w-1/4">
+                          <div className="font-semibold">
+                            Barang Baik Aktual:
+                          </div>
+                          <div className="border p-1 mt-1">
+                            {RabutMesin?.data?.barang_baik_aktual}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+
+                  {/* Catatan */}
+                  <tr>
+                    <td colSpan={3} className="border border-black p-2">
+                      <div className="font-semibold">CATATAN:</div>
+                      <div className="border p-2 min-h-[80px] rounded mt-1">
+                        {RabutMesin?.data?.catatan}
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
       <main className="overflow-x-hidden">
         {isLoading && <Loading />}
         <form
@@ -565,22 +995,51 @@ function ChecksheetBarangRS() {
           }}
         >
           <div className="min-w-[700px] bg-white rounded-xl">
-            <p className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+            <p className="text-[14px] font-semibold w-full flex justify-between border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
+              <div className="flex gap-1">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z"
+                    fill="#0065DE"
+                  />
+                </svg>{' '}
+                BARANG RUSAK SEBAGIAN
+              </div>
+
+              <button
+                onClick={openPreview}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
               >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z"
-                  fill="#0065DE"
-                />
-              </svg>{' '}
-              BARANG RUSAK SEBAGIAN
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  />
+                </svg>
+                Preview Checksheet
+              </button>
             </p>
 
             <div className="flex w-full border-b-8 border-[#D8EAFF] px-8 py-8">
@@ -886,7 +1345,7 @@ function ChecksheetBarangRS() {
                                 {data2.kode} - {data2.masalah}
                               </label>
                               {data2.kode_lkh == '' ||
-                                data2.kode_lkh == null ? (
+                              data2.kode_lkh == null ? (
                                 <></>
                               ) : (
                                 <>
@@ -1033,7 +1492,7 @@ function ChecksheetBarangRS() {
             )}
           </div>
           {RabutMesin?.data?.status == 'incoming' ||
-            RabutMesin?.data?.status == 'pending' ? (
+          RabutMesin?.data?.status == 'pending' ? (
             <>
               <button
                 type="button"
@@ -1168,7 +1627,7 @@ function ChecksheetBarangRS() {
             </div>
             <div className="flex w-full justify-end px-4 py-4">
               {RabutMesin?.data?.status == 'incoming' ||
-                RabutMesin?.data?.status == 'pending' ? (
+              RabutMesin?.data?.status == 'pending' ? (
                 <button
                   disabled={isLoading}
                   type="submit"
