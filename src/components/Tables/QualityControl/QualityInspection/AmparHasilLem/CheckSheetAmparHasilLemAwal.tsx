@@ -9,6 +9,7 @@ import Loading from '../../../../Loading';
 import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import Select from 'react-select';
 import convertTimeStampToDateTime from '../../../../../utils/converDateTime';
+import ptcbl from '../../../../../images/ptcbl.png';
 
 function CheckSheetHasilRabut() {
   const { id } = useParams();
@@ -496,9 +497,353 @@ function CheckSheetHasilRabut() {
       return prevState === index ? null : index;
     });
   };
+
+  const [isOpen, setIsOpen] = useState(false);
+
+  const openPreview = () => {
+    setIsOpen(true);
+  };
+
+  const closePreview = () => {
+    setIsOpen(false);
+  };
+
+  const printChecksheet = () => {
+    const printArea = document.getElementById('print-area');
+
+    if (!printArea) return;
+
+    // Store the current page
+    const currentPage = window.location.href;
+
+    // Create a new window for printing with your domain still in URL
+    const printWindow = window.open(currentPage, '_blank', 'toolbar=0,location=1,menubar=0');
+
+    if (!printWindow) {
+      alert("Please allow pop-ups for printing functionality");
+      return;
+    }
+
+    // Get all styles from the current document
+    const styles = Array.from(document.styleSheets)
+      .map(styleSheet => {
+        try {
+          return Array.from(styleSheet.cssRules)
+            .map(rule => rule.cssText)
+            .join('');
+        } catch (e) {
+          // Likely a CORS issue with external stylesheet
+          if (styleSheet.href) {
+            return `<link rel="stylesheet" href="${styleSheet.href}">`;
+          }
+          return '';
+        }
+      })
+      .filter(Boolean);
+
+    // Clear the new window and insert content with styles
+    printWindow.document.open();
+    printWindow.document.write(`
+      <html>
+        <head>
+          <style>
+            ${styles.join('')}
+            
+            /* Additional styles to fit on one page */
+            @page {
+              size: A4;
+              margin: 10mm;
+            }
+            
+            body {
+              margin: 0;
+              padding: 0;
+            }
+            
+            .print-container {
+              width: 100%;
+              max-width: 100%;
+              box-sizing: border-box;
+              transform: scale(0.95);
+              transform-origin: top left;
+            }
+            
+            /* Adjust font sizes for print */
+            .print-container * {
+              font-size: 10px !important;
+            }
+            
+            .print-container h3, 
+            .print-container .text-lg, 
+            .print-container .font-semibold {
+              font-size: 12px !important;
+            }
+            
+            /* Adjust row heights */
+            .print-container table td {
+              padding: 2px !important;
+            }
+            
+            /* Ensure table fits */
+            .print-container table {
+              width: 100% !important;
+              table-layout: fixed;
+            }
+            
+            /* Force to fit on one page */
+            @media print {
+              html, body {
+                width: 210mm;
+                height: 297mm;
+                overflow: hidden;
+              }
+              
+              .print-container {
+                page-break-inside: avoid;
+                page-break-after: avoid;
+                page-break-before: avoid;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-container">
+            ${printArea.innerHTML}
+          </div>
+          <script>
+            window.onload = function() {
+              // Small delay to ensure styles are applied
+              setTimeout(function() {
+                window.print();
+                window.onafterprint = function() {
+                  window.close();
+                }
+              }, 500);
+            }
+          </script>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+  };
   return (
     <>
+      <>{/* Button to open preview */}
 
+
+        {/* Print Preview Modal */}
+        {isOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-start overflow-y-auto pt-10">
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-7xl">
+              {/* Modal header */}
+              <div className="border-b px-4 py-3 flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Print Preview
+                </h3>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={printChecksheet}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+                  >
+                    <svg
+                      className="w-4 h-4 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                      />
+                    </svg>
+                    Print Checksheet
+                  </button>
+                  <button
+                    onClick={closePreview}
+                    className="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-gray-300"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+
+              {/* Print area content */}
+              <div id="print-area" className="p-6 overflow-auto max-h-[calc(100vh-150px)]">
+                <table className="border-collapse border w-full text-sm">
+                  <thead>
+                    <tr>
+                      <td colSpan={3} className="border border-black p-2">
+                        <div className="flex items-center">
+                          <div className="w-24 flex justify-center">
+                            <img src={ptcbl} alt="logo" />
+                          </div>
+                          <div className="flex-grow text-center font-bold text-lg">
+                            QUALITY ASSURANCE DEPARTMENT
+                          </div>
+                          <div className="w-24 flex justify-center">
+                            {'  '}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td
+                        colSpan={3}
+                        className="border border-black p-2 text-center font-bold"
+                      >
+                        INCOMING INSPECTION CHECKSHEET (IIC)
+                      </td>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Job Order Information */}
+                    <tr>
+                      <td colSpan={3} className="border border-black p-2">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <div className="flex">
+                              <span className="font-semibold w-32">No. JO:</span>
+                              <span>{RabutMesin?.data?.no_jo}</span>
+                            </div>
+                            <div className="flex">
+                              <span className="font-semibold w-32">No. IO:</span>
+                              <span>{RabutMesin?.data?.no_io}</span>
+                            </div>
+                            <div className="flex">
+                              <span className="font-semibold w-32">Nama Barang:</span>
+                              <span>{RabutMesin?.data?.nama_produk}</span>
+                            </div>
+                            <div className="flex">
+                              <span className="font-semibold w-32">Customer:</span>
+                              <span>{RabutMesin?.data?.customer}</span>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex">
+                              <span className="font-semibold w-32">Tanggal:</span>
+                              <span>{new Date().toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex">
+                              <span className="font-semibold w-32">Status:</span>
+                              <span>{RabutMesin?.data?.status}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    {/* Inspection Details */}
+                    <tr>
+                      <td colSpan={3} className="border border-black p-0">
+                        <table className="w-full border-collapse">
+                          <thead>
+                            <tr className="bg-gray-100">
+                              <th className="border border-black p-1 text-center w-8">No.</th>
+                              <th className="border border-black p-1 text-left">Qty Palet</th>
+                              <th className="border border-black p-1 text-left">Parameter</th>
+                              <th className="border border-black p-1 text-left">Inspektor</th>
+                              <th className="border border-black p-1 text-left">Waktu</th>
+                              <th className="border border-black p-1 text-left">Catatan</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {RabutMesin?.data?.inspeksi_ampar_lem_point?.map((data: any, index: any) => {
+                              return (
+                                <tr key={index}>
+                                  <td className="border border-black p-1 text-center">{index + 1}</td>
+                                  <td className="border border-black p-1">Palet ke-{index + 1}</td>
+                                  <td className="border border-black p-1">{data.qty_pallet || '-'}</td>
+                                  <td className="border border-black p-1">{data.inspektor?.nama || '-'}</td>
+                                  <td className="border border-black p-1">{formatElapsedTime(data.lama_pengerjaan)}</td>
+                                  <td className="border border-black p-1">{data.catatan || '-'}</td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+
+                    {/* Defect Details */}
+                    <tr>
+                      <td colSpan={3} className="border border-black p-0">
+                        <table className="w-full border-collapse">
+                          <thead>
+                            <tr className="bg-gray-100">
+                              <th className="border border-black p-1 text-center w-8">No.</th>
+                              <th className="border border-black p-1 text-left">Kode Defect</th>
+                              <th className="border border-black p-1 text-left">Masalah</th>
+                              <th className="border border-black p-1 text-left">Hasil</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {RabutMesin?.data?.inspeksi_ampar_lem_point?.flatMap((point: any, pointIndex: any) =>
+                              point.inspeksi_ampar_lem_defect?.map((defect: any, defectIndex: any) => (
+                                <tr key={`${pointIndex}-${defectIndex}`}>
+                                  <td className="border border-black p-1 text-center">{defectIndex + 1}</td>
+                                  <td className="border border-black p-1">{defect.kode}</td>
+                                  <td className="border border-black p-1">{defect.masalah}</td>
+                                  <td className="border border-black p-1">{defect.hasil || '-'}</td>
+                                </tr>
+                              ))
+                            )}
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+
+                    {/* Summary */}
+                    <tr>
+                      <td colSpan={3} className="border border-black p-2">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <div className="font-semibold mb-2">Sub Total:</div>
+                            <div className="flex mb-1">
+                              <span className="font-semibold w-48">Parameter Qty Palet:</span>
+                              <span>{RabutMesin?.sumQtyPallet || '0'}</span>
+                            </div>
+                            <div className="flex mb-1">
+                              <span className="font-semibold w-48">Jumlah Defect Ditemukan:</span>
+                              <span>{RabutMesin?.totalDefect || '0'}</span>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="font-semibold mb-2">Defect Breakdown:</div>
+                            {RabutMesin?.totalPointDefect?.map((defect: any, index: any) => (
+                              <div key={index} className="flex mb-1">
+                                <span className="font-semibold w-16">{defect.kode}:</span>
+                                <span>{defect.total_defect}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+
+                    {/* Keterangan */}
+                    <tr>
+                      <td colSpan={3} className="border border-black p-2">
+                        <div className="font-semibold mb-2">Keterangan:</div>
+                        <div className="min-h-16 p-2 border border-gray-300 rounded bg-gray-50">
+                          {RabutMesin?.data?.catatan || '-'}
+                        </div>
+                      </td>
+                    </tr>
+
+                    {/* History Kendala JO */}
+
+
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
       <main className="overflow-x-hidden">
         {isLoading && <Loading />}
         <form action="" onSubmit={(e) => {
@@ -507,22 +852,50 @@ function CheckSheetHasilRabut() {
           doneRabut(RabutMesin?.data.id)
         }}>
           <div className="min-w-[700px] bg-white rounded-xl">
-            <p className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+            <p className="text-[14px] font-semibold w-full flex border-b-8 justify-between  border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
+              <div className='flex gap-1'>
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z"
+                    fill="#0065DE"
+                  />
+                </svg>{' '}
+                Ampar Lem Checksheet
+              </div>
+              <button
+                onClick={openPreview}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
               >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM13 8C13 8.55228 12.5523 9 12 9C11.4477 9 11 8.55228 11 8C11 7.44772 11.4477 7 12 7C12.5523 7 13 7.44772 13 8ZM13 17V11H11V17H13Z"
-                  fill="#0065DE"
-                />
-              </svg>{' '}
-              Ampar Lem Checksheet
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  />
+                </svg>
+                Preview Checksheet
+              </button>
             </p>
 
             <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
