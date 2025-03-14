@@ -3,14 +3,13 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import convertTimeStampToDateTime from '../../../../../utils/converDateTime';
 import Loading from '../../../../Loading';
-import { useReactToPrint } from "react-to-print";
-import printIcon from "../../../../../images/icon/print.svg";
+import { useReactToPrint } from 'react-to-print';
+import printIcon from '../../../../../images/icon/print.svg';
 import convertDateToTime from '../../../../../utils/converDateToTime';
 import convertTimeStampToDate from '../../../../../utils/convertDate';
 import formatInteger from '../../../../../utils/formaterInteger';
 
 function ChecksheetLipat() {
-
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const kosong: any = [];
@@ -58,8 +57,9 @@ function ChecksheetLipat() {
     }
   }
   async function startTask(id: any) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLipat/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLipat/start/${id}`;
 
     try {
       setIsLoading(true);
@@ -84,8 +84,9 @@ function ChecksheetLipat() {
       : '-';
 
   async function tambahChecksheetPoint(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLipat/addPoint/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLipat/addPoint/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.put(
@@ -103,20 +104,25 @@ function ChecksheetLipat() {
     }
   }
 
-  async function saveChecksheetResult(id: number, hasilCheck: any, start: any, index: number) {
+  async function saveChecksheetResult(
+    id: number,
+    hasilCheck: any,
+    start: any,
+    index: number,
+  ) {
     const tes = hasilCheck?.some(
       (data: { hasil_check: any }) => data?.hasil_check === null,
-    )
+    );
     const tesCtt = hasilCheck?.some(
       (data: { keterangan: any }) => data?.keterangan === null,
-    )
+    );
 
     if (tesCtt == true) {
-      alert('Keterangan Belum Terisi Semua')
+      alert('Keterangan Belum Terisi Semua');
       return;
     }
     if (tes == true) {
-      alert('Point Belum Terisi Semua')
+      alert('Point Belum Terisi Semua');
       return;
     }
 
@@ -126,13 +132,12 @@ function ChecksheetLipat() {
       return; // Exit function if no start time
     }
 
-
     const stopTime = new Date();
     const timestamp = convertTimeStampToDateTime(new Date());
 
-
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLipat/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLipat/stop/${id}`;
     try {
       setIsLoading(true);
       const elapsedSeconds = await calculateElapsedTime(start, stopTime);
@@ -163,18 +168,16 @@ function ChecksheetLipat() {
   }
 
   async function sumbitChecksheet(id: number) {
-
-
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLipat/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLipat/done/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.put(
         url,
         {
           catatan: ctt,
-          qty: qty
-
+          qty: qty,
         },
         {
           withCredentials: true,
@@ -248,21 +251,18 @@ function ChecksheetLipat() {
     return elapsedTime;
   }
 
-  const isOnprogres =
-    incoming?.inspeksi_lipat_point.some(
-      (data: { status: any }) => data?.status === 'on progress',
-    );
-  const isIncoming =
-    incoming?.inspeksi_lipat_point.some(
-      (data: { status: any }) => data?.status === 'incoming',
-    );
+  const isOnprogres = incoming?.inspeksi_lipat_point.some(
+    (data: { status: any }) => data?.status === 'on progress',
+  );
+  const isIncoming = incoming?.inspeksi_lipat_point.some(
+    (data: { status: any }) => data?.status === 'incoming',
+  );
 
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
 
   return (
     <>
-
       <main className="overflow-x-hidden">
         <form
           action=""
@@ -271,10 +271,9 @@ function ChecksheetLipat() {
             sumbitChecksheet(incoming?.id);
           }}
         >
-
           <div ref={contentRef} className="min-w-[700px] bg-white rounded-xl">
             <div className="text-[14px] items-center font-semibold w-full flex border-b-8 justify-between border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
-              <div className='flex'>
+              <div className="flex">
                 <svg
                   width="24"
                   height="24"
@@ -291,9 +290,15 @@ function ChecksheetLipat() {
                 </svg>{' '}
                 Checksheet Lipat
               </div>
-              <div className='flex gap-1'>
-                <button className=' px-2 py-1 rounded-full flex gap-1  font-bold items-center' type='button' onClick={() => reactToPrintFn()}>
-                  <img src={printIcon} alt="" className='h-10 w-10' />PRINT</button>
+              <div className="flex gap-1">
+                <button
+                  className=" px-2 py-1 rounded-full flex gap-1  font-bold items-center"
+                  type="button"
+                  onClick={() => reactToPrintFn()}
+                >
+                  <img src={printIcon} alt="" className="h-10 w-10" />
+                  PRINT
+                </button>
               </div>
             </div>
 
@@ -364,7 +369,10 @@ function ChecksheetLipat() {
                   : {incoming?.mesin}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {(incoming?.qty_jo == null || incoming?.qty_jo == 0) ? '-' : formatInteger(incoming?.qty_jo)}
+                  :{' '}
+                  {incoming?.qty_jo == null || incoming?.qty_jo == 0
+                    ? '-'
+                    : formatInteger(incoming?.qty_jo)}
                 </label>
                 {/* {
                   incoming?.status == 'incoming' ? (
@@ -382,7 +390,6 @@ function ChecksheetLipat() {
                     <>:{incoming?.qty}</>
                   )} */}
               </div>
-
             </div>
 
             <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
@@ -410,12 +417,10 @@ function ChecksheetLipat() {
             <>
               {incoming?.inspeksi_lipat_point.map(
                 (dataPoint: any, iPoint: number) => {
-
-
                   return (
                     <>
-                      <div className='flex flex-col gap-4'>
-                        <div className='px-4 py-4'>
+                      <div className="flex flex-col gap-4">
+                        <div className="px-4 py-4">
                           {dataPoint?.waktu_mulai == null &&
                             dataPoint?.waktu_selesai == null && (
                               <>
@@ -428,7 +433,7 @@ function ChecksheetLipat() {
                                       Task Belum Dimulai
                                     </p>
                                     <button
-                                      type='button'
+                                      type="button"
                                       onClick={() => {
                                         startTask(dataPoint?.id);
                                       }}
@@ -458,7 +463,10 @@ function ChecksheetLipat() {
                                   Inspector : {dataPoint?.inspektor?.nama}
                                 </label>
                                 <p className="md:text-[14px] text-[9px] font-semibold">
-                                  Time : {convertTimeStampToDateTime(dataPoint.waktu_mulai)}
+                                  Time :{' '}
+                                  {convertTimeStampToDateTime(
+                                    dataPoint.waktu_mulai,
+                                  )}
                                 </p>
                                 <>
                                   <p className="font-bold text-[#00B81D]">
@@ -475,11 +483,16 @@ function ChecksheetLipat() {
                                   Inspector : {dataPoint?.inspektor?.nama}
                                 </label>
                                 <p className="md:text-[14px] text-[9px] font-semibold">
-                                  Time : {convertTimeStampToDateTime(dataPoint.waktu_mulai)}
+                                  Time :{' '}
+                                  {convertTimeStampToDateTime(
+                                    dataPoint.waktu_mulai,
+                                  )}
                                 </p>
                                 <p className="md:text-[14px] text-[9px] font-semibold text-stone-400">
                                   {dataPoint?.lama_pengerjaan != null
-                                    ? formatElapsedTime(dataPoint?.lama_pengerjaan)
+                                    ? formatElapsedTime(
+                                        dataPoint?.lama_pengerjaan,
+                                      )
                                     : ''}{' '}
                                   Detik
                                 </p>
@@ -488,214 +501,188 @@ function ChecksheetLipat() {
                           )}
                         </div>
 
-                        <div className='flex px-2 gap-4'>
+                        <div className="flex px-2 gap-4">
                           <label className="text-neutral-500 text-sm font-semibold">
                             Quantity
                           </label>
                           {dataPoint.status == 'on progress' ? (
                             <>
-                              <input type='text'
+                              <input
+                                type="text"
                                 required
                                 name="qty"
                                 onChange={(e) => {
-                                  handleChangeQty(
-                                    e,
-                                    iPoint,
-                                  );
+                                  handleChangeQty(e, iPoint);
                                 }}
-                                className='border-2 border-stroke w-[10%] rounded-md'
-                              >
-                              </input>
+                                className="border-2 border-stroke w-[10%] rounded-md"
+                              ></input>
                             </>
-                          ) :
-                            (
-                              <>
-                                <label className="text-neutral-500 text-sm font-semibold">
-                                  {(dataPoint?.qty == null || dataPoint?.qty == 0) ? '-' : formatInteger(dataPoint?.qty)}
-                                </label>
-                              </>
-                            )
-                          }
-
-
-
+                          ) : (
+                            <>
+                              <label className="text-neutral-500 text-sm font-semibold">
+                                {dataPoint?.qty == null || dataPoint?.qty == 0
+                                  ? '-'
+                                  : formatInteger(dataPoint?.qty)}
+                              </label>
+                            </>
+                          )}
                         </div>
                       </div>
 
-
-
-
                       <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
-                        {
-                          dataPoint?.inspeksi_lipat_result?.map(
-                            (dataResult: any, iResult: number) => {
-                              return (
-                                <>
-                                  {dataPoint.status == 'on progress' ? (
-                                    <>
-                                      <div className="flex gap-4 col-span-2">
-                                        <label className="text-neutral-500 text-sm font-semibold">
-                                          {iResult + 1}
-                                        </label>
-                                        <label className="text-neutral-500 text-sm font-semibold">
-                                          {dataResult.point_check}
-                                        </label>
-                                      </div>
-                                      <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                                        {dataResult.acuan}
+                        {dataPoint?.inspeksi_lipat_result?.map(
+                          (dataResult: any, iResult: number) => {
+                            return (
+                              <>
+                                {dataPoint.status == 'on progress' ? (
+                                  <>
+                                    <div className="flex gap-4 col-span-2">
+                                      <label className="text-neutral-500 text-sm font-semibold">
+                                        {iResult + 1}
                                       </label>
-                                      <div className="flex flex-col gap-1 col-span-2">
-                                        <div>
-                                          <input
-                                            required
-                                            type="radio"
-                                            id="sesuai1"
-                                            name={`sesuai1 ${iResult}`}
-                                            value="sesuai"
-                                            onChange={(e) => {
-                                              // hasvalue(iPoint)
-                                              // console.log(isOnprogres2)
-                                              handleChangePointRadio(
-                                                e,
-                                                iPoint,
-                                                iResult,
-                                              );
-                                            }}
-                                          />
-                                          <label className="pl-2">
-                                            Sesuai
-                                          </label>
-                                        </div>
-                                        <div>
-                                          <input
-                                            required
-                                            type="radio"
-                                            id="sesuai12"
-                                            name={`sesuai1 ${iResult}`}
-                                            value="tidak sesuai"
-                                            onChange={(e) => {
-
-                                              // hasvalue(iPoint)
-                                              handleChangePointRadio(
-                                                e,
-                                                iPoint,
-                                                iResult,
-                                              );
-                                            }}
-                                          />
-                                          <label className="pl-2">
-                                            Tidak Sesuai
-                                          </label>
-                                        </div>
+                                      <label className="text-neutral-500 text-sm font-semibold">
+                                        {dataResult.point_check}
+                                      </label>
+                                    </div>
+                                    <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                                      {dataResult.acuan}
+                                    </label>
+                                    <div className="flex flex-col gap-1 col-span-2">
+                                      <div>
+                                        <input
+                                          required
+                                          type="radio"
+                                          id="sesuai1"
+                                          name={`sesuai1 ${iResult}`}
+                                          value="sesuai"
+                                          onChange={(e) => {
+                                            // hasvalue(iPoint)
+                                            // console.log(isOnprogres2)
+                                            handleChangePointRadio(
+                                              e,
+                                              iPoint,
+                                              iResult,
+                                            );
+                                          }}
+                                        />
+                                        <label className="pl-2">Sesuai</label>
                                       </div>
-                                      <textarea
-                                        required
-                                        name="keterangan"
-                                        onChange={(e) => {
-                                          handleChangePoint(
-                                            e,
-                                            iPoint,
-                                            iResult,
-                                          );
-                                        }}
-                                        className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                      ></textarea>
-                                      <div className="flex flex-col w-full col-span-3">
-                                        <label className="text-neutral-500 text-sm font-semibold">
-                                          Upload Foto
+                                      <div>
+                                        <input
+                                          required
+                                          type="radio"
+                                          id="sesuai12"
+                                          name={`sesuai1 ${iResult}`}
+                                          value="tidak sesuai"
+                                          onChange={(e) => {
+                                            // hasvalue(iPoint)
+                                            handleChangePointRadio(
+                                              e,
+                                              iPoint,
+                                              iResult,
+                                            );
+                                          }}
+                                        />
+                                        <label className="pl-2">
+                                          Tidak Sesuai
                                         </label>
-                                        <div className="flex w-full rounded-md border border-stroke px-2 py-2">
-                                          <label
-                                            htmlFor="formFile"
-                                            className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
-                                          >
-                                            Pilih File
-                                            <input
-                                              type="file"
-                                              id="formFile"
-                                              accept="image/*"
-                                              className="hidden"
-                                            />
-                                          </label>
-
-                                          <span
+                                      </div>
+                                    </div>
+                                    <textarea
+                                      required
+                                      name="keterangan"
+                                      onChange={(e) => {
+                                        handleChangePoint(e, iPoint, iResult);
+                                      }}
+                                      className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                    ></textarea>
+                                    <div className="flex flex-col w-full col-span-3">
+                                      <label className="text-neutral-500 text-sm font-semibold">
+                                        Upload Foto
+                                      </label>
+                                      <div className="flex w-full rounded-md border border-stroke px-2 py-2">
+                                        <label
+                                          htmlFor="formFile"
+                                          className="flex items-center px-4 py-1 rounded-md bg-primary text-white font-medium cursor-pointer hover:bg-primary-dark"
+                                        >
+                                          Pilih File
+                                          <input
+                                            type="file"
                                             id="formFile"
-                                            className="ml-2 text-sm"
-                                          ></span>
-                                        </div>
-                                      </div>
-
-                                    </>
-                                  ) :
-                                    (
-                                      <>
-                                        <div className="flex gap-4 col-span-2">
-                                          <label className="text-neutral-500 text-sm font-semibold">
-                                            {iResult + 1}
-                                          </label>
-                                          <label className="text-neutral-500 text-sm font-semibold">
-                                            {dataResult.point_check}
-                                          </label>
-                                        </div>
-                                        <label className="text-neutral-400 text-sm font-semibold col-span-2">
-                                          {dataResult.acuan}
+                                            accept="image/*"
+                                            className="hidden"
+                                          />
                                         </label>
-                                        <div className="flex flex-col gap-1 col-span-2">
-                                          {dataPoint.inspeksi_lipat_result[iResult]?.hasil_check}
-                                        </div>
-                                        <textarea
-                                          defaultValue={dataPoint.inspeksi_lipat_result[iResult]?.keterangan}
-                                          name="keterangan"
-                                          readOnly
-                                          className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                                        ></textarea>
-                                        <div className="flex flex-col w-full col-span-3">
 
-                                        </div>
-
-                                      </>
-                                    )}
-
-                                </>
-                              );
-                            },
-                          )
-                        }
-                        {
-                          dataPoint.status == 'on progress' ? (
-                            <>
-                              <button
-
-                                type="button"
-                                onClick={() =>
-
-                                  saveChecksheetResult(
-                                    dataPoint.id,
-                                    dataPoint.inspeksi_lipat_result,
-                                    dataPoint.waktu_mulai,
-                                    iPoint
-                                  )
-                                }
-                                className="bg-green-500 h-10  rounded-md  text-white text-xs font-bold"
-                              >
-                                {isLoading ? 'Loading...' : 'SIMPAN'}
-                              </button>
-                              {isLoading && <Loading />}
-
-                            </>
-
-                          ) : null
-                        }
-
-
-                      </div >
+                                        <span
+                                          id="formFile"
+                                          className="ml-2 text-sm"
+                                        ></span>
+                                      </div>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="flex gap-4 col-span-2">
+                                      <label className="text-neutral-500 text-sm font-semibold">
+                                        {iResult + 1}
+                                      </label>
+                                      <label className="text-neutral-500 text-sm font-semibold">
+                                        {dataResult.point_check}
+                                      </label>
+                                    </div>
+                                    <label className="text-neutral-400 text-sm font-semibold col-span-2">
+                                      {dataResult.acuan}
+                                    </label>
+                                    <div className="flex flex-col gap-1 col-span-2">
+                                      {
+                                        dataPoint.inspeksi_lipat_result[iResult]
+                                          ?.hasil_check
+                                      }
+                                    </div>
+                                    <textarea
+                                      defaultValue={
+                                        dataPoint.inspeksi_lipat_result[iResult]
+                                          ?.keterangan
+                                      }
+                                      name="keterangan"
+                                      readOnly
+                                      className=" col-span-3 peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                                    ></textarea>
+                                    <div className="flex flex-col w-full col-span-3"></div>
+                                  </>
+                                )}
+                              </>
+                            );
+                          },
+                        )}
+                        {dataPoint.status == 'on progress' ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                saveChecksheetResult(
+                                  dataPoint.id,
+                                  dataPoint.inspeksi_lipat_result,
+                                  dataPoint.waktu_mulai,
+                                  iPoint,
+                                )
+                              }
+                              className="bg-green-500 h-10  rounded-md  text-white text-xs font-bold"
+                            >
+                              {isLoading ? 'Loading...' : 'SIMPAN'}
+                            </button>
+                            {isLoading && <Loading />}
+                          </>
+                        ) : null}
+                      </div>
                     </>
                   );
                 },
               )}
               {!isOnprogres && !isIncoming && incoming?.status != 'history' && (
                 <>
-                  <div className='px-2 py-3'>
+                  <div className="px-2 py-3">
                     <button
                       disabled={isLoading}
                       type="button"
@@ -708,13 +695,9 @@ function ChecksheetLipat() {
                     </button>
                     {isLoading && <Loading />}
                   </div>
-
-
                 </>
               )}
-
             </>
-
 
             {/* =============================================Checksheet STOP==========================================================*/}
             {incoming?.waktu_mulai != null &&
@@ -725,12 +708,10 @@ function ChecksheetLipat() {
                   <>
                     {incoming?.inspeksi_lipat_point.map(
                       (dataPoint: any, iPoint: number) => {
-
                         return (
                           <div className="grid grid-cols-12 px-3 py-4 border-b-8 border-[#D8EAFF] gap-2">
                             {dataPoint.inspeksi_lipat_result.map(
                               (dataResult: any, iResult: number) => {
-
                                 return (
                                   <>
                                     <div className="flex gap-4 col-span-2">
@@ -769,30 +750,27 @@ function ChecksheetLipat() {
               )}
 
             <div className="bg-white grid grid-cols-10 px-4 py-4 items-center gap-4">
-
-
               <label className="text-neutral-500 text-sm font-semibold col-span-8">
                 Catatan
-                {
-                  incoming?.status == 'incoming' ? (
-                    <>
-                      <textarea
-                        required
-                        onChange={(e) => {
-                          setCtt(e.target.value);
-                        }}
-                        className="peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                      ></textarea>
-                    </>
-                  ) : (
-                    <>:{incoming?.catatan}</>
-                  )}
+                {incoming?.status == 'incoming' ? (
+                  <>
+                    <textarea
+                      required
+                      onChange={(e) => {
+                        setCtt(e.target.value);
+                      }}
+                      className="peer h-full min-h-[50px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                    ></textarea>
+                  </>
+                ) : (
+                  <>:{incoming?.catatan}</>
+                )}
               </label>
 
               <div className="flex h-full col-span-2 items-end justify-end w-full">
-                {!isIncoming && !isOnprogres &&
-
-                  incoming?.status == 'incoming' ? (
+                {!isIncoming &&
+                !isOnprogres &&
+                incoming?.status == 'incoming' ? (
                   <>
                     <button
                       disabled={isLoading}
@@ -811,8 +789,7 @@ function ChecksheetLipat() {
             </div>
           </div>
         </form>
-      </main >
-
+      </main>
     </>
   );
 }

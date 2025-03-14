@@ -818,6 +818,10 @@ function ChecksheetBarangRS() {
                               </td>
                             </tr>
                             <tr>
+                              <td className="font-semibold w-32">Operator</td>
+                              <td>: {RabutMesin?.data?.operator}</td>
+                            </tr>
+                            <tr>
                               <td className="font-semibold w-32">
                                 Waktu Sortir
                               </td>
