@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-
+import ptcbl from '../../../../../images/ptcbl.png';
 import Loading from '../../../../Loading';
 import formatInteger from '../../../../../utils/formaterInteger';
 import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
@@ -346,10 +346,32 @@ function ChecksheetFinalInspection() {
               <div className="min-w-full bg-white">
                 {/* Header */}
                 <div className="text-center mb-4">
-                  <h2 className="font-bold text-xl">
-                    FINAL INSPECTION CHECKSHEET
-                  </h2>
                   <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr>
+                        <td colSpan={4} className="border border-black p-2">
+                          <div className="flex items-center">
+                            <div className="w-24 flex justify-center">
+                              <img src={ptcbl} alt="logo" />
+                            </div>
+                            <div className="flex-grow text-center font-bold text-lg">
+                              QUALITY ASSURANCE DEPARTMENT
+                            </div>
+                            <div className="w-24 flex justify-center">
+                              {'  '}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="border border-black p-2 text-center font-bold"
+                        >
+                          FINAL INSPECTION CHECKSHEET
+                        </td>
+                      </tr>
+                    </thead>
                     <tbody>
                       <tr>
                         <td className=" p-2 font-medium">Tanggal</td>
