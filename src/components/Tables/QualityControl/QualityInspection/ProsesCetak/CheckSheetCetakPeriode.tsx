@@ -1997,7 +1997,7 @@ function CheckSheetCetakPeriode() {
             </div>
           </div>
           <div className="flex w-full min-w-[700px] border-b-8 items-center border-[#D8EAFF] px-4 py-4 gap-5 bg-white rounded-b-xl mt-2">
-            {cetakMesinPeriodeDefect?.map((data: any, index: number) => {
+            {/* {cetakMesinPeriodeDefect?.map((data: any, index: number) => {
               return (
                 <div className="flex flex-col max-w-45 overflow-x-scroll">
                   <label>Kode: </label>
@@ -2006,7 +2006,7 @@ function CheckSheetCetakPeriode() {
                   <label>{formatInteger(parseInt(data.total_defect))}</label>
                 </div>
               );
-            })}
+            })} */}
           </div>
         </main>
       )}

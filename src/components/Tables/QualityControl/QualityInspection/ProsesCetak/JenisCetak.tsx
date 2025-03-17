@@ -103,86 +103,97 @@ function JenisHasilRabut() {
     // Clear the new window and insert content with styles
     printWindow.document.open();
     printWindow.document.write(`
-                <html>
-                  <head>
-                    <style>
-                      ${styles.join('')}
-                      
-                      /* Additional styles to fit on one page */
-                      @page {
-                        size: A4;
-                        margin: 10mm;
-                      }
-                      
-                      body {
-                        margin: 0;
-                        padding: 0;
-                      }
-                      
-                      .print-container {
-                        width: 100%;
-                        max-width: 100%;
-                        box-sizing: border-box;
-                        transform: scale(0.95);
-                        transform-origin: top left;
-                      }
-                      
-                      /* Adjust font sizes for print */
-                      .print-container * {
-                        font-size: 10px !important;
-                      }
-                      
-                      .print-container h3, 
-                      .print-container .text-lg, 
-                      .print-container .font-semibold {
-                        font-size: 12px !important;
-                      }
-                      
-                      /* Adjust row heights */
-                      .print-container table td {
-                        padding: 2px !important;
-                      }
-                      
-                      /* Ensure table fits */
-                      .print-container table {
-                        width: 100% !important;
-                        table-layout: fixed;
-                      }
-                      
-                      /* Force to fit on one page */
-                      @media print {
-                        html, body {
-                          width: 210mm;
-                          height: 297mm;
-                          overflow: hidden;
-                        }
-                        
-                        .print-container {
-                          page-break-inside: avoid;
-                          page-break-after: avoid;
-                          page-break-before: avoid;
-                        }
-                      }
-                    </style>
-                  </head>
-                  <body>
-                    <div class="print-container">
-                      ${printArea.innerHTML}
-                    </div>
-                    <script>
-                      window.onload = function() {
-                        // Small delay to ensure styles are applied
-                        setTimeout(function() {
-                          window.print();
-                          window.onafterprint = function() {
-                            window.close();
-                          }
-                        }, 500);
-                      }
-                    </script>
-                  </body>
-                </html>
-              `);
+      <html>
+        <head>
+          <style>
+            ${styles.join('')}
+            
+            /* A4 page setup with consistent scale */
+            @page {
+              size: A4;
+              margin: 10mm;
+            }
+            
+            body {
+              margin: 0;
+              padding: 0;
+            }
+            
+            .print-container {
+              width: 100%;
+              max-width: 100%;
+              box-sizing: border-box;
+              transform: scale(0.95);
+              transform-origin: top left;
+            }
+            
+            /* Adjust font sizes for print */
+            .print-container * {
+              font-size: 10px !important;
+            }
+            
+            .print-container h3, 
+            .print-container .text-lg, 
+            .print-container .font-semibold {
+              font-size: 12px !important;
+            }
+            
+            /* Adjust row heights */
+            .print-container table td {
+              padding: 2px !important;
+            }
+            
+            /* Ensure table fits width */
+            .print-container table {
+              width: 100% !important;
+              table-layout: fixed;
+            }
+            
+            /* Print settings - allow multiple pages */
+            @media print {
+              html, body {
+                width: 210mm;
+              }
+              
+              .print-container {
+                page-break-inside: auto; /* Allow page breaks within container */
+              }
+              
+              /* Keep table rows together where possible */
+              tr {
+                page-break-inside: avoid;
+              }
+              
+              /* Keep table headers with their tables */
+              thead {
+                display: table-header-group;
+              }
+              
+              /* Better page break handling */
+              h1, h2, h3, h4, h5 {
+                page-break-after: avoid;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-container">
+            ${printArea.innerHTML}
+          </div>
+          <script>
+            window.onload = function() {
+              // Small delay to ensure styles are applied
+              setTimeout(function() {
+                window.print();
+                window.onafterprint = function() {
+                  window.close();
+                }
+              }, 500);
+            }
+          </script>
+        </body>
+      </html>
+    `);
 
     printWindow.document.close();
   };
@@ -783,62 +794,120 @@ function JenisHasilRabut() {
                               </tbody>
                             </table>
 
-                            <div className="mt-4 overflow-x-auto">
-                              <table className="w-full border-collapse border border-gray-300">
-                                <thead>
-                                  <tr className="bg-blue-50">
-                                    {data.inspeksi_cetak_periode_defect.map(
-                                      (defect: any, i: any) => (
-                                        <th
-                                          key={i}
-                                          className="border border-gray-300 p-2 text-sm"
-                                        >
-                                          {defect.kode}
-                                        </th>
-                                      ),
-                                    )}
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr>
-                                    {data.inspeksi_cetak_periode_defect.map(
-                                      (defect: any, i: any) => {
-                                        let bgColor = '';
-                                        if (defect.hasil === 'ok')
-                                          bgColor = 'bg-blue-100';
-                                        else if (
-                                          defect.hasil === 'ok (toleransi)'
-                                        )
-                                          bgColor = 'bg-yellow-100';
-                                        else if (defect.hasil === 'not ok')
-                                          bgColor = 'bg-red-100';
+                            <div className="mt-2 overflow-x-auto">
+                              {/* Split the defects into chunks of 10 */}
+                              {(() => {
+                                const chunks = [];
+                                for (
+                                  let i = 0;
+                                  i < data.inspeksi_cetak_periode_defect.length;
+                                  i += 10
+                                ) {
+                                  chunks.push(
+                                    data.inspeksi_cetak_periode_defect.slice(
+                                      i,
+                                      i + 10,
+                                    ),
+                                  );
+                                }
 
-                                        return (
-                                          <td
-                                            key={i}
-                                            className={`border border-gray-300 p-2 text-center ${bgColor}`}
-                                          >
-                                            <div className="uppercase font-semibold">
-                                              {defect.hasil}
-                                            </div>
-                                            {defect.hasil === 'not ok' &&
-                                              defect.jumlah_defect && (
-                                                <div className="mt-1">
-                                                  Jumlah:{' '}
-                                                  {formatInteger(
-                                                    parseInt(
-                                                      defect.jumlah_defect,
-                                                    ),
-                                                  )}
-                                                </div>
-                                              )}
-                                          </td>
-                                        );
-                                      },
-                                    )}
-                                  </tr>
-                                </tbody>
-                              </table>
+                                return chunks.map((chunk, chunkIndex) => {
+                                  const isLastChunk =
+                                    chunkIndex === chunks.length - 1;
+                                  const hasPartialRow =
+                                    isLastChunk && chunk.length < 10;
+
+                                  // Calculate cell width based on fixed dimension
+                                  const cellWidthPx = 70; // Fixed width in pixels for each cell
+                                  const tableWidthPx =
+                                    cellWidthPx * chunk.length;
+
+                                  return (
+                                    <div
+                                      key={chunkIndex}
+                                      className="mb-2"
+                                      style={{
+                                        width: hasPartialRow
+                                          ? `${tableWidthPx}px`
+                                          : '100%',
+                                        display: 'inline-block',
+                                      }}
+                                    >
+                                      <table
+                                        className="border-collapse border border-gray-300"
+                                        style={{
+                                          width: `${tableWidthPx}px`,
+                                          tableLayout: 'fixed',
+                                        }}
+                                      >
+                                        <thead>
+                                          <tr className="bg-blue-50">
+                                            {chunk.map(
+                                              (defect: any, i: any) => (
+                                                <th
+                                                  key={i}
+                                                  className="border border-gray-300 p-1 text-sm h-8"
+                                                  style={{
+                                                    width: `${cellWidthPx}px`,
+                                                  }}
+                                                >
+                                                  {defect.kode}
+                                                </th>
+                                              ),
+                                            )}
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          <tr>
+                                            {chunk.map(
+                                              (defect: any, i: any) => {
+                                                let bgColor = '';
+                                                if (defect.hasil === 'ok')
+                                                  bgColor = 'bg-blue-100';
+                                                else if (
+                                                  defect.hasil ===
+                                                  'ok (toleransi)'
+                                                )
+                                                  bgColor = 'bg-yellow-100';
+                                                else if (
+                                                  defect.hasil === 'not ok'
+                                                )
+                                                  bgColor = 'bg-red-100';
+
+                                                return (
+                                                  <td
+                                                    key={i}
+                                                    className={`border border-gray-300 p-1 text-center ${bgColor} h-12`}
+                                                    style={{
+                                                      width: `${cellWidthPx}px`,
+                                                    }}
+                                                  >
+                                                    <div className="uppercase font-semibold text-xs line-clamp-1">
+                                                      {defect.hasil}
+                                                    </div>
+                                                    {defect.hasil ===
+                                                      'not ok' &&
+                                                      defect.jumlah_defect && (
+                                                        <div className="text-xs">
+                                                          Jumlah:{' '}
+                                                          {formatInteger(
+                                                            parseInt(
+                                                              defect.jumlah_defect,
+                                                            ),
+                                                          )}
+                                                        </div>
+                                                      )}
+                                                  </td>
+                                                );
+                                              },
+                                            )}
+                                          </tr>
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  );
+                                });
+                              })()}
                             </div>
 
                             {data.catatan && (

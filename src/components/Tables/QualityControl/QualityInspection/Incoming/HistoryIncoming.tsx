@@ -106,19 +106,23 @@ function HistoryIncoming() {
     const currentPage = window.location.href;
 
     // Create a new window for printing with your domain still in URL
-    const printWindow = window.open(currentPage, '_blank', 'toolbar=0,location=1,menubar=0');
+    const printWindow = window.open(
+      currentPage,
+      '_blank',
+      'toolbar=0,location=1,menubar=0',
+    );
 
     if (!printWindow) {
-      alert("Please allow pop-ups for printing functionality");
+      alert('Please allow pop-ups for printing functionality');
       return;
     }
 
     // Get all styles from the current document
     const styles = Array.from(document.styleSheets)
-      .map(styleSheet => {
+      .map((styleSheet) => {
         try {
           return Array.from(styleSheet.cssRules)
-            .map(rule => rule.cssText)
+            .map((rule) => rule.cssText)
             .join('');
         } catch (e) {
           // Likely a CORS issue with external stylesheet
@@ -135,11 +139,10 @@ function HistoryIncoming() {
     printWindow.document.write(`
       <html>
         <head>
-          
           <style>
             ${styles.join('')}
             
-            /* Additional styles to fit on one page */
+            /* A4 page setup with consistent scale */
             @page {
               size: A4;
               margin: 10mm;
@@ -174,24 +177,35 @@ function HistoryIncoming() {
               padding: 2px !important;
             }
             
-            /* Ensure table fits */
+            /* Ensure table fits width */
             .print-container table {
               width: 100% !important;
               table-layout: fixed;
             }
             
-            /* Force to fit on one page */
+            /* Print settings - allow multiple pages */
             @media print {
               html, body {
                 width: 210mm;
-                height: 297mm;
-                overflow: hidden;
               }
               
               .print-container {
+                page-break-inside: auto; /* Allow page breaks within container */
+              }
+              
+              /* Keep table rows together where possible */
+              tr {
                 page-break-inside: avoid;
+              }
+              
+              /* Keep table headers with their tables */
+              thead {
+                display: table-header-group;
+              }
+              
+              /* Better page break handling */
+              h1, h2, h3, h4, h5 {
                 page-break-after: avoid;
-                page-break-before: avoid;
               }
             }
           </style>
@@ -357,10 +371,11 @@ function HistoryIncoming() {
                         </td>
                         <td className="border border-black p-2 w-1/3 bg-gray-100">
                           <p
-                            className={` uppercase font-semibold text-lg  ${incoming?.verifikasi == 'Diterima'
-                              ? 'text-green-500'
-                              : 'text-red-500'
-                              }`}
+                            className={` uppercase font-semibold text-lg  ${
+                              incoming?.verifikasi == 'Diterima'
+                                ? 'text-green-500'
+                                : 'text-red-500'
+                            }`}
                           >
                             {incoming?.verifikasi}
                           </p>
@@ -888,10 +903,11 @@ function HistoryIncoming() {
                             </div>
                             <div className="text-center">
                               <p
-                                className={` uppercase font-semibold text-lg  ${incoming?.verifikasi == 'Diterima'
-                                  ? 'text-green-500'
-                                  : 'text-red-500'
-                                  }`}
+                                className={` uppercase font-semibold text-lg  ${
+                                  incoming?.verifikasi == 'Diterima'
+                                    ? 'text-green-500'
+                                    : 'text-red-500'
+                                }`}
                               >
                                 {incoming?.verifikasi}
                               </p>
@@ -1037,10 +1053,11 @@ function HistoryIncoming() {
                 className={`flex flex-col h-full w-full  gap-2  py-4 col-span-2  font-semibold  bg-[#F6FAFF]`}
               >
                 <p
-                  className={` uppercase font-semibold text-lg bg-[#F6FAFF] ${incoming?.verifikasi == 'Diterima'
-                    ? 'text-green-500'
-                    : 'text-red-500'
-                    }`}
+                  className={` uppercase font-semibold text-lg bg-[#F6FAFF] ${
+                    incoming?.verifikasi == 'Diterima'
+                      ? 'text-green-500'
+                      : 'text-red-500'
+                  }`}
                 >
                   {incoming?.verifikasi}
                 </p>

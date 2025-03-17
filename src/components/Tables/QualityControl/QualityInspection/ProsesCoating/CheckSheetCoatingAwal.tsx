@@ -24,8 +24,9 @@ function CheckSheetCoatingAwal() {
   }, []);
 
   async function getMasterKode() {
-    const url = `${import.meta.env.VITE_API_LINK_P1
-      }/api/list-kendala?criteria=true&proses=5`;
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=5`;
 
     try {
       const res = await axios.get(url);
@@ -49,7 +50,7 @@ function CheckSheetCoatingAwal() {
       });
 
       setCoatingMesinAwal(res.data.data);
-      setcoatingMesinAwalHistory(res.data.history)
+      setcoatingMesinAwalHistory(res.data.history);
       console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
@@ -57,8 +58,9 @@ function CheckSheetCoatingAwal() {
   }
 
   async function startTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoatingResult/awal/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoatingResult/awal/start/${id}`;
     try {
       const res = await axios.get(url, {
         withCredentials: true,
@@ -83,8 +85,9 @@ function CheckSheetCoatingAwal() {
     spot_uv: any,
     tes_cracking: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoatingResult/awal/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoatingResult/awal/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -115,8 +118,9 @@ function CheckSheetCoatingAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoatingResult/awal/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoatingResult/awal/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -133,15 +137,26 @@ function CheckSheetCoatingAwal() {
       alert(error.response.data.msg);
     }
   }
+  const [sample1Value, setSample1Value] = useState<any>();
+  const [result1, setResult1] = useState<any>();
 
+  const [sample2Value, setSample2Value] = useState<any>();
+  const [result2, setResult2] = useState<any>();
+
+  const [sample3Value, setSample3Value] = useState<any>();
+  const [result3, setResult3] = useState<any>();
   async function doneCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoating/awal/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoating/awal/${id}`;
     try {
       const res = await axios.put(
         url,
         {
           masterMasalah: masterKode,
+          sample_1: sample1Value,
+          sample_2: sample2Value,
+          sample_3: sample3Value,
         },
         {
           withCredentials: true,
@@ -156,8 +171,9 @@ function CheckSheetCoatingAwal() {
   }
 
   async function pendingCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoating/pending/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoating/pending/${id}`;
     try {
       const res = await axios.get(
         url,
@@ -183,7 +199,9 @@ function CheckSheetCoatingAwal() {
   const tanggal = convertTimeStampToDateOnly(coatingMesinAwal?.createdAt);
   const jam = convertDateToTime(coatingMesinAwal?.createdAt);
 
-  const tanggalHistory = convertTimeStampToDateOnly(coatingMesinAwalHistory?.createdAt);
+  const tanggalHistory = convertTimeStampToDateOnly(
+    coatingMesinAwalHistory?.createdAt,
+  );
   const jamHistory = convertDateToTime(coatingMesinAwalHistory?.createdAt);
 
   const jumlahWaktuCheck = formatElapsedTime(
@@ -193,10 +211,9 @@ function CheckSheetCoatingAwal() {
   const openModalHistory = () => setShowHistory(true);
   const closeModalHistory = () => setShowHistory(false);
 
-  const isOnprogres =
-    coatingMesinAwal?.inspeksi_coating_result_awal?.some(
-      (data: { status: any }) => data?.status === 'on progress',
-    );
+  const isOnprogres = coatingMesinAwal?.inspeksi_coating_result_awal?.some(
+    (data: { status: any }) => data?.status === 'on progress',
+  );
   return (
     <>
       {!isMobile && (
@@ -256,10 +273,17 @@ function CheckSheetCoatingAwal() {
                           </div>
                           <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
                             <label className="text-neutral-500 text-sm font-semibold">
-                              :  {tanggalHistory}
+                              : {tanggalHistory}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {formatInteger(parseInt(coatingMesinAwalHistory?.jumlah_druk))} / {formatInteger(parseInt(coatingMesinAwalHistory?.mata))}
+                              :{' '}
+                              {formatInteger(
+                                parseInt(coatingMesinAwalHistory?.jumlah_druk),
+                              )}{' '}
+                              /{' '}
+                              {formatInteger(
+                                parseInt(coatingMesinAwalHistory?.mata),
+                              )}
                             </label>
 
                             <label className="text-neutral-500 text-sm font-semibold">
@@ -335,7 +359,9 @@ function CheckSheetCoatingAwal() {
                         </div>
                         {coatingMesinAwalHistory?.inspeksi_coating_result_awal.map(
                           (data: any, index: number) => {
-                            const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
+                            const lamaPengerjaan = formatElapsedTime(
+                              data.lama_pengerjaan,
+                            );
                             return (
                               <>
                                 <div className="flex flex-col py-6 px-10 border-b-8 border-[#D8EAFF]">
@@ -359,9 +385,7 @@ function CheckSheetCoatingAwal() {
                                     </div>
 
                                     <div className="flex flex-col col-span-2">
-                                      <>
-
-                                      </>
+                                      <></>
                                     </div>
                                   </div>
                                 </div>
@@ -415,32 +439,44 @@ function CheckSheetCoatingAwal() {
 
                                   <div className="grid py-4 bg-white items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.permukaan}</label>
+                                      <label className="pl-2">
+                                        {data.permukaan}
+                                      </label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.nilai_glossy}</label>
+                                      <label className="pl-2">
+                                        {data.nilai_glossy}
+                                      </label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-white items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.gramatur}</label>
+                                      <label className="pl-2">
+                                        {data.gramatur}
+                                      </label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.hasil_coating}</label>
+                                      <label className="pl-2">
+                                        {data.hasil_coating}
+                                      </label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-white items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.spot_uv}</label>
+                                      <label className="pl-2">
+                                        {data.spot_uv}
+                                      </label>
                                     </>
                                   </div>
                                   <div className="grid py-4 bg-[#f3f3f3] items-center justify-center">
                                     <>
-                                      <label className="pl-2">{data.tes_cracking}</label>
+                                      <label className="pl-2">
+                                        {data.tes_cracking}
+                                      </label>
                                     </>
                                   </div>
                                 </div>
@@ -448,20 +484,17 @@ function CheckSheetCoatingAwal() {
                                 <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] px-4 py-4 gap-3">
                                   <div className="grid col-span-8">
                                     <label className=" text-[#6c6b6b] text-sm font-semibold">
-                                      Catatan<span className="text-red-500">*</span> :
+                                      Catatan
+                                      <span className="text-red-500">*</span> :
                                     </label>
 
                                     <textarea
                                       name="catatan"
                                       readOnly
                                       defaultValue={data.catatan}
-
                                       className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
                                     ></textarea>
-
                                   </div>
-
-
                                 </div>
                               </>
                             );
@@ -470,11 +503,7 @@ function CheckSheetCoatingAwal() {
                       </>
                     </ModalKosongan>
                   </>
-                )
-                }
-
-
-
+                )}
               </div>
             </div>
             <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
@@ -498,10 +527,11 @@ function CheckSheetCoatingAwal() {
               </div>
               <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
-                  :  {tanggal}
+                  : {tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {formatInteger(parseInt(coatingMesinAwal?.jumlah_druk))} / {formatInteger(parseInt(coatingMesinAwal?.mata))}
+                  : {formatInteger(parseInt(coatingMesinAwal?.jumlah_druk))} /{' '}
+                  {formatInteger(parseInt(coatingMesinAwal?.mata))}
                 </label>
 
                 <label className="text-neutral-500 text-sm font-semibold">
@@ -580,7 +610,7 @@ function CheckSheetCoatingAwal() {
             {coatingMesinAwal?.inspeksi_coating_result_awal.map(
               (data: any, index: number) => {
                 const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
-                const waktuMulai = convertDateToTime(data.waktu_mulai)
+                const waktuMulai = convertDateToTime(data.waktu_mulai);
                 return (
                   <>
                     <div className="flex flex-col py-6 px-10 border-b-8 border-[#D8EAFF]">
@@ -962,7 +992,7 @@ function CheckSheetCoatingAwal() {
             )}
           </div>
           {!isOnprogres &&
-            coatingMesinAwal?.inspeksi_coating_sub_awal[0].status ==
+          coatingMesinAwal?.inspeksi_coating_sub_awal[0].status ==
             'incoming' ? (
             <>
               <button
@@ -988,12 +1018,209 @@ function CheckSheetCoatingAwal() {
                   .jumlah_periode_check
               }
             </label>
-            <label className=" text-[#6c6b6b] text-sm font-semibold col-span-2">
+            <label className=" text-[#6c6b6b] text-sm font-semibold col-span-3">
               Waktu Check : {jumlahWaktuCheck}
             </label>
-            <div className="grid col-span-6 items-end justify-end gap-2">
-              {!isOnprogres &&
-                coatingMesinAwal?.status == 'incoming' ? (
+            <div className="col-span-2">
+              {(!isOnprogres &&
+                coatingMesinAwal?.status == 'incoming' &&
+                coatingMesinAwal?.inspeksi_coating_sub_awal[0]?.status ==
+                  'incoming') ||
+              coatingMesinAwal?.inspeksi_coating_sub_awal[0]?.status ==
+                'pending' ? (
+                <div className="text-neutral-500 gap-2 items-start justify-start flex flex-col text-sm font-semibold col-span-2">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <label className="text-neutral-500 flex flex-col text-sm font-semibold">
+                        Sample 1
+                      </label>
+                      <input
+                        required
+                        onChange={(e) => {
+                          const newValue = parseFloat(e.target.value);
+                          setSample1Value(newValue);
+                          const result = (newValue / 100) * 10000;
+                          setResult1(result);
+                        }}
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />
+                      <div>gr</div>
+                    </div>
+                    <div>
+                      ={' '}
+                      <input
+                        name="hasilsample1"
+                        disabled
+                        value={result1}
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />{' '}
+                      g/m<sup className="">2</sup>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 flex-col">
+                    <div className="flex gap-2">
+                      <label className="text-neutral-500 flex flex-col text-sm font-semibold">
+                        Sample 2
+                      </label>
+                      <input
+                        required
+                        onChange={(e) => {
+                          const newValue = parseFloat(e.target.value);
+                          setSample2Value(newValue);
+                          const result = (newValue / 100) * 10000;
+                          setResult2(result);
+                        }}
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />
+                      <div>gr</div>
+                    </div>
+                    <div>
+                      ={' '}
+                      <input
+                        name="hasilsample2"
+                        disabled
+                        value={result2}
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />{' '}
+                      g/m<sup className="">2</sup>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 flex-col">
+                    <div className="flex gap-2">
+                      <label className="text-neutral-500 flex flex-col text-sm font-semibold">
+                        Sample 3
+                      </label>
+                      <input
+                        required
+                        onChange={(e) => {
+                          const newValue = parseFloat(e.target.value);
+                          setSample3Value(newValue);
+
+                          const result = (newValue / 100) * 10000;
+                          setResult3(result);
+                        }}
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />
+                      <div>gr</div>
+                    </div>
+                    <div>
+                      ={' '}
+                      <input
+                        name="hasilsample3"
+                        disabled
+                        value={result3}
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />{' '}
+                      g/m<sup className="">2</sup>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-neutral-500 gap-2 items-start justify-start flex flex-col text-sm font-semibold col-span-2">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <label className="text-neutral-500 flex flex-col text-sm font-semibold">
+                        Sample 1
+                      </label>
+                      <input
+                        readOnly
+                        value={
+                          coatingMesinAwal?.inspeksi_coating_sub_awal[0]
+                            ?.sample_1
+                        }
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />
+                      <div>gr</div>
+                    </div>
+                    <div>
+                      ={' '}
+                      <input
+                        name="hasilsample1"
+                        disabled
+                        value={
+                          coatingMesinAwal?.inspeksi_coating_sub_awal[0]
+                            ?.hasil_sample_1
+                        }
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />{' '}
+                      g/m<sup className="">2</sup>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 flex-col">
+                    <div className="flex gap-2">
+                      <label className="text-neutral-500 flex flex-col text-sm font-semibold">
+                        Sample 2
+                      </label>
+                      <input
+                        readOnly
+                        value={
+                          coatingMesinAwal?.inspeksi_coating_sub_awal[0]
+                            ?.sample_2
+                        }
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />
+                      <div>gr</div>
+                    </div>
+                    <div>
+                      ={' '}
+                      <input
+                        name="hasilsample2"
+                        disabled
+                        value={
+                          coatingMesinAwal?.inspeksi_coating_sub_awal[0]
+                            ?.hasil_sample_2
+                        }
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />{' '}
+                      g/m<sup className="">2</sup>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 flex-col">
+                    <div className="flex gap-2">
+                      <label className="text-neutral-500 flex flex-col text-sm font-semibold">
+                        Sample 3
+                      </label>
+                      <input
+                        readOnly
+                        value={
+                          coatingMesinAwal?.inspeksi_coating_sub_awal[0]
+                            ?.sample_3
+                        }
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />
+                      <div>gr</div>
+                    </div>
+                    <div>
+                      ={' '}
+                      <input
+                        name="hasilsample3"
+                        disabled
+                        value={
+                          coatingMesinAwal?.inspeksi_coating_sub_awal[0]
+                            ?.hasil_sample_3
+                        }
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />{' '}
+                      g/m<sup className="">2</sup>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="grid col-span-3 items-end justify-end gap-2">
+              {!isOnprogres && coatingMesinAwal?.status == 'incoming' ? (
                 <button
                   onClick={() => pendingCekAwal(coatingMesinAwal?.id)}
                   className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
@@ -1002,7 +1229,7 @@ function CheckSheetCoatingAwal() {
                 </button>
               ) : null}
               {!isOnprogres &&
-                coatingMesinAwal?.inspeksi_coating_sub_awal[0].status ==
+              coatingMesinAwal?.inspeksi_coating_sub_awal[0].status ==
                 'incoming' ? (
                 <button
                   onClick={() =>

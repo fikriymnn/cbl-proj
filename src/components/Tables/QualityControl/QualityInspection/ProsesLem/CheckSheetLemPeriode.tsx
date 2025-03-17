@@ -32,7 +32,6 @@ function CheckSheetLemPeriode() {
   const [DataDepartment, setDataDepartment] = useState<any>();
   const [cttPeriode, setcttPeriode] = useState<any>();
 
-
   const [Department, setDepartment] = useState([
     {
       id: 0,
@@ -74,20 +73,21 @@ function CheckSheetLemPeriode() {
   }, []);
   const [isFailed, setIsFailed] = useState(false);
   async function getMasterKode() {
-    const url = `${import.meta.env.VITE_API_LINK_P1
-      }/api/list-kendala?criteria=true&proses=11`;
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=11`;
 
     try {
       setIsLoading(true);
       const res = await axios.get(url);
       setIsLoading(false);
       setMasterKode(res);
-      setIsFailed(false)
+      setIsFailed(false);
       console.log(res);
     } catch (error: any) {
       setIsLoading(false);
-      setIsFailed(true)
-      alert('Gagal Memanggil Defect, Coba Refresh Halaman!')
+      setIsFailed(true);
+      alert('Gagal Memanggil Defect, Coba Refresh Halaman!');
       console.log(error.data.msg);
     }
   }
@@ -102,7 +102,7 @@ function CheckSheetLemPeriode() {
       setDataDepartment(res.data);
     } catch (error: any) {
       setIsLoading(false);
-      alert('Gagal Memannggil Department, Coba Refresh Halaman!')
+      alert('Gagal Memannggil Department, Coba Refresh Halaman!');
       console.log(error);
     }
   }
@@ -121,13 +121,14 @@ function CheckSheetLemPeriode() {
       console.log(res.data);
     } catch (error: any) {
       setIsLoading(false);
-      alert('Gagal Memannggil Data, Coba Refresh Halaman!')
+      alert('Gagal Memannggil Data, Coba Refresh Halaman!');
       console.log(error.data.msg);
     }
   }
   async function pendingCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriode/pending/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriode/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -143,10 +144,11 @@ function CheckSheetLemPeriode() {
     }
   }
   async function startTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriodePoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriodePoint/start/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.put(
         url,
         {},
@@ -156,19 +158,20 @@ function CheckSheetLemPeriode() {
       );
 
       getLemMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error.data.msg);
-      setIsLoading(false)
+      setIsLoading(false);
       alert(error.response.data.msg);
     }
   }
   async function deletePeriode(id: number) {
     if (window.confirm('Hapus Periode?')) {
-      const url = `${import.meta.env.VITE_API_LINK
-        }/qc/cs/inspeksiLemPeriodePoint/delete/${id}`;
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiLemPeriodePoint/delete/${id}`;
       try {
-        setIsLoading(true)
+        setIsLoading(true);
         const res = await axios.delete(
           url,
 
@@ -178,10 +181,10 @@ function CheckSheetLemPeriode() {
         );
 
         getLemMesinPeriode();
-        setIsLoading(false)
+        setIsLoading(false);
       } catch (error: any) {
         console.log(error);
-        setIsLoading(false)
+        setIsLoading(false);
         alert(error);
       }
     }
@@ -194,10 +197,11 @@ function CheckSheetLemPeriode() {
     jumlah_sampling: any,
     data_defect: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriodePoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriodePoint/stop/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
       const res = await axios.put(
@@ -213,18 +217,19 @@ function CheckSheetLemPeriode() {
           withCredentials: true,
         },
       );
-      setcttPeriode((null))
+      setcttPeriode(null);
       getLemMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   async function tambahTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriodePoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriodePoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -241,7 +246,7 @@ function CheckSheetLemPeriode() {
       setIsLoading(false);
     } catch (error: any) {
       console.log(error.data.msg);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -255,10 +260,11 @@ function CheckSheetLemPeriode() {
     sumberMasalah: any,
     index: number,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriodePoint/createDefect`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriodePoint/createDefect`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.post(
         url,
 
@@ -292,18 +298,19 @@ function CheckSheetLemPeriode() {
         },
       ]);
       getLemMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   async function doneCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriode/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriode/done/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.put(
         url,
         { catatan: catatan },
@@ -313,10 +320,10 @@ function CheckSheetLemPeriode() {
       );
 
       getLemMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
   //add Point
@@ -461,7 +468,10 @@ function CheckSheetLemPeriode() {
                               : {LemMesinPeriodeHistory?.jumlah}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {formatInteger(parseInt(LemMesinPeriodeHistory?.jumlah_pcs))}
+                              :{' '}
+                              {formatInteger(
+                                parseInt(LemMesinPeriodeHistory?.jumlah_pcs),
+                              )}
                             </label>
 
                             <div className="flex gap-1 font-semibold">
@@ -619,38 +629,53 @@ function CheckSheetLemPeriode() {
                                           <div
                                             className={`flex flex-col min-w-[200px] justify-center py-4 
                                             } items-center gap-2 
-                                             ${data2.hasil == 'ok' ? 'bg-blue-300' :
-                                                data2.hasil == 'ok (toleransi)' ? 'bg-yellow-300' :
-                                                  data2.hasil == 'not ok' ? 'bg-red-300' :
-
-                                                    'bg-white'}`}
+                                             ${
+                                               data2.hasil == 'ok'
+                                                 ? 'bg-blue-300'
+                                                 : data2.hasil ==
+                                                   'ok (toleransi)'
+                                                 ? 'bg-yellow-300'
+                                                 : data2.hasil == 'not ok'
+                                                 ? 'bg-red-300'
+                                                 : 'bg-white'
+                                             }`}
                                           >
                                             <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                               {data2.kode}
                                             </label>
 
                                             <div
-
                                               className={`w-[80%] text-center uppercase font-semibold flex gap-4  
 } `}
                                             >
                                               {data2.hasil == 'ok' ? (
                                                 <>
-                                                  <img src={ok} alt="" className="w-4" />
+                                                  <img
+                                                    src={ok}
+                                                    alt=""
+                                                    className="w-4"
+                                                  />
                                                 </>
-                                              ) : data2.hasil == 'ok (toleransi)' ? (
+                                              ) : data2.hasil ==
+                                                'ok (toleransi)' ? (
                                                 <>
-                                                  <img src={oktole} alt="" className="w-4" />
+                                                  <img
+                                                    src={oktole}
+                                                    alt=""
+                                                    className="w-4"
+                                                  />
                                                 </>
                                               ) : data2.hasil == 'not ok' ? (
                                                 <>
-                                                  <img src={notok} alt="" className="w-4" />
+                                                  <img
+                                                    src={notok}
+                                                    alt=""
+                                                    className="w-4"
+                                                  />
                                                 </>
-                                              ) :
-                                                <>
-                                                  -
-                                                </>
-                                              }
+                                              ) : (
+                                                <>-</>
+                                              )}
 
                                               {data2.hasil}
                                             </div>
@@ -670,7 +695,6 @@ function CheckSheetLemPeriode() {
                             );
                           },
                         )}
-
                       </>
                     </ModalKosongan>
                   </>
@@ -867,12 +891,10 @@ function CheckSheetLemPeriode() {
                         <></>
                       )}
                       {data.status == 'incoming' &&
-                        LemMesinPeriode?.status == 'incoming' ? (
+                      LemMesinPeriode?.status == 'incoming' ? (
                         <>
                           <button
-                            onClick={() =>
-                              deletePeriode(data.id)
-                            }
+                            onClick={() => deletePeriode(data.id)}
                             className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                           >
                             Hapus Periode
@@ -881,9 +903,7 @@ function CheckSheetLemPeriode() {
                       ) : data.status == 'on progress' ? (
                         <>
                           <button
-                            onClick={() =>
-                              deletePeriode(data.id)
-                            }
+                            onClick={() => deletePeriode(data.id)}
                             className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                           >
                             Hapus Periode
@@ -918,7 +938,9 @@ function CheckSheetLemPeriode() {
                             <input
                               type="text"
                               disabled
-                              defaultValue={formatInteger(parseInt(data.numerator))}
+                              defaultValue={formatInteger(
+                                parseInt(data.numerator),
+                              )}
                               name="numerator"
                               onChange={(e) => handleChangePoint(e, index)}
                               className="text-sm font-semibold w-[90%] border-stroke border"
@@ -941,7 +963,9 @@ function CheckSheetLemPeriode() {
                           {data.status == 'done' ? (
                             <input
                               type="text"
-                              defaultValue={formatInteger(parseInt(data.jumlah_sampling))}
+                              defaultValue={formatInteger(
+                                parseInt(data.jumlah_sampling),
+                              )}
                               disabled
                               name="jumlah_sampling"
                               onChange={(e) => handleChangePoint(e, index)}
@@ -977,7 +1001,7 @@ function CheckSheetLemPeriode() {
                               Time : {lamaPengerjaan}
                             </p>
                             {data.status == 'incoming' &&
-                              LemMesinPeriode?.status == 'incoming' ? (
+                            LemMesinPeriode?.status == 'incoming' ? (
                               <>
                                 <p className="font-bold text-[#DE0000]">
                                   Task Belum Dimulai
@@ -1052,18 +1076,21 @@ function CheckSheetLemPeriode() {
                               <div
                                 className={`flex flex-col min-w-[200px] justify-center py-4 
                                   } items-center gap-2 
-                                 ${data2.hasil == 'ok' ? 'bg-blue-300' :
-                                    data2.hasil == 'ok (toleransi)' ? 'bg-yellow-300' :
-                                      data2.hasil == 'not ok' ? 'bg-red-300' :
-
-                                        'bg-white'}`}
+                                 ${
+                                   data2.hasil == 'ok'
+                                     ? 'bg-blue-300'
+                                     : data2.hasil == 'ok (toleransi)'
+                                     ? 'bg-yellow-300'
+                                     : data2.hasil == 'not ok'
+                                     ? 'bg-red-300'
+                                     : 'bg-white'
+                                 }`}
                               >
                                 <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                   {data2.kode}
                                 </label>
                                 {data.status == 'done' ? (
                                   <div
-
                                     className={`w-[80%] text-center uppercase font-semibold flex gap-4  
                                  } `}
                                   >
@@ -1073,17 +1100,23 @@ function CheckSheetLemPeriode() {
                                       </>
                                     ) : data2.hasil == 'ok (toleransi)' ? (
                                       <>
-                                        <img src={oktole} alt="" className="w-4" />
+                                        <img
+                                          src={oktole}
+                                          alt=""
+                                          className="w-4"
+                                        />
                                       </>
                                     ) : data2.hasil == 'not ok' ? (
                                       <>
-                                        <img src={notok} alt="" className="w-4" />
+                                        <img
+                                          src={notok}
+                                          alt=""
+                                          className="w-4"
+                                        />
                                       </>
-                                    ) :
-                                      <>
-                                        -
-                                      </>
-                                    }
+                                    ) : (
+                                      <>-</>
+                                    )}
 
                                     {data2.hasil}
                                   </div>
@@ -1093,20 +1126,23 @@ function CheckSheetLemPeriode() {
                                       <div className="flex gap-1 w-full">
                                         <input
                                           onChange={(e) => {
-                                            handleChangePointDefect(e, index, i);
+                                            handleChangePointDefect(
+                                              e,
+                                              index,
+                                              i,
+                                            );
 
                                             if (e.target.value == 'not ok') {
                                               handleClickNotOke(i, true);
-
                                             } else {
                                               handleClickNotOke(i, false);
                                             }
-
                                           }}
-                                          className={`  ${(i + 1) % 2 === 0
-                                            ? ' bg-[#F3F3F3]'
-                                            : 'bg-white'
-                                            } `}
+                                          className={`  ${
+                                            (i + 1) % 2 === 0
+                                              ? ' bg-[#F3F3F3]'
+                                              : 'bg-white'
+                                          } `}
                                           type="radio"
                                           id="ok11"
                                           value="ok"
@@ -1118,61 +1154,86 @@ function CheckSheetLemPeriode() {
                                       <div className="flex gap-1 w-full">
                                         <input
                                           onChange={(e) => {
-                                            handleChangePointDefect(e, index, i);
+                                            handleChangePointDefect(
+                                              e,
+                                              index,
+                                              i,
+                                            );
                                             if (e.target.value == 'not ok') {
                                               handleClickNotOke(i, true);
                                             } else {
                                               handleClickNotOke(i, false);
                                             }
                                           }}
-                                          className={`  ${(i + 1) % 2 === 0
-                                            ? ' bg-[#F3F3F3]'
-                                            : 'bg-white'
-                                            } `}
+                                          className={`  ${
+                                            (i + 1) % 2 === 0
+                                              ? ' bg-[#F3F3F3]'
+                                              : 'bg-white'
+                                          } `}
                                           type="radio"
                                           id="ok12"
                                           value="ok (toleransi)"
                                           name={`hasil ${i}`}
                                         />
-                                        <img src={oktole} alt="" className="w-4" />
-                                        <label className="">OK (Toleransi)</label>
+                                        <img
+                                          src={oktole}
+                                          alt=""
+                                          className="w-4"
+                                        />
+                                        <label className="">
+                                          OK (Toleransi)
+                                        </label>
                                       </div>
                                       <div className="flex gap-1 w-full">
                                         <input
                                           onChange={(e) => {
-                                            handleChangePointDefect(e, index, i);
+                                            handleChangePointDefect(
+                                              e,
+                                              index,
+                                              i,
+                                            );
                                             if (e.target.value == 'not ok') {
                                               handleClickNotOke(i, true);
                                             } else {
                                               handleClickNotOke(i, false);
                                             }
                                           }}
-                                          className={`  ${(i + 1) % 2 === 0
-                                            ? ' bg-[#F3F3F3]'
-                                            : 'bg-white'
-                                            } `}
+                                          className={`  ${
+                                            (i + 1) % 2 === 0
+                                              ? ' bg-[#F3F3F3]'
+                                              : 'bg-white'
+                                          } `}
                                           type="radio"
                                           id="ok12"
                                           value="not ok"
                                           name={`hasil ${i}`}
                                         />
-                                        <img src={notok} alt="" className="w-4" />
+                                        <img
+                                          src={notok}
+                                          alt=""
+                                          className="w-4"
+                                        />
                                         <label className="">Not OK</label>
                                       </div>
                                       <div className="flex gap-1 w-full">
                                         <input
                                           onChange={(e) => {
-                                            handleChangePointDefect(e, index, i);
+                                            handleChangePointDefect(
+                                              e,
+                                              index,
+                                              i,
+                                            );
                                             if (e.target.value == 'not ok') {
                                               handleClickNotOke(i, true);
                                             } else {
                                               handleClickNotOke(i, false);
                                             }
                                           }}
-                                          className={`  ${(i + 1) % 2 === 0
-                                            ? ' bg-[#F3F3F3]'
-                                            : 'bg-white'
-                                            } `}
+                                          className={`  ${
+                                            (i + 1) % 2 === 0
+                                              ? ' bg-[#F3F3F3]'
+                                              : 'bg-white'
+                                          } `}
                                           type="radio"
                                           id="ok12"
                                           value="-"
@@ -1184,7 +1245,7 @@ function CheckSheetLemPeriode() {
                                   </div>
                                 ) : null}
                                 {showNotOk[i] == true &&
-                                  data.status == 'on progress' ? (
+                                data.status == 'on progress' ? (
                                   <input
                                     type="text"
                                     name="jumlah_defect"
@@ -1198,7 +1259,9 @@ function CheckSheetLemPeriode() {
                                   <input
                                     type="text"
                                     name="jumlah_defect"
-                                    defaultValue={formatInteger(parseInt(data2.jumlah_defect))}
+                                    defaultValue={formatInteger(
+                                      parseInt(data2.jumlah_defect),
+                                    )}
                                     disabled
                                     onChange={(e) =>
                                       handleChangePointHasil(e, index, i)
@@ -1436,33 +1499,36 @@ function CheckSheetLemPeriode() {
                           </>
                         )}
                       </div>
-                      {data.status == 'done' ? (<>
-                        <div className='border-b-8 border-[#D8EAFF]'>
-                          <div className='px-[1%] py-[1%]'>
-                            <label className="text-black text-sm font-bold pt-4 ">
-                              Catatan Periode {index + 1}
-                            </label>
-                            <textarea
-                              readOnly
-                              value={data.catatan}
-                              className=" peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                            ></textarea>
+                      {data.status == 'done' ? (
+                        <>
+                          <div className="border-b-8 border-[#D8EAFF]">
+                            <div className="px-[1%] py-[1%]">
+                              <label className="text-black text-sm font-bold pt-4 ">
+                                Catatan Periode {index + 1}
+                              </label>
+                              <textarea
+                                readOnly
+                                value={data.catatan}
+                                className=" peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                              ></textarea>
+                            </div>
                           </div>
-                        </div>
-                      </>) : (<>
-                        <div className='border-b-8 border-[#D8EAFF]'>
-                          <div className='px-[1%] py-[1%]'>
-                            <label className="text-black text-sm font-bold pt-4">
-                              Catatan Periode {index + 1}
-                            </label>
-                            <textarea
-                              onChange={(e) => setcttPeriode(e.target.value)}
-                              className="peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                            ></textarea>
+                        </>
+                      ) : (
+                        <>
+                          <div className="border-b-8 border-[#D8EAFF]">
+                            <div className="px-[1%] py-[1%]">
+                              <label className="text-black text-sm font-bold pt-4">
+                                Catatan Periode {index + 1}
+                              </label>
+                              <textarea
+                                onChange={(e) => setcttPeriode(e.target.value)}
+                                className="peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                              ></textarea>
+                            </div>
                           </div>
-                        </div>
-                      </>)}
-
+                        </>
+                      )}
                     </>
                   );
                 },
@@ -1472,8 +1538,8 @@ function CheckSheetLemPeriode() {
           {(!isOnprogres &&
             LemMesinPeriode?.status == 'incoming' &&
             LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'incoming') ||
-            (LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' &&
-              LemMesinPeriode?.status == 'incoming') ? (
+          (LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' &&
+            LemMesinPeriode?.status == 'incoming') ? (
             <>
               {!isFailed ? (
                 <>
@@ -1489,15 +1555,13 @@ function CheckSheetLemPeriode() {
                     {isLoading ? 'Loading...' : '+ Periode Check'}
                   </button>
                 </>
-              ) :
+              ) : (
                 <>
-                  <button
-
-                    className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
-                  >
+                  <button className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer">
                     Refresh Halaman
                   </button>
-                </>}
+                </>
+              )}
               {isLoading && <Loading />}
             </>
           ) : null}
@@ -1517,8 +1581,8 @@ function CheckSheetLemPeriode() {
               {(!isOnprogres &&
                 LemMesinPeriode?.status == 'incoming' &&
                 LemMesinPeriode?.inspeksi_lem_periode[0]?.status ==
-                'incoming') ||
-                LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' ? (
+                  'incoming') ||
+              LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' ? (
                 <textarea
                   onChange={(e) => setCatatan(e.target.value)}
                   className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
@@ -1549,8 +1613,8 @@ function CheckSheetLemPeriode() {
               {(!isOnprogres &&
                 LemMesinPeriode?.status == 'incoming' &&
                 LemMesinPeriode?.inspeksi_lem_periode[0]?.status ==
-                'incoming') ||
-                LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' ? (
+                  'incoming') ||
+              LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' ? (
                 <button
                   onClick={() => {
                     doneCekPeriode(LemMesinPeriode?.inspeksi_lem_periode[0].id);
@@ -1564,7 +1628,7 @@ function CheckSheetLemPeriode() {
               {/* ) : null} */}
             </div>
 
-            {lemMesinPeriodeDefect?.map((data: any, index: number) => {
+            {/* {lemMesinPeriodeDefect?.map((data: any, index: number) => {
               return (
                 <div className="">
                   <label>kode: </label>
@@ -1573,7 +1637,7 @@ function CheckSheetLemPeriode() {
                   <label>{formatInteger(parseInt(data.total_defect))}</label>
                 </div>
               );
-            })}
+            })} */}
           </div>
         </main>
       )}

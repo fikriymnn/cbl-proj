@@ -36,17 +36,17 @@ function CheckSheetHasilRabut() {
   async function getRabutMesin() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiAmparLem/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.get(url, {
         withCredentials: true,
       });
-      getKendalaByJO(res.data.data.no_jo)
-      setIsLoading(false)
+      getKendalaByJO(res.data.data.no_jo);
+      setIsLoading(false);
       getmesinByJo(res.data.data.no_jo);
       setRabutMesin(res.data);
       console.log(res.data);
     } catch (error: any) {
-      setIsLoading(false)
+      setIsLoading(false);
       console.log(error.data.msg);
     }
   }
@@ -61,8 +61,9 @@ function CheckSheetHasilRabut() {
   const [tujuanDepartment, settujuanDepartment] = useState<any>([]);
 
   async function getMasterDefect() {
-    const url = `${import.meta.env.VITE_API_LINK_P1
-      }/api/list-kendala?criteria=true`;
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true`;
 
     try {
       const res = await axios.get(url);
@@ -71,7 +72,7 @@ function CheckSheetHasilRabut() {
         res.data.map((item: any) => ({
           value: item.e_kode_produksi,
           label: `${item.e_kode_produksi} - ${item.nama_kendala}`,
-        }))
+        })),
       );
       //console.log('master defect', res.data);
     } catch (error: any) {
@@ -87,7 +88,7 @@ function CheckSheetHasilRabut() {
       setMasterWaste(res.data.waste); // Save raw data for filtering
       //console.log("Master Waste Data:", res.data.waste);
     } catch (error: any) {
-      console.error("Error fetching master waste:", error);
+      console.error('Error fetching master waste:', error);
     }
   }
 
@@ -96,20 +97,22 @@ function CheckSheetHasilRabut() {
   const [selectedOperatorJO, setselectedOperatorJO] = useState<any>(null);
   const [mesinByJo, setmesinByJo] = useState<any>([]);
   async function getKendalaByJO(noJO: any) {
-    const url = `${import.meta.env.VITE_API_LINK_P1
-      }/api/get-kendala-by-jo/${noJO}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/get-kendala-by-jo/${noJO}`;
 
     try {
       const res = await axios.get(url);
-      setkendalaByJo(res.data.data)
+      setkendalaByJo(res.data.data);
       console.log('kendala by jo', res.data.data);
     } catch (error: any) {
       console.log(error);
     }
   }
   async function getmesinByJo(noJO: any) {
-    const url = `${import.meta.env.VITE_API_LINK_P1
-      }/api/get-mesin-by-jo/${noJO}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/get-mesin-by-jo/${noJO}`;
 
     try {
       const res = await axios.get(url);
@@ -288,10 +291,11 @@ function CheckSheetHasilRabut() {
   };
 
   async function startTaskRabut(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiAmparLemPoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiAmparLemPoint/start/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.put(
         url,
         {},
@@ -299,11 +303,11 @@ function CheckSheetHasilRabut() {
           withCredentials: true,
         },
       );
-      setIsLoading(false)
+      setIsLoading(false);
       getRabutMesin();
     } catch (error: any) {
       console.log(error);
-      setIsLoading(false)
+      setIsLoading(false);
       alert(error.response.data.msg);
     }
   }
@@ -314,12 +318,12 @@ function CheckSheetHasilRabut() {
     catatan: any,
     qty_pallet: any,
     data_defect: any,
-
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiAmparLemPoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiAmparLemPoint/stop/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
       const res = await axios.put(
@@ -334,18 +338,19 @@ function CheckSheetHasilRabut() {
           withCredentials: true,
         },
       );
-      setIsLoading(false)
+      setIsLoading(false);
       getRabutMesin();
     } catch (error: any) {
-      setIsLoading(false)
+      setIsLoading(false);
       console.log(error.response.data.msg);
       alert('Parameter Wajib Diisi');
     }
   }
 
   async function tambahTaskRabut(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiAmparLemPoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiAmparLemPoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -365,10 +370,11 @@ function CheckSheetHasilRabut() {
   }
 
   async function doneRabut(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiAmparLem/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiAmparLem/done/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.put(
         url,
         {
@@ -378,10 +384,10 @@ function CheckSheetHasilRabut() {
           withCredentials: true,
         },
       );
-      setIsLoading(false)
+      setIsLoading(false);
       getRabutMesin();
     } catch (error: any) {
-      setIsLoading(false)
+      setIsLoading(false);
       console.log(error);
     }
   }
@@ -415,10 +421,11 @@ function CheckSheetHasilRabut() {
     mesin: any,
     operator: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiAmparLemPoint/createDefect`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiAmparLemPoint/createDefect`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.post(
         url,
 
@@ -441,10 +448,10 @@ function CheckSheetHasilRabut() {
       setShowModal2(false);
       handleClickAdd(index);
       setIdDefect(null);
-      setIsLoading(false)
+      setIsLoading(false);
       getRabutMesin();
     } catch (error: any) {
-      setIsLoading(false)
+      setIsLoading(false);
       console.log(error);
     }
   }
@@ -465,8 +472,8 @@ function CheckSheetHasilRabut() {
       updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
       return updatedShowDetail;
     });
-    setSelectedOption(null)
-    setSelectedSecondOption(null)
+    setSelectedOption(null);
+    setSelectedSecondOption(null);
   };
 
   const handleChangePoint = (e: any, i: number, ii: number) => {
@@ -517,19 +524,23 @@ function CheckSheetHasilRabut() {
     const currentPage = window.location.href;
 
     // Create a new window for printing with your domain still in URL
-    const printWindow = window.open(currentPage, '_blank', 'toolbar=0,location=1,menubar=0');
+    const printWindow = window.open(
+      currentPage,
+      '_blank',
+      'toolbar=0,location=1,menubar=0',
+    );
 
     if (!printWindow) {
-      alert("Please allow pop-ups for printing functionality");
+      alert('Please allow pop-ups for printing functionality');
       return;
     }
 
     // Get all styles from the current document
     const styles = Array.from(document.styleSheets)
-      .map(styleSheet => {
+      .map((styleSheet) => {
         try {
           return Array.from(styleSheet.cssRules)
-            .map(rule => rule.cssText)
+            .map((rule) => rule.cssText)
             .join('');
         } catch (e) {
           // Likely a CORS issue with external stylesheet
@@ -549,7 +560,7 @@ function CheckSheetHasilRabut() {
           <style>
             ${styles.join('')}
             
-            /* Additional styles to fit on one page */
+            /* A4 page setup with consistent scale */
             @page {
               size: A4;
               margin: 10mm;
@@ -584,24 +595,35 @@ function CheckSheetHasilRabut() {
               padding: 2px !important;
             }
             
-            /* Ensure table fits */
+            /* Ensure table fits width */
             .print-container table {
               width: 100% !important;
               table-layout: fixed;
             }
             
-            /* Force to fit on one page */
+            /* Print settings - allow multiple pages */
             @media print {
               html, body {
                 width: 210mm;
-                height: 297mm;
-                overflow: hidden;
               }
               
               .print-container {
+                page-break-inside: auto; /* Allow page breaks within container */
+              }
+              
+              /* Keep table rows together where possible */
+              tr {
                 page-break-inside: avoid;
+              }
+              
+              /* Keep table headers with their tables */
+              thead {
+                display: table-header-group;
+              }
+              
+              /* Better page break handling */
+              h1, h2, h3, h4, h5 {
                 page-break-after: avoid;
-                page-break-before: avoid;
               }
             }
           </style>
@@ -629,8 +651,8 @@ function CheckSheetHasilRabut() {
   };
   return (
     <>
-      <>{/* Button to open preview */}
-
+      <>
+        {/* Button to open preview */}
 
         {/* Print Preview Modal */}
         {isOpen && (
@@ -672,7 +694,10 @@ function CheckSheetHasilRabut() {
               </div>
 
               {/* Print area content */}
-              <div id="print-area" className="p-6 overflow-auto max-h-[calc(100vh-150px)]">
+              <div
+                id="print-area"
+                className="p-6 overflow-auto max-h-[calc(100vh-150px)]"
+              >
                 <table className="border-collapse border w-full text-sm">
                   <thead>
                     <tr>
@@ -684,9 +709,7 @@ function CheckSheetHasilRabut() {
                           <div className="flex-grow text-center font-bold text-lg">
                             QUALITY ASSURANCE DEPARTMENT
                           </div>
-                          <div className="w-24 flex justify-center">
-                            {'  '}
-                          </div>
+                          <div className="w-24 flex justify-center">{'  '}</div>
                         </div>
                       </td>
                     </tr>
@@ -706,29 +729,41 @@ function CheckSheetHasilRabut() {
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <div className="flex">
-                              <span className="font-semibold w-32">No. JO:</span>
+                              <span className="font-semibold w-32">
+                                No. JO:
+                              </span>
                               <span>{RabutMesin?.data?.no_jo}</span>
                             </div>
                             <div className="flex">
-                              <span className="font-semibold w-32">No. IO:</span>
+                              <span className="font-semibold w-32">
+                                No. IO:
+                              </span>
                               <span>{RabutMesin?.data?.no_io}</span>
                             </div>
                             <div className="flex">
-                              <span className="font-semibold w-32">Nama Barang:</span>
+                              <span className="font-semibold w-32">
+                                Nama Barang:
+                              </span>
                               <span>{RabutMesin?.data?.nama_produk}</span>
                             </div>
                             <div className="flex">
-                              <span className="font-semibold w-32">Customer:</span>
+                              <span className="font-semibold w-32">
+                                Customer:
+                              </span>
                               <span>{RabutMesin?.data?.customer}</span>
                             </div>
                           </div>
                           <div>
                             <div className="flex">
-                              <span className="font-semibold w-32">Tanggal:</span>
+                              <span className="font-semibold w-32">
+                                Tanggal:
+                              </span>
                               <span>{new Date().toLocaleDateString()}</span>
                             </div>
                             <div className="flex">
-                              <span className="font-semibold w-32">Status:</span>
+                              <span className="font-semibold w-32">
+                                Status:
+                              </span>
                               <span>{RabutMesin?.data?.status}</span>
                             </div>
                           </div>
@@ -742,27 +777,53 @@ function CheckSheetHasilRabut() {
                         <table className="w-full border-collapse">
                           <thead>
                             <tr className="bg-gray-100">
-                              <th className="border border-black p-1 text-center w-8">No.</th>
-                              <th className="border border-black p-1 text-left">Qty Palet</th>
-                              <th className="border border-black p-1 text-left">Parameter</th>
-                              <th className="border border-black p-1 text-left">Inspektor</th>
-                              <th className="border border-black p-1 text-left">Waktu</th>
-                              <th className="border border-black p-1 text-left">Catatan</th>
+                              <th className="border border-black p-1 text-center w-8">
+                                No.
+                              </th>
+                              <th className="border border-black p-1 text-left">
+                                Qty Palet
+                              </th>
+                              <th className="border border-black p-1 text-left">
+                                Parameter
+                              </th>
+                              <th className="border border-black p-1 text-left">
+                                Inspektor
+                              </th>
+                              <th className="border border-black p-1 text-left">
+                                Waktu
+                              </th>
+                              <th className="border border-black p-1 text-left">
+                                Catatan
+                              </th>
                             </tr>
                           </thead>
                           <tbody>
-                            {RabutMesin?.data?.inspeksi_ampar_lem_point?.map((data: any, index: any) => {
-                              return (
-                                <tr key={index}>
-                                  <td className="border border-black p-1 text-center">{index + 1}</td>
-                                  <td className="border border-black p-1">Palet ke-{index + 1}</td>
-                                  <td className="border border-black p-1">{data.qty_pallet || '-'}</td>
-                                  <td className="border border-black p-1">{data.inspektor?.nama || '-'}</td>
-                                  <td className="border border-black p-1">{formatElapsedTime(data.lama_pengerjaan)}</td>
-                                  <td className="border border-black p-1">{data.catatan || '-'}</td>
-                                </tr>
-                              );
-                            })}
+                            {RabutMesin?.data?.inspeksi_ampar_lem_point?.map(
+                              (data: any, index: any) => {
+                                return (
+                                  <tr key={index}>
+                                    <td className="border border-black p-1 text-center">
+                                      {index + 1}
+                                    </td>
+                                    <td className="border border-black p-1">
+                                      Palet ke-{index + 1}
+                                    </td>
+                                    <td className="border border-black p-1">
+                                      {data.qty_pallet || '-'}
+                                    </td>
+                                    <td className="border border-black p-1">
+                                      {data.inspektor?.nama || '-'}
+                                    </td>
+                                    <td className="border border-black p-1">
+                                      {formatElapsedTime(data.lama_pengerjaan)}
+                                    </td>
+                                    <td className="border border-black p-1">
+                                      {data.catatan || '-'}
+                                    </td>
+                                  </tr>
+                                );
+                              },
+                            )}
                           </tbody>
                         </table>
                       </td>
@@ -774,22 +835,41 @@ function CheckSheetHasilRabut() {
                         <table className="w-full border-collapse">
                           <thead>
                             <tr className="bg-gray-100">
-                              <th className="border border-black p-1 text-center w-8">No.</th>
-                              <th className="border border-black p-1 text-left">Kode Defect</th>
-                              <th className="border border-black p-1 text-left">Masalah</th>
-                              <th className="border border-black p-1 text-left">Hasil</th>
+                              <th className="border border-black p-1 text-center w-8">
+                                No.
+                              </th>
+                              <th className="border border-black p-1 text-left">
+                                Kode Defect
+                              </th>
+                              <th className="border border-black p-1 text-left">
+                                Masalah
+                              </th>
+                              <th className="border border-black p-1 text-left">
+                                Hasil
+                              </th>
                             </tr>
                           </thead>
                           <tbody>
-                            {RabutMesin?.data?.inspeksi_ampar_lem_point?.flatMap((point: any, pointIndex: any) =>
-                              point.inspeksi_ampar_lem_defect?.map((defect: any, defectIndex: any) => (
-                                <tr key={`${pointIndex}-${defectIndex}`}>
-                                  <td className="border border-black p-1 text-center">{defectIndex + 1}</td>
-                                  <td className="border border-black p-1">{defect.kode}</td>
-                                  <td className="border border-black p-1">{defect.masalah}</td>
-                                  <td className="border border-black p-1">{defect.hasil || '-'}</td>
-                                </tr>
-                              ))
+                            {RabutMesin?.data?.inspeksi_ampar_lem_point?.flatMap(
+                              (point: any, pointIndex: any) =>
+                                point.inspeksi_ampar_lem_defect?.map(
+                                  (defect: any, defectIndex: any) => (
+                                    <tr key={`${pointIndex}-${defectIndex}`}>
+                                      <td className="border border-black p-1 text-center">
+                                        {defectIndex + 1}
+                                      </td>
+                                      <td className="border border-black p-1">
+                                        {defect.kode}
+                                      </td>
+                                      <td className="border border-black p-1">
+                                        {defect.masalah}
+                                      </td>
+                                      <td className="border border-black p-1">
+                                        {defect.hasil || '-'}
+                                      </td>
+                                    </tr>
+                                  ),
+                                ),
                             )}
                           </tbody>
                         </table>
@@ -803,22 +883,32 @@ function CheckSheetHasilRabut() {
                           <div>
                             <div className="font-semibold mb-2">Sub Total:</div>
                             <div className="flex mb-1">
-                              <span className="font-semibold w-48">Parameter Qty Palet:</span>
+                              <span className="font-semibold w-48">
+                                Parameter Qty Palet:
+                              </span>
                               <span>{RabutMesin?.sumQtyPallet || '0'}</span>
                             </div>
                             <div className="flex mb-1">
-                              <span className="font-semibold w-48">Jumlah Defect Ditemukan:</span>
+                              <span className="font-semibold w-48">
+                                Jumlah Defect Ditemukan:
+                              </span>
                               <span>{RabutMesin?.totalDefect || '0'}</span>
                             </div>
                           </div>
                           <div>
-                            <div className="font-semibold mb-2">Defect Breakdown:</div>
-                            {RabutMesin?.totalPointDefect?.map((defect: any, index: any) => (
-                              <div key={index} className="flex mb-1">
-                                <span className="font-semibold w-16">{defect.kode}:</span>
-                                <span>{defect.total_defect}</span>
-                              </div>
-                            ))}
+                            <div className="font-semibold mb-2">
+                              Defect Breakdown:
+                            </div>
+                            {RabutMesin?.totalPointDefect?.map(
+                              (defect: any, index: any) => (
+                                <div key={index} className="flex mb-1">
+                                  <span className="font-semibold w-16">
+                                    {defect.kode}:
+                                  </span>
+                                  <span>{defect.total_defect}</span>
+                                </div>
+                              ),
+                            )}
                           </div>
                         </div>
                       </td>
@@ -835,8 +925,6 @@ function CheckSheetHasilRabut() {
                     </tr>
 
                     {/* History Kendala JO */}
-
-
                   </tbody>
                 </table>
               </div>
@@ -846,14 +934,17 @@ function CheckSheetHasilRabut() {
       </>
       <main className="overflow-x-hidden">
         {isLoading && <Loading />}
-        <form action="" onSubmit={(e) => {
-          e.preventDefault()
-          console.log(RabutMesin);
-          doneRabut(RabutMesin?.data.id)
-        }}>
+        <form
+          action=""
+          onSubmit={(e) => {
+            e.preventDefault();
+            console.log(RabutMesin);
+            doneRabut(RabutMesin?.data.id);
+          }}
+        >
           <div className="min-w-[700px] bg-white rounded-xl">
             <p className="text-[14px] font-semibold w-full flex border-b-8 justify-between  border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
-              <div className='flex gap-1'>
+              <div className="flex gap-1">
                 <svg
                   width="24"
                   height="24"
@@ -916,7 +1007,6 @@ function CheckSheetHasilRabut() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   Customer
                 </label>
-
               </div>
               <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
@@ -999,56 +1089,44 @@ function CheckSheetHasilRabut() {
                             <label className="text-blue-600 text-sm font-semibold pb-6">
                               Daftar Kendala : {RabutMesin?.data?.no_jo}
                             </label>
-                            <div className='grid grid-cols-12 gap-2'>
-                              <label
-                                className="text-stone-600 text-sm font-semibold ">
+                            <div className="grid grid-cols-12 gap-2">
+                              <label className="text-stone-600 text-sm font-semibold ">
                                 No
                               </label>
 
-                              <label
-                                className="text-stone-600 text-sm font-semibold col-span-3">
+                              <label className="text-stone-600 text-sm font-semibold col-span-3">
                                 Tanggal Produksi
                               </label>
-                              <label
-                                className="text-stone-600 text-sm font-semibold col-span-2">
+                              <label className="text-stone-600 text-sm font-semibold col-span-2">
                                 Durasi
                               </label>
-                              <label
-                                className="text-stone-600 text-sm font-semibold col-span-2">
+                              <label className="text-stone-600 text-sm font-semibold col-span-2">
                                 Mesin
                               </label>
-                              <label
-                                className="text-stone-600 text-sm font-semibold col-span-4">
+                              <label className="text-stone-600 text-sm font-semibold col-span-4">
                                 Kendala
                               </label>
-
                             </div>
                             {kendalaByJo?.map((data: any, i: any) => (
                               <>
-                                <div key={i} className='flex flex-col'>
-                                  <div className='grid grid-cols-12 gap-2'>
-                                    <label
-                                      className="text-stone-600 text-sm  ">
+                                <div key={i} className="flex flex-col">
+                                  <div className="grid grid-cols-12 gap-2">
+                                    <label className="text-stone-600 text-sm  ">
                                       {i + 1}.
                                     </label>
 
-                                    <label
-                                      className="text-stone-600 text-sm  col-span-3">
+                                    <label className="text-stone-600 text-sm  col-span-3">
                                       {data.tgl_produksi}
                                     </label>
-                                    <label
-                                      className="text-stone-600 text-sm  col-span-2">
+                                    <label className="text-stone-600 text-sm  col-span-2">
                                       {data.durasi}
                                     </label>
-                                    <label
-                                      className="text-stone-600 text-sm  col-span-2">
+                                    <label className="text-stone-600 text-sm  col-span-2">
                                       {data.mesin}
                                     </label>
-                                    <label
-                                      className="text-stone-600 text-sm  col-span-4">
+                                    <label className="text-stone-600 text-sm  col-span-4">
                                       {data.kode_kendala} - {data.nama_kendala}
                                     </label>
-
                                   </div>
                                 </div>
                               </>
@@ -1166,7 +1244,8 @@ function CheckSheetHasilRabut() {
                                   Task Dimulai
                                 </p>
                                 <p className="font-semibold">
-                                  Time :  {convertTimeStampToDateTime(data.waktu_mulai)}
+                                  Time :{' '}
+                                  {convertTimeStampToDateTime(data.waktu_mulai)}
                                 </p>
                                 <button
                                   disabled={isLoading}
@@ -1209,17 +1288,19 @@ function CheckSheetHasilRabut() {
                               <label className=" text-[#6c6b6b] text-sm font-semibold line-clamp-4">
                                 {data2.kode} - {data2.masalah}
                               </label>
-                              {(data2.kode_lkh == '' || data2.kode_lkh == null) ? <></> :
+                              {data2.kode_lkh == '' ||
+                              data2.kode_lkh == null ? (
+                                <></>
+                              ) : (
                                 <>
                                   <label className=" text-[#6c6b6b] text-sm font-semibold">
-                                    Dengan : {data2.kode_lkh} - {data2.masalah_lkh}
+                                    Dengan : {data2.kode_lkh} -{' '}
+                                    {data2.masalah_lkh}
                                   </label>
-
                                 </>
-                              }
+                              )}
                               {data.status == 'done' ? (
                                 <input
-
                                   type="text"
                                   name="hasil"
                                   defaultValue={data2.hasil}
@@ -1247,7 +1328,7 @@ function CheckSheetHasilRabut() {
                       {data.status == 'on progress' ? (
                         <>
                           <button
-                            type='button'
+                            type="button"
                             disabled={isLoading}
                             onClick={() => handleClickAdd(index)}
                             className=" h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
@@ -1266,7 +1347,6 @@ function CheckSheetHasilRabut() {
                           judul={'ADD PROBLEM CODE'}
                         >
                           <div className="flex flex-col gap-2">
-
                             <label className="text-black text-sm font-bold pt-4">
                               Master Defect
                             </label>
@@ -1285,7 +1365,7 @@ function CheckSheetHasilRabut() {
                             />
                             {selectedOption && selectedSecondOption && (
                               <button
-                                type='button'
+                                type="button"
                                 disabled={isLoading}
                                 onClick={() => {
                                   tambahDefectPeriode(
@@ -1297,9 +1377,9 @@ function CheckSheetHasilRabut() {
                                     wasteSelectLkh,
                                     selectedMesinJO,
                                     selectedOperatorJO,
-
                                   ),
-                                    console.log(RabutMesin?.data?.id,
+                                    console.log(
+                                      RabutMesin?.data?.id,
                                       idDefect,
                                       data.id,
                                       index,
@@ -1350,7 +1430,7 @@ function CheckSheetHasilRabut() {
             )}
           </div>
           {RabutMesin?.data?.status == 'incoming' ||
-            RabutMesin?.data?.status == 'pending' ? (
+          RabutMesin?.data?.status == 'pending' ? (
             <button
               disabled={isLoading}
               onClick={() => tambahTaskRabut(RabutMesin?.data.id)}
@@ -1436,7 +1516,6 @@ function CheckSheetHasilRabut() {
                   </div>
                 </div>
                 <div className="flex justify-end item w-full p-5">
-
                   {/* {RabutMesin?.data?.status == 'incoming' ? (
                       <button
                         onClick={() => pendingRabut(RabutMesin?.data.id)}
@@ -1446,24 +1525,22 @@ function CheckSheetHasilRabut() {
                       </button>
                     ) : null} */}
                   {RabutMesin?.data?.status == 'incoming' ||
-                    RabutMesin?.data?.status == 'pending' ? (
+                  RabutMesin?.data?.status == 'pending' ? (
                     <button
                       disabled={isLoading}
-                      type='submit'
-                      value='submit'
+                      type="submit"
+                      value="submit"
                       className=" col-span-2 w-[25%] h-10 rounded-md bg-[#00B81D] text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                     >
                       CHECKSHEET SELESAI
                     </button>
                   ) : null}
-
                 </div>
               </div>
             </div>
           </div>
         </form>
       </main>
-
     </>
   );
 }

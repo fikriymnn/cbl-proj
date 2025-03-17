@@ -73,8 +73,9 @@ function CheckSheetPondPeriode() {
   const [isFailed, setIsFailed] = useState(false);
 
   async function getMasterKode() {
-    const url = `${import.meta.env.VITE_API_LINK_P1
-      }/api/list-kendala?criteria=true&proses=7`;
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=7`;
 
     try {
       setIsLoading(true);
@@ -82,12 +83,12 @@ function CheckSheetPondPeriode() {
 
       setMasterKode(res);
       setIsLoading(false);
-      setIsFailed(false)
+      setIsFailed(false);
       console.log(res);
     } catch (error: any) {
       setIsLoading(false);
-      setIsFailed(true)
-      alert('Gagal Memanggil Defect, Coba Refresh Halaman!')
+      setIsFailed(true);
+      alert('Gagal Memanggil Defect, Coba Refresh Halaman!');
       console.log(error.data.msg);
     }
   }
@@ -102,11 +103,10 @@ function CheckSheetPondPeriode() {
       setDataDepartment(res.data);
     } catch (error: any) {
       setIsLoading(false);
-      alert('Gagal Memannggil Department, Coba Refresh Halaman!')
+      alert('Gagal Memannggil Department, Coba Refresh Halaman!');
       console.log(error);
     }
   }
-
 
   async function getPondMesinPeriode() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiPond/${id}`;
@@ -121,16 +121,17 @@ function CheckSheetPondPeriode() {
       setpondMesinPeriodeHistory(res.data.history);
       console.log(res.data.data);
     } catch (error: any) {
-      alert('Gagal Memannggil Data, Coba Refresh Halaman!')
+      alert('Gagal Memannggil Data, Coba Refresh Halaman!');
       console.log(error.data.msg);
     }
   }
 
   async function startTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondPeriodePoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondPeriodePoint/start/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.put(
         url,
         {},
@@ -139,19 +140,20 @@ function CheckSheetPondPeriode() {
         },
       );
       getPondMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error.data.msg);
       alert(error.response.data.msg);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
   async function deletePeriode(id: number) {
     if (window.confirm('Hapus Periode?')) {
-      const url = `${import.meta.env.VITE_API_LINK
-        }/qc/cs/inspeksiPondPeriodePoint/delete/${id}`;
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiPondPeriodePoint/delete/${id}`;
       try {
-        setIsLoading(true)
+        setIsLoading(true);
         const res = await axios.delete(
           url,
 
@@ -160,10 +162,10 @@ function CheckSheetPondPeriode() {
           },
         );
         getPondMesinPeriode();
-        setIsLoading(false)
+        setIsLoading(false);
       } catch (error: any) {
         console.log(error);
-        setIsLoading(false)
+        setIsLoading(false);
         alert(error);
       }
     }
@@ -176,10 +178,11 @@ function CheckSheetPondPeriode() {
     jumlah_sampling: any,
     data_defect: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondPeriodePoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondPeriodePoint/stop/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
       const res = await axios.put(
@@ -195,18 +198,19 @@ function CheckSheetPondPeriode() {
           withCredentials: true,
         },
       );
-      setcttPeriode(null)
+      setcttPeriode(null);
       getPondMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   async function tambahTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondPeriodePoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondPeriodePoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -223,7 +227,7 @@ function CheckSheetPondPeriode() {
       setIsLoading(false);
     } catch (error: any) {
       console.log(error.data.msg);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -237,10 +241,11 @@ function CheckSheetPondPeriode() {
     sumberMasalah: any,
     index: number,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondPeriodePoint/createDefect`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondPeriodePoint/createDefect`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.post(
         url,
 
@@ -273,17 +278,18 @@ function CheckSheetPondPeriode() {
         },
       ]);
       getPondMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
   async function pendingCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondPeriode/pending/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondPeriode/pending/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.put(
         url,
         {},
@@ -293,17 +299,18 @@ function CheckSheetPondPeriode() {
       );
 
       getPondMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error.data.msg);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
   async function doneCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiPondPeriode/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiPondPeriode/done/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.put(
         url,
         { catatan: catatan },
@@ -313,10 +320,10 @@ function CheckSheetPondPeriode() {
       );
 
       getPondMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -465,11 +472,20 @@ function CheckSheetPondPeriode() {
                               : {tanggalHistory}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {formatInteger(parseInt(pondMesinPeriodeHistory?.jumlah_druk))} /  {formatInteger(parseInt(pondMesinPeriodeHistory?.mata))}
-
+                              :{' '}
+                              {formatInteger(
+                                parseInt(pondMesinPeriodeHistory?.jumlah_druk),
+                              )}{' '}
+                              /{' '}
+                              {formatInteger(
+                                parseInt(pondMesinPeriodeHistory?.mata),
+                              )}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {formatInteger(parseInt(pondMesinPeriodeHistory?.jumlah_pcs))}
+                              :{' '}
+                              {formatInteger(
+                                parseInt(pondMesinPeriodeHistory?.jumlah_pcs),
+                              )}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {pondMesinPeriodeHistory?.ukuran_jadi}
@@ -623,38 +639,53 @@ function CheckSheetPondPeriode() {
                                           <div
                                             className={`flex flex-col min-w-[200px] justify-center py-4 
                                             } items-center gap-2 
-                                             ${data2.hasil == 'ok' ? 'bg-blue-300' :
-                                                data2.hasil == 'ok (toleransi)' ? 'bg-yellow-300' :
-                                                  data2.hasil == 'not ok' ? 'bg-red-300' :
-
-                                                    'bg-white'}`}
+                                             ${
+                                               data2.hasil == 'ok'
+                                                 ? 'bg-blue-300'
+                                                 : data2.hasil ==
+                                                   'ok (toleransi)'
+                                                 ? 'bg-yellow-300'
+                                                 : data2.hasil == 'not ok'
+                                                 ? 'bg-red-300'
+                                                 : 'bg-white'
+                                             }`}
                                           >
                                             <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                               {data2.kode}
                                             </label>
 
                                             <div
-
                                               className={`w-[80%] text-center uppercase font-semibold flex gap-4  
 } `}
                                             >
                                               {data2.hasil == 'ok' ? (
                                                 <>
-                                                  <img src={ok} alt="" className="w-4" />
+                                                  <img
+                                                    src={ok}
+                                                    alt=""
+                                                    className="w-4"
+                                                  />
                                                 </>
-                                              ) : data2.hasil == 'ok (toleransi)' ? (
+                                              ) : data2.hasil ==
+                                                'ok (toleransi)' ? (
                                                 <>
-                                                  <img src={oktole} alt="" className="w-4" />
+                                                  <img
+                                                    src={oktole}
+                                                    alt=""
+                                                    className="w-4"
+                                                  />
                                                 </>
                                               ) : data2.hasil == 'not ok' ? (
                                                 <>
-                                                  <img src={notok} alt="" className="w-4" />
+                                                  <img
+                                                    src={notok}
+                                                    alt=""
+                                                    className="w-4"
+                                                  />
                                                 </>
-                                              ) :
-                                                <>
-                                                  -
-                                                </>
-                                              }
+                                              ) : (
+                                                <>-</>
+                                              )}
 
                                               {data2.hasil}
                                             </div>
@@ -666,14 +697,11 @@ function CheckSheetPondPeriode() {
                                       },
                                     )}
                                   </div>
-
-
                                 </div>
                               </>
                             );
                           },
                         )}
-
                       </>
                     </ModalKosongan>
                   </>
@@ -707,8 +735,8 @@ function CheckSheetPondPeriode() {
                   : {tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {formatInteger(parseInt(pondMesinPeriode?.jumlah_druk))} / {formatInteger(parseInt(pondMesinPeriode?.mata))}
-
+                  : {formatInteger(parseInt(pondMesinPeriode?.jumlah_druk))} /{' '}
+                  {formatInteger(parseInt(pondMesinPeriode?.mata))}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {formatInteger(parseInt(pondMesinPeriode?.jumlah_pcs))}
@@ -749,7 +777,7 @@ function CheckSheetPondPeriode() {
                   : {pondMesinPeriode?.no_jo}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  :  {pondMesinPeriode?.no_io}
+                  : {pondMesinPeriode?.no_io}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {pondMesinPeriode?.nama_produk}
@@ -851,12 +879,10 @@ function CheckSheetPondPeriode() {
                       <></>
                     )}
                     {data.status == 'incoming' &&
-                      pondMesinPeriode?.status == 'incoming' ? (
+                    pondMesinPeriode?.status == 'incoming' ? (
                       <>
                         <button
-                          onClick={() =>
-                            deletePeriode(data.id)
-                          }
+                          onClick={() => deletePeriode(data.id)}
                           className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                         >
                           Hapus Periode
@@ -865,9 +891,7 @@ function CheckSheetPondPeriode() {
                     ) : data.status == 'on progress' ? (
                       <>
                         <button
-                          onClick={() =>
-                            deletePeriode(data.id)
-                          }
+                          onClick={() => deletePeriode(data.id)}
                           className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                         >
                           Hapus Periode
@@ -902,7 +926,9 @@ function CheckSheetPondPeriode() {
                           <input
                             type="text"
                             disabled
-                            defaultValue={formatInteger(parseInt(data.numerator))}
+                            defaultValue={formatInteger(
+                              parseInt(data.numerator),
+                            )}
                             name="numerator"
                             onChange={(e) => handleChangePoint(e, index)}
                             className="text-sm font-semibold w-[90%] border-stroke border"
@@ -924,7 +950,9 @@ function CheckSheetPondPeriode() {
                         {data.status == 'done' ? (
                           <input
                             type="text"
-                            defaultValue={formatInteger(parseInt(data.jumlah_sampling))}
+                            defaultValue={formatInteger(
+                              parseInt(data.jumlah_sampling),
+                            )}
                             disabled
                             name="jumlah_sampling"
                             onChange={(e) => handleChangePoint(e, index)}
@@ -1029,18 +1057,21 @@ function CheckSheetPondPeriode() {
                             <div
                               className={`flex flex-col min-w-[200px] justify-center py-4 
                                 } items-center gap-2 
-                                 ${data2.hasil == 'ok' ? 'bg-blue-300' :
-                                  data2.hasil == 'ok (toleransi)' ? 'bg-yellow-300' :
-                                    data2.hasil == 'not ok' ? 'bg-red-300' :
-
-                                      'bg-white'}`}
+                                 ${
+                                   data2.hasil == 'ok'
+                                     ? 'bg-blue-300'
+                                     : data2.hasil == 'ok (toleransi)'
+                                     ? 'bg-yellow-300'
+                                     : data2.hasil == 'not ok'
+                                     ? 'bg-red-300'
+                                     : 'bg-white'
+                                 }`}
                             >
                               <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                 {data2.kode}
                               </label>
                               {data.status == 'done' ? (
                                 <div
-
                                   className={`w-[80%] text-center uppercase font-semibold flex gap-4  
                              } `}
                                 >
@@ -1050,17 +1081,19 @@ function CheckSheetPondPeriode() {
                                     </>
                                   ) : data2.hasil == 'ok (toleransi)' ? (
                                     <>
-                                      <img src={oktole} alt="" className="w-4" />
+                                      <img
+                                        src={oktole}
+                                        alt=""
+                                        className="w-4"
+                                      />
                                     </>
                                   ) : data2.hasil == 'not ok' ? (
                                     <>
                                       <img src={notok} alt="" className="w-4" />
                                     </>
-                                  ) :
-                                    <>
-                                      -
-                                    </>
-                                  }
+                                  ) : (
+                                    <>-</>
+                                  )}
 
                                   {data2.hasil}
                                 </div>
@@ -1074,16 +1107,15 @@ function CheckSheetPondPeriode() {
 
                                           if (e.target.value == 'not ok') {
                                             handleClickNotOke(i, true);
-
                                           } else {
                                             handleClickNotOke(i, false);
                                           }
-
                                         }}
-                                        className={`  ${(i + 1) % 2 === 0
-                                          ? ' bg-[#F3F3F3]'
-                                          : 'bg-white'
-                                          } `}
+                                        className={`  ${
+                                          (i + 1) % 2 === 0
+                                            ? ' bg-[#F3F3F3]'
+                                            : 'bg-white'
+                                        } `}
                                         type="radio"
                                         id="ok11"
                                         value="ok"
@@ -1102,16 +1134,21 @@ function CheckSheetPondPeriode() {
                                             handleClickNotOke(i, false);
                                           }
                                         }}
-                                        className={`  ${(i + 1) % 2 === 0
-                                          ? ' bg-[#F3F3F3]'
-                                          : 'bg-white'
-                                          } `}
+                                        className={`  ${
+                                          (i + 1) % 2 === 0
+                                            ? ' bg-[#F3F3F3]'
+                                            : 'bg-white'
+                                        } `}
                                         type="radio"
                                         id="ok12"
                                         value="ok (toleransi)"
                                         name={`hasil ${i}`}
                                       />
-                                      <img src={oktole} alt="" className="w-4" />
+                                      <img
+                                        src={oktole}
+                                        alt=""
+                                        className="w-4"
+                                      />
                                       <label className="">OK (Toleransi)</label>
                                     </div>
                                     <div className="flex gap-1 w-full">
@@ -1124,10 +1161,11 @@ function CheckSheetPondPeriode() {
                                             handleClickNotOke(i, false);
                                           }
                                         }}
-                                        className={`  ${(i + 1) % 2 === 0
-                                          ? ' bg-[#F3F3F3]'
-                                          : 'bg-white'
-                                          } `}
+                                        className={`  ${
+                                          (i + 1) % 2 === 0
+                                            ? ' bg-[#F3F3F3]'
+                                            : 'bg-white'
+                                        } `}
                                         type="radio"
                                         id="ok12"
                                         value="not ok"
@@ -1146,10 +1184,11 @@ function CheckSheetPondPeriode() {
                                             handleClickNotOke(i, false);
                                           }
                                         }}
-                                        className={`  ${(i + 1) % 2 === 0
-                                          ? ' bg-[#F3F3F3]'
-                                          : 'bg-white'
-                                          } `}
+                                        className={`  ${
+                                          (i + 1) % 2 === 0
+                                            ? ' bg-[#F3F3F3]'
+                                            : 'bg-white'
+                                        } `}
                                         type="radio"
                                         id="ok12"
                                         value="-"
@@ -1161,7 +1200,7 @@ function CheckSheetPondPeriode() {
                                 </div>
                               ) : null}
                               {showNotOk[i] == true &&
-                                data.status == 'on progress' ? (
+                              data.status == 'on progress' ? (
                                 <input
                                   type="text"
                                   name="jumlah_defect"
@@ -1175,7 +1214,9 @@ function CheckSheetPondPeriode() {
                                 <input
                                   type="text"
                                   name="jumlah_defect"
-                                  defaultValue={formatInteger(parseInt(data2.jumlah_defect))}
+                                  defaultValue={formatInteger(
+                                    parseInt(data2.jumlah_defect),
+                                  )}
                                   disabled
                                   onChange={(e) =>
                                     handleChangePointHasil(e, index, i)
@@ -1404,32 +1445,36 @@ function CheckSheetPondPeriode() {
                         </>
                       )}
                     </div>
-                    {data.status == 'done' ? (<>
-                      <div className='border-b-8 border-[#D8EAFF]'>
-                        <div className='px-[1%] py-[1%]'>
-                          <label className="text-black text-sm font-bold pt-4 ">
-                            Catatan Periode {index + 1}
-                          </label>
-                          <textarea
-                            readOnly
-                            value={data.catatan}
-                            className=" peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                          ></textarea>
+                    {data.status == 'done' ? (
+                      <>
+                        <div className="border-b-8 border-[#D8EAFF]">
+                          <div className="px-[1%] py-[1%]">
+                            <label className="text-black text-sm font-bold pt-4 ">
+                              Catatan Periode {index + 1}
+                            </label>
+                            <textarea
+                              readOnly
+                              value={data.catatan}
+                              className=" peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                            ></textarea>
+                          </div>
                         </div>
-                      </div>
-                    </>) : (<>
-                      <div className='border-b-8 border-[#D8EAFF]'>
-                        <div className='px-[1%] py-[1%]'>
-                          <label className="text-black text-sm font-bold pt-4">
-                            Catatan Periode {index + 1}
-                          </label>
-                          <textarea
-                            onChange={(e) => setcttPeriode(e.target.value)}
-                            className="peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                          ></textarea>
+                      </>
+                    ) : (
+                      <>
+                        <div className="border-b-8 border-[#D8EAFF]">
+                          <div className="px-[1%] py-[1%]">
+                            <label className="text-black text-sm font-bold pt-4">
+                              Catatan Periode {index + 1}
+                            </label>
+                            <textarea
+                              onChange={(e) => setcttPeriode(e.target.value)}
+                              className="peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                            ></textarea>
+                          </div>
                         </div>
-                      </div>
-                    </>)}
+                      </>
+                    )}
                   </>
                 );
               },
@@ -1437,7 +1482,7 @@ function CheckSheetPondPeriode() {
           </div>
           {(!isOnprogres &&
             pondMesinPeriode?.inspeksi_pond_periode[0].status == 'incoming') ||
-            pondMesinPeriode?.inspeksi_pond_periode[0].status == 'pending' ? (
+          pondMesinPeriode?.inspeksi_pond_periode[0].status == 'pending' ? (
             <>
               {!isFailed ? (
                 <>
@@ -1453,15 +1498,13 @@ function CheckSheetPondPeriode() {
                     {isLoading ? 'Loading...' : '+ Periode Check'}
                   </button>
                 </>
-              ) :
+              ) : (
                 <>
-                  <button
-
-                    className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
-                  >
+                  <button className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer">
                     Refresh Halaman
                   </button>
-                </>}
+                </>
+              )}
               {isLoading && <Loading />}
             </>
           ) : null}
@@ -1508,8 +1551,8 @@ function CheckSheetPondPeriode() {
               ) : null}
               {(!isOnprogres &&
                 pondMesinPeriode?.inspeksi_pond_periode[0].status ==
-                'incoming') ||
-                pondMesinPeriode?.inspeksi_pond_periode[0].status == 'pending' ? (
+                  'incoming') ||
+              pondMesinPeriode?.inspeksi_pond_periode[0].status == 'pending' ? (
                 <button
                   onClick={() => {
                     doneCekPeriode(
@@ -1525,7 +1568,7 @@ function CheckSheetPondPeriode() {
 
               {/* ) : null} */}
             </div>
-            {pondMesinPeriodeDefect?.map((data: any, index: number) => {
+            {/* {pondMesinPeriodeDefect?.map((data: any, index: number) => {
               return (
                 <div className="">
                   <label>kode: </label>
@@ -1536,7 +1579,7 @@ function CheckSheetPondPeriode() {
                   <label>{formatInteger(parseInt(data.total_defect))}</label>
                 </div>
               );
-            })}
+            })} */}
           </div>
         </main>
       )}
