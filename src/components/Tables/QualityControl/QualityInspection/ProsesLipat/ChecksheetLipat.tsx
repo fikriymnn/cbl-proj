@@ -8,6 +8,7 @@ import printIcon from '../../../../../images/icon/print.svg';
 import convertDateToTime from '../../../../../utils/converDateToTime';
 import convertTimeStampToDate from '../../../../../utils/convertDate';
 import formatInteger from '../../../../../utils/formaterInteger';
+import ptcbl from '../../../../../images/ptcbl.png';
 
 function ChecksheetLipat() {
   const [isMobile, setIsMobile] = useState(false);
@@ -260,9 +261,413 @@ function ChecksheetLipat() {
 
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
+  const [isOpen, setIsOpen] = useState(false);
 
+  const openPreview = () => {
+    setIsOpen(true);
+  };
+
+  const closePreview = () => {
+    setIsOpen(false);
+  };
+
+  const printChecksheet = () => {
+    const printArea = document.getElementById('print-area');
+
+    if (!printArea) return;
+
+    // Store the current page
+    const currentPage = window.location.href;
+
+    // Create a new window for printing with your domain still in URL
+    const printWindow = window.open(
+      currentPage,
+      '_blank',
+      'toolbar=0,location=1,menubar=0',
+    );
+
+    if (!printWindow) {
+      alert('Please allow pop-ups for printing functionality');
+      return;
+    }
+
+    // Get all styles from the current document
+    const styles = Array.from(document.styleSheets)
+      .map((styleSheet) => {
+        try {
+          return Array.from(styleSheet.cssRules)
+            .map((rule) => rule.cssText)
+            .join('');
+        } catch (e) {
+          // Likely a CORS issue with external stylesheet
+          if (styleSheet.href) {
+            return `<link rel="stylesheet" href="${styleSheet.href}">`;
+          }
+          return '';
+        }
+      })
+      .filter(Boolean);
+
+    // Clear the new window and insert content with styles
+    printWindow.document.open();
+    printWindow.document.write(`
+            <html>
+              <head>
+                <style>
+                  ${styles.join('')}
+                  
+                  /* Additional styles to fit on one page */
+                  @page {
+                    size: A4;
+                    margin: 10mm;
+                  }
+                  
+                  body {
+                    margin: 0;
+                    padding: 0;
+                  }
+                  
+                  .print-container {
+                    width: 100%;
+                    max-width: 100%;
+                    box-sizing: border-box;
+                    transform: scale(0.95);
+                    transform-origin: top left;
+                  }
+                  
+                  /* Adjust font sizes for print */
+                  .print-container * {
+                    font-size: 10px !important;
+                  }
+                  
+                  .print-container h3, 
+                  .print-container .text-lg, 
+                  .print-container .font-semibold {
+                    font-size: 12px !important;
+                  }
+                  
+                  /* Adjust row heights */
+                  .print-container table td {
+                    padding: 2px !important;
+                  }
+                  
+                  /* Ensure table fits */
+                  .print-container table {
+                    width: 100% !important;
+                    table-layout: fixed;
+                  }
+                  
+                  /* Force to fit on one page */
+                  @media print {
+                    html, body {
+                      width: 210mm;
+                      height: 297mm;
+                      overflow: hidden;
+                    }
+                    
+                    .print-container {
+                      page-break-inside: avoid;
+                      page-break-after: avoid;
+                      page-break-before: avoid;
+                    }
+                  }
+                </style>
+              </head>
+              <body>
+                <div class="print-container">
+                  ${printArea.innerHTML}
+                </div>
+                <script>
+                  window.onload = function() {
+                    // Small delay to ensure styles are applied
+                    setTimeout(function() {
+                      window.print();
+                      window.onafterprint = function() {
+                        window.close();
+                      }
+                    }, 500);
+                  }
+                </script>
+              </body>
+            </html>
+          `);
+
+    printWindow.document.close();
+  };
   return (
     <>
+      {isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-start overflow-y-auto pt-10">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-7xl">
+            {/* Modal header */}
+            <div className="border-b px-4 py-3 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Print Preview
+              </h3>
+              <div className="flex space-x-2">
+                <button
+                  onClick={printChecksheet}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+                >
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                    />
+                  </svg>
+                  Print Checksheet
+                </button>
+                <button
+                  onClick={closePreview}
+                  className="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-gray-300"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+            <div id="print-area" className="p-6 bg-white">
+              <div className="min-w-full bg-white">
+                {/* Header */}
+                <div className="text-center mb-4">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr>
+                        <td colSpan={4} className="border border-black p-2">
+                          <div className="flex items-center">
+                            <div className="w-24 flex justify-center">
+                              <img src={ptcbl} alt="logo" />
+                            </div>
+                            <div className="flex-grow text-center font-bold text-lg">
+                              QUALITY ASSURANCE DEPARTMENT
+                            </div>
+                            <div className="w-24 flex justify-center"> </div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="border border-black p-2 text-center font-bold"
+                        >
+                          CHECKSHEET LIPAT
+                        </td>
+                      </tr>
+                    </thead>
+                  </table>
+                </div>
+
+                {/* Information Section */}
+                <div className="grid grid-cols-2 gap-4 mb-6 border border-black p-4">
+                  <div>
+                    <div className="grid grid-rows-6 gap-1">
+                      <div className="flex">
+                        <span className="font-semibold w-24">Tanggal</span>
+                        <span>
+                          : {convertTimeStampToDate(incoming?.createdAt)}
+                        </span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-semibold w-24">No. JO</span>
+                        <span>: {incoming?.no_jo}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-semibold w-24">No. IO</span>
+                        <span>: {incoming?.no_io}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-semibold w-24">Status JO</span>
+                        <span>: {incoming?.status_jo}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-semibold w-24">Item</span>
+                        <span>: {incoming?.item}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="grid grid-rows-6 gap-1">
+                      <div className="flex">
+                        <span className="font-semibold w-24">Jam</span>
+                        <span>: {convertDateToTime(incoming?.createdAt)}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-semibold w-24">Shift</span>
+                        <span>: {incoming?.shift}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-semibold w-24">Operator</span>
+                        <span>: {incoming?.operator}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-semibold w-24">Mesin</span>
+                        <span>: {incoming?.mesin}</span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-semibold w-24">QTY</span>
+                        <span>
+                          :{' '}
+                          {incoming?.qty_jo == null || incoming?.qty_jo == 0
+                            ? '-'
+                            : formatInteger(incoming?.qty_jo)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Time Tracking */}
+                <div className="border border-black p-4 mb-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="flex">
+                        <span className="font-semibold w-32">Waktu Mulai</span>
+                        <span>
+                          : {convertTimeStampToDateTime(incoming?.waktu_mulai)}
+                        </span>
+                      </div>
+                      <div className="flex">
+                        <span className="font-semibold w-32">
+                          Waktu Selesai
+                        </span>
+                        <span>
+                          :{' '}
+                          {convertTimeStampToDateTime(incoming?.waktu_selesai)}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex">
+                        <span className="font-semibold w-32">
+                          Lama Pengerjaan
+                        </span>
+                        <span>
+                          :{' '}
+                          {incoming?.lama_pengerjaan != null
+                            ? formatElapsedTime(incoming?.lama_pengerjaan)
+                            : ''}{' '}
+                          Detik
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Checksheet Table */}
+
+                {incoming?.inspeksi_lipat_point.map(
+                  (dataPoint: any, pointIndex: any) => (
+                    <div key={`point-${pointIndex}`} className="mb-6">
+                      {/* Inspector Info */}
+                      <div className="border border-black p-4 mb-4 bg-gray-50">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <div className="flex">
+                              <span className="font-semibold w-32">
+                                Inspector
+                              </span>
+                              <span>: {dataPoint?.inspektor?.nama}</span>
+                            </div>
+                            <div className="flex">
+                              <span className="font-semibold w-32">
+                                Quantity
+                              </span>
+                              <span>
+                                :{' '}
+                                {dataPoint?.qty == null || dataPoint?.qty == 0
+                                  ? '-'
+                                  : formatInteger(dataPoint?.qty)}
+                              </span>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex">
+                              <span className="font-semibold w-32">Waktu</span>
+                              <span>
+                                :{' '}
+                                {convertTimeStampToDateTime(
+                                  dataPoint.waktu_mulai,
+                                )}
+                              </span>
+                            </div>
+                            <div className="flex">
+                              <span className="font-semibold w-32">Durasi</span>
+                              <span>
+                                :{' '}
+                                {dataPoint?.lama_pengerjaan != null
+                                  ? formatElapsedTime(
+                                      dataPoint?.lama_pengerjaan,
+                                    )
+                                  : ''}{' '}
+                                Detik
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Results Table */}
+                      <table className="w-full text-left border-collapse border border-black">
+                        <thead>
+                          <tr className="bg-gray-100">
+                            <th className="border border-black p-2 w-10">No</th>
+                            <th className="border border-black p-2">
+                              Point Check
+                            </th>
+                            <th className="border border-black p-2">Acuan</th>
+                            <th className="border border-black p-2">
+                              Hasil Check
+                            </th>
+                            <th className="border border-black p-2">
+                              Keterangan
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {dataPoint.inspeksi_lipat_result.map(
+                            (dataResult: any, resultIndex: any) => (
+                              <tr key={`result-${pointIndex}-${resultIndex}`}>
+                                <td className="border border-black p-2">
+                                  {resultIndex + 1}
+                                </td>
+                                <td className="border border-black p-2">
+                                  {dataResult.point_check}
+                                </td>
+                                <td className="border border-black p-2">
+                                  {dataResult.acuan}
+                                </td>
+                                <td className="border border-black p-2">
+                                  {dataResult.hasil_check}
+                                </td>
+                                <td className="border border-black p-2">
+                                  {dataResult.keterangan}
+                                </td>
+                              </tr>
+                            ),
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  ),
+                )}
+
+                {/* Catatan */}
+                <div className="border border-black p-4 mb-6">
+                  <div className="font-semibold mb-2">Catatan:</div>
+                  <div>{incoming?.catatan}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <main className="overflow-x-hidden">
         <form
           action=""
@@ -271,9 +676,9 @@ function ChecksheetLipat() {
             sumbitChecksheet(incoming?.id);
           }}
         >
-          <div ref={contentRef} className="min-w-[700px] bg-white rounded-xl">
-            <div className="text-[14px] items-center font-semibold w-full flex border-b-8 justify-between border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
-              <div className="flex">
+          <div className="min-w-[700px] bg-white rounded-xl">
+            <div className="text-[14px] items-center justify-between font-semibold w-full flex border-b-8  border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
+              <div className="flex gap-1">
                 <svg
                   width="24"
                   height="24"
@@ -290,16 +695,34 @@ function ChecksheetLipat() {
                 </svg>{' '}
                 Checksheet Lipat
               </div>
-              <div className="flex gap-1">
-                <button
-                  className=" px-2 py-1 rounded-full flex gap-1  font-bold items-center"
-                  type="button"
-                  onClick={() => reactToPrintFn()}
+              <button
+                type="button"
+                value={'button'}
+                onClick={openPreview}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+              >
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  <img src={printIcon} alt="" className="h-10 w-10" />
-                  PRINT
-                </button>
-              </div>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  />
+                </svg>
+                Preview Checksheet
+              </button>
             </div>
 
             <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF]">

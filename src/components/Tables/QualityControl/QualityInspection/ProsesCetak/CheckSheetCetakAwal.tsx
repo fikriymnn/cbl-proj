@@ -10,7 +10,6 @@ import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 import formatInteger from '../../../../../utils/formaterInteger';
 
-
 function CheckSheetCetakAwal() {
   const [selectedECs, setSelectedECs] = useState<string[]>([]);
   const { id } = useParams();
@@ -27,15 +26,19 @@ function CheckSheetCetakAwal() {
     getCetakMesinAwal();
     getMasterKode();
     if (cetakMesinAwal?.inspeksi_cetak_awal?.length > 0) {
-      const initialSelectedECs = cetakMesinAwal?.inspeksi_cetak_awal?.inspeksi_cetak_awal_point[0]?.map(
-        (item: any) => item.eye_c || ''
-      );
+      const initialSelectedECs =
+        cetakMesinAwal?.inspeksi_cetak_awal?.inspeksi_cetak_awal_point[0]?.map(
+          (item: any) => item.eye_c || '',
+        );
       setSelectedECs(initialSelectedECs);
     } else {
       setSelectedECs([]);
     }
   }, []);
-  const handleECChange = (event: React.ChangeEvent<HTMLSelectElement>, index: number) => {
+  const handleECChange = (
+    event: React.ChangeEvent<HTMLSelectElement>,
+    index: number,
+  ) => {
     const selectedEC = event.target.value;
     setSelectedECs((prevSelectedECs: string[]) => {
       const updatedSelectedECs = [...prevSelectedECs];
@@ -45,7 +48,18 @@ function CheckSheetCetakAwal() {
   };
 
   const getAvailableECs = (): string[] => {
-    const allECs: string[] = ['EC1', 'EC2', 'EC3', 'EC4', 'EC5', 'EC6', 'EC7', 'EC8', 'EC9', 'EC10'];
+    const allECs: string[] = [
+      'EC1',
+      'EC2',
+      'EC3',
+      'EC4',
+      'EC5',
+      'EC6',
+      'EC7',
+      'EC8',
+      'EC9',
+      'EC10',
+    ];
 
     // Extract used eye_c values from cetakMesinAwal
     const usedEyeCs: string[] = [];
@@ -65,10 +79,12 @@ function CheckSheetCetakAwal() {
     return availableECs;
   };
   async function getMasterKode() {
-    const url = `${import.meta.env.VITE_API_LINK_P1
-      }/api/list-kendala?criteria=true&proses=3`;
-    const url2 = `${import.meta.env.VITE_API_LINK_P1
-      }/api/list-kendala?criteria=true&proses=4`;
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=3`;
+    const url2 = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=4`;
     try {
       const res = await axios.get(url);
       const res2 = await axios.get(url);
@@ -97,8 +113,9 @@ function CheckSheetCetakAwal() {
   }
 
   async function startTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwalPoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwalPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -128,8 +145,9 @@ function CheckSheetCetakAwal() {
     layout_pisau: any,
     acc_warna_awal_jalan: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwalPoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwalPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -161,8 +179,9 @@ function CheckSheetCetakAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwalPoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwalPoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -180,10 +199,19 @@ function CheckSheetCetakAwal() {
       console.log(error.data.msg);
     }
   }
+  const [sample1Value, setSample1Value] = useState<any>();
+  const [result1, setResult1] = useState<any>();
+
+  const [sample2Value, setSample2Value] = useState<any>();
+  const [result2, setResult2] = useState<any>();
+
+  const [sample3Value, setSample3Value] = useState<any>();
+  const [result3, setResult3] = useState<any>();
 
   async function doneCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwal/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwal/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -191,6 +219,9 @@ function CheckSheetCetakAwal() {
           id_inspeksi_cetak_awal: id,
           masterKodeCetak: masterKodeCetak,
           masterKodeCetak2: masterKodeCetak2,
+          sample_1: sample1Value,
+          sample_2: sample2Value,
+          sample_3: sample3Value,
         },
         {
           withCredentials: true,
@@ -204,8 +235,9 @@ function CheckSheetCetakAwal() {
   }
 
   async function pendingCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCetakAwal/pending/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCetakAwal/pending/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -312,10 +344,16 @@ function CheckSheetCetakAwal() {
                               : {tanggalHistory}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              :  {formatInteger(parseInt(cetakMesinAwalHistory?.jumlah_druk))}
+                              :{' '}
+                              {formatInteger(
+                                parseInt(cetakMesinAwalHistory?.jumlah_druk),
+                              )}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {formatInteger(parseInt(cetakMesinAwalHistory?.jumlah_pcs))}
+                              :{' '}
+                              {formatInteger(
+                                parseInt(cetakMesinAwalHistory?.jumlah_pcs),
+                              )}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {cetakMesinAwalHistory?.jenis_kertas}
@@ -667,7 +705,7 @@ function CheckSheetCetakAwal() {
             {cetakMesinAwal?.inspeksi_cetak_awal[0]?.inspeksi_cetak_awal_point?.map(
               (data: any, index: number) => {
                 const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
-                const waktuMulai = convertDateToTime(data.waktu_mulai)
+                const waktuMulai = convertDateToTime(data.waktu_mulai);
                 return (
                   <>
                     <div className="flex flex-col py-6 px-10 border-b-8 border-[#D8EAFF]">
@@ -700,7 +738,7 @@ function CheckSheetCetakAwal() {
                             </p>
                             <>
                               {data.status == 'incoming' &&
-                                cetakMesinAwal?.status == 'incoming' ? (
+                              cetakMesinAwal?.status == 'incoming' ? (
                                 <button
                                   onClick={() => startTaskCekAwal(data.id)}
                                   className="flex w-[50%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
@@ -721,7 +759,6 @@ function CheckSheetCetakAwal() {
                               ) : null}
                             </>
                           </div>
-
                         </div>
 
                         <div className="flex flex-col col-span-2 gap-2">
@@ -742,31 +779,39 @@ function CheckSheetCetakAwal() {
                               </div>
                             </div>
                             {data.status == 'on progress' &&
-                              cetakMesinAwal?.status == 'incoming' ? (
+                            cetakMesinAwal?.status == 'incoming' ? (
                               <>
                                 <select
                                   onChange={(event) => {
-                                    setEyeC(event.target.value)
-                                    handleECChange(event, index)
+                                    setEyeC(event.target.value);
+                                    handleECChange(event, index);
                                   }}
                                   name=""
                                   id=""
                                   className="relative z-20 inline-flex   py-1 pl-3 pr-8 text-sm font-medium outline-none"
                                 >
-                                  <option selected disabled value="" className="dark:bg-boxdark">
+                                  <option
+                                    selected
+                                    disabled
+                                    value=""
+                                    className="dark:bg-boxdark"
+                                  >
                                     Add Eye C
                                   </option>
                                   {getAvailableECs().map((ec) => (
-                                    <option key={ec} value={ec} className="dark:bg-boxdark">
+                                    <option
+                                      key={ec}
+                                      value={ec}
+                                      className="dark:bg-boxdark"
+                                    >
                                       {ec}
                                     </option>
                                   ))}
                                 </select>
                               </>
-                            ) :
-                              <label className="pl-2">
-                                {data.eye_c}
-                              </label>}
+                            ) : (
+                              <label className="pl-2">{data.eye_c}</label>
+                            )}
                           </>
                         </div>
                       </div>
@@ -1063,7 +1108,7 @@ function CheckSheetCetakAwal() {
                           Catatan<span className="text-red-500">*</span> :
                         </label>
                         {data.status == 'on progress' &&
-                          cetakMesinAwal?.status == 'incoming' ? (
+                        cetakMesinAwal?.status == 'incoming' ? (
                           <textarea
                             name="catatan"
                             defaultValue={data.catatan}
@@ -1082,7 +1127,7 @@ function CheckSheetCetakAwal() {
                       </div>
                       <div className="grid col-span-2 items-end justify-center">
                         {data.status == 'on progress' &&
-                          cetakMesinAwal?.status == 'incoming' ? (
+                        cetakMesinAwal?.status == 'incoming' ? (
                           <>
                             <button
                               onClick={() =>
@@ -1104,7 +1149,6 @@ function CheckSheetCetakAwal() {
                             >
                               SIMPAN AWAL JALAN
                             </button>
-
                           </>
                         ) : null}
                       </div>
@@ -1117,8 +1161,8 @@ function CheckSheetCetakAwal() {
           {(!isOnprogres &&
             cetakMesinAwal?.status == 'incoming' &&
             cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'incoming') ||
-            (cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'pending' &&
-              cetakMesinAwal?.status == 'incoming') ? (
+          (cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'pending' &&
+            cetakMesinAwal?.status == 'incoming') ? (
             <>
               <button
                 disabled={isLoading}
@@ -1138,13 +1182,197 @@ function CheckSheetCetakAwal() {
               Jumlah Periode Check :{' '}
               {cetakMesinAwal?.inspeksi_cetak_awal[0]?.jumlah_periode}
             </label>
-            <label className=" text-[#6c6b6b] text-sm font-semibold col-span-2">
+            <label className=" text-[#6c6b6b] text-sm font-semibold col-span-3">
               Waktu Check : {jumlahWaktuCheck}
             </label>
-            <div className="grid col-span-6 items-end justify-end gap-2">
+            <div className="col-span-2">
+              {(!isOnprogres &&
+                cetakMesinAwal?.status == 'incoming' &&
+                cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'incoming') ||
+              cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'pending' ? (
+                <div className="text-neutral-500 gap-2 items-start justify-start flex flex-col text-sm font-semibold col-span-2">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <label className="text-neutral-500 flex flex-col text-sm font-semibold">
+                        Sample 1
+                      </label>
+                      <input
+                        required
+                        onChange={(e) => {
+                          const newValue = parseFloat(e.target.value);
+                          setSample1Value(newValue);
+                          const result = (newValue / 100) * 10000;
+                          setResult1(result);
+                        }}
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />
+                      <div>gr</div>
+                    </div>
+                    <div>
+                      ={' '}
+                      <input
+                        name="hasilsample1"
+                        disabled
+                        value={result1}
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />{' '}
+                      g/m<sup className="">2</sup>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 flex-col">
+                    <div className="flex gap-2">
+                      <label className="text-neutral-500 flex flex-col text-sm font-semibold">
+                        Sample 2
+                      </label>
+                      <input
+                        required
+                        onChange={(e) => {
+                          const newValue = parseFloat(e.target.value);
+                          setSample2Value(newValue);
+                          const result = (newValue / 100) * 10000;
+                          setResult2(result);
+                        }}
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />
+                      <div>gr</div>
+                    </div>
+                    <div>
+                      ={' '}
+                      <input
+                        name="hasilsample2"
+                        disabled
+                        value={result2}
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />{' '}
+                      g/m<sup className="">2</sup>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 flex-col">
+                    <div className="flex gap-2">
+                      <label className="text-neutral-500 flex flex-col text-sm font-semibold">
+                        Sample 3
+                      </label>
+                      <input
+                        required
+                        onChange={(e) => {
+                          const newValue = parseFloat(e.target.value);
+                          setSample3Value(newValue);
+
+                          const result = (newValue / 100) * 10000;
+                          setResult3(result);
+                        }}
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />
+                      <div>gr</div>
+                    </div>
+                    <div>
+                      ={' '}
+                      <input
+                        name="hasilsample3"
+                        disabled
+                        value={result3}
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />{' '}
+                      g/m<sup className="">2</sup>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-neutral-500 gap-2 items-start justify-start flex flex-col text-sm font-semibold col-span-2">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <label className="text-neutral-500 flex flex-col text-sm font-semibold">
+                        Sample 1
+                      </label>
+                      <input
+                        readOnly
+                        value={cetakMesinAwal?.inspeksi_cetak_awal[0]?.sample_1}
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />
+                      <div>gr</div>
+                    </div>
+                    <div>
+                      ={' '}
+                      <input
+                        name="hasilsample1"
+                        disabled
+                        value={
+                          cetakMesinAwal?.inspeksi_cetak_awal[0]?.hasil_sample_1
+                        }
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />{' '}
+                      g/m<sup className="">2</sup>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 flex-col">
+                    <div className="flex gap-2">
+                      <label className="text-neutral-500 flex flex-col text-sm font-semibold">
+                        Sample 2
+                      </label>
+                      <input
+                        readOnly
+                        value={cetakMesinAwal?.inspeksi_cetak_awal[0]?.sample_2}
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />
+                      <div>gr</div>
+                    </div>
+                    <div>
+                      ={' '}
+                      <input
+                        name="hasilsample2"
+                        disabled
+                        value={
+                          cetakMesinAwal?.inspeksi_cetak_awal[0]?.hasil_sample_2
+                        }
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />{' '}
+                      g/m<sup className="">2</sup>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 flex-col">
+                    <div className="flex gap-2">
+                      <label className="text-neutral-500 flex flex-col text-sm font-semibold">
+                        Sample 3
+                      </label>
+                      <input
+                        readOnly
+                        value={cetakMesinAwal?.inspeksi_cetak_awal[0]?.sample_3}
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />
+                      <div>gr</div>
+                    </div>
+                    <div>
+                      ={' '}
+                      <input
+                        name="hasilsample3"
+                        disabled
+                        value={
+                          cetakMesinAwal?.inspeksi_cetak_awal[0]?.hasil_sample_3
+                        }
+                        type="text"
+                        className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                      />{' '}
+                      g/m<sup className="">2</sup>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="grid col-span-3 items-end justify-end gap-2">
               {!isOnprogres &&
-                cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'incoming' &&
-                cetakMesinAwal?.status == 'incoming' ? (
+              cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'incoming' &&
+              cetakMesinAwal?.status == 'incoming' ? (
                 <button
                   onClick={() =>
                     pendingCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0]?.id)
@@ -1157,7 +1385,7 @@ function CheckSheetCetakAwal() {
               {(!isOnprogres &&
                 cetakMesinAwal?.status == 'incoming' &&
                 cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'incoming') ||
-                cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'pending' ? (
+              cetakMesinAwal?.inspeksi_cetak_awal[0]?.status == 'pending' ? (
                 <button
                   onClick={() =>
                     doneCekAwal(cetakMesinAwal?.inspeksi_cetak_awal[0]?.id)
