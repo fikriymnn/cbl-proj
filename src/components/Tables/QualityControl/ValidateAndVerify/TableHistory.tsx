@@ -16,6 +16,7 @@ import calculateTime from '../../../../utils/calculateTime';
 import ModalDetailValidasi from '../../../Modals/ModalDetailValidasi';
 import Loading from '../../../Loading';
 import convertTimeStampToDateOnly from '../../../../utils/convertDate';
+import convertDateToTime from '../../../../utils/converDateToTime';
 
 const TableHistory = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -38,15 +39,14 @@ const TableHistory = () => {
   async function getMasterMesin() {
     const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.get(url, {
         withCredentials: true,
       });
-      setIsLoading(false)
+      setIsLoading(false);
       setmasterMesin(res.data);
-
     } catch (error: any) {
-      setIsLoading(false)
+      setIsLoading(false);
       console.log(error.data.msg);
     }
   }
@@ -90,7 +90,8 @@ const TableHistory = () => {
       return -1; // Return -1 if the date conversion fails
     }
 
-    const millisecondsDiff = waktuResponDate.getTime() - createdAtDate.getTime();
+    const millisecondsDiff =
+      waktuResponDate.getTime() - createdAtDate.getTime();
     const secondsDiff = Math.floor(millisecondsDiff / 1000); // Total seconds difference
 
     return secondsDiff;
@@ -105,7 +106,9 @@ const TableHistory = () => {
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
 
-    return `${hours ? hours + ' hours ' : ''}${minutes ? minutes + ' minutes ' : ''}${seconds ? seconds + ' seconds' : ''}`.trim();
+    return `${hours ? hours + ' hours ' : ''}${
+      minutes ? minutes + ' minutes ' : ''
+    }${seconds ? seconds + ' seconds' : ''}`.trim();
   }
 
   return (
@@ -114,17 +117,13 @@ const TableHistory = () => {
         {isLoading && <Loading />}
 
         <div className="grid md:grid-cols-12 grid-cols-6 px-4 py-1 gap-3">
-
           <div className="flex flex-col gap-2 col-span-2">
-            <p className="text-sm text-primary font-semibold">
-              Dari:
-            </p>
+            <p className="text-sm text-primary font-semibold">Dari:</p>
             <input
-              className='rounded-full bg-[#D8EAFF] px-2 h-8'
+              className="rounded-full bg-[#D8EAFF] px-2 h-8"
               type="date"
               onChange={(e) => setStartDate(e.target.value)}
             ></input>
-
           </div>
           <div className="flex flex-col gap-2 col-span-2">
             <p className=" my-auto text-sm text-primary font-semibold ">
@@ -132,11 +131,10 @@ const TableHistory = () => {
             </p>
 
             <input
-              className='rounded-full bg-[#D8EAFF] px-2 h-8'
+              className="rounded-full bg-[#D8EAFF] px-2 h-8"
               type="date"
               onChange={(e) => setEndDate(e.target.value)}
             ></input>
-
           </div>
           <div className="flex flex-col  gap-2 col-span-2">
             <p className=" my-auto text-sm text-primary font-semibold ">
@@ -145,30 +143,23 @@ const TableHistory = () => {
 
             <select
               onChange={(e) => {
-                setMesinNama(
-                  e.target.value,
-                );
-
+                setMesinNama(e.target.value);
               }}
               className={` z-20 w-full rounded-md bg-blue-200 items-center h-8`}
             >
-              <option
-                selected
-                disabled>
+              <option selected disabled>
                 Pilih Mesin
               </option>
-              {masterMesin?.map(
-                (data: any, i: number) => {
-                  return (
-                    <option
-                      value={data.nama_mesin}
-                      className="text-gray-800 text-sm font-light dark:text-bodydark"
-                    >
-                      {data.nama_mesin}
-                    </option>
-                  );
-                },
-              )}
+              {masterMesin?.map((data: any, i: number) => {
+                return (
+                  <option
+                    value={data.nama_mesin}
+                    className="text-gray-800 text-sm font-light dark:text-bodydark"
+                  >
+                    {data.nama_mesin}
+                  </option>
+                );
+              })}
             </select>
           </div>
           <div className="flex flex-col  gap-2 col-span-2">
@@ -177,16 +168,11 @@ const TableHistory = () => {
             </p>
             <select
               onChange={(e) => {
-                setStatusTiket(
-                  e.target.value,
-                );
-
+                setStatusTiket(e.target.value);
               }}
               className={` z-20 w-full rounded-md bg-blue-200 items-center h-8`}
             >
-              <option
-                selected
-                disabled>
+              <option selected disabled>
                 Pilih Status Tiket
               </option>
 
@@ -209,25 +195,22 @@ const TableHistory = () => {
               No.Jo
             </p>
             <input
-              className='rounded-md h-8 bg-[#D8EAFF] px-2 w-full'
-              placeholder='Nomor JO'
+              className="rounded-md h-8 bg-[#D8EAFF] px-2 w-full"
+              placeholder="Nomor JO"
               type="text"
               onChange={(e) => setNoJo(e.target.value)}
             ></input>
-
           </div>
           <div className="flex ">
             <button
               onClick={() => {
-                getMTC()
+                getMTC();
               }}
               className="bg-primary text-white px-5 py-2 rounded-md my-auto "
             >
               Tampilkan
             </button>
-
           </div>
-
         </div>
 
         {/* <input
@@ -290,7 +273,11 @@ const TableHistory = () => {
       </div>
       {ticketProsesHistory?.data.map((data: any, index: number) => {
         const tglTicket = convertTimeStampToDateOnly(data.createdAt);
-        const tglSelesaiTicket = (data.waktu_selesai_mtc == null ? '-' : convertTimeStampToDate(data.waktu_selesai_mtc));
+        const jamTicket = convertDateToTime(data.createdAt);
+        const tglSelesaiTicket =
+          data.waktu_selesai_mtc == null
+            ? '-'
+            : convertTimeStampToDate(data.waktu_selesai_mtc);
         const waktuRespon = calculateResponTime2(
           data.tiket?.waktu_selesai_mtc,
           data.tiket?.waktu_selesai,
@@ -308,8 +295,12 @@ const TableHistory = () => {
           data.tiket?.waktu_respon_qc,
         );
         const waktuRespon2 = formatMinutesToHoursMinutesSeconds(waktuRespon);
-        const waktuBreakdown = formatMinutesToHoursMinutesSeconds(waktuBreakdownMinutes);
-        const waktuBreakdownMTC = formatMinutesToHoursMinutesSeconds(waktuBreakdownMTCMinutes);
+        const waktuBreakdown = formatMinutesToHoursMinutesSeconds(
+          waktuBreakdownMinutes,
+        );
+        const waktuBreakdownMTC = formatMinutesToHoursMinutesSeconds(
+          waktuBreakdownMTCMinutes,
+        );
 
         const qcRespon = calculateResponTime2(
           data.tiket?.createdAt,
@@ -323,7 +314,9 @@ const TableHistory = () => {
           data.tiket?.waktu_selesai_mtc,
           data.tiket?.waktu_selesai,
         );
-        const waktuVerifikasiQC = formatMinutesToHoursMinutesSeconds(waktuVerifikasiQCMinutes);
+        const waktuVerifikasiQC = formatMinutesToHoursMinutesSeconds(
+          waktuVerifikasiQCMinutes,
+        );
         return (
           <div
             key={index}
@@ -367,8 +360,9 @@ const TableHistory = () => {
                 </p>
               </div>
               <div className="flex w-full  justify-start ">
+                w
                 <p className="text-neutral-500 text-sm font-light  dark:text-white">
-                  {tglTicket}
+                  {jamTicket}
                 </p>
               </div>
               <div className="flex w-full  justify-start  ">
@@ -398,7 +392,10 @@ const TableHistory = () => {
                 </p>
               </div> */}
               <div className="flex w-full justify-end">
-                <button onClick={() => handleClickDetail(index)} className="text-xs font-bold bg-blue-700 py-2 px-3 text-white rounded-sm">
+                <button
+                  onClick={() => handleClickDetail(index)}
+                  className="text-xs font-bold bg-blue-700 py-2 px-3 text-white rounded-sm"
+                >
                   Detail
                 </button>
               </div>

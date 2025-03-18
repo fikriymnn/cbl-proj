@@ -130,37 +130,38 @@ const TableVerifikasi = () => {
 
   return (
     <div className="flex flex-col gap-2">
-      <table className="min-w-full bg-white dark:bg-boxdark shadow-default">
+      {/* Outer container with horizontal scroll */}
+      <table className="w-full bg-white dark:bg-boxdark shadow-default text-xs">
         <thead className="border border-stroke dark:border-strokedark">
           <tr>
-            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left w-10">
+            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left w-8">
               No
             </th>
-            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
               Kode Tiket
             </th>
-            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
               Waktu Masuk
             </th>
-            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
               Mesin
             </th>
-            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
               No JO
             </th>
-            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
               Nama Item
             </th>
-            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
               Kendala
             </th>
-            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
               Persentase
             </th>
-            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-left">
               Eksekutor
             </th>
-            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-center">
+            <th className="py-2 px-1 text-xs font-semibold text-slate-600 dark:text-white text-center w-16">
               Aksi
             </th>
           </tr>
@@ -179,40 +180,44 @@ const TableVerifikasi = () => {
               data.proses_mtcs[lengthProses].waktu_mulai_mtc,
               data.proses_mtcs[lengthProses].waktu_selesai_mtc,
             );
-            console.log(lengthProses);
+
             return (
               <tr
                 key={index}
                 className="border border-stroke dark:border-strokedark hover:bg-gray-50 dark:hover:bg-gray-800"
               >
-                <td className="py-3 px-2 text-xs font-light text-slate-600 dark:text-white">
+                <td className="py-2 px-1 text-xs font-light text-slate-600 dark:text-white">
                   {index + 1}
                 </td>
-                <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white whitespace-nowrap overflow-hidden text-ellipsis max-w-xs">
-                  {data.kode_ticket}
+                <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
+                  <div className="truncate max-w-[90px]">
+                    {data.kode_ticket}
+                  </div>
                 </td>
-                <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white whitespace-nowrap">
-                  {tglTicket}
+                <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
+                  <div className=" max-w-[90px]">{tglTicket}</div>
                 </td>
-                <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white whitespace-nowrap">
-                  {data.mesin}
+                <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
+                  <div className=" max-w-[60px]">{data.mesin}</div>
                 </td>
-                <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white whitespace-nowrap">
-                  {data.no_jo}
+                <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
+                  <div className=" max-w-[90px]">{data.no_jo}</div>
                 </td>
-                <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white overflow-hidden text-ellipsis max-w-xs">
-                  {data.nama_produk}
+                <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
+                  <div className=" max-w-[100px]">{data.nama_produk}</div>
                 </td>
-                <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white overflow-hidden text-ellipsis max-w-xs">
-                  {data.kode_lkh + ' - ' + data.nama_kendala}
+                <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
+                  <div className=" max-w-[100px]">
+                    {data.kode_lkh + ' - ' + data.nama_kendala}
+                  </div>
                 </td>
-                <td className="py-3 px-2">
+                <td className="py-2 px-1">
                   <div className="flex items-center gap-1">
-                    <p className="px-2 rounded-full text-xs font-light text-orange-600 bg-orange-200">
+                    <p className="px-1 rounded-full text-[10px] font-light text-orange-600 bg-orange-200">
                       {skorAwal}
                     </p>
                     <svg
-                      width="16"
+                      width="12"
                       height="6"
                       viewBox="0 0 23 8"
                       fill="none"
@@ -223,18 +228,20 @@ const TableVerifikasi = () => {
                         stroke="#0065DE"
                       />
                     </svg>
-                    <p className="px-2 rounded-full text-xs font-light text-[#FCBF11] bg-[#FFF2B1]">
+                    <p className="px-1 rounded-full text-[10px] font-light text-[#FCBF11] bg-[#FFF2B1]">
                       {skorBaru}
                     </p>
                   </div>
                 </td>
-                <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white overflow-hidden text-ellipsis max-w-xs">
-                  {data.proses_mtcs[lengthProses]?.user_eksekutor?.nama}
+                <td className="py-2 px-1 text-xs font-light text-neutral-500 dark:text-white">
+                  <div className="truncate max-w-[80px]">
+                    {data.proses_mtcs[lengthProses]?.user_eksekutor?.nama}
+                  </div>
                 </td>
-                <td className="py-3 px-2 text-center">
+                <td className="py-2 px-1 text-center">
                   <button
                     onClick={() => openModal1(index)}
-                    className="text-xs font-bold bg-blue-700 py-2 px-2 w-20 text-white rounded-sm"
+                    className="text-[10px] font-bold bg-blue-700 py-1 px-1 w-14 text-white rounded-sm"
                   >
                     Aksi
                   </button>
@@ -277,7 +284,7 @@ const TableVerifikasi = () => {
                       <div>
                         <label
                           htmlFor="namaPemeriksa"
-                          className="form-label block  text-black text-xs font-extrabold my-2 "
+                          className="form-label block text-black text-xs font-extrabold my-2"
                         >
                           CATATAN
                         </label>
@@ -287,7 +294,7 @@ const TableVerifikasi = () => {
                           name="note_qc"
                         ></textarea>
                       </div>
-                      <div className=" z-50 my-5 rounded-md">
+                      <div className="z-50 my-5 rounded-md">
                         <div className="flex flex-col gap-2">
                           <button
                             onClick={() =>
