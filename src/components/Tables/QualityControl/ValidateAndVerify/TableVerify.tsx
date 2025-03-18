@@ -149,7 +149,7 @@ const TableVerifikasi = () => {
               No JO
             </th>
             <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
-              Nama Produk
+              Nama Item
             </th>
             <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
               Kendala
