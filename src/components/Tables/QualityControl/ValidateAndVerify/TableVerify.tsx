@@ -12,8 +12,6 @@ import axios from 'axios';
 import Stack from '@mui/material/Stack';
 import Pagination from '@mui/material/Pagination';
 import convertTimeStampToDate from '../../../../utils/converDateTime';
-import ModalStockCheck1 from '../../../Modals/ModalStockCheck1';
-import zIndex from '@mui/material/styles/zIndex';
 import ModalVerifikasi from '../../../Modals/Qc/ModalVerifikasi';
 import calculateTime from '../../../../utils/calculateTime';
 
@@ -64,8 +62,9 @@ const TableVerifikasi = () => {
   }
 
   async function getMTC() {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/ticket?status_tiket=request to qc`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/ticket?status_tiket=request to qc`;
     try {
       const res = await axios.get(url, {
         params: {
@@ -128,208 +127,200 @@ const TableVerifikasi = () => {
       console.log(error.response);
     }
   }
+
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex w-full border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
-        <div className="flex w-5 ml-2 mr-5 ">
-          <p className="text-slate-600  text-[14px] font-semibold  dark:text-white">
-            No
-          </p>
-        </div>
-        <div className="flex flex-col w-full">
-          <div className="grid grid-cols-12 gap-5 dark:border-strokedark  w-full">
-            <div className="flex w-full justify-start col-span-2 ">
-              <p className="text-slate-600  text-[14px] font-semibold  dark:text-white">
-                Kode Tiket
-              </p>
-            </div>
-            <div className="flex w-full text-[14px] justify-start col-span-2 ">
-              <p className="text-slate-600 font-semibold  dark:text-white">
-                Waktu Masuk
-              </p>
-            </div>
-
-            <div className="flex w-full text-[14px] justify-start ">
-              <p className="text-slate-600 font-semibold ">Mesin</p>
-            </div>
-            <div className="flex w-full text-[14px] justify-start col-span-2">
-              <p className="text-slate-600 font-semibold ">Kendala</p>
-            </div>
-            <div className="flex w-full text-[14px] justify-start col-span-2 ">
-              <p className="text-slate-600 font-semibold ">Persentase</p>
-            </div>
-            <div className="flex w-full text-[14px] justify-start  ">
-              <p className="text-slate-600 font-semibold ">Eksekutor</p>
-            </div>
-            <div className="flex w-full text-[14px] justify-center  col-span-2 ">
-              <p className="text-slate-600 font-semibold ">Aksi</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      {ticketVerifikasi?.data.map((data: any, index: number) => {
-        const lengthProses = data.proses_mtcs.length - 1;
-        const lengthProsesSebelum = lengthProses - 1;
-        const skorAwal =
-          lengthProses == 0
-            ? 0
-            : data.proses_mtcs[lengthProsesSebelum].skor_mtc;
-        const skorBaru = data.proses_mtcs[lengthProses].skor_mtc;
-        const tglTicket = convertTimeStampToDate(data.waktu_selesai_mtc);
-        const waktuPengerjaan = calculateTime(
-          data.proses_mtcs[lengthProses].waktu_mulai_mtc,
-          data.proses_mtcs[lengthProses].waktu_selesai_mtc,
-        );
-        console.log(lengthProses);
-        return (
-          <div
-            key={index}
-            className="flex rounded-xl border  border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark "
-          >
-            <div className="flex items-center w-5 ml-2 mr-5 ">
-              <p className="text-slate-600  text-[14px]   dark:text-white">
-                {index + 1}
-              </p>
-            </div>
-            <div className="grid grid-cols-12 gap-5 w-full dark:border-strokedark items-center">
-              <div className="flex w-full justify-start col-span-2 gap-8 ">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white break-all">
-                  {' '}
+      <table className="min-w-full bg-white dark:bg-boxdark shadow-default">
+        <thead className="border border-stroke dark:border-strokedark">
+          <tr>
+            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left w-10">
+              No
+            </th>
+            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+              Kode Tiket
+            </th>
+            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+              Waktu Masuk
+            </th>
+            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+              Mesin
+            </th>
+            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+              No JO
+            </th>
+            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+              Nama Produk
+            </th>
+            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+              Kendala
+            </th>
+            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+              Persentase
+            </th>
+            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+              Eksekutor
+            </th>
+            <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-center">
+              Aksi
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {ticketVerifikasi?.data.map((data: any, index: number) => {
+            const lengthProses = data.proses_mtcs.length - 1;
+            const lengthProsesSebelum = lengthProses - 1;
+            const skorAwal =
+              lengthProses == 0
+                ? 0
+                : data.proses_mtcs[lengthProsesSebelum].skor_mtc;
+            const skorBaru = data.proses_mtcs[lengthProses].skor_mtc;
+            const tglTicket = convertTimeStampToDate(data.waktu_selesai_mtc);
+            const waktuPengerjaan = calculateTime(
+              data.proses_mtcs[lengthProses].waktu_mulai_mtc,
+              data.proses_mtcs[lengthProses].waktu_selesai_mtc,
+            );
+            console.log(lengthProses);
+            return (
+              <tr
+                key={index}
+                className="border border-stroke dark:border-strokedark hover:bg-gray-50 dark:hover:bg-gray-800"
+              >
+                <td className="py-3 px-2 text-xs font-light text-slate-600 dark:text-white">
+                  {index + 1}
+                </td>
+                <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white whitespace-nowrap overflow-hidden text-ellipsis max-w-xs">
                   {data.kode_ticket}
-                </p>
-              </div>
-              <div className="flex w-full text-[14px] justify-start col-span-2 ">
-                <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                </td>
+                <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white whitespace-nowrap">
                   {tglTicket}
-                </p>
-              </div>
-
-              <div className="flex w-full text-[14px] justify-start ">
-                <p className="text-neutral-500 text-sm font-light ">
+                </td>
+                <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white whitespace-nowrap">
                   {data.mesin}
-                </p>
-              </div>
-              <div className="flex w-full text-[14px] justify-start col-span-2">
-                <p className="text-neutral-500 text-sm font-light ">
+                </td>
+                <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white whitespace-nowrap">
+                  {data.no_jo}
+                </td>
+                <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white overflow-hidden text-ellipsis max-w-xs">
+                  {data.nama_produk}
+                </td>
+                <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white overflow-hidden text-ellipsis max-w-xs">
                   {data.kode_lkh + ' - ' + data.nama_kendala}
-                </p>
-              </div>
-              <div className="flex w-full text-[14px] justify-start col-span-2 items-center gap-2">
-                <p className="px-2 rounded-full text-sm font-light text-orange-600 bg-orange-200 ">
-                  {skorAwal}
-                </p>
-
-                <svg
-                  width="23"
-                  height="8"
-                  viewBox="0 0 23 8"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M0 3.82353H22M22 3.82353L19.25 1M22 3.82353L19.25 7"
-                    stroke="#0065DE"
-                  />
-                </svg>
-
-                <p className="px-2 rounded-full text-sm font-light text-[#FCBF11] bg-[#FFF2B1] ">
-                  {skorBaru}
-                </p>
-              </div>
-              <div className="flex w-full text-[14px] justify-start ">
-                <p className="text-neutral-500 text-sm font-light ">
+                </td>
+                <td className="py-3 px-2">
+                  <div className="flex items-center gap-1">
+                    <p className="px-2 rounded-full text-xs font-light text-orange-600 bg-orange-200">
+                      {skorAwal}
+                    </p>
+                    <svg
+                      width="16"
+                      height="6"
+                      viewBox="0 0 23 8"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M0 3.82353H22M22 3.82353L19.25 1M22 3.82353L19.25 7"
+                        stroke="#0065DE"
+                      />
+                    </svg>
+                    <p className="px-2 rounded-full text-xs font-light text-[#FCBF11] bg-[#FFF2B1]">
+                      {skorBaru}
+                    </p>
+                  </div>
+                </td>
+                <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white overflow-hidden text-ellipsis max-w-xs">
                   {data.proses_mtcs[lengthProses]?.user_eksekutor?.nama}
-                </p>
-              </div>
-              <div className="flex flex-col items-center w-full text-[14px] justify-end col-span-2">
-                <button
-                  onClick={() => openModal1(index)}
-                  className="text-xs font-bold bg-blue-700 py-2 px-2 w-20 text-white rounded-sm"
-                >
-                  Aksi
-                </button>
-
-                {showModal1[index] == true && (
-                  <ModalVerifikasi
-                    kodeTiket={data.kode_ticket}
-                    isOpen={showModal1[index]}
-                    waktuMasuk={data.createdAt}
-                    persentaseAwal={skorAwal}
-                    onClose={() => closeModal1(index)}
-                    onFinish={undefined}
-                    kendala={data.kode_lkh + ' - ' + data.nama_kendala}
-                    kodeLkh={data.kode_lkh}
-                    machineName={data.kode_ticket}
-                    tgl={data.waktu_respon}
-                    jam={'19.09'}
-                    namaPemeriksa={
-                      data.proses_mtcs[lengthProses].user_eksekutor.nama
-                    }
-                    no={'109299'}
-                    idTiket={data.id}
-                    idProses={data.proses_mtcs[lengthProses].id}
-                    namaMesin={data.mesin}
-                    skor_mtc={skorAwal}
-                    jenis_perbaikan={
-                      data.proses_mtcs[lengthProses].cara_perbaikan
-                    }
-                    persentaseBelumVerif={skorBaru}
-                    kode_analisis={
-                      data.proses_mtcs[lengthProses].kode_analisis_mtc +
-                      ' - ' +
-                      data.proses_mtcs[lengthProses].nama_analisis_mtc
-                    }
-                    durasiPerbaikan={waktuPengerjaan}
-                    eksekutor={data.operator}
-                    unit={data.proses_mtcs[lengthProses].unit} bagian={data.proses_mtcs[lengthProses].bagian_mesin}
+                </td>
+                <td className="py-3 px-2 text-center">
+                  <button
+                    onClick={() => openModal1(index)}
+                    className="text-xs font-bold bg-blue-700 py-2 px-2 w-20 text-white rounded-sm"
                   >
-                    <div>
-                      <label
-                        htmlFor="namaPemeriksa"
-                        className="form-label block  text-black text-xs font-extrabold my-2 "
-                      >
-                        CATATAN
-                      </label>
-                      <textarea
-                        onChange={(e) => setNote(e.target.value)}
-                        className="w-full border border-neutral-600 h-56 p-2 rounded-sm"
-                        name="note_qc"
+                    Aksi
+                  </button>
 
-                      ></textarea>
-                    </div>
-                    <div className=" z-50 my-5 rounded-md">
-                      <div className="flex flex-col gap-2">
-                        <button
-                          onClick={() =>
-                            verifikasiTicket(
-                              data.id,
-                              data.proses_mtcs[lengthProses].id,
-                            )
-                          }
-                          className="text-xs font-bold bg-blue-700 py-4 px-5 text-white rounded-md"
+                  {showModal1[index] == true && (
+                    <ModalVerifikasi
+                      kodeTiket={data.kode_ticket}
+                      isOpen={showModal1[index]}
+                      waktuMasuk={data.createdAt}
+                      persentaseAwal={skorAwal}
+                      onClose={() => closeModal1(index)}
+                      onFinish={undefined}
+                      kendala={data.kode_lkh + ' - ' + data.nama_kendala}
+                      kodeLkh={data.kode_lkh}
+                      machineName={data.kode_ticket}
+                      tgl={data.waktu_respon}
+                      jam={'19.09'}
+                      namaPemeriksa={
+                        data.proses_mtcs[lengthProses].user_eksekutor.nama
+                      }
+                      no={'109299'}
+                      idTiket={data.id}
+                      idProses={data.proses_mtcs[lengthProses].id}
+                      namaMesin={data.mesin}
+                      skor_mtc={skorAwal}
+                      jenis_perbaikan={
+                        data.proses_mtcs[lengthProses].cara_perbaikan
+                      }
+                      persentaseBelumVerif={skorBaru}
+                      kode_analisis={
+                        data.proses_mtcs[lengthProses].kode_analisis_mtc +
+                        ' - ' +
+                        data.proses_mtcs[lengthProses].nama_analisis_mtc
+                      }
+                      durasiPerbaikan={waktuPengerjaan}
+                      eksekutor={data.operator}
+                      unit={data.proses_mtcs[lengthProses].unit}
+                      bagian={data.proses_mtcs[lengthProses].bagian_mesin}
+                    >
+                      <div>
+                        <label
+                          htmlFor="namaPemeriksa"
+                          className="form-label block  text-black text-xs font-extrabold my-2 "
                         >
-                          Verifikasi
-                        </button>
-                        <button
-                          onClick={() =>
-                            tolakTicket(
-                              data.id,
-                              data.proses_mtcs[lengthProses].id,
-                            )
-                          }
-                          className="text-xs font-bold bg-red-700 py-4 px-5 text-white rounded-md"
-                        >
-                          Tolak
-                        </button>
+                          CATATAN
+                        </label>
+                        <textarea
+                          onChange={(e) => setNote(e.target.value)}
+                          className="w-full border border-neutral-600 h-56 p-2 rounded-sm"
+                          name="note_qc"
+                        ></textarea>
                       </div>
-                    </div>
-                  </ModalVerifikasi>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      })}
+                      <div className=" z-50 my-5 rounded-md">
+                        <div className="flex flex-col gap-2">
+                          <button
+                            onClick={() =>
+                              verifikasiTicket(
+                                data.id,
+                                data.proses_mtcs[lengthProses].id,
+                              )
+                            }
+                            className="text-xs font-bold bg-blue-700 py-4 px-5 text-white rounded-md"
+                          >
+                            Verifikasi
+                          </button>
+                          <button
+                            onClick={() =>
+                              tolakTicket(
+                                data.id,
+                                data.proses_mtcs[lengthProses].id,
+                              )
+                            }
+                            className="text-xs font-bold bg-red-700 py-4 px-5 text-white rounded-md"
+                          >
+                            Tolak
+                          </button>
+                        </div>
+                      </div>
+                    </ModalVerifikasi>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
       <div className="w-full flex justify-end mt-5 ">
         <Stack spacing={2}>
           <Pagination
