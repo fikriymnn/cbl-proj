@@ -8,7 +8,7 @@ import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import formatInteger from '../../../../utils/formaterInteger';
 import ModalXL from '../../PPIC/JadwalProduksi/ModalXL';
 
-function PengajuanPayrollBulan() {
+function ApprovePayrollBulanan() {
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [payWeek, setPayWeek] = useState<any>();
@@ -38,7 +38,7 @@ function PengajuanPayrollBulan() {
   async function putPayroll(id: any, index: any) {
     const url = `${
       import.meta.env.VITE_API_LINK
-    }/hr/payroll/bayarBulananPeriode/bayar/${id}`;
+    }/hr/payroll/bayarBulananPeriode/approve/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.put(
@@ -50,7 +50,7 @@ function PengajuanPayrollBulan() {
       );
       closeEdit(index);
       setIsLoading(false);
-      alert('Berhasil Bayar');
+      alert('Berhasil Approve');
       getPayroll();
     } catch (error: any) {
       setIsLoading(false);
@@ -89,10 +89,7 @@ function PengajuanPayrollBulan() {
       {isLoading && <Loading />}
       <div className="min-w-[700px] bg-white rounded-xl">
         <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
-          <div className="grid grid-cols-9 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
-            <label className="text-neutral-500 text-xs font-semibold col-span-2">
-              Yang Menyetujui
-            </label>
+          <div className="grid grid-cols-8 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
             <label className="text-neutral-500 text-xs font-semibold  ">
               Periode Dari
             </label>
@@ -113,10 +110,7 @@ function PengajuanPayrollBulan() {
 
           {payWeek?.data.map((data: any, i: number) => {
             return (
-              <div className="grid grid-cols-9 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
-                <label className="text-neutral-500 text-xs font-semibold col-span-2 ">
-                  {data.payroll_detail_bulanan[0]?.karyawan_hr?.name}
-                </label>
+              <div className="grid grid-cols-8 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
                 <label className="text-neutral-500 text-xs font-semibold  ">
                   {convertTimeStampToDate(data.periode_dari)}
                 </label>
@@ -134,7 +128,7 @@ function PengajuanPayrollBulan() {
                   {data.status}
                 </label>
                 <div className="flex justify-center ">
-                  {data.status == 'incoming pay' ? (
+                  {data.status == 'incoming approved' ? (
                     <>
                       <button
                         onClick={() => openEdit(i)}
@@ -146,11 +140,12 @@ function PengajuanPayrollBulan() {
                   ) : (
                     <></>
                   )}
+
                   {showEdit[i] == true && (
                     <ModalXL
                       isOpen={showEdit[i]}
                       onClose={() => closeEdit(i)}
-                      judul={'Rincian History Payroll'}
+                      judul={'Rincian Payroll'}
                     >
                       <>
                         <div className="grid grid-cols-5 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
@@ -199,7 +194,7 @@ function PengajuanPayrollBulan() {
                                 </label>
 
                                 <label className="text-neutral-500 text-xs font-semibold ">
-                                  Rp. {formatInteger(data2.total_upah)}
+                                  Rp. {formatInteger(data2.sub_total_upah)}
                                 </label>
                                 <div className="flex justify-center ">
                                   <button
@@ -315,6 +310,7 @@ function PengajuanPayrollBulan() {
                                               </label>
                                             </div>
                                           </div>
+
                                           <div className="flex flex-col gap-2">
                                             <div className="flex flex-col">
                                               <label
@@ -358,6 +354,25 @@ function PengajuanPayrollBulan() {
                                                 )}
                                               </label>
                                             </div>
+                                            <div className="flex flex-col">
+                                              <label
+                                                htmlFor=""
+                                                className="text-black text-xs font-bold"
+                                              >
+                                                PENGURANGAN ATAU PENAMBAHAN
+                                              </label>
+                                              <label
+                                                htmlFor=""
+                                                className="text-[#7a7a7a] text-xl font-normal"
+                                              >
+                                                Rp.{' '}
+                                                {new Intl.NumberFormat(
+                                                  'id-ID',
+                                                ).format(
+                                                  data2.pengurangan_penambahan,
+                                                )}
+                                              </label>
+                                            </div>
 
                                             <div className="flex flex-col">
                                               <label
@@ -372,7 +387,7 @@ function PengajuanPayrollBulan() {
                                               >
                                                 Rp.{' '}
                                                 {formatInteger(
-                                                  data2.total_upah,
+                                                  data2.sub_total_upah,
                                                 )}
                                               </label>
                                             </div>
@@ -491,7 +506,7 @@ function PengajuanPayrollBulan() {
                             onClick={() => putPayroll(data.id, i)}
                             className="px-2 py-4  text-xs bg-green-400 items-center justify-center text-white font-semibold rounded-md flex w-full "
                           >
-                            Bayar
+                            Approve
                           </button>
                         </div>
                       </>
@@ -519,4 +534,4 @@ function PengajuanPayrollBulan() {
   );
 }
 
-export default PengajuanPayrollBulan;
+export default ApprovePayrollBulanan;
