@@ -76,6 +76,7 @@ function PayrollBulan() {
           withCredentials: true,
         },
       );
+      alert('Berhasil Diajukan');
       setIsLoading(false);
       setPayWeek(res.data.data);
       console.log(res.data.data);
