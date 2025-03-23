@@ -2,13 +2,14 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
 import Loading from '../../../../Loading';
-import ptcbl from '../../../../../images/ptcbl.png';
+
 function BuatPlusKaryawanKeHR() {
-  const [options, setOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     getMe();
+    getjabatan();
+    getDepartment();
   }, []);
 
   const [me, setMe] = useState<any>();
@@ -23,26 +24,80 @@ function BuatPlusKaryawanKeHR() {
       });
 
       setMe(res.data);
-      setIdPengaju(res.data.id_karyawan);
+      setIdPengaju(res.data.id_karyawan || 40);
       setnamaPemohon(res.data.nama);
       console.log('getme', res.data);
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
-  const [formData, setFormData] = useState({
-    pemohon: '',
-    jabatan: '',
 
-    jenisKelamin: 'Pria/Wanita',
-    jumlahDetail: '',
+  const [department, setDepartment] = useState<any>();
+  const [departmentOptions, setDepartmentOptions] = useState([]);
+  const [idDepartment, setidDepartment] = useState<any>();
+
+  async function getDepartment() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/hr/department`;
+    try {
+      setIsLoading(true);
+      const res = await axios.get(url, {
+        params: {
+          is_active: true,
+        },
+        withCredentials: true,
+      });
+      setIsLoading(false);
+      setDepartment(res.data.data);
+
+      // Create department options
+      const options = res.data.data.map((dept: any) => ({
+        value: dept.id,
+        label: dept.nama_department,
+      }));
+      setDepartmentOptions(options);
+
+      console.log('dept', res.data);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
+
+  const [jabatan, setjabatan] = useState<any>();
+  const [jabatanOptions, setJabatanOptions] = useState([]);
+  const [idJabatan, setIdjabatan] = useState<any>();
+
+  async function getjabatan() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/hr/jabatan`;
+    try {
+      setIsLoading(true);
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      setIsLoading(false);
+      setjabatan(res.data.data);
+
+      // Create jabatan options
+      const options = res.data.data.map((jab: any) => ({
+        value: jab.id,
+        label: jab.nama_jabatan,
+      }));
+      setJabatanOptions(options);
+
+      console.log('jabatan', res.data.data);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
+
+  const [formData, setFormData] = useState({
+    jenis_kelamin: 'Pria/Wanita',
     pendidikan: '',
     usia: '',
     pengalaman: '',
-    syaratKhusus1: '',
-    syaratKhusus2: '',
-    syaratKhusus3: '',
-    tanggalPengajuan: '',
+    syarat_Khusus: '',
+    jumlahDetail: '',
   });
 
   const handleChange = (e: any) => {
@@ -53,6 +108,55 @@ function BuatPlusKaryawanKeHR() {
     }));
   };
 
+  async function postKaryawan() {
+    const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanKaryawan`;
+    try {
+      setIsLoading(true);
+      console.log(formData, idDepartment, idJabatan, idPengaju);
+      const res = await axios.post(
+        url,
+        {
+          ...formData,
+          untuk_id_jabatan: idJabatan,
+          untuk_id_department: idDepartment,
+          id_pengaju: idPengaju,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+      setIsLoading(false);
+      //window.location.reload();
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
+
+  const handleChangePointDepatment = (selected: any) => {
+    const { value } = selected;
+    const filteredData = department.find(
+      (item: any) => item.id == value,
+      // item.id.includes(parseInt(value));
+    );
+
+    console.log(filteredData?.id);
+
+    setidDepartment(filteredData?.id);
+  };
+
+  const handleChangePointJabatan = (selected: any) => {
+    const { value } = selected;
+    const filteredData = jabatan.find(
+      (item: any) => item.id == value,
+      // item.id.includes(parseInt(value));
+    );
+
+    console.log(filteredData?.id);
+
+    setIdjabatan(filteredData?.id);
+  };
+
   return (
     <main className="overflow-x-scroll">
       {isLoading && <Loading />}
@@ -60,6 +164,7 @@ function BuatPlusKaryawanKeHR() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
+            postKaryawan();
           }}
         >
           <div className="space-y-4 mb-6">
@@ -76,15 +181,24 @@ function BuatPlusKaryawanKeHR() {
             </div>
 
             <div className="flex">
-              <label className="w-1/4 font-semibold">
-                Untuk bagian/jabatan
-              </label>
+              <label className="w-1/4 font-semibold">Department</label>
               <span className="w-8 text-center">:</span>
-              <input
-                type="text"
-                name="jabatan"
-                className="flex-1 border-b border-gray-300 focus:outline-none focus:border-blue-500"
-                onChange={handleChange}
+              <Select
+                placeholder="Pilih Department..."
+                options={departmentOptions}
+                onChange={handleChangePointDepatment}
+                className={`relative z-40 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white'`}
+              />
+            </div>
+
+            <div className="flex">
+              <label className="w-1/4 font-semibold">Jabatan</label>
+              <span className="w-8 text-center">:</span>
+              <Select
+                placeholder="Pilih Jabatan..."
+                options={jabatanOptions}
+                onChange={handleChangePointJabatan}
+                className={`relative z-30 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white'`}
               />
             </div>
           </div>
@@ -99,9 +213,10 @@ function BuatPlusKaryawanKeHR() {
                   <label className="inline-flex items-center">
                     <input
                       type="radio"
-                      name="jenisKelamin"
+                      name="jenis_kelamin"
                       value="Pria"
                       className="mr-2"
+                      checked={formData.jenis_kelamin === 'Pria'}
                       onChange={handleChange}
                     />
                     Pria
@@ -109,9 +224,10 @@ function BuatPlusKaryawanKeHR() {
                   <label className="inline-flex items-center">
                     <input
                       type="radio"
-                      name="jenisKelamin"
+                      name="jenis_kelamin"
                       value="Wanita"
                       className="mr-2"
+                      checked={formData.jenis_kelamin === 'Wanita'}
                       onChange={handleChange}
                     />
                     Wanita
@@ -119,9 +235,10 @@ function BuatPlusKaryawanKeHR() {
                   <label className="inline-flex items-center">
                     <input
                       type="radio"
-                      name="jenisKelamin"
+                      name="jenis_kelamin"
                       value="Pria/Wanita"
                       className="mr-2"
+                      checked={formData.jenis_kelamin === 'Pria/Wanita'}
                       onChange={handleChange}
                     />
                     Pria/Wanita
@@ -136,6 +253,7 @@ function BuatPlusKaryawanKeHR() {
                   type="number"
                   name="jumlahDetail"
                   className="flex-1 border-b border-gray-300 focus:outline-none focus:border-blue-500"
+                  value={formData.jumlahDetail}
                   onChange={handleChange}
                 />
               </div>
@@ -147,6 +265,7 @@ function BuatPlusKaryawanKeHR() {
                   type="text"
                   name="pendidikan"
                   className="flex-1 border-b border-gray-300 focus:outline-none focus:border-blue-500"
+                  value={formData.pendidikan}
                   onChange={handleChange}
                 />
               </div>
@@ -158,6 +277,7 @@ function BuatPlusKaryawanKeHR() {
                   type="text"
                   name="usia"
                   className="flex-1 border-b border-gray-300 focus:outline-none focus:border-blue-500"
+                  value={formData.usia}
                   onChange={handleChange}
                 />
               </div>
@@ -169,6 +289,7 @@ function BuatPlusKaryawanKeHR() {
                   type="text"
                   name="pengalaman"
                   className="flex-1 border-b border-gray-300 focus:outline-none focus:border-blue-500"
+                  value={formData.pengalaman}
                   onChange={handleChange}
                 />
               </div>
@@ -178,29 +299,11 @@ function BuatPlusKaryawanKeHR() {
                 <span className="w-8 text-center">:</span>
                 <div className="flex-1 space-y-2">
                   <div className="flex gap-2">
-                    <span>a.</span>
                     <input
                       type="text"
-                      name="syaratKhusus1"
+                      name="syarat_Khusus"
                       className="flex-1 border-b border-gray-300 focus:outline-none focus:border-blue-500"
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <span>b.</span>
-                    <input
-                      type="text"
-                      name="syaratKhusus2"
-                      className="flex-1 border-b border-gray-300 focus:outline-none focus:border-blue-500"
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <span>c.</span>
-                    <input
-                      type="text"
-                      name="syaratKhusus3"
-                      className="flex-1 border-b border-gray-300 focus:outline-none focus:border-blue-500"
+                      value={formData.syarat_Khusus}
                       onChange={handleChange}
                     />
                   </div>
