@@ -126,7 +126,8 @@ function BuatPlusKaryawanKeHR() {
         },
       );
       setIsLoading(false);
-      //window.location.reload();
+      console.log(res.data);
+      window.location.reload();
     } catch (error: any) {
       setIsLoading(false);
       console.log(error);
