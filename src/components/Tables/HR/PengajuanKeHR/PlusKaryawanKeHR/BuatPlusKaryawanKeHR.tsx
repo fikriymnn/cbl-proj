@@ -96,8 +96,8 @@ function BuatPlusKaryawanKeHR() {
     pendidikan: '',
     usia: '',
     pengalaman: '',
-    syarat_Khusus: '',
-    jumlahDetail: '',
+    syarat_khusus: '',
+    jumlah_dibutuhkan: '',
   });
 
   const handleChange = (e: any) => {
@@ -252,9 +252,9 @@ function BuatPlusKaryawanKeHR() {
                 <span className="w-8 text-center">:</span>
                 <input
                   type="number"
-                  name="jumlahDetail"
+                  name="jumlah_dibutuhkan"
                   className="flex-1 border-b border-gray-300 focus:outline-none focus:border-blue-500"
-                  value={formData.jumlahDetail}
+                  value={formData.jumlah_dibutuhkan}
                   onChange={handleChange}
                 />
               </div>
@@ -302,9 +302,9 @@ function BuatPlusKaryawanKeHR() {
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      name="syarat_Khusus"
+                      name="syarat_khusus"
                       className="flex-1 border-b border-gray-300 focus:outline-none focus:border-blue-500"
-                      value={formData.syarat_Khusus}
+                      value={formData.syarat_khusus}
                       onChange={handleChange}
                     />
                   </div>
