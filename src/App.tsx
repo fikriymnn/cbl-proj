@@ -153,7 +153,6 @@ import LengkapiMasterKaryawan from './pages/HR/Personal/LengkapiMasterKaryawan';
 import Absensi from './pages/HR/Personal/KalenderKerja/absensi';
 import MasterGrade from './pages/MasterData/MTC/MasterGrade';
 
-
 import MasterSHiftHR from './pages/HR/MasterDataHR/MastershiftHr';
 import MasterDepartment from './pages/HR/MasterDataHR/MasterDepartment';
 import EditMasterKaryawan from './pages/HR/Personal/EditMasterKaryawan';
@@ -197,6 +196,7 @@ import MasterSPTeguran from './pages/HR/MasterDataHR/MasterSPTeguran';
 import ProduksiWaste from './pages/Produksi/ProduksiWaste';
 import RekapHRPage from './pages/HR/Rekap/RekapHR';
 import PayrollBulanPage from './pages/HR/Payroll/PayrollBulanPage';
+import MasterDoc from './pages/MasterData/QC/MasterDoc';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1335,7 +1335,17 @@ function App() {
             </>
           }
         />
-
+        <Route
+          path="/masterdataqc/nodoc"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterDoc />
+              </ProtectedRoute>
+            </>
+          }
+        />
         <Route
           path="/masterdataqc/finalinspection"
           element={
@@ -1667,14 +1677,7 @@ function App() {
             </>
           }
         />
-        <Route
-          path="/hr"
-          element={
-            <>
-
-            </>
-          }
-        />
+        <Route path="/hr" element={<></>} />
         <Route
           path="/hr/pm/masterperusahaan"
           element={
@@ -1799,7 +1802,7 @@ function App() {
           path="/hr/pengajuan"
           element={
             <>
-              < PengajuanKeHR />
+              <PengajuanKeHR />
             </>
           }
         />
@@ -1807,7 +1810,7 @@ function App() {
           path="/hr/pengajuanJabatan"
           element={
             <>
-              < PengajuanJabatanKeHR />
+              <PengajuanJabatanKeHR />
             </>
           }
         />
@@ -1815,7 +1818,7 @@ function App() {
           path="/hr/pengajuanJabatanHistory"
           element={
             <>
-              < HistoryPengajuanJabatanKeHR />
+              <HistoryPengajuanJabatanKeHR />
             </>
           }
         />
@@ -1823,7 +1826,7 @@ function App() {
           path="/hr/rp/jabatan"
           element={
             <>
-              < ResponJabatan />
+              <ResponJabatan />
             </>
           }
         />
@@ -1831,7 +1834,7 @@ function App() {
           path="/hr/rp/jabatanHistory"
           element={
             <>
-              < HistoryResponJabatan />
+              <HistoryResponJabatan />
             </>
           }
         />
@@ -2028,7 +2031,6 @@ function App() {
           }
         />
       </Routes>
-
     </>
   );
 }
