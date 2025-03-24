@@ -151,6 +151,26 @@ function TableAbsenMentah() {
       console.log(error);
     }
   }
+  async function hapusAbsen(idk: any, checkTime: any) {
+    if (window.confirm('Apakah Anda yakin ingin Menghapus Data Absen Ini?')) {
+      const url = `${import.meta.env.VITE_API_LINK}/hr/absensiInOut`;
+      try {
+        setIsLoading(true);
+        const res = await axios.delete(url, {
+          data: {
+            id_karyawan: idk,
+            checktime: checkTime,
+          },
+          withCredentials: true,
+        });
+        setIsLoading(false);
+        getabsen(dateFrom, dateTo);
+      } catch (error: any) {
+        setIsLoading(false);
+        console.log(error);
+      }
+    }
+  }
   async function getMasterUser() {
     const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
     try {
@@ -424,7 +444,7 @@ function TableAbsenMentah() {
                         {data.tglCheck}
                       </label>
 
-                      <label className="text-neutral-500 text-sm font-semibold col-span-5">
+                      <label className="text-neutral-500 text-sm font-semibold col-span-4">
                         {data.checkType}
                       </label>
                       <button
@@ -534,6 +554,12 @@ function TableAbsenMentah() {
                           </>
                         </ModalKosonganSmall>
                       )}
+                      <button
+                        onClick={() => hapusAbsen(data.userid, data.checkTime)}
+                        className="w-full bg-red-600 text-white text-sm py-1 rounded-md"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </>
                 );
