@@ -282,7 +282,7 @@ function HistoryIncoming() {
                   <table className="border-collapse border w-full text-sm">
                     <thead>
                       <tr>
-                        <td colSpan={3} className="border border-black p-2">
+                        <td colSpan={2} className="border border-black p-2">
                           <div className="flex items-center">
                             <div className="w-24 flex justify-center">
                               <img src={ptcbl} alt="logo" />
@@ -295,10 +295,16 @@ function HistoryIncoming() {
                             </div>
                           </div>
                         </td>
+                        <td
+                          rowSpan={2}
+                          className="border border-black p-2 text-left font-bold"
+                        >
+                          No. Dok : {incoming?.no_doc}
+                        </td>
                       </tr>
                       <tr>
                         <td
-                          colSpan={3}
+                          colSpan={2}
                           className="border border-black p-2 text-center font-bold"
                         >
                           INCOMING INSPECTION CHECKSHEET (IIC)
