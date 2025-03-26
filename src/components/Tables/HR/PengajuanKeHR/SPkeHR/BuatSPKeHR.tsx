@@ -74,20 +74,16 @@ function BuatSPKeHR() {
       setUserList(res.data.data);
       console.log('user list', res.data.data);
       setOptions(
-        res.data.data.map((item: any) => ({
-          value: item.userid,
-          label:
-            item.biodata_karyawan[0]?.nik +
-            ' - ' +
-            item.name +
-            ' - ' +
-            item.biodata_karyawan[0]?.nama_jabatan +
-            ' - ' +
-            (item.biodata_karyawan[0]?.bagian_mesin_karyawan == null
-              ? ''
-              : item.biodata_karyawan[0]?.bagian_mesin_karyawan[0]
-                  ?.nama_bagian_mesin),
-        })),
+        res.data.data.map((item: any) => {
+          const latestBagianMesin =
+            item.biodata_karyawan[0]?.bagian_mesin_karyawan?.slice(-1)[0]
+              ?.nama_bagian_mesin || '';
+
+          return {
+            value: item.userid,
+            label: `${item.biodata_karyawan[0]?.nik} - ${item.name} - ${item.biodata_karyawan[0]?.nama_jabatan} - ${latestBagianMesin}`,
+          };
+        }),
       );
     } catch (error: any) {
       console.log(error);

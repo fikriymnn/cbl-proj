@@ -121,7 +121,14 @@ function HistoryBulan() {
 
     setShowEdit2(onchangeVal);
   };
-
+  const tipeKaryawan: any = [
+    { tipe_karyawan: 'produksi' },
+    { tipe_karyawan: 'staff' },
+  ];
+  const tipePenggajian: any = [
+    { tipe_penggajian: 'bulanan' },
+    { tipe_penggajian: 'mingguan' },
+  ];
   return (
     <main className="overflow-x-scroll">
       {isLoading && <Loading />}
@@ -188,6 +195,8 @@ function HistoryBulan() {
                           divisi={divisi}
                           setFilteredData={setFilteredData}
                           formatInteger={formatInteger}
+                          tipe_karyawan={tipeKaryawan}
+                          tipe_penggajian={tipePenggajian}
                         />
                         <div className="grid grid-cols-5 gap-4 px-3 py-4 border-b-8 border-[#D8EAFF] ">
                           <div className="flex gap-3">

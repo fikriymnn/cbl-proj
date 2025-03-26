@@ -11,7 +11,7 @@ interface FilterProps {
   formatInteger: (num: number) => string;
 }
 
-const EnhancedEmployeeFilter: React.FC<FilterProps> = ({
+const EnhancedEmployeeFilterMinggu: React.FC<FilterProps> = ({
   payWeek,
   department,
   divisi,
@@ -39,11 +39,8 @@ const EnhancedEmployeeFilter: React.FC<FilterProps> = ({
     // Flatten all employee data from all payroll details
     const allEmployees: any[] = [];
     payWeek.data.forEach((payData: any) => {
-      if (
-        payData.payroll_detail_bulanan &&
-        Array.isArray(payData.payroll_detail_bulanan)
-      ) {
-        payData.payroll_detail_bulanan.forEach((detail: any) => {
+      if (payData.payroll_detail && Array.isArray(payData.payroll_detail)) {
+        payData.payroll_detail.forEach((detail: any) => {
           allEmployees.push({
             ...detail,
             parent: payData, // Store reference to parent data
@@ -299,4 +296,4 @@ const EnhancedEmployeeFilter: React.FC<FilterProps> = ({
   );
 };
 
-export default EnhancedEmployeeFilter;
+export default EnhancedEmployeeFilterMinggu;
