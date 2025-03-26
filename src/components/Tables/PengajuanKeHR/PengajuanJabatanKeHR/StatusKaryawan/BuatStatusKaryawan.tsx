@@ -91,7 +91,12 @@ function BuatStatusKaryawan() {
             ' - ' +
             item.name +
             ' - ' +
-            item.biodata_karyawan[0]?.nama_jabatan,
+            item.biodata_karyawan[0]?.nama_jabatan +
+            ' - ' +
+            (item.biodata_karyawan[0]?.bagian_mesin_karyawan == null
+              ? ''
+              : item.biodata_karyawan[0]?.bagian_mesin_karyawan[0]
+                  ?.nama_bagian_mesin),
         })),
       );
     } catch (error: any) {
