@@ -290,7 +290,7 @@ function TableAbsensi() {
                 <label className="text-sm text-primary font-semibold">
                   Department
                 </label>
-                <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
+                <div className="relative z-20 h-10 bg-white dark:bg-form-input flex w-[50%]">
                   <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
                     <svg
                       width="20"
