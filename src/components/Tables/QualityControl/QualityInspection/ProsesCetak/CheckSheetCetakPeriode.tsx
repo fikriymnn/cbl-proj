@@ -21,6 +21,7 @@ function CheckSheetCetakPeriode() {
   const [isMobile, setIsMobile] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [cetakMesinPeriode, setCetakMesinPeriode] = useState<any>();
+  const [cetakMesinAwal, setCetakMesinAwal] = useState<any>();
   const [cetakMesinPeriodeDefect, setCetakMesinPeriodeDefect] = useState<any>();
   const [catatan, setCatatan] = useState<any>();
   const [kode, setKode] = useState<any>();
@@ -61,15 +62,6 @@ function CheckSheetCetakPeriode() {
     getCetakMesinPeriode();
     getDepartment();
     getMasterKode();
-    if (cetakMesinPeriode?.inspeksi_cetak_periode?.length > 0) {
-      const initialSelectedECs =
-        cetakMesinPeriode?.inspeksi_cetak_periode?.inspeksi_cetak_periode_point[0]?.map(
-          (item: any) => item.eye_c || '',
-        );
-      setSelectedECs(initialSelectedECs);
-    } else {
-      setSelectedECs([]);
-    }
   }, []);
 
   const [isFailed, setIsFailed] = useState(false);
@@ -121,6 +113,7 @@ function CheckSheetCetakPeriode() {
         withCredentials: true,
       });
       setIsLoading(false);
+      setCetakMesinAwal(res.data.data);
       setCetakMesinPeriode(res.data.data);
       setCetakMesinPeriodeDefect(res.data.defect);
       setCetakMesinPeriodeHistory(res.data.history);
@@ -202,34 +195,41 @@ function CheckSheetCetakPeriode() {
       }
     }
   }
-  const handleECChange = (
-    event: React.ChangeEvent<HTMLSelectElement>,
-    index: number,
-  ) => {
-    const selectedEC = event.target.value;
-    setSelectedECs((prevSelectedECs: string[]) => {
-      const updatedSelectedECs = [...prevSelectedECs];
-      updatedSelectedECs[index] = selectedEC;
-      return updatedSelectedECs;
-    });
-  };
 
-  const getAvailableECs = (): string[] => {
-    const allECs: string[] = [
-      'EC1',
-      'EC2',
-      'EC3',
-      'EC4',
-      'EC5',
-      'EC6',
-      'EC7',
-      'EC8',
-      'EC9',
-      'EC10',
-    ];
+  const getAllECs = (): string[] => [
+    'EC1',
+    'EC2',
+    'EC3',
+    'EC4',
+    'EC5',
+    'EC6',
+    'EC7',
+    'EC8',
+    'EC9',
+    'EC10',
+  ];
 
-    // Extract used eye_c values from cetakMesinAwal
+  const getAvailableECs = (
+    cetakMesinAwal?: any,
+    cetakMesinPeriode?: any,
+  ): string[] => {
+    const allECs = getAllECs();
+
+    // Collect used ECs from both inspeksi_cetak_awal and inspeksi_cetak_periode
     const usedEyeCs: string[] = [];
+
+    // Collect ECs from inspeksi_cetak_awal
+    if (cetakMesinAwal?.inspeksi_cetak_awal?.length > 0) {
+      cetakMesinAwal.inspeksi_cetak_awal.forEach((item: any) => {
+        item.inspeksi_cetak_awal_point.forEach((point: any) => {
+          if (point.eye_c) {
+            usedEyeCs.push(point.eye_c);
+          }
+        });
+      });
+    }
+
+    // Collect ECs from inspeksi_cetak_periode
     if (cetakMesinPeriode?.inspeksi_cetak_periode?.length > 0) {
       cetakMesinPeriode.inspeksi_cetak_periode.forEach((item: any) => {
         item.inspeksi_cetak_periode_point.forEach((point: any) => {
@@ -239,10 +239,18 @@ function CheckSheetCetakPeriode() {
         });
       });
     }
-    const availableECs = allECs.filter((ec) => !usedEyeCs.includes(ec));
 
-    return availableECs;
+    // Find the first available EC that hasn't been used
+    for (const ec of allECs) {
+      if (!usedEyeCs.includes(ec)) {
+        return [ec];
+      }
+    }
+
+    // If all ECs are used, return an empty array
+    return [];
   };
+
   async function stopTaskCekPeriode(
     id: number,
     startTime: any,
@@ -272,6 +280,7 @@ function CheckSheetCetakPeriode() {
           withCredentials: true,
         },
       );
+      setEyeC(null);
       setcttPeriode(null);
       getCetakMesinPeriode();
       setIsLoading(false);
@@ -1091,23 +1100,25 @@ function CheckSheetCetakPeriode() {
                           cetakMesinPeriode?.status == 'incoming' ? (
                             <>
                               <select
+                                value={eyeC} // Add this to control the selected value
                                 onChange={(event) => {
                                   setEyeC(event.target.value);
-                                  handleECChange(event, index);
                                 }}
                                 name=""
                                 id=""
-                                className="relative z-20 inline-flex   py-1 pl-3 pr-8 text-sm font-medium outline-none"
+                                className="relative z-20 inline-flex py-1 pl-3 pr-8 text-sm font-medium outline-none"
                               >
                                 <option
-                                  selected
-                                  disabled
                                   value=""
+                                  selected
                                   className="dark:bg-boxdark"
                                 >
                                   Add Eye C
                                 </option>
-                                {getAvailableECs().map((ec) => (
+                                {getAvailableECs(
+                                  cetakMesinAwal,
+                                  cetakMesinPeriode,
+                                ).map((ec) => (
                                   <option
                                     key={ec}
                                     value={ec}

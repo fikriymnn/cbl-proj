@@ -180,7 +180,14 @@ function PayrollBulan() {
       console.log(error);
     }
   }
-
+  const tipeKaryawan: any = [
+    { tipe_karyawan: 'produksi' },
+    { tipe_karyawan: 'staff' },
+  ];
+  const tipePenggajian: any = [
+    { tipe_penggajian: 'bulanan' },
+    { tipe_penggajian: 'mingguan' },
+  ];
   return (
     <main>
       {isLoading && <Loading />}
@@ -228,6 +235,8 @@ function PayrollBulan() {
           department={department?.data}
           divisi={divisi?.data}
           setFilteredData={setFilteredData}
+          tipe_karyawan={tipeKaryawan}
+          tipe_penggajian={tipePenggajian}
         />
         <div className=" w-full h-full  border-b-8 border-[#D8EAFF] bg-white px-4 py-4 items-center justify-between flex">
           <div>
