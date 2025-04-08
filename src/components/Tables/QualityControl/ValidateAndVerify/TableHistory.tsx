@@ -17,6 +17,7 @@ import ModalDetailValidasi from '../../../Modals/ModalDetailValidasi';
 import Loading from '../../../Loading';
 import convertTimeStampToDateOnly from '../../../../utils/convertDate';
 import convertDateToTime from '../../../../utils/converDateToTime';
+import * as XLSX from 'xlsx'; // Add this import at the top
 
 const TableHistory = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -24,13 +25,20 @@ const TableHistory = () => {
   const [ticketProsesHistory, setTicketProsesHistory] = useState<any>(null);
   const [showModalDetail, setShowModalDetail] = useState(null);
   const [masterMesin, setmasterMesin] = useState<any>();
+  const [startDate, setStartDate] = useState<any>();
+  const [endDate, setEndDate] = useState<any>();
+  const [mesinNama, setMesinNama] = useState<any>();
+  const [statusTiket, setStatusTiket] = useState<any>();
+  const [noJo, setNoJo] = useState<any>();
 
   const handleClickDetail = (index: any) => {
     setShowModalDetail((prevState: any) => {
       return prevState === index ? null : index;
     });
   };
+
   const closeModalDetail = () => setShowModalDetail(null);
+
   useEffect(() => {
     getMTC();
     getMasterMesin();
@@ -47,14 +55,10 @@ const TableHistory = () => {
       setmasterMesin(res.data);
     } catch (error: any) {
       setIsLoading(false);
-      console.log(error.data.msg);
+      console.log(error.data?.msg);
     }
   }
-  const [startDate, setStartDate] = useState<any>();
-  const [endDate, setEndDate] = useState<any>();
-  const [mesinNama, setMesinNama] = useState<any>();
-  const [statusTiket, setStatusTiket] = useState<any>();
-  const [noJo, setNoJo] = useState<any>();
+
   async function getMTC() {
     const url = `${import.meta.env.VITE_API_LINK}/prosessMtcHistoryQc`;
     try {
@@ -72,12 +76,12 @@ const TableHistory = () => {
       });
 
       setTicketProsesHistory(res.data);
-
       console.log(res.data);
     } catch (error: any) {
       console.log(error.response);
     }
   }
+
   function calculateResponTime2(startDate: any, endDate: any) {
     if (!startDate || !endDate) {
       return -1; // Return -1 if any of the values are null or empty
@@ -111,13 +115,168 @@ const TableHistory = () => {
     }${seconds ? seconds + ' seconds' : ''}`.trim();
   }
 
+  // Revised exportToExcel function for the nested tiket structure
+  const exportToExcel = () => {
+    if (!ticketProsesHistory?.data || ticketProsesHistory.data.length === 0) {
+      alert('No data to export');
+      return;
+    }
+
+    // Create a new workbook
+    const workbook = XLSX.utils.book_new();
+
+    // Format data for Excel - focusing on the nested structure from the second example
+    const excelData = ticketProsesHistory.data.map((data: any, index: any) => {
+      // Main data comes from the process itself
+      const processData = data;
+
+      // Ticket data is nested inside
+      const tiketData = processData.tiket || {};
+
+      // Format dates
+      const tglTicket = tiketData.createdAt
+        ? convertTimeStampToDateOnly(tiketData.createdAt)
+        : '-';
+      const jamTicket = tiketData.createdAt
+        ? convertDateToTime(tiketData.createdAt)
+        : '-';
+      const tglSelesaiTicket =
+        processData.waktu_selesai_mtc == null
+          ? '-'
+          : convertTimeStampToDate(processData.waktu_selesai_mtc);
+
+      // Calculate times
+      const waktuRespon = calculateResponTime2(
+        processData.waktu_selesai_mtc,
+        processData.waktu_selesai,
+      );
+
+      const waktuBreakdownMinutes = calculateResponTime2(
+        tiketData.createdAt,
+        processData.waktu_selesai,
+      );
+
+      const waktuBreakdownMTCMinutes = calculateResponTime2(
+        tiketData.waktu_respon_qc,
+        processData.waktu_selesai_mtc,
+      );
+
+      const waktuRespon2 = formatMinutesToHoursMinutesSeconds(waktuRespon);
+      const waktuBreakdown = formatMinutesToHoursMinutesSeconds(
+        waktuBreakdownMinutes,
+      );
+      const waktuBreakdownMTC = formatMinutesToHoursMinutesSeconds(
+        waktuBreakdownMTCMinutes,
+      );
+
+      // Return data focusing on the process + nested ticket structure
+      return {
+        No: index + 1,
+        // Process MTC information
+
+        'Bagian Mesin': processData.bagian_mesin || '-',
+        Unit: processData.unit || '-',
+        'Cara Perbaikan': processData.cara_perbaikan || '-',
+        'Kode Analisis MTC': processData.kode_analisis_mtc || '-',
+        'Nama Analisis MTC': processData.nama_analisis_mtc || '-',
+        'Note MTC': processData.note_mtc || '-',
+        'Note QC': processData.note_qc || '-',
+        'Note Analisis': processData.note_analisis || '-',
+        'Skor MTC': processData.skor_mtc || '-',
+        'Status Proses': processData.status_proses || '-',
+        'Status QC': processData.status_qc || '-',
+
+        // User information
+        'Eksekutor Nama': processData.user_eksekutor?.nama || '-',
+        'Eksekutor Role': processData.user_eksekutor?.role || '-',
+        'QC Nama': processData.user_qc?.nama || '-',
+        'QC Role': processData.user_qc?.role || '-',
+
+        // Timing information
+        'Waktu Mulai MTC': processData.waktu_mulai_mtc
+          ? convertTimeStampToDate(processData.waktu_mulai_mtc)
+          : '-',
+        'Waktu Selesai MTC': processData.waktu_selesai_mtc
+          ? convertTimeStampToDate(processData.waktu_selesai_mtc)
+          : '-',
+        'Waktu Selesai Total': processData.waktu_selesai
+          ? convertTimeStampToDate(processData.waktu_selesai)
+          : '-',
+        'Waktu Breakdown MTC': waktuBreakdownMTC,
+        'Waktu Respon Total': waktuRespon2,
+
+        // Ticket information (nested)
+        'Ticket ID': tiketData.id || '-',
+        'Kode Tiket': tiketData.kode_ticket || '-',
+        'Tanggal Tiket': tglTicket,
+        'Jam Tiket': jamTicket,
+        'No Jo': tiketData.no_jo || '-',
+        'No SO': tiketData.no_so || '-',
+        'No IO': tiketData.no_io || '-',
+        Item: tiketData.nama_produk || '-',
+        Mesin: tiketData.mesin || '-',
+        Proses: tiketData.proses || '-',
+        Kendala: `${tiketData.kode_lkh || '-'} - ${
+          tiketData.nama_kendala || '-'
+        }`,
+        'Jenis Kendala': tiketData.jenis_kendala || '-',
+        'Bagian Tiket': tiketData.bagian_tiket || '-',
+        Bagian: tiketData.bagian || '-',
+        Spek: tiketData.spek || '-',
+        Customer: tiketData.nama_customer || '-',
+        Operator: tiketData.operator || '-',
+        QTY: tiketData.qty || '-',
+        'QTY Druk': tiketData.qty_druk || '-',
+        'Status Tiket': tiketData.status_tiket || '-',
+        'Kode Analisis (Tiket)': tiketData.kode_analisis_mtc || '-',
+        'Nama Analisis (Tiket)': tiketData.nama_analisis_mtc || '-',
+        'Jenis Analisis MTC': tiketData.jenis_analisis_mtc || '-',
+
+        // Ticket timing
+        'Waktu Respon QC': tiketData.waktu_respon_qc
+          ? convertTimeStampToDate(tiketData.waktu_respon_qc)
+          : '-',
+        'Waktu Mulai MTC (Tiket)': tiketData.waktu_mulai_mtc
+          ? convertTimeStampToDate(tiketData.waktu_mulai_mtc)
+          : '-',
+        'Waktu Respon (Tiket)': tiketData.waktu_respon
+          ? convertTimeStampToDate(tiketData.waktu_respon)
+          : '-',
+        'Waktu Breakdown Total': waktuBreakdown,
+      };
+    });
+
+    // Create worksheet and add data
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+    // Set column widths for better readability
+    const wscols =
+      excelData.length > 0
+        ? Object.keys(excelData[0]).map(() => ({ wch: 20 })) // Default width for all columns
+        : [];
+    worksheet['!cols'] = wscols;
+
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Process MTC Details');
+
+    // Generate Excel file
+    const today = new Date();
+    const date = `${today.getFullYear()}-${(today.getMonth() + 1)
+      .toString()
+      .padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+    const filename = `MTC_Process_Details_${date}.xlsx`;
+
+    // Write and download the file
+    XLSX.writeFile(workbook, filename);
+  };
+
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex  gap-1 items-center bg-white ">
+      <div className="flex gap-1 items-center bg-white">
         {isLoading && <Loading />}
 
-        <div className="grid md:grid-cols-12 grid-cols-6 px-4 py-1 gap-3">
-          <div className="flex flex-col gap-2 col-span-2">
+        <div className="grid md:grid-cols-12 grid-cols-6 px-4 py-1 gap-3 items-center">
+          <div className="flex flex-col  gap-2 col-span-2">
             <p className="text-sm text-primary font-semibold">Dari:</p>
             <input
               className="rounded-full bg-[#D8EAFF] px-2 h-8"
@@ -126,7 +285,7 @@ const TableHistory = () => {
             ></input>
           </div>
           <div className="flex flex-col gap-2 col-span-2">
-            <p className=" my-auto text-sm text-primary font-semibold ">
+            <p className="my-auto text-sm text-primary font-semibold">
               Sampai:
             </p>
 
@@ -136,8 +295,8 @@ const TableHistory = () => {
               onChange={(e) => setEndDate(e.target.value)}
             ></input>
           </div>
-          <div className="flex flex-col  gap-2 col-span-2">
-            <p className=" my-auto text-sm text-primary font-semibold ">
+          <div className="flex flex-col gap-2 col-span-2">
+            <p className="my-auto text-sm text-primary font-semibold">
               Pilih Mesin:
             </p>
 
@@ -145,7 +304,7 @@ const TableHistory = () => {
               onChange={(e) => {
                 setMesinNama(e.target.value);
               }}
-              className={` z-20 w-full rounded-md bg-blue-200 items-center h-8`}
+              className={`z-20 w-full rounded-md bg-blue-200 items-center h-8`}
             >
               <option selected disabled>
                 Pilih Mesin
@@ -153,6 +312,7 @@ const TableHistory = () => {
               {masterMesin?.map((data: any, i: number) => {
                 return (
                   <option
+                    key={i}
                     value={data.nama_mesin}
                     className="text-gray-800 text-sm font-light dark:text-bodydark"
                   >
@@ -162,15 +322,15 @@ const TableHistory = () => {
               })}
             </select>
           </div>
-          <div className="flex flex-col  gap-2 col-span-2">
-            <p className=" my-auto text-sm text-primary font-semibold ">
+          <div className="flex flex-col gap-2 col-span-2">
+            <p className="my-auto text-sm text-primary font-semibold">
               Pilih Status Tiket:
             </p>
             <select
               onChange={(e) => {
                 setStatusTiket(e.target.value);
               }}
-              className={` z-20 w-full rounded-md bg-blue-200 items-center h-8`}
+              className={`z-20 w-full rounded-md bg-blue-200 items-center h-8`}
             >
               <option selected disabled>
                 Pilih Status Tiket
@@ -190,10 +350,8 @@ const TableHistory = () => {
               </option>
             </select>
           </div>
-          <div className=" gap-2 flex flex-col col-span-2">
-            <p className=" my-auto text-sm text-primary font-semibold ">
-              No.Jo
-            </p>
+          <div className="gap-2 flex flex-col col-span-2">
+            <p className="my-auto text-sm text-primary font-semibold">No.Jo</p>
             <input
               className="rounded-md h-8 bg-[#D8EAFF] px-2 w-full"
               placeholder="Nomor JO"
@@ -201,25 +359,28 @@ const TableHistory = () => {
               onChange={(e) => setNoJo(e.target.value)}
             ></input>
           </div>
-          <div className="flex ">
+          <div className="flex flex-col gap-2 col-span-2">
             <button
               onClick={() => {
                 getMTC();
               }}
-              className="bg-primary text-white px-5 py-2 rounded-md my-auto "
+              className="bg-primary text-white px-5 py-2 rounded-md my-auto"
             >
               Tampilkan
             </button>
+
+            {/* Export to Excel Button */}
+            {ticketProsesHistory?.data &&
+              ticketProsesHistory.data.length > 0 && (
+                <button
+                  onClick={exportToExcel}
+                  className="bg-green-600 text-white px-5 py-2 rounded-md"
+                >
+                  Export Excel
+                </button>
+              )}
           </div>
         </div>
-
-        {/* <input
-          type="search"
-          placeholder="search"
-          name=""
-          id=""
-          className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
-        /> */}
       </div>
       <div className="flex px-2 border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
         <p className="w-5 text-[14px] font-semibold mr-3">No</p>
