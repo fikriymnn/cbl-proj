@@ -63,34 +63,30 @@ function ProsesFinalInspectionhistory() {
 
   return (
     <>
-
       <main className="overflow-x-scroll">
         <div className="min-w-[700px] bg-white rounded-xl">
           <div className="flex w-full justify-end h-full items-center border-b-8 border-[#D8EAFF]">
-            <div className='flex flex-col gap-1 w-[20%] px-4 py-2 '>
+            <div className="flex flex-col gap-1 w-[40%] px-4 py-2 ">
               <p className=" my-auto text-xs text-primary font-semibold ">
                 Cari
               </p>
               <input
-                className='rounded-md h-8 bg-[#D8EAFF] px-2 w-full'
-                placeholder='Nomor Jo'
+                className="rounded-md h-8 bg-[#D8EAFF] px-2 w-full"
+                placeholder="Nomor Jo, Io, Produk, Customer"
                 type="text"
                 onChange={(e) => setNoJo(e.target.value)}
               ></input>
             </div>
             <div className="flex flex-col  w-[15%] px-4 py-2   gap-4">
-              <p className=" my-auto text-xs text-primary font-semibold ">
-
-              </p>
+              <p className=" my-auto text-xs text-primary font-semibold "></p>
               <button
                 onClick={() => {
-                  getFinalInspection()
+                  getFinalInspection();
                 }}
                 className="bg-primary text-white  rounded-md px-1 py-1 "
               >
                 Cari
               </button>
-
             </div>
           </div>
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
@@ -98,9 +94,7 @@ function ProsesFinalInspectionhistory() {
               <div
                 className={`w-full h-full sticky left-0 z-20  gap-8 col-span-1 flex items-center`}
               >
-                <div
-                  className={`w-2 h-full sticky left-0 z-20   `}
-                ></div>
+                <div className={`w-2 h-full sticky left-0 z-20   `}></div>
                 <label className="text-neutral-500 text-sm font-semibold ">
                   NO
                 </label>
@@ -121,9 +115,7 @@ function ProsesFinalInspectionhistory() {
                 Tanggal
               </label>
               <div className="justify-end flex pr-2 col-span-2">
-                <>
-
-                </>
+                <></>
               </div>
             </div>
             <div className="w-2 h-full "></div>
@@ -189,7 +181,6 @@ function ProsesFinalInspectionhistory() {
           </Stack>
         </div>
       </main>
-
     </>
   );
 }

@@ -360,7 +360,6 @@ const TableHistory = () => {
                 </p>
               </div>
               <div className="flex w-full  justify-start ">
-                w
                 <p className="text-neutral-500 text-sm font-light  dark:text-white">
                   {jamTicket}
                 </p>

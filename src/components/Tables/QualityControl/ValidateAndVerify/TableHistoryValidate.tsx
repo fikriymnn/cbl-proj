@@ -38,15 +38,14 @@ const TableHistoryValidate = () => {
   async function getMasterMesin() {
     const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.get(url, {
         withCredentials: true,
       });
-      setIsLoading(false)
+      setIsLoading(false);
       setmasterMesin(res.data);
-
     } catch (error: any) {
-      setIsLoading(false)
+      setIsLoading(false);
       console.log(error.data.msg);
     }
   }
@@ -59,33 +58,34 @@ const TableHistoryValidate = () => {
   async function getMTC() {
     const url = `${import.meta.env.VITE_API_LINK}/ticket`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.get(url, {
         params: {
           page: page,
           limit: 10,
           historiQc: true,
-          no_jo: noJo,
+          search: noJo,
           start_date: startDate,
           end_date: endDate,
           mesin: mesinNama,
-          status_qc: statusTiket
+          status_qc: statusTiket,
         },
         withCredentials: true,
       });
-      setIsLoading(false)
+      setIsLoading(false);
       setTicket(res.data);
 
       console.log(res.data);
     } catch (error: any) {
-      setIsLoading(false)
+      setIsLoading(false);
       console.log(error.response);
     }
   }
   function calculateResponTime2(startDate: any, endDate: any) {
     const createdAtDate = new Date(startDate);
     const waktuResponDate = new Date(endDate);
-    const millisecondsDiff = waktuResponDate.getTime() - createdAtDate.getTime();
+    const millisecondsDiff =
+      waktuResponDate.getTime() - createdAtDate.getTime();
 
     const secondsDiff = Math.floor(millisecondsDiff / 1000); // Total seconds difference
     return secondsDiff;
@@ -95,7 +95,9 @@ const TableHistoryValidate = () => {
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
 
-    return `${hours ? hours + ' hours ' : ''}${minutes ? minutes + ' minutes ' : ''}${seconds ? seconds + ' seconds' : ''}`.trim();
+    return `${hours ? hours + ' hours ' : ''}${
+      minutes ? minutes + ' minutes ' : ''
+    }${seconds ? seconds + ' seconds' : ''}`.trim();
   }
   return (
     <div className="flex flex-col gap-2">
@@ -103,17 +105,13 @@ const TableHistoryValidate = () => {
         {isLoading && <Loading />}
 
         <div className="grid md:grid-cols-12 grid-cols-6 px-4 py-1 gap-3">
-
           <div className="flex flex-col gap-2 col-span-2">
-            <p className="text-sm text-primary font-semibold">
-              Dari:
-            </p>
+            <p className="text-sm text-primary font-semibold">Dari:</p>
             <input
-              className='rounded-full bg-[#D8EAFF] px-2 h-8'
+              className="rounded-full bg-[#D8EAFF] px-2 h-8"
               type="date"
               onChange={(e) => setStartDate(e.target.value)}
             ></input>
-
           </div>
           <div className="flex flex-col gap-2 col-span-2">
             <p className=" my-auto text-sm text-primary font-semibold ">
@@ -121,11 +119,10 @@ const TableHistoryValidate = () => {
             </p>
 
             <input
-              className='rounded-full bg-[#D8EAFF] px-2 h-8'
+              className="rounded-full bg-[#D8EAFF] px-2 h-8"
               type="date"
               onChange={(e) => setEndDate(e.target.value)}
             ></input>
-
           </div>
           <div className="flex flex-col  gap-2 col-span-2">
             <p className=" my-auto text-sm text-primary font-semibold ">
@@ -134,30 +131,23 @@ const TableHistoryValidate = () => {
 
             <select
               onChange={(e) => {
-                setMesinNama(
-                  e.target.value,
-                );
-
+                setMesinNama(e.target.value);
               }}
               className={` z-20 w-full rounded-md bg-blue-200 items-center h-8`}
             >
-              <option
-                selected
-                disabled>
+              <option selected disabled>
                 Pilih Mesin
               </option>
-              {masterMesin?.map(
-                (data: any, i: number) => {
-                  return (
-                    <option
-                      value={data.nama_mesin}
-                      className="text-gray-800 text-sm font-light dark:text-bodydark"
-                    >
-                      {data.nama_mesin}
-                    </option>
-                  );
-                },
-              )}
+              {masterMesin?.map((data: any, i: number) => {
+                return (
+                  <option
+                    value={data.nama_mesin}
+                    className="text-gray-800 text-sm font-light dark:text-bodydark"
+                  >
+                    {data.nama_mesin}
+                  </option>
+                );
+              })}
             </select>
           </div>
           <div className="flex flex-col  gap-2 col-span-2">
@@ -166,16 +156,11 @@ const TableHistoryValidate = () => {
             </p>
             <select
               onChange={(e) => {
-                setStatusTiket(
-                  e.target.value,
-                );
-
+                setStatusTiket(e.target.value);
               }}
               className={` z-20 w-full rounded-md bg-blue-200 items-center h-8`}
             >
-              <option
-                selected
-                disabled>
+              <option selected disabled>
                 Pilih Status Tiket
               </option>
 
@@ -191,7 +176,6 @@ const TableHistoryValidate = () => {
               >
                 di tolak
               </option>
-
             </select>
           </div>
           <div className=" gap-2 flex flex-col col-span-2">
@@ -199,25 +183,22 @@ const TableHistoryValidate = () => {
               No.Jo
             </p>
             <input
-              className='rounded-md h-8 bg-[#D8EAFF] px-2 w-full'
-              placeholder='Nomor JO'
+              className="rounded-md h-8 bg-[#D8EAFF] px-2 w-full"
+              placeholder="Nomor JO"
               type="text"
               onChange={(e) => setNoJo(e.target.value)}
             ></input>
-
           </div>
           <div className="flex ">
             <button
               onClick={() => {
-                getMTC()
+                getMTC();
               }}
               className="bg-primary text-white px-5 py-2 rounded-md my-auto "
             >
               Tampilkan
             </button>
-
           </div>
-
         </div>
 
         {/* <input
@@ -280,8 +261,12 @@ const TableHistoryValidate = () => {
       </div>
       {ticket?.data.map((data: any, index: number) => {
         const tglTicket = convertTimeStampToDate(data.createdAt);
-        const waktuRespon = calculateResponTime2(data.createdAt, data.waktu_respon_qc);
-        const waktuResponSecond = formatMinutesToHoursMinutesSeconds(waktuRespon);
+        const waktuRespon = calculateResponTime2(
+          data.createdAt,
+          data.waktu_respon_qc,
+        );
+        const waktuResponSecond =
+          formatMinutesToHoursMinutesSeconds(waktuRespon);
         const waktuBreakdownMinutes = calculateResponTime2(
           data.createdAt,
           data.waktu_selesai,
@@ -294,10 +279,17 @@ const TableHistoryValidate = () => {
         //   data.createdAt,
         //   data.waktu_respon_qc,
         // );
-        const tglSelesaiTicket = (data.waktu_selesai_mtc == null ? '-' : convertTimeStampToDate(data.waktu_selesai_mtc));
+        const tglSelesaiTicket =
+          data.waktu_selesai_mtc == null
+            ? '-'
+            : convertTimeStampToDate(data.waktu_selesai_mtc);
         // const waktuValidasiQC = formatMinutesToHoursMinutes(waktuValidasiQCMinutes);
-        const waktuBreakdown = formatMinutesToHoursMinutesSeconds(waktuBreakdownMinutes);
-        const waktuBreakdownMTC = formatMinutesToHoursMinutesSeconds(waktuBreakdownMTCMinutes);
+        const waktuBreakdown = formatMinutesToHoursMinutesSeconds(
+          waktuBreakdownMinutes,
+        );
+        const waktuBreakdownMTC = formatMinutesToHoursMinutesSeconds(
+          waktuBreakdownMTCMinutes,
+        );
 
         const qcRespon = calculateResponTime2(
           data.createdAt,
@@ -311,7 +303,9 @@ const TableHistoryValidate = () => {
           data.waktu_selesai_mtc,
           data.waktu_selesai,
         );
-        const waktuVerifikasiQC = formatMinutesToHoursMinutesSeconds(waktuVerifikasiQCMinutes);
+        const waktuVerifikasiQC = formatMinutesToHoursMinutesSeconds(
+          waktuVerifikasiQCMinutes,
+        );
         return (
           <div
             key={index}
@@ -382,7 +376,10 @@ const TableHistoryValidate = () => {
                 </p>
               </div> */}
               <div className="flex w-full justify-end">
-                <button onClick={() => handleClickDetail(index)} className="text-xs font-bold bg-blue-700 py-2 px-3 text-white rounded-sm">
+                <button
+                  onClick={() => handleClickDetail(index)}
+                  className="text-xs font-bold bg-blue-700 py-2 px-3 text-white rounded-sm"
+                >
                   Detail
                 </button>
               </div>
@@ -408,13 +405,14 @@ const TableHistoryValidate = () => {
                   waktuSelesai={tglSelesaiTicket}
                   WaktuBreakdown={waktuBreakdown}
                   waktuBreakdownMTC={waktuBreakdownMTC}
-                  waktuVerifikasiQC={waktuVerifikasiQC} data={data}                >
+                  waktuVerifikasiQC={waktuVerifikasiQC}
+                  data={data}
+                >
                   <></>
                 </ModalDetailValidasi>
               </>
             )}
           </div>
-
         );
       })}
       <div className="w-full flex  mt-5 ">
