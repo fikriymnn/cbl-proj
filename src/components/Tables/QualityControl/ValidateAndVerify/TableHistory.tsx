@@ -74,7 +74,7 @@ const TableHistory = () => {
           end_date: endDate,
           mesin: mesinNama,
           status_qc: statusTiket,
-          no_jo: noJo,
+          search: noJo,
         },
         withCredentials: true,
       });
@@ -145,7 +145,7 @@ const TableHistory = () => {
           end_date: endDate,
           mesin: mesinNama,
           status_qc: statusTiket,
-          no_jo: noJo,
+          search: noJo,
         },
         withCredentials: true,
       });
@@ -435,10 +435,10 @@ const TableHistory = () => {
             </select>
           </div>
           <div className="gap-2 flex flex-col col-span-2">
-            <p className="my-auto text-sm text-primary font-semibold">No.Jo</p>
+            <p className="my-auto text-sm text-primary font-semibold">Cari</p>
             <input
               className="rounded-md h-8 bg-[#D8EAFF] px-2 w-full"
-              placeholder="Nomor JO"
+              placeholder="Jo, Io, Item, Customer, Kendala"
               type="text"
               onChange={(e) => setNoJo(e.target.value)}
             ></input>

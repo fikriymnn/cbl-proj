@@ -120,7 +120,7 @@ function ListHistory() {
                   <p className="">Nama Barang</p>
                 </div>
                 <div className="flex flex-col   text-stone-500 text-[16px] font-bold md:ps-0 bg-white">
-                  <p className="">Gramatur</p>
+                  <p className="">Status </p>
                 </div>
                 <div className="flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold md:ps-0 bg-white">
                   <p className="">No. JO</p>
@@ -155,7 +155,7 @@ function ListHistory() {
                       </div>
                       <div className="flex flex-col     bg-white">
                         <p className="text-stone-500 text-sm font-medium ">
-                          {data.gramatur}
+                          {data.verifikasi}
                         </p>
                       </div>
                       <div className="flex flex-col  col-span-2  bg-white">

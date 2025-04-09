@@ -500,12 +500,10 @@ const TableHistoryValidate = () => {
             </select>
           </div>
           <div className=" gap-2 flex flex-col col-span-2">
-            <p className=" my-auto text-sm text-primary font-semibold ">
-              No.Jo
-            </p>
+            <p className=" my-auto text-sm text-primary font-semibold ">Cari</p>
             <input
               className="rounded-md h-8 bg-[#D8EAFF] px-2 w-full"
-              placeholder="Nomor JO"
+              placeholder="Jo, Io, Item, Customer, Kendala"
               type="text"
               onChange={(e) => setNoJo(e.target.value)}
             ></input>
@@ -819,7 +817,7 @@ const TableHistoryValidate = () => {
                   key={index}
                   unit={data.unit}
                   bagian={data.bagian}
-                  validator={data.user_respon_qc.nama}
+                  validator={data.user_respon_qc?.nama}
                   nojo={data.no_jo}
                   customer={data.nama_customer}
                   masalah={data.nama_analisis_mtc}

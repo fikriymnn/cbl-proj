@@ -112,6 +112,9 @@ function ProsesFinalInspectionhistory() {
                 Inspector
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-1">
+                Status
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold col-span-1">
                 Tanggal
               </label>
               <div className="justify-end flex pr-2 col-span-2">
@@ -147,9 +150,12 @@ function ProsesFinalInspectionhistory() {
                       {data.data_inspector?.nama}
                     </label>
                     <label className="text-neutral-500 text-sm font-semibold col-span-1">
+                      {data.status}
+                    </label>
+                    <label className="text-neutral-500 text-sm font-semibold col-span-1">
                       {tglTicket}
                     </label>
-                    <div className="justify-end flex pr-2 col-span-2">
+                    <div className="justify-end flex pr-2 col-span-1">
                       <>
                         <Link
                           to={`/qc/qualityinspection/final_inspection/checkAwal/${data.id}`}
