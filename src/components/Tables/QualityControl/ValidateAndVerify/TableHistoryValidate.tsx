@@ -17,6 +17,9 @@ import calculateTime from '../../../../utils/calculateTime';
 import ModalDetailValidasi from '../../../Modals/ModalDetailValidasi';
 import Loading from '../../../Loading';
 import convertDateToTime from '../../../../utils/converDateToTime';
+import * as XLSX from 'xlsx'; // Add this import at the top
+import ModalXL from '../../PPIC/JadwalProduksi/ModalXL';
+import ModalFull from '../../PPIC/JadwalProduksi/ModalFull';
 
 const TableHistoryValidate = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -99,13 +102,331 @@ const TableHistoryValidate = () => {
       minutes ? minutes + ' minutes ' : ''
     }${seconds ? seconds + ' seconds' : ''}`.trim();
   }
+  const [showExportPreview, setShowExportPreview] = useState(false);
+  const [previewData, setPreviewData] = useState([]);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [visibleRows, setVisibleRows] = useState(20);
+  // Function to open and close the export preview modal
+  const openModalExport = () => {
+    setVisibleRows(20); // Reset to 20 visible rows when opening the modal
+    setShowExportPreview(true);
+  };
+  const closeModalExport = () => setShowExportPreview(false);
+
+  const prepareExportData = async () => {
+    try {
+      // Show loading indicator
+      setIsLoadingPreview(true);
+      setVisibleRows(20); // Reset visible rows when loading new data
+
+      // Fetch all data without pagination, but keeping other filters
+      const url = `${import.meta.env.VITE_API_LINK}/ticket`;
+      const response = await axios.get(url, {
+        params: {
+          historiQc: true,
+          search: noJo,
+          start_date: startDate,
+          end_date: endDate,
+          mesin: mesinNama,
+          status_qc: statusTiket,
+        },
+        withCredentials: true,
+      });
+
+      const allData = response.data.data;
+
+      if (!allData || allData.length === 0) {
+        alert('No data to export');
+        setIsLoadingPreview(false);
+        return;
+      }
+
+      // Extract all ticket data with their processes flattened
+      let excelData: any = [];
+
+      // Go through each ticket and its associated processes
+      allData.forEach((ticket: any, ticketIndex: any) => {
+        // If there are MTC processes, create a row for each process
+        if (ticket.proses_mtcs && ticket.proses_mtcs.length > 0) {
+          ticket.proses_mtcs.forEach((process: any, processIndex: any) => {
+            // Format dates
+            const tglTicket = ticket.createdAt
+              ? convertTimeStampToDateOnly(ticket.createdAt)
+              : '-';
+            const jamTicket = ticket.createdAt
+              ? convertDateToTime(ticket.createdAt)
+              : '-';
+
+            // Calculate times
+            const waktuRespon = calculateResponTime2(
+              process.waktu_selesai_mtc,
+              process.waktu_selesai,
+            );
+
+            const waktuBreakdownMinutes = calculateResponTime2(
+              ticket.createdAt,
+              process.waktu_selesai,
+            );
+
+            const waktuBreakdownMTCMinutes = calculateResponTime2(
+              ticket.waktu_respon_qc,
+              process.waktu_selesai_mtc,
+            );
+
+            const waktuRespon2 =
+              formatMinutesToHoursMinutesSeconds(waktuRespon);
+            const waktuBreakdown = formatMinutesToHoursMinutesSeconds(
+              waktuBreakdownMinutes,
+            );
+            const waktuBreakdownMTC = formatMinutesToHoursMinutesSeconds(
+              waktuBreakdownMTCMinutes,
+            );
+
+            excelData.push({
+              No: excelData.length + 1,
+              // Ticket information
+              'Ticket ID': ticket.id || '-',
+              'Kode Tiket': ticket.kode_ticket || '-',
+              'Tanggal Tiket': tglTicket,
+              'Jam Tiket': jamTicket,
+              'No Jo': ticket.no_jo || '-',
+              'No SO': ticket.no_so || '-',
+              'No IO': ticket.no_io || '-',
+              Item: ticket.nama_produk || '-',
+              Mesin: ticket.mesin || '-',
+              Proses: ticket.proses || '-',
+              Kendala: `${ticket.kode_lkh || '-'} - ${
+                ticket.nama_kendala || '-'
+              }`,
+              'Jenis Kendala': ticket.jenis_kendala || '-',
+              'Bagian Tiket': ticket.bagian_tiket || '-',
+              Bagian: ticket.bagian || '-',
+              Spek: ticket.spek || '-',
+              Customer: ticket.nama_customer || '-',
+              Operator: ticket.operator || '-',
+              QTY: ticket.qty || '-',
+              'QTY Druk': ticket.qty_druk || '-',
+              'Status Tiket': ticket.status_tiket || '-',
+              'Kode Analisis (Tiket)': ticket.kode_analisis_mtc || '-',
+              'Nama Analisis (Tiket)': ticket.nama_analisis_mtc || '-',
+              'Jenis Analisis MTC': ticket.jenis_analisis_mtc || '-',
+
+              // Process MTC information
+              'Process ID': process.id || '-',
+              'Bagian Mesin': process.bagian_mesin || '-',
+              Unit: process.unit || '-',
+              'Cara Perbaikan': process.cara_perbaikan || '-',
+              'Kode Analisis MTC': process.kode_analisis_mtc || '-',
+              'Nama Analisis MTC': process.nama_analisis_mtc || '-',
+              'Note MTC': process.note_mtc || '-',
+              'Note QC': process.note_qc || '-',
+              'Note Analisis': process.note_analisis || '-',
+              'Skor MTC': process.skor_mtc || '-',
+              'Status Proses': process.status_proses || '-',
+              'Status QC': process.status_qc || '-',
+              'Is Rework': process.is_rework ? 'Yes' : 'No',
+
+              // User information
+              'Eksekutor Nama': process.user_eksekutor?.nama || '-',
+              'Eksekutor Role': process.user_eksekutor?.role || '-',
+              'QC Nama': process.user_qc?.nama || '-',
+              'QC Role': process.user_qc?.role || '-',
+
+              // Timing information
+              'Waktu Respon QC': ticket.waktu_respon_qc
+                ? convertTimeStampToDate(ticket.waktu_respon_qc)
+                : '-',
+              'Waktu Mulai MTC': process.waktu_mulai_mtc
+                ? convertTimeStampToDate(process.waktu_mulai_mtc)
+                : '-',
+              'Waktu Selesai MTC': process.waktu_selesai_mtc
+                ? convertTimeStampToDate(process.waktu_selesai_mtc)
+                : '-',
+              'Waktu Selesai Total': process.waktu_selesai
+                ? convertTimeStampToDate(process.waktu_selesai)
+                : '-',
+              'Waktu Breakdown MTC': waktuBreakdownMTC,
+              'Waktu Respon Total': waktuRespon2,
+              'Waktu Breakdown Total': waktuBreakdown,
+
+              // Add a sortable date field (for internal use)
+              _createdAtTimestamp: ticket.createdAt
+                ? new Date(ticket.createdAt).getTime()
+                : 0,
+            });
+          });
+        } else {
+          // If there are no processes, still create a row for the ticket
+          const tglTicket = ticket.createdAt
+            ? convertTimeStampToDateOnly(ticket.createdAt)
+            : '-';
+          const jamTicket = ticket.createdAt
+            ? convertDateToTime(ticket.createdAt)
+            : '-';
+
+          excelData.push({
+            No: excelData.length + 1,
+            // Ticket information
+            'Ticket ID': ticket.id || '-',
+            'Kode Tiket': ticket.kode_ticket || '-',
+            'Tanggal Tiket': tglTicket,
+            'Jam Tiket': jamTicket,
+            'No Jo': ticket.no_jo || '-',
+            'No SO': ticket.no_so || '-',
+            'No IO': ticket.no_io || '-',
+            Item: ticket.nama_produk || '-',
+            Mesin: ticket.mesin || '-',
+            Proses: ticket.proses || '-',
+            Kendala: `${ticket.kode_lkh || '-'} - ${
+              ticket.nama_kendala || '-'
+            }`,
+            'Jenis Kendala': ticket.jenis_kendala || '-',
+            'Bagian Tiket': ticket.bagian_tiket || '-',
+            Bagian: ticket.bagian || '-',
+            Spek: ticket.spek || '-',
+            Customer: ticket.nama_customer || '-',
+            Operator: ticket.operator || '-',
+            QTY: ticket.qty || '-',
+            'QTY Druk': ticket.qty_druk || '-',
+            'Status Tiket': ticket.status_tiket || '-',
+            'Kode Analisis (Tiket)': ticket.kode_analisis_mtc || '-',
+            'Nama Analisis (Tiket)': ticket.nama_analisis_mtc || '-',
+            'Jenis Analisis MTC': ticket.jenis_analisis_mtc || '-',
+
+            // Process MTC information (empty for tickets without processes)
+            'Process ID': '-',
+            'Bagian Mesin': '-',
+            Unit: '-',
+            'Cara Perbaikan': '-',
+            'Kode Analisis MTC': '-',
+            'Nama Analisis MTC': '-',
+            'Note MTC': '-',
+            'Note QC': '-',
+            'Note Analisis': '-',
+            'Skor MTC': '-',
+            'Status Proses': '-',
+            'Status QC': '-',
+            'Is Rework': '-',
+
+            // User information
+            'Eksekutor Nama': '-',
+            'Eksekutor Role': '-',
+            'QC Nama': ticket.user_respon_qc?.nama || '-',
+            'QC Role': ticket.user_respon_qc?.role || '-',
+
+            // Timing information
+            'Waktu Respon QC': ticket.waktu_respon_qc
+              ? convertTimeStampToDate(ticket.waktu_respon_qc)
+              : '-',
+            'Waktu Mulai MTC': '-',
+            'Waktu Selesai MTC': '-',
+            'Waktu Selesai Total': '-',
+            'Waktu Breakdown MTC': '-',
+            'Waktu Respon Total': '-',
+            'Waktu Breakdown Total': '-',
+
+            // Add a sortable date field (for internal use)
+            _createdAtTimestamp: ticket.createdAt
+              ? new Date(ticket.createdAt).getTime()
+              : 0,
+          });
+        }
+      });
+
+      // Sort the data so newest is at the top
+      excelData = excelData.sort(
+        (a: any, b: any) => b._createdAtTimestamp - a._createdAtTimestamp,
+      );
+
+      // Remove the temporary sort field before displaying/exporting
+      excelData = excelData.map((item: any, index: any) => {
+        const { _createdAtTimestamp, ...rest } = item;
+        return { No: index + 1, ...rest };
+      });
+
+      // Store formatted data for preview and show the modal
+      setPreviewData(excelData);
+      openModalExport();
+    } catch (error) {
+      console.error('Preview failed:', error);
+      alert('Preview failed. Please try again.');
+    } finally {
+      // Hide loading indicator
+      setIsLoadingPreview(false);
+    }
+  };
+  // Actual export function that uses the preview data
+  const exportToExcel = () => {
+    try {
+      // Show loading indicator
+      setIsLoadingPreview(true);
+
+      if (!previewData || previewData.length === 0) {
+        alert('No data to export');
+        setIsLoadingPreview(false);
+        return;
+      }
+
+      // Create a new workbook
+      const workbook = XLSX.utils.book_new();
+
+      // Create worksheet and add data
+      const worksheet = XLSX.utils.json_to_sheet(previewData);
+
+      // Set column widths for better readability
+      const wscols =
+        previewData.length > 0
+          ? Object.keys(previewData[0]).map(() => ({ wch: 20 })) // Default width for all columns
+          : [];
+      worksheet['!cols'] = wscols;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Process MTC Details');
+
+      // Generate Excel file
+      const today = new Date();
+      const date = `${today.getFullYear()}-${(today.getMonth() + 1)
+        .toString()
+        .padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+
+      let filename = `History_Validasi_${date}`;
+
+      // Add filter info to filename if any filter is applied
+      if (startDate && endDate) {
+        filename += `_${startDate.split('T')[0]}_to_${endDate.split('T')[0]}`;
+      }
+      if (mesinNama) {
+        filename += `_${mesinNama}`;
+      }
+      if (statusTiket) {
+        filename += `_${statusTiket}`;
+      }
+      if (noJo) {
+        filename += `_JO-${noJo}`;
+      }
+
+      filename += `.xlsx`;
+
+      // Write and download the file
+      XLSX.writeFile(workbook, filename);
+
+      // Close the modal after export
+      closeModalExport();
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Export failed. Please try again.');
+    } finally {
+      // Hide loading indicator
+      setIsLoadingPreview(false);
+    }
+  };
   return (
     <div className="flex flex-col gap-2">
       <div className="flex  gap-1 items-center bg-white ">
         {isLoading && <Loading />}
 
-        <div className="grid md:grid-cols-12 grid-cols-6 px-4 py-1 gap-3">
-          <div className="flex flex-col gap-2 col-span-2">
+        <div className="grid md:grid-cols-12 grid-cols-6 px-4 py-1 gap-3 items-center">
+          <div className="flex flex-col  gap-2 col-span-2">
             <p className="text-sm text-primary font-semibold">Dari:</p>
             <input
               className="rounded-full bg-[#D8EAFF] px-2 h-8"
@@ -189,7 +510,7 @@ const TableHistoryValidate = () => {
               onChange={(e) => setNoJo(e.target.value)}
             ></input>
           </div>
-          <div className="flex ">
+          <div className="flex flex-col gap-2 col-span-2">
             <button
               onClick={() => {
                 getMTC();
@@ -198,6 +519,107 @@ const TableHistoryValidate = () => {
             >
               Tampilkan
             </button>
+            <button
+              onClick={() => prepareExportData()}
+              className="px-5 py-2 rounded-md my-auto text-white bg-green-500 justify-center items-center hover:cursor-pointer"
+              disabled={isLoadingPreview}
+            >
+              {isLoadingPreview ? 'Loading...' : 'EXPORT PREVIEW'}
+            </button>
+            {showExportPreview && (
+              <ModalFull
+                isOpen={showExportPreview}
+                onClose={() => closeModalExport()}
+                judul={'Export Preview'}
+              >
+                <>
+                  <div className="flex flex-col h-[85vh]">
+                    {' '}
+                    {/* Full height container */}
+                    <div className="flex justify-between mb-4 px-2 pt-5">
+                      <div className="text-sm text-gray-500">
+                        Total Data: {previewData.length}
+                      </div>
+                      <button
+                        onClick={exportToExcel}
+                        className="bg-blue-500 text-white py-1 px-4 rounded hover:bg-blue-600"
+                        disabled={isLoadingPreview}
+                      >
+                        {isLoadingPreview ? 'Exporting...' : 'Export to Excel'}
+                      </button>
+                    </div>
+                    <div className="overflow-auto flex-1 relative">
+                      {' '}
+                      {/* Flex grow to take available space */}
+                      <table className="min-w-full bg-white border">
+                        <thead className="bg-blue-50 sticky top-0 z-10 shadow-sm">
+                          <tr>
+                            {previewData.length > 0 &&
+                              Object.keys(previewData[0]).map((key, index) => (
+                                <th
+                                  key={index}
+                                  className="py-3 px-4 border-b text-left text-xs font-semibold text-blue-700 uppercase tracking-wider"
+                                >
+                                  {key}
+                                </th>
+                              ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {previewData
+                            .slice(0, visibleRows)
+                            .map((row, rowIndex) => (
+                              <tr
+                                key={rowIndex}
+                                className={
+                                  rowIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                                }
+                              >
+                                {Object.values(row).map((value, colIndex) => (
+                                  <td
+                                    key={colIndex}
+                                    className="py-2 px-4 border-b text-sm"
+                                  >
+                                    {value?.toString() || '-'}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {/* Fixed footer with status and buttons */}
+                    <div className="flex items-center justify-between border-t bg-gray-50 py-3 px-4 mt-auto">
+                      <div className="text-sm text-gray-600">
+                        Showing {Math.min(visibleRows, previewData.length)} of{' '}
+                        {previewData.length} rows
+                      </div>
+
+                      {visibleRows < previewData.length && (
+                        <div className="space-x-3">
+                          <button
+                            className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded font-medium text-sm"
+                            onClick={() =>
+                              setVisibleRows(
+                                Math.min(visibleRows + 20, previewData.length),
+                              )
+                            }
+                          >
+                            Show 20 More
+                          </button>
+                          <button
+                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-medium text-sm"
+                            onClick={() => setVisibleRows(previewData.length)}
+                          >
+                            Show All ({previewData.length} rows)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              </ModalFull>
+            )}
           </div>
         </div>
 

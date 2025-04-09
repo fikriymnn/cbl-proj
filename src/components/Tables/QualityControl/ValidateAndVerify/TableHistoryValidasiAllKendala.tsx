@@ -17,7 +17,11 @@ import ModalDetailValidasi from '../../../Modals/ModalDetailValidasi';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import convertTimeStampToDateTime from '../../../../utils/converDateTime';
 import Loading from '../../../Loading';
-
+import * as XLSX from 'xlsx'; // Add this import at the top
+import ModalXL from '../../PPIC/JadwalProduksi/ModalXL';
+import ModalFull from '../../PPIC/JadwalProduksi/ModalFull';
+import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
+import convertDateToTime from '../../../../utils/converDateToTime';
 const TableHistoryValidateAllKendala = () => {
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -90,13 +94,217 @@ const TableHistoryValidateAllKendala = () => {
 
     setShowEdit(onchangeVal);
   };
+  function calculateResponTime2(startDate: any, endDate: any) {
+    const createdAtDate = new Date(startDate);
+    const waktuResponDate = new Date(endDate);
+    const millisecondsDiff =
+      waktuResponDate.getTime() - createdAtDate.getTime();
+
+    const secondsDiff = Math.floor(millisecondsDiff / 1000); // Total seconds difference
+    return secondsDiff;
+  }
+  function formatMinutesToHoursMinutesSeconds(totalSeconds: number) {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    return `${hours ? hours + ' hours ' : ''}${
+      minutes ? minutes + ' minutes ' : ''
+    }${seconds ? seconds + ' seconds' : ''}`.trim();
+  }
+  const [showExportPreview, setShowExportPreview] = useState(false);
+  const [previewData, setPreviewData] = useState([]);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [visibleRows, setVisibleRows] = useState(20);
+
+  // Function to open and close the export preview modal
+  const openModalExport = () => {
+    setVisibleRows(20); // Reset to 20 visible rows when opening the modal
+    setShowExportPreview(true);
+  };
+  const closeModalExport = () => setShowExportPreview(false);
+
+  const prepareExportData = async () => {
+    try {
+      // Show loading indicator
+      setIsLoadingPreview(true);
+      setVisibleRows(20); // Reset visible rows when loading new data
+
+      // Fetch all data without pagination, but keeping other filters
+      const url = `${import.meta.env.VITE_API_LINK}/kendalaLkh`;
+      const response = await axios.get(url, {
+        params: {
+          bagian_tiket: 'history',
+          no_jo: noJo,
+          start_date: startDate,
+          end_date: endDate,
+          mesin: mesinNama,
+        },
+        withCredentials: true,
+      });
+
+      const allData = response.data.data;
+
+      if (!allData || allData.length === 0) {
+        alert('No data to export');
+        setIsLoadingPreview(false);
+        return;
+      }
+
+      // Extract all ticket data
+      let excelData: any = [];
+
+      // Go through each ticket
+      allData.forEach((ticket: any, ticketIndex: any) => {
+        // Format dates
+        const tglTicket = ticket.createdAt
+          ? convertTimeStampToDateOnly(ticket.createdAt)
+          : '-';
+        const jamTicket = ticket.createdAt
+          ? convertDateToTime(ticket.createdAt)
+          : '-';
+
+        // Calculate response time if available
+        const waktuBreakdown =
+          ticket.waktu_selesai && ticket.createdAt
+            ? formatMinutesToHoursMinutesSeconds(
+                calculateResponTime2(ticket.createdAt, ticket.waktu_selesai),
+              )
+            : '-';
+
+        // Format departments
+        const departments = ticket.data_department
+          ? ticket.data_department
+              .map((dept: any) => dept.department)
+              .join(', ')
+          : '-';
+
+        excelData.push({
+          No: excelData.length + 1,
+          // Ticket information
+          'Ticket ID': ticket.id || '-',
+          'Kode Tiket': ticket.kode_ticket || '-',
+          'Tanggal Tiket': tglTicket,
+          'Jam Tiket': jamTicket,
+          'No Jo': ticket.no_jo || '-',
+          'No SO': ticket.no_so || '-',
+          'No IO': ticket.no_io || '-',
+          Item: ticket.nama_produk || '-',
+          Mesin: ticket.mesin || '-',
+          Kendala: `${ticket.kode_lkh || '-'} - ${ticket.nama_kendala || '-'}`,
+          'Jenis Kendala': ticket.jenis_kendala || '-',
+          'Bagian Tiket': ticket.bagian_tiket || '-',
+          Departments: departments,
+          Customer: ticket.nama_customer || '-',
+          Operator: ticket.operator || '-',
+          'Status Tiket': ticket.status_tiket || '-',
+          'Note QC': ticket.note_qc || '-',
+
+          // QC User information
+          'QC Nama': ticket.user_qc?.nama || '-',
+          'QC Role': ticket.user_qc?.role || '-',
+          'QC Bagian': ticket.user_qc?.bagian || '-',
+
+          // Add a sortable date field (for internal use)
+          _createdAtTimestamp: ticket.createdAt
+            ? new Date(ticket.createdAt).getTime()
+            : 0,
+        });
+      });
+
+      // Sort the data so newest is at the top
+      excelData = excelData.sort(
+        (a: any, b: any) => b._createdAtTimestamp - a._createdAtTimestamp,
+      );
+
+      // Remove the temporary sort field before displaying/exporting
+      excelData = excelData.map((item: any, index: any) => {
+        const { _createdAtTimestamp, ...rest } = item;
+        return { No: index + 1, ...rest };
+      });
+
+      // Store formatted data for preview and show the modal
+      setPreviewData(excelData);
+      openModalExport();
+    } catch (error) {
+      console.error('Preview failed:', error);
+      alert('Preview failed. Please try again.');
+    } finally {
+      // Hide loading indicator
+      setIsLoadingPreview(false);
+    }
+  };
+
+  // Actual export function that uses the preview data
+  const exportToExcel = () => {
+    try {
+      // Show loading indicator
+      setIsLoadingPreview(true);
+
+      if (!previewData || previewData.length === 0) {
+        alert('No data to export');
+        setIsLoadingPreview(false);
+        return;
+      }
+
+      // Create a new workbook
+      const workbook = XLSX.utils.book_new();
+
+      // Create worksheet and add data
+      const worksheet = XLSX.utils.json_to_sheet(previewData);
+
+      // Set column widths for better readability
+      const wscols =
+        previewData.length > 0
+          ? Object.keys(previewData[0]).map(() => ({ wch: 20 })) // Default width for all columns
+          : [];
+      worksheet['!cols'] = wscols;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Ticket Details');
+
+      // Generate Excel file
+      const today = new Date();
+      const date = `${today.getFullYear()}-${(today.getMonth() + 1)
+        .toString()
+        .padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+
+      let filename = `History_All_Kendala_${date}`;
+
+      // Add filter info to filename if any filter is applied
+      if (startDate && endDate) {
+        filename += `_${startDate.split('T')[0]}_to_${endDate.split('T')[0]}`;
+      }
+      if (mesinNama) {
+        filename += `_${mesinNama}`;
+      }
+
+      if (noJo) {
+        filename += `_JO-${noJo}`;
+      }
+
+      filename += `.xlsx`;
+
+      // Write and download the file
+      XLSX.writeFile(workbook, filename);
+
+      // Close the modal after export
+      closeModalExport();
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Export failed. Please try again.');
+    } finally {
+      // Hide loading indicator
+      setIsLoadingPreview(false);
+    }
+  };
   return (
     <div className="flex flex-col gap-2">
       <div className="flex  gap-1 items-center bg-white ">
         {isLoading && <Loading />}
 
-        <div className="grid md:grid-cols-12 grid-cols-6 px-4 py-1 gap-3">
-          <div className="flex flex-col gap-2 col-span-2">
+        <div className="grid md:grid-cols-12 grid-cols-6 px-4 py-1 gap-3 items-center">
+          <div className="flex flex-col  gap-2 col-span-2">
             <p className="text-sm text-primary font-semibold">Dari:</p>
             <input
               className="rounded-full bg-[#D8EAFF] px-2 h-8"
@@ -153,7 +361,8 @@ const TableHistoryValidateAllKendala = () => {
               onChange={(e) => setNoJo(e.target.value)}
             ></input>
           </div>
-          <div className="flex ">
+          <div className=" gap-2 flex flex-col col-span-2"></div>
+          <div className="flex flex-col gap-2 col-span-2">
             <button
               onClick={() => {
                 getMTC();
@@ -162,6 +371,107 @@ const TableHistoryValidateAllKendala = () => {
             >
               Tampilkan
             </button>
+            <button
+              onClick={() => prepareExportData()}
+              className="px-5 py-2 rounded-md my-auto text-white bg-green-500 justify-center items-center hover:cursor-pointer"
+              disabled={isLoadingPreview}
+            >
+              {isLoadingPreview ? 'Loading...' : 'EXPORT PREVIEW'}
+            </button>
+            {showExportPreview && (
+              <ModalFull
+                isOpen={showExportPreview}
+                onClose={() => closeModalExport()}
+                judul={'Export Preview'}
+              >
+                <>
+                  <div className="flex flex-col h-[85vh]">
+                    {' '}
+                    {/* Full height container */}
+                    <div className="flex justify-between mb-4 px-2 pt-5">
+                      <div className="text-sm text-gray-500">
+                        Total Data: {previewData.length}
+                      </div>
+                      <button
+                        onClick={exportToExcel}
+                        className="bg-blue-500 text-white py-1 px-4 rounded hover:bg-blue-600"
+                        disabled={isLoadingPreview}
+                      >
+                        {isLoadingPreview ? 'Exporting...' : 'Export to Excel'}
+                      </button>
+                    </div>
+                    <div className="overflow-auto flex-1 relative">
+                      {' '}
+                      {/* Flex grow to take available space */}
+                      <table className="min-w-full bg-white border">
+                        <thead className="bg-blue-50 sticky top-0 z-10 shadow-sm">
+                          <tr>
+                            {previewData.length > 0 &&
+                              Object.keys(previewData[0]).map((key, index) => (
+                                <th
+                                  key={index}
+                                  className="py-3 px-4 border-b text-left text-xs font-semibold text-blue-700 uppercase tracking-wider"
+                                >
+                                  {key}
+                                </th>
+                              ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {previewData
+                            .slice(0, visibleRows)
+                            .map((row, rowIndex) => (
+                              <tr
+                                key={rowIndex}
+                                className={
+                                  rowIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                                }
+                              >
+                                {Object.values(row).map((value, colIndex) => (
+                                  <td
+                                    key={colIndex}
+                                    className="py-2 px-4 border-b text-sm"
+                                  >
+                                    {value?.toString() || '-'}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {/* Fixed footer with status and buttons */}
+                    <div className="flex items-center justify-between border-t bg-gray-50 py-3 px-4 mt-auto">
+                      <div className="text-sm text-gray-600">
+                        Showing {Math.min(visibleRows, previewData.length)} of{' '}
+                        {previewData.length} rows
+                      </div>
+
+                      {visibleRows < previewData.length && (
+                        <div className="space-x-3">
+                          <button
+                            className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded font-medium text-sm"
+                            onClick={() =>
+                              setVisibleRows(
+                                Math.min(visibleRows + 20, previewData.length),
+                              )
+                            }
+                          >
+                            Show 20 More
+                          </button>
+                          <button
+                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-medium text-sm"
+                            onClick={() => setVisibleRows(previewData.length)}
+                          >
+                            Show All ({previewData.length} rows)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              </ModalFull>
+            )}
           </div>
         </div>
       </div>

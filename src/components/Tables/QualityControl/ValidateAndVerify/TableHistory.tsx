@@ -21,6 +21,7 @@ import * as XLSX from 'xlsx'; // Add this import at the top
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import ModalXL from '../../PPIC/JadwalProduksi/ModalXL';
 import convertTimeStampToAllSecond from '../../../../utils/ConverttimestametoAllSecond';
+import ModalFull from '../../PPIC/JadwalProduksi/ModalFull';
 
 const TableHistory = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -321,7 +322,7 @@ const TableHistory = () => {
         .toString()
         .padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
 
-      let filename = `MTC_Process_Details_${date}`;
+      let filename = `History_Verifikasi_${date}`;
 
       // Add filter info to filename if any filter is applied
       if (startDate && endDate) {
@@ -457,11 +458,11 @@ const TableHistory = () => {
               className="px-5 py-2 rounded-md my-auto text-white bg-green-500 justify-center items-center hover:cursor-pointer"
               disabled={isLoadingPreview}
             >
-              {isLoadingPreview ? 'Loading...' : 'EXPORT DATA'}
+              {isLoadingPreview ? 'Loading...' : 'EXPORT PREVIEW'}
             </button>
             {/* Export preview modal */}
             {showExportPreview && (
-              <ModalXL
+              <ModalFull
                 isOpen={showExportPreview}
                 onClose={() => closeModalExport()}
                 judul={'Export Preview'}
@@ -552,7 +553,7 @@ const TableHistory = () => {
                     </div>
                   </div>
                 </>
-              </ModalXL>
+              </ModalFull>
             )}
           </div>
         </div>
