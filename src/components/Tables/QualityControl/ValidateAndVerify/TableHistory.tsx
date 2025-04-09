@@ -18,6 +18,9 @@ import Loading from '../../../Loading';
 import convertTimeStampToDateOnly from '../../../../utils/convertDate';
 import convertDateToTime from '../../../../utils/converDateToTime';
 import * as XLSX from 'xlsx'; // Add this import at the top
+import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
+import ModalXL from '../../PPIC/JadwalProduksi/ModalXL';
+import convertTimeStampToAllSecond from '../../../../utils/ConverttimestametoAllSecond';
 
 const TableHistory = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -114,160 +117,240 @@ const TableHistory = () => {
       minutes ? minutes + ' minutes ' : ''
     }${seconds ? seconds + ' seconds' : ''}`.trim();
   }
+  // Add this state to your component
+  const [showExportPreview, setShowExportPreview] = useState(false);
+  const [previewData, setPreviewData] = useState([]);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
+  const [visibleRows, setVisibleRows] = useState(20);
+  // Function to open and close the export preview modal
+  const openModalExport = () => {
+    setVisibleRows(20); // Reset to 20 visible rows when opening the modal
+    setShowExportPreview(true);
+  };
+  const closeModalExport = () => setShowExportPreview(false);
 
-  // Revised exportToExcel function for the nested tiket structure
-  const exportToExcel = () => {
-    if (!ticketProsesHistory?.data || ticketProsesHistory.data.length === 0) {
-      alert('No data to export');
-      return;
+  // Modified function to prepare export data and show preview
+  const prepareExportData = async () => {
+    try {
+      setIsLoadingPreview(true);
+      setVisibleRows(20); //
+
+      // Fetch all data without pagination, but keeping other filters
+      const url = `${import.meta.env.VITE_API_LINK}/prosessMtcHistoryQc`;
+      const response = await axios.get(url, {
+        params: {
+          // Don't include page and limit to get all data at once
+          start_date: startDate,
+          end_date: endDate,
+          mesin: mesinNama,
+          status_qc: statusTiket,
+          no_jo: noJo,
+        },
+        withCredentials: true,
+      });
+
+      const allData = response.data;
+
+      if (!allData || allData.length === 0) {
+        alert('No data to export');
+        setIsLoadingPreview(false);
+        return;
+      }
+
+      // Format data for Excel
+      let excelData = allData.map((data: any, index: any) => {
+        // Process data formatting (same as before)
+        const processData = data;
+        const tiketData = processData.tiket || {};
+
+        // Format dates and calculate times (same as before)
+        const tglTicket = tiketData.createdAt
+          ? convertTimeStampToDateOnly(tiketData.createdAt)
+          : '-';
+        const jamTicket = tiketData.createdAt
+          ? convertDateToTime(tiketData.createdAt)
+          : '-';
+        const tglSelesaiTicket =
+          processData.waktu_selesai_mtc == null
+            ? '-'
+            : convertTimeStampToDate(processData.waktu_selesai_mtc);
+
+        const waktuBreakdownMinutes = calculateResponTime2(
+          tiketData.createdAt,
+          processData.waktu_selesai,
+        );
+
+        const waktuBreakdownMTCMinutes = calculateResponTime2(
+          tiketData.waktu_respon_qc,
+          processData.waktu_selesai_mtc,
+        );
+
+        const waktuBreakdown = formatMinutesToHoursMinutesSeconds(
+          waktuBreakdownMinutes,
+        );
+        const waktuBreakdownMTC = formatMinutesToHoursMinutesSeconds(
+          waktuBreakdownMTCMinutes,
+        );
+
+        // Return data focusing on the process + nested ticket structure
+        return {
+          No: index + 1,
+          // Process MTC information
+          'Bagian Mesin': processData.bagian_mesin || '-',
+          Unit: processData.unit || '-',
+          'Cara Perbaikan': processData.cara_perbaikan || '-',
+          'Kode Analisis MTC': processData.kode_analisis_mtc || '-',
+          'Nama Analisis MTC': processData.nama_analisis_mtc || '-',
+          'Note MTC': processData.note_mtc || '-',
+          'Note QC': processData.note_qc || '-',
+          'Note Analisis': processData.note_analisis || '-',
+          'Skor MTC': processData.skor_mtc || '-',
+          'Status Proses': processData.status_proses || '-',
+          'Status QC': processData.status_qc || '-',
+
+          // User information
+          'Eksekutor Nama': processData.user_eksekutor?.nama || '-',
+          'Eksekutor Role': processData.user_eksekutor?.role || '-',
+          'QC Nama': processData.user_qc?.nama || '-',
+          'QC Role': processData.user_qc?.role || '-',
+
+          // Ticket information (nested)
+          'Ticket ID': tiketData.id || '-',
+          'Kode Tiket': tiketData.kode_ticket || '-',
+          'Tanggal Tiket': tglTicket,
+          'Jam Tiket': jamTicket,
+          'No Jo': tiketData.no_jo || '-',
+          'No SO': tiketData.no_so || '-',
+          'No IO': tiketData.no_io || '-',
+          Item: tiketData.nama_produk || '-',
+          Mesin: tiketData.mesin || '-',
+          Proses: tiketData.proses || '-',
+          Kendala: `${tiketData.kode_lkh || '-'} - ${
+            tiketData.nama_kendala || '-'
+          }`,
+          'Jenis Kendala': tiketData.jenis_kendala || '-',
+          'Bagian Tiket': tiketData.bagian_tiket || '-',
+          Bagian: tiketData.bagian || '-',
+          Spek: tiketData.spek || '-',
+          Customer: tiketData.nama_customer || '-',
+          Operator: tiketData.operator || '-',
+          QTY: tiketData.qty || '-',
+          'QTY Druk': tiketData.qty_druk || '-',
+          'Status Tiket': tiketData.status_tiket || '-',
+          'Kode Analisis (Tiket)': tiketData.kode_analisis_mtc || '-',
+          'Nama Analisis (Tiket)': tiketData.nama_analisis_mtc || '-',
+          'Jenis Analisis MTC': tiketData.jenis_analisis_mtc || '-',
+
+          // Ticket timing
+          'Waktu Respon QC': tiketData.waktu_respon_qc
+            ? convertTimeStampToAllSecond(tiketData.waktu_respon_qc)
+            : '-',
+          'Waktu Respon MTC (Tiket)': tiketData.waktu_respon
+            ? convertTimeStampToAllSecond(tiketData.waktu_respon)
+            : '-',
+          // Timing information
+
+          'Waktu Mulai MTC (Tiket)': tiketData.waktu_mulai_mtc
+            ? convertTimeStampToAllSecond(tiketData.waktu_mulai_mtc)
+            : '-',
+          'Waktu Selesai MTC': processData.waktu_selesai_mtc
+            ? convertTimeStampToAllSecond(processData.waktu_selesai_mtc)
+            : '-',
+          'Waktu Breakdown MTC': waktuBreakdownMTC,
+
+          'Waktu Breakdown Total': waktuBreakdown,
+          _createdAtTimestamp: tiketData.createdAt
+            ? new Date(tiketData.createdAt).getTime()
+            : 0,
+        };
+      });
+      // Sort the data so newest is at the top (based on ticket creation date)
+      excelData = excelData.sort(
+        (a: any, b: any) => b._createdAtTimestamp - a._createdAtTimestamp,
+      );
+
+      // Remove the temporary sort field before displaying/exporting
+      excelData = excelData.map((item: any, index: any) => {
+        const { _createdAtTimestamp, ...rest } = item;
+        // Update the 'No' field to reflect the new order
+        return { No: index + 1, ...rest };
+      });
+      // Store formatted data for preview and show the modal
+      setPreviewData(excelData);
+      openModalExport();
+    } catch (error) {
+      console.error('Preview failed:', error);
+      alert('Preview failed. Please try again.');
+    } finally {
+      // Hide loading indicator
+      setIsLoadingPreview(false);
     }
+  };
 
-    // Create a new workbook
-    const workbook = XLSX.utils.book_new();
+  // Actual export function that uses the preview data
+  const exportToExcel = () => {
+    try {
+      // Show loading indicator
+      setIsLoadingPreview(true);
 
-    // Format data for Excel - focusing on the nested structure from the second example
-    const excelData = ticketProsesHistory.data.map((data: any, index: any) => {
-      // Main data comes from the process itself
-      const processData = data;
+      if (!previewData || previewData.length === 0) {
+        alert('No data to export');
+        setIsLoadingPreview(false);
+        return;
+      }
 
-      // Ticket data is nested inside
-      const tiketData = processData.tiket || {};
+      // Create a new workbook
+      const workbook = XLSX.utils.book_new();
 
-      // Format dates
-      const tglTicket = tiketData.createdAt
-        ? convertTimeStampToDateOnly(tiketData.createdAt)
-        : '-';
-      const jamTicket = tiketData.createdAt
-        ? convertDateToTime(tiketData.createdAt)
-        : '-';
-      const tglSelesaiTicket =
-        processData.waktu_selesai_mtc == null
-          ? '-'
-          : convertTimeStampToDate(processData.waktu_selesai_mtc);
+      // Create worksheet and add data
+      const worksheet = XLSX.utils.json_to_sheet(previewData);
 
-      // Calculate times
-      const waktuRespon = calculateResponTime2(
-        processData.waktu_selesai_mtc,
-        processData.waktu_selesai,
-      );
+      // Set column widths for better readability
+      const wscols =
+        previewData.length > 0
+          ? Object.keys(previewData[0]).map(() => ({ wch: 20 })) // Default width for all columns
+          : [];
+      worksheet['!cols'] = wscols;
 
-      const waktuBreakdownMinutes = calculateResponTime2(
-        tiketData.createdAt,
-        processData.waktu_selesai,
-      );
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Process MTC Details');
 
-      const waktuBreakdownMTCMinutes = calculateResponTime2(
-        tiketData.waktu_respon_qc,
-        processData.waktu_selesai_mtc,
-      );
+      // Generate Excel file
+      const today = new Date();
+      const date = `${today.getFullYear()}-${(today.getMonth() + 1)
+        .toString()
+        .padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
 
-      const waktuRespon2 = formatMinutesToHoursMinutesSeconds(waktuRespon);
-      const waktuBreakdown = formatMinutesToHoursMinutesSeconds(
-        waktuBreakdownMinutes,
-      );
-      const waktuBreakdownMTC = formatMinutesToHoursMinutesSeconds(
-        waktuBreakdownMTCMinutes,
-      );
+      let filename = `MTC_Process_Details_${date}`;
 
-      // Return data focusing on the process + nested ticket structure
-      return {
-        No: index + 1,
-        // Process MTC information
+      // Add filter info to filename if any filter is applied
+      if (startDate && endDate) {
+        filename += `_${startDate.split('T')[0]}_to_${endDate.split('T')[0]}`;
+      }
+      if (mesinNama) {
+        filename += `_${mesinNama}`;
+      }
+      if (statusTiket) {
+        filename += `_${statusTiket}`;
+      }
+      if (noJo) {
+        filename += `_JO-${noJo}`;
+      }
 
-        'Bagian Mesin': processData.bagian_mesin || '-',
-        Unit: processData.unit || '-',
-        'Cara Perbaikan': processData.cara_perbaikan || '-',
-        'Kode Analisis MTC': processData.kode_analisis_mtc || '-',
-        'Nama Analisis MTC': processData.nama_analisis_mtc || '-',
-        'Note MTC': processData.note_mtc || '-',
-        'Note QC': processData.note_qc || '-',
-        'Note Analisis': processData.note_analisis || '-',
-        'Skor MTC': processData.skor_mtc || '-',
-        'Status Proses': processData.status_proses || '-',
-        'Status QC': processData.status_qc || '-',
+      filename += `.xlsx`;
 
-        // User information
-        'Eksekutor Nama': processData.user_eksekutor?.nama || '-',
-        'Eksekutor Role': processData.user_eksekutor?.role || '-',
-        'QC Nama': processData.user_qc?.nama || '-',
-        'QC Role': processData.user_qc?.role || '-',
+      // Write and download the file
+      XLSX.writeFile(workbook, filename);
 
-        // Timing information
-        'Waktu Mulai MTC': processData.waktu_mulai_mtc
-          ? convertTimeStampToDate(processData.waktu_mulai_mtc)
-          : '-',
-        'Waktu Selesai MTC': processData.waktu_selesai_mtc
-          ? convertTimeStampToDate(processData.waktu_selesai_mtc)
-          : '-',
-        'Waktu Selesai Total': processData.waktu_selesai
-          ? convertTimeStampToDate(processData.waktu_selesai)
-          : '-',
-        'Waktu Breakdown MTC': waktuBreakdownMTC,
-        'Waktu Respon Total': waktuRespon2,
-
-        // Ticket information (nested)
-        'Ticket ID': tiketData.id || '-',
-        'Kode Tiket': tiketData.kode_ticket || '-',
-        'Tanggal Tiket': tglTicket,
-        'Jam Tiket': jamTicket,
-        'No Jo': tiketData.no_jo || '-',
-        'No SO': tiketData.no_so || '-',
-        'No IO': tiketData.no_io || '-',
-        Item: tiketData.nama_produk || '-',
-        Mesin: tiketData.mesin || '-',
-        Proses: tiketData.proses || '-',
-        Kendala: `${tiketData.kode_lkh || '-'} - ${
-          tiketData.nama_kendala || '-'
-        }`,
-        'Jenis Kendala': tiketData.jenis_kendala || '-',
-        'Bagian Tiket': tiketData.bagian_tiket || '-',
-        Bagian: tiketData.bagian || '-',
-        Spek: tiketData.spek || '-',
-        Customer: tiketData.nama_customer || '-',
-        Operator: tiketData.operator || '-',
-        QTY: tiketData.qty || '-',
-        'QTY Druk': tiketData.qty_druk || '-',
-        'Status Tiket': tiketData.status_tiket || '-',
-        'Kode Analisis (Tiket)': tiketData.kode_analisis_mtc || '-',
-        'Nama Analisis (Tiket)': tiketData.nama_analisis_mtc || '-',
-        'Jenis Analisis MTC': tiketData.jenis_analisis_mtc || '-',
-
-        // Ticket timing
-        'Waktu Respon QC': tiketData.waktu_respon_qc
-          ? convertTimeStampToDate(tiketData.waktu_respon_qc)
-          : '-',
-        'Waktu Mulai MTC (Tiket)': tiketData.waktu_mulai_mtc
-          ? convertTimeStampToDate(tiketData.waktu_mulai_mtc)
-          : '-',
-        'Waktu Respon (Tiket)': tiketData.waktu_respon
-          ? convertTimeStampToDate(tiketData.waktu_respon)
-          : '-',
-        'Waktu Breakdown Total': waktuBreakdown,
-      };
-    });
-
-    // Create worksheet and add data
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
-
-    // Set column widths for better readability
-    const wscols =
-      excelData.length > 0
-        ? Object.keys(excelData[0]).map(() => ({ wch: 20 })) // Default width for all columns
-        : [];
-    worksheet['!cols'] = wscols;
-
-    // Add worksheet to workbook
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Process MTC Details');
-
-    // Generate Excel file
-    const today = new Date();
-    const date = `${today.getFullYear()}-${(today.getMonth() + 1)
-      .toString()
-      .padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
-    const filename = `MTC_Process_Details_${date}.xlsx`;
-
-    // Write and download the file
-    XLSX.writeFile(workbook, filename);
+      // Close the modal after export
+      closeModalExport();
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Export failed. Please try again.');
+    } finally {
+      // Hide loading indicator
+      setIsLoadingPreview(false);
+    }
   };
 
   return (
@@ -369,16 +452,108 @@ const TableHistory = () => {
               Tampilkan
             </button>
 
-            {/* Export to Excel Button */}
-            {ticketProsesHistory?.data &&
-              ticketProsesHistory.data.length > 0 && (
-                <button
-                  onClick={exportToExcel}
-                  className="bg-green-600 text-white px-5 py-2 rounded-md"
-                >
-                  Export Excel
-                </button>
-              )}
+            <button
+              onClick={() => prepareExportData()}
+              className="px-5 py-2 rounded-md my-auto text-white bg-green-500 justify-center items-center hover:cursor-pointer"
+              disabled={isLoadingPreview}
+            >
+              {isLoadingPreview ? 'Loading...' : 'EXPORT DATA'}
+            </button>
+            {/* Export preview modal */}
+            {showExportPreview && (
+              <ModalXL
+                isOpen={showExportPreview}
+                onClose={() => closeModalExport()}
+                judul={'Export Preview'}
+              >
+                <>
+                  <div className="flex flex-col h-[85vh]">
+                    {' '}
+                    {/* Full height container */}
+                    <div className="flex justify-between mb-4 px-2 pt-5">
+                      <div className="text-sm text-gray-500">
+                        Total Data: {previewData.length}
+                      </div>
+                      <button
+                        onClick={exportToExcel}
+                        className="bg-blue-500 text-white py-1 px-4 rounded hover:bg-blue-600"
+                        disabled={isLoadingPreview}
+                      >
+                        {isLoadingPreview ? 'Exporting...' : 'Export to Excel'}
+                      </button>
+                    </div>
+                    <div className="overflow-auto flex-1 relative">
+                      {' '}
+                      {/* Flex grow to take available space */}
+                      <table className="min-w-full bg-white border">
+                        <thead className="bg-blue-50 sticky top-0 z-10 shadow-sm">
+                          <tr>
+                            {previewData.length > 0 &&
+                              Object.keys(previewData[0]).map((key, index) => (
+                                <th
+                                  key={index}
+                                  className="py-3 px-4 border-b text-left text-xs font-semibold text-blue-700 uppercase tracking-wider"
+                                >
+                                  {key}
+                                </th>
+                              ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {previewData
+                            .slice(0, visibleRows)
+                            .map((row, rowIndex) => (
+                              <tr
+                                key={rowIndex}
+                                className={
+                                  rowIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                                }
+                              >
+                                {Object.values(row).map((value, colIndex) => (
+                                  <td
+                                    key={colIndex}
+                                    className="py-2 px-4 border-b text-sm"
+                                  >
+                                    {value?.toString() || '-'}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {/* Fixed footer with status and buttons */}
+                    <div className="flex items-center justify-between border-t bg-gray-50 py-3 px-4 mt-auto">
+                      <div className="text-sm text-gray-600">
+                        Showing {Math.min(visibleRows, previewData.length)} of{' '}
+                        {previewData.length} rows
+                      </div>
+
+                      {visibleRows < previewData.length && (
+                        <div className="space-x-3">
+                          <button
+                            className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded font-medium text-sm"
+                            onClick={() =>
+                              setVisibleRows(
+                                Math.min(visibleRows + 20, previewData.length),
+                              )
+                            }
+                          >
+                            Show 20 More
+                          </button>
+                          <button
+                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-medium text-sm"
+                            onClick={() => setVisibleRows(previewData.length)}
+                          >
+                            Show All ({previewData.length} rows)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              </ModalXL>
+            )}
           </div>
         </div>
       </div>
