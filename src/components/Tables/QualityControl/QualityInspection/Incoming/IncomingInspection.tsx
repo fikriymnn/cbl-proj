@@ -71,8 +71,9 @@ function IncomingInspection() {
     }
   }
   async function startTask(id: any) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahan/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahan/start/${id}`;
 
     try {
       const res = await axios.get(url, {
@@ -107,8 +108,9 @@ function IncomingInspection() {
     }
     const stopTime = new Date();
     const timestamp = convertDatetimeToDate(new Date());
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahan/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahan/stop/${id}`;
 
     try {
       const elapsedSeconds = await calculateElapsedTime(start, stopTime);
@@ -141,8 +143,9 @@ function IncomingInspection() {
     }
   }
   async function sumbitPoint(objek: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${objek.id
-      }`;
+    const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${
+      objek.id
+    }`;
     try {
       const res = await axios.put(
         url,
@@ -168,8 +171,9 @@ function IncomingInspection() {
       alert('Point 1 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -202,8 +206,9 @@ function IncomingInspection() {
       alert('Point 2 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -238,8 +243,9 @@ function IncomingInspection() {
       alert('Point 3 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -269,8 +275,9 @@ function IncomingInspection() {
       alert('Point 4 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -298,8 +305,9 @@ function IncomingInspection() {
       alert('Point 5 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -328,8 +336,9 @@ function IncomingInspection() {
       alert('Point 6 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -356,8 +365,9 @@ function IncomingInspection() {
       alert('Point 7 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -383,8 +393,9 @@ function IncomingInspection() {
       alert('Point 8 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -410,8 +421,9 @@ function IncomingInspection() {
       alert('Point 9 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -450,8 +462,9 @@ function IncomingInspection() {
       return; // Exit function if no start time
     }
 
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahan/update/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahan/update/${id}`;
     try {
       setIsLoading(true);
       if (verifikasi == 'Diterima') {
@@ -1093,20 +1106,22 @@ function IncomingInspection() {
                                     setKiri(parseInt(e.target.value));
                                     // setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                     const newValue = parseFloat(e.target.value);
-                                    const result = (newValue / 10) * 10000;
+                                    const result = (newValue / 100) * 10000;
                                     setResult1(result);
                                   }}
                                   type="number"
                                   className="border-2 border-stroke w-[80%] rounded-sm"
                                 />
                                 <div>
-                                  = <input
+                                  ={' '}
+                                  <input
                                     name="hasilsample1"
                                     disabled
                                     value={result1}
                                     type="text"
                                     className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                                  /> g/m<sup className=''>2</sup>
+                                  />{' '}
+                                  g/m<sup className="">2</sup>
                                 </div>
                                 <label className="text-neutral-500 text-sm font-semibold pt-1">
                                   Tengah
@@ -1121,19 +1136,21 @@ function IncomingInspection() {
                                     setTengah(parseInt(e.target.value));
                                     // setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                     const newValue = parseFloat(e.target.value);
-                                    const result = (newValue / 10) * 10000;
+                                    const result = (newValue / 100) * 10000;
                                     setResult2(result);
                                   }}
                                   className="border-2 border-stroke w-[80%] rounded-sm"
                                 />
                                 <div>
-                                  = <input
+                                  ={' '}
+                                  <input
                                     name="hasilsample2"
                                     disabled
                                     value={result2}
                                     type="text"
                                     className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                                  /> g/m<sup className=''>2</sup>
+                                  />{' '}
+                                  g/m<sup className="">2</sup>
                                 </div>
                                 <label className="text-neutral-500 text-sm font-semibold pt-1">
                                   Bawah
@@ -1148,19 +1165,21 @@ function IncomingInspection() {
                                     setKanan(parseInt(e.target.value));
                                     // setIncoming({ ...incoming, inspeksi_bahan_result: array })
                                     const newValue = parseFloat(e.target.value);
-                                    const result = (newValue / 10) * 10000;
+                                    const result = (newValue / 100) * 10000;
                                     setResult3(result);
                                   }}
                                   className="border-2 border-stroke w-[80%] rounded-sm"
                                 />
                                 <div>
-                                  = <input
+                                  ={' '}
+                                  <input
                                     name="hasilsample3"
                                     disabled
                                     value={result3}
                                     type="text"
                                     className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                                  /> g/m<sup className=''>2</sup>
+                                  />{' '}
+                                  g/m<sup className="">2</sup>
                                 </div>
                                 <input
                                   hidden
@@ -1195,14 +1214,18 @@ function IncomingInspection() {
                                     gr
                                   </label>
                                   <div>
-                                    = <input
+                                    ={' '}
+                                    <input
                                       name="hasilsample3"
                                       disabled
-                                      value={incoming?.inspeksi_bahan_result[1]
-                                        .hasil_rumus_kiri}
+                                      value={
+                                        incoming?.inspeksi_bahan_result[1]
+                                          .hasil_rumus_kiri
+                                      }
                                       type="text"
                                       className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                                    /> g/m<sup className=''>2</sup>
+                                    />{' '}
+                                    g/m<sup className="">2</sup>
                                   </div>
                                   <label className="text-neutral-500 text-sm font-semibold pt-1">
                                     Tengah
@@ -1215,14 +1238,18 @@ function IncomingInspection() {
                                     gr
                                   </label>
                                   <div>
-                                    = <input
+                                    ={' '}
+                                    <input
                                       name="hasilsample3"
                                       disabled
-                                      value={incoming?.inspeksi_bahan_result[1]
-                                        .hasil_rumus_tengah}
+                                      value={
+                                        incoming?.inspeksi_bahan_result[1]
+                                          .hasil_rumus_tengah
+                                      }
                                       type="text"
                                       className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                                    /> g/m<sup className=''>2</sup>
+                                    />{' '}
+                                    g/m<sup className="">2</sup>
                                   </div>
                                   <label className="text-neutral-500 text-sm font-semibold pt-1">
                                     Bawah
@@ -1235,14 +1262,18 @@ function IncomingInspection() {
                                     gr
                                   </label>
                                   <div>
-                                    = <input
+                                    ={' '}
+                                    <input
                                       name="hasilsample3"
                                       disabled
-                                      value={incoming?.inspeksi_bahan_result[1]
-                                        .hasil_rumus_kanan}
+                                      value={
+                                        incoming?.inspeksi_bahan_result[1]
+                                          .hasil_rumus_kanan
+                                      }
                                       type="text"
                                       className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                                    /> g/m<sup className=''>2</sup>
+                                    />{' '}
+                                    g/m<sup className="">2</sup>
                                   </div>
                                 </div>
                               </>
@@ -2933,61 +2964,63 @@ function IncomingInspection() {
                               Kiri
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold ">
-                              {
-                                incoming?.inspeksi_bahan_result[1]
-                                  .hasil_kiri
-                              }{' '}
-                              gr
+                              {incoming?.inspeksi_bahan_result[1].hasil_kiri} gr
                             </label>
                             <div>
-                              = <input
+                              ={' '}
+                              <input
                                 name="hasilsample3"
                                 disabled
-                                value={incoming?.inspeksi_bahan_result[1]
-                                  .hasil_rumus_kiri}
+                                value={
+                                  incoming?.inspeksi_bahan_result[1]
+                                    .hasil_rumus_kiri
+                                }
                                 type="text"
                                 className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                              /> g/m<sup className=''>2</sup>
+                              />{' '}
+                              g/m<sup className="">2</sup>
                             </div>
                             <label className="text-neutral-500 text-sm font-semibold pt-1">
                               Tengah
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold ">
-                              {
-                                incoming?.inspeksi_bahan_result[1]
-                                  .hasil_tengah
-                              }{' '}
+                              {incoming?.inspeksi_bahan_result[1].hasil_tengah}{' '}
                               gr
                             </label>
                             <div>
-                              = <input
+                              ={' '}
+                              <input
                                 name="hasilsample3"
                                 disabled
-                                value={incoming?.inspeksi_bahan_result[1]
-                                  .hasil_rumus_tengah}
+                                value={
+                                  incoming?.inspeksi_bahan_result[1]
+                                    .hasil_rumus_tengah
+                                }
                                 type="text"
                                 className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                              /> g/m<sup className=''>2</sup>
+                              />{' '}
+                              g/m<sup className="">2</sup>
                             </div>
                             <label className="text-neutral-500 text-sm font-semibold pt-1">
                               Bawah
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold ">
-                              {
-                                incoming?.inspeksi_bahan_result[1]
-                                  .hasil_bawah
-                              }{' '}
+                              {incoming?.inspeksi_bahan_result[1].hasil_bawah}{' '}
                               gr
                             </label>
                             <div>
-                              = <input
+                              ={' '}
+                              <input
                                 name="hasilsample3"
                                 disabled
-                                value={incoming?.inspeksi_bahan_result[1]
-                                  .hasil_rumus_kanan}
+                                value={
+                                  incoming?.inspeksi_bahan_result[1]
+                                    .hasil_rumus_kanan
+                                }
                                 type="text"
                                 className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                              /> g/m<sup className=''>2</sup>
+                              />{' '}
+                              g/m<sup className="">2</sup>
                             </div>
                           </div>
                         </div>
