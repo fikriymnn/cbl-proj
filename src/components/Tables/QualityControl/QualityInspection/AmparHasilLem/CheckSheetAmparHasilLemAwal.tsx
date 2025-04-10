@@ -66,7 +66,9 @@ function CheckSheetHasilRabut() {
     }/api/list-kendala?criteria=true`;
 
     try {
+      setIsLoading(true);
       const res = await axios.get(url);
+      setIsLoading(false);
       setDefectMaster(res.data); // Save raw data for filtering
       setOptions(
         res.data.map((item: any) => ({
@@ -76,6 +78,7 @@ function CheckSheetHasilRabut() {
       );
       //console.log('master defect', res.data);
     } catch (error: any) {
+      setIsLoading(false);
       console.log(error.data.msg);
     }
   }
@@ -84,10 +87,13 @@ function CheckSheetHasilRabut() {
     const url2 = `${import.meta.env.VITE_API_LINK_P1}/api/master-waste`;
 
     try {
+      setIsLoading(true);
       const res = await axios.get(url2);
       setMasterWaste(res.data.waste); // Save raw data for filtering
+      setIsLoading(false);
       //console.log("Master Waste Data:", res.data.waste);
     } catch (error: any) {
+      setIsLoading(false);
       console.error('Error fetching master waste:', error);
     }
   }
@@ -102,10 +108,13 @@ function CheckSheetHasilRabut() {
     }/api/get-kendala-by-jo/${noJO}`;
 
     try {
+      setIsLoading(true);
       const res = await axios.get(url);
+      setIsLoading(false);
       setkendalaByJo(res.data.data);
       console.log('kendala by jo', res.data.data);
     } catch (error: any) {
+      setIsLoading(false);
       console.log(error);
     }
   }
@@ -115,10 +124,13 @@ function CheckSheetHasilRabut() {
     }/api/get-mesin-by-jo/${noJO}`;
 
     try {
+      setIsLoading(true);
       const res = await axios.get(url);
+      setIsLoading(false);
       setmesinByJo(res.data.data);
       console.log('Mesin by jo', res.data.data);
     } catch (error: any) {
+      setIsLoading(false);
       console.log(error);
     }
   }

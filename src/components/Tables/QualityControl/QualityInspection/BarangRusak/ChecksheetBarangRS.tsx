@@ -71,6 +71,7 @@ function ChecksheetBarangRS() {
     }/api/list-kendala?criteria=true`;
 
     try {
+      setIsLoading(true);
       const res = await axios.get(url);
       setDefectMaster(res.data); // Save raw data for filtering
       setOptions(
@@ -79,8 +80,10 @@ function ChecksheetBarangRS() {
           label: `${item.e_kode_produksi} - ${item.nama_kendala}`,
         })),
       );
+      setIsLoading(false);
       //console.log('master defect', res.data);
     } catch (error: any) {
+      setIsLoading(false);
       console.log(error.data.msg);
     }
   }
@@ -89,10 +92,13 @@ function ChecksheetBarangRS() {
     const url2 = `${import.meta.env.VITE_API_LINK_P1}/api/master-waste`;
 
     try {
+      setIsLoading(true);
       const res = await axios.get(url2);
+      setIsLoading(false);
       setMasterWaste(res.data.waste); // Save raw data for filtering
       console.log('Master Waste Data:', res.data.waste);
     } catch (error: any) {
+      setIsLoading(false);
       console.error('Error fetching master waste:', error);
     }
   }
@@ -106,10 +112,13 @@ function ChecksheetBarangRS() {
     }/api/get-kendala-by-jo/${noJO}`;
 
     try {
+      setIsLoading(true);
       const res = await axios.get(url);
+      setIsLoading(false);
       setkendalaByJo(res.data.data);
       console.log('kendala by jo', res.data.data);
     } catch (error: any) {
+      setIsLoading(false);
       console.log(error);
     }
   }
@@ -122,10 +131,13 @@ function ChecksheetBarangRS() {
     }/api/get-mesin-by-jo/${noJO}`;
 
     try {
+      setIsLoading(true);
       const res = await axios.get(url);
+      setIsLoading(false);
       setmesinByJo(res.data.data);
       console.log('Mesin by jo', res.data.data);
     } catch (error: any) {
+      setIsLoading(false);
       console.log(error);
     }
   }
