@@ -101,6 +101,8 @@ const popUpTable2 = ({
           withCredentials: true,
         },
       );
+      onClose();
+      onFinish();
       alert('berhasil');
       setIsLoading(false);
     } catch (error) {
@@ -209,20 +211,22 @@ const popUpTable2 = ({
           </tbody>
         </table>
       </div>
-      <button
-        onClick={() => {
-          lemburOneDay();
-        }}
-        className="bg-primary text-white  rounded-md my-auto py-1 px-2"
-      >
-        Lembur
-      </button>
-      <button
-        onClick={() => putJadwalView()}
-        className="bg-primary text-white px-5 py-2 rounded-md my-auto mt-4"
-      >
-        Simpan
-      </button>
+      <div className="flex gap-2">
+        <button
+          onClick={() => {
+            lemburOneDay();
+          }}
+          className="bg-primary text-white px-5 py-2 rounded-md my-auto mt-4"
+        >
+          Lembur
+        </button>
+        <button
+          onClick={() => putJadwalView()}
+          className="bg-primary text-white px-5 py-2 rounded-md my-auto mt-4"
+        >
+          Simpan
+        </button>
+      </div>
     </div>
   );
 };
