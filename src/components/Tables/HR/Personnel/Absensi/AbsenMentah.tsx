@@ -408,163 +408,207 @@ function TableAbsenMentah() {
                 </label>
               </div>
               <div className="w-2 h-full "></div>
-              {filteredAbsen?.map((data: any, i: any) => {
-                const [rawDate, rawTime] = data.tglCheck.split(' '); // Split the date and time
-                const [day2, month2, year2] = rawDate.split('-'); // Split the day, month, and year
-                const formattedDate2 = `${year2}-${month2.padStart(
-                  2,
-                  '0',
-                )}-${day2.padStart(2, '0')}`; // Format as YYYY-MM-DD
+              {filteredAbsen
+                ?.slice() // Create a copy of the array to avoid mutating the original
+                .sort((a: any, b: any) => {
+                  // Parse dates for format like "11-2-2025 6:11:0"
+                  const [rawDateA, rawTimeA] = a.tglCheck.split(' ');
+                  const [dayA, monthA, yearA] = rawDateA.split('-');
+                  const timePartsA = rawTimeA
+                    .split(':')
+                    .map((part: any) => parseInt(part, 10));
 
-                // Split time into hours and minutes, and handle optional seconds
-                const [hours, minutes] = rawTime.split(':');
-                const formattedTime = `${hours.padStart(
-                  2,
-                  '0',
-                )}:${minutes.padStart(2, '0')}`;
+                  // Create date objects with proper format
+                  const dateA = new Date(
+                    parseInt(yearA, 10),
+                    parseInt(monthA, 10) - 1, // Month is 0-indexed in JS Date
+                    parseInt(dayA, 10),
+                    timePartsA[0] || 0, // Hours
+                    timePartsA[1] || 0, // Minutes
+                    timePartsA[2] || 0, // Seconds
+                  );
 
-                const date = formattedDate2;
-                const time = formattedTime;
+                  const [rawDateB, rawTimeB] = b.tglCheck.split(' ');
+                  const [dayB, monthB, yearB] = rawDateB.split('-');
+                  const timePartsB = rawTimeB
+                    .split(':')
+                    .map((part: any) => parseInt(part, 10));
 
-                return (
-                  <>
-                    <div
-                      key={i}
-                      className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 "
-                    >
-                      <div className="flex col-span-2 gap-2">
-                        <label className="text-neutral-500 text-sm font-semibold ">
-                          {i + 1}
-                        </label>
-                        <label className="text-neutral-500 text-sm font-semibold ">
-                          {data.nama}
-                        </label>
-                      </div>
+                  const dateB = new Date(
+                    parseInt(yearB, 10),
+                    parseInt(monthB, 10) - 1,
+                    parseInt(dayB, 10),
+                    timePartsB[0] || 0,
+                    timePartsB[1] || 0,
+                    timePartsB[2] || 0,
+                  );
 
-                      <label className="text-neutral-500 text-sm font-semibold col-span-4">
-                        {data.tglCheck}
-                      </label>
+                  // Sort by latest first (descending order)
+                  return dateB.getTime() - dateA.getTime();
+                })
+                .map((data: any, i: any) => {
+                  const [rawDate, rawTime] = data.tglCheck.split(' '); // Split the date and time
+                  const [day2, month2, year2] = rawDate.split('-'); // Split the day, month, and year
+                  const formattedDate2 = `${year2}-${month2.padStart(
+                    2,
+                    '0',
+                  )}-${day2.padStart(2, '0')}`; // Format as YYYY-MM-DD
 
-                      <label className="text-neutral-500 text-sm font-semibold col-span-4">
-                        {data.checkType}
-                      </label>
-                      <button
-                        onClick={() => openEdit(i, date, time)}
-                        className="w-full bg-blue-600 text-white text-sm py-1 rounded-md"
+                  // Split time into hours and minutes, and handle optional seconds
+                  const [hours, minutes] = rawTime.split(':');
+                  const formattedTime = `${hours.padStart(
+                    2,
+                    '0',
+                  )}:${minutes.padStart(2, '0')}`;
+
+                  const date = formattedDate2;
+                  const time = formattedTime;
+
+                  return (
+                    <>
+                      <div
+                        key={i}
+                        className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 "
                       >
-                        Edit
-                      </button>
-                      {showEdit[i] == true && (
-                        <ModalKosonganSmall
-                          isOpen={showEdit[i]}
-                          onClose={() => closeEdit(i)}
-                          judul={'Edit Absen Mentah'}
+                        <div className="flex col-span-2 gap-2">
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            {i + 1}
+                          </label>
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            {data.nama}
+                          </label>
+                        </div>
+
+                        <label className="text-neutral-500 text-sm font-semibold col-span-4">
+                          {data.tglCheck}
+                        </label>
+
+                        <label className="text-neutral-500 text-sm font-semibold col-span-4">
+                          {data.checkType}
+                        </label>
+                        <button
+                          onClick={() => openEdit(i, date, time)}
+                          className="w-full bg-blue-600 text-white text-sm py-1 rounded-md"
                         >
-                          <>
-                            <div
-                              key={i}
-                              className="flex flex-col px-4 py-4  gap-2"
-                            >
-                              <div className="flex flex-col">
-                                <label className="text-neutral-500 text-sm font-semibold ">
-                                  Nama
-                                </label>
-                                <input
-                                  type="text"
-                                  className="px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke"
-                                  value={data.nama}
-                                  readOnly
-                                ></input>
-                              </div>
-                              <div className="flex flex-col">
-                                <label className="text-neutral-500 text-sm font-semibold ">
-                                  Check Time
-                                </label>
-                                <input
-                                  type="text"
-                                  className="px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke"
-                                  value={data.checkTime}
-                                  readOnly
-                                ></input>
-                              </div>
-                              <div className="flex flex-col">
-                                <label className="text-neutral-500 text-sm font-semibold ">
-                                  Tanggal
-                                </label>
-                                <input
-                                  type="date"
-                                  className="px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke"
-                                  defaultValue={tglNewEdit}
-                                  onChange={(e) =>
-                                    settglNewEdit(e.target.value)
-                                  }
-                                ></input>
-                              </div>
-                              <div className="flex flex-col">
-                                <label className="text-neutral-500 text-sm font-semibold ">
-                                  Jam
-                                </label>
-                                <input
-                                  type="time"
-                                  className="px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke"
-                                  defaultValue={hoursNewEdit}
-                                  onChange={(e) =>
-                                    setHoursNewEdit(e.target.value)
-                                  }
-                                ></input>
-                              </div>
-                              <div className="flex flex-col">
-                                <label className="text-neutral-500 text-sm font-semibold ">
-                                  Tipe Check
-                                </label>
-                                <div className="flex gap-1">
-                                  <input
-                                    type="radio"
-                                    className=" text-neutral-500 text-sm border-2 rounded-md border-stroke"
-                                    value={0}
-                                    checked={typeCheckEdit === 0}
-                                    name={`tipecheck-${i}`}
-                                    onChange={(e) =>
-                                      setTypeCheckEdit(parseInt(e.target.value))
-                                    }
-                                  />
-                                  Masuk
-                                  <input
-                                    type="radio"
-                                    className=" text-neutral-500 text-sm border-2 rounded-md border-stroke"
-                                    value={1}
-                                    checked={typeCheckEdit === 1}
-                                    name={`tipecheck-${i}`}
-                                    onChange={(e) =>
-                                      setTypeCheckEdit(parseInt(e.target.value))
-                                    }
-                                  />
-                                  Keluar
-                                </div>
-                              </div>
-                              <button
-                                disabled={isLoading}
-                                onClick={() => {
-                                  putAbsen(data.userid, data.checkTime, i);
-                                }}
-                                className="bg-blue-500 text-white text-md px-4 py-1 rounded-md font-semibold"
+                          Edit
+                        </button>
+                        {showEdit[i] == true && (
+                          <ModalKosonganSmall
+                            isOpen={showEdit[i]}
+                            onClose={() => closeEdit(i)}
+                            judul={'Edit Absen Mentah'}
+                          >
+                            <>
+                              <div
+                                key={i}
+                                className="flex flex-col px-4 py-4  gap-2"
                               >
-                                SIMPAN
-                              </button>
-                            </div>
-                          </>
-                        </ModalKosonganSmall>
-                      )}
-                      <button
-                        onClick={() => hapusAbsen(data.userid, data.checkTime)}
-                        className="w-full bg-red-600 text-white text-sm py-1 rounded-md"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </>
-                );
-              })}
+                                <div className="flex flex-col">
+                                  <label className="text-neutral-500 text-sm font-semibold ">
+                                    Nama
+                                  </label>
+                                  <input
+                                    type="text"
+                                    className="px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke"
+                                    value={data.nama}
+                                    readOnly
+                                  ></input>
+                                </div>
+                                <div className="flex flex-col">
+                                  <label className="text-neutral-500 text-sm font-semibold ">
+                                    Check Time
+                                  </label>
+                                  <input
+                                    type="text"
+                                    className="px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke"
+                                    value={data.checkTime}
+                                    readOnly
+                                  ></input>
+                                </div>
+                                <div className="flex flex-col">
+                                  <label className="text-neutral-500 text-sm font-semibold ">
+                                    Tanggal
+                                  </label>
+                                  <input
+                                    type="date"
+                                    className="px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke"
+                                    defaultValue={tglNewEdit}
+                                    onChange={(e) =>
+                                      settglNewEdit(e.target.value)
+                                    }
+                                  ></input>
+                                </div>
+                                <div className="flex flex-col">
+                                  <label className="text-neutral-500 text-sm font-semibold ">
+                                    Jam
+                                  </label>
+                                  <input
+                                    type="time"
+                                    className="px-2 h-7 text text-neutral-500 text-sm border-2 rounded-md border-stroke"
+                                    defaultValue={hoursNewEdit}
+                                    onChange={(e) =>
+                                      setHoursNewEdit(e.target.value)
+                                    }
+                                  ></input>
+                                </div>
+                                <div className="flex flex-col">
+                                  <label className="text-neutral-500 text-sm font-semibold ">
+                                    Tipe Check
+                                  </label>
+                                  <div className="flex gap-1">
+                                    <input
+                                      type="radio"
+                                      className=" text-neutral-500 text-sm border-2 rounded-md border-stroke"
+                                      value={0}
+                                      checked={typeCheckEdit === 0}
+                                      name={`tipecheck-${i}`}
+                                      onChange={(e) =>
+                                        setTypeCheckEdit(
+                                          parseInt(e.target.value),
+                                        )
+                                      }
+                                    />
+                                    Masuk
+                                    <input
+                                      type="radio"
+                                      className=" text-neutral-500 text-sm border-2 rounded-md border-stroke"
+                                      value={1}
+                                      checked={typeCheckEdit === 1}
+                                      name={`tipecheck-${i}`}
+                                      onChange={(e) =>
+                                        setTypeCheckEdit(
+                                          parseInt(e.target.value),
+                                        )
+                                      }
+                                    />
+                                    Keluar
+                                  </div>
+                                </div>
+                                <button
+                                  disabled={isLoading}
+                                  onClick={() => {
+                                    putAbsen(data.userid, data.checkTime, i);
+                                  }}
+                                  className="bg-blue-500 text-white text-md px-4 py-1 rounded-md font-semibold"
+                                >
+                                  SIMPAN
+                                </button>
+                              </div>
+                            </>
+                          </ModalKosonganSmall>
+                        )}
+                        <button
+                          onClick={() =>
+                            hapusAbsen(data.userid, data.checkTime)
+                          }
+                          className="w-full bg-red-600 text-white text-sm py-1 rounded-md"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </>
+                  );
+                })}
             </div>
           </div>
         </main>
