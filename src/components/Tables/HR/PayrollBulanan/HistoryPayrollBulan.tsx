@@ -246,7 +246,7 @@ function HistoryBulan() {
                             </label>
 
                             <label className="text-neutral-500 text-xs font-semibold ">
-                              Rp. {formatInteger(data2.total_upah)}
+                              Rp. {formatInteger(data2.sub_total_upah)}
                             </label>
                             <div className="flex justify-center ">
                               <button
@@ -392,6 +392,37 @@ function HistoryBulan() {
                                             htmlFor=""
                                             className="text-black text-xs font-bold"
                                           >
+                                            CATATAN PENGURANGAN ATAU PENAMBAHAN
+                                          </label>
+                                          <label
+                                            htmlFor=""
+                                            className="text-[#7a7a7a] text-xl font-normal"
+                                          >
+                                            {data2.note_pengurangan_penambahan}
+                                          </label>
+                                        </div>
+                                        <div className="flex flex-col">
+                                          <label
+                                            htmlFor=""
+                                            className="text-black text-xs font-bold"
+                                          >
+                                            PENGURANGAN ATAU PENAMBAHAN
+                                          </label>
+                                          <label
+                                            htmlFor=""
+                                            className="text-[#7a7a7a] text-xl font-normal"
+                                          >
+                                            Rp.{' '}
+                                            {formatInteger(
+                                              data2.pengurangan_penambahan,
+                                            )}
+                                          </label>
+                                        </div>
+                                        <div className="flex flex-col">
+                                          <label
+                                            htmlFor=""
+                                            className="text-black text-xs font-bold"
+                                          >
                                             TOTAL POTONGAN
                                           </label>
                                           <label
@@ -417,7 +448,9 @@ function HistoryBulan() {
                                             className="text-[#7a7a7a] text-xl font-normal"
                                           >
                                             Rp.{' '}
-                                            {formatInteger(data2.total_upah)}
+                                            {formatInteger(
+                                              data2.sub_total_upah,
+                                            )}
                                           </label>
                                         </div>
                                       </div>

@@ -28,7 +28,8 @@ function PayrollBulan() {
         ...payWeek,
         detail: payWeek.detail.map((item: any) => ({
           ...item,
-          originalSubTotal: item.summaryPayroll.sub_total, // Store initial sub_total
+          originalSubTotal: item.summaryPayroll.sub_total,
+          // Make sure these fields are preserved when setting up the state
         })),
       });
     }
@@ -90,7 +91,7 @@ function PayrollBulan() {
     const newDetail = [...editedPayWeek.detail];
     newDetail[index].summaryPayroll.pengurangan_penambahan = value;
     newDetail[index].summaryPayroll.sub_total =
-      newDetail[index].originalSubTotal + value; // Update sub_total
+      newDetail[index].originalSubTotal + value;
 
     // Recalculate total based on new sub_totals
     const newTotal = newDetail.reduce(
@@ -101,22 +102,32 @@ function PayrollBulan() {
     setEditedPayWeek({
       ...editedPayWeek,
       detail: newDetail,
-      total: newTotal, // Update total in payWeek
+      total: newTotal,
     });
   };
 
+  const handleInputNote = (index: number, value: string) => {
+    const newDetail = [...editedPayWeek.detail];
+    newDetail[index].summaryPayroll.note_pengurangan_penambahan = value;
+
+    setEditedPayWeek({
+      ...editedPayWeek,
+      detail: newDetail,
+    });
+  };
   const [showEdit, setShowEdit] = useState<any>([]);
   const openEdit = (i: any) => {
-    const onchangeVal: any = [...showEdit];
+    const onchangeVal = [...showEdit];
     onchangeVal[i] = true;
-
     setShowEdit(onchangeVal);
+    // Don't reset the data here
   };
-  const closeEdit = (i: any) => {
-    const onchangeVal: any = [...showEdit];
-    onchangeVal[i] = false;
 
+  const closeEdit = (i: any) => {
+    const onchangeVal = [...showEdit];
+    onchangeVal[i] = false;
     setShowEdit(onchangeVal);
+    // Don't reset the data here either
   };
   const handleClickDetail = (index: number) => {
     setShowDetail((prevState) => {
@@ -438,10 +449,36 @@ function PayrollBulan() {
                               Rp. {formatInteger(data.summaryPayroll?.total)}
                             </label>
                           </div>
+                          <label
+                            htmlFor=""
+                            className="text-black text-xs font-bold"
+                          >
+                            Catatan Pengurangan Penambahan
+                          </label>
+                          <input
+                            className="border-2 border-stroke rounded-md"
+                            type="text"
+                            value={
+                              data.summaryPayroll.note_pengurangan_penambahan ||
+                              ''
+                            }
+                            onChange={(e) =>
+                              handleInputNote(i, String(e.target.value))
+                            }
+                            placeholder="Masukkan Catatan"
+                          />
+                          <label
+                            htmlFor=""
+                            className="text-black text-xs font-bold"
+                          >
+                            Jumlah Pengurangan Penambahan
+                          </label>
                           <input
                             className="border-2 border-stroke rounded-md"
                             type="number"
-                            value={data.summaryPayroll.penggurangan_penambahan}
+                            value={
+                              data.summaryPayroll.pengurangan_penambahan || 0
+                            }
                             onChange={(e) =>
                               handleInputChange(i, Number(e.target.value))
                             }
