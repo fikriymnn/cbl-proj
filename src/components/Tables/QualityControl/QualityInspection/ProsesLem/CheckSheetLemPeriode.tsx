@@ -13,6 +13,7 @@ import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import Loading from '../../../../Loading';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 import formatInteger from '../../../../../utils/formaterInteger';
+import ModalKosonganSmall from '../../../../Modals/ModalKosonganSmall';
 
 function CheckSheetLemPeriode() {
   const { id } = useParams();
@@ -125,6 +126,7 @@ function CheckSheetLemPeriode() {
       console.log(error.data.msg);
     }
   }
+  const [alasanPending, setalasanPending] = useState<any>();
   async function pendingCekPeriode(id: number) {
     const url = `${
       import.meta.env.VITE_API_LINK
@@ -132,17 +134,22 @@ function CheckSheetLemPeriode() {
     try {
       const res = await axios.put(
         url,
-        {},
+        {
+          alasan_pending: alasanPending,
+        },
         {
           withCredentials: true,
         },
       );
-
+      closeModalPending();
       getLemMesinPeriode();
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
+  const [showPending, setShowPending] = useState(false);
+  const openModalPending = () => setShowPending(true);
+  const closeModalPending = () => setShowPending(false);
   async function startTaskCekPeriode(id: number) {
     const url = `${
       import.meta.env.VITE_API_LINK
@@ -1600,16 +1607,43 @@ function CheckSheetLemPeriode() {
             <div className="grid col-span-2 items-end justify-end gap-2">
               {!isOnprogres && LemMesinPeriode?.status == 'incoming' ? (
                 <button
-                  onClick={() =>
-                    pendingCekPeriode(
-                      LemMesinPeriode?.inspeksi_lem_periode[0].id,
-                    )
-                  }
+                  onClick={() => openModalPending()}
                   className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                 >
                   PENDING
                 </button>
               ) : null}
+              {showPending == true && (
+                <>
+                  <ModalKosonganSmall
+                    isOpen={showPending}
+                    onClose={() => closeModalPending()}
+                    judul={'Alasan Pending'}
+                  >
+                    <>
+                      <div className="flex flex-col gap-2 px-4 py-4">
+                        <div className="flex gap-2 flex-col w-full">
+                          <input
+                            onChange={(e) => setalasanPending(e.target.value)}
+                            type="text"
+                            className="border-2 border-stroke w-full rounded-sm col-span-2 h-10"
+                          />
+                        </div>
+                        <button
+                          onClick={() =>
+                            pendingCekPeriode(
+                              LemMesinPeriode?.inspeksi_lem_periode[0].id,
+                            )
+                          }
+                          className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                        >
+                          PENDING
+                        </button>
+                      </div>
+                    </>
+                  </ModalKosonganSmall>
+                </>
+              )}
               {(!isOnprogres &&
                 LemMesinPeriode?.status == 'incoming' &&
                 LemMesinPeriode?.inspeksi_lem_periode[0]?.status ==

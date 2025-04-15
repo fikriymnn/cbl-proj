@@ -13,6 +13,7 @@ import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import Loading from '../../../../Loading';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 import formatInteger from '../../../../../utils/formaterInteger';
+import ModalKosonganSmall from '../../../../Modals/ModalKosonganSmall';
 
 function CheckSheetCetakPeriode() {
   const [selectedECs, setSelectedECs] = useState<string[]>([]);
@@ -397,7 +398,7 @@ function CheckSheetCetakPeriode() {
       console.log(error);
     }
   }
-
+  const [alasanPending, setalasanPending] = useState<any>();
   async function pendingCekPeriode(id: number) {
     const url = `${
       import.meta.env.VITE_API_LINK
@@ -405,18 +406,22 @@ function CheckSheetCetakPeriode() {
     try {
       const res = await axios.put(
         url,
-        {},
+        {
+          alasan_pending: alasanPending,
+        },
         {
           withCredentials: true,
         },
       );
-
+      closeModalPending();
       getCetakMesinPeriode();
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
-
+  const [showPending, setShowPending] = useState(false);
+  const openModalPending = () => setShowPending(true);
+  const closeModalPending = () => setShowPending(false);
   //add Point
   const handleAddPointDepartment = () => {
     setDepartment([
@@ -1975,16 +1980,43 @@ function CheckSheetCetakPeriode() {
             <div className="grid col-span-2 items-end justify-end gap-2">
               {!isOnprogres && cetakMesinPeriode?.status == 'incoming' ? (
                 <button
-                  onClick={() =>
-                    pendingCekPeriode(
-                      cetakMesinPeriode?.inspeksi_cetak_periode[0].id,
-                    )
-                  }
+                  onClick={() => openModalPending()}
                   className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                 >
                   PENDING
                 </button>
               ) : null}
+              {showPending == true && (
+                <>
+                  <ModalKosonganSmall
+                    isOpen={showPending}
+                    onClose={() => closeModalPending()}
+                    judul={'Alasan Pending'}
+                  >
+                    <>
+                      <div className="flex flex-col gap-2 px-4 py-4">
+                        <div className="flex gap-2 flex-col w-full">
+                          <input
+                            onChange={(e) => setalasanPending(e.target.value)}
+                            type="text"
+                            className="border-2 border-stroke w-full rounded-sm col-span-2 h-10"
+                          />
+                        </div>
+                        <button
+                          onClick={() =>
+                            pendingCekPeriode(
+                              cetakMesinPeriode?.inspeksi_cetak_periode[0].id,
+                            )
+                          }
+                          className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                        >
+                          PENDING
+                        </button>
+                      </div>
+                    </>
+                  </ModalKosonganSmall>
+                </>
+              )}
               {(!isOnprogres &&
                 cetakMesinPeriode?.status == 'incoming' &&
                 cetakMesinPeriode?.inspeksi_cetak_periode[0]?.status ==
