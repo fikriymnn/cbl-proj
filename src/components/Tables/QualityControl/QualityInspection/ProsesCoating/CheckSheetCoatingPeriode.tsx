@@ -29,7 +29,8 @@ function CheckSheetCoatingPeriode() {
   const [persenKriteria, setPersenKriteria] = useState<any>();
   const [sumberMasalah, setSumberMasalah] = useState<any>();
   const [DataDepartment, setDataDepartment] = useState<any>();
-  const [coatingdMesinPeriodeHistory, setcoatingdMesinPeriodeHistory] = useState<any>();
+  const [coatingdMesinPeriodeHistory, setcoatingdMesinPeriodeHistory] =
+    useState<any>();
 
   const [Department, setDepartment] = useState([
     {
@@ -86,8 +87,9 @@ function CheckSheetCoatingPeriode() {
   const [isFailed, setIsFailed] = useState(false);
 
   async function getMasterKode() {
-    const url = `${import.meta.env.VITE_API_LINK_P1
-      }/api/list-kendala?criteria=true&proses=5`;
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=5`;
 
     try {
       setIsLoading(true);
@@ -95,12 +97,12 @@ function CheckSheetCoatingPeriode() {
 
       setMasterKode(res);
       setIsLoading(false);
-      setIsFailed(false)
+      setIsFailed(false);
       console.log(res);
     } catch (error: any) {
       setIsLoading(false);
-      setIsFailed(true)
-      alert('Gagal Memanggil Defect, Coba Refresh Halaman!')
+      setIsFailed(true);
+      alert('Gagal Memanggil Defect, Coba Refresh Halaman!');
       console.log(error.data.msg);
     }
   }
@@ -115,7 +117,7 @@ function CheckSheetCoatingPeriode() {
       setDataDepartment(res.data);
     } catch (error: any) {
       setIsLoading(false);
-      alert('Gagal Memannggil Department, Coba Refresh Halaman!')
+      alert('Gagal Memannggil Department, Coba Refresh Halaman!');
       console.log(error);
     }
   }
@@ -134,16 +136,17 @@ function CheckSheetCoatingPeriode() {
       console.log(res);
     } catch (error: any) {
       setIsLoading(false);
-      alert('Gagal Memannggil Data, Coba Refresh Halaman!')
+      alert('Gagal Memannggil Data, Coba Refresh Halaman!');
       console.log(error.data.msg);
     }
   }
 
   async function startTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoatingResult/periode/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoatingResult/periode/start/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.get(
         url,
 
@@ -153,19 +156,20 @@ function CheckSheetCoatingPeriode() {
       );
 
       getCoatingMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error.data.msg);
       alert(error.response.data.msg);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
   async function deletePeriode(id: number) {
     if (window.confirm('Hapus Periode?')) {
-      const url = `${import.meta.env.VITE_API_LINK
-        }/qc/cs/inspeksiCoatingResult/periode/delete/${id}`;
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiCoatingResult/periode/delete/${id}`;
       try {
-        setIsLoading(true)
+        setIsLoading(true);
         const res = await axios.delete(
           url,
 
@@ -174,10 +178,10 @@ function CheckSheetCoatingPeriode() {
           },
         );
         getCoatingMesinPeriode();
-        setIsLoading(false)
+        setIsLoading(false);
       } catch (error: any) {
         console.log(error);
-        setIsLoading(false)
+        setIsLoading(false);
         alert(error);
       }
     }
@@ -193,10 +197,11 @@ function CheckSheetCoatingPeriode() {
     nilai_glossy_kanan: any,
     data_defect: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoatingResult/periode/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoatingResult/periode/stop/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
       const res = await axios.put(
@@ -215,18 +220,19 @@ function CheckSheetCoatingPeriode() {
           withCredentials: true,
         },
       );
-      setcttPeriode(null)
+      setcttPeriode(null);
       getCoatingMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   async function tambahTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoatingResult/periode/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoatingResult/periode/${id}`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -254,10 +260,11 @@ function CheckSheetCoatingPeriode() {
     sumberMasalah: any,
     index: number,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoatingResult/periode/point/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoatingResult/periode/point/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.post(
         url,
 
@@ -285,25 +292,26 @@ function CheckSheetCoatingPeriode() {
         },
       ]);
       getCoatingMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   async function doneCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoating/periode/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoating/periode/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.put(
         url,
         {
           catatan: catatan,
           sample_1: sample1Value,
           sample_2: sample2Value,
-          sample_3: sample3Value
+          sample_3: sample3Value,
         },
         {
           withCredentials: true,
@@ -311,18 +319,19 @@ function CheckSheetCoatingPeriode() {
       );
 
       getCoatingMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   async function pendingCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiCoating/pending/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiCoating/pending/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.get(
         url,
 
@@ -332,10 +341,10 @@ function CheckSheetCoatingPeriode() {
       );
 
       getCoatingMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error.data.msg);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -413,7 +422,6 @@ function CheckSheetCoatingPeriode() {
   const openModalHistory = () => setShowHistory(true);
   const closeModalHistory = () => setShowHistory(false);
 
-
   const isOnprogres =
     CoatingMesinPeriode?.inspeksi_coating_result_periode?.some(
       (data: { status: any }) => data?.status === 'on progress',
@@ -483,10 +491,24 @@ function CheckSheetCoatingPeriode() {
                               : {tanggalHistory}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {formatInteger(parseInt(coatingdMesinPeriodeHistory?.jumlah_druk))} / {formatInteger(parseInt(coatingdMesinPeriodeHistory?.mata))}
+                              :{' '}
+                              {formatInteger(
+                                parseInt(
+                                  coatingdMesinPeriodeHistory?.jumlah_druk,
+                                ),
+                              )}{' '}
+                              /{' '}
+                              {formatInteger(
+                                parseInt(coatingdMesinPeriodeHistory?.mata),
+                              )}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {formatInteger(parseInt(coatingdMesinPeriodeHistory?.jumlah_pcs))}
+                              :{' '}
+                              {formatInteger(
+                                parseInt(
+                                  coatingdMesinPeriodeHistory?.jumlah_pcs,
+                                ),
+                              )}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {coatingdMesinPeriodeHistory?.jenis_kertas}
@@ -565,8 +587,12 @@ function CheckSheetCoatingPeriode() {
                         </div>
                         {coatingdMesinPeriodeHistory?.inspeksi_coating_result_periode?.map(
                           (data: any, index: number) => {
-                            const waktuSampling = convertDateToTime(data.waktu_mulai);
-                            const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
+                            const waktuSampling = convertDateToTime(
+                              data.waktu_mulai,
+                            );
+                            const lamaPengerjaan = formatElapsedTime(
+                              data.lama_pengerjaan,
+                            );
                             return (
                               <>
                                 <label
@@ -599,15 +625,28 @@ function CheckSheetCoatingPeriode() {
                                           FORM FILLING GUIDE
                                         </label>
                                         <label className="text-black text-sm font-semibold flex gap-2">
-                                          <img alt="" src={ok} className="w-5"></img>OK
-                                        </label>
-                                        <label className="text-black text-sm font-semibold flex gap-2">
-                                          <img alt="" src={oktole} className="w-5"></img>OK
-                                          (Toleransi)
-                                        </label>
-                                        <label className="text-black text-sm font-semibold flex gap-2">
-                                          <img alt="" src={notok} className="w-5"></img>NOT
+                                          <img
+                                            alt=""
+                                            src={ok}
+                                            className="w-5"
+                                          ></img>
                                           OK
+                                        </label>
+                                        <label className="text-black text-sm font-semibold flex gap-2">
+                                          <img
+                                            alt=""
+                                            src={oktole}
+                                            className="w-5"
+                                          ></img>
+                                          OK (Toleransi)
+                                        </label>
+                                        <label className="text-black text-sm font-semibold flex gap-2">
+                                          <img
+                                            alt=""
+                                            src={notok}
+                                            className="w-5"
+                                          ></img>
+                                          NOT OK
                                         </label>
                                       </div>
 
@@ -644,7 +683,8 @@ function CheckSheetCoatingPeriode() {
                                   </div>
                                   <div className="flex flex-col justify-between">
                                     <label className="text-sm font-semibold">
-                                      NUMERATOR<span className="text-red-600">*</span>
+                                      NUMERATOR
+                                      <span className="text-red-600">*</span>
                                     </label>
 
                                     <input
@@ -652,15 +692,14 @@ function CheckSheetCoatingPeriode() {
                                       readOnly
                                       defaultValue={data.numerator}
                                       name="numerator"
-
                                       className="text-sm font-semibold w-full border-stroke border"
                                     ></input>
-
                                   </div>
 
                                   <div className="flex flex-col justify-between">
                                     <label className="text-sm font-semibold">
-                                      JUMLAH SAMPLING<span className="text-red-600">*</span>
+                                      JUMLAH SAMPLING
+                                      <span className="text-red-600">*</span>
                                     </label>
 
                                     <input
@@ -668,10 +707,8 @@ function CheckSheetCoatingPeriode() {
                                       readOnly
                                       defaultValue={data.jumlah_sampling}
                                       name="jumlah_sampling"
-
                                       className="text-sm font-semibold w-full border-stroke border"
                                     ></input>
-
                                   </div>
                                   <div className="flex flex-col justify-between">
                                     <label className="text-sm font-semibold">
@@ -684,10 +721,8 @@ function CheckSheetCoatingPeriode() {
                                       readOnly
                                       defaultValue={data.nilai_glossy_kiri}
                                       name="nilai_glossy_kiri"
-
                                       className="text-sm font-semibold w-[90%] border-stroke border"
                                     ></input>
-
                                   </div>
                                   <div className="flex flex-col justify-between">
                                     <label className="text-sm font-semibold">
@@ -700,10 +735,8 @@ function CheckSheetCoatingPeriode() {
                                       readOnly
                                       defaultValue={data.nilai_glossy_tengah}
                                       name="nilai_glossy_tengah"
-
                                       className="text-sm font-semibold w-[90%] border-stroke border"
                                     ></input>
-
                                   </div>
                                   <div className="flex flex-col justify-between">
                                     <label className="text-sm font-semibold">
@@ -716,21 +749,15 @@ function CheckSheetCoatingPeriode() {
                                       readOnly
                                       defaultValue={data.nilai_glossy_kanan}
                                       name="nilai_glossy_kanan"
-
                                       className="text-sm font-semibold w-[90%] border-stroke border"
                                     ></input>
-
                                   </div>
-                                  <>
-
-                                  </>
+                                  <></>
                                   <>
                                     <div className="w-[30%]">
                                       <p className="md:text-[14px] text-[9px] font-semibold">
                                         Time : {lamaPengerjaan}
                                       </p>
-
-
                                     </div>
                                   </>
                                 </div>
@@ -742,43 +769,55 @@ function CheckSheetCoatingPeriode() {
                                         <div
                                           className={`flex flex-col min-w-[200px] justify-center py-4 
                                 } items-center gap-2 
-                                 ${data2.hasil == 'ok' ? 'bg-blue-300' :
-                                              data2.hasil == 'ok (toleransi)' ? 'bg-yellow-300' :
-                                                data2.hasil == 'not ok' ? 'bg-red-300' :
-
-                                                  'bg-white'}`}
+                                 ${
+                                   data2.hasil == 'ok'
+                                     ? 'bg-blue-300'
+                                     : data2.hasil == 'ok (toleransi)'
+                                     ? 'bg-yellow-300'
+                                     : data2.hasil == 'not ok'
+                                     ? 'bg-red-300'
+                                     : 'bg-white'
+                                 }`}
                                         >
                                           <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                             {data2.kode}
                                           </label>
 
                                           <div
-
                                             className={`w-[80%] text-center uppercase font-semibold flex gap-4  
                                  } `}
                                           >
                                             {data2.hasil == 'ok' ? (
                                               <>
-                                                <img src={ok} alt="" className="w-4" />
+                                                <img
+                                                  src={ok}
+                                                  alt=""
+                                                  className="w-4"
+                                                />
                                               </>
-                                            ) : data2.hasil == 'ok (toleransi)' ? (
+                                            ) : data2.hasil ==
+                                              'ok (toleransi)' ? (
                                               <>
-                                                <img src={oktole} alt="" className="w-4" />
+                                                <img
+                                                  src={oktole}
+                                                  alt=""
+                                                  className="w-4"
+                                                />
                                               </>
                                             ) : data2.hasil == 'not ok' ? (
                                               <>
-                                                <img src={notok} alt="" className="w-4" />
+                                                <img
+                                                  src={notok}
+                                                  alt=""
+                                                  className="w-4"
+                                                />
                                               </>
-                                            ) :
-                                              <>
-                                                -
-                                              </>
-                                            }
+                                            ) : (
+                                              <>-</>
+                                            )}
 
                                             {data2.hasil}
                                           </div>
-
-
 
                                           {data2.hasil == 'not ok' ? (
                                             <input
@@ -788,16 +827,14 @@ function CheckSheetCoatingPeriode() {
                                               readOnly
                                               className="text-sm font-semibold w-[90%] border-stroke border"
                                             ></input>
-                                          ) : (<></>)}
+                                          ) : (
+                                            <></>
+                                          )}
                                         </div>
                                       );
                                     },
                                   )}
-
-
-
                                 </div>
-
                               </>
                             );
                           },
@@ -805,8 +842,7 @@ function CheckSheetCoatingPeriode() {
                       </>
                     </ModalKosongan>
                   </>
-                )
-                }
+                )}
               </div>
             </div>
             <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
@@ -835,7 +871,8 @@ function CheckSheetCoatingPeriode() {
                   : {tanggal}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {formatInteger(parseInt(CoatingMesinPeriode?.jumlah_druk))} / {formatInteger(parseInt(CoatingMesinPeriode?.mata))}
+                  : {formatInteger(parseInt(CoatingMesinPeriode?.jumlah_druk))}{' '}
+                  / {formatInteger(parseInt(CoatingMesinPeriode?.mata))}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {formatInteger(parseInt(CoatingMesinPeriode?.jumlah_pcs))}
@@ -978,12 +1015,10 @@ function CheckSheetCoatingPeriode() {
                       <></>
                     )}
                     {data.status == 'incoming' &&
-                      CoatingMesinPeriode?.status == 'incoming' ? (
+                    CoatingMesinPeriode?.status == 'incoming' ? (
                       <>
                         <button
-                          onClick={() =>
-                            deletePeriode(data.id)
-                          }
+                          onClick={() => deletePeriode(data.id)}
                           className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                         >
                           Hapus Periode
@@ -992,9 +1027,7 @@ function CheckSheetCoatingPeriode() {
                     ) : data.status == 'on progress' ? (
                       <>
                         <button
-                          onClick={() =>
-                            deletePeriode(data.id)
-                          }
+                          onClick={() => deletePeriode(data.id)}
                           className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                         >
                           Hapus Periode
@@ -1002,7 +1035,6 @@ function CheckSheetCoatingPeriode() {
                       </>
                     ) : null}
                     <div className="flex min-w-screen justify-between px-2 py-4">
-
                       <label className="text-sm font-semibold">
                         {index + 1}
                       </label>
@@ -1234,18 +1266,21 @@ function CheckSheetCoatingPeriode() {
                             <div
                               className={`flex flex-col min-w-[200px] justify-center py-4 
                                 } items-center gap-2 
-                                 ${data2.hasil == 'ok' ? 'bg-blue-300' :
-                                  data2.hasil == 'ok (toleransi)' ? 'bg-yellow-300' :
-                                    data2.hasil == 'not ok' ? 'bg-red-300' :
-
-                                      'bg-white'}`}
+                                 ${
+                                   data2.hasil == 'ok'
+                                     ? 'bg-blue-300'
+                                     : data2.hasil == 'ok (toleransi)'
+                                     ? 'bg-yellow-300'
+                                     : data2.hasil == 'not ok'
+                                     ? 'bg-red-300'
+                                     : 'bg-white'
+                                 }`}
                             >
                               <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                 {data2.kode}
                               </label>
                               {data.status == 'done' ? (
                                 <div
-
                                   className={`w-[80%] text-center uppercase font-semibold flex gap-4  
                                  } `}
                                 >
@@ -1255,21 +1290,22 @@ function CheckSheetCoatingPeriode() {
                                     </>
                                   ) : data2.hasil == 'ok (toleransi)' ? (
                                     <>
-                                      <img src={oktole} alt="" className="w-4" />
+                                      <img
+                                        src={oktole}
+                                        alt=""
+                                        className="w-4"
+                                      />
                                     </>
                                   ) : data2.hasil == 'not ok' ? (
                                     <>
                                       <img src={notok} alt="" className="w-4" />
                                     </>
-                                  ) :
-                                    <>
-                                      -
-                                    </>
-                                  }
+                                  ) : (
+                                    <>-</>
+                                  )}
 
                                   {data2.hasil}
                                 </div>
-
                               ) : data.status == 'on progress' ? (
                                 <div className="flex flex-col  w-full px-2 py-2">
                                   <div className={`flex flex-col w-full`}>
@@ -1280,16 +1316,15 @@ function CheckSheetCoatingPeriode() {
 
                                           if (e.target.value == 'not ok') {
                                             handleClickNotOke(i, true);
-
                                           } else {
                                             handleClickNotOke(i, false);
                                           }
-
                                         }}
-                                        className={`  ${(i + 1) % 2 === 0
-                                          ? ' bg-[#F3F3F3]'
-                                          : 'bg-white'
-                                          } `}
+                                        className={`  ${
+                                          (i + 1) % 2 === 0
+                                            ? ' bg-[#F3F3F3]'
+                                            : 'bg-white'
+                                        } `}
                                         type="radio"
                                         id="ok11"
                                         value="ok"
@@ -1308,16 +1343,21 @@ function CheckSheetCoatingPeriode() {
                                             handleClickNotOke(i, false);
                                           }
                                         }}
-                                        className={`  ${(i + 1) % 2 === 0
-                                          ? ' bg-[#F3F3F3]'
-                                          : 'bg-white'
-                                          } `}
+                                        className={`  ${
+                                          (i + 1) % 2 === 0
+                                            ? ' bg-[#F3F3F3]'
+                                            : 'bg-white'
+                                        } `}
                                         type="radio"
                                         id="ok12"
                                         value="ok (toleransi)"
                                         name={`hasil ${i}`}
                                       />
-                                      <img src={oktole} alt="" className="w-4" />
+                                      <img
+                                        src={oktole}
+                                        alt=""
+                                        className="w-4"
+                                      />
                                       <label className="">OK (Toleransi)</label>
                                     </div>
                                     <div className="flex gap-1 w-full">
@@ -1330,10 +1370,11 @@ function CheckSheetCoatingPeriode() {
                                             handleClickNotOke(i, false);
                                           }
                                         }}
-                                        className={`  ${(i + 1) % 2 === 0
-                                          ? ' bg-[#F3F3F3]'
-                                          : 'bg-white'
-                                          } `}
+                                        className={`  ${
+                                          (i + 1) % 2 === 0
+                                            ? ' bg-[#F3F3F3]'
+                                            : 'bg-white'
+                                        } `}
                                         type="radio"
                                         id="ok12"
                                         value="not ok"
@@ -1352,10 +1393,11 @@ function CheckSheetCoatingPeriode() {
                                             handleClickNotOke(i, false);
                                           }
                                         }}
-                                        className={`  ${(i + 1) % 2 === 0
-                                          ? ' bg-[#F3F3F3]'
-                                          : 'bg-white'
-                                          } `}
+                                        className={`  ${
+                                          (i + 1) % 2 === 0
+                                            ? ' bg-[#F3F3F3]'
+                                            : 'bg-white'
+                                        } `}
                                         type="radio"
                                         id="ok12"
                                         value="-"
@@ -1367,7 +1409,7 @@ function CheckSheetCoatingPeriode() {
                                 </div>
                               ) : null}
                               {showNotOk[i] == true &&
-                                data.status == 'on progress' ? (
+                              data.status == 'on progress' ? (
                                 <input
                                   type="text"
                                   name="jumlah_defect"
@@ -1608,60 +1650,64 @@ function CheckSheetCoatingPeriode() {
                         </>
                       )}
                     </div>
-                    {data.status == 'done' ? (<>
-                      <div className='border-b-8 border-[#D8EAFF]'>
-                        <div className='px-[1%] py-[1%]'>
-                          <label className="text-black text-sm font-bold pt-4 ">
-                            Catatan Periode {index + 1}
-                          </label>
-                          <textarea
-                            readOnly
-                            value={data.catatan}
-                            className=" peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                          ></textarea>
+                    {data.status == 'done' ? (
+                      <>
+                        <div className="border-b-8 border-[#D8EAFF]">
+                          <div className="px-[1%] py-[1%]">
+                            <label className="text-black text-sm font-bold pt-4 ">
+                              Catatan Periode {index + 1}
+                            </label>
+                            <textarea
+                              readOnly
+                              value={data.catatan}
+                              className=" peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                            ></textarea>
+                          </div>
                         </div>
-                      </div>
-                    </>) : (<>
-                      <div className='border-b-8 border-[#D8EAFF]'>
-                        <div className='px-[1%] py-[1%]'>
-                          <label className="text-black text-sm font-bold pt-4">
-                            Catatan Periode {index + 1}
-                          </label>
-                          <textarea
-                            onChange={(e) => setcttPeriode(e.target.value)}
-                            className="peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                          ></textarea>
+                      </>
+                    ) : (
+                      <>
+                        <div className="border-b-8 border-[#D8EAFF]">
+                          <div className="px-[1%] py-[1%]">
+                            <label className="text-black text-sm font-bold pt-4">
+                              Catatan Periode {index + 1}
+                            </label>
+                            <textarea
+                              onChange={(e) => setcttPeriode(e.target.value)}
+                              className="peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                            ></textarea>
+                          </div>
                         </div>
-                      </div>
-                    </>)}
+                      </>
+                    )}
                   </>
                 );
               },
             )}
           </div>
           {!isOnprogres &&
-            CoatingMesinPeriode?.inspeksi_coating_sub_periode[0].status !=
+          CoatingMesinPeriode?.inspeksi_coating_sub_periode[0].status !=
             'history' ? (
             <>
               {!isFailed ? (
                 <>
                   <button
                     disabled={isLoading}
-                    onClick={() => tambahTaskCekPeriode(CoatingMesinPeriode?.id)}
+                    onClick={() =>
+                      tambahTaskCekPeriode(CoatingMesinPeriode?.id)
+                    }
                     className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
                   >
                     {isLoading ? 'Loading...' : '+ Periode Check'}
                   </button>
                 </>
-              ) :
+              ) : (
                 <>
-                  <button
-
-                    className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
-                  >
+                  <button className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer">
                     Refresh Halaman
                   </button>
-                </>}
+                </>
+              )}
               {isLoading && <Loading />}
             </>
           ) : null}
@@ -1679,7 +1725,7 @@ function CheckSheetCoatingPeriode() {
                 Catatan<span className="text-red-500">*</span> :
               </label>
               {CoatingMesinPeriode?.inspeksi_coating_sub_periode[0].status !=
-                'history' ? (
+              'history' ? (
                 <textarea
                   onChange={(e) => setCatatan(e.target.value)}
                   className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
@@ -1695,11 +1741,11 @@ function CheckSheetCoatingPeriode() {
               )}
             </div>
             {CoatingMesinPeriode?.inspeksi_coating_sub_periode[0].status !=
-              'history' ? (
-              <div className='text-neutral-500 gap-2 items-start justify-start flex flex-col text-sm font-semibold col-span-2'>
-                <div className='flex flex-col gap-2'>
-                  <div className='flex gap-2'>
-                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+            'history' ? (
+              <div className="text-neutral-500 gap-2 items-start justify-start flex flex-col text-sm font-semibold col-span-2">
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <label className="text-neutral-500 flex flex-col text-sm font-semibold">
                       Sample 1
                     </label>
                     <input
@@ -1713,23 +1759,23 @@ function CheckSheetCoatingPeriode() {
                       type="text"
                       className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
                     />
-                    <div>
-                      gr
-                    </div>
+                    <div>gr</div>
                   </div>
                   <div>
-                    = <input
+                    ={' '}
+                    <input
                       name="hasilsample1"
                       disabled
                       value={result1}
                       type="text"
                       className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                    /> g/m<sup className=''>2</sup>
+                    />{' '}
+                    g/m<sup className="">2</sup>
                   </div>
                 </div>
-                <div className='flex gap-2 flex-col'>
-                  <div className='flex gap-2'>
-                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                <div className="flex gap-2 flex-col">
+                  <div className="flex gap-2">
+                    <label className="text-neutral-500 flex flex-col text-sm font-semibold">
                       Sample 2
                     </label>
                     <input
@@ -1743,23 +1789,23 @@ function CheckSheetCoatingPeriode() {
                       type="text"
                       className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
                     />
-                    <div>
-                      gr
-                    </div>
+                    <div>gr</div>
                   </div>
                   <div>
-                    =  <input
+                    ={' '}
+                    <input
                       name="hasilsample2"
                       disabled
                       value={result2}
                       type="text"
                       className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                    /> g/m<sup className=''>2</sup>
+                    />{' '}
+                    g/m<sup className="">2</sup>
                   </div>
                 </div>
-                <div className='flex gap-2 flex-col'>
-                  <div className='flex gap-2'>
-                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                <div className="flex gap-2 flex-col">
+                  <div className="flex gap-2">
+                    <label className="text-neutral-500 flex flex-col text-sm font-semibold">
                       Sample 3
                     </label>
                     <input
@@ -1774,104 +1820,120 @@ function CheckSheetCoatingPeriode() {
                       type="text"
                       className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
                     />
-                    <div>
-                      gr
-                    </div>
+                    <div>gr</div>
                   </div>
                   <div>
-                    =  <input
+                    ={' '}
+                    <input
                       name="hasilsample3"
                       disabled
                       value={result3}
                       type="text"
                       className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                    /> g/m<sup className=''>2</sup>
+                    />{' '}
+                    g/m<sup className="">2</sup>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className='text-neutral-500 gap-2 items-start justify-start flex flex-col text-sm font-semibold col-span-2'>
-                <div className='flex flex-col gap-2'>
-                  <div className='flex gap-2'>
-                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+              <div className="text-neutral-500 gap-2 items-start justify-start flex flex-col text-sm font-semibold col-span-2">
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    <label className="text-neutral-500 flex flex-col text-sm font-semibold">
                       Sample 1
                     </label>
                     <input
                       readOnly
-                      value={CoatingMesinPeriode?.inspeksi_coating_sub_periode[0]?.sample_1}
+                      value={
+                        CoatingMesinPeriode?.inspeksi_coating_sub_periode[0]
+                          ?.sample_1
+                      }
                       type="text"
                       className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
                     />
-                    <div>
-                      gr
-                    </div>
+                    <div>gr</div>
                   </div>
                   <div>
-                    = <input
+                    ={' '}
+                    <input
                       name="hasilsample1"
                       disabled
-                      value={CoatingMesinPeriode?.inspeksi_coating_sub_periode[0]?.hasil_sample_1}
+                      value={
+                        CoatingMesinPeriode?.inspeksi_coating_sub_periode[0]
+                          ?.hasil_sample_1
+                      }
                       type="text"
                       className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                    /> g/m<sup className=''>2</sup>
+                    />{' '}
+                    g/m<sup className="">2</sup>
                   </div>
                 </div>
-                <div className='flex gap-2 flex-col'>
-                  <div className='flex gap-2'>
-                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                <div className="flex gap-2 flex-col">
+                  <div className="flex gap-2">
+                    <label className="text-neutral-500 flex flex-col text-sm font-semibold">
                       Sample 2
                     </label>
                     <input
                       readOnly
-                      value={CoatingMesinPeriode?.inspeksi_coating_sub_periode[0]?.sample_2}
+                      value={
+                        CoatingMesinPeriode?.inspeksi_coating_sub_periode[0]
+                          ?.sample_2
+                      }
                       type="text"
                       className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
                     />
-                    <div>
-                      gr
-                    </div>
+                    <div>gr</div>
                   </div>
                   <div>
-                    =  <input
+                    ={' '}
+                    <input
                       name="hasilsample2"
                       disabled
-                      value={CoatingMesinPeriode?.inspeksi_coating_sub_periode[0]?.hasil_sample_2}
+                      value={
+                        CoatingMesinPeriode?.inspeksi_coating_sub_periode[0]
+                          ?.hasil_sample_2
+                      }
                       type="text"
                       className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                    /> g/m<sup className=''>2</sup>
+                    />{' '}
+                    g/m<sup className="">2</sup>
                   </div>
                 </div>
-                <div className='flex gap-2 flex-col'>
-                  <div className='flex gap-2'>
-                    <label className='text-neutral-500 flex flex-col text-sm font-semibold'>
+                <div className="flex gap-2 flex-col">
+                  <div className="flex gap-2">
+                    <label className="text-neutral-500 flex flex-col text-sm font-semibold">
                       Sample 3
                     </label>
                     <input
                       readOnly
-                      value={CoatingMesinPeriode?.inspeksi_coating_sub_periode[0]?.sample_3}
-
+                      value={
+                        CoatingMesinPeriode?.inspeksi_coating_sub_periode[0]
+                          ?.sample_3
+                      }
                       type="text"
                       className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
                     />
-                    <div>
-                      gr
-                    </div>
+                    <div>gr</div>
                   </div>
                   <div>
-                    =  <input
+                    ={' '}
+                    <input
                       name="hasilsample3"
                       disabled
-                      value={CoatingMesinPeriode?.inspeksi_coating_sub_periode[0]?.hasil_sample_3}
+                      value={
+                        CoatingMesinPeriode?.inspeksi_coating_sub_periode[0]
+                          ?.hasil_sample_3
+                      }
                       type="text"
                       className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
-                    /> g/m<sup className=''>2</sup>
+                    />{' '}
+                    g/m<sup className="">2</sup>
                   </div>
                 </div>
               </div>
             )}
             <div className="grid col-span-2 items-end justify-end gap-2">
-              {!isOnprogres &&
-                CoatingMesinPeriode?.status == 'incoming' ? (
+              {!isOnprogres && CoatingMesinPeriode?.status == 'incoming' ? (
                 <button
                   onClick={() => pendingCekAwal(CoatingMesinPeriode?.id)}
                   className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
@@ -1880,7 +1942,7 @@ function CheckSheetCoatingPeriode() {
                 </button>
               ) : null}
               {!isOnprogres &&
-                CoatingMesinPeriode?.inspeksi_coating_sub_periode[0].status !=
+              CoatingMesinPeriode?.inspeksi_coating_sub_periode[0].status !=
                 'history' ? (
                 <button
                   onClick={() => {

@@ -8,6 +8,7 @@ import calculateElapsedTime from '../../../../../utils/calculateElapsedTime';
 import Loading from '../../../../Loading';
 import formatInteger from '../../../../../utils/formaterInteger';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
+import ModalKosonganSmall from '../../../../Modals/ModalKosonganSmall';
 
 function CheckSheetCoatingAwal() {
   const { id } = useParams();
@@ -116,7 +117,7 @@ function CheckSheetCoatingAwal() {
       alert(error.response.data.msg);
     }
   }
-
+  const [alasanPending, setalasanPending] = useState<any>();
   async function tambahTaskCekAwal(id: number) {
     const url = `${
       import.meta.env.VITE_API_LINK
@@ -175,14 +176,14 @@ function CheckSheetCoatingAwal() {
       import.meta.env.VITE_API_LINK
     }/qc/cs/inspeksiCoating/pending/${id}`;
     try {
-      const res = await axios.get(
+      const res = await axios.put(
         url,
-
+        { alasan_pending: alasanPending },
         {
           withCredentials: true,
         },
       );
-
+      closeModalPending();
       getCoatingMesinAwal();
     } catch (error: any) {
       console.log(error.data.msg);
@@ -214,6 +215,9 @@ function CheckSheetCoatingAwal() {
   const isOnprogres = coatingMesinAwal?.inspeksi_coating_result_awal?.some(
     (data: { status: any }) => data?.status === 'on progress',
   );
+  const [showPending, setShowPending] = useState(false);
+  const openModalPending = () => setShowPending(true);
+  const closeModalPending = () => setShowPending(false);
   return (
     <>
       {!isMobile && (
@@ -1222,12 +1226,39 @@ function CheckSheetCoatingAwal() {
             <div className="grid col-span-3 items-end justify-end gap-2">
               {!isOnprogres && coatingMesinAwal?.status == 'incoming' ? (
                 <button
-                  onClick={() => pendingCekAwal(coatingMesinAwal?.id)}
+                  onClick={() => openModalPending()}
                   className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                 >
                   PENDING
                 </button>
               ) : null}
+              {showPending == true && (
+                <>
+                  <ModalKosonganSmall
+                    isOpen={showPending}
+                    onClose={() => closeModalPending()}
+                    judul={'Alasan Pending'}
+                  >
+                    <>
+                      <div className="flex flex-col gap-2 px-4 py-4">
+                        <div className="flex gap-2 flex-col w-full">
+                          <input
+                            onChange={(e) => setalasanPending(e.target.value)}
+                            type="text"
+                            className="border-2 border-stroke w-full rounded-sm col-span-2 h-10"
+                          />
+                        </div>
+                        <button
+                          onClick={() => pendingCekAwal(coatingMesinAwal?.id)}
+                          className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                        >
+                          PENDING
+                        </button>
+                      </div>
+                    </>
+                  </ModalKosonganSmall>
+                </>
+              )}
               {!isOnprogres &&
               coatingMesinAwal?.inspeksi_coating_sub_awal[0].status ==
                 'incoming' ? (
