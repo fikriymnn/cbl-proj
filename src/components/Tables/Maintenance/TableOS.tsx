@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import Filter from '../../../images/icon/filter.svg';
 import Burger from '../../../images/icon/burger.svg';
 import Arrow from '../../../images/icon/arrowDown.svg';
-
+import Select from 'react-select';
 import ModalStockCheck1 from '../../Modals/ModalStockCheck1';
 import Polygon6 from '../../../images/icon/Polygon6.svg';
 import X from '../../../images/icon/x.svg';
@@ -99,24 +99,32 @@ function TableOS() {
 
   useEffect(() => {
     getTiket();
-    getUser();
+    getMasterUser();
   }, [page]);
 
-  async function getUser() {
+  async function getMasterUser() {
+    const url = `${import.meta.env.VITE_API_LINK}/users`;
     try {
-      setIsLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_API_LINK}/me`, {
+      const res = await axios.get(url, {
+        params: {
+          status: 'aktif',
+          bagian: 'maintenance',
+        },
         withCredentials: true,
       });
-      // if (res.data.success == false) {
-      //   navigate("/auth/login");
-      // }
-      setIsLoading(false);
-      setUser(res.data);
-      console.log(res.data);
+
+      setUserList(res.data);
+      console.log('user list', res.data);
+      setOptions(
+        res.data.map((item: any) => {
+          return {
+            value: item.id,
+            label: `${item.nama}`,
+          };
+        }),
+      );
     } catch (error: any) {
-      setIsLoading(false);
-      console.log(error.response);
+      console.log(error);
     }
   }
   const [showModalDetail, setShowModalDetail] = useState<any>([]);
@@ -152,11 +160,14 @@ function TableOS() {
       console.log(error.data.msg);
     }
   }
+  const [userList, setUserList] = useState<any>();
+  const [options, setOptions] = useState([]);
   const [startDate, setStartDate] = useState<any>();
   const [endDate, setEndDate] = useState<any>();
   const [mesinNama, setMesinNama] = useState<any>();
   const [statusTiket, setStatusTiket] = useState<any>();
   const [noJo, setNoJo] = useState<any>();
+  const [idKaryawan, setIdKaryawan] = useState<any>();
 
   async function getTiket(isRework?: boolean, idModal?: number) {
     const url = `${import.meta.env.VITE_API_LINK}/ticket`;
@@ -164,7 +175,7 @@ function TableOS() {
       setIsLoading(true);
       const res = await axios.get(url, {
         params: {
-          no_jo: noJo,
+          search: noJo,
           bagian_tiket: 'os2',
           page: page,
           limit: 10,
@@ -172,6 +183,7 @@ function TableOS() {
           end_date: endDate,
           mesin: mesinNama,
           status_tiket: statusTiket,
+          id_eksekutor: idKaryawan,
         },
         withCredentials: true,
       });
@@ -221,6 +233,17 @@ function TableOS() {
       alert(error.respone.data.msg);
     }
   }
+  const handleChangePointDepatment = (selected: any) => {
+    const { value } = selected;
+    const filteredData = userList.find(
+      (item: any) => item.id == value,
+      // item.id.includes(parseInt(value));
+    );
+
+    console.log(filteredData?.id);
+
+    setIdKaryawan(filteredData?.id);
+  };
 
   function calculateResponTime(startDate: any, endDate: any) {
     const createdAtDate = new Date(startDate);
@@ -764,13 +787,23 @@ function TableOS() {
               </option>
             </select>
           </div>
+          <div className="flex flex-col gap-1 col-span-2">
+            <label className=" text-[#6c6b6b] text-sm font-semibold">
+              Nama
+            </label>
+            <Select
+              placeholder="Cari..."
+              options={options}
+              onChange={handleChangePointDepatment}
+              className={`relative z-50 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
+                            }`}
+            ></Select>
+          </div>
           <div className=" gap-2 flex flex-col col-span-2">
-            <p className=" my-auto text-sm text-primary font-semibold ">
-              No.Jo
-            </p>
+            <p className=" my-auto text-sm text-primary font-semibold ">Cari</p>
             <input
               className="rounded-md h-8 bg-[#D8EAFF] px-2 w-full"
-              placeholder="Nomor JO"
+              placeholder="Kendala / No Jo"
               type="text"
               onChange={(e) => setNoJo(e.target.value)}
             ></input>

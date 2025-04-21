@@ -34,14 +34,14 @@ function Stockmaster() {
   async function getMesin() {
     const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.get(url, {
         withCredentials: true,
       });
-      setIsLoading(false)
+      setIsLoading(false);
       setMesin(res.data);
     } catch (error: any) {
-      setIsLoading(false)
+      setIsLoading(false);
       console.log(error.data.msg);
     }
   }
@@ -64,11 +64,12 @@ function Stockmaster() {
   const [namaSparepart, setNamaSparePart] = useState<any>();
   const [lokasi, setLokasi] = useState<any>();
   const [mesinEdit, setMesinEdit] = useState<any>();
+  const [umurEdit, setumurEdit] = useState<any>();
 
   async function editStock(id: any, i: any) {
     const url = `${import.meta.env.VITE_API_LINK}/stokSparepart/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.put(
         url,
         {
@@ -76,19 +77,26 @@ function Stockmaster() {
           nama_sparepart: namaSparepart,
           part_number: partNumber,
           lokasi: lokasi,
-          id_mesin: mesinEdit
+          id_mesin: mesinEdit,
+          umur_sparepart: umurEdit,
         },
         {
           withCredentials: true,
         },
       );
-      setIsLoading(false)
-      closeEdit(i)
-      getStokSparepart()
+      setKode('');
+      setPartNumber('');
+      setNamaSparePart('');
+      setLokasi('');
+      setMesinEdit('');
+      setumurEdit('');
+      setIsLoading(false);
+      closeEdit(i);
+      getStokSparepart();
       alert('Edit Success');
       console.log(res.data);
     } catch (error: any) {
-      setIsLoading(false)
+      setIsLoading(false);
       alert(error.response.data.msg);
       console.log(error.response);
     }
@@ -107,7 +115,7 @@ function Stockmaster() {
     umur_sparepart: 0,
     stok: 0,
   });
-  const [masterGrade, setmasterGrade] = useState<any>();;
+  const [masterGrade, setmasterGrade] = useState<any>();
 
   async function getMasterGrade() {
     const url = `${import.meta.env.VITE_API_LINK}/master/grade`;
@@ -122,8 +130,6 @@ function Stockmaster() {
       console.log(error.data.msg);
     }
   }
-
-
 
   async function addStok() {
     const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
@@ -149,8 +155,8 @@ function Stockmaster() {
         },
       );
       alert('Add Success');
-      getStokSparepart()
-      closeModalHistory()
+      getStokSparepart();
+      closeModalHistory();
       console.log(res.data);
     } catch (error: any) {
       alert(error.response.data.msg);
@@ -168,19 +174,23 @@ function Stockmaster() {
   const [showHistory, setShowHistory] = useState(false);
   const openModalHistory = () => setShowHistory(true);
   const closeModalHistory = () => setShowHistory(false);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   const filteredData = stokSparepart
     ?.filter((data: any) =>
-      [data.kode, data.mesin.nama_mesin, data.part_number, data.nama_sparepart]
-        .some((field) =>
-          field?.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+      [
+        data.kode,
+        data.mesin.nama_mesin,
+        data.part_number,
+        data.nama_sparepart,
+      ].some(
+        (field) => field?.toLowerCase().includes(searchQuery.toLowerCase()),
+      ),
     )
     .slice()
     .sort((a: any, b: any) => {
-      const numA = parseInt(a.kode.match(/\d+/)?.[0] || "0", 10);
-      const numB = parseInt(b.kode.match(/\d+/)?.[0] || "0", 10);
+      const numA = parseInt(a.kode.match(/\d+/)?.[0] || '0', 10);
+      const numB = parseInt(b.kode.match(/\d+/)?.[0] || '0', 10);
       return numA - numB;
     });
   return (
@@ -192,7 +202,7 @@ function Stockmaster() {
         </p>
         <div className="w-full py-2 rounded-md bg-white p-3 flex gap-5">
           <div className="flex justify-between w-full">
-            <div className='w-[50%] flex text-sm'>
+            <div className="w-[50%] flex text-sm">
               <input
                 type="text"
                 placeholder="Cari Berdasarkan kode, mesin, part number, atau nama sparepart"
@@ -276,7 +286,10 @@ function Stockmaster() {
                                 className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
                                             }`}
                               >
-                                <option value="" className="text-body dark:text-bodydark">
+                                <option
+                                  value=""
+                                  className="text-body dark:text-bodydark"
+                                >
                                   Select Mesin
                                 </option>
                                 {mesin?.map((data: any, index: number) => {
@@ -290,7 +303,6 @@ function Stockmaster() {
                                     </option>
                                   );
                                 })}
-
                               </select>
 
                               <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
@@ -354,7 +366,9 @@ function Stockmaster() {
                           </div>
                         </div>
                         <div className="mt-5 flex flex-col justify-center px-2">
-                          <p className="text-xs font-semibold">Grade (keperluan awal)</p>
+                          <p className="text-xs font-semibold">
+                            Grade (keperluan awal)
+                          </p>
                           <div className="flex justify-center items-center">
                             <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                               <select
@@ -363,20 +377,25 @@ function Stockmaster() {
                                 className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
                                                 }`}
                               >
-                                <option value="" className="text-body dark:text-bodydark">
+                                <option
+                                  value=""
+                                  className="text-body dark:text-bodydark"
+                                >
                                   Select Grade
                                 </option>
-                                {masterGrade?.map((data: any, index: number) => {
-                                  return (
-                                    <option
-                                      key={index}
-                                      value={data.id}
-                                      className="text-body dark:text-bodydark"
-                                    >
-                                      {data.grade} - {data.percent}
-                                    </option>
-                                  );
-                                })}
+                                {masterGrade?.map(
+                                  (data: any, index: number) => {
+                                    return (
+                                      <option
+                                        key={index}
+                                        value={data.id}
+                                        className="text-body dark:text-bodydark"
+                                      >
+                                        {data.grade} - {data.percent}
+                                      </option>
+                                    );
+                                  },
+                                )}
                               </select>
                             </div>
                           </div>
@@ -508,8 +527,8 @@ function Stockmaster() {
         {filteredData
           ?.slice() // Make a shallow copy to avoid mutating original data
           .sort((a: any, b: any) => {
-            const numA = parseInt(a.kode.match(/\d+/)?.[0] || "0", 10);
-            const numB = parseInt(b.kode.match(/\d+/)?.[0] || "0", 10);
+            const numA = parseInt(a.kode.match(/\d+/)?.[0] || '0', 10);
+            const numB = parseInt(b.kode.match(/\d+/)?.[0] || '0', 10);
             return numA - numB;
           })
           .map((data: any, i: number) => {
@@ -523,19 +542,27 @@ function Stockmaster() {
                     <p className="text-xs col-span-2">{data.nama_sparepart} </p>
                     <p className="text-xs">{data.mesin.nama_mesin}</p>
                     <p className="text-xs">{data.lokasi}</p>
-                    <p className="text-xs">{formatInteger(data.umur_sparepart)}</p>
+                    <p className="text-xs">
+                      {formatInteger(data.umur_sparepart)}
+                    </p>
                     <p className="text-xs">{data.grade}</p>
-                    <p className={`text-xs ${data.stok <= 0 ? "text-red-500 font-bold" : ""}`}>
+                    <p
+                      className={`text-xs ${
+                        data.stok <= 0 ? 'text-red-500 font-bold' : ''
+                      }`}
+                    >
                       {data.stok}
                     </p>
                     <p className="text-xs">{data.type_part}</p>
                     <p className="text-xs">{data.limit_stok}</p>
-                    <div className='flex flex-col gap-1'>
-                      <button onClick={() => openEdit(i)} className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
+                    <div className="flex flex-col gap-1">
+                      <button
+                        onClick={() => openEdit(i)}
+                        className="bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1"
+                      >
                         EDIT
                       </button>
                       {showEdit[i] == true && (
-
                         <ModalKosonganSmall
                           isOpen={showEdit[i]}
                           onClose={() => closeEdit(i)}
@@ -544,7 +571,6 @@ function Stockmaster() {
                           <>
                             <div className="grid   gap-3 w-full px-5 py-2">
                               <>
-
                                 <div className="flex w-full flex-col">
                                   <label className="text-black text-xs font-bold">
                                     Kode
@@ -553,7 +579,9 @@ function Stockmaster() {
                                     <input
                                       name="kode"
                                       defaultValue={data.kode}
-                                      onChange={(e) => { setKode(e.target.value) }}
+                                      onChange={(e) => {
+                                        setKode(e.target.value);
+                                      }}
                                       type="text"
                                       className=" w-[387px] h-10 border-2 border-stroke rounded-md"
                                     />
@@ -567,15 +595,15 @@ function Stockmaster() {
                                     <input
                                       name="part_number"
                                       defaultValue={data.part_number}
-                                      onChange={(e) => { setPartNumber(e.target.value) }}
+                                      onChange={(e) => {
+                                        setPartNumber(e.target.value);
+                                      }}
                                       type="text"
                                       className=" w-[387px] h-10 border-2 border-stroke rounded-md"
                                     />
                                   </div>
-
                                 </div>
                                 <div className="flex w-full flex-col">
-
                                   <label className="text-black text-xs font-bold">
                                     Nama SparePart
                                   </label>
@@ -583,15 +611,15 @@ function Stockmaster() {
                                     <input
                                       name="nama_sparepart"
                                       defaultValue={data.nama_sparepart}
-                                      onChange={(e) => { setNamaSparePart(e.target.value) }}
+                                      onChange={(e) => {
+                                        setNamaSparePart(e.target.value);
+                                      }}
                                       type="text"
                                       className=" w-[387px] h-10 border-2 border-stroke rounded-md"
                                     />
                                   </div>
-
                                 </div>
                                 <div className="flex w-full flex-col">
-
                                   <label className="text-black text-xs font-bold">
                                     Lokasi
                                   </label>
@@ -599,12 +627,29 @@ function Stockmaster() {
                                     <input
                                       name="lokasi"
                                       defaultValue={data.lokasi}
-                                      onChange={(e) => { setLokasi(e.target.value) }}
+                                      onChange={(e) => {
+                                        setLokasi(e.target.value);
+                                      }}
                                       type="text"
                                       className=" w-[387px] h-10 border-2 border-stroke rounded-md"
                                     />
                                   </div>
-
+                                </div>
+                                <div className="flex w-full flex-col">
+                                  <label className="text-black text-xs font-bold">
+                                    Umur Sparepart
+                                  </label>
+                                  <div className="flex w-full">
+                                    <input
+                                      name="umur_sparepart"
+                                      defaultValue={data.umur_sparepart}
+                                      onChange={(e) => {
+                                        setumurEdit(e.target.value);
+                                      }}
+                                      type="text"
+                                      className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                    />
+                                  </div>
                                 </div>
                                 <div className="flex w-full flex-col">
                                   <label className="text-black text-xs font-bold">
@@ -612,11 +657,16 @@ function Stockmaster() {
                                   </label>
                                   <select
                                     name="id_mesin"
-                                    onChange={(e) => { setMesinEdit(e.target.value) }}
+                                    onChange={(e) => {
+                                      setMesinEdit(e.target.value);
+                                    }}
                                     className={`w-[387px] h-10 border-2 border-stroke rounded-md' 
                                             }`}
                                   >
-                                    <option value="" className="text-body dark:text-bodydark">
+                                    <option
+                                      value=""
+                                      className="text-body dark:text-bodydark"
+                                    >
                                       Select Mesin
                                     </option>
                                     {mesin?.map((data: any, index: number) => {
@@ -630,7 +680,6 @@ function Stockmaster() {
                                         </option>
                                       );
                                     })}
-
                                   </select>
                                 </div>
 
@@ -642,7 +691,6 @@ function Stockmaster() {
                                     SIMPAN
                                   </button>
                                 </div>
-
                               </>
                             </div>
                           </>
