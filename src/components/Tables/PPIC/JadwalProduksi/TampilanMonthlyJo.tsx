@@ -44,6 +44,10 @@ function TampilanMonthlyJO() {
       today.toISOString().slice(0, 10),
       lastDayOfMonth.toISOString().slice(0, 10),
     );
+    getJadwalLembur(
+      today.toISOString().slice(0, 10),
+      lastDayOfMonth.toISOString().slice(0, 10),
+    );
   }, [selectedMonth]);
   const [listJO1, setJo1] = useState<any>();
   async function get1Tiket(id: any, i: any) {
@@ -195,6 +199,12 @@ function TampilanMonthlyJO() {
         .toISOString()
         .slice(0, 10),
     );
+    getJadwalLembur(
+      currentDate.toISOString().slice(0, 7) + '-01',
+      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0)
+        .toISOString()
+        .slice(0, 10),
+    );
   };
 
   const getFormattedDate = (date: any) => {
@@ -240,6 +250,67 @@ function TampilanMonthlyJO() {
     setShowEdit(updatedShowEdit);
   };
   const [activeView, setActiveView] = useState('default');
+
+  const [lemburData, setLemburData] = useState<any>([
+    {
+      tanggal_lembur: '2025-04-22',
+      shift_1: true,
+      shift_2: false,
+    },
+    {
+      tanggal_lembur: '2025-04-21',
+      shift_1: true,
+      shift_2: true,
+    },
+    {
+      tanggal_lembur: '2025-04-23',
+      shift_1: true,
+      shift_2: false,
+    },
+  ]);
+
+  async function postLembur(lembur_data: any, mesin: any) {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/ppic/jadwalProduksiViewLembur`;
+    try {
+      setIsLoading(true);
+      const res = await axios.post(
+        url,
+        { data_lembur: lembur_data, mesin: mesin },
+        {
+          withCredentials: true,
+        },
+      );
+      setIsLoading(false);
+      //setJo(res.data);
+      console.log('listJO', res.data);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
+
+  const getJadwalLembur = async (tglAwal: string, tglAkhir: string) => {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/ppic/jadwalProduksiViewLembur`;
+    try {
+      setIsLoading(true);
+      const response = await axios.get(url, {
+        params: {
+          start_date: tglAwal,
+          end_date: tglAkhir,
+        },
+        withCredentials: true,
+      });
+      console.log('jadwal lembur', response.data.data);
+      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setIsLoading(false);
+    }
+  };
   return (
     <main className="overflow-x-scroll ' ">
       {isLoading && <Loading />}
@@ -274,6 +345,10 @@ function TampilanMonthlyJO() {
                       0,
                     );
                     getJadwalView(
+                      e.target.value + '-01',
+                      lastDay.toISOString().slice(0, 10),
+                    );
+                    getJadwalLembur(
                       e.target.value + '-01',
                       lastDay.toISOString().slice(0, 10),
                     );
@@ -368,21 +443,46 @@ function TampilanMonthlyJO() {
                               <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Date From
+                                    Date
                                   </label>
                                   <input
+                                    defaultValue={lemburData[0].tanggal_lembur}
+                                    onChange={(e) => {
+                                      const newData = [...lemburData];
+                                      newData[0].tanggal_lembur =
+                                        e.target.value;
+                                      setLemburData(newData);
+                                    }}
                                     type="date"
                                     className="w-full p-2 border border-gray-300 rounded-md"
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Date To
+                                  <label>
+                                    <input
+                                      type="checkbox"
+                                      checked={lemburData[0]?.shift_1}
+                                      onChange={(e) => {
+                                        const newData = [...lemburData];
+                                        newData[0].shift_1 = e.target.checked;
+                                        setLemburData(newData);
+                                      }}
+                                    />
+                                    Shift 1
                                   </label>
-                                  <input
-                                    type="date"
-                                    className="w-full p-2 border border-gray-300 rounded-md"
-                                  />
+
+                                  <label>
+                                    <input
+                                      type="checkbox"
+                                      checked={lemburData[0]?.shift_2}
+                                      onChange={(e) => {
+                                        const newData = [...lemburData];
+                                        newData[0].shift_2 = e.target.checked;
+                                        setLemburData(newData);
+                                      }}
+                                    />
+                                    Shift 2
+                                  </label>
                                 </div>
                               </div>
 
@@ -393,7 +493,13 @@ function TampilanMonthlyJO() {
                                 >
                                   Cancel
                                 </button>
-                                <button className="px-4 py-2 bg-blue-600 text-white rounded-md">
+                                <button
+                                  className="px-4 py-2 bg-blue-600 text-white rounded-md"
+                                  onClick={() => {
+                                    postLembur(lemburData, machine),
+                                      console.log(lemburData);
+                                  }}
+                                >
                                   Save Schedule
                                 </button>
                               </div>
