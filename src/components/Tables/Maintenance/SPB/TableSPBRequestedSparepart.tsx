@@ -276,7 +276,7 @@ function TableSPBRequestedSparepart() {
                 </div>
                 <div className="flex gap-2">
                   <p className="text-stone-500 text-xs font-bold ">
-                    Qty Update
+                    Qty Request / Update Qty
                   </p>
                   <img className="w-2" src={Polygon6} alt="" />
                 </div>
@@ -340,9 +340,10 @@ function TableSPBRequestedSparepart() {
                           </div>
                           <div className="flex gap-2">
                             <p className="text-neutral-500 text-sm font-light line-clamp-1">
-                              {data.qty_update}
+                              {data.qty}/{data.qty_update}
                             </p>
                           </div>
+
                           <div className="flex gap-2 justify-end pr-8">
                             {data.status_pengajuan == 'section head approval' ||
                             'section head verifikasi' ? (

@@ -844,23 +844,22 @@ function TableSPBRequested() {
                         </svg>
                       </button>
                       {showModalMonitoringPurchase == index ? (
-                        <div className='z-50'>
-
-                        <MonitoringSPB
-                          isOpen={showModalMonitoringPurchase}
-                          onClose={closeModalMonitoringPurchase}
-                          status={data.status_pengajuan}
-                          waktu_tiket_masuk={tglSpb}
-                          pelapor={data.pelapor.nama}
-                          kode_part={data.master_part.kode}
-                          nama_barang={data.master_part.nama_sparepart}
-                          mesin={data.master_part.mesin.nama_mesin}
-                          qty={data.qty}
-                          tanggal_estimasi={tglPermintaanKedatangan}
-                          catatan={data.note}
-                        >
-                          <div></div>
-                        </MonitoringSPB>
+                        <div className="z-50">
+                          <MonitoringSPB
+                            isOpen={showModalMonitoringPurchase}
+                            onClose={closeModalMonitoringPurchase}
+                            status={data.status_pengajuan}
+                            waktu_tiket_masuk={tglSpb}
+                            pelapor={data.pelapor.nama}
+                            kode_part={data.master_part.kode}
+                            nama_barang={data.master_part.nama_sparepart}
+                            mesin={data.master_part.mesin.nama_mesin}
+                            qty={data.qty}
+                            tanggal_estimasi={tglPermintaanKedatangan}
+                            catatan={data.note}
+                          >
+                            <div></div>
+                          </MonitoringSPB>
                         </div>
                       ) : (
                         <></>
