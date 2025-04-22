@@ -239,7 +239,7 @@ function TampilanMonthlyJO() {
     updatedShowEdit[index] = false;
     setShowEdit(updatedShowEdit);
   };
-
+  const [activeView, setActiveView] = useState('default');
   return (
     <main className="overflow-x-scroll ' ">
       {isLoading && <Loading />}
@@ -290,178 +290,298 @@ function TampilanMonthlyJO() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <div className="flex">
-                {/* Machine Columns */}
-                <div className="flex flex-col w-[12%] border-r border-[#D8EAFF]">
-                  <div className="h-10 border-b border-[#D8EAFF] bg-[#eaf4ff] flex items-center justify-center">
-                    <p className="text-[#0065de] text-[11px] font-semibold">
-                      Machines
-                    </p>
-                  </div>
-                  {machineList.map((machine, index) => (
-                    <div
-                      key={index}
-                      className={`flex items-center justify-center cursor-pointer hover:bg-[#DEF0FF] ${
-                        index % 2 === 0 ? 'bg-[#F0F7FF]' : 'bg-white'
-                      }`}
-                      style={{
-                        height: `${calculateRowHeight(machine)}px`,
-                      }}
-                      onClick={() => openEdit(index, machine)}
-                    >
-                      <p className="text-[#0065de] text-[11px] font-semibold">
-                        {machine}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                {machineList.map(
-                  (machine, index) =>
-                    showEdit[index] && (
-                      <ModalXL
-                        key={index}
-                        isOpen={showEdit[index]}
-                        onClose={() => closeEdit(index)}
-                        judul={'Jadwal Mesin ' + machine}
-                      >
-                        <div className="p-6">
-                          <h2 className="text-xl font-bold mb-4">
-                            Jadwal Lembur Untuk Mesin : {machine}
-                          </h2>
-                          <p className="mb-4">{selectedMonth}</p>
-
-                          <div className="grid grid-cols-2 gap-4 mb-6">
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Date From
-                              </label>
-                              <input
-                                type="date"
-                                className="w-full p-2 border border-gray-300 rounded-md"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Date To
-                              </label>
-                              <input
-                                type="date"
-                                className="w-full p-2 border border-gray-300 rounded-md"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="flex justify-end gap-2">
-                            <button
-                              className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md"
-                              onClick={() => closeEdit(index)}
-                            >
-                              Cancel
-                            </button>
-                            <button className="px-4 py-2 bg-blue-600 text-white rounded-md">
-                              Save Schedule
-                            </button>
-                          </div>
-                        </div>
-                      </ModalXL>
-                    ),
-                )}
-                {/* Date Columns */}
-                <div className="flex flex-grow overflow-x-auto">
-                  <div className="flex">
-                    {generateMonthDates().map((date, dateIndex) => (
-                      <div
-                        key={dateIndex}
-                        className="flex flex-col w-[50px] border-r border-[#D8EAFF]"
-                      >
-                        {/* Date Header */}
-                        <div className="h-10 border-b border-[#D8EAFF] bg-[#eaf4ff] flex items-center justify-center">
-                          <p className="text-[#0065de] text-[11px] font-semibold">
-                            {date.getDate()}
-                          </p>
-                        </div>
-
-                        {/* Machine Cells */}
-                        {machineList.map((machine, machineIndex) => {
-                          const normalizedMachine = normalizeMesin(machine);
-
-                          // Filter data for this specific date and machine
-                          const matchingData = mapData.filter((d: any) => {
-                            const dateTanggal = new Date(d.tanggal);
-                            return (
-                              dateTanggal.getFullYear() ===
-                                date.getFullYear() &&
-                              dateTanggal.getMonth() === date.getMonth() &&
-                              dateTanggal.getDate() === date.getDate() &&
-                              normalizeMesin(d.mesin) === normalizedMachine
-                            );
-                          });
-
-                          // Unique job orders tracking
-                          const uniqueJobOrders: string[] = [];
-
-                          return (
-                            <div
-                              key={machineIndex}
-                              className={`flex items-center justify-center ${
-                                machineIndex % 2 === 0
-                                  ? 'bg-[#F0F7FF]'
-                                  : 'bg-white'
-                              }`}
-                              style={{
-                                height: `${calculateRowHeight(machine)}px`,
-                              }}
-                            >
-                              {matchingData.length > 0 && (
-                                <div className="flex flex-col items-center gap-1">
-                                  {matchingData.map(
-                                    (data: any, index: number) => {
-                                      // Color assignment logic
-                                      let jobOrderColorClass = '';
-                                      const existingIndex =
-                                        uniqueJobOrders.indexOf(data.no_jo);
-
-                                      if (existingIndex !== -1) {
-                                        jobOrderColorClass =
-                                          jobOrderColors[
-                                            existingIndex %
-                                              jobOrderColors.length
-                                          ];
-                                      } else {
-                                        uniqueJobOrders.push(data.no_jo);
-                                        jobOrderColorClass =
-                                          jobOrderColors[
-                                            uniqueJobOrders.length -
-                                              (1 % jobOrderColors.length)
-                                          ];
-                                      }
-
-                                      return (
-                                        <button
-                                          onMouseEnter={() =>
-                                            setHoveredJobOrder(data)
-                                          }
-                                          onMouseLeave={() =>
-                                            setHoveredJobOrder(null)
-                                          }
-                                          className={`text-[8px] font-semibold border border-opacity-50 p-0.5 rounded-sm ${jobOrderColorClass}`}
-                                        >
-                                          {data.no_jo}
-                                        </button>
-                                      );
-                                    },
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ))}
-                  </div>
+            <div className="p-4">
+              {/* Toggle buttons */}
+              <div className="flex justify-center mb-4">
+                <div className="inline-flex rounded-md shadow-sm" role="group">
+                  <button
+                    type="button"
+                    className={`px-4 py-2 text-sm font-medium border ${
+                      activeView === 'default'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-100'
+                    } rounded-l-lg border-gray-200`}
+                    onClick={() => setActiveView('default')}
+                  >
+                    JADWAL REGULER
+                  </button>
+                  <button
+                    type="button"
+                    className={`px-4 py-2 text-sm font-medium border-t border-b border-r ${
+                      activeView === 'lembur'
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-gray-700 hover:bg-gray-100'
+                    } rounded-r-lg border-gray-200`}
+                    onClick={() => setActiveView('lembur')}
+                  >
+                    LEMBUR
+                  </button>
                 </div>
               </div>
+
+              {/* Conditional rendering based on active view */}
+              {activeView === 'default' ? (
+                // Your existing component code
+                <div className="overflow-x-auto">
+                  <div className="flex">
+                    {/* Machine Columns */}
+                    <div className="flex flex-col w-[12%] border-r border-[#D8EAFF]">
+                      <div className="h-10 border-b border-[#D8EAFF] bg-[#eaf4ff] flex items-center justify-center">
+                        <p className="text-[#0065de] text-[11px] font-semibold">
+                          Machines
+                        </p>
+                      </div>
+                      {machineList.map((machine, index) => (
+                        <div
+                          key={index}
+                          className={`flex items-center justify-center cursor-pointer hover:bg-[#DEF0FF] ${
+                            index % 2 === 0 ? 'bg-[#F0F7FF]' : 'bg-white'
+                          }`}
+                          style={{
+                            height: `${calculateRowHeight(machine)}px`,
+                          }}
+                          onClick={() => openEdit(index, machine)}
+                        >
+                          <p className="text-[#0065de] text-[11px] font-semibold">
+                            {machine}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Modal implementation */}
+                    {machineList.map(
+                      (machine, index) =>
+                        showEdit[index] && (
+                          <ModalXL
+                            key={index}
+                            isOpen={showEdit[index]}
+                            onClose={() => closeEdit(index)}
+                            judul={'Jadwal Mesin ' + machine}
+                          >
+                            <div className="p-6">
+                              <h2 className="text-xl font-bold mb-4">
+                                Jadwal Lembur Untuk Mesin : {machine}
+                              </h2>
+                              <p className="mb-4">{selectedMonth}</p>
+
+                              <div className="grid grid-cols-2 gap-4 mb-6">
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Date From
+                                  </label>
+                                  <input
+                                    type="date"
+                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Date To
+                                  </label>
+                                  <input
+                                    type="date"
+                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                  />
+                                </div>
+                              </div>
+
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md"
+                                  onClick={() => closeEdit(index)}
+                                >
+                                  Cancel
+                                </button>
+                                <button className="px-4 py-2 bg-blue-600 text-white rounded-md">
+                                  Save Schedule
+                                </button>
+                              </div>
+                            </div>
+                          </ModalXL>
+                        ),
+                    )}
+
+                    {/* Date Columns */}
+                    <div className="flex flex-grow overflow-x-auto">
+                      <div className="flex">
+                        {generateMonthDates().map((date, dateIndex) => (
+                          <div
+                            key={dateIndex}
+                            className="flex flex-col w-[50px] border-r border-[#D8EAFF]"
+                          >
+                            {/* Date Header */}
+                            <div className="h-10 border-b border-[#D8EAFF] bg-[#eaf4ff] flex items-center justify-center">
+                              <p className="text-[#0065de] text-[11px] font-semibold">
+                                {date.getDate()}
+                              </p>
+                            </div>
+
+                            {/* Machine Cells */}
+                            {machineList.map((machine, machineIndex) => {
+                              const normalizedMachine = normalizeMesin(machine);
+
+                              // Filter data for this specific date and machine
+                              const matchingData = mapData.filter((d: any) => {
+                                const dateTanggal = new Date(d.tanggal);
+                                return (
+                                  dateTanggal.getFullYear() ===
+                                    date.getFullYear() &&
+                                  dateTanggal.getMonth() === date.getMonth() &&
+                                  dateTanggal.getDate() === date.getDate() &&
+                                  normalizeMesin(d.mesin) === normalizedMachine
+                                );
+                              });
+
+                              // Unique job orders tracking
+                              const uniqueJobOrders: any = [];
+
+                              return (
+                                <div
+                                  key={machineIndex}
+                                  className={`flex items-center justify-center ${
+                                    machineIndex % 2 === 0
+                                      ? 'bg-[#F0F7FF]'
+                                      : 'bg-white'
+                                  }`}
+                                  style={{
+                                    height: `${calculateRowHeight(machine)}px`,
+                                  }}
+                                >
+                                  {matchingData.length > 0 && (
+                                    <div className="flex flex-col items-center gap-1">
+                                      {matchingData.map(
+                                        (data: any, index: any) => {
+                                          // Color assignment logic
+                                          let jobOrderColorClass = '';
+                                          const existingIndex =
+                                            uniqueJobOrders.indexOf(data.no_jo);
+
+                                          if (existingIndex !== -1) {
+                                            jobOrderColorClass =
+                                              jobOrderColors[
+                                                existingIndex %
+                                                  jobOrderColors.length
+                                              ];
+                                          } else {
+                                            uniqueJobOrders.push(data.no_jo);
+                                            jobOrderColorClass =
+                                              jobOrderColors[
+                                                uniqueJobOrders.length -
+                                                  (1 % jobOrderColors.length)
+                                              ];
+                                          }
+
+                                          return (
+                                            <button
+                                              key={index}
+                                              onMouseEnter={() =>
+                                                setHoveredJobOrder(data)
+                                              }
+                                              onMouseLeave={() =>
+                                                setHoveredJobOrder(null)
+                                              }
+                                              className={`text-[8px] font-semibold border border-opacity-50 p-0.5 rounded-sm ${jobOrderColorClass}`}
+                                            >
+                                              {data.no_jo}
+                                            </button>
+                                          );
+                                        },
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // LEMBUR component
+                <div className="overflow-x-auto">
+                  <div className="flex">
+                    {/* Machine Columns */}
+                    <div className="flex flex-col w-[12%] border-r border-[#D8EAFF]">
+                      <div className="h-10 border-b border-[#D8EAFF] bg-[#eaf4ff] flex items-center justify-center">
+                        <p className="text-[#0065de] text-[11px] font-semibold">
+                          Machines
+                        </p>
+                      </div>
+                      {machineList.map((machine, index) => (
+                        <div
+                          key={index}
+                          className={`flex items-center justify-center cursor-pointer hover:bg-[#DEF0FF] ${
+                            index % 2 === 0 ? 'bg-[#F0F7FF]' : 'bg-white'
+                          }`}
+                          style={{
+                            height: `${calculateRowHeight(machine)}px`,
+                          }}
+                          onClick={() => openEdit(index, machine)}
+                        >
+                          <p className="text-[#0065de] text-[11px] font-semibold">
+                            {machine}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Date Columns - LEMBUR view can be customized differently */}
+                    <div className="flex flex-grow overflow-x-auto">
+                      <div className="flex">
+                        {generateMonthDates().map((date, dateIndex) => (
+                          <div
+                            key={dateIndex}
+                            className="flex flex-col w-[50px] border-r border-[#D8EAFF]"
+                          >
+                            {/* Date Header */}
+                            <div className="h-10 border-b border-[#D8EAFF] bg-[#eaf4ff] flex items-center justify-center">
+                              <p className="text-[#0065de] text-[11px] font-semibold">
+                                {date.getDate()}
+                              </p>
+                            </div>
+
+                            {/* Machine Cells - For LEMBUR view */}
+                            {machineList.map((machine, machineIndex) => {
+                              // You can customize this for the LEMBUR view
+                              // For example, filter for overtime data instead
+
+                              return (
+                                <div
+                                  key={machineIndex}
+                                  className={`flex items-center justify-center ${
+                                    machineIndex % 2 === 0
+                                      ? 'bg-[#F0F7FF]'
+                                      : 'bg-white'
+                                  }`}
+                                  style={{
+                                    height: `${calculateRowHeight(machine)}px`,
+                                  }}
+                                >
+                                  {/* Overtime specific content would go here */}
+                                  {/* This is just a placeholder showing the view is different */}
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    {date.getDay() === 0 ||
+                                    date.getDay() === 6 ? (
+                                      <button
+                                        className={`text-[8px] font-semibold border border-opacity-50 p-0.5 rounded-sm `}
+                                      >
+                                        JO-TES
+                                      </button>
+                                    ) : null}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Optional: Detailed Hover Card */}
               {hoveredJobOrder && (
