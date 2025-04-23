@@ -61,9 +61,7 @@ const TableGrupAnalisis = () => {
   }
 
   async function getMasterDefect() {
-    const url = `${
-      import.meta.env.VITE_API_LINK_P1
-    }/api/list-kendala?criteria=true`;
+    const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-all-kendala`;
 
     try {
       setIsLoading(true);
@@ -72,11 +70,11 @@ const TableGrupAnalisis = () => {
       setDefectMaster(res.data); // Save raw data for filtering
       setOptions(
         res.data.map((item: any) => ({
-          value: item.i_id,
-          label: `${item.e_kode_produksi} - ${item.nama_kendala}`,
+          value: item.kode,
+          label: `${item.kode} - ${item.kendala}`,
         })),
       );
-      //console.log('master defect', res.data);
+      console.log('master defect', res.data);
     } catch (error: any) {
       setIsLoading(false);
       console.log(error.data?.msg || error.message);
@@ -106,7 +104,7 @@ const TableGrupAnalisis = () => {
     }
   }
 
-  async function postChild(mainId: number, analisisId: number) {
+  async function postChild(mainId: number, analisisId: number, i: any) {
     const url = `${
       import.meta.env.VITE_API_LINK
     }/master/kodeAnalisisGrup/child`;
@@ -124,7 +122,7 @@ const TableGrupAnalisis = () => {
       );
       setIsLoading(false);
       getmasterAnalisisGrup(); // Refresh the data
-      closeEdit(mainId);
+      closeEdit(i);
     } catch (error: any) {
       setIsLoading(false);
       console.log(error);
@@ -146,6 +144,7 @@ const TableGrupAnalisis = () => {
     onchangeVal[i] = true;
     setShowEdit(onchangeVal);
     setSelectedMainId(mainId);
+    console.log('Main ID', mainId);
   };
 
   const closeEdit = (i: any) => {
@@ -158,21 +157,68 @@ const TableGrupAnalisis = () => {
 
   const handleChangePoint = (selected: any) => {
     const { value } = selected;
-    const filteredData = defectMaster.find((item: any) => item.i_id == value);
+    const filteredData = defectMaster.find((item: any) => item.kode == value);
 
     setSelectedDefect({
-      kode: filteredData?.e_kode_produksi,
-      nama: filteredData?.nama_kendala,
+      kode: filteredData?.kode,
+      nama: filteredData?.kendala,
     });
 
-    console.log(filteredData?.e_kode_produksi);
-    console.log(filteredData?.nama_kendala);
+    console.log(filteredData?.kode);
+    console.log(filteredData?.kendala);
   };
 
   const handleChangeAnalisis = (selected: any) => {
     setSelectedAnalisis(selected.value);
   };
-
+  async function deleteMain(id: number, kode_kendala: any) {
+    if (
+      window.confirm(
+        `Apakah Anda yakin ingin Menghapus Kode Kendala :  ${kode_kendala}`,
+      )
+    ) {
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/master/kodeAnalisisGrup/main/${id}
+`;
+      try {
+        setIsLoading(true);
+        const res = await axios.delete(url, {
+          withCredentials: true,
+        });
+        setIsLoading(false);
+        getmasterAnalisisGrup();
+        console.log(res.data);
+      } catch (error: any) {
+        setIsLoading(false);
+        console.log(error);
+      }
+    }
+  }
+  async function deleteChild(id: number, kode_kendala: any, analisis_mtc: any) {
+    if (
+      window.confirm(
+        `Apakah Anda yakin ingin Menghapus Analisis MTC :  ${analisis_mtc} Pada Kode Kendala : ${kode_kendala}`,
+      )
+    ) {
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/master/kodeAnalisisGrup/child/${id}
+`;
+      try {
+        setIsLoading(true);
+        const res = await axios.delete(url, {
+          withCredentials: true,
+        });
+        setIsLoading(false);
+        getmasterAnalisisGrup();
+        console.log(res.data);
+      } catch (error: any) {
+        setIsLoading(false);
+        console.log(error);
+      }
+    }
+  }
   return (
     <div className="rounded-xl border border-stroke bg-white pt-4 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
       <>
@@ -241,127 +287,122 @@ const TableGrupAnalisis = () => {
           )}
         </div>
 
-        <div className="flex flex-col">
-          <div className="flex border-b border-stroke dark:border-strokedark">
-            <div className="flex w-1/12 justify-center items-center gap-4 p-2.5 ">
-              <p className="  hidden text-[14px] text-slate-600 font-semibold dark:text-white sm:block">
+        <table className="w-full text-left border-collapse">
+          <thead className="bg-gray-100 dark:bg-gray-800">
+            <tr className="border-b border-stroke dark:border-strokedark">
+              <th className="p-2.5 text-[14px] text-slate-600 font-semibold dark:text-white hidden sm:table-cell">
                 No
-              </p>
-            </div>
-
-            <div className="flex items-center text-[14px] w-2/12 justify-start p-2.5 ">
-              <p className="text-slate-600 font-semibold text-center dark:text-white">
+              </th>
+              <th className="p-2.5 text-[14px] text-slate-600 font-semibold dark:text-white">
                 Kode Kendala
-              </p>
-            </div>
-
-            <div className="flex items-center text-[14px] w-5/12 justify-start  p-2.5 ">
-              <p className="text-slate-600 font-semibold text-center">
+              </th>
+              <th className="p-2.5 text-[14px] text-slate-600 font-semibold dark:text-white">
                 Analisis MTC
-              </p>
-            </div>
-
-            <div className="flex w-5/12 "></div>
-          </div>
-          {masterAnalisisGrup != null &&
-            masterAnalisisGrup.map((data: any, i: number) => {
-              return (
-                <>
-                  <div
-                    className={`flex ${
-                      i === masterAnalisisGrup.length - 1
-                        ? ''
-                        : 'border-b border-stroke dark:border-strokedark'
-                    }`}
-                    key={i}
-                  >
-                    <div className="flex justify-center items-center w-1/12   gap-3 p-2.5">
-                      <p className="hidden text-[14px] text-black dark:text-white sm:block">
-                        {i + 1}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center w-2/12 justify-start p-2.5 ">
-                      <p className="text-slate-600 text-[14px]  text-center uppercase dark:text-white">
-                        {data.kode_kendala} - {data.nama_kendala}
-                      </p>
-                    </div>
-
-                    <div className="flex  text-[14px] w-5/12 justify-start flex-col  p-2.5 ">
-                      {data.child_grup?.map((data2: any, ii: number) => {
-                        return (
-                          <p key={ii} className="text-slate-600  text-start">
-                            {data2.kode_analisis?.kode_analisis} -{' '}
+              </th>
+              <th className="p-2.5"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {masterAnalisisGrup != null &&
+              masterAnalisisGrup.map((data: any, i: number) => (
+                <tr
+                  key={i}
+                  className={`border-b border-stroke dark:border-strokedark ${
+                    i === masterAnalisisGrup.length - 1 ? 'border-0' : ''
+                  }`}
+                >
+                  <td className="p-2.5 text-[14px] text-black dark:text-white hidden sm:table-cell ">
+                    {i + 1}
+                  </td>
+                  <td className="p-2.5 text-[14px] text-slate-600  uppercase dark:text-white">
+                    {data.kode_kendala} - {data.nama_kendala}
+                  </td>
+                  <td className="p-2.5 text-[14px] text-slate-600 dark:text-white">
+                    <div className="flex flex-col gap-1">
+                      {data.child_grup?.map((data2: any, ii: number) => (
+                        <div className="flex  gap-1" key={ii}>
+                          <p>
+                            {ii + 1}. {data2.kode_analisis?.kode_analisis} -{' '}
                             {data2.kode_analisis?.nama_analisis} -{' '}
                             {data2.kode_analisis?.bagian_analisis}
                           </p>
-                        );
-                      })}
-                    </div>
-
-                    <div className="flex w-1/12 "></div>
-
-                    <div className="flex items-center w-4/12 justify-end p-2.5 gap-2 pr-10">
-                      <button
-                        onClick={() => openEdit(i, data.id)}
-                        className="bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1"
-                      >
-                        + Analisis MTC
-                      </button>
-                      {showEdit[i] == true && (
-                        <>
-                          <ModalKosongan
-                            isOpen={showEdit[i]}
-                            onClose={() => closeEdit(i)}
-                            judul={'Tambah Analisis MTC'}
+                          <button
+                            onClick={() =>
+                              deleteChild(
+                                data2.id,
+                                data.kode_kendala,
+                                data2.kode_analisis?.kode_analisis,
+                              )
+                            }
+                            className="bg-red-600 rounded-sm  text-white text-xs font-bold px-2 py-1"
                           >
-                            <>
-                              <div className="flex flex-col gap-4">
-                                <div className="flex flex-col gap-1">
-                                  <Select
-                                    placeholder="Pilih Analisis MTC..."
-                                    options={analisisOptions}
-                                    onChange={(selected) => {
-                                      handleChangeAnalisis(selected);
-                                    }}
-                                    className={`relative z-50 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white'}`}
-                                  />
-                                </div>
-
-                                <div className="flex justify-end mt-4">
-                                  <button
-                                    onClick={() => {
-                                      if (selectedAnalisis && selectedMainId) {
-                                        postChild(
-                                          selectedMainId,
-                                          selectedAnalisis,
-                                        );
-                                      }
-                                    }}
-                                    disabled={!selectedAnalisis || isLoading}
-                                    className={`bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-2 ${
-                                      !selectedAnalisis || isLoading
-                                        ? 'opacity-50 cursor-not-allowed'
-                                        : ''
-                                    }`}
-                                  >
-                                    {isLoading ? 'Loading...' : 'TAMBAH'}
-                                  </button>
-                                </div>
-                              </div>
-                            </>
-                          </ModalKosongan>
-                        </>
-                      )}
-                      {/* <button className="bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1">
-                        DELETE
-                      </button> */}
+                            X
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  </div>
-                </>
-              );
-            })}
-        </div>
+                  </td>
+                  <td className="p-2.5 justify-end items-end flex-col gap-2 flex pr-10">
+                    <button
+                      onClick={() => openEdit(i, data.id)}
+                      className="bg-blue-600 rounded-sm w-30 text-white text-xs font-bold px-4 py-1"
+                    >
+                      + Analisis MTC
+                    </button>
+
+                    {showEdit[i] === true && (
+                      <ModalKosongan
+                        isOpen={showEdit[i]}
+                        onClose={() => closeEdit(i)}
+                        judul={'Tambah Analisis MTC'}
+                      >
+                        <div className="flex flex-col gap-4 h-[400px] py-5">
+                          <div className="flex flex-col gap-1">
+                            <Select
+                              placeholder="Pilih Analisis MTC..."
+                              options={analisisOptions}
+                              onChange={(selected) => {
+                                handleChangeAnalisis(selected);
+                              }}
+                              className="relative z-50 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input text-black dark:text-white"
+                            />
+                          </div>
+
+                          <div className="flex justify-end mt-4">
+                            <button
+                              onClick={() => {
+                                if (selectedAnalisis && selectedMainId) {
+                                  postChild(
+                                    selectedMainId,
+                                    selectedAnalisis,
+                                    i,
+                                  );
+                                }
+                              }}
+                              disabled={!selectedAnalisis || isLoading}
+                              className={`bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-2 ${
+                                !selectedAnalisis || isLoading
+                                  ? 'opacity-50 cursor-not-allowed'
+                                  : ''
+                              }`}
+                            >
+                              {isLoading ? 'Loading...' : 'TAMBAH'}
+                            </button>
+                          </div>
+                        </div>
+                      </ModalKosongan>
+                    )}
+                    <button
+                      onClick={() => deleteMain(data.id, data.kode_kendala)}
+                      className="bg-red-600 rounded-sm w-30 text-white text-xs font-bold px-4 py-1"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
       </>
     </div>
   );
