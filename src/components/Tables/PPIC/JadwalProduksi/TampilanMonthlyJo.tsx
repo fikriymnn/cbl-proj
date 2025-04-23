@@ -236,12 +236,28 @@ function TampilanMonthlyJO() {
   );
   const [selectedMachine, setSelectedMachine] = useState(null);
 
-  // Functions to open and close the modal
   const openEdit = (index: any, machine: any) => {
     const updatedShowEdit = [...showEdit];
     updatedShowEdit[index] = true;
     setShowEdit(updatedShowEdit);
-    setSelectedMachine(machine);
+
+    // Find matching machine entries in the mapData
+    const matchingEntries = mapData.filter(
+      (d: any) => normalizeMesin(d.mesin) === normalizeMesin(machine),
+    );
+
+    if (matchingEntries.length > 0) {
+      // Use the original machine name from the API data
+      setSelectedMachine(matchingEntries[0].mesin);
+    } else {
+      // No matching entries found
+      alert(
+        `Tidak ada Jadwal Untuk Mesin ${machine}, pada bulan ${selectedMonth}`,
+      );
+      // Close the modal immediately since there's no data
+      closeEdit(index);
+      return;
+    }
   };
 
   const closeEdit = (index: any) => {
@@ -251,25 +267,73 @@ function TampilanMonthlyJO() {
   };
   const [activeView, setActiveView] = useState('default');
 
-  const [lemburData, setLemburData] = useState<any>([
-    {
-      tanggal_lembur: '2025-04-22',
-      shift_1: true,
-      shift_2: false,
-    },
-    {
-      tanggal_lembur: '2025-04-21',
-      shift_1: true,
-      shift_2: true,
-    },
-    {
-      tanggal_lembur: '2025-04-23',
-      shift_1: true,
-      shift_2: false,
-    },
-  ]);
+  // Update the state to include dateRange
+  const [dateRange, setDateRange] = useState({
+    startDate: '2025-04-22',
+    endDate: '2025-04-23',
+  });
 
-  async function postLembur(lembur_data: any, mesin: any) {
+  // Initialize lembur data as an empty array instead of with preset values
+  const [lemburData, setLemburData] = useState<any[]>([]);
+
+  // Function to generate dates between two dates
+  const generateDateRange = (startDate: string, endDate: string) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const dateList = [];
+
+    // Clone the start date
+    let currentDate = new Date(start);
+
+    // Loop from start date to end date (inclusive)
+    while (currentDate <= end) {
+      // Format date as YYYY-MM-DD
+      const formattedDate = currentDate.toISOString().split('T')[0];
+
+      // Add to date list with default shift values
+      dateList.push({
+        tanggal_lembur: formattedDate,
+        shift_1: false,
+        shift_2: false,
+      });
+
+      // Move to next day
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    return dateList;
+  };
+
+  // Function to update dateRange and generate lemburData
+  const handleDateRangeChange = (
+    field: 'startDate' | 'endDate',
+    value: string,
+  ) => {
+    const newDateRange = { ...dateRange, [field]: value };
+    setDateRange(newDateRange);
+
+    // Only generate dates if both dates are valid
+    if (newDateRange.startDate && newDateRange.endDate) {
+      const newLemburData = generateDateRange(
+        newDateRange.startDate,
+        newDateRange.endDate,
+      );
+      setLemburData(newLemburData);
+    }
+  };
+
+  // Function to handle checkbox changes
+  const handleShiftChange = (
+    index: number,
+    shift: 'shift_1' | 'shift_2',
+    checked: boolean,
+  ) => {
+    const newData = [...lemburData];
+    newData[index][shift] = checked;
+    setLemburData(newData);
+  };
+
+  async function postLembur(lembur_data: any, mesin: any, i: any) {
     const url = `${
       import.meta.env.VITE_API_LINK
     }/ppic/jadwalProduksiViewLembur`;
@@ -283,13 +347,28 @@ function TampilanMonthlyJO() {
         },
       );
       setIsLoading(false);
-      //setJo(res.data);
-      console.log('listJO', res.data);
+
+      alert('Berhasil menambah data lembur!');
+      closeEdit(i); // Close the modal after saving
+      // Consider adding a success message or refreshing the data
     } catch (error: any) {
+      alert(error.response.data.message);
       setIsLoading(false);
-      console.log(error);
+      // Consider adding an error message
     }
   }
+
+  // useEffect to initialize the date range data
+  useEffect(() => {
+    // Generate initial date list when component mounts
+    const initialLemburData = generateDateRange(
+      dateRange.startDate,
+      dateRange.endDate,
+    );
+    setLemburData(initialLemburData);
+  }, []);
+
+  const [lemburViewData, setLemburViewData] = useState<any[]>([]);
 
   const getJadwalLembur = async (tglAwal: string, tglAkhir: string) => {
     const url = `${
@@ -304,7 +383,8 @@ function TampilanMonthlyJO() {
         },
         withCredentials: true,
       });
-      console.log('jadwal lembur', response.data.data);
+      console.log('jadwal lembur 2', response.data.data);
+      setLemburViewData(response.data.data); // Store the data in state
       setIsLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -424,7 +504,6 @@ function TampilanMonthlyJO() {
                       ))}
                     </div>
 
-                    {/* Modal implementation */}
                     {machineList.map(
                       (machine, index) =>
                         showEdit[index] && (
@@ -443,47 +522,95 @@ function TampilanMonthlyJO() {
                               <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div>
                                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Date
+                                    Start Date
                                   </label>
                                   <input
-                                    defaultValue={lemburData[0].tanggal_lembur}
-                                    onChange={(e) => {
-                                      const newData = [...lemburData];
-                                      newData[0].tanggal_lembur =
-                                        e.target.value;
-                                      setLemburData(newData);
-                                    }}
+                                    value={dateRange.startDate}
+                                    onChange={(e) =>
+                                      handleDateRangeChange(
+                                        'startDate',
+                                        e.target.value,
+                                      )
+                                    }
                                     type="date"
                                     className="w-full p-2 border border-gray-300 rounded-md"
                                   />
                                 </div>
                                 <div>
-                                  <label>
-                                    <input
-                                      type="checkbox"
-                                      checked={lemburData[0]?.shift_1}
-                                      onChange={(e) => {
-                                        const newData = [...lemburData];
-                                        newData[0].shift_1 = e.target.checked;
-                                        setLemburData(newData);
-                                      }}
-                                    />
-                                    Shift 1
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    End Date
                                   </label>
-
-                                  <label>
-                                    <input
-                                      type="checkbox"
-                                      checked={lemburData[0]?.shift_2}
-                                      onChange={(e) => {
-                                        const newData = [...lemburData];
-                                        newData[0].shift_2 = e.target.checked;
-                                        setLemburData(newData);
-                                      }}
-                                    />
-                                    Shift 2
-                                  </label>
+                                  <input
+                                    value={dateRange.endDate}
+                                    onChange={(e) =>
+                                      handleDateRangeChange(
+                                        'endDate',
+                                        e.target.value,
+                                      )
+                                    }
+                                    type="date"
+                                    className="w-full p-2 border border-gray-300 rounded-md"
+                                  />
                                 </div>
+                              </div>
+
+                              {/* Date range list with checkboxes */}
+                              <div className="mb-6 max-h-96 overflow-y-auto border border-gray-200 rounded-md">
+                                <table className="w-full">
+                                  <thead className="bg-gray-100">
+                                    <tr className="text-left">
+                                      <th className="p-3">Date</th>
+                                      <th className="p-3">Shift 1</th>
+                                      <th className="p-3">Shift 2</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {lemburData.map((item, idx) => (
+                                      <tr
+                                        key={idx}
+                                        className={
+                                          idx % 2 === 0
+                                            ? 'bg-white'
+                                            : 'bg-gray-50'
+                                        }
+                                      >
+                                        <td className="p-3">
+                                          {convertTimeStampToDate(
+                                            item.tanggal_lembur,
+                                          )}
+                                        </td>
+                                        <td className="p-3">
+                                          <input
+                                            type="checkbox"
+                                            checked={item.shift_1}
+                                            onChange={(e) =>
+                                              handleShiftChange(
+                                                idx,
+                                                'shift_1',
+                                                e.target.checked,
+                                              )
+                                            }
+                                            className="h-4 w-4"
+                                          />
+                                        </td>
+                                        <td className="p-3">
+                                          <input
+                                            type="checkbox"
+                                            checked={item.shift_2}
+                                            onChange={(e) =>
+                                              handleShiftChange(
+                                                idx,
+                                                'shift_2',
+                                                e.target.checked,
+                                              )
+                                            }
+                                            className="h-4 w-4"
+                                          />
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
                               </div>
 
                               <div className="flex justify-end gap-2">
@@ -495,10 +622,13 @@ function TampilanMonthlyJO() {
                                 </button>
                                 <button
                                   className="px-4 py-2 bg-blue-600 text-white rounded-md"
-                                  onClick={() => {
-                                    postLembur(lemburData, machine),
-                                      console.log(lemburData);
-                                  }}
+                                  onClick={() =>
+                                    postLembur(
+                                      lemburData,
+                                      selectedMachine,
+                                      index,
+                                    )
+                                  }
                                 >
                                   Save Schedule
                                 </button>
@@ -648,11 +778,56 @@ function TampilanMonthlyJO() {
                                 {date.getDate()}
                               </p>
                             </div>
-
                             {/* Machine Cells - For LEMBUR view */}
                             {machineList.map((machine, machineIndex) => {
-                              // You can customize this for the LEMBUR view
-                              // For example, filter for overtime data instead
+                              const normalizedMachine = normalizeMesin(machine);
+
+                              // Get the date string in YYYY-MM-DD format for comparison
+                              const dateString = date
+                                .toISOString()
+                                .split('T')[0];
+
+                              // Filter lembur data for this specific date and machine
+                              const lemburForDateAndMachine =
+                                lemburViewData.filter((l: any) => {
+                                  // Convert tanggal_lembur to YYYY-MM-DD
+                                  const lemburDate = new Date(l.tanggal_lembur);
+                                  const lemburDateString = lemburDate
+                                    .toISOString()
+                                    .split('T')[0];
+
+                                  return (
+                                    lemburDateString === dateString &&
+                                    normalizeMesin(l.mesin) ===
+                                      normalizedMachine
+                                  );
+                                });
+
+                              // Determine color based on shift status
+                              let bgColorClass = '';
+                              let shiftText = '';
+
+                              if (lemburForDateAndMachine.length > 0) {
+                                const shift1Active =
+                                  lemburForDateAndMachine.some(
+                                    (l) => l.shift_1,
+                                  );
+                                const shift2Active =
+                                  lemburForDateAndMachine.some(
+                                    (l) => l.shift_2,
+                                  );
+
+                                if (shift1Active && shift2Active) {
+                                  bgColorClass = 'bg-green-500'; // Both shifts - green
+                                  shiftText = 'Shift 1 & 2';
+                                } else if (shift1Active) {
+                                  bgColorClass = 'bg-yellow-500'; // Shift 1 only - yellow
+                                  shiftText = 'Shift 1';
+                                } else if (shift2Active) {
+                                  bgColorClass = 'bg-blue-500'; // Shift 2 only - blue
+                                  shiftText = 'Shift 2';
+                                }
+                              }
 
                               return (
                                 <div
@@ -666,18 +841,15 @@ function TampilanMonthlyJO() {
                                     height: `${calculateRowHeight(machine)}px`,
                                   }}
                                 >
-                                  {/* Overtime specific content would go here */}
-                                  {/* This is just a placeholder showing the view is different */}
-                                  <div className="w-full h-full flex items-center justify-center">
-                                    {date.getDay() === 0 ||
-                                    date.getDay() === 6 ? (
-                                      <button
-                                        className={`text-[8px] font-semibold border border-opacity-50 p-0.5 rounded-sm `}
-                                      >
-                                        JO-TES
-                                      </button>
-                                    ) : null}
-                                  </div>
+                                  {/* Display colored indicator with shift text if lembur exists */}
+                                  {lemburForDateAndMachine.length > 0 && (
+                                    <div
+                                      className={`px-1 py-0.5 rounded ${bgColorClass} flex items-center justify-center text-white text-[10px] font-semibold`}
+                                      title={`Overtime scheduled for ${shiftText}`}
+                                    >
+                                      {shiftText}
+                                    </div>
+                                  )}
                                 </div>
                               );
                             })}
