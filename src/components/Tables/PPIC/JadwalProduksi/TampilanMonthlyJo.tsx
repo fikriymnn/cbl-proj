@@ -346,8 +346,8 @@ function TampilanMonthlyJO() {
           withCredentials: true,
         },
       );
+      console.log('respon lembur', res);
       setIsLoading(false);
-
       alert('Berhasil menambah data lembur!');
       closeEdit(i); // Close the modal after saving
       // Consider adding a success message or refreshing the data
@@ -787,17 +787,26 @@ function TampilanMonthlyJO() {
                                 .toISOString()
                                 .split('T')[0];
 
-                              // Filter lembur data for this specific date and machine
                               const lemburForDateAndMachine =
                                 lemburViewData.filter((l: any) => {
-                                  // Convert tanggal_lembur to YYYY-MM-DD
-                                  const lemburDate = new Date(l.tanggal_lembur);
-                                  const lemburDateString = lemburDate
-                                    .toISOString()
-                                    .split('T')[0];
+                                  // Manually parse the date parts from tanggal_lembur
+                                  const lemburDateParts = l.tanggal_lembur
+                                    .split('T')[0]
+                                    .split('-');
 
+                                  // Create date parts from the current date in the loop
+                                  const currentYear = date.getFullYear();
+                                  const currentMonth = date.getMonth() + 1; // Add 1 because months are 0-indexed
+                                  const currentDay = date.getDate();
+
+                                  // Compare year, month, and day separately
                                   return (
-                                    lemburDateString === dateString &&
+                                    parseInt(lemburDateParts[0]) ===
+                                      currentYear &&
+                                    parseInt(lemburDateParts[1]) ===
+                                      currentMonth &&
+                                    parseInt(lemburDateParts[2]) ===
+                                      currentDay &&
                                     normalizeMesin(l.mesin) ===
                                       normalizedMachine
                                   );
