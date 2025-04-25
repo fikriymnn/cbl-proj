@@ -207,7 +207,7 @@ const ModalDetail = ({
           <div className="flex w-full pt-1">
             <div className=" w-6/12">
               <label className="form-label block  text-black text-xs font-extrabold mt-2">
-                ANALISIS PENYEBAB
+                KODE MTC
               </label>
               <div>{analisisPenyebab}</div>
             </div>
@@ -345,7 +345,7 @@ const ModalDetail = ({
           <div className="flex w-full pt-1">
             <div className="flex w-full">
               <label className="form-label block  text-black text-xs font-extrabold mt-3">
-                CATATAN
+                ANALISIS PENYEBAB DAN DETAIL TINDAKAN
               </label>
             </div>
           </div>

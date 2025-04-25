@@ -1223,12 +1223,12 @@ function TableOS() {
                                           jam={'19.09'}
                                           namaPemeriksa={
                                             data.proses_mtcs[lengthProses]
-                                              .user_eksekutor.nama
+                                              .user_eksekutor?.nama
                                           }
                                           no={'109299'}
                                           idTiket={data.id}
                                           idProses={
-                                            data.proses_mtcs[lengthProses].id
+                                            data.proses_mtcs[lengthProses]?.id
                                           }
                                           namaMesin={data.mesin}
                                           skor_mtc={
