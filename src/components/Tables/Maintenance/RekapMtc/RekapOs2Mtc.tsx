@@ -13,6 +13,7 @@ import BarChartMesinOnly from '../../../../pages/UiElements/BarchartMesinOnly';
 import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import ModalXL from '../../PPIC/JadwalProduksi/ModalXL';
+import ModalFull from '../../PPIC/JadwalProduksi/ModalFull';
 
 function RekapOs2Mtc() {
   const [bulan, setBulan] = useState(0);
@@ -1205,17 +1206,17 @@ function RekapOs2Mtc() {
 
                           {/* More explicit check for modal visibility */}
                           {showModal1[i] && showModal1[i][k] === true && (
-                            <ModalXL
+                            <ModalFull
                               isOpen={true}
                               onClose={() => closeModal1(i, k)}
                               judul={'Detail Data'}
                             >
                               <div className="overflow-x-auto pt-4">
-                                <label className="text-sm  font-semibold">
+                                <label className="text-sm font-semibold">
                                   {data.mesin} - {data2.nama_bulan}
                                 </label>
                                 <table className="min-w-full divide-y divide-gray-200 border border-blue-200 rounded-lg overflow-hidden">
-                                  <thead className="bg-blue-600 text-white font-semibold ">
+                                  <thead className="bg-blue-600 text-white font-semibold">
                                     <tr>
                                       <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                                         No JO
@@ -1234,6 +1235,16 @@ function RekapOs2Mtc() {
                                       </th>
                                       <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                                         Nama Kendala
+                                      </th>
+                                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                        Validasi QC
+                                      </th>
+                                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                        Breakdown Mtc
+                                      </th>
+
+                                      <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                                        Verifikasi QC
                                       </th>
                                       <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                                         Breakdown Time
@@ -1267,8 +1278,83 @@ function RekapOs2Mtc() {
                                             breakdownTimeMs = timeDiff;
                                           }
                                         }
+
+                                        // Calculate BreakdownMtc time
+                                        let breakdownMtcMs = 0;
+                                        if (
+                                          data3.waktu_respon_mtc &&
+                                          data3.waktu_selesai_mtc
+                                        ) {
+                                          const startMtc = new Date(
+                                            data3.waktu_respon_mtc,
+                                          );
+                                          const endMtc = new Date(
+                                            data3.waktu_selesai_mtc,
+                                          );
+                                          const mtcTimeDiff =
+                                            endMtc.getTime() -
+                                            startMtc.getTime();
+                                          if (
+                                            !isNaN(mtcTimeDiff) &&
+                                            mtcTimeDiff > 0
+                                          ) {
+                                            breakdownMtcMs = mtcTimeDiff;
+                                          }
+                                        }
+
+                                        // Calculate Validasi QC time
+                                        let validasiQcMs = 0;
+                                        if (
+                                          data3.createdAt &&
+                                          data3.waktu_respon_qc
+                                        ) {
+                                          const startQc = new Date(
+                                            data3.createdAt,
+                                          );
+                                          const endQc = new Date(
+                                            data3.waktu_respon_qc,
+                                          );
+                                          const qcTimeDiff =
+                                            endQc.getTime() - startQc.getTime();
+                                          if (
+                                            !isNaN(qcTimeDiff) &&
+                                            qcTimeDiff > 0
+                                          ) {
+                                            validasiQcMs = qcTimeDiff;
+                                          }
+                                        }
+
+                                        // Calculate Verifikasi QC time
+                                        let verifikasiQcMs = 0;
+                                        if (
+                                          data3.waktu_selesai_mtc &&
+                                          data3.waktu_selesai
+                                        ) {
+                                          const startVerif = new Date(
+                                            data3.waktu_selesai_mtc,
+                                          );
+                                          const endVerif = new Date(
+                                            data3.waktu_selesai,
+                                          );
+                                          const verifTimeDiff =
+                                            endVerif.getTime() -
+                                            startVerif.getTime();
+                                          if (
+                                            !isNaN(verifTimeDiff) &&
+                                            verifTimeDiff > 0
+                                          ) {
+                                            verifikasiQcMs = verifTimeDiff;
+                                          }
+                                        }
+
                                         // Add the calculated milliseconds to each item for sorting
-                                        return { ...data3, breakdownTimeMs };
+                                        return {
+                                          ...data3,
+                                          breakdownTimeMs,
+                                          breakdownMtcMs,
+                                          validasiQcMs,
+                                          verifikasiQcMs,
+                                        };
                                       })
                                       // Sort by breakdown time (descending)
                                       .sort(
@@ -1294,6 +1380,65 @@ function RekapOs2Mtc() {
                                               1000,
                                           );
                                           breakdownTime = `${hours}h ${minutes}m ${seconds}s`;
+                                        }
+
+                                        // Format the BreakdownMtc time
+                                        let breakdownMtc = '-';
+                                        if (data3.breakdownMtcMs > 0) {
+                                          const hoursMtc = Math.floor(
+                                            data3.breakdownMtcMs /
+                                              (1000 * 60 * 60),
+                                          );
+                                          const minutesMtc = Math.floor(
+                                            (data3.breakdownMtcMs %
+                                              (1000 * 60 * 60)) /
+                                              (1000 * 60),
+                                          );
+                                          const secondsMtc = Math.floor(
+                                            (data3.breakdownMtcMs %
+                                              (1000 * 60)) /
+                                              1000,
+                                          );
+                                          breakdownMtc = `${hoursMtc}h ${minutesMtc}m ${secondsMtc}s`;
+                                        }
+
+                                        // Format the Validasi QC time
+                                        let validasiQc = '-';
+                                        if (data3.validasiQcMs > 0) {
+                                          const hoursQc = Math.floor(
+                                            data3.validasiQcMs /
+                                              (1000 * 60 * 60),
+                                          );
+                                          const minutesQc = Math.floor(
+                                            (data3.validasiQcMs %
+                                              (1000 * 60 * 60)) /
+                                              (1000 * 60),
+                                          );
+                                          const secondsQc = Math.floor(
+                                            (data3.validasiQcMs % (1000 * 60)) /
+                                              1000,
+                                          );
+                                          validasiQc = `${hoursQc}h ${minutesQc}m ${secondsQc}s`;
+                                        }
+
+                                        // Format the Verifikasi QC time
+                                        let verifikasiQc = '-';
+                                        if (data3.verifikasiQcMs > 0) {
+                                          const hoursVerif = Math.floor(
+                                            data3.verifikasiQcMs /
+                                              (1000 * 60 * 60),
+                                          );
+                                          const minutesVerif = Math.floor(
+                                            (data3.verifikasiQcMs %
+                                              (1000 * 60 * 60)) /
+                                              (1000 * 60),
+                                          );
+                                          const secondsVerif = Math.floor(
+                                            (data3.verifikasiQcMs %
+                                              (1000 * 60)) /
+                                              1000,
+                                          );
+                                          verifikasiQc = `${hoursVerif}h ${minutesVerif}m ${secondsVerif}s`;
                                         }
 
                                         return (
@@ -1324,6 +1469,15 @@ function RekapOs2Mtc() {
                                               {data3.nama_kendala}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                              {validasiQc}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                              {breakdownMtc}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                              {verifikasiQc}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
                                               {breakdownTime}
                                             </td>
                                           </tr>
@@ -1332,7 +1486,7 @@ function RekapOs2Mtc() {
                                   </tbody>
                                 </table>
                               </div>
-                            </ModalXL>
+                            </ModalFull>
                           )}
                         </div>
                       );
