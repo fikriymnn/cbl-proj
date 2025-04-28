@@ -5,317 +5,446 @@ import Loading from '../../../Loading';
 import BarChartKaryawan from './BarchartKaryawan';
 import Production from '../../../../images/icon/production.svg';
 
-function RekapKaryawan() {
-  const [isLoading, setIsLoading] = useState(false);
+interface StatusCounts {
+  active: number;
+  cutoff: number;
+  resign: number;
+  total: number;
+}
+
+interface KaryawanRekapData {
+  rekap?: {
+    department?: any;
+    divisi?: any;
+    grade?: any;
+    jabatan?: any;
+    jenis_kelamin?: any;
+    status_karyawan?: any;
+    tipe_karyawan?: any;
+    tipe_penggajian?: any;
+    [key: string]: any;
+  };
+  data?: any[];
+}
+
+interface BiodataKaryawan {
+  status_active?: string;
+}
+
+interface KaryawanDetail {
+  biodata_karyawan?: BiodataKaryawan[];
+  [key: string]: any;
+}
+
+function RekapKaryawan(): JSX.Element {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoadingDetail, setIsLoadingDetail] = useState<boolean>(false);
+  const [karyawan, setKaryawan] = useState<KaryawanRekapData | null>(null);
+  const [karyawanDetail, setKaryawanDetail] = useState<KaryawanDetail[]>([]);
+  const [statusCounts, setStatusCounts] = useState<StatusCounts>({
+    active: 0,
+    cutoff: 0,
+    resign: 0,
+    total: 0,
+  });
+
+  // Modified: Change to a Set to track multiple selected sections
+  const [selectedSections, setSelectedSections] = useState<Set<string>>(
+    new Set(),
+  );
+
+  // Field mapping between section IDs and their data fields
+  const fieldMap: Record<string, string> = {
+    department: 'department',
+    divisi: 'divisi',
+    grade: 'grade',
+    jabatan: 'jabatan',
+    jenisKelamin: 'jenis_kelamin',
+    statusKaryawan: 'status_karyawan',
+    tipeKaryawan: 'tipe_karyawan',
+    tipePenggajian: 'tipe_penggajian',
+  };
+
+  // Section title mapping
+  const sectionTitles: Record<string, string> = {
+    statusOverview: 'Employee Status Overview',
+    department: 'Department',
+    divisi: 'Divisi',
+    grade: 'Grade',
+    jabatan: 'Jabatan',
+    jenisKelamin: 'Jenis Kelamin',
+    statusKaryawan: 'Status Karyawan',
+    tipeKaryawan: 'Tipe Karyawan',
+    tipePenggajian: 'Tipe Penggajian',
+  };
+
   useEffect(() => {
     getKaryawan();
+    getKaryawanDetail();
   }, []);
 
-  const [karyawan, setKaryawan] = useState<any>();
+  // Modified: Toggle function for multiple selections
+  const toggleSection = (section: string): void => {
+    setSelectedSections((prevSelected) => {
+      const newSelected = new Set(prevSelected);
+      if (newSelected.has(section)) {
+        newSelected.delete(section);
+      } else {
+        newSelected.add(section);
+      }
+      return newSelected;
+    });
+  };
 
-  async function getKaryawan() {
+  async function getKaryawan(): Promise<void> {
     const url = `${import.meta.env.VITE_API_LINK}/hr/karyawanRekap`;
     try {
       setIsLoading(true);
-      const res = await axios.get(
-        url,
-
-        {
-          params: {
-            is_active: true,
-          },
-          withCredentials: true,
+      const res = await axios.get(url, {
+        params: {
+          is_active: true,
         },
-      );
+        withCredentials: true,
+      });
       setIsLoading(false);
       setKaryawan(res.data);
       console.log(res.data);
-    } catch (error: any) {
+    } catch (error) {
       setIsLoading(false);
       console.log(error);
     }
   }
-  const [showTable, setShowTable] = useState(false);
-  const [showTable1, setShowTable1] = useState(false);
-  const [showTable2, setShowTable2] = useState(false);
-  const [showTable3, setShowTable3] = useState(false);
-  const [showTable4, setShowTable4] = useState(false);
-  const [showTable5, setShowTable5] = useState(false);
-  const [showTable6, setShowTable6] = useState(false);
-  const [showTable7, setShowTable7] = useState(false);
+
+  async function getKaryawanDetail(): Promise<void> {
+    const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
+    try {
+      setIsLoadingDetail(true);
+      const res = await axios.get(url, {
+        params: {},
+        withCredentials: true,
+      });
+      setKaryawanDetail(res.data.data);
+      calculateStatusCounts(res.data.data);
+      console.log('Detail data:', res.data.data);
+      setIsLoadingDetail(false);
+    } catch (error) {
+      console.log(error);
+      setIsLoadingDetail(false);
+    }
+  }
+
+  const calculateStatusCounts = (employeeData: KaryawanDetail[]): void => {
+    if (!employeeData || !Array.isArray(employeeData)) {
+      console.log('Invalid employee data format');
+      return;
+    }
+
+    const counts: StatusCounts = {
+      active: 0,
+      cutoff: 0,
+      resign: 0,
+      total: employeeData.length,
+    };
+
+    employeeData.forEach((employee) => {
+      const status =
+        employee?.biodata_karyawan?.[0]?.status_active?.toLowerCase();
+      if (status === 'active') {
+        counts.active += 1;
+      } else if (status === 'cut off') {
+        counts.cutoff += 1;
+      } else {
+        counts.resign += 1;
+      }
+    });
+
+    setStatusCounts(counts);
+  };
+
+  // Render the status overview content
+  const renderStatusOverviewContent = (): JSX.Element => {
+    return (
+      <div className="p-4 overflow-x-auto">
+        <table className="min-w-full bg-white border">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="py-2 px-4 border-b border-r text-left">Status</th>
+              <th className="py-2 px-4 border-b border-r text-left">Jumlah</th>
+              <th className="py-2 px-4 border-b text-left">Persentase</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td className="py-2 px-4 border-b border-r">Active</td>
+              <td className="py-2 px-4 border-b border-r">
+                {statusCounts.active}
+              </td>
+              <td className="py-2 px-4 border-b">
+                {statusCounts.total > 0
+                  ? ((statusCounts.active / statusCounts.total) * 100).toFixed(
+                      2,
+                    )
+                  : 0}
+                %
+              </td>
+            </tr>
+            <tr>
+              <td className="py-2 px-4 border-b border-r">Cut Off</td>
+              <td className="py-2 px-4 border-b border-r">
+                {statusCounts.cutoff}
+              </td>
+              <td className="py-2 px-4 border-b">
+                {statusCounts.total > 0
+                  ? ((statusCounts.cutoff / statusCounts.total) * 100).toFixed(
+                      2,
+                    )
+                  : 0}
+                %
+              </td>
+            </tr>
+            <tr>
+              <td className="py-2 px-4 border-b border-r">Resign</td>
+              <td className="py-2 px-4 border-b border-r">
+                {statusCounts.resign}
+              </td>
+              <td className="py-2 px-4 border-b">
+                {statusCounts.total > 0
+                  ? ((statusCounts.resign / statusCounts.total) * 100).toFixed(
+                      2,
+                    )
+                  : 0}
+                %
+              </td>
+            </tr>
+            <tr className="bg-gray-50">
+              <td className="py-2 px-4 border-b border-r font-semibold">
+                Total
+              </td>
+              <td className="py-2 px-4 border-b border-r font-semibold">
+                {statusCounts.total}
+              </td>
+              <td className="py-2 px-4 border-b font-semibold">100%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  // Render the chart content for a specific section
+  const renderChartContent = (sectionId: string): JSX.Element => {
+    const dataField = fieldMap[sectionId];
+    return (
+      <div className="p-4 h-full">
+        <BarChartKaryawan
+          value={karyawan?.rekap?.[dataField]}
+          employeeData={karyawan?.data ?? []}
+          groupField={dataField}
+        />
+      </div>
+    );
+  };
+
+  // Interface for the card component props
+  interface CardProps {
+    id: string;
+    title: string;
+    isSelected: boolean;
+  }
+
+  // Card component for collapsed or expanded view
+  const Card: React.FC<CardProps> = ({ id, title, isSelected }) => {
+    return (
+      <div
+        className={`bg-white border-2 rounded-md shadow-md cursor-pointer ${
+          isSelected ? 'border-blue-500 bg-blue-50' : ''
+        }`}
+        onClick={() => toggleSection(id)}
+      >
+        <div className="flex gap-3 items-center p-3">
+          <img src={Production} alt="Logo" />
+          <p className="text-xl font-semibold text-[#0065DE]">{title}</p>
+          {isSelected && (
+            <span className="ml-auto bg-blue-500 text-white rounded-full p-1">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Button to show selected sections
+  const ViewSelectedButton: React.FC = () => {
+    if (selectedSections.size === 0) return null;
+
+    return (
+      <div className="fixed bottom-4 right-4">
+        <button
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md shadow-lg flex items-center"
+          onClick={() => setShowSelected(true)}
+        >
+          <span>Tampilkan Data ({selectedSections.size})</span>
+          <svg
+            className="ml-2"
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+    );
+  };
+
+  // State to control view mode
+  const [showSelected, setShowSelected] = useState<boolean>(false);
+
+  // Render selected cards in expanded view
+  const renderSelectedCards = (): JSX.Element => {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold">Data Dipilih</h2>
+          <button
+            className="bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1 px-3 rounded-md"
+            onClick={() => setShowSelected(false)}
+          >
+            Kembali
+          </button>
+        </div>
+
+        {Array.from(selectedSections).map((sectionId) => (
+          <div
+            key={sectionId}
+            className="bg-white border-2 rounded-md shadow-md"
+          >
+            <div className="flex justify-between items-center p-3 border-b">
+              <div className="flex gap-3 items-center">
+                <img src={Production} alt="Logo" />
+                <p className="text-xl font-semibold text-[#0065DE]">
+                  {sectionTitles[sectionId]}
+                </p>
+              </div>
+              <button
+                className="text-gray-500 hover:text-gray-700"
+                onClick={() => toggleSection(sectionId)}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M18 6L6 18"></path>
+                  <path d="M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+
+            {sectionId === 'statusOverview'
+              ? renderStatusOverviewContent()
+              : renderChartContent(sectionId)}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // Main card selection grid
+  const renderCardSelectionGrid = (): JSX.Element => {
+    return (
+      <>
+        <div className="mb-6">
+          <h2 className="text-xl font-bold mb-2">PILIH DATA</h2>
+          <p className="text-gray-600">
+            Pilih Beberapa Data Yang Ingin Ditampilkan.
+          </p>
+        </div>
+        <div className="mb-4">
+          <Card
+            id="statusOverview"
+            title="Employee Status Overview"
+            isSelected={selectedSections.has('statusOverview')}
+          />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Card
+            id="department"
+            title="Department"
+            isSelected={selectedSections.has('department')}
+          />
+          <Card
+            id="divisi"
+            title="Divisi"
+            isSelected={selectedSections.has('divisi')}
+          />
+          <Card
+            id="grade"
+            title="Grade"
+            isSelected={selectedSections.has('grade')}
+          />
+          <Card
+            id="jabatan"
+            title="Jabatan"
+            isSelected={selectedSections.has('jabatan')}
+          />
+          <Card
+            id="jenisKelamin"
+            title="Jenis Kelamin"
+            isSelected={selectedSections.has('jenisKelamin')}
+          />
+          <Card
+            id="statusKaryawan"
+            title="Status Karyawan"
+            isSelected={selectedSections.has('statusKaryawan')}
+          />
+          <Card
+            id="tipeKaryawan"
+            title="Tipe Karyawan"
+            isSelected={selectedSections.has('tipeKaryawan')}
+          />
+          <Card
+            id="tipePenggajian"
+            title="Tipe Penggajian"
+            isSelected={selectedSections.has('tipePenggajian')}
+          />
+        </div>
+        <ViewSelectedButton />
+      </>
+    );
+  };
 
   return (
     <div>
-      <>
-        <main className="overflow-x-scroll flex flex-col gap-4">
-          {isLoading && <Loading />}
-          <div className="min-w-[700px] bg-white border-2">
-            <div className="">
-              <div className="bg-white rounded-md shadow-md md:w-12/12 overflow-x-scroll">
-                <div className="flex gap-3 p-3">
-                  <img src={Production} alt="Logo" />
-                  <p className="text-xl font-semibold text-[#0065DE]">
-                    Department
-                  </p>
-                </div>
-                <BarChartKaryawan
-                  value={karyawan?.rekap?.department}
-                  employeeData={karyawan?.data}
-                />
-                {/* <div className="flex justify-start my-3 px-4">
-                  <button
-                    onClick={() => setShowTable(!showTable)}
-                    className="px-4 py-2 bg-[#0065DE] text-white rounded-md hover:bg-blue-700 transition-colors"
-                  >
-                    {showTable ? 'Hide Details' : 'Show Details'}
-                  </button>
-                </div> */}
-              </div>
-              {/* {showTable && (
-                <div className="overflow-x-auto mt-4">
-                  <table className="min-w-full border-collapse border border-gray-300">
-                    <tbody>
-                      {karyawan?.rekap?.department?.map(
-                        (dept: any, deptIndex: any, index: any) => {
-                          // Get the department name from rekap
-                          const departmentName = dept.nama;
-
-                          // Filter employees that belong to this department
-                          const departmentEmployees = karyawan?.data?.filter(
-                            (employee: any) =>
-                              employee.biodata_karyawan[0]?.department
-                                ?.nama_department === departmentName,
-                          );
-
-                          return departmentEmployees &&
-                            departmentEmployees.length > 0 ? (
-                            <div
-                              key={`dept-${index}-${deptIndex}`}
-                              className="mb-6"
-                            >
-                              <h3 className="text-lg font-semibold mb-2">
-                                Department : {departmentName}
-                              </h3>
-                              <table className="min-w-full border-collapse border border-gray-300">
-                                <thead>
-                                  <tr className="bg-gray-100">
-                                    <th className="border border-gray-300 px-4 py-2">
-                                      NIK
-                                    </th>
-                                    <th className="border border-gray-300 px-4 py-2">
-                                      Nama
-                                    </th>
-                                    <th className="border border-gray-300 px-4 py-2">
-                                      Status Karyawan
-                                    </th>
-                                    <th className="border border-gray-300 px-4 py-2">
-                                      Tipe Penggajian
-                                    </th>
-                                    <th className="border border-gray-300 px-4 py-2">
-                                      Tipe Karyawan
-                                    </th>
-                                    <th className="border border-gray-300 px-4 py-2">
-                                      Bagian
-                                    </th>
-                                    <th className="border border-gray-300 px-4 py-2">
-                                      Department
-                                    </th>
-                                    <th className="border border-gray-300 px-4 py-2">
-                                      Divisi
-                                    </th>
-                                    <th className="border border-gray-300 px-4 py-2">
-                                      Jabatan
-                                    </th>
-                                    <th className="border border-gray-300 px-4 py-2">
-                                      Grade
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {departmentEmployees.map(
-                                    (employee: any, empIndex: any) => (
-                                      <tr
-                                        key={`emp-${index}-${deptIndex}-${empIndex}`}
-                                        className="text-center"
-                                      >
-                                        <td className="border border-gray-300 px-4 py-2">
-                                          {employee.biodata_karyawan[0]?.nik ||
-                                            '-'}
-                                        </td>
-                                        <td className="border border-gray-300 px-4 py-2">
-                                          {employee.name || '-'}
-                                        </td>
-                                        <td className="border border-gray-300 px-4 py-2">
-                                          {employee.biodata_karyawan[0]?.status
-                                            ?.nama_status || '-'}
-                                        </td>
-                                        <td className="border border-gray-300 px-4 py-2">
-                                          {employee.biodata_karyawan[0]
-                                            ?.tipe_penggajian || '-'}
-                                        </td>
-                                        <td className="border border-gray-300 px-4 py-2">
-                                          {employee.biodata_karyawan[0]
-                                            ?.tipe_karyawan || '-'}
-                                        </td>
-                                        <td className="border border-gray-300 px-4 py-2">
-                                          {employee.biodata_karyawan[0]?.bagian
-                                            ?.nama_bagian || '-'}
-                                        </td>
-                                        <td className="border border-gray-300 px-4 py-2">
-                                          {employee.biodata_karyawan[0]
-                                            ?.department?.nama_department ||
-                                            '-'}
-                                        </td>
-                                        <td className="border border-gray-300 px-4 py-2">
-                                          {employee.biodata_karyawan[0]?.divisi
-                                            ?.nama_divisi || '-'}
-                                        </td>
-                                        <td className="border border-gray-300 px-4 py-2">
-                                          {employee.biodata_karyawan[0]?.jabatan
-                                            ?.nama_jabatan || '-'}
-                                        </td>
-                                        <td className="border border-gray-300 px-4 py-2">
-                                          {employee.biodata_karyawan[0]?.grade
-                                            ?.kategori || '-'}
-                                        </td>
-                                      </tr>
-                                    ),
-                                  )}
-                                </tbody>
-                              </table>
-                            </div>
-                          ) : null;
-                        },
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )} */}
-            </div>
-          </div>
-
-          <div className="min-w-[700px] bg-white border-2">
-            <div className="">
-              <div className="bg-white rounded-md shadow-md md:w-12/12 overflow-x-scroll ">
-                <div className="flex gap-3 p-3">
-                  <img src={Production} alt="Logo" />
-
-                  <p className="text-xl font-semibold text-[#0065DE]">Divisi</p>
-                </div>
-                <BarChartKaryawan
-                  value={karyawan?.rekap?.divisi}
-                  employeeData={karyawan?.data}
-                  groupField="divisi"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="min-w-[700px] bg-white border-2 ">
-            <div className="bg-white rounded-md shadow-md md:w-12/12 overflow-x-scroll">
-              <div className="flex gap-3 p-3">
-                <img src={Production} alt="Logo" />
-
-                <p className="text-xl font-semibold text-[#0065DE]">Grade</p>
-              </div>
-              <BarChartKaryawan
-                value={karyawan?.rekap?.grade}
-                employeeData={karyawan?.data}
-                groupField="grade"
-              />
-            </div>
-          </div>
-          <div className="min-w-[700px] bg-white border-2">
-            <div className="">
-              <div className="bg-white rounded-md shadow-md md:w-12/12 overflow-x-scroll ">
-                <div className="flex gap-3 p-3">
-                  <img src={Production} alt="Logo" />
-
-                  <p className="text-xl font-semibold text-[#0065DE]">
-                    Jabatan
-                  </p>
-                </div>
-                <BarChartKaryawan
-                  value={karyawan?.rekap?.jabatan}
-                  employeeData={karyawan?.data}
-                  groupField="jabatan"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="min-w-[700px] bg-white border-2">
-            <div className="">
-              <div className="bg-white rounded-md shadow-md md:w-12/12 overflow-x-scroll ">
-                <div className="flex gap-3 p-3">
-                  <img src={Production} alt="Logo" />
-
-                  <p className="text-xl font-semibold text-[#0065DE]">
-                    Jenis Kelamin
-                  </p>
-                </div>
-                <BarChartKaryawan
-                  value={karyawan?.rekap?.jenis_kelamin}
-                  employeeData={karyawan?.data}
-                  groupField="jenis_kelamin"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="min-w-[700px] bg-white border-2">
-            <div className="">
-              <div className="bg-white rounded-md shadow-md md:w-12/12 overflow-x-scroll ">
-                <div className="flex gap-3 p-3">
-                  <img src={Production} alt="Logo" />
-
-                  <p className="text-xl font-semibold text-[#0065DE]">
-                    Status Karyawan
-                  </p>
-                </div>
-                <BarChartKaryawan
-                  value={karyawan?.rekap?.status_karyawan}
-                  employeeData={karyawan?.data}
-                  groupField="status_karyawan"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="min-w-[700px] bg-white border-2">
-            <div className="">
-              <div className="bg-white rounded-md shadow-md md:w-12/12 overflow-x-scroll ">
-                <div className="flex gap-3 p-3">
-                  <img src={Production} alt="Logo" />
-
-                  <p className="text-xl font-semibold text-[#0065DE]">
-                    Tipe Karyawan
-                  </p>
-                </div>
-                <BarChartKaryawan
-                  value={karyawan?.rekap?.tipe_karyawan}
-                  employeeData={karyawan?.data}
-                  groupField="tipe_karyawan"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="min-w-[700px] bg-white border-2">
-            <div className="">
-              <div className="bg-white rounded-md shadow-md md:w-12/12 overflow-x-scroll ">
-                <div className="flex gap-3 p-3">
-                  <img src={Production} alt="Logo" />
-
-                  <p className="text-xl font-semibold text-[#0065DE]">
-                    Tipe Penggajian
-                  </p>
-                </div>
-                <BarChartKaryawan
-                  value={karyawan?.rekap?.tipe_penggajian}
-                  employeeData={karyawan?.data}
-                  groupField="tipe_penggajian"
-                />
-              </div>
-            </div>
-          </div>
-        </main>
-      </>
+      <main className="flex flex-col">
+        {(isLoading || isLoadingDetail) && <Loading />}
+        {showSelected ? renderSelectedCards() : renderCardSelectionGrid()}
+      </main>
     </div>
   );
 }
