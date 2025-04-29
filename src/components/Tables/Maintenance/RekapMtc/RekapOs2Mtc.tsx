@@ -8,8 +8,23 @@ import convertTimeStampToDate from '../../../../utils/convertDate';
 import BarChartProductionQuality from '../../../../pages/UiElements/BarchartProductionQuality';
 import BarChartMesinOnly from '../../../../pages/UiElements/BarchartMesinOnly';
 import ModalFull from '../../PPIC/JadwalProduksi/ModalFull';
+import { ExportButton } from './export-button';
+import Loading from '../../../Loading';
+
+interface DataState {
+  defectOs2?: any;
+  qualityDefect?: any;
+  produksiDefect?: any;
+  responTime?: any;
+  responTimeBulan?: any;
+  oneMesin?: any;
+  allMesin?: any;
+  breakDown?: any;
+  breakDownMonth?: any;
+}
 
 function RekapOs2Mtc() {
+  const [data2, setData2] = useState<DataState>({});
   // Current date state
   const [currentDate, setCurrentDate] = useState({
     month: 0,
@@ -146,144 +161,194 @@ function RekapOs2Mtc() {
 
   // Modal state
   const [showModal, setShowModal] = useState<boolean[][]>([]);
-
-  useEffect(() => {
-    const today = new Date();
-    const currentMonth = today.getMonth() + 1;
-    const currentYear = today.getFullYear();
-
-    setCurrentDate({
-      month: currentMonth,
-      year: currentYear,
-    });
-
-    // Initial data loading
-    fetchData({
-      responTime: { year: currentYear, month: currentMonth },
-      mesinProblem: { from: null, to: null },
-      quality: { from: null, to: null },
-      produksi: { from: null, to: null },
-      responTimeBulan: { from: null, to: null },
-      allMesin: true,
-    });
-  }, []);
-
+  const [params, setParams] = useState<any>({});
+  const [isLoading, setIsLoading] = useState(false);
   // Combined fetch function
-  const fetchData = async (params: any) => {
+  const fetchData = async (fetchParams: any) => {
+    setParams(fetchParams); // Store the params for use in export filenames
     try {
       const apiBaseUrl = import.meta.env.VITE_API_LINK;
 
-      if (params.mesinProblem) {
-        const res = await axios.get(`${apiBaseUrl}/reportMtc/mesinProblem`, {
-          params: {
-            start_date: params.mesinProblem.from,
-            end_date: params.mesinProblem.to,
-          },
-          withCredentials: true,
-        });
-        setData((prev) => ({
-          ...prev,
-          defectOs2: res.data.data_jenis_masalah,
-        }));
-      }
-
-      if (params.quality) {
-        const res = await axios.get(`${apiBaseUrl}/reportMtc/qualityDefect`, {
-          params: {
-            start_date: params.quality.from,
-            end_date: params.quality.to,
-          },
-          withCredentials: true,
-        });
-        setData((prev) => ({ ...prev, qualityDefect: res.data.data }));
-      }
-
-      if (params.produksi) {
-        const res = await axios.get(`${apiBaseUrl}/reportMtc/produksiDefect`, {
-          params: {
-            start_date: params.produksi.from,
-            end_date: params.produksi.to,
-          },
-          withCredentials: true,
-        });
-        setData((prev) => ({ ...prev, produksiDefect: res.data.data }));
-      }
-
-      if (params.responTime) {
-        const res = await axios.get(
-          `${apiBaseUrl}/reportMtc/responTimeMinggu`,
-          {
+      if (fetchParams.mesinProblem) {
+        setIsLoading(true);
+        try {
+          const res = await axios.get(`${apiBaseUrl}/reportMtc/mesinProblem`, {
             params: {
-              tahun: params.responTime.year,
-              bulan: params.responTime.month,
+              start_date: fetchParams.mesinProblem.from,
+              end_date: fetchParams.mesinProblem.to,
             },
             withCredentials: true,
-          },
-        );
-        setData((prev) => ({ ...prev, responTime: res.data.data }));
+          });
+          setData((prev) => ({
+            ...prev,
+            defectOs2: res.data.data_jenis_masalah,
+          }));
+        } catch (error) {
+          console.error('Error fetching mesin problem:', error);
+        } finally {
+          setIsLoading(false);
+        }
       }
-      if (params.responTimeBulan) {
+
+      if (fetchParams.quality) {
+        setIsLoading(true);
+        try {
+          const res = await axios.get(`${apiBaseUrl}/reportMtc/qualityDefect`, {
+            params: {
+              start_date: fetchParams.quality.from,
+              end_date: fetchParams.quality.to,
+            },
+            withCredentials: true,
+          });
+          setData((prev) => ({ ...prev, qualityDefect: res.data.data }));
+          console.log('Quality Defect Data:', res.data.data);
+        } catch (error) {
+          console.error('Error fetching quality defect:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+
+      if (fetchParams.produksi) {
+        setIsLoading(true);
+        try {
+          const res = await axios.get(
+            `${apiBaseUrl}/reportMtc/produksiDefect`,
+            {
+              params: {
+                start_date: fetchParams.produksi.from,
+                end_date: fetchParams.produksi.to,
+              },
+              withCredentials: true,
+            },
+          );
+          setData((prev) => ({ ...prev, produksiDefect: res.data.data }));
+        } catch (error) {
+          console.error('Error fetching produksi defect:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+
+      if (fetchParams.responTime) {
+        setIsLoading(true);
+        try {
+          const res = await axios.get(
+            `${apiBaseUrl}/reportMtc/responTimeMinggu`,
+            {
+              params: {
+                tahun: fetchParams.responTime.year,
+                bulan: fetchParams.responTime.month,
+              },
+              withCredentials: true,
+            },
+          );
+          setData((prev) => ({ ...prev, responTime: res.data.data }));
+          console.log('Respon Time Data:', res.data.data);
+        } catch (error) {
+          console.error('Error fetching respon time minggu:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+
+      if (fetchParams.responTimeBulan) {
+        setIsLoading(true);
         try {
           const url = `${apiBaseUrl}/reportMtc/responTime`;
           const res = await axios.get(url, {
             params: {
-              fromDate: params.responTimeBulan.from,
-              toDate: params.responTimeBulan.to,
+              fromDate: fetchParams.responTimeBulan.from,
+              toDate: fetchParams.responTimeBulan.to,
             },
             withCredentials: true,
           });
           setData((prev) => ({ ...prev, responTimeBulan: res.data }));
+          console.log(res.data);
         } catch (error) {
           console.error('Error fetching respon time bulan:', error);
+        } finally {
+          setIsLoading(false);
         }
       }
-      if (params.oneMesin) {
-        const res = await axios.get(`${apiBaseUrl}/reportMtc/oneMesinProblem`, {
-          params: {
-            start_date: params.oneMesin.from,
-            end_date: params.oneMesin.to,
-            mesin_name: params.oneMesin.name,
-          },
-          withCredentials: true,
-        });
-        setData((prev) => ({ ...prev, oneMesin: res.data }));
+
+      if (fetchParams.oneMesin) {
+        setIsLoading(true);
+        try {
+          const res = await axios.get(
+            `${apiBaseUrl}/reportMtc/oneMesinProblem`,
+            {
+              params: {
+                start_date: fetchParams.oneMesin.from,
+                end_date: fetchParams.oneMesin.to,
+                mesin_name: fetchParams.oneMesin.name,
+              },
+              withCredentials: true,
+            },
+          );
+          setData((prev) => ({ ...prev, oneMesin: res.data }));
+        } catch (error) {
+          console.error('Error fetching one mesin data:', error);
+        } finally {
+          setIsLoading(false);
+        }
       }
 
-      if (params.allMesin) {
-        const res = await axios.get(`${apiBaseUrl}/reportMtc/mesinTicket`, {
-          withCredentials: true,
-        });
-        setData((prev) => ({ ...prev, allMesin: res.data }));
+      if (fetchParams.allMesin) {
+        setIsLoading(true);
+        try {
+          const res = await axios.get(`${apiBaseUrl}/reportMtc/mesinTicket`, {
+            withCredentials: true,
+          });
+          setData((prev) => ({ ...prev, allMesin: res.data }));
+        } catch (error) {
+          console.error('Error fetching all mesin data:', error);
+        } finally {
+          setIsLoading(false);
+        }
       }
 
-      if (params.breakDown) {
-        const res = await axios.get(
-          `${apiBaseUrl}/reportMtc/breakdownTimeMinggu`,
-          {
+      if (fetchParams.breakDown) {
+        setIsLoading(true);
+        try {
+          const res = await axios.get(
+            `${apiBaseUrl}/reportMtc/breakdownTimeMinggu`,
+            {
+              params: {
+                tahun: fetchParams.breakDown.year,
+                bulan: fetchParams.breakDown.month,
+              },
+              withCredentials: true,
+            },
+          );
+          setData((prev) => ({ ...prev, breakDown: res.data.data }));
+        } catch (error) {
+          console.error('Error fetching breakdown time minggu:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+
+      if (fetchParams.breakDownMonth) {
+        setIsLoading(true);
+        try {
+          const res = await axios.get(`${apiBaseUrl}/reportMtc/breakdownTime`, {
             params: {
-              tahun: params.breakDown.year,
-              bulan: params.breakDown.month,
+              fromDate: fetchParams.breakDownMonth.from,
+              toDate: fetchParams.breakDownMonth.to,
             },
             withCredentials: true,
-          },
-        );
-        setData((prev) => ({ ...prev, breakDown: res.data.data }));
-      }
-
-      if (params.breakDownMonth) {
-        const res = await axios.get(`${apiBaseUrl}/reportMtc/breakdownTime`, {
-          params: {
-            fromDate: params.breakDownMonth.from,
-            toDate: params.breakDownMonth.to,
-          },
-          withCredentials: true,
-        });
-        setData((prev) => ({ ...prev, breakDownMonth: res.data }));
-        initializeModalState(res.data);
-        console.log('Breakdown Month Data:', res.data);
+          });
+          setData((prev) => ({ ...prev, breakDownMonth: res.data }));
+        } catch (error) {
+          console.error('Error fetching breakdown month data:', error);
+        } finally {
+          setIsLoading(false);
+        }
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      setIsLoading(false);
+      console.error('Error in fetchData:', error);
     }
   };
 
@@ -303,23 +368,6 @@ function RekapOs2Mtc() {
       },
     }));
   };
-
-  // Initialize modal state
-  const initializeModalState = (breakDownData: any) => {
-    const initialState: boolean[][] = [];
-    if (breakDownData?.data) {
-      for (let i = 0; i < breakDownData.data.length; i++) {
-        initialState[i] = [];
-        if (breakDownData.data[i]?.data) {
-          for (let k = 0; k < breakDownData.data[i].data.length; k++) {
-            initialState[i][k] = false;
-          }
-        }
-      }
-    }
-    setShowModal(initialState);
-  };
-
   // Modal handlers
   const toggleModal = (i: number, k: number, isOpen: boolean) => {
     const newModalState = [...showModal];
@@ -351,6 +399,9 @@ function RekapOs2Mtc() {
   const handleViewClick = () => {
     setShowSelectionPanel(false);
     setShowDataPanels(true);
+    fetchData({
+      allMesin: true,
+    });
   };
 
   // Handle back button click
@@ -394,7 +445,8 @@ function RekapOs2Mtc() {
   };
   return (
     <div>
-      {/* Your existing JSX structure - using the new state management */}
+      {isLoading && <Loading />}
+
       {/* Defect Mesin Section */}
       {showSelectionPanel && (
         <div className="bg-white rounded-md shadow-md p-6 mb-5 border-2">
@@ -638,6 +690,18 @@ function RekapOs2Mtc() {
                     Reset
                   </button>
                 </div>
+                {/* {data2.defectOs2 && ( */}
+                <div className="flex justify-center my-5">
+                  <ExportButton
+                    data={data.defectOs2?.jenis_masalah}
+                    type="mesinProblem"
+                    label="Export"
+                    dateRange={{
+                      from: params?.mesinProblem?.from,
+                      to: params?.mesinProblem?.to,
+                    }}
+                  />
+                </div>
               </div>
 
               <div className="md:grid grid-cols-1 gap-5 px-10 pb-10 pt-5">
@@ -751,7 +815,7 @@ function RekapOs2Mtc() {
                           e.target.value,
                         )
                       }
-                      className="z-20 w-[40%] rounded-md bg-blue-200 items-center h-8"
+                      className="z-20 w-full rounded-md bg-blue-200 items-center h-8"
                     >
                       <option disabled selected>
                         Pilih Mesin
@@ -782,6 +846,17 @@ function RekapOs2Mtc() {
                     >
                       Tampilkan
                     </button>
+                  </div>
+                  <div className="flex justify-center my-5">
+                    <ExportButton
+                      data={data.oneMesin?.data_jenis_masalah}
+                      type="oneMesin"
+                      label="Export"
+                      dateRange={{
+                        from: params?.oneMesin?.from,
+                        to: params?.oneMesin?.to,
+                      }}
+                    />
                   </div>
                 </div>
                 <div className="md:grid grid-cols-1 gap-5 px-10 pb-10 ">
@@ -971,6 +1046,17 @@ function RekapOs2Mtc() {
                       Reset
                     </button>
                   </div>
+                  <div className="flex justify-center my-5">
+                    <ExportButton
+                      data={data.qualityDefect}
+                      type="quality"
+                      label="Export"
+                      dateRange={{
+                        from: params?.quality?.from,
+                        to: params?.quality?.to,
+                      }}
+                    />
+                  </div>
                 </div>
 
                 <div className="md:grid grid-cols-1 gap-5 px-10 pb-10 pt-5">
@@ -1093,6 +1179,17 @@ function RekapOs2Mtc() {
                       Reset
                     </button>
                   </div>
+                  <div className="flex justify-center my-5">
+                    <ExportButton
+                      data={data.produksiDefect}
+                      type="produksi"
+                      label="Export"
+                      dateRange={{
+                        from: params?.produksi?.from,
+                        to: params?.produksi?.to,
+                      }}
+                    />
+                  </div>
                 </div>
 
                 <div className="md:grid grid-cols-1 gap-5  pb-10 pt-5">
@@ -1200,7 +1297,7 @@ function RekapOs2Mtc() {
                     />
                   </div>
                   <div className="flex col-span-4 gap-3 justify-end">
-                    <div className="flex justify-center col-span-2">
+                    <div className="flex justify-center ">
                       <button
                         onClick={() =>
                           fetchData({
@@ -1215,7 +1312,7 @@ function RekapOs2Mtc() {
                         Tampilkan
                       </button>
                     </div>
-                    <div className="flex justify-center col-span-2">
+                    <div className="flex justify-center ">
                       <button
                         onClick={() =>
                           fetchData({
@@ -1229,6 +1326,17 @@ function RekapOs2Mtc() {
                       >
                         Bulan Ini
                       </button>
+                    </div>
+                    <div className="fex justify-center ">
+                      <ExportButton
+                        data={data.responTime}
+                        type="responTime"
+                        label="Export"
+                        dateRange={{
+                          year: params?.responTime?.year || '',
+                          month: params?.responTime?.month || '',
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -1354,6 +1462,17 @@ function RekapOs2Mtc() {
                       Reset
                     </button>
                   </div>
+                  <div className="flex justify-center my-5">
+                    <ExportButton
+                      data={data.responTimeBulan?.data}
+                      type="responTimeBulan"
+                      label="Export"
+                      dateRange={{
+                        from: params?.responTimeBulan?.from,
+                        to: params?.responTimeBulan?.to,
+                      }}
+                    />
+                  </div>
                 </div>
 
                 <div className="flex gap-10 w-full justify-center">
@@ -1401,18 +1520,16 @@ function RekapOs2Mtc() {
                             {data.data?.map((data2: any, i: any) => {
                               return (
                                 <>
-                                  <div className="text-xs ">
-                                    {data.data?.map((data2: any) => (
-                                      <label
-                                        key={data2.jumlah_waktu_jam}
-                                        className="text-xs"
-                                      >
-                                        {parseFloat(
-                                          data2.jumlah_waktu_jam,
-                                        ).toFixed(2)}
-                                      </label>
-                                    ))}
-                                  </div>
+                                  {data.data?.map((data2: any) => (
+                                    <label
+                                      key={data2.jumlah_waktu_jam}
+                                      className="text-xs"
+                                    >
+                                      {parseFloat(
+                                        data2.jumlah_waktu_jam,
+                                      ).toFixed(2)}
+                                    </label>
+                                  ))}
                                 </>
                               );
                             })}
@@ -1504,6 +1621,17 @@ function RekapOs2Mtc() {
                       >
                         Bulan Ini
                       </button>
+                    </div>
+                    <div className="fex justify-center ">
+                      <ExportButton
+                        data={data.breakDown}
+                        type="breakDown"
+                        label="Export"
+                        dateRange={{
+                          year: params?.breakdownTime?.year || '',
+                          month: params?.breakdownTime?.month || '',
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
@@ -1628,6 +1756,17 @@ function RekapOs2Mtc() {
                     >
                       Reset
                     </button>
+                  </div>
+                  <div className="flex justify-center my-5">
+                    <ExportButton
+                      data={data.breakDownMonth?.data}
+                      type="breakDownMonth"
+                      label="Export"
+                      dateRange={{
+                        from: params?.breakDownMonth?.from,
+                        to: params?.breakDownMonth?.to,
+                      }}
+                    />
                   </div>
                 </div>
 

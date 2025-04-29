@@ -214,10 +214,36 @@ export default function TabResponPengajuanHR() {
                 }`}
                 {...a11yProps(5)}
               />
-              <Tab label={`Terlambat`} {...a11yProps(6)} />
-              <Tab label={`Dinas`} {...a11yProps(7)} />
-              <Tab label="SP" {...a11yProps(8)} />
-              <Tab label="Penambahan Karyawan" {...a11yProps(9)} />
+              <Tab
+                label={`Terlambat ${
+                  task?.pengajuan_terlambat == 0
+                    ? ''
+                    : '(' + task?.pengajuan_terlambat + ')'
+                }`}
+                {...a11yProps(6)}
+              />
+              <Tab
+                label={`Dinas ${
+                  task?.pengajuan_dinas == 0
+                    ? ''
+                    : '(' + task?.pengajuan_dinas + ')'
+                }`}
+                {...a11yProps(7)}
+              />
+              <Tab
+                label={`SP ${
+                  task?.pengajuan_sp == 0 ? '' : '(' + task?.pengajuan_sp + ')'
+                }`}
+                {...a11yProps(8)}
+              />
+              <Tab
+                label={`Penambahan Karyawan ${
+                  task?.pengajuan_penambahan_karyawan == 0
+                    ? ''
+                    : '(' + task?.pengajuan_penambahan_karyawan + ')'
+                }`}
+                {...a11yProps(9)}
+              />
             </Tabs>
           </ThemeProvider>
         </AppBar>
