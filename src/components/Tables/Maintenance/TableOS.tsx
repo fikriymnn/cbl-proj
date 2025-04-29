@@ -1558,7 +1558,13 @@ function TableOS() {
                                             data.waktu_respon_qc,
                                           )}
                                         </td>
-                                        <td className="border border-gray-300 p-2">
+                                        <td
+                                          className={`border border-gray-300 p-2 ${
+                                            waktuValidasiQCMinutes >= 1800
+                                              ? 'text-red-500'
+                                              : ''
+                                          }`}
+                                        >
                                           {waktuValidasiQC}
                                         </td>
                                       </tr>
@@ -1595,8 +1601,13 @@ function TableOS() {
                                               ?.waktu_selesai,
                                           )}{' '}
                                         </td>
-                                        <td className="border border-gray-300 p-2">
-                                          {' '}
+                                        <td
+                                          className={`border border-gray-300 p-2 ${
+                                            waktuVerifikasiQCMinutes >= 3600
+                                              ? 'text-red-500'
+                                              : ''
+                                          }`}
+                                        >
                                           {waktuVerifikasiQC}
                                         </td>
                                       </tr>
