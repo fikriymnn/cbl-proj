@@ -54,23 +54,61 @@ function MasterKaryawanIsi() {
       }
     }
   }
+  const [statusFilter, setStatusFilter] = useState('active');
   const [searchQuery, setSearchQuery] = useState('');
-  const filteredAbsen = karyawan?.data?.filter((data: any) =>
-    data.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredAbsen = karyawan?.data?.filter((data: any) => {
+    // Name filter
+    const nameMatches = data.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+
+    // Status filter
+    const status = data.biodata_karyawan[0]?.status_active || '';
+    let statusMatches = true;
+
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'lain-lain') {
+        // "lain-lain" should match anything that's not "active" or "cut off"
+        statusMatches = status !== 'active' && status !== 'cut off';
+      } else {
+        // Match the specific status
+        statusMatches = status === statusFilter;
+      }
+    }
+
+    return nameMatches && statusMatches;
+  });
   return (
     <div>
       <>
         <main className="overflow-x-scroll">
           <div className="min-w-[700px] bg-white rounded-xl">
             <div className=" w-full h-full flex border-b-8 border-[#D8EAFF] px-2 py-3 justify-between">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="border-1 w-[40%] border-stroke px-2 py-1 rounded-md bg-blue-100"
-                placeholder="Cari Karyawan"
-              />
+              <div className="flex gap-10">
+                <input
+                  type="text"
+                  placeholder="Cari Karyawan"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="border-1 w-full border-stroke px-2 py-1 rounded-md bg-blue-100"
+                />
+                <div className="flex gap-4">
+                  <label htmlFor="statusFilter" className="mr-2 font-medium">
+                    Status:
+                  </label>
+                  <select
+                    id="statusFilter"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="border-1 border-stroke px-2 py-1 rounded-md bg-blue-100"
+                  >
+                    <option value="active">Active</option>
+                    <option value="all">All</option>
+                    <option value="cut off">Cut Off</option>
+                    <option value="lain-lain">Lain-lain</option>
+                  </select>
+                </div>
+              </div>
               <Link to={'/hr/pm/masterkaryawan/add'}>
                 <button className="px-8 py-1 text-sm bg-blue-600 items-center justify-center text-white font-semibold rounded-md">
                   TAMBAH PERSONNEL
