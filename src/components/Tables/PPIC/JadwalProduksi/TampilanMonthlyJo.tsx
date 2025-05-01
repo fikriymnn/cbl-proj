@@ -556,12 +556,64 @@ function TampilanMonthlyJO() {
 
                               {/* Date range list with checkboxes */}
                               <div className="mb-6 max-h-96 overflow-y-auto border border-gray-200 rounded-md">
-                                <table className="w-full">
+                                <table className="w-full table-fixed">
                                   <thead className="bg-gray-100">
                                     <tr className="text-left">
-                                      <th className="p-3">Date</th>
-                                      <th className="p-3">Shift 1</th>
-                                      <th className="p-3">Shift 2</th>
+                                      <th className="p-3 w-1/3">Date</th>
+                                      <th className="p-3 w-1/3">
+                                        <div className="flex items-center">
+                                          <span className="mr-2">Shift 1</span>
+                                          <button
+                                            className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 w-24"
+                                            onClick={() => {
+                                              const newLemburData = [
+                                                ...lemburData,
+                                              ];
+                                              const allChecked =
+                                                newLemburData.every(
+                                                  (item) => item.shift_1,
+                                                );
+                                              newLemburData.forEach((item) => {
+                                                item.shift_1 = !allChecked;
+                                              });
+                                              setLemburData(newLemburData);
+                                            }}
+                                          >
+                                            {lemburData.every(
+                                              (item) => item.shift_1,
+                                            )
+                                              ? 'Unselect All'
+                                              : 'Select All'}
+                                          </button>
+                                        </div>
+                                      </th>
+                                      <th className="p-3 w-1/3">
+                                        <div className="flex items-center">
+                                          <span className="mr-2">Shift 2</span>
+                                          <button
+                                            className="ml-2 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 w-24"
+                                            onClick={() => {
+                                              const newLemburData = [
+                                                ...lemburData,
+                                              ];
+                                              const allChecked =
+                                                newLemburData.every(
+                                                  (item) => item.shift_2,
+                                                );
+                                              newLemburData.forEach((item) => {
+                                                item.shift_2 = !allChecked;
+                                              });
+                                              setLemburData(newLemburData);
+                                            }}
+                                          >
+                                            {lemburData.every(
+                                              (item) => item.shift_2,
+                                            )
+                                              ? 'Unselect All'
+                                              : 'Select All'}
+                                          </button>
+                                        </div>
+                                      </th>
                                     </tr>
                                   </thead>
                                   <tbody>
@@ -579,7 +631,7 @@ function TampilanMonthlyJO() {
                                             item.tanggal_lembur,
                                           )}
                                         </td>
-                                        <td className="p-3">
+                                        <td className="p-3 text-center">
                                           <input
                                             type="checkbox"
                                             checked={item.shift_1}
@@ -593,7 +645,7 @@ function TampilanMonthlyJO() {
                                             className="h-4 w-4"
                                           />
                                         </td>
-                                        <td className="p-3">
+                                        <td className="p-3 text-center">
                                           <input
                                             type="checkbox"
                                             checked={item.shift_2}
