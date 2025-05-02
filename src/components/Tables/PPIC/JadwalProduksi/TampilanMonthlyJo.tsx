@@ -4,7 +4,8 @@ import axios from 'axios';
 import Loading from '../../../Loading';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
-import { Tooltip } from 'react-tooltip';
+
+import JobOrderTable from './JobOrderTable';
 
 function TampilanMonthlyJO() {
   const [isLoading, setIsLoading] = useState(false);
@@ -88,20 +89,40 @@ function TampilanMonthlyJO() {
   };
 
   const [listJO, setJo] = useState<any>();
-  async function getmasterKategori() {
+  async function getmasterKategori(
+    startDate = '',
+    endDate = '',
+    searchTerm = '',
+  ) {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksi`;
+
     try {
       setIsLoading(true);
+
+      // Prepare parameters with proper typing
+      const params: {
+        status_tiket: string;
+        start_date?: string;
+        end_date?: string;
+        search?: string;
+      } = {
+        status_tiket: 'history',
+      };
+
+      // Add filter parameters if provided
+      if (startDate) params.start_date = startDate;
+      if (endDate) params.end_date = endDate;
+      if (searchTerm) params.search = searchTerm;
+
       const res = await axios.get(url, {
-        params: {
-          status_tiket: 'history',
-        },
+        params,
         withCredentials: true,
       });
+
       setIsLoading(false);
       setJo(res.data);
       console.log('listJO', res.data);
-    } catch (error: any) {
+    } catch (error) {
       setIsLoading(false);
       console.log(error);
     }
@@ -934,100 +955,18 @@ function TampilanMonthlyJO() {
             </div>
 
             {isDetailVisible && (
-              <div className="fixed right-0 top-7 h-full w-[70%] bg-white shadow-lg p-4 overflow-y-auto rounded-xl ">
-                <h2 className="text-lg font-bold mb-4">Job Order List</h2>
-
-                <button
-                  onClick={() => setIsDetailVisible(false)}
-                  className="text-white font-semibold px-4 py-2 text-sm mt-3 rounded-md bg-red-600"
-                >
-                  Close
-                </button>
-
-                <div className="overflow-x-auto py-2">
-                  <table className="w-full border-collapse shadow-lg rounded-md overflow-hidden ">
-                    {/* Table Header */}
-                    <thead className="bg-blue-500 text-white font-semibold">
-                      <tr>
-                        <th className="border border-blue-600 px-4 py-2">No</th>
-                        <th className="border border-blue-600 px-4 py-2">
-                          No JO
-                        </th>
-                        <th className="border border-blue-600 px-4 py-2">
-                          Item
-                        </th>
-                        <th className="border border-blue-600 px-4 py-2">
-                          Qty Druk
-                        </th>
-                        <th className="border border-blue-600 px-4 py-2">
-                          Qty PCS
-                        </th>
-                        <th className="border border-blue-600 px-4 py-2">
-                          Tanggal Kirim
-                        </th>
-                        <th className="border border-blue-600 px-4 py-2">
-                          Action
-                        </th>
-                      </tr>
-                    </thead>
-
-                    {/* Table Body */}
-                    <tbody>
-                      {listJO?.data?.length > 0 ? (
-                        listJO.data.map((jo: any, index: number) => (
-                          <tr
-                            key={index}
-                            className={`${
-                              index % 2 === 0 ? 'bg-blue-50' : 'bg-white'
-                            } hover:bg-blue-100 transition duration-200`}
-                          >
-                            <td className="border border-blue-200 px-4 py-2 text-center">
-                              {index + 1}
-                            </td>
-                            <td className="border border-blue-200 px-4 py-2 text-center">
-                              {jo.no_jo}
-                            </td>
-                            <td className="border border-blue-200 px-4 py-2 text-center">
-                              {jo.item}
-                            </td>
-                            <td className="border border-blue-200 px-4 py-2 text-center">
-                              {jo.qty_druk}
-                            </td>
-                            <td className="border border-blue-200 px-4 py-2 text-center">
-                              {jo.qty_pcs}
-                            </td>
-                            <td className="border border-blue-200 px-4 py-2 text-center">
-                              {jo.tgl_kirim}
-                            </td>
-                            <td className="border border-blue-200 px-4 py-2 text-center">
-                              <button
-                                onClick={() => {
-                                  get1Tiket(jo.id, index); // Call function
-                                  setSelectedJO(jo); // Store selected JO
-                                  setSelectedIndex(index); // Store index
-                                  setIsModalOpen(true); // Open modal
-                                }}
-                                className="text-[#0065de] text-sm  font-bold"
-                              >
-                                DETAIL
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td
-                            colSpan={6}
-                            className="text-center py-4 text-gray-600"
-                          >
-                            No data available
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+              <JobOrderTable
+                listJO={listJO}
+                get1Tiket={get1Tiket}
+                setSelectedJO={setSelectedJO}
+                setSelectedIndex={setSelectedIndex}
+                setIsModalOpen={setIsModalOpen}
+                isDetailVisible={isDetailVisible}
+                setIsDetailVisible={setIsDetailVisible}
+                loading={isLoading}
+                title="Job Order List"
+                getmasterKategori={getmasterKategori}
+              />
             )}
           </div>
           {isModalOpen && selectedJO && (
