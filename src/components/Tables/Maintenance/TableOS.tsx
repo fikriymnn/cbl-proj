@@ -1548,11 +1548,29 @@ function TableOS() {
                                           -
                                         </td>
                                       </tr>
-                                      <tr className="border-b border-gray-300">
-                                        <td className="border border-gray-300 p-2">
+                                      <tr
+                                        className={`border  p-2 ${
+                                          waktuValidasiQCMinutes >= 1800
+                                            ? 'text-red-500 border-red-500'
+                                            : 'border-gray-300'
+                                        }`}
+                                      >
+                                        <td
+                                          className={`border border-gray-300 p-2 ${
+                                            waktuValidasiQCMinutes >= 1800
+                                              ? 'text-red-500'
+                                              : ''
+                                          }`}
+                                        >
                                           Waktu Validasi QC
                                         </td>
-                                        <td className="border border-gray-300 p-2">
+                                        <td
+                                          className={`border border-gray-300 p-2 ${
+                                            waktuValidasiQCMinutes >= 1800
+                                              ? 'text-red-500'
+                                              : ''
+                                          }`}
+                                        >
                                           {data.user_respon_qc?.nama} ~{' '}
                                           {convertTimeStampToDateTime(
                                             data.waktu_respon_qc,
@@ -1586,11 +1604,29 @@ function TableOS() {
                                           {waktuBreakdownMTC}
                                         </td>
                                       </tr>
-                                      <tr className="border-b border-gray-300">
-                                        <td className="border border-gray-300 p-2">
+                                      <tr
+                                        className={`border border-gray-300 p-2 ${
+                                          waktuVerifikasiQCMinutes >= 3600
+                                            ? 'text-red-500 border-red-500'
+                                            : 'border-gray-300'
+                                        }`}
+                                      >
+                                        <td
+                                          className={`border border-gray-300 p-2 ${
+                                            waktuVerifikasiQCMinutes >= 3600
+                                              ? 'text-red-500'
+                                              : ''
+                                          }`}
+                                        >
                                           Waktu Verifikasi QC
                                         </td>
-                                        <td className="border border-gray-300 p-2">
+                                        <td
+                                          className={`border border-gray-300 p-2 ${
+                                            waktuVerifikasiQCMinutes >= 3600
+                                              ? 'text-red-500'
+                                              : ''
+                                          }`}
+                                        >
                                           {
                                             data.proses_mtcs?.at(-1)?.user_qc
                                               ?.nama
