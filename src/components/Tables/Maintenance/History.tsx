@@ -6,6 +6,7 @@ import ModalMtcDate from '../../Modals/ModalMtcDate';
 import ModalStockCheck1 from '../../Modals/ModalStockCheck1';
 import Polygon6 from '../../../images/icon/Polygon6.svg';
 import axios from 'axios';
+import Select from 'react-select';
 import X from '../../../images/icon/x.svg';
 import ModalDetail from '../../Modals/ModalDetail';
 import { Stack } from '@mui/material';
@@ -100,24 +101,39 @@ function HistoryOS2() {
 
     setShowModal1(onchangeVal);
   };
-
+  const [limit, setLimit] = useState(10);
   useEffect(() => {
     getTiket();
-    getUser();
-  }, [page]);
+    getMasterUser();
+  }, [page, limit]);
 
-  async function getUser() {
+  const handleLimitChange = (newLimit: number) => {
+    setLimit(newLimit);
+    setPage(1); // Reset to first page when changing limit
+  };
+  async function getMasterUser() {
+    const url = `${import.meta.env.VITE_API_LINK}/users`;
     try {
-      const res = await axios.get(`${import.meta.env.VITE_API_LINK}/me`, {
+      const res = await axios.get(url, {
+        params: {
+          status: 'aktif',
+          bagian: 'maintenance',
+        },
         withCredentials: true,
       });
-      // if (res.data.success == false) {
-      //   navigate("/auth/login");
-      // }
-      setUser(res.data);
-      console.log(res.data);
+
+      setUserList(res.data);
+      console.log('user list', res.data);
+      setOptions(
+        res.data.map((item: any) => {
+          return {
+            value: item.id,
+            label: `${item.nama}`,
+          };
+        }),
+      );
     } catch (error: any) {
-      console.log(error.response);
+      console.log(error);
     }
   }
   const [showModalDetail, setShowModalDetail] = useState<any>([]);
@@ -134,6 +150,9 @@ function HistoryOS2() {
 
     setShowModalDetail(onchangeVal);
   };
+  const [userList, setUserList] = useState<any>();
+  const [options, setOptions] = useState([]);
+  const [idKaryawan, setIdKaryawan] = useState<any>();
   const [startDate, setStartDate] = useState<any>();
   const [endDate, setEndDate] = useState<any>();
   const [mesinNama, setMesinNama] = useState<any>();
@@ -147,11 +166,12 @@ function HistoryOS2() {
           bagian_tiket: 'histori os2',
           no_jo: noJo,
           page: page,
-          limit: 10,
+          limit: limit, // Use the limit state here instead of hardcoded 10
           start_date: startDate,
           end_date: endDate,
           mesin: mesinNama,
           status_tiket: statusTiket,
+          id_eksekutor: idKaryawan,
         },
         withCredentials: true,
       });
@@ -171,6 +191,17 @@ function HistoryOS2() {
     }
   }
 
+  const handleChangePointDepatment = (selected: any) => {
+    const { value } = selected;
+    const filteredData = userList.find(
+      (item: any) => item.id == value,
+      // item.id.includes(parseInt(value));
+    );
+
+    console.log(filteredData?.id);
+
+    setIdKaryawan(filteredData?.id);
+  };
   async function reworkTiket(idTiket: number) {
     const url = `${import.meta.env.VITE_API_LINK}/ticket/rework/${idTiket}`;
 
@@ -659,182 +690,215 @@ function HistoryOS2() {
       {isLoading && <Loading />}
       <div className="flex justify-between items-center bg-white p-2">
         <div>
-          {filter == true ? (
-            <div className="absolute rounded-md bg-white shadow-2xl md:w-96 w-11/12 p-2 -translate-x-2 md:-translate-y-6 -translate-y-32 border border-gray"></div>
-          ) : (
-            ''
+          {filter && (
+            <div className=" bg-white shadow-2xl md:w-96 w-11/12 p-2 -translate-x-2 md:-translate-y-6 -translate-y-32 border border-gray"></div>
           )}
         </div>
-        <div className="grid md:grid-cols-12 grid-cols-6 px-4 py-1 gap-3 items-center">
-          <div className="flex flex-col gap-2 col-span-2">
-            <p className="text-sm text-primary font-semibold">Dari:</p>
-            <input
-              className="rounded-full bg-[#D8EAFF] px-2 h-8"
-              type="date"
-              onChange={(e) => setStartDate(e.target.value)}
-            ></input>
-          </div>
-          <div className="flex flex-col gap-2 col-span-2">
-            <p className=" my-auto text-sm text-primary font-semibold ">
-              Sampai:
-            </p>
 
-            <input
-              className="rounded-full bg-[#D8EAFF] px-2 h-8"
-              type="date"
-              onChange={(e) => setEndDate(e.target.value)}
-            ></input>
-          </div>
-          <div className="flex flex-col  gap-2 col-span-2">
-            <p className=" my-auto text-sm text-primary font-semibold ">
-              Pilih Mesin:
-            </p>
+        <div className="bg-white  p-6 mb-6">
+          <div className="grid md:grid-cols-3 grid-cols-1 gap-6">
+            {/* Date Range */}
+            <div className="flex flex-row md:flex-row items-center gap-4 col-span-3 md:col-span-1">
+              <div className="flex flex-col gap-2 flex-1">
+                <p className="text-sm text-primary font-semibold">Dari:</p>
+                <input
+                  className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                  type="date"
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-2 flex-1">
+                <p className="text-sm text-primary font-semibold">Sampai:</p>
+                <input
+                  className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                  type="date"
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+            </div>
 
-            <select
-              onChange={(e) => {
-                setMesinNama(e.target.value);
-              }}
-              className={` z-20 w-full rounded-md bg-blue-200 items-center h-8`}
-            >
-              <option selected disabled>
-                Pilih Mesin
-              </option>
-              {masterMesin?.map((data: any, i: number) => {
-                return (
+            {/* Dropdown Filters */}
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-primary font-semibold">Pilih Mesin:</p>
+              <select
+                onChange={(e) => {
+                  setMesinNama(e.target.value);
+                }}
+                className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
+              >
+                <option selected disabled>
+                  Pilih Mesin
+                </option>
+                {masterMesin?.map((data: any, i: any) => (
                   <option
+                    key={i}
                     value={data.nama_mesin}
-                    className="text-gray-800 text-sm font-light dark:text-bodydark"
+                    className="text-gray-800 text-sm"
                   >
                     {data.nama_mesin}
                   </option>
-                );
-              })}
-            </select>
-          </div>
+                ))}
+              </select>
+            </div>
 
-          <div className=" gap-2 flex flex-col col-span-4">
-            <p className=" my-auto text-sm text-primary font-semibold ">
-              No.Jo
-            </p>
-            <input
-              className="rounded-md h-8 bg-[#D8EAFF] px-2 w-full"
-              placeholder="Nomor JO"
-              type="text"
-              onChange={(e) => setNoJo(e.target.value)}
-            ></input>
-          </div>
-          <div className="flex flex-col gap-2 col-span-2">
-            <button
-              onClick={() => {
-                getTiket();
-              }}
-              className="bg-primary text-white px-5 py-2 rounded-md my-auto "
-            >
-              Tampilkan
-            </button>
-            <button
-              onClick={() => prepareExportData()}
-              className="px-5 py-2 rounded-md my-auto text-white bg-green-500 justify-center items-center hover:cursor-pointer"
-              disabled={isLoadingPreview}
-            >
-              {isLoadingPreview ? 'Loading...' : 'EXPORT PREVIEW'}
-            </button>
-            {showExportPreview && (
-              <ModalFull
-                isOpen={showExportPreview}
-                onClose={() => closeModalExport()}
-                judul={'Export Preview'}
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-primary font-semibold">
+                Status Tiket:
+              </p>
+              <select
+                onChange={(e) => {
+                  setStatusTiket(e.target.value);
+                }}
+                className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
               >
-                <>
-                  <div className="flex flex-col h-[85vh]">
-                    {' '}
-                    {/* Full height container */}
-                    <div className="flex justify-between mb-4 px-2 pt-5">
-                      <div className="text-sm text-gray-500">
-                        Total Data: {previewData.length}
-                      </div>
-                      <button
-                        onClick={exportToExcel}
-                        className="bg-blue-500 text-white py-1 px-4 rounded hover:bg-blue-600"
-                        disabled={isLoadingPreview}
-                      >
-                        {isLoadingPreview ? 'Exporting...' : 'Export to Excel'}
-                      </button>
-                    </div>
-                    <div className="overflow-auto flex-1 relative">
-                      {' '}
-                      {/* Flex grow to take available space */}
-                      <table className="min-w-full bg-white border">
-                        <thead className="bg-blue-50 sticky top-0 z-10 shadow-sm">
-                          <tr>
-                            {previewData.length > 0 &&
-                              Object.keys(previewData[0]).map((key, index) => (
-                                <th
-                                  key={index}
-                                  className="py-3 px-4 border-b text-left text-xs font-semibold text-blue-700 uppercase tracking-wider"
-                                >
-                                  {key}
-                                </th>
-                              ))}
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {previewData
-                            .slice(0, visibleRows)
-                            .map((row, rowIndex) => (
-                              <tr
-                                key={rowIndex}
-                                className={
-                                  rowIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'
-                                }
-                              >
-                                {Object.values(row).map((value, colIndex) => (
-                                  <td
-                                    key={colIndex}
-                                    className="py-2 px-4 border-b text-sm"
-                                  >
-                                    {value?.toString() || '-'}
-                                  </td>
-                                ))}
-                              </tr>
-                            ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    {/* Fixed footer with status and buttons */}
-                    <div className="flex items-center justify-between border-t bg-gray-50 py-3 px-4 mt-auto">
-                      <div className="text-sm text-gray-600">
-                        Showing {Math.min(visibleRows, previewData.length)} of{' '}
-                        {previewData.length} rows
-                      </div>
+                <option selected disabled>
+                  Pilih Status Tiket
+                </option>
+                <option value="open">Open</option>
+                <option value="request to qc">Request to QC</option>
+                <option value="temporary">Temporary</option>
+                <option value="monitoring">Monitoring</option>
+              </select>
+            </div>
 
-                      {visibleRows < previewData.length && (
-                        <div className="space-x-3">
-                          <button
-                            className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded font-medium text-sm"
-                            onClick={() =>
-                              setVisibleRows(
-                                Math.min(visibleRows + 20, previewData.length),
-                              )
-                            }
-                          >
-                            Show 20 More
-                          </button>
-                          <button
-                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-medium text-sm"
-                            onClick={() => setVisibleRows(previewData.length)}
-                          >
-                            Show All ({previewData.length} rows)
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </>
-              </ModalFull>
-            )}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-primary font-semibold">Nama</label>
+              <Select
+                placeholder="Cari..."
+                options={options}
+                onChange={handleChangePointDepatment}
+                className="rounded-lg"
+                styles={{
+                  control: (provided) => ({
+                    ...provided,
+                    backgroundColor: '#EBF5FF',
+                    borderColor: '#BFDBFE',
+                    minHeight: '40px',
+                    boxShadow: 'none',
+                    '&:hover': {
+                      borderColor: '#93C5FD',
+                    },
+                  }),
+                }}
+              />
+            </div>
+
+            {/* Text Search */}
+            <div className="flex flex-col gap-2">
+              <p className="text-sm text-primary font-semibold">Cari</p>
+              <input
+                className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                placeholder="Kendala / No Jo"
+                type="text"
+                onChange={(e) => setNoJo(e.target.value)}
+              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-end gap-3">
+              <button
+                onClick={() => getTiket()}
+                className="bg-primary hover:bg-blue-700 text-white font-medium px-5 py-2 rounded-lg transition-colors flex-1"
+              >
+                Tampilkan
+              </button>
+              <button
+                onClick={() => prepareExportData()}
+                className="bg-green-500 hover:bg-green-600 text-white font-medium px-5 py-2 rounded-lg transition-colors flex-1 disabled:opacity-50"
+                disabled={isLoadingPreview}
+              >
+                {isLoadingPreview ? 'Loading...' : 'Export'}
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Export Preview Modal */}
+        {showExportPreview && (
+          <ModalFull
+            isOpen={showExportPreview}
+            onClose={() => closeModalExport()}
+            judul={'Export Preview'}
+          >
+            <div className="flex flex-col h-[85vh]">
+              <div className="flex justify-between mb-4 px-2 pt-5">
+                <div className="text-sm text-gray-500">
+                  Total Data: {previewData.length}
+                </div>
+                <button
+                  onClick={exportToExcel}
+                  className="bg-blue-500 text-white py-1 px-4 rounded hover:bg-blue-600 font-medium"
+                  disabled={isLoadingPreview}
+                >
+                  {isLoadingPreview ? 'Exporting...' : 'Export to Excel'}
+                </button>
+              </div>
+              <div className="overflow-auto flex-1 relative">
+                <table className="min-w-full bg-white border">
+                  <thead className="bg-blue-50 sticky top-0 z-10 shadow-sm">
+                    <tr>
+                      {previewData.length > 0 &&
+                        Object.keys(previewData[0]).map((key, index) => (
+                          <th
+                            key={index}
+                            className="py-3 px-4 border-b text-left text-xs font-semibold text-blue-700 uppercase tracking-wider"
+                          >
+                            {key}
+                          </th>
+                        ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewData.slice(0, visibleRows).map((row, rowIndex) => (
+                      <tr
+                        key={rowIndex}
+                        className={
+                          rowIndex % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                        }
+                      >
+                        {Object.values(row).map((value, colIndex) => (
+                          <td
+                            key={colIndex}
+                            className="py-2 px-4 border-b text-sm"
+                          >
+                            {value?.toString() || '-'}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex items-center justify-between border-t bg-gray-50 py-3 px-4 mt-auto">
+                <div className="text-sm text-gray-600">
+                  Showing {Math.min(visibleRows, previewData.length)} of{' '}
+                  {previewData.length} rows
+                </div>
+
+                {visibleRows < previewData.length && (
+                  <div className="space-x-3">
+                    <button
+                      className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded font-medium text-sm"
+                      onClick={() =>
+                        setVisibleRows(
+                          Math.min(visibleRows + 20, previewData.length),
+                        )
+                      }
+                    >
+                      Show 20 More
+                    </button>
+                    <button
+                      className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-medium text-sm"
+                      onClick={() => setVisibleRows(previewData.length)}
+                    >
+                      Show All ({previewData.length} rows)
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </ModalFull>
+        )}
       </div>
 
       {!isMobile && (
@@ -1135,17 +1199,39 @@ function HistoryOS2() {
                   );
                 })}
             </div>
-            <div className="w-full flex justify-end">
-              <Stack spacing={2}>
-                <Pagination
-                  count={tiket?.total_page}
-                  color="primary"
-                  onChange={(e, i) => {
-                    setPage(i);
-                    console.log(i);
-                  }}
-                />
-              </Stack>
+            <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-6 pb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Rows per page:</span>
+                <div className="flex gap-2">
+                  {[10, 25, 50, 100].map((pageSize) => (
+                    <button
+                      key={pageSize}
+                      onClick={() => handleLimitChange(pageSize)}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                        limit === pageSize
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {pageSize}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Stack spacing={2}>
+                  <Pagination
+                    count={tiket?.total_page}
+                    color="primary"
+                    page={page}
+                    onChange={(e, i) => {
+                      setPage(i);
+                      console.log(i);
+                    }}
+                  />
+                </Stack>
+              </div>
             </div>
           </div>
         </>

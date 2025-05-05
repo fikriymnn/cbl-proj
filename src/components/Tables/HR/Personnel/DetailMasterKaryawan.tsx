@@ -173,6 +173,7 @@ export default function DetailMasterKaryawanIsi() {
         },
         withCredentials: true,
       });
+      console.log('absen', res.data);
       setAbsen(res.data);
     } catch (error: any) {
       console.error('Error fetching absen data:', error);
@@ -191,6 +192,7 @@ export default function DetailMasterKaryawanIsi() {
         },
         withCredentials: true,
       });
+      console.log('rekap absen', res.data);
       setRekapAbsen(res.data);
     } catch (error: any) {
       console.error('Error fetching rekap absen data:', error);

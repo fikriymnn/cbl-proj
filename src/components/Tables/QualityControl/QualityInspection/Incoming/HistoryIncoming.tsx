@@ -366,7 +366,7 @@ function HistoryIncoming() {
                               Jumlah kedatangan
                             </div>
                             <div className="col-span-2">
-                              : {incoming?.jumlah}
+                              : {incoming?.jumlah} LP
                             </div>
 
                             <div className="font-semibold">√N + 1</div>

@@ -122,8 +122,11 @@ function ListHistoryChemical() {
                 <div className="flex flex-col   text-stone-500 text-[16px] font-bold md:ps-0 bg-white">
                   <p className="">Gramatur</p>
                 </div>
-                <div className="flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold md:ps-0 bg-white">
+                <div className="flex flex-col   text-stone-500 text-[16px] font-bold md:ps-0 bg-white">
                   <p className="">No. JO</p>
+                </div>
+                <div className="flex flex-col   text-stone-500 text-[16px] font-bold md:ps-0 bg-white">
+                  <p className="">Inspektor</p>
                 </div>
                 <div className="flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold md:ps-0 bg-white">
                   <p className="">Tanggal</p>
@@ -158,9 +161,14 @@ function ListHistoryChemical() {
                           {data.gramatur}
                         </p>
                       </div>
-                      <div className="flex flex-col  col-span-2  bg-white">
+                      <div className="flex flex-col   bg-white">
                         <p className="text-stone-500 text-sm font-medium ">
                           {data.no_jo}
+                        </p>
+                      </div>
+                      <div className="flex flex-col   bg-white">
+                        <p className="text-stone-500 text-sm font-medium ">
+                          {data.inspector}
                         </p>
                       </div>
                       <div className="flex flex-col col-span-2   bg-white">

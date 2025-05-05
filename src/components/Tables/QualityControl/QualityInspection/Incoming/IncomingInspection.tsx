@@ -712,7 +712,7 @@ function IncomingInspection() {
 
                 <label className="text-black text-lg font-bold mt-12"> </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {incoming?.jumlah}
+                  : {incoming?.jumlah} LP
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   {incoming?.status == 'incoming' ? (
