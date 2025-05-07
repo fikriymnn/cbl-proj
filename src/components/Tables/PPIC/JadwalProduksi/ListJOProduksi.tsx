@@ -147,6 +147,21 @@ function ListJOProduksi() {
     }
   }, [API_BASE, fetchAPI]);
 
+  const [mesinList, setmesinList] = useState<any>([]);
+  async function getMasterMesin() {
+    const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-mesin`;
+    try {
+      setIsLoading(true);
+      const res = await axios.get(url, {});
+      setIsLoading(false);
+      setmesinList(res.data.data);
+      console.log('getmesin', res.data.data);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error.data.msg);
+    }
+  }
+
   const getInitialJOList = useCallback(async () => {
     const url = `${API_BASE}/ppic/jadwalProduksi`;
     // Only use the required status_tiket parameter
@@ -291,6 +306,7 @@ function ListJOProduksi() {
   }, []);
 
   useEffect(() => {
+    getMasterMesin();
     // Load ALL data initially without filters
     getInitialJadwalView();
     getInitialJOList();
@@ -317,6 +333,80 @@ function ListJOProduksi() {
     getJadwalView();
     getJOList();
   }, [getJadwalView, getJOList]);
+  const [bookingData, setBookingData] = useState({
+    tanggal: '',
+    mesin: '',
+    no_io: '',
+    nama_customer: '',
+    nama_item: '',
+    qty_pcs: '',
+    qty_druk: '',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<any>(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+
+  // Handle booking form input changes
+  const handleBookingChange = (e: any) => {
+    const { name, value } = e.target;
+
+    // Convert numeric fields to numbers
+    let processedValue = value;
+    if (name === 'qty_pcs' || name === 'qty_druk') {
+      processedValue = value === '' ? '' : Number(value);
+    }
+
+    setBookingData({
+      ...bookingData,
+      [name]: processedValue,
+    });
+  };
+
+  // Submit booking data to API
+  const handleSubmitBooking = async (e: any) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitError(null);
+    setSubmitSuccess(false);
+
+    try {
+      const apiUrl = `${API_BASE}/ppic/bookingJadwal`;
+
+      // Make POST request using axios
+      const response = await axios.post(apiUrl, bookingData);
+
+      console.log('Booking successful:', response.data);
+      setSubmitSuccess(true);
+
+      // Reset form after successful submission
+      setBookingData({
+        tanggal: '',
+        mesin: '',
+        no_io: '',
+        nama_customer: '',
+        nama_item: '',
+        qty_pcs: '',
+        qty_druk: '',
+      });
+
+      // Close modal after short delay
+      setTimeout(() => {
+        setShowListJo(false);
+      }, 1500);
+    } catch (error: unknown) {
+      console.error('Booking error:', error);
+      if (axios.isAxiosError(error)) {
+        setSubmitError(
+          error.response?.data?.message ||
+            'Failed to submit booking. Please try again.',
+        );
+      } else {
+        setSubmitError('Failed to submit booking. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <main className="overflow-x-scroll">
@@ -713,58 +803,145 @@ function ListJOProduksi() {
 
       {/* Booking Modal */}
       {showListJo && (
-        <ModalKosonganSmall
+        <ModalXL
           isOpen={showListJo}
           onClose={() => setShowListJo(false)}
-          judul="Booking"
+          judul=" Buat Booking Baru"
         >
-          <div className="grid grid-cols-12 w-full md:gap-4 gap-1 px-4 py-4 md:mt-0 bg-white mb-2">
-            <div className="gap-2 col-span-8 flex flex-col">
-              <p className="my-auto text-sm text-primary font-semibold">
-                Pilih Tanggal
-              </p>
-              <div className="flex w-full gap-2 justify-between">
-                <p className="text-sm text-primary font-semibold">Dari :</p>
-                <input
-                  className="rounded-md bg-blue-200 px-2"
-                  type="date"
-                  value={dateRange.startDate}
-                  onChange={(e) =>
-                    handleDateChange('startDate', e.target.value)
-                  }
-                />
+          {/* Right side - New booking form */}
+          <div className="flex flex-col gap-2 py-4">
+            <form onSubmit={handleSubmitBooking}>
+              <div className="grid grid-cols-1 gap-2">
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-primary font-semibold w-32">
+                    Tanggal:
+                  </p>
+                  <input
+                    className="rounded-md bg-blue-200 px-2 py-1 flex-1"
+                    type="date"
+                    name="tanggal"
+                    value={bookingData.tanggal}
+                    onChange={handleBookingChange}
+                    required
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-primary font-semibold w-32">
+                    Mesin:
+                  </p>
+                  <select
+                    className="rounded-md bg-blue-200 px-2 py-1 flex-1"
+                    name="mesin"
+                    onChange={handleBookingChange}
+                  >
+                    <option value="">Pilih Mesin</option>
+                    {mesinList.map((mesin: any) => (
+                      <option key={mesin.mesin} value={mesin.mesin}>
+                        {mesin.mesin}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-primary font-semibold w-32">
+                    No IO:
+                  </p>
+                  <input
+                    className="rounded-md bg-blue-200 px-2 py-1 flex-1"
+                    type="text"
+                    name="no_io"
+                    placeholder="Contoh: IO-TES-001"
+                    value={bookingData.no_io}
+                    onChange={handleBookingChange}
+                    required
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-primary font-semibold w-32">
+                    Nama Customer:
+                  </p>
+                  <input
+                    className="rounded-md bg-blue-200 px-2 py-1 flex-1"
+                    type="text"
+                    name="nama_customer"
+                    placeholder="Nama customer"
+                    value={bookingData.nama_customer}
+                    onChange={handleBookingChange}
+                    required
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-primary font-semibold w-32">
+                    Nama Item:
+                  </p>
+                  <input
+                    className="rounded-md bg-blue-200 px-2 py-1 flex-1"
+                    type="text"
+                    name="nama_item"
+                    placeholder="Nama item"
+                    value={bookingData.nama_item}
+                    onChange={handleBookingChange}
+                    required
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-primary font-semibold w-32">
+                    Qty PCS:
+                  </p>
+                  <input
+                    className="rounded-md bg-blue-200 px-2 py-1 flex-1"
+                    type="number"
+                    name="qty_pcs"
+                    placeholder="Jumlah PCS"
+                    value={bookingData.qty_pcs}
+                    onChange={handleBookingChange}
+                    required
+                  />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-primary font-semibold w-32">
+                    Qty Druk:
+                  </p>
+                  <input
+                    className="rounded-md bg-blue-200 px-2 py-1 flex-1"
+                    type="number"
+                    name="qty_druk"
+                    placeholder="Jumlah druk"
+                    value={bookingData.qty_druk}
+                    onChange={handleBookingChange}
+                    required
+                  />
+                </div>
+
+                {submitError && (
+                  <div className="bg-red-100 text-red-700 p-2 rounded">
+                    {submitError}
+                  </div>
+                )}
+
+                {submitSuccess && (
+                  <div className="bg-green-100 text-green-700 p-2 rounded">
+                    Booking berhasil dibuat!
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  className="bg-primary text-white px-4 py-2 rounded-md mt-2"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Memproses...' : 'Simpan Booking'}
+                </button>
               </div>
-              <div className="flex w-full gap-2 justify-between">
-                <p className="text-sm text-primary font-semibold">Sampai :</p>
-                <input
-                  className="rounded-md bg-blue-200 px-2"
-                  type="date"
-                  value={dateRange.endDate}
-                  onChange={(e) => handleDateChange('endDate', e.target.value)}
-                />
-              </div>
-              <div className="flex w-full gap-2 justify-between">
-                <p className="text-sm text-primary font-semibold">Cari :</p>
-                <input
-                  className="rounded-md bg-blue-200 px-2 py-1"
-                  type="text"
-                  placeholder="Cari JO, item, dll..."
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                />
-              </div>
-              <button
-                onClick={() => {
-                  handleApplyFilters();
-                  setShowListJo(false);
-                }}
-                className="bg-primary text-white px-4 py-2 rounded-md mt-2 self-end"
-              >
-                Terapkan
-              </button>
-            </div>
+            </form>
           </div>
-        </ModalKosonganSmall>
+        </ModalXL>
       )}
     </main>
   );

@@ -475,41 +475,48 @@ function ReportKapasitas() {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {bookingData.detail.map((detail, index) => (
-                                    <tr
-                                      key={detail.id}
-                                      className={
-                                        index % 2 === 0
-                                          ? 'bg-white'
-                                          : 'bg-gray-50'
-                                      }
-                                    >
-                                      <td className="py-3 px-4 border-b">
-                                        {detail.no_io}
-                                      </td>
-                                      <td className="py-3 px-4 border-b">
-                                        {detail.nama_customer}
-                                      </td>
-                                      <td className="py-3 px-4 border-b">
-                                        {detail.nama_item}
-                                      </td>
-                                      <td className="py-3 px-4 border-b text-right">
-                                        {formatNumber(detail.qty_pcs)}
-                                      </td>
-                                      <td className="py-3 px-4 border-b text-right">
-                                        {formatNumber(detail.qty_druk)}
-                                      </td>
-                                      <td className="py-3 px-4 border-b">
-                                        {new Date(
-                                          detail.tanggal,
-                                        ).toLocaleDateString('id-ID', {
-                                          day: 'numeric',
-                                          month: 'long',
-                                          year: 'numeric',
-                                        })}
-                                      </td>
-                                    </tr>
-                                  ))}
+                                  {bookingData.detail
+                                    .slice()
+                                    .sort(
+                                      (a, b) =>
+                                        new Date(a.tanggal).getTime() -
+                                        new Date(b.tanggal).getTime(),
+                                    ) // Sort by date ascending
+                                    .map((detail, index) => (
+                                      <tr
+                                        key={detail.id}
+                                        className={
+                                          index % 2 === 0
+                                            ? 'bg-white'
+                                            : 'bg-gray-50'
+                                        }
+                                      >
+                                        <td className="py-3 px-4 border-b">
+                                          {detail.no_io}
+                                        </td>
+                                        <td className="py-3 px-4 border-b">
+                                          {detail.nama_customer}
+                                        </td>
+                                        <td className="py-3 px-4 border-b">
+                                          {detail.nama_item}
+                                        </td>
+                                        <td className="py-3 px-4 border-b text-right">
+                                          {formatNumber(detail.qty_pcs)}
+                                        </td>
+                                        <td className="py-3 px-4 border-b text-right">
+                                          {formatNumber(detail.qty_druk)}
+                                        </td>
+                                        <td className="py-3 px-4 border-b">
+                                          {new Date(
+                                            detail.tanggal,
+                                          ).toLocaleDateString('id-ID', {
+                                            day: 'numeric',
+                                            month: 'long',
+                                            year: 'numeric',
+                                          })}
+                                        </td>
+                                      </tr>
+                                    ))}
                                 </tbody>
                               </table>
                             </div>
