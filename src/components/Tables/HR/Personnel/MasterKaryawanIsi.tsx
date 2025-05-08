@@ -14,10 +14,7 @@ function MasterKaryawanIsi() {
     const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
     try {
       const res = await axios.get(url, {
-        params: {
-          is_active: true,
-          is_cutoff: true,
-        },
+        params: {},
         withCredentials: true,
       });
       setKaryawan(res.data);
