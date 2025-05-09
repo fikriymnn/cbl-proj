@@ -8,6 +8,7 @@ interface ProcessRecord {
   createdAt?: string;
   updatedAt?: string;
   operator?: string;
+  inspektor?: string;
   status?: string;
   status_jo?: string;
   mesin?: string;
@@ -159,15 +160,19 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
       });
     });
 
-    // Important fields to show first
+    // Important fields to show first - added inspektor, lama_pengerjaan, waktu_check
     const priorityFields = [
       'id',
       'tanggal',
       'operator',
+      'inspektor',
       'status',
       'mesin',
       'jumlah_druk',
       'jumlah_pcs',
+      'jumlah_pending',
+      'lama_pengerjaan',
+      'waktu_check',
       'status_jo',
     ];
 
@@ -203,11 +208,45 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
       return formatDate(value);
     }
 
+    // Format time fields (lama_pengerjaan, waktu_check) to HH:MM:SS format
+    if (key === 'lama_pengerjaan' || key === 'waktu_check') {
+      const minutes = parseFloat(value);
+      if (!isNaN(minutes)) {
+        const hours = Math.floor(minutes / 60);
+        const mins = Math.floor(minutes % 60);
+        const secs = Math.floor((minutes * 60) % 60);
+
+        return `${hours.toString().padStart(2, '0')}:${mins
+          .toString()
+          .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      }
+    }
+
     if (typeof value === 'object') {
       return JSON.stringify(value);
     }
 
     return String(value);
+  };
+
+  // Get the latest inspectors across all processes
+  const getLatestInspectors = (item: ProcessData) => {
+    const inspectors: { [key: string]: string } = {};
+
+    processKeys.forEach((processKey) => {
+      const processData = item[processKey];
+      if (Array.isArray(processData) && processData.length > 0) {
+        // Find the latest record with an inspector value
+        for (let i = processData.length - 1; i >= 0; i--) {
+          if (processData[i].inspector) {
+            inspectors[processKey] = processData[i].inspector || '';
+            break;
+          }
+        }
+      }
+    });
+
+    return inspectors;
   };
 
   // Render the table header
@@ -287,6 +326,14 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
                         : 'text-orange-500 font-medium'
                     }`}
                   >
+                    {formatFieldValue(key, record[key])}
+                  </span>
+                ) : key === 'lama_pengerjaan' || key === 'waktu_check' ? (
+                  <span className="text-blue-600">
+                    {formatFieldValue(key, record[key])}
+                  </span>
+                ) : key === 'inspektor' || key === 'operator' ? (
+                  <span className="font-medium">
                     {formatFieldValue(key, record[key])}
                   </span>
                 ) : (
@@ -431,156 +478,282 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
         </div>
       ) : (
         <div className="flex flex-col gap-6">
-          {filteredData.map((item: any, index) => (
-            <div
-              key={index}
-              className="mb-4 border rounded-lg shadow-sm w-full"
-            >
-              {/* Full-width header with JO info */}
-              <div className="bg-blue-50 p-3 border-b rounded-t-lg">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-lg font-bold">
-                    <span className="inline-block w-6 h-6 bg-blue-600 text-white rounded-full text-center text-xs leading-6 mr-2">
-                      {index + 1}
-                    </span>
-                    {item.item}
-                  </h2>
-                  <div className="flex gap-4 text-sm">
-                    <div className="px-2 py-1 bg-blue-100 rounded">
-                      <span className="font-semibold">JO:</span> {item.no_jo}
+          {filteredData.map((item: any, index) => {
+            // Get all latest inspectors for this item
+            const latestInspectors = getLatestInspectors(item);
+
+            return (
+              <div
+                key={index}
+                className="mb-4 border rounded-lg shadow-sm w-full"
+              >
+                {/* Full-width header with JO info */}
+                <div className="bg-blue-50 p-3 border-b rounded-t-lg">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center">
+                      <h2 className="text-lg font-bold">
+                        <span className="inline-block w-6 h-6 bg-blue-600 text-white rounded-full text-center text-xs leading-6 mr-2">
+                          {index + 1}
+                        </span>
+                        {item.item}
+                      </h2>
+                      <div className="flex gap-4 text-sm">
+                        <div className="px-2 py-1 bg-blue-100 rounded">
+                          <span className="font-semibold">JO:</span>{' '}
+                          {item.no_jo}
+                        </div>
+                        <div className="px-2 py-1 bg-blue-100 rounded">
+                          <span className="font-semibold">IO:</span>{' '}
+                          {item.no_io}
+                        </div>
+                      </div>
                     </div>
-                    <div className="px-2 py-1 bg-blue-100 rounded">
-                      <span className="font-semibold">IO:</span> {item.no_io}
+
+                    {/* Row for total processing time across all processes */}
+                    <div className="flex justify-between items-center text-sm">
+                      {/* Display latest inspectors in a scrollable row */}
+
+                      <div className="flex gap-4">
+                        {(() => {
+                          // Calculate total processing time from all records
+                          let totalMinutes = 0;
+
+                          processKeys.forEach((processKey) => {
+                            const processData = item[processKey];
+                            if (Array.isArray(processData)) {
+                              processData.forEach((record) => {
+                                // Check for lama_pengerjaan or waktu_check and add to total
+                                if (record.lama_pengerjaan) {
+                                  totalMinutes +=
+                                    parseFloat(record.lama_pengerjaan) || 0;
+                                }
+                                if (record.waktu_check) {
+                                  totalMinutes +=
+                                    parseFloat(record.waktu_check) || 0;
+                                }
+                              });
+                            }
+                          });
+
+                          if (totalMinutes > 0) {
+                            // Convert to hours, minutes, seconds format
+                            const hours = Math.floor(totalMinutes / 60);
+                            const minutes = Math.floor(totalMinutes % 60);
+                            const seconds = Math.floor(
+                              (totalMinutes * 60) % 60,
+                            );
+
+                            const formattedTime = `${hours
+                              .toString()
+                              .padStart(2, '0')} jam ${minutes
+                              .toString()
+                              .padStart(2, '0')} menit ${seconds
+                              .toString()
+                              .padStart(2, '0')} detik`;
+
+                            return (
+                              <div className="px-2 py-1 bg-green-100 rounded">
+                                <span className="font-semibold">
+                                  Total Waktu Pengerjaan:
+                                </span>{' '}
+                                {formattedTime}
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Single row for process boxes */}
-              <div className="p-3">
-                <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
-                  {processKeys.map((processKey) => {
-                    const processData = item[processKey];
-                    const isEmpty =
-                      !processData ||
-                      (Array.isArray(processData) && processData.length === 0);
-                    const hasData =
-                      Array.isArray(processData) && processData.length > 0;
+                {/* Single row for process boxes */}
+                <div className="p-3">
+                  <div className="grid grid-cols-4 md:grid-cols-6 gap-3">
+                    {processKeys.map((processKey) => {
+                      const processData = item[processKey];
+                      const isEmpty =
+                        !processData ||
+                        (Array.isArray(processData) &&
+                          processData.length === 0);
+                      const hasData =
+                        Array.isArray(processData) && processData.length > 0;
 
-                    // Get the latest record data for preview (if exists)
-                    const latestRecord = hasData
-                      ? processData[processData.length - 1]
-                      : null;
+                      // Get the latest record data for preview (if exists)
+                      const latestRecord = hasData
+                        ? processData[processData.length - 1]
+                        : null;
 
-                    return (
-                      <div
-                        key={processKey}
-                        className={`border rounded ${
-                          hasData
-                            ? 'bg-green-50 border-green-200'
-                            : 'bg-black text-white'
-                        }`}
-                      >
-                        <div className="p-2">
-                          <div className="flex justify-between items-center mb-1">
-                            <h3 className="font-medium capitalize text-xs">
-                              {processKey.replace(/_/g, ' ')}
-                            </h3>
-                            <span
-                              className={`px-1 py-0.5 text-xs rounded-full ${
-                                hasData
-                                  ? 'bg-green-100 text-green-800'
-                                  : 'bg-gray-700 text-gray-300'
-                              }`}
-                            >
-                              {hasData ? `${processData.length}` : '0'}
-                            </span>
+                      // Get the latest inspector for this process
+                      const latestInspector =
+                        latestInspectors[processKey] || null;
+
+                      return (
+                        <div
+                          key={processKey}
+                          className={`border rounded ${
+                            hasData
+                              ? 'bg-green-50 border-green-200'
+                              : 'bg-black text-white'
+                          }`}
+                        >
+                          <div className="p-2">
+                            <div className="flex justify-between items-center mb-1">
+                              <h3 className="font-medium capitalize text-xs">
+                                {processKey.replace(/_/g, ' ')}
+                              </h3>
+                              <span
+                                className={`px-1 py-0.5 text-xs rounded-full ${
+                                  hasData
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-gray-700 text-gray-300'
+                                }`}
+                              >
+                                {hasData ? `${processData.length}` : '0'}
+                              </span>
+                            </div>
+
+                            {hasData && latestRecord && (
+                              <div className="border-t border-green-200 mt-1 pt-1 text-xs text-gray-600">
+                                {latestRecord.tanggal && (
+                                  <div className="mb-1">
+                                    <span className="font-medium">
+                                      Tanggal:
+                                    </span>{' '}
+                                    {formatDate(latestRecord.tanggal)}
+                                  </div>
+                                )}
+                                {/* Display latest inspector if available */}
+                                {latestInspector && (
+                                  <div className="mb-1">
+                                    <span className="font-medium">
+                                      Inspektor:
+                                    </span>{' '}
+                                    <span className="text-purple-700 font-medium">
+                                      {latestInspector}
+                                    </span>
+                                  </div>
+                                )}
+                                {latestRecord.operator && (
+                                  <div className="mb-1">
+                                    <span className="font-medium">
+                                      Operator:
+                                    </span>{' '}
+                                    {latestRecord.operator}
+                                  </div>
+                                )}
+                                {latestRecord.mesin && (
+                                  <div className="mb-1">
+                                    <span className="font-medium">Mesin:</span>{' '}
+                                    {latestRecord.mesin}
+                                  </div>
+                                )}
+                                {latestRecord.status && (
+                                  <div className="mb-1">
+                                    <span className="font-medium">Status:</span>{' '}
+                                    <span
+                                      className={`${
+                                        latestRecord.status.toLowerCase() ===
+                                        'selesai'
+                                          ? 'text-green-600 font-medium'
+                                          : 'text-orange-500 font-medium'
+                                      }`}
+                                    >
+                                      {latestRecord.status}
+                                    </span>
+                                  </div>
+                                )}
+                                {/* Calculate and display total processing time for this process */}
+                                {(() => {
+                                  if (!Array.isArray(processData)) return null;
+
+                                  let totalMinutes = 0;
+                                  processData.forEach((record) => {
+                                    if (record.lama_pengerjaan) {
+                                      totalMinutes +=
+                                        parseFloat(record.lama_pengerjaan) || 0;
+                                    }
+                                    if (record.waktu_check) {
+                                      totalMinutes +=
+                                        parseFloat(record.waktu_check) || 0;
+                                    }
+                                  });
+
+                                  if (totalMinutes > 0) {
+                                    const hours = Math.floor(totalMinutes / 60);
+                                    const minutes = Math.floor(
+                                      totalMinutes % 60,
+                                    );
+                                    const seconds = Math.floor(
+                                      (totalMinutes * 60) % 60,
+                                    );
+
+                                    return (
+                                      <div className="mb-1">
+                                        <span className="font-medium">
+                                          Waktu:
+                                        </span>{' '}
+                                        <span className="text-blue-600">
+                                          {hours.toString().padStart(2, '0')}:
+                                          {minutes.toString().padStart(2, '0')}:
+                                          {seconds.toString().padStart(2, '0')}
+                                        </span>
+                                      </div>
+                                    );
+                                  }
+
+                                  return null;
+                                })()}
+                              </div>
+                            )}
                           </div>
 
-                          {hasData && latestRecord && (
-                            <div className="border-t border-green-200 mt-1 pt-1 text-xs text-gray-600">
-                              {latestRecord.tanggal && (
-                                <div className="mb-1">
-                                  <span className="font-medium">Tanggal:</span>{' '}
-                                  {formatDate(latestRecord.tanggal)}
-                                </div>
-                              )}
-                              {latestRecord.operator && (
-                                <div className="mb-1">
-                                  <span className="font-medium">Operator:</span>{' '}
-                                  {latestRecord.operator}
-                                </div>
-                              )}
-                              {latestRecord.mesin && (
-                                <div className="mb-1">
-                                  <span className="font-medium">Mesin:</span>{' '}
-                                  {latestRecord.mesin}
-                                </div>
-                              )}
-                              {latestRecord.status && (
-                                <div className="mb-1">
-                                  <span className="font-medium">Status:</span>{' '}
-                                  <span
-                                    className={`${
-                                      latestRecord.status.toLowerCase() ===
-                                      'selesai'
-                                        ? 'text-green-600 font-medium'
-                                        : 'text-orange-500 font-medium'
-                                    }`}
-                                  >
-                                    {latestRecord.status}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex border-t">
-                          <button
-                            onClick={() => openDetailModal(item, processKey)}
-                            className={`py-1 text-xs hover:bg-blue-700 ${
-                              hasData
-                                ? 'w-1/2 bg-blue-600 text-white rounded-bl'
-                                : 'w-full text-center text-gray-400 border-gray-600'
-                            }`}
-                            disabled={!hasData}
-                          >
-                            {hasData ? 'View Details' : 'No data'}
-                          </button>
-
-                          {hasData && latestRecord && latestRecord.id && (
+                          <div className="flex border-t">
                             <button
-                              onClick={() =>
-                                openDetailPage(processKey, latestRecord.id)
-                              }
-                              className="w-1/2 py-1 bg-green-600 text-white rounded-br text-xs hover:bg-green-700 flex items-center justify-center"
+                              onClick={() => openDetailModal(item, processKey)}
+                              className={`py-1 text-xs hover:bg-blue-700 ${
+                                hasData
+                                  ? 'w-1/2 bg-blue-600 text-white rounded-bl'
+                                  : 'w-full text-center text-gray-400 border-gray-600'
+                              }`}
+                              disabled={!hasData}
                             >
-                              <span>Open</span>
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-3 w-3 ml-1"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                />
-                              </svg>
+                              {hasData ? 'View Details' : 'No data'}
                             </button>
-                          )}
+
+                            {hasData && latestRecord && latestRecord.id && (
+                              <button
+                                onClick={() =>
+                                  openDetailPage(processKey, latestRecord.id)
+                                }
+                                className="w-1/2 py-1 bg-green-600 text-white rounded-br text-xs hover:bg-green-700 flex items-center justify-center"
+                              >
+                                <span>Open</span>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-3 w-3 ml-1"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                  />
+                                </svg>
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
