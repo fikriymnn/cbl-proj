@@ -144,41 +144,211 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
     window.open(url, '_blank');
   };
 
-  // Function to render object details in modal
-  const renderObjectDetails = (obj: any) => {
+  // Get all field keys from the records to create table headers
+  const getFieldKeys = (records: ProcessRecord[]) => {
+    if (!records || records.length === 0) return [];
+
+    // Collect all unique keys from all records
+    const allKeys = new Set<string>();
+    records.forEach((record) => {
+      Object.keys(record).forEach((key) => {
+        // Skip complex nested objects for table display
+        if (typeof record[key] !== 'object' || record[key] === null) {
+          allKeys.add(key);
+        }
+      });
+    });
+
+    // Important fields to show first
+    const priorityFields = [
+      'id',
+      'tanggal',
+      'operator',
+      'status',
+      'mesin',
+      'jumlah_druk',
+      'jumlah_pcs',
+      'status_jo',
+    ];
+
+    // Sort fields with priority fields first, then alphabetically
+    return Array.from(allKeys).sort((a, b) => {
+      const indexA = priorityFields.indexOf(a);
+      const indexB = priorityFields.indexOf(b);
+
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      } else if (indexA !== -1) {
+        return -1;
+      } else if (indexB !== -1) {
+        return 1;
+      } else {
+        return a.localeCompare(b);
+      }
+    });
+  };
+
+  // Format field value for display
+  const formatFieldValue = (key: string, value: any) => {
+    if (value === null || value === undefined) {
+      return '-';
+    }
+
+    if (
+      key.includes('tanggal') ||
+      key.includes('date') ||
+      key === 'createdAt' ||
+      key === 'updatedAt'
+    ) {
+      return formatDate(value);
+    }
+
+    if (typeof value === 'object') {
+      return JSON.stringify(value);
+    }
+
+    return String(value);
+  };
+
+  // Render the table header
+  const renderTableHeader = (fieldKeys: string[]) => {
+    return (
+      <thead className="bg-gray-50">
+        <tr>
+          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Actions
+          </th>
+          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+            #
+          </th>
+          {fieldKeys.map((key) => (
+            <th
+              key={key}
+              className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+            >
+              {key.replace(/_/g, ' ')}
+            </th>
+          ))}
+        </tr>
+      </thead>
+    );
+  };
+
+  // Render table rows
+  const renderTableRows = (
+    records: ProcessRecord[],
+    fieldKeys: string[],
+    process: string,
+  ) => {
+    return (
+      <tbody className="bg-white divide-y divide-gray-200">
+        {records.map((record, index) => (
+          <tr
+            key={index}
+            className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+          >
+            <td className="px-4 py-2 whitespace-nowrap text-sm">
+              {record.id && (
+                <button
+                  onClick={() => openDetailPage(process, record.id)}
+                  className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 flex items-center"
+                >
+                  <span>Open Detail</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-3 w-3 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                    />
+                  </svg>
+                </button>
+              )}
+            </td>
+            <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">
+              {index + 1}
+            </td>
+            {fieldKeys.map((key) => (
+              <td
+                key={key}
+                className="px-4 py-2 whitespace-nowrap text-sm text-gray-500"
+              >
+                {key === 'status' ? (
+                  <span
+                    className={`${
+                      String(record[key]).toLowerCase() === 'selesai'
+                        ? 'text-green-600 font-medium'
+                        : 'text-orange-500 font-medium'
+                    }`}
+                  >
+                    {formatFieldValue(key, record[key])}
+                  </span>
+                ) : (
+                  formatFieldValue(key, record[key])
+                )}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    );
+  };
+
+  // Render complex nested objects
+  const renderNestedObject = (obj: any, parentKey: string = '') => {
     if (!obj || typeof obj !== 'object') return null;
 
     return (
-      <div className="pl-2 border-l-2 border-gray-300">
-        {Object.entries(obj).map(([key, value]) => (
-          <div key={key} className="mb-1">
-            <span className="font-medium capitalize">
-              {key.replace(/_/g, ' ')}:
-            </span>{' '}
-            {typeof value === 'object' && value !== null
-              ? renderObjectDetails(value)
-              : key.includes('tanggal') ||
-                key.includes('date') ||
-                key === 'createdAt' ||
-                key === 'updatedAt'
-              ? formatDate(value as string)
-              : String(value !== null && value !== undefined ? value : '-')}
-          </div>
-        ))}
+      <div className="pl-4 border-l-2 border-gray-300 mt-2">
+        {Object.entries(obj).map(([key, value]) => {
+          const fullKey = parentKey ? `${parentKey}.${key}` : key;
+
+          if (typeof value === 'object' && value !== null) {
+            return (
+              <div key={fullKey} className="mb-2">
+                <span className="font-medium capitalize">
+                  {key.replace(/_/g, ' ')}:
+                </span>
+                {renderNestedObject(value, fullKey)}
+              </div>
+            );
+          }
+
+          return (
+            <div key={fullKey} className="mb-1">
+              <span className="font-medium capitalize">
+                {key.replace(/_/g, ' ')}:
+              </span>{' '}
+              {formatFieldValue(key, value)}
+            </div>
+          );
+        })}
       </div>
     );
   };
 
-  // Render the modal
+  // Render the modal with table structure
   const renderModal = () => {
     if (!showModal || !selectedProcess) return null;
 
     const { item, process, data } = selectedProcess;
+    const fieldKeys = getFieldKeys(data);
+    const hasComplexData = data.some((record) =>
+      Object.values(record).some(
+        (value) => typeof value === 'object' && value !== null,
+      ),
+    );
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-screen overflow-auto">
-          <div className="p-4 border-b flex justify-between items-center">
+        <div className="bg-white rounded-lg shadow-lg w-11/12 max-w-6xl max-h-screen overflow-auto">
+          <div className="p-4 border-b flex justify-between items-center sticky top-0 bg-white z-10">
             <h3 className="text-lg font-bold capitalize">
               {process.replace(/_/g, ' ')} Details for {String(item.item)} (JO:{' '}
               {String(item.no_jo)})
@@ -192,53 +362,46 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
           </div>
 
           <div className="p-4">
-            {Array.isArray(data) && data.length > 0 ? (
-              data.map((record, index) => (
-                <div key={index} className="mb-4 p-3 border rounded">
-                  <div className="flex justify-between items-start">
-                    <h4 className="font-medium mb-2">Record {index + 1}:</h4>
-                    {record.id && (
-                      <button
-                        onClick={() => openDetailPage(process, record.id)}
-                        className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 flex items-center"
-                      >
-                        <span>Open Detail</span>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-3 w-3 ml-1"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                          />
-                        </svg>
-                      </button>
-                    )}
+            {data.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  {renderTableHeader(fieldKeys)}
+                  {renderTableRows(data, fieldKeys, process)}
+                </table>
+
+                {/* Display nested objects separately if they exist */}
+                {hasComplexData && (
+                  <div className="mt-6 border-t pt-4">
+                    <h4 className="font-bold text-gray-700 mb-3">
+                      Additional Complex Data
+                    </h4>
+                    {data.map((record, index) => {
+                      const complexFields = Object.entries(record).filter(
+                        ([_, value]) =>
+                          typeof value === 'object' && value !== null,
+                      );
+
+                      if (complexFields.length === 0) return null;
+
+                      return (
+                        <div key={index} className="mb-4 p-3 border rounded">
+                          <h5 className="font-medium mb-2">
+                            Record {index + 1} - Complex Fields:
+                          </h5>
+                          {complexFields.map(([key, value]) => (
+                            <div key={key} className="mb-3">
+                              <span className="font-medium capitalize">
+                                {key.replace(/_/g, ' ')}:
+                              </span>
+                              {renderNestedObject(value)}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
                   </div>
-                  {Object.entries(record).map(([key, value]) => (
-                    <div key={key} className="ml-4 mb-1">
-                      <span className="font-medium capitalize">
-                        {key.replace(/_/g, ' ')}:
-                      </span>{' '}
-                      {typeof value === 'object' && value !== null
-                        ? renderObjectDetails(value)
-                        : key.includes('tanggal') ||
-                          key.includes('date') ||
-                          key === 'createdAt' ||
-                          key === 'updatedAt'
-                        ? formatDate(value)
-                        : String(
-                            value !== null && value !== undefined ? value : '-',
-                          )}
-                    </div>
-                  ))}
-                </div>
-              ))
+                )}
+              </div>
             ) : (
               <div className="p-4 bg-gray-100 text-center rounded">
                 No data available for this process. This information may be
@@ -247,7 +410,7 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
             )}
           </div>
 
-          <div className="p-4 border-t">
+          <div className="p-4 border-t sticky bottom-0 bg-white">
             <button
               onClick={closeModal}
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
