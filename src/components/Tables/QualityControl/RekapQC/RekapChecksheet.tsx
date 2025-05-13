@@ -18,6 +18,7 @@ function RekapChecksheet() {
     useState<RekapChecksheetData | null>(null);
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [joNumber, setJoNumber] = useState<string>(''); // Added state for JO number
   const [loading, setLoading] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
 
@@ -31,10 +32,16 @@ function RekapChecksheet() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/report/checkSheet`;
 
     try {
-      // Add query parameters for start_date and end_date if they exist
-      const params: { start_date?: string; end_date?: string } = {};
+      // Add query parameters for start_date, end_date, and no_jo if they exist
+      const params: {
+        start_date?: string;
+        end_date?: string;
+        no_jo?: string; // Added no_jo parameter
+      } = {};
+
       if (startDate) params.start_date = startDate;
       if (endDate) params.end_date = endDate;
+      if (joNumber) params.no_jo = joNumber; // Add JO number to params if exists
 
       const res = await axios.get(url, {
         withCredentials: true,
@@ -88,6 +95,21 @@ function RekapChecksheet() {
                 id="endDate"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
+                className="border border-gray-300 rounded px-3 py-2"
+              />
+            </div>
+
+            {/* Added JO Number input */}
+            <div className="flex flex-col">
+              <label htmlFor="joNumber" className="mb-1 text-sm font-medium">
+                Nomor JO
+              </label>
+              <input
+                type="text"
+                id="joNumber"
+                value={joNumber}
+                onChange={(e) => setJoNumber(e.target.value)}
+                placeholder="Enter JO Number"
                 className="border border-gray-300 rounded px-3 py-2"
               />
             </div>
