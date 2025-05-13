@@ -180,7 +180,7 @@ function Stockmaster() {
     ?.filter((data: any) =>
       [
         data.kode,
-        data.mesin.nama_mesin,
+        data.mesin?.nama_mesin,
         data.part_number,
         data.nama_sparepart,
       ].some(
@@ -540,7 +540,7 @@ function Stockmaster() {
                     <p className="text-xs">{data.kode}</p>
                     <p className="text-xs">{data.part_number}</p>
                     <p className="text-xs col-span-2">{data.nama_sparepart} </p>
-                    <p className="text-xs">{data.mesin.nama_mesin}</p>
+                    <p className="text-xs">{data.mesin?.nama_mesin}</p>
                     <p className="text-xs">{data.lokasi}</p>
                     <p className="text-xs">
                       {formatInteger(data.umur_sparepart)}
