@@ -9,12 +9,25 @@ function BuatCutiKeHR() {
   const [options2, setOptions2] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [userList, setUserList] = useState<any>();
-
+  const [masterSettings, setMasterSettings] = useState<any>(null);
   useEffect(() => {
     getMe();
     getCutiKhusus();
+    getMasterSettings();
   }, []);
-
+  // Fetch master settings from API
+  async function getMasterSettings() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/hr/absensi`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      setMasterSettings(res.data);
+      console.log('Master settings:', res.data);
+    } catch (error: any) {
+      console.log('Error fetching master settings:', error);
+    }
+  }
   const [me, setMe] = useState<any>();
   const [idPengaju, setIdPengaju] = useState<any>();
 
@@ -68,22 +81,17 @@ function BuatCutiKeHR() {
 
   const handleChangePointDepatment = (selected: any) => {
     const { value } = selected;
-    const filteredData = userList.find(
-      (item: any) => item.userid == value,
-      // item.id.includes(parseInt(value));
-    );
+    const filteredData = userList.find((item: any) => item.userid == value);
 
     console.log(filteredData?.userid);
     console.log(filteredData?.biodata_karyawan[0]?.sisa_cuti);
     setSisaCuti(filteredData?.biodata_karyawan[0]?.sisa_cuti);
     setIdKaryawan(filteredData?.userid);
   };
+
   const handleChangePointCuti = (selected: any) => {
     const { value } = selected;
-    const filteredData = cutiKhusus.find(
-      (item: any) => item.id == value,
-      // item.id.includes(parseInt(value));
-    );
+    const filteredData = cutiKhusus.find((item: any) => item.id == value);
     console.log(filteredData?.id);
     setDaysDifference(filteredData?.jumlah_hari);
     setAlasanCuti(filteredData?.nama_cuti);
@@ -138,6 +146,7 @@ function BuatCutiKeHR() {
       console.log(error);
     }
   }
+
   async function postCutiKhusus() {
     if (tipeCuti == null) {
       alert('Tipe Cuti Belum Diisi');
@@ -174,40 +183,43 @@ function BuatCutiKeHR() {
       console.log(error);
     }
   }
+
   const [daysDifference, setDaysDifference] = useState<any>();
   const [showError, setShowError] = useState(false);
   const [showErrorEarlyDate, setShowErrorEarlyDate] = useState(false);
 
   useEffect(() => {
-    const today = new Date();
-    const threeDaysLater = new Date();
-    threeDaysLater.setDate(today.getDate() + 2);
+    if (!masterSettings || !tglDari || !tglSampai) {
+      setDaysDifference(null);
+      setShowError(false);
+      setShowErrorEarlyDate(false);
+      return;
+    }
 
-    if (tglDari && tglSampai) {
-      if (tglDari <= tglSampai) {
-        if (tglDari <= threeDaysLater) {
-          setShowErrorEarlyDate(true);
-        } else if (
-          tglDari <= today ||
-          (tglDari > today && tglDari >= threeDaysLater)
-        ) {
-          setShowErrorEarlyDate(false);
-        }
-        const diffInMs = Math.abs(tglSampai - tglDari);
-        const days = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
-        setDaysDifference(days + 1);
-        setShowError(false); // Hide error message
+    const today = new Date();
+    const minimalPengajuanHari =
+      masterSettings.minimal_pengajuan_cuti_hari || 3; // Default to 3 if not set
+    const minDate = new Date();
+    minDate.setDate(today.getDate() + parseInt(minimalPengajuanHari) - 1);
+
+    if (tglDari <= tglSampai) {
+      // Check if date meets the minimal_pengajuan_cuti_hari requirement
+      if (tglDari < minDate) {
+        setShowErrorEarlyDate(true);
       } else {
-        setDaysDifference(null);
-        setShowError(true); // Show error message
         setShowErrorEarlyDate(false);
       }
+
+      const diffInMs = Math.abs(tglSampai - tglDari);
+      const days = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
+      setDaysDifference(days + 1);
+      setShowError(false); // Hide error message
     } else {
       setDaysDifference(null);
-      setShowError(false); // Hide error message
+      setShowError(true); // Show error message
       setShowErrorEarlyDate(false);
     }
-  }, [tglDari, tglSampai]);
+  }, [tglDari, tglSampai, masterSettings]);
 
   const handleStartDateChange = (event: any) => {
     setTglDari(new Date(event.target.value));
@@ -216,19 +228,16 @@ function BuatCutiKeHR() {
   const handleEndDateChange = (event: any) => {
     setTglSampai(new Date(event.target.value));
   };
+
   const [cutiKhusus, setCutiKhusus] = useState<any>();
 
   async function getCutiKhusus() {
     const url = `${import.meta.env.VITE_API_LINK}/master/hr/cutiKhusus`;
     try {
       setIsLoading(true);
-      const res = await axios.get(
-        url,
-
-        {
-          withCredentials: true,
-        },
-      );
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
       setIsLoading(false);
       setCutiKhusus(res.data.data);
       setOptions2(
@@ -252,43 +261,45 @@ function BuatCutiKeHR() {
     }
     return ''; // Return empty string if no date or daysOff are available
   };
+
   const endDate = calculateEndDate();
+
+  // Get the actual number of days required from master settings
+  const minimalPengajuanHari = masterSettings?.minimal_pengajuan_cuti_hari || 3;
+
   return (
     <main className="overflow-x-scroll min-h-screen">
       {isLoading && <Loading />}
-      <div className="min-w-[700px]  bg-white rounded-xl ">
-        <div className="grid grid-cols-2 gap-5  border-b-8 border-[#D8EAFF] px-7 py-4 ">
+      <div className="min-w-[700px] bg-white rounded-xl shadow-sm">
+        <div className="grid grid-cols-2 gap-5 border-b-8 border-[#D8EAFF] px-7 py-4">
           <div className="flex flex-col gap-1">
-            <label className=" text-[#6c6b6b] text-sm font-semibold">
-              Nama
-            </label>
+            <label className="text-[#6c6b6b] text-sm font-semibold">Nama</label>
             <Select
               placeholder="Cari..."
               options={options}
               onChange={(selectedId) => {
                 handleChangePointDepatment(selectedId);
               }}
-              className={`relative z-50 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
-                  }`}
-            ></Select>
+              className="relative z-50 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white'"
+            />
           </div>
           <div className="flex flex-col gap-3">
-            <label className=" text-[#6c6b6b] text-sm font-semibold">
+            <label className="text-[#6c6b6b] text-sm font-semibold">
               Hak Cuti Yang Masih Tersedia
             </label>
-            <label className=" text-[#6c6b6b] text-lg font-semibold">
+            <label className="text-[#6c6b6b] text-lg font-semibold">
               {sisaCuti}
             </label>
           </div>
         </div>
+
         <div className="relative z-20 w-[40%] bg-transparent dark:bg-form-input px-7 py-4">
-          <label className=" text-[#6c6b6b] text-sm font-semibold">
+          <label className="text-[#6c6b6b] text-sm font-semibold">
             Tipe Cuti
           </label>
           <select
             onChange={(e) => setTipeCuti(e.target.value)}
-            className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent  px-5 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary 
-                                }`}
+            className="relative z-20 w-full appearance-none rounded border border-stroke bg-transparent px-5 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary"
           >
             <option
               value=""
@@ -325,27 +336,27 @@ function BuatCutiKeHR() {
             </svg>
           </span>
         </div>
+
         {tipeCuti == 'khusus' ? (
           <>
             <div className="grid grid-cols-2 px-7 py-4 gap-5">
               <div className="flex flex-col gap-1 z-50">
                 <div className="grid grid-cols-2 gap-2 items-center">
-                  <div className="flex flex-col  gap-2">
+                  <div className="flex flex-col gap-2">
                     <p className="text-sm text-[#6c6b6b] font-semibold md:w-3/12 w-2/12">
                       Tanggal :
                     </p>
                     <input
                       className="rounded-md bg-[#D8EAFF] px-2"
                       type="date"
-                      //onChange={(e) => setDateFrom4(e.target.value)}
                       onChange={handleStartDateChange}
                     ></input>
                   </div>
-                  <div className="flex flex-col  gap-2">
-                    <label className=" text-[#6c6b6b] text-sm font-semibold">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[#6c6b6b] text-sm font-semibold">
                       Jumlah Hari : {daysDifference}
                     </label>
-                    <label className=" text-[#6c6b6b] text-sm font-semibold">
+                    <label className="text-[#6c6b6b] text-sm font-semibold">
                       Sampai :{' '}
                       {endDate == null
                         ? '-'
@@ -353,7 +364,8 @@ function BuatCutiKeHR() {
                     </label>
                   </div>
                 </div>
-                <label className=" text-[#6c6b6b] text-sm font-semibold">
+
+                <label className="text-[#6c6b6b] text-sm font-semibold">
                   Pilih Tipe Cuti
                 </label>
                 <Select
@@ -362,10 +374,17 @@ function BuatCutiKeHR() {
                   onChange={(selectedId) => {
                     handleChangePointCuti(selectedId);
                   }}
-                  className={`relative z-50 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
-                  }`}
+                  className="relative z-50 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white'"
                 ></Select>
+
+                {showErrorEarlyDate && (
+                  <div className="text-red-500 mt-2">
+                    Pengajuan Cuti harus diajukan minimal {minimalPengajuanHari}{' '}
+                    hari sebelumnya
+                  </div>
+                )}
               </div>
+
               <div>
                 <div className="flex w-full flex-col">
                   <label className="text-[#6c6b6b] text-sm font-semibold">
@@ -376,19 +395,23 @@ function BuatCutiKeHR() {
                       name="alasan_cuti"
                       readOnly
                       value={alasanCuti}
-                      className=" peer h-full min-h-[100px] w-full resize-none border-2 border-stroke rounded-md px-2"
+                      className="peer h-full min-h-[100px] w-full resize-none border-2 border-stroke rounded-md px-2"
                     />
                   </div>
                 </div>
               </div>
             </div>
+
             <div className="flex w-full justify-end items-end px-7 py-4">
-              {tipeCuti == 'khusus' || sisaCuti >= 1 ? (
+              {!showErrorEarlyDate &&
+              (tipeCuti == 'khusus' || sisaCuti >= 1) ? (
                 <>
                   <button
                     onClick={() => postCutiKhusus()}
-                    disabled={isLoading}
-                    className="flex px-4 py-1 justify-center items-center bg-blue-600 text-white font-semibold rounded-md"
+                    disabled={isLoading || showErrorEarlyDate}
+                    className={`flex px-4 py-1 justify-center items-center ${
+                      showErrorEarlyDate ? 'bg-gray-400' : 'bg-blue-600'
+                    } text-white font-semibold rounded-md`}
                   >
                     AJUKAN
                   </button>
@@ -401,18 +424,17 @@ function BuatCutiKeHR() {
             <div className="grid grid-cols-2 gap-5 px-7 py-4">
               <div className="flex flex-col gap-3">
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="flex flex-col  gap-2">
+                  <div className="flex flex-col gap-2">
                     <p className="text-sm text-[#6c6b6b] font-semibold md:w-3/12 w-2/12">
                       Dari :
                     </p>
                     <input
                       className="rounded-md bg-[#D8EAFF] px-2"
                       type="date"
-                      //onChange={(e) => setDateFrom4(e.target.value)}
                       onChange={handleStartDateChange}
                     ></input>
                   </div>
-                  <div className="flex flex-col  gap-2">
+                  <div className="flex flex-col gap-2">
                     <p className="text-sm text-[#6c6b6b] font-semibold md:w-3/12 w-2/12">
                       Sampai :
                     </p>
@@ -420,7 +442,6 @@ function BuatCutiKeHR() {
                       className="rounded-md bg-[#D8EAFF] px-2"
                       type="date"
                       onChange={handleEndDateChange}
-                      //onChange={(e) => setDateFrom4(e.target.value)}
                     ></input>
                   </div>
                 </div>
@@ -428,7 +449,7 @@ function BuatCutiKeHR() {
                 {daysDifference !== null &&
                   !showError &&
                   !showErrorEarlyDate && (
-                    <label className=" text-[#6c6b6b] text-sm font-semibold">
+                    <label className="text-[#6c6b6b] text-sm font-semibold">
                       Jumlah Hari: {daysDifference}
                     </label>
                   )}
@@ -438,9 +459,11 @@ function BuatCutiKeHR() {
                     Tanggal dari tidak boleh kurang dari Tanggal Sampai
                   </div>
                 )}
+
                 {showErrorEarlyDate && (
                   <div className="text-red-500">
-                    Pengajuan Cuti Diajukan maksimal H-3
+                    Pengajuan Cuti harus diajukan minimal {minimalPengajuanHari}{' '}
+                    hari sebelumnya
                   </div>
                 )}
               </div>
@@ -455,19 +478,22 @@ function BuatCutiKeHR() {
                     onChange={(e) => {
                       setAlasanCuti(e.target.value);
                     }}
-                    className=" peer h-full min-h-[100px] w-full resize-none border-2 border-stroke rounded-md px-2"
+                    className="peer h-full min-h-[100px] w-full resize-none border-2 border-stroke rounded-md px-2"
                   />
                 </div>
               </div>
             </div>
+
             <div className="flex w-full justify-end items-end px-7 py-4">
               {!(showError || showErrorEarlyDate) &&
               (tipeCuti == 'khusus' || sisaCuti >= 1) ? (
                 <>
                   <button
                     onClick={() => postCuti()}
-                    disabled={isLoading}
-                    className="flex px-4 py-1 justify-center items-center bg-blue-600 text-white font-semibold rounded-md"
+                    disabled={isLoading || showErrorEarlyDate}
+                    className={`flex px-4 py-1 justify-center items-center ${
+                      showErrorEarlyDate ? 'bg-gray-400' : 'bg-blue-600'
+                    } text-white font-semibold rounded-md`}
                   >
                     AJUKAN
                   </button>
