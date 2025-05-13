@@ -14,7 +14,8 @@ interface ListJOData {
 }
 
 const JobOrderTable = ({
-  listJO,
+  historyListJO,
+  penjadwalanListJO,
   get1Tiket,
   setSelectedJO,
   setSelectedIndex,
@@ -25,7 +26,8 @@ const JobOrderTable = ({
   title = 'Job Order List',
   getmasterKategori,
 }: {
-  listJO: ListJOData;
+  historyListJO: ListJOData;
+  penjadwalanListJO: ListJOData;
   get1Tiket: (id: number, index: number) => void;
   setSelectedJO: (jo: JobOrder) => void;
   setSelectedIndex: (index: number) => void;
@@ -35,6 +37,7 @@ const JobOrderTable = ({
   loading?: boolean;
   title?: string;
   getmasterKategori: (
+    statusTiket: string,
     startDate: string,
     endDate: string,
     searchTerm: string,
@@ -44,11 +47,24 @@ const JobOrderTable = ({
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeStatus, setActiveStatus] = useState<'history' | 'penjadwalan'>(
+    'history',
+  );
+
+  // Get the correct data based on activeStatus
+  const activeData =
+    activeStatus === 'history' ? historyListJO : penjadwalanListJO;
 
   // Handler for search button click
   const handleSearch = () => {
     // Call getmasterKategori with the filter parameters
-    getmasterKategori(startDate, endDate, searchTerm);
+    getmasterKategori(activeStatus, startDate, endDate, searchTerm);
+  };
+
+  // Handler for status change
+  const handleStatusChange = (status: 'history' | 'penjadwalan') => {
+    setActiveStatus(status);
+    getmasterKategori(status, startDate, endDate, searchTerm);
   };
 
   // Handler for the detail button click
@@ -62,7 +78,36 @@ const JobOrderTable = ({
   // Filter UI
   const renderFilters = () => (
     <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        {/* Status Toggle */}
+        <div className="flex flex-col">
+          <label className="text-sm font-medium mb-1 text-gray-700">
+            Status Tiket
+          </label>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => handleStatusChange('history')}
+              className={`px-3 py-2 text-sm rounded-md ${
+                activeStatus === 'history'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700'
+              }`}
+            >
+              Jadwal
+            </button>
+            <button
+              onClick={() => handleStatusChange('penjadwalan')}
+              className={`px-3 py-2 text-sm rounded-md ${
+                activeStatus === 'penjadwalan'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700'
+              }`}
+            >
+              Booking
+            </button>
+          </div>
+        </div>
+
         <div className="flex flex-col">
           <label className="text-sm font-medium mb-1 text-gray-700">
             Tanggal Mulai
@@ -120,7 +165,9 @@ const JobOrderTable = ({
         <thead className="bg-blue-500 text-white font-semibold">
           <tr>
             <th className="border border-blue-600 px-4 py-2">No</th>
-            <th className="border border-blue-600 px-4 py-2">No JO</th>
+            <th className="border border-blue-600 px-4 py-2">
+              {activeStatus == 'history' ? 'No JO' : 'No Booking'}
+            </th>
             <th className="border border-blue-600 px-4 py-2">Item</th>
             <th className="border border-blue-600 px-4 py-2">Qty Druk</th>
             <th className="border border-blue-600 px-4 py-2">Qty PCS</th>
@@ -137,8 +184,8 @@ const JobOrderTable = ({
                 Loading...
               </td>
             </tr>
-          ) : listJO?.data?.length > 0 ? (
-            listJO.data.map((jo, index) => (
+          ) : activeData?.data?.length > 0 ? (
+            activeData.data.map((jo: any, index: any) => (
               <tr
                 key={index}
                 className={`${
@@ -149,7 +196,7 @@ const JobOrderTable = ({
                   {index + 1}
                 </td>
                 <td className="border border-blue-200 px-4 py-2 text-center">
-                  {jo.no_jo}
+                  {activeStatus == 'history' ? jo.no_jo : jo.no_booking}
                 </td>
                 <td className="border border-blue-200 px-4 py-2 text-center">
                   {jo.item}

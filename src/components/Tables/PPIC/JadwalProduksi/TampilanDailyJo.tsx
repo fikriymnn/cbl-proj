@@ -9,12 +9,28 @@ import formatInteger from '../../../../utils/formaterInteger';
 import PopUpTable2 from './PopUpTable2';
 import JobOrderTable from './JobOrderTable';
 
+interface JobOrder {
+  id: number;
+  no_jo: string;
+  item: string;
+  qty_druk: number;
+  qty_pcs: number;
+  tgl_kirim: string;
+  no_booking?: string;
+  // Add other fields as needed
+}
+interface ListJOData {
+  data: JobOrder[];
+}
 function TampilanDailyJO() {
   const [isLoading, setIsLoading] = useState(false);
   const [startDate, setStartDate] = useState<any>(null);
   const [endDate, setEndDate] = useState<any>(null);
   const [mapData, setMapData] = useState<any>([]);
-
+  const [historyListJO, setHistoryListJO] = useState<ListJOData>({ data: [] });
+  const [penjadwalanListJO, setPenjadwalanListJO] = useState<ListJOData>({
+    data: [],
+  });
   const today = new Date();
   const [todayDate, setTodayDate] = useState<string>('');
   const year = today.getFullYear();
@@ -52,12 +68,7 @@ function TampilanDailyJO() {
 
     setShowCalculate(onchangeVal);
   };
-  const closeCalculate = (i: any) => {
-    const onchangeVal: any = [...showCalculate];
-    onchangeVal[i] = false;
 
-    setShowCalculate(onchangeVal);
-  };
   const getJadwalView = async (tglAwal: any, tglAkhir: any) => {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksiView`;
     try {
@@ -79,13 +90,14 @@ function TampilanDailyJO() {
   };
 
   const [listJO, setJo] = useState<any>();
+  // Modified getmasterKategori function to handle both statuses
   async function getmasterKategori(
-    startDate = '',
-    endDate = '',
-    searchTerm = '',
+    statusTiket: string = 'history',
+    startDate: string = '',
+    endDate: string = '',
+    searchTerm: string = '',
   ) {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksi`;
-
     try {
       setIsLoading(true);
 
@@ -96,7 +108,7 @@ function TampilanDailyJO() {
         end_date?: string;
         search?: string;
       } = {
-        status_tiket: 'history',
+        status_tiket: statusTiket,
       };
 
       // Add filter parameters if provided
@@ -110,31 +122,26 @@ function TampilanDailyJO() {
       });
 
       setIsLoading(false);
-      setJo(res.data);
-      console.log('listJO', res.data);
+
+      // Set data to the appropriate state based on status_tiket
+      if (statusTiket === 'history') {
+        setHistoryListJO(res.data);
+        console.log('historyListJO', res.data);
+      } else if (statusTiket === 'penjadwalan') {
+        setPenjadwalanListJO(res.data);
+        console.log('penjadwalanListJO', res.data);
+      }
     } catch (error) {
       setIsLoading(false);
       console.log(error);
     }
   }
 
-  const putMasukJadwal = async (id: any) => {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/ppic/jadwalProduksi/submit/${id}`;
-    try {
-      setIsLoading(true);
-      const response = await axios.put(url, {
-        withCredentials: true,
-      });
-      alert('berhasil');
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      setIsLoading(false);
-    }
-  };
-
+  // Load initial data when component mounts
+  useEffect(() => {
+    getmasterKategori('history');
+    getmasterKategori('penjadwalan');
+  }, []);
   const hours = Array.from(
     { length: 24 },
     (_, i) => `${i.toString().padStart(2, '0')}:00:00`,
@@ -313,7 +320,6 @@ function TampilanDailyJO() {
                       </p>
                     </div>
 
-                    {/* Machine Columns (Ensures Data Matches Mesin & Hour) */}
                     {machineList.map((machine, colIndex) => {
                       // Normalize mesin name for flexible matching
                       const normalizeMesin = (mesin: string) => {
@@ -346,16 +352,29 @@ function TampilanDailyJO() {
                           }`}
                         >
                           {matchingData ? (
-                            <button
-                              onClick={() => openModal3(matchingData?.id)}
-                              onMouseEnter={() =>
-                                setHoveredJobOrder(matchingData)
-                              }
-                              onMouseLeave={() => setHoveredJobOrder(null)}
-                              className="text-center text-[#0065de] text-[11px] font-semibold"
-                            >
-                              {matchingData.no_jo}
-                            </button>
+                            <div className="flex flex-col items-center">
+                              <button
+                                onClick={() => openModal3(matchingData?.id)}
+                                onMouseEnter={() =>
+                                  setHoveredJobOrder(matchingData)
+                                }
+                                onMouseLeave={() => setHoveredJobOrder(null)}
+                                className="text-center text-[#0065de] text-[11px] font-semibold"
+                              >
+                                {matchingData.no_jo}
+                              </button>
+                              {matchingData.no_booking && (
+                                <button
+                                  onMouseEnter={() =>
+                                    setHoveredJobOrder(matchingData)
+                                  }
+                                  onMouseLeave={() => setHoveredJobOrder(null)}
+                                  className="text-center text-[#FF6B00] text-[11px] font-semibold"
+                                >
+                                  {matchingData.no_booking}
+                                </button>
+                              )}
+                            </div>
                           ) : (
                             <p className="text-[#bbb] text-[11px]">-</p> // Placeholder for empty slot
                           )}
@@ -385,9 +404,11 @@ function TampilanDailyJO() {
                 ))}
               </div>
             </div>
+            {/* Render JobOrderTable with both lists */}
             {isDetailVisible && (
               <JobOrderTable
-                listJO={listJO}
+                historyListJO={historyListJO}
+                penjadwalanListJO={penjadwalanListJO}
                 get1Tiket={get1Tiket}
                 setSelectedJO={setSelectedJO}
                 setSelectedIndex={setSelectedIndex}
@@ -403,6 +424,9 @@ function TampilanDailyJO() {
               <div className="fixed bottom-4 right-4 bg-white s p-4 rounded-md border-2 border-black">
                 <h3 className="font-bold text-sm mb-2">Job Order Details</h3>
                 <p>Job Order: {hoveredJobOrder.no_jo}</p>
+                {hoveredJobOrder.no_booking && (
+                  <p>Booking: {hoveredJobOrder.no_booking}</p>
+                )}
                 <p>Item: {hoveredJobOrder.item}</p>
                 {/* Add more details as needed */}
               </div>

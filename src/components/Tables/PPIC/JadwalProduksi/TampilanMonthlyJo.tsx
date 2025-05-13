@@ -6,14 +6,29 @@ import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
 
 import JobOrderTable from './JobOrderTable';
-
+interface JobOrder {
+  id: number;
+  no_jo: string;
+  item: string;
+  qty_druk: number;
+  qty_pcs: number;
+  tgl_kirim: string;
+  no_booking?: string;
+  // Add other fields as needed
+}
+interface ListJOData {
+  data: JobOrder[];
+}
 function TampilanMonthlyJO() {
   const [isLoading, setIsLoading] = useState(false);
   const [startDate, setStartDate] = useState<string>(() => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   });
-
+  const [historyListJO, setHistoryListJO] = useState<ListJOData>({ data: [] });
+  const [penjadwalanListJO, setPenjadwalanListJO] = useState<ListJOData>({
+    data: [],
+  });
   const [endDate, setEndDate] = useState<string>(() => {
     const today = new Date();
     today.setDate(today.getDate() + 6);
@@ -89,13 +104,14 @@ function TampilanMonthlyJO() {
   };
 
   const [listJO, setJo] = useState<any>();
+  // Modified getmasterKategori function to handle both statuses
   async function getmasterKategori(
-    startDate = '',
-    endDate = '',
-    searchTerm = '',
+    statusTiket: string = 'history',
+    startDate: string = '',
+    endDate: string = '',
+    searchTerm: string = '',
   ) {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksi`;
-
     try {
       setIsLoading(true);
 
@@ -106,7 +122,7 @@ function TampilanMonthlyJO() {
         end_date?: string;
         search?: string;
       } = {
-        status_tiket: 'history',
+        status_tiket: statusTiket,
       };
 
       // Add filter parameters if provided
@@ -120,13 +136,26 @@ function TampilanMonthlyJO() {
       });
 
       setIsLoading(false);
-      setJo(res.data);
-      console.log('listJO', res.data);
+
+      // Set data to the appropriate state based on status_tiket
+      if (statusTiket === 'history') {
+        setHistoryListJO(res.data);
+        console.log('historyListJO', res.data);
+      } else if (statusTiket === 'penjadwalan') {
+        setPenjadwalanListJO(res.data);
+        console.log('penjadwalanListJO', res.data);
+      }
     } catch (error) {
       setIsLoading(false);
       console.log(error);
     }
   }
+
+  // Load initial data when component mounts
+  useEffect(() => {
+    getmasterKategori('history');
+    getmasterKategori('penjadwalan');
+  }, []);
   const generateMonthDates = () => {
     const year = parseInt(selectedMonth.split('-')[0]);
     const month = parseInt(selectedMonth.split('-')[1]) - 1;
@@ -758,7 +787,7 @@ function TampilanMonthlyJO() {
                                   }}
                                 >
                                   {matchingData.length > 0 && (
-                                    <div className="flex flex-col items-center gap-1">
+                                    <div className="flex flex-col items-center gap-1 p-0.5 w-full">
                                       {matchingData.map(
                                         (data: any, index: any) => {
                                           // Color assignment logic
@@ -782,18 +811,27 @@ function TampilanMonthlyJO() {
                                           }
 
                                           return (
-                                            <button
+                                            <div
                                               key={index}
-                                              onMouseEnter={() =>
-                                                setHoveredJobOrder(data)
-                                              }
-                                              onMouseLeave={() =>
-                                                setHoveredJobOrder(null)
-                                              }
-                                              className={`text-[8px] font-semibold border border-opacity-50 p-0.5 rounded-sm ${jobOrderColorClass}`}
+                                              className="flex flex-col w-full items-center"
                                             >
-                                              {data.no_jo}
-                                            </button>
+                                              <button
+                                                onMouseEnter={() =>
+                                                  setHoveredJobOrder(data)
+                                                }
+                                                onMouseLeave={() =>
+                                                  setHoveredJobOrder(null)
+                                                }
+                                                className={`text-[8px] font-semibold border border-opacity-50 p-0.5 rounded-sm w-full ${jobOrderColorClass}`}
+                                              >
+                                                {data.no_jo}
+                                                {data.no_booking && (
+                                                  <span className="text-[7px] font-medium text-gray-700 bg-gray-100 p-0.5 rounded-sm mt-0.5 w-full overflow-hidden text-center">
+                                                    {data.no_booking}
+                                                  </span>
+                                                )}
+                                              </button>
+                                            </div>
                                           );
                                         },
                                       )}
@@ -954,9 +992,11 @@ function TampilanMonthlyJO() {
               )}
             </div>
 
+            {/* Render JobOrderTable with both lists */}
             {isDetailVisible && (
               <JobOrderTable
-                listJO={listJO}
+                historyListJO={historyListJO}
+                penjadwalanListJO={penjadwalanListJO}
                 get1Tiket={get1Tiket}
                 setSelectedJO={setSelectedJO}
                 setSelectedIndex={setSelectedIndex}

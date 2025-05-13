@@ -12,6 +12,7 @@ import ModalFull from './ModalFull';
 interface JOData {
   id: string;
   no_jo: string;
+  no_booking: string;
   item: string;
   qty_pcs: number;
   qty_druk: number;
@@ -53,7 +54,7 @@ interface DetailJOData {
   };
 }
 
-function ListJOProduksi() {
+function ListBookingJo() {
   // Consolidated state management with proper typing
   const [isLoading, setIsLoading] = useState(false);
   const [listJO, setListJO] = useState<{ data: JOData[] }>({ data: [] });
@@ -123,7 +124,7 @@ function ListJOProduksi() {
             : method === 'put'
             ? await axios.put(url, config.data, config)
             : await axios.post(url, config.data, config);
-        console.log('response', response);
+
         return response.data;
       } catch (error) {
         console.error(`Error in API call to ${url}:`, error);
@@ -156,7 +157,6 @@ function ListJOProduksi() {
       const res = await axios.get(url, {});
       setIsLoading(false);
       setmesinList(res.data.data);
-      console.log('getmesin', res.data.data);
     } catch (error: any) {
       setIsLoading(false);
       console.log(error.data.msg);
@@ -168,7 +168,7 @@ function ListJOProduksi() {
     // Only use the required status_tiket parameter
     const params = {
       status_tiket: 'incoming',
-      type: 'jadwal',
+      type: 'booking',
     };
 
     const data = await fetchAPI(url, params);
@@ -434,7 +434,7 @@ function ListJOProduksi() {
           {/* Table Header */}
           <div className="grid grid-cols-12 bg-white border-b-8 border-[#D8EAFF] px-[1%] py-[1%]">
             <p className="text-[#646464] text-xs font-bold col-span-2">
-              Job Order
+              No Booking
             </p>
             <p className="text-[#646464] text-xs font-bold col-span-2">
               Nama Item
@@ -455,7 +455,7 @@ function ListJOProduksi() {
                   className="grid grid-cols-12 bg-white border-b-8 border-[#D8EAFF] px-[1%] py-[1%]"
                 >
                   <p className="text-[#646464] text-sm col-span-2">
-                    {jo.no_jo}
+                    {jo.no_booking}
                   </p>
                   <p className="text-[#646464] text-sm col-span-2">{jo.item}</p>
                   <p className="text-[#646464] text-sm">
@@ -506,10 +506,10 @@ function ListJOProduksi() {
                           <div className="flex flex-col">
                             <div className="grid grid-cols-2 gap-2">
                               <label className="text-black text-xs font-bold">
-                                Nomor JO
+                                Nomor Booking
                               </label>
                               <label className="text-[#016ae6] uppercase text-xl font-normal">
-                                : {jo.no_jo}
+                                : {jo.no_booking}
                               </label>
                             </div>
                             <div className="grid grid-cols-2 gap-2">
@@ -750,4 +750,4 @@ function ListJOProduksi() {
   );
 }
 
-export default ListJOProduksi;
+export default ListBookingJo;

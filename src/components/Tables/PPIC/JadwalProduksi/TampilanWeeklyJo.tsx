@@ -5,14 +5,29 @@ import Loading from '../../../Loading';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
 import JobOrderTable from './JobOrderTable';
-
+interface JobOrder {
+  id: number;
+  no_jo: string;
+  item: string;
+  qty_druk: number;
+  qty_pcs: number;
+  tgl_kirim: string;
+  no_booking?: string;
+  // Add other fields as needed
+}
+interface ListJOData {
+  data: JobOrder[];
+}
 function TampilanWeeklyJO() {
   const [isLoading, setIsLoading] = useState(false);
   const [startDate, setStartDate] = useState<string>(() => {
     const today = new Date();
     return today.toISOString().split('T')[0];
   });
-
+  const [historyListJO, setHistoryListJO] = useState<ListJOData>({ data: [] });
+  const [penjadwalanListJO, setPenjadwalanListJO] = useState<ListJOData>({
+    data: [],
+  });
   const [endDate, setEndDate] = useState<string>(() => {
     const today = new Date();
     today.setDate(today.getDate() + 6);
@@ -72,13 +87,14 @@ function TampilanWeeklyJO() {
   };
 
   const [listJO, setJo] = useState<any>();
+  // Modified getmasterKategori function to handle both statuses
   async function getmasterKategori(
-    startDate = '',
-    endDate = '',
-    searchTerm = '',
+    statusTiket: string = 'history',
+    startDate: string = '',
+    endDate: string = '',
+    searchTerm: string = '',
   ) {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksi`;
-
     try {
       setIsLoading(true);
 
@@ -89,7 +105,7 @@ function TampilanWeeklyJO() {
         end_date?: string;
         search?: string;
       } = {
-        status_tiket: 'history',
+        status_tiket: statusTiket,
       };
 
       // Add filter parameters if provided
@@ -103,13 +119,26 @@ function TampilanWeeklyJO() {
       });
 
       setIsLoading(false);
-      setJo(res.data);
-      console.log('listJO', res.data);
+
+      // Set data to the appropriate state based on status_tiket
+      if (statusTiket === 'history') {
+        setHistoryListJO(res.data);
+        console.log('historyListJO', res.data);
+      } else if (statusTiket === 'penjadwalan') {
+        setPenjadwalanListJO(res.data);
+        console.log('penjadwalanListJO', res.data);
+      }
     } catch (error) {
       setIsLoading(false);
       console.log(error);
     }
   }
+
+  // Load initial data when component mounts
+  useEffect(() => {
+    getmasterKategori('history');
+    getmasterKategori('penjadwalan');
+  }, []);
 
   const [isDetailVisible, setIsDetailVisible] = useState(false);
   const machineList = [
@@ -361,7 +390,7 @@ function TampilanWeeklyJO() {
                           className={`flex w-[12%] justify-center items-center border-r border-[#D8EAFF] ${colBackgroundColor}`}
                         >
                           {matchingDataArray.length > 0 ? (
-                            <div className="flex flex-col items-center">
+                            <div className="flex flex-col items-center w-full">
                               {matchingDataArray.map(
                                 (data: any, index: any) => {
                                   // Find or assign a color for this job order
@@ -387,18 +416,27 @@ function TampilanWeeklyJO() {
                                   }
 
                                   return (
-                                    <button
+                                    <div
                                       key={index}
-                                      onMouseEnter={() =>
-                                        setHoveredJobOrder(data)
-                                      }
-                                      onMouseLeave={() =>
-                                        setHoveredJobOrder(null)
-                                      }
-                                      className={`text-center text-[11px] font-semibold border border-opacity-50 p-1 m-1 rounded-md ${jobOrderColorClass}`}
+                                      className="flex flex-col items-center w-full p-1"
                                     >
-                                      {data.no_jo}
-                                    </button>
+                                      <button
+                                        onMouseEnter={() =>
+                                          setHoveredJobOrder(data)
+                                        }
+                                        onMouseLeave={() =>
+                                          setHoveredJobOrder(null)
+                                        }
+                                        className={`text-center text-[11px] font-semibold border border-opacity-50 p-1 rounded-md w-full ${jobOrderColorClass}`}
+                                      >
+                                        {data.no_jo}
+                                        {data.no_booking && (
+                                          <span className="">
+                                            {data.no_booking}
+                                          </span>
+                                        )}
+                                      </button>
+                                    </div>
                                   );
                                 },
                               )}
@@ -414,14 +452,17 @@ function TampilanWeeklyJO() {
                 <div className="fixed bottom-4 right-4 bg-white shadow-lg p-4 rounded-lg border">
                   <h3 className="font-bold text-sm mb-2">Job Order Details</h3>
                   <p>Job Order: {hoveredJobOrder.no_jo}</p>
+                  <p>No Booking: {hoveredJobOrder.no_booking}</p>
                   <p>Item: {hoveredJobOrder.item}</p>
                   {/* Add more details as needed */}
                 </div>
               )}
             </div>
+            {/* Render JobOrderTable with both lists */}
             {isDetailVisible && (
               <JobOrderTable
-                listJO={listJO}
+                historyListJO={historyListJO}
+                penjadwalanListJO={penjadwalanListJO}
                 get1Tiket={get1Tiket}
                 setSelectedJO={setSelectedJO}
                 setSelectedIndex={setSelectedIndex}

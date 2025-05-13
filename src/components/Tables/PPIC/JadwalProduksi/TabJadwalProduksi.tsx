@@ -11,6 +11,7 @@ import ListJOProduksi from './ListJOProduksi';
 import TampilanDailyJO from './TampilanDailyJo';
 import TampilanWeeklyJO from './TampilanWeeklyJo';
 import TampilanMonthlyJO from './TampilanMonthlyJo';
+import ListBookingJo from './ListBookingJO';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -127,9 +128,10 @@ export default function TabJadwalProduksi() {
             className="bg-white text-[#00499F] font-semibold mb-2 "
           >
             <Tab label="List JO" {...a11yProps(0)} className="" />
-            <Tab label="Overview Daily" {...a11yProps(1)} className="" />
-            <Tab label="Overview Weekly" {...a11yProps(2)} className="" />
-            <Tab label="Overview Monthly" {...a11yProps(3)} className="" />
+            <Tab label="Jo Booking" {...a11yProps(1)} className="" />
+            <Tab label="Overview Daily" {...a11yProps(2)} className="" />
+            <Tab label="Overview Weekly" {...a11yProps(3)} className="" />
+            <Tab label="Overview Monthly" {...a11yProps(4)} className="" />
           </Tabs>
         </ThemeProvider>
       </AppBar>
@@ -137,12 +139,15 @@ export default function TabJadwalProduksi() {
         <ListJOProduksi />
       </TabPanel>
       <TabPanel value={value} index={1} dir={theme.direction}>
-        <TampilanDailyJO />
+        <ListBookingJo />
       </TabPanel>
       <TabPanel value={value} index={2} dir={theme.direction}>
-        <TampilanWeeklyJO />
+        <TampilanDailyJO />
       </TabPanel>
       <TabPanel value={value} index={3} dir={theme.direction}>
+        <TampilanWeeklyJO />
+      </TabPanel>
+      <TabPanel value={value} index={4} dir={theme.direction}>
         <TampilanMonthlyJO />
       </TabPanel>
     </Box>
