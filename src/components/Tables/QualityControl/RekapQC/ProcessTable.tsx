@@ -236,10 +236,12 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
     processKeys.forEach((processKey) => {
       const processData = item[processKey];
       if (Array.isArray(processData) && processData.length > 0) {
-        // Find the latest record with an inspector value
+        // Find the latest record with an inspector or inspektor value
         for (let i = processData.length - 1; i >= 0; i--) {
-          if (processData[i].inspector) {
-            inspectors[processKey] = processData[i].inspector || '';
+          if (processData[i].inspector || processData[i].inspektor) {
+            // Prioritize inspektor over inspector when both are available
+            inspectors[processKey] =
+              processData[i].inspektor || processData[i].inspector || '';
             break;
           }
         }
