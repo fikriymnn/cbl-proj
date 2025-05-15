@@ -169,6 +169,21 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
     window.open(url, '_blank');
   };
 
+  // Function to calculate processing time for a record
+  const getRecordProcessingTime = (record: ProcessRecord): number => {
+    // If both are available, use lama_pengerjaan
+    if (record.lama_pengerjaan && record.waktu_check) {
+      return parseFloat(record.lama_pengerjaan) || 0;
+    }
+    // If only one is available, use that one
+    else if (record.lama_pengerjaan) {
+      return parseFloat(record.lama_pengerjaan) || 0;
+    } else if (record.waktu_check) {
+      return parseFloat(record.waktu_check) || 0;
+    }
+    return 0;
+  };
+
   // Get all field keys from the records to create table headers
   const getFieldKeys = (records: ProcessRecord[]) => {
     if (!records || records.length === 0) return [];
@@ -542,15 +557,8 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
                             const processData = item[processKey];
                             if (Array.isArray(processData)) {
                               processData.forEach((record) => {
-                                // Check for lama_pengerjaan or waktu_check and add to total
-                                if (record.lama_pengerjaan) {
-                                  totalSeconds +=
-                                    parseFloat(record.lama_pengerjaan) || 0;
-                                }
-                                if (record.waktu_check) {
-                                  totalSeconds +=
-                                    parseFloat(record.waktu_check) || 0;
-                                }
+                                // Add processing time using our helper function
+                                totalSeconds += getRecordProcessingTime(record);
                               });
                             }
                           });
@@ -674,14 +682,9 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
 
                                   let totalSeconds = 0;
                                   processData.forEach((record) => {
-                                    if (record.lama_pengerjaan) {
-                                      totalSeconds +=
-                                        parseFloat(record.lama_pengerjaan) || 0;
-                                    }
-                                    if (record.waktu_check) {
-                                      totalSeconds +=
-                                        parseFloat(record.waktu_check) || 0;
-                                    }
+                                    // Add processing time using our helper function
+                                    totalSeconds +=
+                                      getRecordProcessingTime(record);
                                   });
 
                                   if (totalSeconds > 0) {
