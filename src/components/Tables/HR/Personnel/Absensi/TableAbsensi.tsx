@@ -589,7 +589,8 @@ function TableAbsensi() {
                           <div className="flex flex-col gap-1">
                             {data.status_lembur_spl == 'dengan SPL' &&
                             (data.status_ketidaksesuaian == 'none' ||
-                              data.status_ketidaksesuaian == 'rejected') ? (
+                              data.status_ketidaksesuaian == 'rejected') &&
+                            data.jam_lembur != data.jam_lembur_spl ? (
                               <>
                                 <button
                                   onClick={() => openSPL(i)}
