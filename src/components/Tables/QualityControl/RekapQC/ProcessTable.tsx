@@ -116,6 +116,30 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
     }
   };
 
+  // Function to format seconds to "X Jam Y Menit Z Detik"
+  const formatSecondsToTime = (seconds: number) => {
+    if (isNaN(seconds) || seconds <= 0) return '-';
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+
+    return `${hours} Jam ${minutes} Menit ${remainingSeconds} Detik`;
+  };
+
+  // Function to format seconds to HH:MM:SS format for the modal
+  const formatSecondsToHHMMSS = (seconds: number) => {
+    if (isNaN(seconds) || seconds <= 0) return '-';
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+
+    return `${hours.toString().padStart(2, '0')}:${minutes
+      .toString()
+      .padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   // Function to open modal for a specific process
   const openDetailModal = (item: ProcessData, process: string) => {
     setSelectedProcess({
@@ -210,15 +234,9 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
 
     // Format time fields (lama_pengerjaan, waktu_check) to HH:MM:SS format
     if (key === 'lama_pengerjaan' || key === 'waktu_check') {
-      const minutes = parseFloat(value);
-      if (!isNaN(minutes)) {
-        const hours = Math.floor(minutes / 60);
-        const mins = Math.floor(minutes % 60);
-        const secs = Math.floor((minutes * 60) % 60);
-
-        return `${hours.toString().padStart(2, '0')}:${mins
-          .toString()
-          .padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      const seconds = parseFloat(value);
+      if (!isNaN(seconds)) {
+        return formatSecondsToHHMMSS(seconds);
       }
     }
 
@@ -517,8 +535,8 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
 
                       <div className="flex gap-4">
                         {(() => {
-                          // Calculate total processing time from all records
-                          let totalMinutes = 0;
+                          // Calculate total processing time from all records in seconds
+                          let totalSeconds = 0;
 
                           processKeys.forEach((processKey) => {
                             const processData = item[processKey];
@@ -526,39 +544,24 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
                               processData.forEach((record) => {
                                 // Check for lama_pengerjaan or waktu_check and add to total
                                 if (record.lama_pengerjaan) {
-                                  totalMinutes +=
+                                  totalSeconds +=
                                     parseFloat(record.lama_pengerjaan) || 0;
                                 }
                                 if (record.waktu_check) {
-                                  totalMinutes +=
+                                  totalSeconds +=
                                     parseFloat(record.waktu_check) || 0;
                                 }
                               });
                             }
                           });
 
-                          if (totalMinutes > 0) {
-                            // Convert to hours, minutes, seconds format
-                            const hours = Math.floor(totalMinutes / 60);
-                            const minutes = Math.floor(totalMinutes % 60);
-                            const seconds = Math.floor(
-                              (totalMinutes * 60) % 60,
-                            );
-
-                            const formattedTime = `${hours
-                              .toString()
-                              .padStart(2, '0')} jam ${minutes
-                              .toString()
-                              .padStart(2, '0')} menit ${seconds
-                              .toString()
-                              .padStart(2, '0')} detik`;
-
+                          if (totalSeconds > 0) {
                             return (
                               <div className="px-2 py-1 bg-green-100 rounded">
                                 <span className="font-semibold">
                                   Total Waktu Pengerjaan:
                                 </span>{' '}
-                                {formattedTime}
+                                {formatSecondsToTime(totalSeconds)}
                               </div>
                             );
                           }
@@ -669,36 +672,26 @@ const ProcessTable: React.FC<ProcessTableProps> = ({
                                 {(() => {
                                   if (!Array.isArray(processData)) return null;
 
-                                  let totalMinutes = 0;
+                                  let totalSeconds = 0;
                                   processData.forEach((record) => {
                                     if (record.lama_pengerjaan) {
-                                      totalMinutes +=
+                                      totalSeconds +=
                                         parseFloat(record.lama_pengerjaan) || 0;
                                     }
                                     if (record.waktu_check) {
-                                      totalMinutes +=
+                                      totalSeconds +=
                                         parseFloat(record.waktu_check) || 0;
                                     }
                                   });
 
-                                  if (totalMinutes > 0) {
-                                    const hours = Math.floor(totalMinutes / 60);
-                                    const minutes = Math.floor(
-                                      totalMinutes % 60,
-                                    );
-                                    const seconds = Math.floor(
-                                      (totalMinutes * 60) % 60,
-                                    );
-
+                                  if (totalSeconds > 0) {
                                     return (
                                       <div className="mb-1">
                                         <span className="font-medium">
                                           Waktu:
                                         </span>{' '}
                                         <span className="text-blue-600">
-                                          {hours.toString().padStart(2, '0')}:
-                                          {minutes.toString().padStart(2, '0')}:
-                                          {seconds.toString().padStart(2, '0')}
+                                          {formatSecondsToTime(totalSeconds)}
                                         </span>
                                       </div>
                                     );
