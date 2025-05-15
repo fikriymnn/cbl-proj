@@ -295,7 +295,7 @@ function TableAbsensi() {
                         <option value="" disabled selected>
                           PILIH DEPARTMENT
                         </option>
-                        {department.data.map((data: any, i: any) => (
+                        {department?.data?.map((data: any, i: any) => (
                           <option key={i} value={data.id}>
                             {data.nama_department}
                           </option>
