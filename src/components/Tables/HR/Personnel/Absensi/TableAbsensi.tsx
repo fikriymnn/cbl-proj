@@ -588,9 +588,15 @@ function TableAbsensi() {
                         <td className="p-2">
                           <div className="flex flex-col gap-1">
                             {data.status_lembur_spl == 'dengan SPL' &&
-                            data.status_ketidaksesuaian == 'none' &&
-                            tipe_lembur != null ? (
+                            (data.status_ketidaksesuaian == 'none' ||
+                              data.status_ketidaksesuaian == 'rejected') ? (
                               <>
+                                <button
+                                  onClick={() => openSPL(i)}
+                                  className="w-full bg-yellow-600 text-white text-sm py-1 rounded-md"
+                                >
+                                  SPL
+                                </button>
                                 {showSPL[i] == true && (
                                   <ModalKosongan
                                     isOpen={showSPL[i]}
