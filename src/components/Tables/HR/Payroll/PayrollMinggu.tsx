@@ -235,7 +235,7 @@ function PayrollMinggu() {
                 }}
                 className="bg-primary text-white px-5 py-2 rounded-md my-auto "
               >
-                Filter
+                Pilih Periode
               </button>
             </div>
           </div>
