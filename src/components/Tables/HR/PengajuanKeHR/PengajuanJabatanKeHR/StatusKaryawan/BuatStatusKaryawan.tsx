@@ -392,51 +392,135 @@ function BuatStatusKaryawan() {
       day: 'numeric',
     });
   };
+  const [showAbsenModal, setShowAbsenModal] = useState(false);
 
-  const renderKeterlambatanTable = () => {
-    if (!rekapAbsen || !rekapAbsen.data) return null;
+  // Add this function to render the modal for both absences and keterlambatan details
+  const renderAbsenModal = () => {
+    if (!showAbsenModal) return null;
 
-    // Flatten all absensi arrays and filter for the current employee
-    const keterlambatanData = rekapAbsen.data
-      .flatMap((item: any) => item.absensi || [])
-      .filter(
-        (absen: any) =>
-          absen.userid === idKaryawan && absen.status_masuk === 'Terlambat ',
-      );
-
-    if (keterlambatanData.length === 0) {
-      return (
-        <p className="text-gray-500 italic ml-10 mb-2">
-          Tidak ada keterlambatan dalam periode ini
-        </p>
-      );
-    }
+    // Extract keterlambatan data if rekapAbsen exists
+    const keterlambatanData = rekapAbsen?.data
+      ? rekapAbsen.data
+          .flatMap((item: any) => item.absensi || [])
+          .filter(
+            (absen: any) =>
+              absen.userid === idKaryawan &&
+              absen.status_masuk === 'Terlambat ',
+          )
+      : [];
 
     return (
-      <div className="border-2 border-stroke p-4 rounded-md mb-4 ml-10">
-        <p className="text-gray-500 text-sm mb-2">
-          Detail keterlambatan selama periode:
-        </p>
-        <table className="w-full">
-          <thead>
-            <tr className="border-b-2">
-              <th className="text-left p-2">Tanggal</th>
-              <th className="text-left p-2">Hari</th>
-              <th className="text-left p-2">Jam Masuk</th>
-              <th className="text-left p-2">Terlambat</th>
-            </tr>
-          </thead>
-          <tbody>
-            {keterlambatanData.map((absen: any, index: any) => (
-              <tr key={index} className="border-b">
-                <td className="p-2">{absen.tgl_masuk}</td>
-                <td className="p-2">{absen.hari}</td>
-                <td className="p-2">{absen.jam_masuk}</td>
-                <td className="p-2">{absen.menit_terlambat} Jam</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="bg-white rounded-xl p-6 w-11/12 max-w-4xl max-h-[80vh] overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold">
+              Detail Absensi & Keterlambatan
+            </h3>
+            <button
+              onClick={() => setShowAbsenModal(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          {/* Absensi Data */}
+          <div className="mb-6">
+            <h4 className="font-bold text-lg mb-3">Data Absensi</h4>
+            {absenData ? (
+              <div className="border-2 border-stroke p-4 rounded-md">
+                <p className="text-gray-500 text-sm mb-2">
+                  Data absensi diambil dari sistem:
+                </p>
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2">
+                      <th className="text-left p-2">Jenis Ketidakhadiran</th>
+                      <th className="text-left p-2">Jumlah Hari</th>
+                      <th className="text-left p-2">Jumlah Tiket</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b">
+                      <td className="p-2">Mangkir (Alpa)</td>
+                      <td className="p-2">{absenData.mangkir_hari || 0}</td>
+                      <td className="p-2">{absenData.mangkir_tiket || 0}</td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="p-2">Izin</td>
+                      <td className="p-2">{absenData.izin_hari || 0}</td>
+                      <td className="p-2">{absenData.izin_tiket || 0}</td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="p-2">Sakit</td>
+                      <td className="p-2">{absenData.sakit_hari || 0}</td>
+                      <td className="p-2">{absenData.sakit_tiket || 0}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-gray-500 italic">
+                Pilih periode untuk mengambil data absensi
+              </p>
+            )}
+          </div>
+
+          {/* Keterlambatan Data */}
+          <div>
+            <h4 className="font-bold text-lg mb-3">Detail Keterlambatan</h4>
+            {keterlambatanData.length > 0 ? (
+              <div className="border-2 border-stroke p-4 rounded-md">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2">
+                      <th className="text-left p-2">Tanggal</th>
+                      <th className="text-left p-2">Hari</th>
+                      <th className="text-left p-2">Jam Masuk</th>
+                      <th className="text-left p-2">Terlambat</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {keterlambatanData.map((absen: any, index: any) => (
+                      <tr key={index} className="border-b">
+                        <td className="p-2">{absen.tgl_masuk}</td>
+                        <td className="p-2">{absen.hari}</td>
+                        <td className="p-2">{absen.jam_masuk}</td>
+                        <td className="p-2">{absen.menit_terlambat} Jam</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-gray-500 italic">
+                Tidak ada keterlambatan dalam periode ini
+              </p>
+            )}
+          </div>
+
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={() => setShowAbsenModal(false)}
+              className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium rounded-md transition-colors"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
       </div>
     );
   };
@@ -591,7 +675,7 @@ function BuatStatusKaryawan() {
           <div className="mb-6">
             <p className="text-black font-bold text-lg mb-3">BAGIAN 2</p>
 
-            {absenData ? (
+            {/* {absenData ? (
               <div className="border-2 border-stroke p-4 rounded-md mb-4">
                 <p className="text-gray-500 text-sm mb-2">
                   Data absensi diambil dari sistem:
@@ -627,7 +711,7 @@ function BuatStatusKaryawan() {
               <p className="text-gray-500 italic mb-4">
                 Pilih periode untuk mengambil data absensi
               </p>
-            )}
+            )} */}
 
             {/* Absence inputs */}
             <div className="grid grid-cols-12 mb-3 items-center">
@@ -693,9 +777,31 @@ function BuatStatusKaryawan() {
                 <label>Hari</label>
               </div>
             </div>
-
-            {/* Keterlambatan table */}
-            {renderKeterlambatanTable()}
+            <div className="mb-4">
+              <button
+                onClick={() => setShowAbsenModal(true)}
+                disabled={!absenData && !rekapAbsen}
+                className={`px-4 py-2 rounded-md flex items-center gap-2 ${
+                  absenData || rekapAbsen
+                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Lihat Detail Absensi & Keterlambatan
+              </button>
+            </div>
           </div>
 
           {/* Teguran Peringatan section */}
@@ -908,6 +1014,7 @@ function BuatStatusKaryawan() {
           </button>
         </div>
       </div>
+      {renderAbsenModal()}
     </main>
   );
 }
