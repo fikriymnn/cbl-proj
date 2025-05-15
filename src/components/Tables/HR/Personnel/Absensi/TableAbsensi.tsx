@@ -664,7 +664,7 @@ function TableAbsensi() {
                                             </label>
                                             <label className="text-[#6c6b6b] text-sm">
                                               {convertTimeStampToDate(
-                                                data.tgl_masuk,
+                                                data.waktu_masuk,
                                               )}
                                             </label>
                                           </div>

@@ -668,7 +668,13 @@ function PayrollMinggu() {
                               {data.detailAbsensi?.map(
                                 (data2: any, ii: any) => (
                                   <>
-                                    <div className="grid grid-cols-12  py-4 border-b-8 border-[#D8EAFF] gap-2 ">
+                                    <div
+                                      className={`grid grid-cols-12  py-4 border-b-8 border-[#D8EAFF] gap-2 ${
+                                        data2.jam_lembur != data2.jam_lembur_spl
+                                          ? 'bg-red-200'
+                                          : ''
+                                      }`}
+                                    >
                                       <div className="flex col-span-2 gap-2">
                                         <label className="text-neutral-500 text-sm font-semibold ">
                                           {ii + 1}.
@@ -702,16 +708,36 @@ function PayrollMinggu() {
                                           ? ' ~'
                                           : data2.shift}
                                       </label>
-                                      <label className="text-neutral-500 text-sm font-semibold">
-                                        {data2.status_lembur == null ||
-                                        data2.status_lembur == 0
-                                          ? ' ~'
-                                          : data2.status_lembur}{' '}
-                                        {data2.jam_lembur == null ||
-                                        data2.jam_lembur == 0
-                                          ? ''
-                                          : '~ ' + data2.jam_lembur + 'Jam'}
-                                      </label>
+                                      <div className="flex flex-col">
+                                        <label className="text-neutral-500 text-sm font-semibold">
+                                          {data2.status_lembur == null ||
+                                          data2.status_lembur == 0
+                                            ? ' ~'
+                                            : data2.status_lembur}{' '}
+                                          {data2.jam_lembur == null ||
+                                          data2.jam_lembur == 0
+                                            ? ''
+                                            : '~ ' + data2.jam_lembur + 'Jam'}
+                                        </label>
+                                        <div>
+                                          {data2.jam_lembur !=
+                                          data2.jam_lembur_spl ? (
+                                            <div className="text-neutral-500 flex flex-col text-sm font-semibold">
+                                              <label>
+                                                Jam Lembur Absen :{' '}
+                                                {data2.jam_lembur}
+                                              </label>
+                                              <label>
+                                                Jam Lembur SPL :{' '}
+                                                {data2.jam_lembur_spl}
+                                              </label>
+                                            </div>
+                                          ) : (
+                                            ''
+                                          )}
+                                        </div>
+                                      </div>
+
                                       <div className="flex flex-col gap-1 col-span-2">
                                         <label className="text-neutral-500 text-sm font-semibold ">
                                           {data2.status_masuk}
