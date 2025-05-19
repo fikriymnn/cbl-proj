@@ -214,12 +214,14 @@ function TableOS() {
   async function reworkTiket(idTiket: number, iModal: number) {
     const url = `${import.meta.env.VITE_API_LINK}/ticket/rework/${idTiket}`;
 
+    console.log('idtiket', idTiket, user);
+
     try {
       setIsLoading(true);
       const res = await axios.put(
         url,
         {
-          id_eksekutor: user.id,
+          // id_eksekutor: user.id,
         },
         {
           withCredentials: true,
