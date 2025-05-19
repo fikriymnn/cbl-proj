@@ -1,84 +1,142 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Filter from '../../../../images/icon/filter.svg';
-import Burger from '../../../../images/icon/burger.svg';
-import Arrow from '../../../../images/icon/arrowDown.svg';
 import Polygon6 from '../../../../images/icon/Polygon6.svg';
 import ModalSPBService from '../../../Modals/ModalNewSPBService';
 import axios from 'axios';
 import convertTimeStampToDate from '../../../../utils/convertDate';
 import MonitoringSPB from '../../../Modals/MonitoringSPB';
-import ModalEditSPB from '../../../Modals/ModalEditSPB';
-import ModalNoteSPB from '../../../Modals/ModalNoteSPB';
 import ModalEditSparepartSPB from '../../../Modals/ModalEditSparepartSPB';
 import ModalNoteSPBSparepart from '../../../Modals/ModalNoteSPBSparepart';
-import Stack from '@mui/material/Stack';
-import Pagination from '@mui/material/Pagination';
+import { Pagination, Stack } from '@mui/material';
 
 function TableSPBRequestedSparepart() {
+  // State variables
   const [page, setPage] = useState(1);
   const [showModalSPBBaru, setShowModalSPBBaru] = useState(false);
-
-  const openModalSPBBaru = () => setShowModalSPBBaru(true);
-  const closeModalSPBBaru = () => setShowModalSPBBaru(false);
-
-  const [isMobile, setIsMobile] = useState(false);
   const [openButton, setOpenButton] = useState(null);
-
   const [showModalMonitoring, setShowModalMonitoring] = useState(null);
   const [showModalEdit, setShowModalEdit] = useState(null);
   const [showModalCatatan, setShowModalCatatan] = useState(null);
   const [showModalTolak, setShowModalTolak] = useState(null);
+  const [spbSparepart, setSpbSparepart] = useState<any>();
+  const [updateQty, setUpdateQty] = useState<number>(0);
+  const [showUpdateQtyModal, setShowUpdateQtyModal] = useState(null);
+  const [userRole, setUserRole] = useState<string>('');
 
+  // Ref for detecting clicks outside the dropdown menu
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Modal handlers
+  const openModalSPBBaru = () => setShowModalSPBBaru(true);
+  const closeModalSPBBaru = () => setShowModalSPBBaru(false);
+
+  const closeModalMonitoring = () => {
+    setShowModalMonitoring(null);
+    // Ensure edit modal is also closed when monitoring is closed
+    setShowModalEdit(null);
+  };
+
+  const closeModalEdit = () => setShowModalEdit(null);
+
+  const closeModalCatatan = () => {
+    setShowModalCatatan(null);
+    // Close dropdown menu after action
+    setOpenButton(null);
+  };
+
+  const closeModalTolak = () => {
+    setShowModalTolak(null);
+    // Close dropdown menu after action
+    setOpenButton(null);
+  };
+
+  const closeUpdateQtyModal = () => {
+    setShowUpdateQtyModal(null);
+    // Close dropdown menu after action
+    setOpenButton(null);
+  };
+
+  // Button click handlers
   const handleClick = (index: any) => {
     setOpenButton((prevState: any) => {
       return prevState === index ? null : index;
     });
   };
+
   const handleClickMonitoring = (index: any) => {
+    // Close any open dropdown menu
+    setOpenButton(null);
     setShowModalMonitoring((prevState: any) => {
       return prevState === index ? null : index;
     });
   };
+
   const handleClickCatatan = (index: any) => {
     setShowModalCatatan((prevState: any) => {
       return prevState === index ? null : index;
     });
   };
+
   const handleClickTolak = (index: any) => {
     setShowModalTolak((prevState: any) => {
       return prevState === index ? null : index;
     });
   };
+
   const handleClickEdit = (index: any) => {
     setShowModalEdit((prevState: any) => {
       return prevState === index ? null : index;
     });
   };
 
-  const handleResize = () => {
-    setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
+  const handleClickUpdateQty = (index: any, qty: number) => {
+    setUpdateQty(qty);
+    setShowUpdateQtyModal((prevState: any) => {
+      return prevState === index ? null : index;
+    });
   };
+
+  const handleUpdateQty = async (id: string) => {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/spbStokSparepartMonitoringMtc/${id}`;
+    try {
+      const response = await axios.put(
+        url,
+        { qty_update: updateQty },
+        { withCredentials: true },
+      );
+
+      closeUpdateQtyModal();
+      getSpbSeparepart();
+    } catch (error: any) {
+      console.error('Error updating qty:', error.response || error);
+    }
+  };
+
+  // Handle clicks outside of dropdown
   useEffect(() => {
-    handleResize();
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setOpenButton(null);
+      }
+    }
 
-    // Event listener for window resize
-    window.addEventListener('resize', handleResize);
-
-    // Cleanup on component unmount
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
-  const [showDetailMobile, setShowDetailMobile] = useState<boolean>();
-
   useEffect(() => {
     getSpbSeparepart();
-    getSpbServicePurchase();
+    getMe();
   }, []);
 
-  const [spbSparepart, setSpbSparepart] = useState<any>();
-
+  // API functions
   async function getSpbSeparepart() {
     const url = `${import.meta.env.VITE_API_LINK}/spbStokSparepart`;
     try {
@@ -86,270 +144,195 @@ function TableSPBRequestedSparepart() {
         params: {
           page: page,
           limit: 10,
+          status_spb: 'progres',
         },
         withCredentials: true,
       });
 
       setSpbSparepart(res.data);
-      console.log(res.data);
-
-      let data: any[] = [];
-      for (let i = 0; i < res.data.data.length; i++) {
-        data.push(false);
-      }
-      //   setShowModal1(data);
-      //   setShowModalDetail(data);
-      //   setShowTwoButtons(data);
-      //   setShowTwoButtonsMobile(data);
+      console.log('SPB Sparepart data:', res.data);
     } catch (error: any) {
-      console.log(error.response);
+      console.error('Error fetching sparepart data:', error.response || error);
     }
   }
 
-  const closeModalMonitoring = () => setShowModalMonitoring(null);
-  const closeModalEdit = () => setShowModalEdit(null);
-  const closeModalCatatan = () => setShowModalCatatan(null);
-  const closeModalTolak = () => setShowModalTolak(null);
-
-  //ini untuk purchase sementara
-  const [page2, setPage2] = useState(1);
-  const [spbServicePurchase, setSpbServicePurchase] = useState<any>();
-  const [statusPengajuan, setStatusPengajuan] = useState<any>();
-  const [qtyUpdate, setQtyUpdate] = useState<any>();
-  const [openButtonPurchase, setOpenButtonPurchase] = useState(null);
-  const [showModalMonitoringPurchase, setShowModalMonitoringPurchase] =
-    useState(null);
-  const [showModalEditPurchase, setShowModalEditPurchase] = useState(null);
-
-  const handleClickPurchase = (index: any) => {
-    setOpenButtonPurchase((prevState: any) => {
-      return prevState === index ? null : index;
-    });
-  };
-
-  const handleClickMonitoringPurchase = (index: any) => {
-    setShowModalMonitoringPurchase((prevState: any) => {
-      return prevState === index ? null : index;
-    });
-  };
-
-  const handleClickEditPurchase = (index: any) => {
-    setShowModalEditPurchase((prevState: any) => {
-      return prevState === index ? null : index;
-    });
-  };
-
-  const closeModalMonitoringPurchase = () =>
-    setShowModalMonitoringPurchase(null);
-  const closeModalEditPurchase = () => setShowModalEditPurchase(null);
-
-  async function getSpbServicePurchase() {
-    const url = `${import.meta.env.VITE_API_LINK}/spbStokSparepartPurchase`;
+  async function getMe() {
+    const url = `${import.meta.env.VITE_API_LINK}/me`;
     try {
       const res = await axios.get(url, {
-        params: {
-          page: page2,
-          limit: 10,
-        },
         withCredentials: true,
       });
 
-      setSpbServicePurchase(res.data);
-      console.log(res.data);
+      // Set user role from API response
+      setUserRole(res.data.role);
     } catch (error: any) {
-      console.log(error.response);
+      console.error('Error fetching user data:', error.response || error);
     }
   }
 
-  async function updatePurchase(id: number) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/spbStokSparepartMonitoring/${id}`;
-    try {
-      const res = await axios.put(
-        url,
-        {
-          status_pengajuan: statusPengajuan,
-          qty_update: qtyUpdate,
-        },
-        {
-          withCredentials: true,
-        },
-      );
-
-      alert('success');
-      getSpbSeparepart();
-      getSpbServicePurchase();
-    } catch (error: any) {
-      console.log(error.response);
-    }
-  }
-
-  async function donePurchase(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK}/doneSpbStokPurchase/${id}`;
-    try {
-      const res = await axios.put(
-        url,
-        {},
-        {
-          withCredentials: true,
-        },
-      );
-
-      alert('success');
-      getSpbSeparepart();
-      getSpbServicePurchase();
-    } catch (error: any) {
-      console.log(error.response);
-    }
-  }
+  // Check if user is authorized to see action buttons
+  const isAuthorizedUser = () => {
+    return userRole === 'super admin' || userRole === 'section head';
+  };
 
   return (
-    <main>
-      {!isMobile && (
-        <>
-          <div>
-            <div className="flex flex-row items-center bg-white p-2">
-              <div className="flex w-6/12">
-                <img src={Filter} alt="" className="mx-3 my-auto" />
-              </div>
-              <div className="flex flex-row w-6/12 justify-end">
-                <input
-                  type="search"
-                  placeholder="search"
-                  name=""
-                  id=""
-                  className="md:w-[330px] w-40 mx-3 px-3 bg-[#E9F3FF] rounded-md"
-                />
-                <button
-                  onClick={openModalSPBBaru}
-                  className="bg-green-600 rounded-md text-white text-xs font-semibold px-10"
+    <main className="p-4">
+      <>
+        <div className="bg-gray-50 rounded-lg shadow-sm">
+          {/* Header section */}
+          <div className="flex flex-row items-center bg-white p-4 rounded-t-lg">
+            <div className="flex w-6/12"></div>
+            <div className="flex flex-row w-6/12 justify-end">
+              <input
+                type="search"
+                placeholder="Search..."
+                className="md:w-[330px] w-40 mx-3 px-4 py-2 bg-[#E9F3FF] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                onClick={openModalSPBBaru}
+                className="bg-green-600 hover:bg-green-700 transition-colors rounded-md text-white font-semibold px-6 py-2"
+              >
+                SPB BARU
+              </button>
+              {showModalSPBBaru && (
+                <ModalSPBService
+                  isOpen={showModalSPBBaru}
+                  onClose={closeModalSPBBaru}
+                  noSPB={'MT-0001'}
+                  tglSpb={'20 MEI 2024'}
+                  sumber={'kebutuhan'}
+                  data={undefined}
+                  onFinish={getSpbSeparepart}
+                  idProses={undefined}
                 >
-                  SPB BARU
-                </button>
-                {showModalSPBBaru && (
-                  <ModalSPBService
-                    isOpen={showModalSPBBaru}
-                    onClose={closeModalSPBBaru}
-                    noSPB={'MT-0001'}
-                    tglSpb={'20 MEI 2024'}
-                    sumber={'kebutuhan'}
-                    data={undefined}
-                    onFinish={getSpbSeparepart}
-                    idProses={undefined}
-                  >
-                    <p></p>
-                  </ModalSPBService>
-                )}
-              </div>
+                  <p></p>
+                </ModalSPBService>
+              )}
             </div>
-            <div className="flex bg-white mt-2 py-2">
-              <p className="w-10 px-3 text-stone-500 text-xs font-bold ">No</p>
-              <div className="grid  grid-cols-9 w-full">
-                <div className="flex gap-2">
-                  <p className="text-stone-500 text-xs font-bold ">No. SPB</p>
-                  <img className="w-2" src={Polygon6} alt="" />
-                </div>
-                <div className="flex gap-2">
-                  <p className="text-stone-500 text-xs font-bold ">
-                    Tanggal SPB
-                  </p>
-                  <img className="w-2" src={Polygon6} alt="" />
-                </div>
-                <div className="flex gap-2">
-                  <p className="text-stone-500 text-xs font-bold ">
-                    Nama Barang
-                  </p>
-                  <img className="w-2" src={Polygon6} alt="" />
-                </div>
-                <div className="flex gap-2">
-                  <p className="text-stone-500 text-xs font-bold ">Kode Part</p>
-                  <img className="w-2" src={Polygon6} alt="" />
-                </div>
-                <div className="flex gap-2 col-span-2">
-                  <p className="text-stone-500 text-xs font-bold ">Status</p>
-                  <img className="w-2" src={Polygon6} alt="" />
-                </div>
-                <div className="flex gap-2">
-                  <p className="text-stone-500 text-xs font-bold ">Tanggal</p>
-                  <img className="w-2" src={Polygon6} alt="" />
-                </div>
-                <div className="flex gap-2">
-                  <p className="text-stone-500 text-xs font-bold ">
-                    Qty Request / Update Qty
-                  </p>
-                  <img className="w-2" src={Polygon6} alt="" />
-                </div>
-                <div className="flex gap-2 pr-8">
-                  <p className="text-stone-500 text-xs font-bold ">Action</p>
-                </div>
-              </div>
-            </div>
-            {spbSparepart?.data.map((data: any, index: number) => {
-              const tglSpb = convertTimeStampToDate(data.tgl_spb);
-              const tglPermintaanKedatangan = convertTimeStampToDate(
-                data.tgl_permintaan_kedatangan,
-              );
-              return (
-                <div className=" overflow-x-auto">
-                  <div className="min-w-[700px] ">
-                    <div className="my-2 ">
-                      <section className="flex  bg-white  rounded-md px-1 py-2">
-                        <p className="w-10 px-3 text-stone-500 pt-2 text-xs font-bold  items-center">
-                          {index + 1}
-                        </p>
-                        <div className="grid  grid-cols-9 w-full  items-center">
-                          <div className="flex gap-2">
-                            <p className="text-neutral-500 text-sm font-light line-clamp-1 ">
-                              {data.no_spb}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <p className="text-neutral-500 text-sm font-light line-clamp-1">
-                              {tglSpb}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <p className="text-neutral-500 text-sm font-light line-clamp-1">
-                              {data.stok_sparepart.nama_sparepart}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <p className="text-neutral-500 text-sm font-light line-clamp-1">
-                              {data.stok_sparepart.kode}
-                            </p>
-                          </div>
-                          <div className="flex gap-2 col-span-2">
-                            <p
-                              className={
-                                data.status_pengajuan ==
-                                  'section head approval' ||
-                                data.status_pengajuan ==
-                                  'section head verifikasi'
-                                  ? 'text-white bg-green-600  px-2 rounded-2xl text-sm font-light line-clamp-1'
-                                  : 'text-white bg-green-600  px-2 rounded-2xl text-sm font-light line-clamp-1'
-                              }
-                            >
-                              {data.status_pengajuan}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <p className="text-neutral-500 text-sm font-light line-clamp-1">
-                              {tglPermintaanKedatangan}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <p className="text-neutral-500 text-sm font-light line-clamp-1">
-                              {data.qty}/{data.qty_update}
-                            </p>
-                          </div>
+          </div>
 
-                          <div className="flex gap-2 justify-end pr-8">
-                            {data.status_pengajuan == 'section head approval' ||
-                            'section head verifikasi' ? (
+          {/* Table header */}
+          <div className="flex bg-gray-100 py-3 px-2 border-b border-gray-200 items-center">
+            <p className="w-10 px-3 text-gray-600 text-xs font-bold">No</p>
+            <div className="grid grid-cols-9 w-full">
+              <div className="flex gap-2 items-center">
+                <p className="text-gray-600 text-xs font-bold">No. SPB</p>
+                <img className="w-2" src={Polygon6} alt="" />
+              </div>
+              <div className="flex gap-2 items-center">
+                <p className="text-gray-600 text-xs font-bold">Tanggal SPB</p>
+                <img className="w-2" src={Polygon6} alt="" />
+              </div>
+              <div className="flex gap-2 items-center">
+                <p className="text-gray-600 text-xs font-bold">Nama Barang</p>
+                <img className="w-2" src={Polygon6} alt="" />
+              </div>
+              <div className="flex gap-2 items-center">
+                <p className="text-gray-600 text-xs font-bold">Kode Part</p>
+                <img className="w-2" src={Polygon6} alt="" />
+              </div>
+              <div className="flex gap-2 col-span-2 items-center">
+                <p className="text-gray-600 text-xs font-bold">Status</p>
+                <img className="w-2" src={Polygon6} alt="" />
+              </div>
+              <div className="flex gap-2 items-center">
+                <p className="text-gray-600 text-xs font-bold">Tanggal</p>
+                <img className="w-2" src={Polygon6} alt="" />
+              </div>
+              <div className="flex gap-2 items-center">
+                <p className="text-gray-600 text-xs font-bold">
+                  Qty Request / Update Qty
+                </p>
+                <img className="w-2" src={Polygon6} alt="" />
+              </div>
+              <div className="flex gap-2 pr-8 items-center justify-end">
+                <p className="text-gray-600 text-xs font-bold">Action</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Table content */}
+          <div className="overflow-x-auto">
+            <div className="min-w-[700px]">
+              {spbSparepart?.data.map((data: any, index: number) => {
+                const tglSpb = convertTimeStampToDate(data.tgl_spb);
+                const tglPermintaanKedatangan = convertTimeStampToDate(
+                  data.tgl_permintaan_kedatangan,
+                );
+
+                // Determine status color
+                const getStatusColor = (status: string) => {
+                  switch (status) {
+                    case 'section head approval':
+                      return 'bg-yellow-500';
+                    case 'section head verifikasi':
+                      return 'bg-blue-500';
+                    case 'verifikasi qty mtc':
+                      return 'bg-purple-500';
+                    default:
+                      return 'bg-green-600';
+                  }
+                };
+
+                return (
+                  <div key={`spb-row-${index}`} className="my-1">
+                    <section className="flex bg-white hover:bg-gray-50 transition-colors rounded-md px-2 py-3 border-b border-gray-100">
+                      <p className="w-10 px-3 text-gray-600 text-xs font-bold py-2">
+                        {index + 1}
+                      </p>
+                      <div className="grid grid-cols-9 w-full items-center">
+                        <div>
+                          <p className="text-gray-700 text-sm font-medium line-clamp-1">
+                            {data.no_spb}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 text-sm line-clamp-1">
+                            {tglSpb}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 text-sm line-clamp-1">
+                            {data.stok_sparepart.nama_sparepart}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 text-sm line-clamp-1">
+                            {data.stok_sparepart.kode}
+                          </p>
+                        </div>
+                        <div className="col-span-2">
+                          <p
+                            className={`text-white ${getStatusColor(
+                              data.status_pengajuan,
+                            )} px-3 py-1 rounded-full text-xs font-medium inline-block`}
+                          >
+                            {data.status_pengajuan}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 text-sm line-clamp-1">
+                            {tglPermintaanKedatangan}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 text-sm line-clamp-1">
+                            {data.qty}/{data.qty_update || '-'}
+                          </p>
+                        </div>
+
+                        <div className="flex gap-2 justify-end pr-8 relative">
+                          {/* Action buttons */}
+                          {isAuthorizedUser() &&
+                            (data.status_pengajuan ===
+                              'section head approval' ||
+                              data.status_pengajuan ===
+                                'section head verifikasi' ||
+                              data.status_pengajuan ===
+                                'verifikasi qty mtc') && (
                               <button
                                 onClick={() => handleClick(index)}
-                                className="px-4 py-2 bg-[#0065DE] rounded-md"
+                                className="px-4 py-2 bg-[#0065DE] hover:bg-blue-700 transition-colors rounded-md"
                               >
                                 <svg
                                   width="4"
@@ -377,638 +360,209 @@ function TableSPBRequestedSparepart() {
                                   />
                                 </svg>
                               </button>
-                            ) : null}
-                            <button
-                              onClick={() => handleClickMonitoring(index)}
-                              className="px-3 py-3 bg-[#0065DE] rounded-md"
+                            )}
+
+                          <button
+                            onClick={() => handleClickMonitoring(index)}
+                            className="px-3 py-3 bg-[#0065DE] hover:bg-blue-700 transition-colors rounded-md ml-1"
+                          >
+                            <svg
+                              width="15"
+                              height="10"
+                              viewBox="0 0 15 10"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
                             >
-                              <svg
-                                width="15"
-                                height="10"
-                                viewBox="0 0 15 10"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M14 9L7.64444 2L1 9"
-                                  stroke="white"
-                                  stroke-width="2.5"
-                                />
-                              </svg>
-                            </button>
-                            {openButton == index ? (
-                              <>
-                                <div className="absolute bg-white mt-10 -translate-x-10 p-1 shadow-5 rounded-md">
-                                  <div className="flex flex-col gap-1">
+                              <path
+                                d="M14 9L7.64444 2L1 9"
+                                stroke="white"
+                                strokeWidth="2.5"
+                              />
+                            </svg>
+                          </button>
+
+                          {/* Popup menu for actions */}
+                          {openButton === index && (
+                            <div
+                              ref={dropdownRef}
+                              className="absolute bg-white mt-10 -translate-x-10 p-2 shadow-lg rounded-md z-20 w-32"
+                            >
+                              <div className="flex flex-col gap-2">
+                                {data.status_pengajuan ===
+                                  'section head approval' && (
+                                  <>
                                     <button
                                       onClick={() => handleClickCatatan(index)}
-                                      className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
+                                      className="w-full text-sm font-bold bg-green-600 hover:bg-green-700 py-2 text-white rounded-md transition-colors"
                                     >
-                                      Setujui{' '}
+                                      Terima
                                     </button>
                                     <button
                                       onClick={() => handleClickTolak(index)}
-                                      className="w-25 text-xs font-bold bg-red-600 py-2 text-white rounded-md"
+                                      className="w-full text-sm font-bold bg-red-600 hover:bg-red-700 py-2 text-white rounded-md transition-colors"
                                     >
-                                      Tolak{' '}
+                                      Tolak
                                     </button>
-                                  </div>
-                                </div>
-                              </>
-                            ) : (
-                              <></>
-                            )}
-                            {showModalMonitoring == index ? (
-                              <div className="">
-                                <MonitoringSPB
-                                  isOpen={showModalMonitoring}
-                                  onClose={closeModalMonitoring}
-                                  status={data.status_pengajuan}
-                                  waktu_tiket_masuk={tglSpb}
-                                  pelapor={data.pelapor.nama}
-                                  kode_part={data.stok_sparepart.kode}
-                                  nama_barang={
-                                    data.stok_sparepart.nama_sparepart
-                                  }
-                                  mesin={data.stok_sparepart.mesin.nama_mesin}
-                                  qty={data.qty}
-                                  tanggal_estimasi={tglPermintaanKedatangan}
-                                  catatan={data.note}
-                                >
-                                  <button
-                                    onClick={() => handleClickEdit(index)}
-                                    className="w-full justify-center text-center rounded md bg-blue-600 text-white font-semibold py-2"
-                                  >
-                                    Edit SPB
-                                  </button>
-                                </MonitoringSPB>
-                              </div>
-                            ) : (
-                              <></>
-                            )}
-                            {showModalEdit == index && (
-                              <ModalEditSparepartSPB
-                                isOpen={showModalEdit}
-                                onClose={closeModalEdit}
-                                onFinish={getSpbSeparepart}
-                                data={data}
-                              >
-                                <p></p>
-                              </ModalEditSparepartSPB>
-                            )}
-                            {showModalCatatan == index && (
-                              <>
-                                <ModalNoteSPBSparepart
-                                  isOpen={showModalCatatan}
-                                  onClose={closeModalCatatan}
-                                  onFinish={getSpbSeparepart}
-                                  isApprove={true}
-                                  isValidate={
-                                    data.status_pengajuan ==
-                                    'section head approval'
-                                      ? true
-                                      : false
-                                  }
-                                  data={data}
-                                ></ModalNoteSPBSparepart>
-                              </>
-                            )}
-                            {showModalTolak == index && (
-                              <>
-                                <ModalNoteSPBSparepart
-                                  isOpen={showModalTolak}
-                                  onClose={closeModalTolak}
-                                  onFinish={getSpbSeparepart}
-                                  isApprove={false}
-                                  isValidate={
-                                    data.status_pengajuan ==
-                                    'section head approval'
-                                      ? true
-                                      : false
-                                  }
-                                  data={data}
-                                ></ModalNoteSPBSparepart>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </section>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
-      {isMobile && (
-        <>
-          <div>
-            <div className="flex flex-col gap-2 items-center bg-white p-2">
-              <div className="flex flex-row w-full justify-end">
-                <input
-                  type="search"
-                  placeholder="search"
-                  name=""
-                  id=""
-                  className=" mx-3 px-3 bg-[#E9F3FF] rounded-md"
-                />
-                <button
-                  onClick={openModalSPBBaru}
-                  className="bg-green-600 rounded-md text-white text-xs font-semibold px-10"
-                >
-                  SPB BARU
-                </button>
-                {showModalSPBBaru && (
-                  <ModalSPBService
-                    isOpen={showModalSPBBaru}
-                    onClose={closeModalSPBBaru}
-                    noSPB={'MT-0001'}
-                    tglSpb={'20 MEI 2024'}
-                    sumber={'kebutuhan'}
-                    data={undefined}
-                    onFinish={getSpbSeparepart}
-                    idProses={undefined}
-                  >
-                    <p></p>
-                  </ModalSPBService>
-                )}
-              </div>
-              <div className="flex w-full">
-                <img src={Filter} alt="" className="mx-3 my-auto" />
-              </div>
-            </div>
-            <div className="flex bg-white mt-2 py-2 px-2">
-              <div className="flex gap-2 w-full">
-                <div className="flex  w-2/12 ">
-                  <p className="text-xs font-bold "> Mesin</p>
-                  <img className="w-2" src={Polygon6} alt="" />
-                </div>
-                <div className="flex  w-5/12 ">
-                  <p className="text-xs font-bold "> Nama Barang</p>
-                  <img className="w-2" src={Polygon6} alt="" />
-                </div>
-                <div className="flex  w-2/12 ">
-                  <p className="text-xs font-bold ">Status</p>
-                  <img className="w-2" src={Polygon6} alt="" />
-                </div>
-                <div className="flex  w-2/12 ">
-                  <p className="text-xs font-bold ">Action</p>
-                  <img className="w-2" src={Polygon6} alt="" />
-                </div>
-              </div>
-            </div>
-            <div className=" overflow-x-auto">
-              {spbSparepart?.map((data: any, index: number) => {
-                const tglSpb = convertTimeStampToDate(data.tgl_spb);
-                const tglPermintaanKedatangan = convertTimeStampToDate(
-                  data.tgl_permintaan_kedatangan,
-                );
-                return (
-                  <>
-                    <div className="">
-                      <div className="my-2 ">
-                        <section className="flex flex-col bg-white  rounded-lg px-2">
-                          <div className="flex w-full py-3 gap-1">
-                            <div className="flex  w-2/12  ">
-                              <p className="text-neutral-500 text-xs font-light">
-                                {data.stok_sparepart.nama_mesin}
-                              </p>
-                            </div>
-                            <div className="flex  w-6/12 ">
-                              <p className="text-neutral-500 text-xs font-light w-10/12">
-                                {data.stok_sparepart.nama_sparepart}
-                              </p>
-                            </div>
-                            <div className="flex  w-2/12  ">
-                              <p
-                                className={
-                                  data.status_pengajuan ==
-                                    'section head approval' ||
-                                  data.status_pengajuan ==
-                                    'section head verifikasi'
-                                    ? 'text-white bg-green-600  px-2 py-1 rounded-md text-[9px] font-light text-center leading-[9px]'
-                                    : 'text-white bg-yellow-600  px-2 py-1 rounded-md text-[9px] font-light text-center leading-[9px]'
-                                }
-                              >
-                                {data.status_pengajuan}
-                              </p>
-                            </div>
-                            <div className="flex gap-2 items-center pb-2">
-                              <div>
-                                <button
-                                  title="button"
-                                  onClick={() => handleClick(index)}
-                                  className="text-xs px-1  py-2 font-bold bg-blue-700  text-white rounded-sm"
-                                >
-                                  <img src={Burger} alt="" className="mx-1" />
-                                </button>
-                              </div>
+                                  </>
+                                )}
 
-                              <div>
-                                <button
-                                  title="button"
-                                  onClick={() => handleClickMonitoring(index)}
-                                  className="text-xs  h-6 font-bold text-blue-700 bg-blue-700  border-blue-700 border rounded-sm"
-                                >
-                                  <img src={Arrow} alt="" className="mx-1" />
-                                </button>
-                              </div>
-                              {openButton == index ? (
-                                <>
-                                  <div className="absolute bg-white mt-20 -translate-x-10 p-1 shadow-5 rounded-md">
-                                    <div className="flex flex-col gap-1">
-                                      <button
-                                        onClick={() =>
-                                          handleClickCatatan(index)
-                                        }
-                                        className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                      >
-                                        Setujui{' '}
-                                      </button>
-                                      <button
-                                        onClick={() => handleClickTolak(index)}
-                                        className="w-25 text-xs font-bold bg-red-600 py-2 text-white rounded-md"
-                                      >
-                                        Tolak{' '}
-                                      </button>
-                                    </div>
-                                  </div>
-                                </>
-                              ) : (
-                                <></>
-                              )}
-                              {showModalMonitoring == index ? (
-                                <div className="">
-                                  <MonitoringSPB
-                                    isOpen={showModalMonitoring}
-                                    onClose={closeModalMonitoring}
-                                    status={data.status_pengajuan}
-                                    waktu_tiket_masuk={tglSpb}
-                                    pelapor={data.pelapor.nama}
-                                    kode_part={data.stok_sparepart.kode}
-                                    nama_barang={
-                                      data.stok_sparepart.nama_sparepart
+                                {data.status_pengajuan ===
+                                  'verifikasi qty mtc' && (
+                                  <button
+                                    onClick={() =>
+                                      handleClickUpdateQty(index, data.qty)
                                     }
-                                    mesin={data.stok_sparepart.mesin.nama_mesin}
-                                    qty={data.qty}
-                                    tanggal_estimasi={tglPermintaanKedatangan}
-                                    catatan={data.note}
+                                    className="w-full text-sm font-bold bg-blue-600 hover:bg-blue-700 py-2 text-white rounded-md transition-colors"
                                   >
-                                    <button
-                                      onClick={() => handleClickEdit(index)}
-                                      className="w-full justify-center text-center rounded md bg-blue-600 text-white font-semibold py-2"
-                                    >
-                                      Edit SPB
-                                    </button>
-                                  </MonitoringSPB>
-                                </div>
-                              ) : (
-                                <></>
-                              )}
-                              {showModalEdit && (
-                                <ModalEditSparepartSPB
-                                  isOpen={showModalEdit}
-                                  onClose={closeModalEdit}
-                                  onFinish={getSpbSeparepart}
-                                  data={data}
-                                >
-                                  <p></p>
-                                </ModalEditSparepartSPB>
-                              )}
-                              {showModalCatatan == index && (
-                                <>
-                                  <ModalNoteSPBSparepart
-                                    isOpen={showModalCatatan}
-                                    onClose={closeModalCatatan}
-                                    onFinish={getSpbSeparepart}
-                                    isApprove={true}
-                                    isValidate={
-                                      data.status_pengajuan ==
-                                      'section head approval'
-                                        ? true
-                                        : false
-                                    }
-                                    data={data}
-                                  ></ModalNoteSPBSparepart>
-                                </>
-                              )}
-                              {showModalTolak == null && (
-                                <>
-                                  <ModalNoteSPBSparepart
-                                    isOpen={showModalCatatan}
-                                    onClose={closeModalCatatan}
-                                    onFinish={getSpbSeparepart}
-                                    isApprove={false}
-                                    isValidate={
-                                      data.status_pengajuan ==
-                                      'section head approval'
-                                        ? true
-                                        : false
-                                    }
-                                    data={data}
-                                  ></ModalNoteSPBSparepart>
-                                </>
-                              )}
+                                    Update Qty
+                                  </button>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </section>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </>
+                    </section>
+                  </div>
                 );
               })}
             </div>
           </div>
-        </>
-      )}
-      <div className="w-full flex justify-end mt-5 ">
-        <Stack spacing={2}>
-          <Pagination
-            count={spbSparepart?.total_page}
-            color="primary"
-            onChange={(e, i) => {
-              setPage(i);
-              console.log(i);
-            }}
-          />
-        </Stack>
-      </div>
 
-      <div>CONTOH DI PURCHASE</div>
-      {spbServicePurchase?.data.map((data: any, index: number) => {
-        const tglSpb = convertTimeStampToDate(data.tgl_spb);
-        const tglPermintaanKedatangan = convertTimeStampToDate(
-          data.tgl_permintaan_kedatangan,
-        );
-        return (
-          <div key={index} className=" overflow-x-auto">
-            <div className="min-w-[700px] ">
-              <div className="my-2 ">
-                <section className="flex  bg-white  rounded-md px-1 py-2">
-                  <p className="w-10 px-3 text-stone-500 pt-2 text-xs font-bold  items-center">
-                    {index + 1}
-                  </p>
-                  <div className="grid  grid-cols-8 w-full  items-center">
-                    <div className="flex gap-2">
-                      <p className="text-neutral-500 text-sm font-light line-clamp-1 ">
-                        {data.no_spb}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <p className="text-neutral-500 text-sm font-light line-clamp-1">
-                        {tglSpb}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <p className="text-neutral-500 text-sm font-light line-clamp-1">
-                        {data.stok_sparepart.nama_sparepart}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <p className="text-neutral-500 text-sm font-light line-clamp-1">
-                        {data.stok_sparepart.kode}
-                      </p>
-                    </div>
-                    <div className="flex gap-2 col-span-2">
-                      <p
-                        className={
-                          data.status_pengajuan == 'section head approval' ||
-                          data.status_pengajuan == 'section head verifikasi'
-                            ? 'text-white bg-green-600  px-2 rounded-2xl text-sm font-light line-clamp-1'
-                            : 'text-white bg-yellow-600  px-2 rounded-2xl text-sm font-light line-clamp-1'
-                        }
-                      >
-                        {data.status_pengajuan}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <p className="text-neutral-500 text-sm font-light line-clamp-1">
-                        {tglPermintaanKedatangan}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <p className="text-neutral-500 text-sm font-light line-clamp-1">
-                        {data.qty_update}
-                      </p>
-                    </div>
-                    <div className="flex gap-2 justify-end pr-8">
-                      <button
-                        onClick={() => handleClickPurchase(index)}
-                        className="px-4 py-2 bg-[#0065DE] rounded-md"
-                      >
-                        <svg
-                          width="4"
-                          height="11"
-                          viewBox="0 0 4 11"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
+          {/* Modals Section - Moved outside the mapping to ensure proper z-index layering */}
+          {spbSparepart?.data.map((data: any, index: number) => {
+            const tglSpb = convertTimeStampToDate(data.tgl_spb);
+            const tglPermintaanKedatangan = convertTimeStampToDate(
+              data.tgl_permintaan_kedatangan,
+            );
+
+            return (
+              <React.Fragment key={`modal-container-${index}`}>
+                {/* Monitoring Modal */}
+                {showModalMonitoring === index && (
+                  <MonitoringSPB
+                    isOpen={showModalMonitoring !== null}
+                    onClose={closeModalMonitoring}
+                    status={data.status_pengajuan}
+                    waktu_tiket_masuk={tglSpb}
+                    pelapor={data.pelapor.nama}
+                    kode_part={data.stok_sparepart.kode}
+                    nama_barang={data.stok_sparepart.nama_sparepart}
+                    mesin={data.stok_sparepart.mesin.nama_mesin}
+                    qty={data.qty}
+                    tanggal_estimasi={tglPermintaanKedatangan}
+                    catatan={data.note}
+                  >
+                    <button
+                      onClick={() => handleClickEdit(index)}
+                      className="w-full justify-center text-center rounded-md bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 transition-colors"
+                    >
+                      Edit SPB
+                    </button>
+                  </MonitoringSPB>
+                )}
+
+                {/* Edit Modal */}
+                {showModalEdit === index && (
+                  <ModalEditSparepartSPB
+                    isOpen={showModalEdit !== null}
+                    onClose={closeModalEdit}
+                    onFinish={getSpbSeparepart}
+                    data={data}
+                  >
+                    <p></p>
+                  </ModalEditSparepartSPB>
+                )}
+
+                {/* Catatan Modal */}
+                {showModalCatatan === index && (
+                  <ModalNoteSPBSparepart
+                    isOpen={showModalCatatan !== null}
+                    onClose={closeModalCatatan}
+                    onFinish={getSpbSeparepart}
+                    isApprove={true}
+                    isValidate={
+                      data.status_pengajuan === 'section head approval'
+                    }
+                    data={data}
+                  ></ModalNoteSPBSparepart>
+                )}
+
+                {/* Tolak Modal */}
+                {showModalTolak === index && (
+                  <ModalNoteSPBSparepart
+                    isOpen={showModalTolak !== null}
+                    onClose={closeModalTolak}
+                    onFinish={getSpbSeparepart}
+                    isApprove={false}
+                    isValidate={
+                      data.status_pengajuan === 'section head approval'
+                    }
+                    data={data}
+                  ></ModalNoteSPBSparepart>
+                )}
+
+                {/* Update Qty Modal */}
+                {showUpdateQtyModal === index && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                      <h3 className="text-lg font-semibold mb-4">
+                        Update Quantity
+                      </h3>
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Current Qty: {data.qty}
+                        </label>
+                        <input
+                          type="number"
+                          value={updateQty}
+                          onChange={(e) => setUpdateQty(Number(e.target.value))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          min="1"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={closeUpdateQtyModal}
+                          className="px-4 py-2 bg-gray-300 hover:bg-gray-400 rounded-md text-gray-800 transition-colors"
                         >
-                          <rect width="4" height="1.90909" fill="white" />
-                          <rect
-                            y="4.45312"
-                            width="4"
-                            height="1.90909"
-                            fill="white"
-                          />
-                          <rect
-                            y="8.9082"
-                            width="4"
-                            height="1.90909"
-                            fill="white"
-                          />
-                        </svg>
-                      </button>
-                      {openButtonPurchase == index ? (
-                        <>
-                          <div className="absolute bg-white mt-10 p-1 shadow-5 rounded-md">
-                            <div className="flex flex-col gap-1">
-                              <button
-                                onClick={() => handleClickEditPurchase(index)}
-                                className="w-25 text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                              >
-                                UPDATE
-                              </button>
-                              <button
-                                onClick={() => donePurchase(data.id)}
-                                className="w-25 text-xs font-bold bg-red-600 py-2 text-white rounded-md"
-                              >
-                                DONE
-                              </button>
-                            </div>
-                          </div>
-                        </>
-                      ) : (
-                        <></>
-                      )}
-                      <button
-                        onClick={() => handleClickMonitoringPurchase(index)}
-                        className="px-3 py-3 bg-[#0065DE] rounded-md"
-                      >
-                        <svg
-                          width="15"
-                          height="10"
-                          viewBox="0 0 15 10"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
+                          Cancel
+                        </button>
+                        <button
+                          onClick={() => handleUpdateQty(data.id)}
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md text-white transition-colors"
                         >
-                          <path
-                            d="M14 9L7.64444 2L1 9"
-                            stroke="white"
-                            stroke-width="2.5"
-                          />
-                        </svg>
-                      </button>
-                      {showModalMonitoringPurchase == index ? (
-                        <MonitoringSPB
-                          isOpen={showModalMonitoringPurchase}
-                          onClose={closeModalMonitoringPurchase}
-                          status={data.status_pengajuan}
-                          waktu_tiket_masuk={tglSpb}
-                          pelapor={data.pelapor.nama}
-                          kode_part={data.stok_sparepart.kode}
-                          nama_barang={data.stok_sparepart.nama_sparepart}
-                          mesin={data.stok_sparepart.mesin.nama_mesin}
-                          qty={data.qty}
-                          tanggal_estimasi={tglPermintaanKedatangan}
-                          catatan={data.note}
-                        >
-                          <div></div>
-                        </MonitoringSPB>
-                      ) : (
-                        <></>
-                      )}
+                          Update
+                        </button>
+                      </div>
                     </div>
-
-                    {showModalEditPurchase == index && (
-                      <>
-                        <div className="fixed z-50 inset-0 overflow-y-auto backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
-                          <div className="w-full max-w-md bg-white rounded-xl shadow-md">
-                            <div className="flex w-full items-center pt-4 px-3">
-                              <label className="flex w-10/12 text-blue-700 text-sm font-bold ">
-                                SPB UPDATE
-                              </label>
-                              <button
-                                type="button"
-                                onClick={closeModalEditPurchase}
-                                className="text-gray-400 focus:outline-none"
-                              >
-                                <svg
-                                  width="22"
-                                  height="22"
-                                  viewBox="0 0 22 22"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <circle
-                                    cx="11"
-                                    cy="11"
-                                    r="11"
-                                    fill="#0065DE"
-                                  />
-                                  <rect
-                                    x="6.03955"
-                                    y="4.23242"
-                                    width="17"
-                                    height="3"
-                                    rx="1.5"
-                                    transform="rotate(42.8321 6.03955 4.23242)"
-                                    fill="white"
-                                  />
-                                  <rect
-                                    x="4.18213"
-                                    y="16.0609"
-                                    width="17"
-                                    height="3"
-                                    rx="1.5"
-                                    transform="rotate(-45 4.18213 16.0609)"
-                                    fill="white"
-                                  />
-                                </svg>
-                              </button>
-                            </div>
-
-                            <div className="px-4 pb-4">
-                              <div className="pt-2">
-                                <label
-                                  htmlFor="ticketCode"
-                                  className="form-label block  text-black text-xs font-extrabold"
-                                >
-                                  STATUS PENGAJUAN
-                                </label>
-
-                                <textarea
-                                  onChange={(e) =>
-                                    setStatusPengajuan(e.target.value)
-                                  }
-                                  name=""
-                                  defaultValue={data.status_pengajuan}
-                                  rows={3}
-                                  cols={6}
-                                  id=""
-                                  className="w-full p-2 bg-zinc-100 border border-zinc-400 rounded-sm  "
-                                ></textarea>
-                              </div>
-
-                              <div className="pt-2">
-                                <label
-                                  htmlFor="ticketCode"
-                                  className="form-label block  text-black text-xs font-extrabold"
-                                >
-                                  QTY UPDATE
-                                </label>
-
-                                <input
-                                  onChange={(e) => setQtyUpdate(e.target.value)}
-                                  defaultValue={data.qty_update}
-                                  id=""
-                                  type="number"
-                                  className="w-full p-2 bg-zinc-100 border border-zinc-400 rounded-sm  "
-                                ></input>
-                              </div>
-
-                              <div className="pt-4"></div>
-
-                              <button
-                                onClick={() => {
-                                  updatePurchase(data.id),
-                                    closeModalEditPurchase();
-                                }}
-                                className="w-full h-12 text-center text-white text-xs font-bold bg-blue-700 rounded-md"
-                              >
-                                Update
-                              </button>
-                            </div>
-
-                            <button
-                              title="button"
-                              type="button"
-                              onClick={closeModalEditPurchase}
-                              className="absolute top-auto right-auto bottom-3 left-auto transform translate-x-1/2 translate-y-1/2 text-gray-400 focus:outline-none"
-                            ></button>
-                          </div>
-                        </div>
-                      </>
-                    )}
                   </div>
-                </section>
-              </div>
+                )}
+              </React.Fragment>
+            );
+          })}
+
+          {/* Empty state message */}
+          {spbSparepart?.data.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              No data available
             </div>
+          )}
+
+          <div className="flex items-center gap-2">
+            <Stack spacing={2}>
+              <Pagination
+                count={spbSparepart?.total_page}
+                color="primary"
+                page={page}
+                onChange={(e, i) => {
+                  setPage(i);
+                }}
+              />
+            </Stack>
           </div>
-        );
-      })}
-      <div className="w-full flex justify-center mt-5 ">
-        <Stack spacing={2}>
-          <Pagination
-            count={spbServicePurchase?.total_page}
-            color="primary"
-            onChange={(e, i) => {
-              setPage2(i);
-              console.log(i);
-            }}
-          />
-        </Stack>
-      </div>
+        </div>
+      </>
     </main>
   );
 }
