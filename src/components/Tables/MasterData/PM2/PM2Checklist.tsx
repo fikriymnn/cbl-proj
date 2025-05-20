@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
-import Logo from '../../images/logo/logo-cbl 1.svg';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
-import ModalEditPM1Master from '../../../Modals/Master/PM1/ModalEditPM1Master';
-import ModalKonfirmasi from '../../../Modals/Master/PM1/ModalKonfirmasi';
 import ModalKonfirmasiPm2 from '../../../Modals/Master/PM2/ModalKonfirmasiPm2';
 import ModalEditPM2Master from '../../../Modals/Master/PM2/ModalEditPM2Master';
+import * as XLSX from 'xlsx';
 
 const PM2Checklist = () => {
   const { id } = useParams();
@@ -96,12 +94,87 @@ const PM2Checklist = () => {
     setShowDelete(onchangeVal);
   };
 
+  // Function to export data to Excel
+  const exportToExcel = () => {
+    if (!point || !mesin) return;
+
+    // Prepare the workbook and worksheet
+    const wb = XLSX.utils.book_new();
+
+    // Create worksheet data for PM2 Checklist
+    const wsData = [];
+
+    // Add header information
+    wsData.push(['PM2 Checklist Report']);
+    wsData.push(['Machine Name', mesin.nama_mesin]);
+    wsData.push(['Date Generated', new Date().toLocaleString()]);
+    wsData.push([]); // Empty row
+
+    // Add column headers for inspection points
+    wsData.push(['No.', 'Inspection Point', 'Category']);
+
+    // Add inspection points data
+    point.forEach((data: any, index: number) => {
+      wsData.push([index + 1, data.inspection_point, data.category || '-']);
+
+      // Add task list header for this inspection point
+      wsData.push(['', 'Task List', '', '', '']);
+      wsData.push([
+        '',
+        'No.',
+        'Task',
+        'Inspection Method',
+        'Acceptance Criteria',
+        'Tools',
+      ]);
+
+      // Add tasks data
+      data.ms_inspection_task_pm2s.forEach((task: any, taskIndex: number) => {
+        wsData.push([
+          '',
+          taskIndex + 1,
+          task.task,
+          task.method,
+          task.acceptance_criteria,
+          task.tools,
+        ]);
+      });
+
+      // Add empty row after each inspection point
+      wsData.push([]);
+    });
+
+    // Create worksheet
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Set column widths
+    const colWidths = [
+      { wch: 5 }, // No.
+      { wch: 30 }, // Inspection Point
+      { wch: 20 }, // Category
+      { wch: 30 }, // Task
+      { wch: 25 }, // Inspection Method
+      { wch: 30 }, // Acceptance Criteria
+      { wch: 20 }, // Tools
+    ];
+    ws['!cols'] = colWidths;
+
+    // Add the worksheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'PM2 Checklist');
+
+    // Generate Excel file and trigger download
+    const fileName = `PM2_Checklist_${mesin.nama_mesin}_${
+      new Date().toISOString().split('T')[0]
+    }.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  };
+
   return (
     <div className="rounded-xl border border-stroke bg-white pt-4 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
       {!isMobile && (
         <>
-          <div className="flex w-full  gap-2 pr-8 border-b-6 border-[#D8EAFF] px-4 pb-5">
-            <div className="flex flex-col w-11/12">
+          <div className="flex w-full gap-2 pr-8 border-b-6 border-[#D8EAFF] px-4 pb-5">
+            <div className="flex flex-col w-8/12">
               <label className="text-neutral-500 text-sm font-semibold">
                 Machine Details
               </label>
@@ -109,7 +182,13 @@ const PM2Checklist = () => {
                 Nama Mesin : {mesin != null && mesin.nama_mesin}
               </label>
             </div>
-            <div className="flex w-3/12 justify-end">
+            <div className="flex w-4/12 justify-end gap-2">
+              <button
+                onClick={exportToExcel}
+                className="bg-[#34A853] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
+              >
+                EXPORT EXCEL
+              </button>
               <a
                 href={`/masterdata/masterpm2/pm2checklist/addinspection/${
                   mesin != null && mesin.id
@@ -248,87 +327,149 @@ const PM2Checklist = () => {
             })}
         </>
       )}
-      {/* {isMobile && (
+      {isMobile && (
         <>
-          <div className="flex w-full justify-between pr-8 border-b border-stroke pb-2">
-            <input
-              type="search"
-              placeholder="search"
-              name=""
-              id=""
-              className="md:w-96 w-40 py-1 mx-3 px-3 bg-[#E9F3FF]"
-            />
-            <button className=" bg-blue-600 rounded-sm text-white text-xs font-bold px-7 py-1">
-              TAMBAH MESIN
-            </button>
-          </div>
-
-          <div className="flex flex-col w-full ">
-            <div className="flex border-b border-stroke dark:border-strokedark">
-              <div className="flex items-center w-4/12 justify-center p-2.5 ">
-                <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">
-                  Kode
-                </p>
-              </div>
-              <div className="flex items-center text-[14px] w-4/12 justify-start p-2.5 pl-4">
-                <p className="text-slate-600 font-semibold text-center dark:text-white">
-                  Nama
-                </p>
-              </div>
-
-              <div className="flex items-center text-[14px] w-4/12 justify-start  p-2.5 ">
-                <p className="text-slate-600 font-semibold text-center">
-                  {' '}
-                  Tipe
-                </p>
-              </div>
+          <div className="flex w-full gap-2 pr-8 border-b-6 border-[#D8EAFF] px-4 pb-5">
+            <div className="flex flex-col w-8/12">
+              <label className="text-neutral-500 text-sm font-semibold">
+                Machine Details
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold">
+                Nama Mesin : {mesin != null && mesin.nama_mesin}
+              </label>
             </div>
-            {masterMesin != null &&
-                            masterMesin.map((data: any, i: number) => {
-                                return (
-                                    <>
-                                        <div
-                                            className={`flex ${i === masterMesin.length - 1
-                                                ? 'w-full'
-                                                : ' px-2 w-full'
-                                                }`}
-                                            key={i}
-                                        >
-                                            <div className="flex items-center w-2/12 justify-start p-2.5">
-                                                <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white">{data.kode_mesin}</p>
-                                            </div>
-                                            <div className="flex items-end text-[14px] w-4/12 justify-end p-2.5 ">
-                                                <p className="text-slate-600 font-semibold text-center dark:text-white">{data.nama_mesin}</p>
-                                            </div>
-                                            <div className="flex items-end text-[14px] w-1/12 justify-end p-2.5 ">
-
-                                            </div>
-                                            <div className="flex items-center text-[14px] w-4/12 justify-center p-2.5 ">
-                                                <p
-                                                    className={`text-[14px] font-semibold text-center uppercase ${data.bagian_mesin === 'printing'
-                                                        ? 'text-green-500' : data.bagian_mesin === 'water base / coating' ? 'text-yellow-500'
-                                                            : data.bagian_mesin === 'pond' ? 'text-purple-500' : data.bagian_mesin === 'finishing' ? 'text-red-500' : 'bg-white text-white'}`}>
-                                                    {data.bagian_mesin}
-                                                </p>
-                                            </div>
-
-
-                                        </div>
-                                        <div className="flex items-start w-full justify-start p-2.5 gap-2 border-b border-stroke dark:border-strokedark">
-                                            <button className='bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
-                                                EDIT
-                                            </button>
-                                            <button className='bg-red-600 rounded-sm text-white text-xs font-bold px-4 py-1'>
-                                                DELETE
-                                            </button>
-                                        </div>
-
-                                    </>
-                                );
-                            })}
+            <div className="flex w-4/12 justify-end gap-2">
+              <button
+                onClick={exportToExcel}
+                className="bg-[#34A853] text-center text-white text-xs font-bold p-1 rounded-md"
+              >
+                EXCEL
+              </button>
+              <a
+                href={`/masterdata/masterpm2/pm2checklist/addinspection/${
+                  mesin != null && mesin.id
+                }`}
+              >
+                <button className="bg-[#0065DE] text-center text-white text-xs font-bold p-1 rounded-md">
+                  + POINT
+                </button>
+              </a>
+            </div>
           </div>
+
+          {point != null &&
+            point.map((data: any, i: number) => {
+              return (
+                <>
+                  <div className="flex py-4 flex-col">
+                    <div className="flex flex-row gap-4 px-4">
+                      <label className="text-black text-xs font-bold">
+                        POINT
+                      </label>
+                      <label className="text-black text-xs font-bold">
+                        INSPECTION POINT
+                      </label>
+                    </div>
+                    <div className="flex w-full flex-row gap-4 pt-3 px-4">
+                      <div className="flex w-[40px] justify-center">
+                        <label className="text-neutral-500 text-sm font-semibold">
+                          {i + 1}
+                        </label>
+                      </div>
+                      <div className="flex w-10/12">
+                        <label className="text-neutral-500 text-sm font-semibold">
+                          {data.inspection_point}
+                        </label>
+                      </div>
+                      <div className="flex flex-row gap-3">
+                        <button
+                          onClick={() => openEdit(i)}
+                          className="bg-[#0065DE] text-center text-white text-xs font-bold px-4 py-2 rounded-md"
+                        >
+                          EDIT
+                        </button>
+                        {showEdit[i] == true && (
+                          <ModalEditPM2Master
+                            children={undefined}
+                            isOpen={showEdit[i]}
+                            onClose={() => closeEdit(i)}
+                            idPoint={data.id}
+                            data={data}
+                          />
+                        )}
+                        <button
+                          onClick={() => openDelete(i)}
+                          className="bg-[#DE0000] text-center text-white text-xs font-bold px-2 py-2 rounded-md"
+                        >
+                          DELETE
+                        </button>
+                        {showDelete[i] == true && (
+                          <ModalKonfirmasiPm2
+                            children={undefined}
+                            isOpen={showDelete[i]}
+                            onClose={() => closeDelete(i)}
+                            idPoint={data.id}
+                            onFinish={getPointPm2}
+                          />
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col px-2">
+                      <div className="flex w-full  pt-6 border-b border-stroke">
+                        <label className="text-black text-xs font-bold pl-2">
+                          TASK LIST
+                        </label>
+                      </div>
+                      {data.ms_inspection_task_pm2s.map(
+                        (task: any, ii: number) => {
+                          return (
+                            <>
+                              <div className="flex w-full  pt-4 border-b border-stroke  pb-4">
+                                <div className="flex w-[60px] justify-center">
+                                  <label className="text-black text-xs font-bold">
+                                    {ii + 1}
+                                  </label>
+                                </div>
+                                <div className="flex w-5/12 justify-start pl-6 flex-col gap-2">
+                                  <label className="text-black text-xs font-bold">
+                                    TASK
+                                  </label>
+                                  <label className="text-neutral-500 text-sm font-semibold">
+                                    {task.task}
+                                  </label>
+                                  <label className="text-black text-xs font-bold pt-2">
+                                    INSPECTION METHOD
+                                  </label>
+                                  <label className="text-neutral-500 text-sm font-semibold">
+                                    {task.method}
+                                  </label>
+                                </div>
+                                <div className="flex w-5/12 justify-start pl-6 flex-col gap-2">
+                                  <label className="text-black text-xs font-bold text-start">
+                                    ACCEPTANCE CRITERIA
+                                  </label>
+                                  <label className="text-neutral-500 text-sm font-semibold text-start">
+                                    {task.acceptance_criteria}
+                                  </label>
+                                  <label className="text-black text-xs font-bold pt-2">
+                                    TOOLS
+                                  </label>
+                                  <label className="text-neutral-500 text-sm font-semibold">
+                                    {task.tools}
+                                  </label>
+                                </div>
+                              </div>
+                            </>
+                          );
+                        },
+                      )}
+                    </div>
+                  </div>
+                </>
+              );
+            })}
         </>
-      )} */}
+      )}
     </div>
   );
 };
