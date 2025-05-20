@@ -257,15 +257,15 @@ const ModalDetail = ({
                   <tr className="bg-gray-100">
                     <th className="p-2 border text-left">No</th>
                     <th className="p-2 border text-left">
-                      Nama Sparepart Awal
+                      Nama Sparepart Baru
                     </th>
                     <th className="p-2 border text-left">
-                      Nama Sparepart Pengganti
+                      Nama Sparepart Rusak
                     </th>
-                    <th className="p-2 border text-left">Grade Awal</th>
-                    <th className="p-2 border text-left">Grade Pengganti</th>
-                    <th className="p-2 border text-left">Lokasi</th>
-                    <th className="p-2 border text-left">Lokasi Pengganti</th>
+                    <th className="p-2 border text-left">Grade Baru</th>
+                    <th className="p-2 border text-left">Grade Rusak</th>
+                    <th className="p-2 border text-left">Lokasi Baru</th>
+                    <th className="p-2 border text-left">Lokasi Rusak</th>
                     <th className="p-2 border text-left">Qty</th>
                     <th className="p-2 border text-left">Status</th>
                     <th className="p-2 border text-left">Tanggal</th>
