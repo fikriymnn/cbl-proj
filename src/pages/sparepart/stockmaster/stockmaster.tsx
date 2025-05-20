@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import DefaultLayout from '../../../layout/DefaultLayout';
-import { Link } from 'react-router-dom';
 import axios from 'axios';
 import formatInteger from '../../../utils/formaterInteger';
 import ModalKosonganSmall from '../../../components/Modals/ModalKosonganSmall';
@@ -10,6 +9,9 @@ import ModalKosongan from '../../../components/Modals/Qc/NCR/NCRResponQC';
 function Stockmaster() {
   const [stokSparepart, setStokSparepart] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isEditLoading, setIsEditLoading] = useState<boolean>(false);
+  const [isAddLoading, setIsAddLoading] = useState<boolean>(false);
+
   useEffect(() => {
     getStokSparepart();
     getMesin();
@@ -19,16 +21,19 @@ function Stockmaster() {
   async function getStokSparepart() {
     const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
     try {
+      setIsLoading(true);
       const res = await axios.get(url, {
         withCredentials: true,
       });
-
       setStokSparepart(res.data);
+      setIsLoading(false);
       console.log(res.data);
     } catch (error: any) {
+      setIsLoading(false);
       console.log(error.response);
     }
   }
+
   const [mesin, setMesin] = useState<any>();
 
   async function getMesin() {
@@ -45,17 +50,17 @@ function Stockmaster() {
       console.log(error.data.msg);
     }
   }
+
   const [showEdit, setShowEdit] = useState<any>([]);
   const openEdit = (i: any) => {
     const onchangeVal: any = [...showEdit];
     onchangeVal[i] = true;
-
     setShowEdit(onchangeVal);
   };
+
   const closeEdit = (i: any) => {
     const onchangeVal: any = [...showEdit];
     onchangeVal[i] = false;
-
     setShowEdit(onchangeVal);
   };
 
@@ -67,9 +72,11 @@ function Stockmaster() {
   const [umurEdit, setumurEdit] = useState<any>();
 
   async function editStock(id: any, i: any) {
+    if (isEditLoading) return; // Prevent multiple clicks
+
     const url = `${import.meta.env.VITE_API_LINK}/stokSparepart/${id}`;
     try {
-      setIsLoading(true);
+      setIsEditLoading(true);
       const res = await axios.put(
         url,
         {
@@ -90,17 +97,18 @@ function Stockmaster() {
       setLokasi('');
       setMesinEdit('');
       setumurEdit('');
-      setIsLoading(false);
+      setIsEditLoading(false);
       closeEdit(i);
       getStokSparepart();
       alert('Edit Success');
       console.log(res.data);
     } catch (error: any) {
-      setIsLoading(false);
+      setIsEditLoading(false);
       alert(error.response.data.msg);
       console.log(error.response);
     }
   }
+
   const [addItem, setAddItem] = useState({
     kode: '',
     nama_sparepart: '',
@@ -115,25 +123,31 @@ function Stockmaster() {
     umur_sparepart: 0,
     stok: 0,
   });
+
   const [masterGrade, setmasterGrade] = useState<any>();
 
   async function getMasterGrade() {
     const url = `${import.meta.env.VITE_API_LINK}/master/grade`;
     try {
+      setIsLoading(true);
       const res = await axios.get(url, {
         withCredentials: true,
       });
-
+      setIsLoading(false);
       setmasterGrade(res.data);
       console.log(res.data);
     } catch (error: any) {
+      setIsLoading(false);
       console.log(error.data.msg);
     }
   }
 
   async function addStok() {
+    if (isAddLoading) return; // Prevent multiple clicks
+
     const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
     try {
+      setIsAddLoading(true);
       const res = await axios.post(
         url,
         {
@@ -154,11 +168,13 @@ function Stockmaster() {
           withCredentials: true,
         },
       );
+      setIsAddLoading(false);
       alert('Add Success');
       getStokSparepart();
       closeModalHistory();
       console.log(res.data);
     } catch (error: any) {
+      setIsAddLoading(false);
       alert(error.response.data.msg);
       console.log(error.response);
     }
@@ -167,10 +183,11 @@ function Stockmaster() {
   //change value Data
   const handleChangeData = (e: any) => {
     const { name, value } = e.target;
-    const onchangeVal: any = addItem;
+    const onchangeVal: any = { ...addItem };
     onchangeVal[name] = value;
     setAddItem(onchangeVal);
   };
+
   const [showHistory, setShowHistory] = useState(false);
   const openModalHistory = () => setShowHistory(true);
   const closeModalHistory = () => setShowHistory(false);
@@ -193,6 +210,7 @@ function Stockmaster() {
       const numB = parseInt(b.kode.match(/\d+/)?.[0] || '0', 10);
       return numA - numB;
     });
+
   return (
     <DefaultLayout>
       <>
@@ -214,9 +232,12 @@ function Stockmaster() {
             <div className="flex gap-5">
               <button
                 onClick={() => openModalHistory()}
-                className="px-3 py-2 bg-green-600 text-white  font-semibold text-xs rounded-md"
+                disabled={isAddLoading}
+                className={`px-3 py-2 ${
+                  isAddLoading ? 'bg-gray-400' : 'bg-green-600'
+                } text-white font-semibold text-xs rounded-md`}
               >
-                ADD ITEM
+                {isAddLoading ? 'LOADING...' : 'ADD ITEM'}
               </button>
               {showHistory == true && (
                 <>
@@ -492,11 +513,15 @@ function Stockmaster() {
                         <div className="flex justify-end items-end ">
                           <button
                             onClick={() => {
-                              addStok(), console.log(addItem);
+                              addStok();
+                              console.log(addItem);
                             }}
-                            className="bg-green-500 h-9 w-full text-white font-semibold rounded-md text-xs"
+                            disabled={isAddLoading}
+                            className={`h-9 w-full text-white font-semibold rounded-md text-xs ${
+                              isAddLoading ? 'bg-gray-400' : 'bg-green-500'
+                            }`}
                           >
-                            SAVE
+                            {isAddLoading ? 'LOADING...' : 'SAVE'}
                           </button>
                         </div>
                       </div>
@@ -525,7 +550,7 @@ function Stockmaster() {
         </div>
 
         {filteredData
-          ?.slice() // Make a shallow copy to avoid mutating original data
+          ?.slice()
           .sort((a: any, b: any) => {
             const numA = parseInt(a.kode.match(/\d+/)?.[0] || '0', 10);
             const numB = parseInt(b.kode.match(/\d+/)?.[0] || '0', 10);
@@ -534,7 +559,11 @@ function Stockmaster() {
           .map((data: any, i: number) => {
             return (
               <>
-                <div className="flex bg-white py-2 px-1 text-center">
+                <div
+                  className={`flex bg-white py-2 px-1 text-center ${
+                    data.stok <= 0 ? 'bg-red-200' : ''
+                  }`}
+                >
                   <p className="text-xs w-[2%]">{i + 1}</p>
                   <div className="grid grid-cols-12 w-[98%] text-center">
                     <p className="text-xs">{data.kode}</p>
@@ -558,9 +587,12 @@ function Stockmaster() {
                     <div className="flex flex-col gap-1">
                       <button
                         onClick={() => openEdit(i)}
-                        className="bg-blue-600 rounded-sm text-white text-xs font-bold px-4 py-1"
+                        disabled={isEditLoading}
+                        className={`rounded-sm text-white text-xs font-bold px-4 py-1 ${
+                          isEditLoading ? 'bg-gray-400' : 'bg-blue-600'
+                        }`}
                       >
-                        EDIT
+                        {isEditLoading ? 'LOADING...' : 'EDIT'}
                       </button>
                       {showEdit[i] == true && (
                         <ModalKosonganSmall
@@ -569,7 +601,7 @@ function Stockmaster() {
                           judul={'Edit Stok Master'}
                         >
                           <>
-                            <div className="grid   gap-3 w-full px-5 py-2">
+                            <div className="grid gap-3 w-full px-5 py-2">
                               <>
                                 <div className="flex w-full flex-col">
                                   <label className="text-black text-xs font-bold">

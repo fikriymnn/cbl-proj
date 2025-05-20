@@ -1,12 +1,7 @@
-// import React, { useState } from 'react';
-
 import { useEffect, useRef, useState } from 'react';
-import CheckStockPengganti from '../Tables/Modals/SparepartPengganti';
 import axios from 'axios';
 import Info from '../../images/icon/Info.svg';
-import ModalMtcStockCheck from './ModalMtcStockCheck';
-import ModalMtcStockCheck2 from './ModalMtcStockCheck2';
-import CheckStock2 from '../Tables/Modals/CheckStock2';
+
 import Loading from '../Loading';
 
 const ModalStockCheck1 = ({
@@ -49,28 +44,9 @@ const ModalStockCheck1 = ({
   bagian: any;
 }) => {
   if (!isOpen) return null;
-
-  const [sparepart, setSparepart] = useState([
-    {
-      rusak: '',
-      pengganti: '',
-    },
-  ]);
-  const [selectedOption, setSelectedOption] = useState<string>('');
   const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
-
-  const [selectedNamaAnalisis, setSelectedNamaAnalisis] = useState<any>();
-
   const changeTextColor = () => {
     setIsOptionSelected(true);
-  };
-  const [isHidden, setIsHidden] = useState(true);
-  const [buttonHidden, setButtonHidden] = useState(true);
-
-  const handleClick = () => {
-    setIsHidden(false);
-    setButtonHidden(false);
-    setSparepart([]);
   };
 
   const [isMobile, setIsMobile] = useState(false);
@@ -88,9 +64,6 @@ const ModalStockCheck1 = ({
       window.removeEventListener('resize', handleResize);
     };
   }, []);
-
-  const [rusak, setRusak] = useState(false);
-
   function convertDatetimeToDate(datetime: any) {
     const dateObject = new Date(datetime);
     const day = dateObject.getDate().toString().padStart(2, '0'); // Ensure two-digit day
@@ -114,9 +87,6 @@ const ModalStockCheck1 = ({
   const waktuPeriksa = convertDatetimeToTime(tgl);
 
   const [typePost, setTypePost] = useState<any>('normal');
-
-  const [mesin, setMesin] = useState<any>(namaMesin);
-  const [mesinMsSparepart, setMesinMsSparepart] = useState<any>(namaMesin);
   const [masterMesin, setmasterMesin] = useState<any>();
 
   const [selectedKodeAnalisis, setSelectedKodeAnalisis] = useState<any>();
@@ -129,8 +99,6 @@ const ModalStockCheck1 = ({
   const [kodeAnalisis, setKodeAnalisis] = useState<any>(null);
   const [skorPerbaikan, setSkorPerbaikan] = useState<any>(null);
 
-  const [stokSparepart, setStokSparepart] = useState<any>([]);
-  const [masterSparepart, setMasterSparepart] = useState<any>(null);
   const [kebutuhanSparepart, setKebutuhanSparepart] = useState<any>([]);
 
   useEffect(() => {
@@ -180,39 +148,6 @@ const ModalStockCheck1 = ({
     }
   }
 
-  async function getStokSparepart(idMesin: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
-    try {
-      const res = await axios.get(url, {
-        params: {
-          id_mesin: idMesin,
-        },
-        withCredentials: true,
-      });
-
-      setStokSparepart(res.data);
-      console.log(res.data);
-    } catch (error: any) {
-      console.log(error.data.msg);
-    }
-  }
-
-  async function getMasterSparepart(id_mesin: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/master/sparepart`;
-    try {
-      const res = await axios.get(url, {
-        params: {
-          id_mesin: id_mesin,
-        },
-        withCredentials: true,
-      });
-
-      setMasterSparepart(res.data);
-      console.log(res.data);
-    } catch (error: any) {
-      console.log(error);
-    }
-  }
   const [isLoading, setIsLoading] = useState(false);
 
   async function postAnalisis() {
@@ -354,6 +289,108 @@ const ModalStockCheck1 = ({
   const openModalMsStok = () => setShowModalMsStok(true);
   const closeModalMsStok = () => setShowModalMsStok(false);
 
+  // First, fix the state initialization to be consistent
+  const [stokSparepart, setStokSparepart] = useState<any[]>([]);
+  const [displayedStokSparepart, setDisplayedStokSparepart] = useState<any[]>(
+    [],
+  );
+  const [masterSparepart, setMasterSparepart] = useState<any[]>([]);
+  const [displayedMasterSparepart, setDisplayedMasterSparepart] = useState<
+    any[]
+  >([]);
+
+  // Modified API functions to update both the main data and displayed data
+  async function getStokSparepart(idMesin: any) {
+    const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
+    try {
+      const res = await axios.get(url, {
+        params: {
+          id_mesin: idMesin,
+        },
+        withCredentials: true,
+      });
+
+      setStokSparepart(res.data);
+      setDisplayedStokSparepart(res.data); // Also update the displayed data
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error?.data?.msg || error);
+    }
+  }
+
+  async function getMasterSparepart(id_mesin: any) {
+    const url = `${import.meta.env.VITE_API_LINK}/master/sparepart`;
+    try {
+      const res = await axios.get(url, {
+        params: {
+          id_mesin: id_mesin,
+        },
+        withCredentials: true,
+      });
+
+      setMasterSparepart(res.data);
+      setDisplayedMasterSparepart(res.data); // Also update the displayed data
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
+
+  // Improved search handler with null checks
+  const handleSearch = (
+    searchTerm: string,
+    type: 'masterSparepart' | 'stokSparepart',
+  ) => {
+    if (type === 'masterSparepart') {
+      // Check if masterSparepart is available to search
+      if (!masterSparepart || masterSparepart.length === 0) {
+        return;
+      }
+
+      if (!searchTerm) {
+        // Reset to original data
+        setDisplayedMasterSparepart(masterSparepart);
+        return;
+      }
+
+      const filteredData = masterSparepart.filter(
+        (item: any) =>
+          (item.nama_sparepart &&
+            item.nama_sparepart
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())) ||
+          (item.kode &&
+            item.kode.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (item.posisi_part &&
+            item.posisi_part.toLowerCase().includes(searchTerm.toLowerCase())),
+      );
+
+      setDisplayedMasterSparepart(filteredData);
+    } else {
+      // Check if stokSparepart is available to search
+      if (!stokSparepart || stokSparepart.length === 0) {
+        return;
+      }
+
+      if (!searchTerm) {
+        // Reset to original data
+        setDisplayedStokSparepart(stokSparepart);
+        return;
+      }
+
+      const filteredData = stokSparepart.filter(
+        (item: any) =>
+          (item.nama_sparepart &&
+            item.nama_sparepart
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())) ||
+          (item.kode &&
+            item.kode.toLowerCase().includes(searchTerm.toLowerCase())),
+      );
+
+      setDisplayedStokSparepart(filteredData);
+    }
+  };
   return (
     <div className="fixed z-50 inset-0 h-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
       <div className="w-full max-w-4xl bg-white rounded-xl shadow-md max-h-screen overflow-y-auto">
@@ -658,23 +695,24 @@ const ModalStockCheck1 = ({
               KEBUTUHAN SPAREPART
             </label>
           </div>
-          <div className="">
-            <div className="pb-2 ">
+
+          <div className="mx-auto">
+            <div className="pb-2">
               <>
                 {kebutuhanSparepart.map((data: any, i: number) => {
                   return (
                     <>
-                      <div className="md:flex  mb-2 px-2 lg:py-3 py-1 bg-[#D8EAFF] rounded-md">
+                      <div className="md:flex mb-2 px-3 py-2 bg-[#D8EAFF] rounded-md shadow-sm">
                         <>
-                          <label className="hidden sm:block text-blue-700 text-xs font-bold pt-2 pl-4">
+                          <span className="hidden sm:flex text-blue-700 text-xs font-bold items-center px-2">
                             {i + 1}
-                          </label>
+                          </span>
                           <div className="flex md:w-[35%] w-full">
                             {data.id_ms_sparepart == null ? (
                               <button
                                 onClick={openModalMsStok}
                                 name="rusak"
-                                className="lg:ml-4 ml-[2px] lg:w-[415px] w-[320px] h-9 bg-blue-700 rounded text-center text-white md:text-xs text-[9px] md:font-bold font-semibold"
+                                className="flex-grow bg-blue-700 hover:bg-blue-800 transition-colors h-9 rounded text-white text-xs font-semibold"
                               >
                                 PILIH SPAREPART RUSAK
                               </button>
@@ -682,291 +720,66 @@ const ModalStockCheck1 = ({
                               <button
                                 name="rusak"
                                 onClick={openModalMsStok}
-                                className="lg:ml-4 ml-[2px]  lg:w-[415px] w-[320px] h-9 bg-white rounded text-center text-[#0065DE] text-xs font-bold"
+                                className="flex-grow bg-white border border-blue-200 h-9 rounded text-[#0065DE] text-xs font-semibold"
                               >
                                 {data.detail_ms_sparepart.nama_sparepart}
                               </button>
                             )}
 
-                            {showModalMsStok && (
-                              <>
-                                <div className="fixed z-50 inset-0 backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center  ">
-                                  <div className="w-full max-w-4xl  bg-white rounded-xl shadow-md h-[620px]">
-                                    <div className="flex w-full items-center pt-4">
-                                      <label className="flex lg:w-11/12 w-10/12 px-5 text-blue-700 text-sm font-bold ">
-                                        Sparepart Master Check
-                                      </label>
-                                      <button
-                                        type="button"
-                                        onClick={closeModalMsStok}
-                                        className="text-gray-400 focus:outline-none mr-5"
-                                      >
-                                        <svg
-                                          width="22"
-                                          height="22"
-                                          viewBox="0 0 22 22"
-                                          fill="none"
-                                          xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                          <circle
-                                            cx="11"
-                                            cy="11"
-                                            r="11"
-                                            fill="#0065DE"
-                                          />
-                                          <rect
-                                            x="6.03955"
-                                            y="4.23242"
-                                            width="17"
-                                            height="3"
-                                            rx="1.5"
-                                            transform="rotate(42.8321 6.03955 4.23242)"
-                                            fill="white"
-                                          />
-                                          <rect
-                                            x="4.18213"
-                                            y="16.0609"
-                                            width="17"
-                                            height="3"
-                                            rx="1.5"
-                                            transform="rotate(-45 4.18213 16.0609)"
-                                            fill="white"
-                                          />
-                                        </svg>
-                                      </button>
-                                    </div>
-                                    <div className="px-5 pb-4">
-                                      <div className="relative flex w-full gap-10 justify-start pb-2 pt-3">
-                                        <select
-                                          onChange={(e) => {
-                                            getMasterSparepart(e.target.value);
-                                            changeTextColor();
-                                          }}
-                                          className={`relative z-20 w-8/12  appearance-none rounded-md  text-xs bg-blue-100 py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                                            isOptionSelected
-                                              ? 'text-gray-800 dark:text-white'
-                                              : ''
-                                          }`}
-                                        >
-                                          <option
-                                            value=""
-                                            selected
-                                            disabled
-                                            className="text-gray-800 text-xs font-light dark:text-bodydark"
-                                          >
-                                            SELECT MESIN
-                                          </option>
-                                          {masterMesin != null &&
-                                            masterMesin?.map(
-                                              (data: any, i: number) => {
-                                                return (
-                                                  <option
-                                                    value={data.id}
-                                                    className="text-gray-800 text-xs font-light dark:text-bodydark"
-                                                  >
-                                                    {data.nama_mesin}
-                                                  </option>
-                                                );
-                                              },
-                                            )}
-                                        </select>
-                                        <input
-                                          type="text"
-                                          className="flex py-2 lg:w-6/12 w-full text-black text-sm font-normal bg-blue-100 rounded h-full pl-2"
-                                          placeholder="Search Sparepart..."
-                                          id="searchInput"
-                                        />
-                                        <div className="-translate-x-8 my-auto">
-                                          <svg
-                                            width="16"
-                                            height="18"
-                                            viewBox="0 0 16 18"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                          >
-                                            <path
-                                              d="M15.7231 14.5835L11.2285 9.98926L8.90283 12.3648L13.4007 16.959C13.7698 17.3361 14.3774 17.3361 14.7465 16.959L15.7231 15.9614C16.0923 15.5811 16.0923 14.9572 15.7231 14.5835Z"
-                                              fill="#0065DE"
-                                            />
-                                            <path
-                                              d="M9.00432 11.3404L10.2227 10.0959L8.83447 8.67793C10.1476 6.74614 9.96465 4.07033 8.27917 2.34874C6.38791 0.416956 3.3142 0.416956 1.41967 2.34874C-0.474857 4.28053 -0.47159 7.4201 1.41967 9.35522C3.10515 11.0768 5.72482 11.2637 7.61609 9.92241L9.00432 11.3404ZM2.3604 8.38099C0.988503 6.97969 0.988503 4.70759 2.3604 3.30963C3.7323 1.90833 5.95674 1.90833 7.32537 3.30963C8.69727 4.71093 8.69727 6.98303 7.32537 8.38099C5.95674 9.78228 3.7323 9.78228 2.3604 8.38099Z"
-                                              fill="#0065DE"
-                                            />
-                                          </svg>
-                                        </div>
-                                      </div>
-                                      <div className=" border border-black rounded-md overflow-y-scroll h-80">
-                                        <div className="flex border-b border-stroke dark:border-strokedark">
-                                          <div className="flex items-center justify-start  w-1/12 gap-3 p-2.5 ">
-                                            <p className="hidden text-xs text-slate-600 font-semibold dark:text-white sm:block pl-5">
-                                              No
-                                            </p>
-                                          </div>
-
-                                          <div className="flex items-center lg:w-5/12 w-4/12 justify-center lg:p-2.5 lg:ml-2 ">
-                                            <p className="text-slate-600 text-xs font-semibold text-center dark:text-white ">
-                                              Kode
-                                            </p>
-                                          </div>
-                                          <div className="flex items-center lg:w-5/12 w-4/12 justify-center lg:p-2.5 lg:ml-2 ">
-                                            <p className="text-slate-600 text-xs font-semibold text-center dark:text-white ">
-                                              Sparepart Name
-                                            </p>
-                                          </div>
-                                          <div className="flex items-center text-xs lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
-                                            <p className="text-slate-600 font-semibold text-center dark:text-white">
-                                              Posisi Part
-                                            </p>
-                                          </div>
-                                          <div className="flex items-center text-xs lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
-                                            <p className="text-slate-600 font-semibold text-center dark:text-white"></p>
-                                          </div>
-                                        </div>
-
-                                        {masterSparepart?.map(
-                                          (
-                                            SparepartMaster: any,
-                                            ii: number,
-                                          ) => {
-                                            return (
-                                              <div className="flex border-b border-stroke dark:border-strokedark ">
-                                                <div className="flex items-center justify-start  w-1/12 gap-3 p-2.5 ">
-                                                  <p className="hidden text-xs text-slate-600 font-semibold dark:text-white sm:block pl-5">
-                                                    {ii + 1}
-                                                  </p>
-                                                </div>
-
-                                                <div className="flex items-center lg:w-5/12 w-4/12 justify-center lg:p-2.5 lg:ml-2 ">
-                                                  <p className="text-slate-600 text-xs font-semibold text-center dark:text-white ">
-                                                    {SparepartMaster.kode}
-                                                  </p>
-                                                </div>
-                                                <div className="flex items-center lg:w-5/12 w-4/12 justify-center lg:p-2.5 lg:ml-2 ">
-                                                  <p className="text-slate-600 text-xs font-semibold text-center dark:text-white ">
-                                                    {
-                                                      SparepartMaster.nama_sparepart
-                                                    }
-                                                  </p>
-                                                </div>
-                                                <div className="flex items-center text-xs lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
-                                                  <p className="text-slate-600 font-semibold text-center dark:text-white">
-                                                    {
-                                                      SparepartMaster.posisi_part
-                                                    }
-                                                  </p>
-                                                </div>
-                                                <div className="flex items-center text-xs lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
-                                                  <button
-                                                    className="bg-primary w-20 text-white"
-                                                    onClick={() => {
-                                                      const onchangeVal: any = [
-                                                        ...kebutuhanSparepart,
-                                                      ];
-                                                      onchangeVal[i][
-                                                        'id_ms_sparepart'
-                                                      ] = SparepartMaster.id;
-                                                      onchangeVal[i][
-                                                        'detail_ms_sparepart'
-                                                      ] = {
-                                                        kode: SparepartMaster.kode,
-                                                        nama_sparepart:
-                                                          SparepartMaster.nama_sparepart,
-                                                        nama_mesin:
-                                                          SparepartMaster.nama_mesin,
-                                                        posisi_part:
-                                                          SparepartMaster.posisi_part,
-                                                        sisa_umur:
-                                                          SparepartMaster.sisa_umur,
-                                                        grade:
-                                                          SparepartMaster.grade_2,
-                                                      };
-                                                      setKebutuhanSparepart(
-                                                        onchangeVal,
-                                                      );
-                                                      closeModalMsStok();
-                                                    }}
-                                                  >
-                                                    select
-                                                  </button>
-                                                </div>
-                                              </div>
-                                            );
-                                          },
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </>
-                            )}
-
                             <button
-                              // onClick={() => {
-                              //   setInfo(!info)
-                              // }}
                               onClick={() => toggleInfo(i)}
-                              className="bg-primary px-2 my-auto rounded-md mx-2 h-9 "
-                              title="button"
+                              className="bg-primary hover:bg-blue-800 transition-colors px-2 rounded-md mx-2 h-9 flex items-center justify-center"
+                              title="Info Sparepart Rusak"
                             >
-                              <img src={Info} alt="" />
+                              <img src={Info} alt="Info" />
                             </button>
                           </div>
 
-                          <svg
-                            className="lg:ml-4 ml-[2px]"
-                            width="39"
-                            height="39"
-                            viewBox="0 0 39 39"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <g clip-path="url(#clip0_708_3509)">
-                              <path
-                                d="M39 0H0V39H39V0Z"
-                                fill="white"
-                                fill-opacity="0.01"
-                              />
+                          <div className="flex items-center justify-center mx-2 md:mx-4">
+                            <svg
+                              width="24"
+                              height="24"
+                              viewBox="0 0 39 39"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
                               <path
                                 d="M14.625 25.1875H30.875V4.0625"
                                 stroke="#777777"
-                                stroke-width="3"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                               />
                               <path
                                 d="M24.375 17.0625H8.125V34.9375"
                                 stroke="#777777"
-                                stroke-width="3"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                               />
                               <path
                                 d="M35.75 8.9375L30.875 4.0625L26 8.9375"
                                 stroke="#777777"
-                                stroke-width="3"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                               />
                               <path
                                 d="M13 30.0625L8.125 34.9375L3.25 30.0625"
                                 stroke="#777777"
-                                stroke-width="3"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                               />
-                            </g>
-                            <defs>
-                              <clipPath id="clip0_708_3509">
-                                <rect width="39" height="39" fill="white" />
-                              </clipPath>
-                            </defs>
-                          </svg>
+                            </svg>
+                          </div>
+
                           <div className="flex md:w-[35%] w-full">
                             {data.id_stok == null ? (
                               <button
                                 name="pengganti"
                                 onClick={openModalStok}
-                                className="lg:ml-4 ml-[2px] lg:w-[415px] w-[320px] h-9 bg-blue-700 rounded text-center text-white md:text-xs text-[9px] md:font-bold font-semibold"
+                                className="flex-grow bg-blue-700 hover:bg-blue-800 transition-colors h-9 rounded text-white text-xs font-semibold"
                               >
                                 PILIH PENGGANTI
                               </button>
@@ -974,260 +787,32 @@ const ModalStockCheck1 = ({
                               <button
                                 name="pengganti"
                                 onClick={openModalStok}
-                                className="lg:ml-4 ml-[2px] w-[282px] h-9 bg-white rounded text-center text-[#0065DE] text-xs font-bold"
+                                className="flex-grow bg-white border border-blue-200 h-9 rounded text-[#0065DE] text-xs font-semibold"
                               >
                                 {data.detail_stok.nama_sparepart}
                               </button>
                             )}
 
-                            {showModalStok && (
-                              <div className="fixed shadow-md z-50 inset-0 backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center  ">
-                                <div className="w-full max-w-4xl  bg-white rounded-xl shadow-md h-[620px]">
-                                  <div className="flex w-full items-center pt-4">
-                                    <label className="flex lg:w-11/12 w-10/12 text-blue-700 text-sm font-bold mx-5">
-                                      Sparepart Stok Check
-                                    </label>
-                                    <button
-                                      type="button"
-                                      onClick={closeModalStok}
-                                      className="text-gray-400 focus:outline-none mr-5"
-                                    >
-                                      <svg
-                                        width="22"
-                                        height="22"
-                                        viewBox="0 0 22 22"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                      >
-                                        <circle
-                                          cx="11"
-                                          cy="11"
-                                          r="11"
-                                          fill="#0065DE"
-                                        />
-                                        <rect
-                                          x="6.03955"
-                                          y="4.23242"
-                                          width="17"
-                                          height="3"
-                                          rx="1.5"
-                                          transform="rotate(42.8321 6.03955 4.23242)"
-                                          fill="white"
-                                        />
-                                        <rect
-                                          x="4.18213"
-                                          y="16.0609"
-                                          width="17"
-                                          height="3"
-                                          rx="1.5"
-                                          transform="rotate(-45 4.18213 16.0609)"
-                                          fill="white"
-                                        />
-                                      </svg>
-                                    </button>
-                                  </div>
-                                  <div className="px-5 pb-4">
-                                    <div className="relative flex w-full gap-10 justify-start pb-2 pt-3">
-                                      <select
-                                        onChange={(e) => {
-                                          getStokSparepart(e.target.value);
-                                          changeTextColor();
-                                        }}
-                                        className={`relative z-20 w-10/12 appearance-none rounded-md  text-xs bg-blue-100 py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
-                                          isOptionSelected
-                                            ? 'text-gray-800 dark:text-white '
-                                            : ''
-                                        }`}
-                                      >
-                                        <option
-                                          value=""
-                                          selected
-                                          disabled
-                                          className="text-gray-800 text-xs font-light dark:text-bodydark"
-                                        >
-                                          SELECT MESIN
-                                        </option>
-                                        {masterMesin != null &&
-                                          masterMesin?.map(
-                                            (data: any, i: number) => {
-                                              return (
-                                                <option
-                                                  value={data.id}
-                                                  className="text-gray-800 text-xs font-light dark:text-bodydark"
-                                                >
-                                                  {data.nama_mesin}
-                                                </option>
-                                              );
-                                            },
-                                          )}
-                                      </select>
-                                      <div className="-translate-x-8 my-auto">
-                                        <svg
-                                          width="16"
-                                          height="18"
-                                          viewBox="0 0 16 18"
-                                          fill="none"
-                                          xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                          <path
-                                            d="M15.7231 14.5835L11.2285 9.98926L8.90283 12.3648L13.4007 16.959C13.7698 17.3361 14.3774 17.3361 14.7465 16.959L15.7231 15.9614C16.0923 15.5811 16.0923 14.9572 15.7231 14.5835Z"
-                                            fill="#0065DE"
-                                          />
-                                          <path
-                                            d="M9.00432 11.3404L10.2227 10.0959L8.83447 8.67793C10.1476 6.74614 9.96465 4.07033 8.27917 2.34874C6.38791 0.416956 3.3142 0.416956 1.41967 2.34874C-0.474857 4.28053 -0.47159 7.4201 1.41967 9.35522C3.10515 11.0768 5.72482 11.2637 7.61609 9.92241L9.00432 11.3404ZM2.3604 8.38099C0.988503 6.97969 0.988503 4.70759 2.3604 3.30963C3.7323 1.90833 5.95674 1.90833 7.32537 3.30963C8.69727 4.71093 8.69727 6.98303 7.32537 8.38099C5.95674 9.78228 3.7323 9.78228 2.3604 8.38099Z"
-                                            fill="#0065DE"
-                                          />
-                                        </svg>
-                                      </div>
-                                      <input
-                                        type="text"
-                                        className="flex py-2 lg:w-6/12 w-full text-black text-sm font-normal bg-blue-100 rounded h-full pl-2"
-                                        placeholder="Search Sparepart..."
-                                        id="searchInput"
-                                      />
-                                    </div>
-                                    <div className=" border border-black rounded-md overflow-y-scroll h-80">
-                                      <div className="flex border-b border-stroke dark:border-strokedark">
-                                        <div className="flex items-center justify-start  w-1/12 gap-3 p-2.5 ">
-                                          <p className="hidden text-[14px] text-slate-600 font-semibold dark:text-white sm:block pl-5">
-                                            No
-                                          </p>
-                                        </div>
-
-                                        <div className="flex items-center lg:w-5/12 w-4/12 justify-center lg:p-2.5 lg:ml-2 ">
-                                          <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white ">
-                                            Kode
-                                          </p>
-                                        </div>
-                                        <div className="flex items-center lg:w-5/12 w-4/12 justify-center lg:p-2.5 lg:ml-2 ">
-                                          <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white ">
-                                            Sparepart Name
-                                          </p>
-                                        </div>
-                                        <div className="flex items-center text-[14px] lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
-                                          <p className="text-slate-600 font-semibold text-center dark:text-white">
-                                            Qty
-                                          </p>
-                                        </div>
-                                        <div className="flex items-center text-[14px] lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
-                                          <p className="text-slate-600 font-semibold text-center dark:text-white">
-                                            Umur
-                                          </p>
-                                        </div>
-                                        <div className="flex items-center text-[14px] lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
-                                          <p className="text-slate-600 font-semibold text-center dark:text-white">
-                                            Grade
-                                          </p>
-                                        </div>
-                                        <div className="flex items-center text-[14px] lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
-                                          <p className="text-slate-600 font-semibold text-center dark:text-white"></p>
-                                        </div>
-                                      </div>
-
-                                      {stokSparepart?.map(
-                                        (SparepartStok: any, ii: number) => {
-                                          return (
-                                            <div className="flex border-b border-stroke dark:border-strokedark">
-                                              <div className="flex items-center justify-start  w-1/12 gap-3 p-2.5 ">
-                                                <p className="hidden text-[14px] text-slate-600 font-semibold dark:text-white sm:block pl-5">
-                                                  {ii + 1}
-                                                </p>
-                                              </div>
-
-                                              <div className="flex items-center lg:w-5/12 w-4/12 justify-center lg:p-2.5 lg:ml-2 ">
-                                                <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white ">
-                                                  {SparepartStok.kode}
-                                                </p>
-                                              </div>
-                                              <div className="flex items-center lg:w-5/12 w-4/12 justify-center lg:p-2.5 lg:ml-2 ">
-                                                <p className="text-slate-600 text-[14px] font-semibold text-center dark:text-white ">
-                                                  {SparepartStok.nama_sparepart}
-                                                </p>
-                                              </div>
-                                              <div className="flex items-center text-[14px] lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
-                                                <p className="text-slate-600 font-semibold text-center dark:text-white">
-                                                  {SparepartStok.stok}
-                                                </p>
-                                              </div>
-                                              <div className="flex items-center text-[14px] lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
-                                                <p className="text-slate-600 font-semibold text-center dark:text-white">
-                                                  {SparepartStok.umur_sparepart}
-                                                </p>
-                                              </div>
-                                              <div className="flex items-center text-[14px] lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
-                                                <p className="text-slate-600 font-semibold text-center dark:text-white">
-                                                  {SparepartStok.grade}
-                                                </p>
-                                              </div>
-                                              <div className="my-auto lg:w-4/12 w-3/12 justify-center p-2.5 ml-2">
-                                                {SparepartStok.stok > 0 ? (
-                                                  <button
-                                                    className="bg-primary w-20 text-white"
-                                                    onClick={() => {
-                                                      const onchangeVal: any = [
-                                                        ...kebutuhanSparepart,
-                                                      ];
-                                                      onchangeVal[i][
-                                                        'id_stok'
-                                                      ] = SparepartStok.id;
-                                                      onchangeVal[i][
-                                                        'detail_stok'
-                                                      ] = {
-                                                        kode: SparepartStok.kode,
-                                                        part_number:
-                                                          SparepartStok.part_number,
-                                                        nama_sparepart:
-                                                          SparepartStok.nama_sparepart,
-                                                        nama_mesin:
-                                                          SparepartStok.nama_mesin,
-                                                        lokasi:
-                                                          SparepartStok.lokasi,
-                                                        umur: SparepartStok.umur_sparepart,
-                                                        grade:
-                                                          SparepartStok.grade,
-                                                      };
-                                                      setKebutuhanSparepart(
-                                                        onchangeVal,
-                                                      );
-
-                                                      closeModalStok();
-                                                    }}
-                                                  >
-                                                    select
-                                                  </button>
-                                                ) : null}
-                                              </div>
-                                            </div>
-                                          );
-                                        },
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-
                             <button
-                              title="button"
+                              title="Info Sparepart Pengganti"
                               onClick={() => toggleInfoPengganti(i)}
-                              className="bg-primary px-2 my-auto rounded-md mx-2 h-9 "
+                              className="bg-primary hover:bg-blue-800 transition-colors px-2 rounded-md mx-2 h-9 flex items-center justify-center"
                             >
-                              <img src={Info} alt="" />
+                              <img src={Info} alt="Info" />
                             </button>
                           </div>
+
                           <div className="flex md:w-2/12 w-full md:mt-0 mt-2">
-                            <div className="w-[130px] h-9 lg:ml-2 ml-[2px] bg-[#EDF5FF] rounded text-center text-[#0065DE] text-xs font-bold lg:pt-[9px] pt-[10px] px-1">
-                              {data.detail_stok.grade == ''
-                                ? ''
-                                : data.detail_stok.grade}
+                            <div className="flex-grow h-9 bg-[#EDF5FF] rounded flex items-center justify-center text-[#0065DE] text-xs font-semibold">
+                              {data.detail_stok.grade || '-'}
                             </div>
                             <button
-                              name="pengganti"
+                              name="delete"
                               onClick={() => handleDeletePoint(i)}
-                              className="lg:ml-2 ml-[2px] w-[39px] h-9 bg-[#DE0000] rounded justify-items-center mx-auto"
+                              className="ml-2 w-9 h-9 bg-[#DE0000] hover:bg-red-700 transition-colors rounded flex items-center justify-center"
+                              title="Delete"
                             >
                               <svg
-                                className=" mx-auto"
                                 width="14"
                                 height="14"
                                 viewBox="0 0 14 14"
@@ -1255,84 +840,459 @@ const ModalStockCheck1 = ({
                           </div>
                         </>
                       </div>
+
+                      {/* Info tooltips */}
                       <div className="grid grid-cols-2 gap-10">
-                        <div className="w-80">
-                          {info[i] && (
-                            <>
-                              <div
-                                onFocus={() => setInfo({ ...info, [i]: true })}
-                                onBlur={() => setInfo({ ...info, [i]: false })}
-                                className={` mt-1 mb-5 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${
-                                  info[i] ? 'block' : 'hidden'
-                                }`}
-                              >
-                                <div className="flex flex-col bg-blue-100 shadow-md">
-                                  <p className="text-xs font-bold text-primary p-2">
-                                    Info Starepart Rusak
-                                  </p>
-                                  <div className=" p-2">
-                                    <p className="text-xs font-semibold">
-                                      Umur
-                                    </p>
-                                    <p className="text-xs">
-                                      {data.detail_ms_sparepart.sisa_umur}
-                                    </p>
-                                    <div className=" text-[9px] mt-2">
-                                      <p className="font-semibold text-xs">
-                                        Grade
-                                      </p>
-                                      <p className="text-xs">
-                                        {data.detail_ms_sparepart.grade}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                        {infoPengganti[i] && (
-                          <>
-                            <div
-                              onFocus={() =>
-                                setInfoPengganti({
-                                  ...infoPengganti,
-                                  [i]: true,
-                                })
-                              }
-                              onBlur={() =>
-                                setInfoPengganti({
-                                  ...infoPengganti,
-                                  [i]: false,
-                                })
-                              }
-                              className={`  mt-1 mb-5 flex w-80 flex-col rounded-md border border-stroke bg-white shadow-md dark:border-strokedark dark:bg-boxdark ${
-                                infoPengganti[i] ? 'block' : 'hidden'
-                              }`}
-                            >
-                              <div className="flex flex-col bg-blue-100 shadow-md">
-                                <p className="text-xs font-bold text-primary p-2">
-                                  Info Starepart Pengganti
+                        {info[i] && (
+                          <div className="w-80 mt-1 mb-3 rounded-md border border-blue-200 bg-white shadow-md">
+                            <div className="bg-blue-100">
+                              <p className="text-xs font-bold text-primary p-2">
+                                Info Sparepart Rusak
+                              </p>
+                              <div className="p-2">
+                                <p className="text-xs font-semibold">Umur</p>
+                                <p className="text-xs">
+                                  {data.detail_ms_sparepart.sisa_umur}
                                 </p>
-                                <div className=" p-2">
-                                  <p className="text-xs font-semibold">Umur</p>
+                                <div className="mt-2">
+                                  <p className="font-semibold text-xs">Grade</p>
                                   <p className="text-xs">
-                                    {data.detail_stok.umur}
+                                    {data.detail_ms_sparepart.grade}
                                   </p>
-                                  <div className=" text-[9px] mt-2">
-                                    <p className="font-semibold text-xs">
-                                      Grade
-                                    </p>
-                                    <p className="text-xs">
-                                      {data.detail_stok.grade}
-                                    </p>
-                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </>
+                          </div>
+                        )}
+
+                        {infoPengganti[i] && (
+                          <div className="w-80 mt-1 mb-3 rounded-md border border-blue-200 bg-white shadow-md">
+                            <div className="bg-blue-100">
+                              <p className="text-xs font-bold text-primary p-2">
+                                Info Sparepart Pengganti
+                              </p>
+                              <div className="p-2">
+                                <p className="text-xs font-semibold">Umur</p>
+                                <p className="text-xs">
+                                  {data.detail_stok.umur}
+                                </p>
+                                <div className="mt-2">
+                                  <p className="font-semibold text-xs">Grade</p>
+                                  <p className="text-xs">
+                                    {data.detail_stok.grade}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         )}
                       </div>
+
+                      {/* Modal for Sparepart Rusak */}
+                      {showModalMsStok && (
+                        <div className="fixed z-50 inset-0 backdrop-blur-sm bg-black/30 p-4 md:p-8 flex justify-center items-center">
+                          <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg h-full overflow-y-auto">
+                            <div className="flex items-center justify-between p-4 border-b">
+                              <h3 className="text-blue-700 text-sm font-bold">
+                                Sparepart Master Check
+                              </h3>
+                              <button
+                                type="button"
+                                onClick={closeModalMsStok}
+                                className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                              >
+                                <svg
+                                  width="22"
+                                  height="22"
+                                  viewBox="0 0 22 22"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <circle
+                                    cx="11"
+                                    cy="11"
+                                    r="11"
+                                    fill="#0065DE"
+                                  />
+                                  <rect
+                                    x="6.03955"
+                                    y="4.23242"
+                                    width="17"
+                                    height="3"
+                                    rx="1.5"
+                                    transform="rotate(42.8321 6.03955 4.23242)"
+                                    fill="white"
+                                  />
+                                  <rect
+                                    x="4.18213"
+                                    y="16.0609"
+                                    width="17"
+                                    height="3"
+                                    rx="1.5"
+                                    transform="rotate(-45 4.18213 16.0609)"
+                                    fill="white"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+
+                            <div className="p-4">
+                              <div className="flex gap-4 mb-4">
+                                <select
+                                  onChange={(e) => {
+                                    getMasterSparepart(e.target.value);
+                                    changeTextColor();
+                                  }}
+                                  className={`flex-grow appearance-none rounded-md text-xs bg-blue-100 py-2 px-3 outline-none focus:ring-2 focus:ring-blue-500 ${
+                                    isOptionSelected ? 'text-gray-800' : ''
+                                  }`}
+                                >
+                                  <option
+                                    value=""
+                                    selected
+                                    disabled
+                                    className="text-gray-500"
+                                  >
+                                    SELECT MESIN
+                                  </option>
+                                  {masterMesin != null &&
+                                    masterMesin?.map((data: any, i: number) => (
+                                      <option value={data.id} key={i}>
+                                        {data.nama_mesin}
+                                      </option>
+                                    ))}
+                                </select>
+
+                                <div className="relative flex-grow">
+                                  <input
+                                    type="text"
+                                    className="w-full py-2 px-3 text-sm bg-blue-100 rounded-md pl-10"
+                                    placeholder="Search Sparepart..."
+                                    id="searchInput"
+                                    onChange={(e) =>
+                                      handleSearch(
+                                        e.target.value,
+                                        'masterSparepart',
+                                      )
+                                    }
+                                  />
+                                  <div className="absolute inset-y-0 left-3 flex items-center">
+                                    <svg
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 16 18"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="M15.7231 14.5835L11.2285 9.98926L8.90283 12.3648L13.4007 16.959C13.7698 17.3361 14.3774 17.3361 14.7465 16.959L15.7231 15.9614C16.0923 15.5811 16.0923 14.9572 15.7231 14.5835Z"
+                                        fill="#0065DE"
+                                      />
+                                      <path
+                                        d="M9.00432 11.3404L10.2227 10.0959L8.83447 8.67793C10.1476 6.74614 9.96465 4.07033 8.27917 2.34874C6.38791 0.416956 3.3142 0.416956 1.41967 2.34874C-0.474857 4.28053 -0.47159 7.4201 1.41967 9.35522C3.10515 11.0768 5.72482 11.2637 7.61609 9.92241L9.00432 11.3404ZM2.3604 8.38099C0.988503 6.97969 0.988503 4.70759 2.3604 3.30963C3.7323 1.90833 5.95674 1.90833 7.32537 3.30963C8.69727 4.71093 8.69727 6.98303 7.32537 8.38099C5.95674 9.78228 3.7323 9.78228 2.3604 8.38099Z"
+                                        fill="#0065DE"
+                                      />
+                                    </svg>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="border rounded-md overflow-hidden">
+                                <table className="w-full">
+                                  <thead className="bg-gray-50 border-b">
+                                    <tr>
+                                      <th className="text-left text-xs font-semibold text-gray-600 p-3 w-12">
+                                        No
+                                      </th>
+                                      <th className="text-left text-xs font-semibold text-gray-600 p-3">
+                                        Kode
+                                      </th>
+                                      <th className="text-left text-xs font-semibold text-gray-600 p-3">
+                                        Sparepart Name
+                                      </th>
+                                      <th className="text-left text-xs font-semibold text-gray-600 p-3">
+                                        Posisi Part
+                                      </th>
+                                      <th className="w-24"></th>
+                                    </tr>
+                                  </thead>
+                                  <tbody
+                                    className="divide-y divide-gray-200 overflow-y-auto"
+                                    style={{ maxHeight: '400px' }}
+                                  >
+                                    {displayedMasterSparepart.map(
+                                      (SparepartMaster: any, ii: number) => (
+                                        <tr
+                                          key={ii}
+                                          className="hover:bg-gray-50"
+                                        >
+                                          <td className="p-3 text-xs">
+                                            {ii + 1}
+                                          </td>
+                                          <td className="p-3 text-xs">
+                                            {SparepartMaster.kode}
+                                          </td>
+                                          <td className="p-3 text-xs">
+                                            {SparepartMaster.nama_sparepart}
+                                          </td>
+                                          <td className="p-3 text-xs">
+                                            {SparepartMaster.posisi_part}
+                                          </td>
+                                          <td className="p-3">
+                                            <button
+                                              className="bg-primary hover:bg-blue-700 transition-colors text-white text-xs py-1 px-3 rounded w-full"
+                                              onClick={() => {
+                                                const onchangeVal: any = [
+                                                  ...kebutuhanSparepart,
+                                                ];
+                                                onchangeVal[i][
+                                                  'id_ms_sparepart'
+                                                ] = SparepartMaster.id;
+                                                onchangeVal[i][
+                                                  'detail_ms_sparepart'
+                                                ] = {
+                                                  kode: SparepartMaster.kode,
+                                                  nama_sparepart:
+                                                    SparepartMaster.nama_sparepart,
+                                                  nama_mesin:
+                                                    SparepartMaster.nama_mesin,
+                                                  posisi_part:
+                                                    SparepartMaster.posisi_part,
+                                                  sisa_umur:
+                                                    SparepartMaster.sisa_umur,
+                                                  grade:
+                                                    SparepartMaster.grade_2,
+                                                };
+                                                setKebutuhanSparepart(
+                                                  onchangeVal,
+                                                );
+                                                closeModalMsStok();
+                                              }}
+                                            >
+                                              Select
+                                            </button>
+                                          </td>
+                                        </tr>
+                                      ),
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Modal for Sparepart Pengganti */}
+                      {showModalStok && (
+                        <div className="fixed z-50 inset-0 backdrop-blur-sm bg-black/30 p-4 md:p-8 flex justify-center items-center">
+                          <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg h-full overflow-y-auto">
+                            <div className="flex items-center justify-between p-4 border-b">
+                              <h3 className="text-blue-700 text-sm font-bold">
+                                Sparepart Stok Check
+                              </h3>
+                              <button
+                                type="button"
+                                onClick={closeModalStok}
+                                className="text-gray-400 hover:text-gray-600 focus:outline-none"
+                              >
+                                <svg
+                                  width="22"
+                                  height="22"
+                                  viewBox="0 0 22 22"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <circle
+                                    cx="11"
+                                    cy="11"
+                                    r="11"
+                                    fill="#0065DE"
+                                  />
+                                  <rect
+                                    x="6.03955"
+                                    y="4.23242"
+                                    width="17"
+                                    height="3"
+                                    rx="1.5"
+                                    transform="rotate(42.8321 6.03955 4.23242)"
+                                    fill="white"
+                                  />
+                                  <rect
+                                    x="4.18213"
+                                    y="16.0609"
+                                    width="17"
+                                    height="3"
+                                    rx="1.5"
+                                    transform="rotate(-45 4.18213 16.0609)"
+                                    fill="white"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+
+                            <div className="p-4">
+                              <div className="flex gap-4 mb-4">
+                                <select
+                                  onChange={(e) => {
+                                    getStokSparepart(e.target.value);
+                                    changeTextColor();
+                                  }}
+                                  className={`flex-grow appearance-none rounded-md text-xs bg-blue-100 py-2 px-3 outline-none focus:ring-2 focus:ring-blue-500 ${
+                                    isOptionSelected ? 'text-gray-800' : ''
+                                  }`}
+                                >
+                                  <option
+                                    value=""
+                                    selected
+                                    disabled
+                                    className="text-gray-500"
+                                  >
+                                    SELECT MESIN
+                                  </option>
+                                  {masterMesin != null &&
+                                    masterMesin?.map((data: any, i: number) => (
+                                      <option value={data.id} key={i}>
+                                        {data.nama_mesin}
+                                      </option>
+                                    ))}
+                                </select>
+
+                                <div className="relative flex-grow">
+                                  <input
+                                    type="text"
+                                    className="w-full py-2 px-3 text-sm bg-blue-100 rounded-md pl-10"
+                                    placeholder="Search Sparepart..."
+                                    onChange={(e) =>
+                                      handleSearch(
+                                        e.target.value,
+                                        'stokSparepart',
+                                      )
+                                    }
+                                  />
+                                  <div className="absolute inset-y-0 left-3 flex items-center">
+                                    <svg
+                                      width="16"
+                                      height="16"
+                                      viewBox="0 0 16 18"
+                                      fill="none"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="M15.7231 14.5835L11.2285 9.98926L8.90283 12.3648L13.4007 16.959C13.7698 17.3361 14.3774 17.3361 14.7465 16.959L15.7231 15.9614C16.0923 15.5811 16.0923 14.9572 15.7231 14.5835Z"
+                                        fill="#0065DE"
+                                      />
+                                      <path
+                                        d="M9.00432 11.3404L10.2227 10.0959L8.83447 8.67793C10.1476 6.74614 9.96465 4.07033 8.27917 2.34874C6.38791 0.416956 3.3142 0.416956 1.41967 2.34874C-0.474857 4.28053 -0.47159 7.4201 1.41967 9.35522C3.10515 11.0768 5.72482 11.2637 7.61609 9.92241L9.00432 11.3404ZM2.3604 8.38099C0.988503 6.97969 0.988503 4.70759 2.3604 3.30963C3.7323 1.90833 5.95674 1.90833 7.32537 3.30963C8.69727 4.71093 8.69727 6.98303 7.32537 8.38099C5.95674 9.78228 3.7323 9.78228 2.3604 8.38099Z"
+                                        fill="#0065DE"
+                                      />
+                                    </svg>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="border rounded-md overflow-hidden">
+                                <table className="w-full">
+                                  <thead className="bg-gray-50 border-b">
+                                    <tr>
+                                      <th className="text-left text-xs font-semibold text-gray-600 p-3 w-12">
+                                        No
+                                      </th>
+                                      <th className="text-left text-xs font-semibold text-gray-600 p-3">
+                                        Kode
+                                      </th>
+                                      <th className="text-left text-xs font-semibold text-gray-600 p-3">
+                                        Sparepart Name
+                                      </th>
+                                      <th className="text-center text-xs font-semibold text-gray-600 p-3 w-16">
+                                        Qty
+                                      </th>
+                                      <th className="text-center text-xs font-semibold text-gray-600 p-3 w-16">
+                                        Umur
+                                      </th>
+                                      <th className="text-center text-xs font-semibold text-gray-600 p-3 w-16">
+                                        Grade
+                                      </th>
+                                      <th className="w-24"></th>
+                                    </tr>
+                                  </thead>
+                                  <tbody
+                                    className="divide-y divide-gray-200 overflow-y-auto"
+                                    style={{ maxHeight: '400px' }}
+                                  >
+                                    {displayedStokSparepart?.map(
+                                      (SparepartStok: any, ii: number) => (
+                                        <tr
+                                          key={ii}
+                                          className="hover:bg-gray-50"
+                                        >
+                                          <td className="p-3 text-xs">
+                                            {ii + 1}
+                                          </td>
+                                          <td className="p-3 text-xs">
+                                            {SparepartStok.kode}
+                                          </td>
+                                          <td className="p-3 text-xs">
+                                            {SparepartStok.nama_sparepart}
+                                          </td>
+                                          <td className="p-3 text-xs text-center">
+                                            {SparepartStok.stok}
+                                          </td>
+                                          <td className="p-3 text-xs text-center">
+                                            {SparepartStok.umur_sparepart}
+                                          </td>
+                                          <td className="p-3 text-xs text-center">
+                                            {SparepartStok.grade}
+                                          </td>
+                                          <td className="p-3">
+                                            {SparepartStok.stok > 0 ? (
+                                              <button
+                                                className="bg-primary hover:bg-blue-700 transition-colors text-white text-xs py-1 px-3 rounded w-full"
+                                                onClick={() => {
+                                                  const onchangeVal: any = [
+                                                    ...kebutuhanSparepart,
+                                                  ];
+                                                  onchangeVal[i]['id_stok'] =
+                                                    SparepartStok.id;
+                                                  onchangeVal[i][
+                                                    'detail_stok'
+                                                  ] = {
+                                                    kode: SparepartStok.kode,
+                                                    part_number:
+                                                      SparepartStok.part_number,
+                                                    nama_sparepart:
+                                                      SparepartStok.nama_sparepart,
+                                                    nama_mesin:
+                                                      SparepartStok.nama_mesin,
+                                                    lokasi:
+                                                      SparepartStok.lokasi,
+                                                    umur: SparepartStok.umur_sparepart,
+                                                    grade: SparepartStok.grade,
+                                                  };
+                                                  setKebutuhanSparepart(
+                                                    onchangeVal,
+                                                  );
+                                                  closeModalStok();
+                                                }}
+                                              >
+                                                Select
+                                              </button>
+                                            ) : (
+                                              <span className="text-xs text-gray-400">
+                                                Out of Stock
+                                              </span>
+                                            )}
+                                          </td>
+                                        </tr>
+                                      ),
+                                    )}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </>
                   );
                 })}
