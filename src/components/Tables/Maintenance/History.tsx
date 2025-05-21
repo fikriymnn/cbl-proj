@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import Filter from '../../../images/icon/filter.svg';
 import Burger from '../../../images/icon/burger.svg';
 import Arrow from '../../../images/icon/arrowDown.svg';
 import ModalMtcDate from '../../Modals/ModalMtcDate';
@@ -7,7 +6,6 @@ import ModalStockCheck1 from '../../Modals/ModalStockCheck1';
 import Polygon6 from '../../../images/icon/Polygon6.svg';
 import axios from 'axios';
 import Select from 'react-select';
-import X from '../../../images/icon/x.svg';
 import ModalDetail from '../../Modals/ModalDetail';
 import { Stack } from '@mui/material';
 // import moment from 'moment';
@@ -22,7 +20,6 @@ import convertTimeStampToDate from '../../../utils/convertDate';
 import Loading from '../../Loading';
 function HistoryOS2() {
   const [isMobile, setIsMobile] = useState(false);
-  const [status, setStatus] = useState();
   const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -741,25 +738,7 @@ function HistoryOS2() {
               </select>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <p className="text-sm text-primary font-semibold">
-                Status Tiket:
-              </p>
-              <select
-                onChange={(e) => {
-                  setStatusTiket(e.target.value);
-                }}
-                className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
-              >
-                <option selected disabled>
-                  Pilih Status Tiket
-                </option>
-                <option value="open">Open</option>
-                <option value="request to qc">Request to QC</option>
-                <option value="temporary">Temporary</option>
-                <option value="monitoring">Monitoring</option>
-              </select>
-            </div>
+            <div className="flex flex-col gap-2"></div>
 
             <div className="flex flex-col gap-2">
               <label className="text-sm text-primary font-semibold">Nama</label>

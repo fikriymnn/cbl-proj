@@ -560,8 +560,8 @@ function Stockmaster() {
             return (
               <>
                 <div
-                  className={`flex bg-white py-2 px-1 text-center ${
-                    data.stok <= 0 ? 'bg-red-200' : ''
+                  className={`flex  py-2 px-1 text-center ${
+                    data.stok <= 0 ? 'bg-red-200' : 'bg-white'
                   }`}
                 >
                   <p className="text-xs w-[2%]">{i + 1}</p>
