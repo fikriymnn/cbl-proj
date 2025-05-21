@@ -904,38 +904,34 @@ function HistoryOS2() {
       {!isMobile && (
         <>
           <div className="flex bg-white mt-2 py-2">
-            <p className="w-10 px-3 text-xs font-bold ">No</p>
-            <div className="grid grid-cols-12 w-full gap-2">
-              <div className="flex gap-2  col-span-2">
-                <p className="text-xs font-bold ">Waktu Tiket</p>
-                <img className="w-2" src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-2 ">
-                <p className="text-xs font-bold ">No.Jo</p>
-                <img className="w-2" src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-2 ">
-                <p className="text-xs font-bold ">Mesin</p>
-                <img className="w-2" src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-2 col-span-3">
-                <p className="text-xs font-bold ">Jenis Kendala</p>
+            <p className="px-5 text-xs font-bold ">No</p>
+            <div className="grid md:grid-cols-6  w-full">
+              <div className="flex gap-2">
+                <p className="text-xs font-bold ">Kode Tiket</p>
                 <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className="flex gap-2">
+                <p className="text-xs font-bold ">Nama Mesin</p>
+                <img className="w-2" src={Polygon6} alt="" />
+              </div>
+              <div className="flex gap-2 ">
+                <p className="text-xs font-bold ">Tanggal Tiket Masuk</p>
+                <img className="w-2" src={Polygon6} alt="" />
+              </div>
+              <div className="flex gap-2">
+                <p className="text-xs font-bold ">Tanggal Selesai</p>
+                <img className="w-2" src={Polygon6} alt="" />
+              </div>
+              <div className="flex gap-2">
+                <p className="text-xs font-bold ">Jumlah Pengerjaan</p>
+                <img className="w-2" src={Polygon6} alt="" />
+              </div>
+              {/* <div className="flex gap-2">
+                                <p className="text-xs font-bold ">Sparepart Digunakan</p>
+                                <img className="w-2" src={Polygon6} alt="" />
+                            </div> */}
+              <div className="flex gap-2 justify-end px-10">
                 <p className="text-xs font-bold ">Status</p>
-                <img className="w-2" src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-2">
-                <p className="text-xs font-bold ">Percent</p>
-                <img className="w-2" src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-2  col-span-2">
-                <p className="text-xs font-bold ">Breakdown Time</p>
-                <img className="w-2" src={Polygon6} alt="" />
-              </div>
-              <div className="flex gap-2 ">
-                <p className="text-xs font-bold ">Action</p>
               </div>
             </div>
           </div>
@@ -945,38 +941,11 @@ function HistoryOS2() {
                 tiket.data.map((data: any, i: any) => {
                   const lengthProses = data.proses_mtcs.length - 1;
 
-                  function convertDatetimeToDate(datetime: any) {
-                    const dateObject = new Date(datetime);
-                    const day = dateObject
-                      .getDate()
-                      .toString()
-                      .padStart(2, '0'); // Ensure two-digit day
-                    const month = (dateObject.getMonth() + 1)
-                      .toString()
-                      .padStart(2, '0'); // Adjust for zero-based month
-                    const year = dateObject.getFullYear();
-                    const hours = dateObject
-                      .getHours()
-                      .toString()
-                      .padStart(2, '0');
-                    const minutes = dateObject
-                      .getMinutes()
-                      .toString()
-                      .padStart(2, '0');
-
-                    return `${year}/${month}/${day}  ${hours}:${minutes}`; // Example format (YYYY-MM-DD)
-                  }
-
-                  const dateMtc = convertTimeStampToDateTime(data.createdAt);
                   const waktuSelesaiMtc = convertTimeStampToDateTime(
                     data.proses_mtcs[lengthProses].waktu_selesai_mtc,
                   );
-                  //   const waktuMulai = convertTimeStampToDateTime(
-                  //     data.waktu_mulai_mtc,
-                  //   );
-                  //   const waktuSelesai = convertTimeStampToDateTime(
-                  //     data.waktu_selesai_mtc,
-                  //   );
+
+                  const dateMtc = convertTimeStampToDateTime(data.createdAt);
                   const waktuRespon = calculateResponTime(
                     data.waktu_respon_qc == null
                       ? data.createdAt
@@ -1032,118 +1001,60 @@ function HistoryOS2() {
                         <section className="flex  bg-white  rounded-lg">
                           <div
                             key={i}
-                            className="py-3 w-10 px-3 flex justify-center items-center"
+                            className=" py-3 px-6 flex justify-center items-center"
                           >
-                            {i + 1 + (page - 1) * limit}
+                            {i + 1}
                           </div>
-                          <div className="grid grid-cols-12 w-full gap-2 px-3">
-                            <div className="flex flex-col md:gap-5 gap-1 w-full col-span-2">
-                              <div className="my-auto  ">
-                                <p className="text-xs font-light break-all">
-                                  {dateMtc}
+                          <div className="grid  grid-cols-6 w-full  ">
+                            <div className="flex flex-col md:gap-5 gap-1 ">
+                              <div className="my-auto ">
+                                <p className="text-sm font-light break-all">
+                                  {data.kode_ticket}
                                 </p>
                               </div>
                             </div>
                             <div className="flex flex-col md:gap-5 gap-1 ">
                               <div className="my-auto">
-                                <p className="text-xs font-light">
-                                  {data.no_jo}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex flex-col md:gap-5 gap-1 ">
-                              <div className="my-auto">
-                                <p className="text-xs font-light">
+                                <p className="text-sm font-light">
                                   {data.mesin}
                                 </p>
                               </div>
                             </div>
-                            <div className="flex flex-col md:gap-5 gap-1 col-span-3">
-                              <div className="my-auto w-full">
-                                <p className="text-xs font-light">
-                                  {data.kode_lkh} - {data.nama_kendala}
-                                </p>
+                            <div className="flex flex-col  md:gap-5 gap-1 ">
+                              <div className="my-auto w-11/12">
+                                <p className="text-sm font-light">{dateMtc}</p>
                               </div>
                             </div>
                             <div className="flex items-center md:gap-5 gap-1 ">
-                              <div className="flex ">
-                                <p
-                                  className={
-                                    data.status_tiket == 'pending'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'open'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.status_tiket == 'monitoring'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                      : data.status_tiket == 'temporary'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                      : data.status_tiket == 'request to qc'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1]  `
-                                      : data.status_tiket == 'qc rejected'
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : ''
-                                  }
-                                >
-                                  {data.status_tiket}{' '}
-                                </p>
-                              </div>
+                              <div className="flex ">{waktuSelesaiMtc}</div>
                             </div>
                             <div className="flex items-center md:gap-5 gap-1  p-2">
                               <div className="flex ">
-                                <p
-                                  className={
-                                    data.skor_mtc == 0
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.skor_mtc == 20
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.skor_mtc == 40
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
-                                      : data.skor_mtc == 50
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#fff2b1bd] `
-                                      : data.skor_mtc >= 60
-                                      ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
-                                      : ''
-                                  }
-                                >
-                                  {data.skor_mtc}%
+                                <p className="text-sm px-2  font-light  rounded-xl flex justify-center">
+                                  {data.proses_mtcs.length}
                                 </p>
                               </div>
                             </div>
-                            {/* <div className="flex flex-col justify-center md:gap-5 gap-1 ">
-                                                            <div>
-                                                                <p className="text-sm font-light">
-                                                                    {data.proses_mtcs.length}
-                                                                </p>
-                                                            </div>
-                                                        </div> */}
                             <div className="flex gap-2 items-center md:mb-0 mb-2 justify-end px-5">
                               <div>
                                 <div>
-                                  {data.status_tiket == 'monitoring' ||
-                                  data.status_tiket == 'request to qc' ? (
-                                    <button
-                                      title="button"
-                                      className="text-xs font-bold bg-blue-200 py-2 text-white rounded-md opacity-0"
+                                  <div className="flex ">
+                                    <p
+                                      className={
+                                        data.status_tiket == 'pending'
+                                          ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
+                                          : data.status_tiket == 'open'
+                                          ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FCBF11] bg-[#FFF2B1] `
+                                          : data.status_tiket == 'monitoring'
+                                          ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#004CDE] bg-[#B1ECFF] `
+                                          : data.status_tiket == 'temporary'
+                                          ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#FC4911] bg-[#de85002a]  `
+                                          : `text-sm px-2  font-light  rounded-xl flex justify-center text-[#2EB300] bg-[#00de3f2b]  `
+                                      }
                                     >
-                                      <img
-                                        src={Burger}
-                                        alt=""
-                                        className="mx-3"
-                                      />
-                                    </button>
-                                  ) : (
-                                    <button
-                                      title="button"
-                                      className="text-xs font-bold bg-blue-700 py-2 text-white rounded-md"
-                                      onClick={() => handleClick(i)}
-                                    >
-                                      <img
-                                        src={Burger}
-                                        alt=""
-                                        className="mx-3"
-                                      />
-                                    </button>
-                                  )}
+                                      {data.status_tiket}
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
                               <div>
@@ -1152,7 +1063,7 @@ function HistoryOS2() {
                                   onClick={() => handleClickDetail(i)}
                                   className="text-xs font-bold text-blue-700 bg-blue-700 py-2 border-blue-700 border rounded-md"
                                 >
-                                  <img src={Arrow} alt="" className="mx-3" />
+                                  <img src={Arrow} alt="" className="mx-2" />
                                 </button>
                               </div>
                             </div>
@@ -1165,7 +1076,7 @@ function HistoryOS2() {
                               <div className="flex px-5 py-2">
                                 <div className="flex flex-col gap-2 w-2/12">
                                   <p className="text-xs font-bold">
-                                    Kode Tiket
+                                    Waktu Tiket Masuk
                                   </p>
                                 </div>
                                 <div className="grid grid-cols-6 gap-3 w-10/12">
@@ -1200,7 +1111,7 @@ function HistoryOS2() {
                                 <div className="flex flex-col gap-2 w-2/12">
                                   <div>
                                     <p className="text-xs font-medium">
-                                      {data.kode_ticket}
+                                      {dateMtc}
                                     </p>
                                   </div>
                                   <div>
@@ -1211,58 +1122,18 @@ function HistoryOS2() {
                                       {waktuRespon}
                                     </p>
                                   </div>
-                                  <div>
-                                    <p className="text-xs font-bold">Pelapor</p>
-                                    <p className="text-xs font-medium">
-                                      {data.operator}
-                                    </p>
-                                  </div>
                                 </div>
-
                                 <div className="grid grid-cols-6 gap-3 w-10/12">
                                   {data.proses_mtcs.map(
                                     (proses: any, ii: any) => {
-                                      const tglMulaiMtc = convertDatetimeToDate(
-                                        proses.waktu_mulai_mtc,
-                                      );
-                                      function convertJam(datetime: any) {
-                                        const dateObject = new Date(datetime);
-                                        const hours = dateObject
-                                          .getHours()
-                                          .toString()
-                                          .padStart(2, '0');
-                                        const minutes = dateObject
-                                          .getMinutes()
-                                          .toString()
-                                          .padStart(2, '0');
-                                        return `${hours}:${minutes}`; // Example format (YYYY-MM-DD)
-                                      }
-                                      function convertTgl(datetime: any) {
-                                        const dateObject = new Date(datetime);
-                                        const day = dateObject
-                                          .getDate()
-                                          .toString()
-                                          .padStart(2, '0'); // Ensure two-digit day
-                                        const month = (
-                                          dateObject.getMonth() + 1
-                                        )
-                                          .toString()
-                                          .padStart(2, '0'); // Adjust for zero-based month
-                                        const year = dateObject.getFullYear();
-
-                                        return `${year}/${month}/${day}`; // Example format (YYYY-MM-DD)
-                                      }
-
-                                      const waktuMtc = convertTgl(
-                                        proses.waktu_mulai_mtc,
-                                      );
-                                      const jamMtc = convertJam(
-                                        proses.waktu_mulai_mtc,
-                                      );
+                                      const tglMulaiMtc =
+                                        convertTimeStampToDateTime(
+                                          proses.waktu_mulai_mtc,
+                                        );
                                       return (
                                         <>
                                           <div className="flex flex-col gap-2">
-                                            <h5 className="text-xs font-medium pl-5">
+                                            <h5 className="text-xs font-medium">
                                               {ii + 1}
                                             </h5>
                                           </div>
@@ -1278,17 +1149,20 @@ function HistoryOS2() {
                                           </div>
 
                                           <div className="flex flex-col gap-2">
-                                            <div className="flex ">
+                                            <div className="flex">
                                               <p
                                                 className={
-                                                  proses.skor_mtc <= 100 &&
-                                                  proses.skor_mtc >= 60
-                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
-                                                    : proses.skor_mtc > 20 &&
-                                                      proses.skor_mtc <= 59
-                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center  text-[#FCBF11] bg-[#FFF2B1] `
-                                                    : proses.skor_mtc <= 20
-                                                    ? `text-xs px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1]`
+                                                  proses.skor_mtc === 100
+                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#0057FF] bg-[#B1ECFF] `
+                                                    : proses.skor_mtc >= 60 &&
+                                                      proses.skor_mtc < 100
+                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-green-600 bg-[#00de3f2f] `
+                                                    : proses.skor_mtc >= 40 &&
+                                                      proses.skor_mtc < 60
+                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFDBB1] `
+                                                    : proses.skor_mtc < 40 &&
+                                                      proses.skor_mtc >= 0
+                                                    ? `text-sm px-2  font-light  rounded-xl flex justify-center text-[#DE0000] bg-[#FFB1B1] `
                                                     : ''
                                                 }
                                               >
@@ -1320,8 +1194,8 @@ function HistoryOS2() {
                                               }
                                               kendala={data.nama_kendala}
                                               machineName={data.mesin}
-                                              tgl={waktuMtc}
-                                              jam={jamMtc}
+                                              tgl={'12/12/24'}
+                                              jam={'17.00'}
                                               namaPemeriksa={
                                                 proses.user_eksekutor.nama
                                               }
@@ -1512,166 +1386,6 @@ function HistoryOS2() {
                                 </>
                               )}
                             </div>
-                            {data.proses_mtcs?.map(
-                              (proses: any, index: any) =>
-                                proses.status_proses === 'qc rejected' && (
-                                  <tr
-                                    key={index}
-                                    className=" text-sm px-4 py-4"
-                                  >
-                                    <td className=" p-2 text-red-400 font-bold">
-                                      QC Rejected
-                                    </td>
-                                    <td className=" p-2 text-center font-medium">
-                                      {proses.user_qc?.nama} - {proses.note_qc}
-                                    </td>
-                                  </tr>
-                                ),
-                            )}
-                            {data.waktu_selesai == null ? (
-                              ''
-                            ) : (
-                              <>
-                                <table className="w-full border-collapse font-sans text-xs mx-auto">
-                                  <thead>
-                                    <tr className="bg-gray-200">
-                                      <th className="border border-gray-300 p-2 text-left">
-                                        Keterangan
-                                      </th>
-                                      <th className="border border-gray-300 p-2 text-left">
-                                        Detail
-                                      </th>
-                                      <th className="border border-gray-300 p-2 text-left">
-                                        Waktu
-                                      </th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    <tr className="border-b border-gray-300">
-                                      <td className="border border-gray-300 p-2">
-                                        Waktu Tiket Masuk
-                                      </td>
-                                      <td className="border border-gray-300 p-2">
-                                        {dateMtc}
-                                      </td>
-                                      <td className="border border-gray-300 p-2">
-                                        -
-                                      </td>
-                                    </tr>
-                                    <tr
-                                      className={`border  p-2 ${
-                                        waktuValidasiQCMinutes >= 1800
-                                          ? 'text-red-500 border-red-500'
-                                          : 'border-gray-300'
-                                      }`}
-                                    >
-                                      <td
-                                        className={`border border-gray-300 p-2 ${
-                                          waktuValidasiQCMinutes >= 1800
-                                            ? 'text-red-500'
-                                            : ''
-                                        }`}
-                                      >
-                                        Waktu Validasi QC
-                                      </td>
-                                      <td
-                                        className={`border border-gray-300 p-2 ${
-                                          waktuValidasiQCMinutes >= 1800
-                                            ? 'text-red-500'
-                                            : ''
-                                        }`}
-                                      >
-                                        {data.user_respon_qc?.nama} ~{' '}
-                                        {convertTimeStampToDateTime(
-                                          data.waktu_respon_qc,
-                                        )}
-                                      </td>
-                                      <td
-                                        className={`border border-gray-300 p-2 ${
-                                          waktuValidasiQCMinutes >= 1800
-                                            ? 'text-red-500'
-                                            : ''
-                                        }`}
-                                      >
-                                        {waktuValidasiQC}
-                                      </td>
-                                    </tr>
-                                    <tr className="border-b border-gray-300">
-                                      <td className="border border-gray-300 p-2">
-                                        Waktu Breakdown MTC
-                                      </td>
-                                      <td className="border border-gray-300 p-2">
-                                        {convertTimeStampToDateTime(
-                                          data.waktu_mulai_mtc,
-                                        )}{' '}
-                                        -{' '}
-                                        {convertTimeStampToDateTime(
-                                          data.waktu_selesai_mtc,
-                                        )}{' '}
-                                      </td>
-                                      <td className="border border-gray-300 p-2">
-                                        {' '}
-                                        {waktuBreakdownMTC}
-                                      </td>
-                                    </tr>
-                                    <tr
-                                      className={`border border-gray-300 p-2 ${
-                                        waktuVerifikasiQCMinutes >= 3600
-                                          ? 'text-red-500 border-red-500'
-                                          : 'border-gray-300'
-                                      }`}
-                                    >
-                                      <td
-                                        className={`border border-gray-300 p-2 ${
-                                          waktuVerifikasiQCMinutes >= 3600
-                                            ? 'text-red-500'
-                                            : ''
-                                        }`}
-                                      >
-                                        Waktu Verifikasi QC
-                                      </td>
-                                      <td
-                                        className={`border border-gray-300 p-2 ${
-                                          waktuVerifikasiQCMinutes >= 3600
-                                            ? 'text-red-500'
-                                            : ''
-                                        }`}
-                                      >
-                                        {
-                                          data.proses_mtcs?.at(-1)?.user_qc
-                                            ?.nama
-                                        }{' '}
-                                        ~{' '}
-                                        {convertTimeStampToDateTime(
-                                          data.proses_mtcs?.at(-1)
-                                            ?.waktu_selesai,
-                                        )}{' '}
-                                      </td>
-                                      <td
-                                        className={`border border-gray-300 p-2 ${
-                                          waktuVerifikasiQCMinutes >= 3600
-                                            ? 'text-red-500'
-                                            : ''
-                                        }`}
-                                      >
-                                        {waktuVerifikasiQC}
-                                      </td>
-                                    </tr>
-                                    <tr className="border-b border-gray-300">
-                                      <td className="border border-gray-300 p-2">
-                                        Waktu Breakdown
-                                      </td>
-                                      <td className="border border-gray-300 p-2">
-                                        -
-                                      </td>
-                                      <td className="border border-gray-300 p-2">
-                                        {waktuBreakdown}
-                                      </td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              </>
-                            )}
                           </>
                         )}
                       </div>
@@ -1679,39 +1393,39 @@ function HistoryOS2() {
                   );
                 })}
             </div>
-          </div>
-          <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-6 pb-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Rows per page:</span>
-              <div className="flex gap-2">
-                {[10, 25, 50, 100].map((pageSize) => (
-                  <button
-                    key={pageSize}
-                    onClick={() => handleLimitChange(pageSize)}
-                    className={`px-3 py-1 text-sm rounded-md transition-colors ${
-                      limit === pageSize
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {pageSize}
-                  </button>
-                ))}
+            <div className="w-full flex flex-col md:flex-row items-center justify-between gap-4 mt-6 pb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Rows per page:</span>
+                <div className="flex gap-2">
+                  {[10, 25, 50, 100].map((pageSize) => (
+                    <button
+                      key={pageSize}
+                      onClick={() => handleLimitChange(pageSize)}
+                      className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                        limit === pageSize
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {pageSize}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div className="flex items-center gap-2">
-              <Stack spacing={2}>
-                <Pagination
-                  count={tiket?.total_page}
-                  color="primary"
-                  page={page}
-                  onChange={(e, i) => {
-                    setPage(i);
-                    console.log(i);
-                  }}
-                />
-              </Stack>
+              <div className="flex items-center gap-2">
+                <Stack spacing={2}>
+                  <Pagination
+                    count={tiket?.total_page}
+                    color="primary"
+                    page={page}
+                    onChange={(e, i) => {
+                      setPage(i);
+                      console.log(i);
+                    }}
+                  />
+                </Stack>
+              </div>
             </div>
           </div>
         </>
