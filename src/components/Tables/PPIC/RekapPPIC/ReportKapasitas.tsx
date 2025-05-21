@@ -148,7 +148,7 @@ function ReportKapasitas() {
 
   // Define color scheme for chart
   const getCapacityColor = (percent: number) => {
-    if (percent <= 25) return '#ef4444'; // Red for critical
+    if (percent <= 10) return '#ef4444'; // Red for critical
     if (percent <= 50) return '#f59e0b'; // Amber for warning
     if (percent <= 75) return '#3b82f6'; // Blue for moderate
     return '#22c55e'; // Green for good
@@ -394,7 +394,7 @@ function ReportKapasitas() {
                                   ? 'text-green-600'
                                   : item.sisa_kapasitas_percent > 50
                                   ? 'text-blue-600'
-                                  : item.sisa_kapasitas_percent > 25
+                                  : item.sisa_kapasitas_percent > 10
                                   ? 'text-amber-600'
                                   : 'text-red-600'
                               }`}

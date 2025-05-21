@@ -65,7 +65,46 @@ function TampilanWeeklyJO() {
       console.log(error);
     }
   }
+  const formatIndonesianDate = (dateString: any) => {
+    const days = [
+      'Minggu',
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu',
+    ];
 
+    const months = [
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
+    ];
+
+    const date = new Date(dateString);
+    const dayName = days[date.getDay()];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+
+    return `${dayName}, ${day} ${month} ${year}`;
+  };
+  const [formattedDisplayDate, setFormattedDisplayDate] = useState('');
+
+  useEffect(() => {
+    // Set formatted display date whenever startDate changes
+    setFormattedDisplayDate(formatIndonesianDate(startDate));
+  }, [startDate]);
   const getJadwalView = async (tglAwal: string, tglAkhir: string) => {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksiWeekView`;
     try {
@@ -276,7 +315,7 @@ function TampilanWeeklyJO() {
                   Prev
                 </button>
                 <label className="text-xl text-blue-400 font-semibold w-full flex justify-center">
-                  {convertTimeStampToDate(startDate)}
+                  {formattedDisplayDate}
                 </label>
                 <button
                   onClick={() => handleNextPrev('next')}

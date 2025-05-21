@@ -991,25 +991,7 @@ function TableOS() {
                       : data.waktu_respon_qc,
                     data.waktu_respon,
                   );
-                  // const waktuBreakdown = calculateResponTime(
-                  //   data.createdAt,
-                  //   data.waktu_selesai,
-                  // );
-                  // const waktuBreakdownMTC = calculateResponTime(
-                  //   data.waktu_respon_qc,
-                  //   data.waktu_selesai_mtc,
-                  // );
-                  // const qcRespon = calculateResponTime(
-                  //   data.createdAt,
-                  //   data.waktu_respon_qc,
-                  // )
-                  // const qcVerif = calculateResponTime(
-                  //   data.waktu_selesai_mtc,
-                  //   data.waktu_selesai,
-                  // )
-                  // const waktuBreakdownQC =
-                  //   parseInt(qcRespon) + parseInt(qcVerif)
-                  //   ;
+
                   const waktuBreakdownMinutes = calculateResponTime2(
                     data.createdAt,
                     data.waktu_selesai,

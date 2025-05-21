@@ -941,19 +941,59 @@ function HistoryOS2() {
                 tiket.data.map((data: any, i: any) => {
                   const lengthProses = data.proses_mtcs.length - 1;
 
-                  const dateMtc = convertTimeStampToDateTime(data.createdAt);
                   const waktuSelesaiMtc = convertTimeStampToDateTime(
                     data.proses_mtcs[lengthProses].waktu_selesai_mtc,
                   );
-                  //   const waktuMulai = convertTimeStampToDateTime(
-                  //     data.waktu_mulai_mtc,
-                  //   );
-                  //   const waktuSelesai = convertTimeStampToDateTime(
-                  //     data.waktu_selesai_mtc,
-                  //   );
+
+                  const dateMtc = convertTimeStampToDateTime(data.createdAt);
                   const waktuRespon = calculateResponTime(
-                    data.createdAt,
+                    data.waktu_respon_qc == null
+                      ? data.createdAt
+                      : data.waktu_respon_qc,
                     data.waktu_respon,
+                  );
+
+                  const waktuBreakdownMinutes = calculateResponTime2(
+                    data.createdAt,
+                    data.waktu_selesai,
+                  );
+                  const waktuBreakdownMTCMinutes = calculateResponTime2(
+                    data.waktu_respon_qc,
+                    data.waktu_selesai_mtc,
+                  );
+                  const waktuValidasiQCMinutes = calculateResponTime2(
+                    data.createdAt,
+                    data.waktu_respon_qc,
+                  );
+                  const waktuValidasiQC = formatMinutesToHoursMinutesSeconds(
+                    waktuValidasiQCMinutes,
+                  );
+                  const waktuBreakdown = formatMinutesToHoursMinutesSeconds(
+                    waktuBreakdownMinutes,
+                  );
+                  const waktuBreakdownMTC = formatMinutesToHoursMinutesSeconds(
+                    waktuBreakdownMTCMinutes,
+                  );
+
+                  const qcRespon = calculateResponTime2(
+                    data.createdAt,
+                    data.waktu_respon_qc,
+                  );
+                  const qcVerif = calculateResponTime2(
+                    data.waktu_selesai_mtc,
+                    data.waktu_selesai,
+                  );
+                  const waktuVerifikasiQCMinutes = calculateResponTime2(
+                    data.waktu_selesai_mtc,
+                    data.waktu_selesai,
+                  );
+                  const waktuVerifikasiQC = formatMinutesToHoursMinutesSeconds(
+                    waktuVerifikasiQCMinutes,
+                  );
+                  // Combine qcRespon and qcVerif and format them
+                  const waktuBreakdownQCMinutes: any = qcRespon + qcVerif;
+                  const waktuBreakdownQC = formatMinutesToHoursMinutesSeconds(
+                    waktuBreakdownQCMinutes,
                   );
                   return (
                     <>
@@ -995,13 +1035,6 @@ function HistoryOS2() {
                                 </p>
                               </div>
                             </div>
-                            {/* <div className="flex flex-col justify-center md:gap-5 gap-1 ">
-                                                            <div>
-                                                                <p className="text-sm font-light">
-                                                                    {data.proses_mtcs.length}
-                                                                </p>
-                                                            </div>
-                                                        </div> */}
                             <div className="flex gap-2 items-center md:mb-0 mb-2 justify-end px-5">
                               <div>
                                 <div>
@@ -1192,6 +1225,166 @@ function HistoryOS2() {
                                 </div>
                               </div>
                             </div>
+                            {data.proses_mtcs?.map(
+                              (proses: any, index: any) =>
+                                proses.status_proses === 'qc rejected' && (
+                                  <tr
+                                    key={index}
+                                    className=" text-sm px-4 py-4"
+                                  >
+                                    <td className=" p-2 text-red-400 font-bold">
+                                      QC Rejected
+                                    </td>
+                                    <td className=" p-2 text-center font-medium">
+                                      {proses.user_qc?.nama} - {proses.note_qc}
+                                    </td>
+                                  </tr>
+                                ),
+                            )}
+                            {data.waktu_selesai == null ? (
+                              ''
+                            ) : (
+                              <>
+                                <table className="w-full border-collapse font-sans text-xs mx-auto">
+                                  <thead>
+                                    <tr className="bg-gray-200">
+                                      <th className="border border-gray-300 p-2 text-left">
+                                        Keterangan
+                                      </th>
+                                      <th className="border border-gray-300 p-2 text-left">
+                                        Detail
+                                      </th>
+                                      <th className="border border-gray-300 p-2 text-left">
+                                        Waktu
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr className="border-b border-gray-300">
+                                      <td className="border border-gray-300 p-2">
+                                        Waktu Tiket Masuk
+                                      </td>
+                                      <td className="border border-gray-300 p-2">
+                                        {dateMtc}
+                                      </td>
+                                      <td className="border border-gray-300 p-2">
+                                        -
+                                      </td>
+                                    </tr>
+                                    <tr
+                                      className={`border  p-2 ${
+                                        waktuValidasiQCMinutes >= 1800
+                                          ? 'text-red-500 border-red-500'
+                                          : 'border-gray-300'
+                                      }`}
+                                    >
+                                      <td
+                                        className={`border border-gray-300 p-2 ${
+                                          waktuValidasiQCMinutes >= 1800
+                                            ? 'text-red-500'
+                                            : ''
+                                        }`}
+                                      >
+                                        Waktu Validasi QC
+                                      </td>
+                                      <td
+                                        className={`border border-gray-300 p-2 ${
+                                          waktuValidasiQCMinutes >= 1800
+                                            ? 'text-red-500'
+                                            : ''
+                                        }`}
+                                      >
+                                        {data.user_respon_qc?.nama} ~{' '}
+                                        {convertTimeStampToDateTime(
+                                          data.waktu_respon_qc,
+                                        )}
+                                      </td>
+                                      <td
+                                        className={`border border-gray-300 p-2 ${
+                                          waktuValidasiQCMinutes >= 1800
+                                            ? 'text-red-500'
+                                            : ''
+                                        }`}
+                                      >
+                                        {waktuValidasiQC}
+                                      </td>
+                                    </tr>
+                                    <tr className="border-b border-gray-300">
+                                      <td className="border border-gray-300 p-2">
+                                        Waktu Breakdown MTC
+                                      </td>
+                                      <td className="border border-gray-300 p-2">
+                                        {convertTimeStampToDateTime(
+                                          data.waktu_mulai_mtc,
+                                        )}{' '}
+                                        -{' '}
+                                        {convertTimeStampToDateTime(
+                                          data.waktu_selesai_mtc,
+                                        )}{' '}
+                                      </td>
+                                      <td className="border border-gray-300 p-2">
+                                        {' '}
+                                        {waktuBreakdownMTC}
+                                      </td>
+                                    </tr>
+                                    <tr
+                                      className={`border border-gray-300 p-2 ${
+                                        waktuVerifikasiQCMinutes >= 3600
+                                          ? 'text-red-500 border-red-500'
+                                          : 'border-gray-300'
+                                      }`}
+                                    >
+                                      <td
+                                        className={`border border-gray-300 p-2 ${
+                                          waktuVerifikasiQCMinutes >= 3600
+                                            ? 'text-red-500'
+                                            : ''
+                                        }`}
+                                      >
+                                        Waktu Verifikasi QC
+                                      </td>
+                                      <td
+                                        className={`border border-gray-300 p-2 ${
+                                          waktuVerifikasiQCMinutes >= 3600
+                                            ? 'text-red-500'
+                                            : ''
+                                        }`}
+                                      >
+                                        {
+                                          data.proses_mtcs?.at(-1)?.user_qc
+                                            ?.nama
+                                        }{' '}
+                                        ~{' '}
+                                        {convertTimeStampToDateTime(
+                                          data.proses_mtcs?.at(-1)
+                                            ?.waktu_selesai,
+                                        )}{' '}
+                                      </td>
+                                      <td
+                                        className={`border border-gray-300 p-2 ${
+                                          waktuVerifikasiQCMinutes >= 3600
+                                            ? 'text-red-500'
+                                            : ''
+                                        }`}
+                                      >
+                                        {waktuVerifikasiQC}
+                                      </td>
+                                    </tr>
+                                    <tr className="border-b border-gray-300">
+                                      <td className="border border-gray-300 p-2">
+                                        Waktu Breakdown
+                                      </td>
+                                      <td className="border border-gray-300 p-2">
+                                        -
+                                      </td>
+                                      <td className="border border-gray-300 p-2">
+                                        {waktuBreakdown}
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </>
+                            )}
                           </>
                         )}
                       </div>

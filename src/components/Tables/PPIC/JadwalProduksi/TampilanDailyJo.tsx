@@ -22,28 +22,64 @@ interface JobOrder {
 interface ListJOData {
   data: JobOrder[];
 }
+
+// Function to format date as "Hari, DD Bulan YYYY"
+const formatIndonesianDate = (dateString: any) => {
+  const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+  const months = [
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember',
+  ];
+
+  const date = new Date(dateString);
+  const dayName = days[date.getDay()];
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+
+  return `${dayName}, ${day} ${month} ${year}`;
+};
+
 function TampilanDailyJO() {
   const [isLoading, setIsLoading] = useState(false);
-  const [startDate, setStartDate] = useState<any>(null);
-  const [endDate, setEndDate] = useState<any>(null);
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+  const day = String(today.getDate()).padStart(2, '0');
+  const formattedDate = `${year}-${month}-${day}`;
+
+  const [startDate, setStartDate] = useState(formattedDate);
+  const [endDate, setEndDate] = useState(formattedDate);
   const [mapData, setMapData] = useState<any>([]);
   const [historyListJO, setHistoryListJO] = useState<ListJOData>({ data: [] });
   const [penjadwalanListJO, setPenjadwalanListJO] = useState<ListJOData>({
     data: [],
   });
-  const today = new Date();
-  const [todayDate, setTodayDate] = useState<string>('');
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
-  const day = String(today.getDate()).padStart(2, '0');
+  const [todayDate, setTodayDate] = useState(formattedDate);
+  const [formattedDisplayDate, setFormattedDisplayDate] = useState('');
 
-  const formattedDate = `${year}-${month}-${day}`;
+  useEffect(() => {
+    // Set formatted display date whenever startDate changes
+    setFormattedDisplayDate(formatIndonesianDate(startDate));
+  }, [startDate]);
+
   useEffect(() => {
     getJadwalView(formattedDate, formattedDate);
-    const today = new Date();
-    setTodayDate(today.toISOString().split('T')[0]);
+    setTodayDate(formattedDate);
     getmasterKategori();
   }, []);
+
   const [listJO1, setJo1] = useState<any>();
   async function get1Tiket(id: any, i: any) {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksi/${id}`;
@@ -88,8 +124,6 @@ function TampilanDailyJO() {
       setIsLoading(false);
     }
   };
-
-  const [listJO, setJo] = useState<any>();
   // Modified getmasterKategori function to handle both statuses
   async function getmasterKategori(
     statusTiket: string = 'history',
@@ -249,6 +283,7 @@ function TampilanDailyJO() {
                 <input
                   className="rounded-md bg-[#D8EAFF] px-2 h-8"
                   type="date"
+                  value={startDate}
                   onChange={(e) => {
                     setStartDate(e.target.value);
                     setEndDate(e.target.value);
@@ -282,7 +317,7 @@ function TampilanDailyJO() {
                 </button>
               </div>
               <label className="text-xl text-blue-400 font-semibold w-full flex justify-center">
-                {convertTimeStampToDate(startDate)}
+                {formattedDisplayDate}
               </label>
             </div>
 
