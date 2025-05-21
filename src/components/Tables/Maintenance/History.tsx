@@ -967,15 +967,17 @@ function HistoryOS2() {
                     return `${year}/${month}/${day}  ${hours}:${minutes}`; // Example format (YYYY-MM-DD)
                   }
 
+                  const dateMtc = convertTimeStampToDateTime(data.createdAt);
                   const waktuSelesaiMtc = convertTimeStampToDateTime(
                     data.proses_mtcs[lengthProses].waktu_selesai_mtc,
                   );
-
-                  const dateMtc = convertTimeStampToDateTime(data.createdAt);
+                  //   const waktuMulai = convertTimeStampToDateTime(
+                  //     data.waktu_mulai_mtc,
+                  //   );
+                  //   const waktuSelesai = convertTimeStampToDateTime(
+                  //     data.waktu_selesai_mtc,
+                  //   );
                   const waktuRespon = calculateResponTime(
-                    data.waktu_respon_qc == null
-                      ? data.createdAt
-                      : data.waktu_respon_qc,
                     data.waktu_respon_qc == null
                       ? data.createdAt
                       : data.waktu_respon_qc,
