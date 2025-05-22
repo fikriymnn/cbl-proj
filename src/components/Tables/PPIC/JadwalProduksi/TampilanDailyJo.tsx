@@ -252,8 +252,8 @@ function TampilanDailyJO() {
       'Desember',
     ];
 
-    const [datePart, timePart] = dateString.split(' ');
-    const [year, month, day] = datePart.split('-');
+    const [datePart, timePart] = dateString?.split(' ');
+    const [year, month, day] = datePart?.split('-');
 
     return `${parseInt(day)} / ${
       months[parseInt(month) - 1]
@@ -644,7 +644,10 @@ function TampilanDailyJO() {
                                   htmlFor=""
                                   className="text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center"
                                 >
-                                  {formatCustomDate(data2.tgl_from)}
+                                  {data2.tgl_from == null ||
+                                  data2.tgl_from == ''
+                                    ? '-'
+                                    : formatCustomDate(data2.tgl_from)}
                                 </label>
                               </>
                             ) : (

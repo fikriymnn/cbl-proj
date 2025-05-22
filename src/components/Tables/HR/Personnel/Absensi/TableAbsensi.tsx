@@ -5,6 +5,7 @@ import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 import TabPengajuanLangsung from './TabPengajuanLangsung';
 import Polygon6 from '../../../../../images/icon/Polygon6.svg';
 import convertTimeStampToDate from '../../../../../utils/convertDate';
+import * as XLSX from 'xlsx';
 
 function TableAbsensi() {
   const [isLoading, setIsLoading] = useState(false);
@@ -238,6 +239,120 @@ function TableAbsensi() {
         data.tipe_penggajian === selectedTipePenggajian)
     );
   });
+  // Function to convert timestamp to readable format
+  const formatTimestamp = (timestamp: string | null) => {
+    if (!timestamp) return '';
+    try {
+      const date = new Date(timestamp);
+      return date.toLocaleString('id-ID', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
+    } catch (error) {
+      return timestamp;
+    }
+  };
+
+  // Function to export data to Excel
+  const exportToExcel = () => {
+    if (!filteredAbsen || filteredAbsen.length === 0) {
+      alert('Tidak ada data untuk diekspor');
+      return;
+    }
+
+    // Prepare data for export (excluding ID fields and converting timestamps)
+    const exportData = filteredAbsen.map((item: any, index: number) => ({
+      No: index + 1,
+      Nama: item.name,
+      Hari: item.hari,
+      'Tanggal Masuk': item.tgl_masuk,
+      'Tanggal Absen': item.tgl_absen,
+      'Tanggal Keluar': item.tgl_keluar || '',
+      'Waktu Masuk': formatTimestamp(item.waktu_masuk),
+      'Waktu Keluar': formatTimestamp(item.waktu_keluar),
+      'Jam Masuk': item.jam_masuk || '',
+      'Jam Keluar': item.jam_keluar || '',
+      Shift: item.shift || '',
+      'Jenis Hari Masuk': item.jenis_hari_masuk,
+      Department: item.nama_department,
+      Divisi: item.nama_divisi,
+      'Tipe Karyawan': item.tipe_karyawan,
+      'Tipe Penggajian': item.tipe_penggajian,
+      'Status Absen': item.status_absen,
+      'Status Masuk': item.status_masuk,
+      'Status Keluar': item.status_keluar,
+      'Status Lembur': item.status_lembur,
+      'Status Lembur SPL': item.status_lembur_spl,
+      'Status Ketidaksesuaian': item.status_ketidaksesuaian || '',
+      'Jam Lembur': item.jam_lembur || 0,
+      'Jam Lembur SPL': item.jam_lembur_spl || 0,
+      'Jam Terlambat': item.menit_terlambat || 0,
+    }));
+
+    // Create workbook and worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    // Set column widths for better readability
+    const columnWidths = [
+      { wch: 5 }, // No
+      { wch: 20 }, // Nama
+      { wch: 10 }, // Hari
+      { wch: 15 }, // Tanggal Masuk
+      { wch: 15 }, // Tanggal Absen
+      { wch: 15 }, // Tanggal Keluar
+      { wch: 20 }, // Waktu Masuk
+      { wch: 20 }, // Waktu Keluar
+      { wch: 10 }, // Jam Masuk
+      { wch: 10 }, // Jam Keluar
+      { wch: 10 }, // Shift
+      { wch: 15 }, // Jenis Hari Masuk
+      { wch: 25 }, // Department
+      { wch: 20 }, // Divisi
+      { wch: 15 }, // Tipe Karyawan
+      { wch: 15 }, // Tipe Penggajian
+      { wch: 15 }, // Status Absen
+      { wch: 15 }, // Status Masuk
+      { wch: 15 }, // Status Keluar
+      { wch: 15 }, // Status Lembur
+      { wch: 18 }, // Status Lembur SPL
+      { wch: 20 }, // Status Ketidaksesuaian
+      { wch: 12 }, // Jam Lembur
+      { wch: 15 }, // Jam Lembur SPL
+      { wch: 15 }, // Jam Terlambat
+    ];
+
+    worksheet['!cols'] = columnWidths;
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Data Absensi');
+    // Generate filename based on date range and current date
+    const currentDate = new Date().toISOString().split('T')[0];
+    let filename = 'Data_Absensi';
+
+    // Add date range to filename if filters are applied
+    if (dateFrom && dateTo) {
+      if (dateFrom === dateTo) {
+        // Single date
+        filename += `_${dateFrom}`;
+      } else {
+        // Date range
+        filename += `_${dateFrom}_to_${dateTo}`;
+      }
+    } else if (dateFrom || dateTo) {
+      // Only one date is selected
+      filename += `_${dateFrom || dateTo}`;
+    }
+
+    // Add current export date
+    filename += `_exported_${currentDate}.xlsx`;
+
+    // Save the file
+    XLSX.writeFile(workbook, filename);
+  };
 
   return (
     <>
@@ -395,6 +510,18 @@ function TableAbsensi() {
                   className="bg-green-600 hover:bg-green-700 transition-colors rounded-md px-5 py-2.5 text-sm font-medium text-white"
                 >
                   Data Hari Ini
+                </button>
+                {/* Export to Excel Button */}
+                <button
+                  onClick={exportToExcel}
+                  disabled={!filteredAbsen || filteredAbsen.length === 0}
+                  className={`rounded-md px-5 py-2.5 text-sm font-medium text-white ${
+                    !filteredAbsen || filteredAbsen.length === 0
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-orange-600 hover:bg-orange-700 transition-colors'
+                  }`}
+                >
+                  Export Excel
                 </button>
               </div>
 

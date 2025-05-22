@@ -658,7 +658,10 @@ function PayrollMinggu() {
                                         <div>
                                           {data2.status_lembur || '-'}
                                           {data2.jam_lembur
-                                            ? ` (${data2.jam_lembur} jam)`
+                                            ? ` (${
+                                                data2.jam_lembur -
+                                                data2.lama_istirahat
+                                              } jam)`
                                             : ''}
                                         </div>
 
