@@ -17,6 +17,7 @@ const popUpTable2 = ({
 }) => {
   // Initialize data with dataMap
   const [data, setData] = useState<any>(dataMap);
+  const [semuaTahap, setSemuaTahap] = useState<any>(false);
   const startDate = new Date(data.tanggal);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -71,6 +72,7 @@ const popUpTable2 = ({
         url,
         {
           data_jadwal: data,
+          isSemuaTahap: semuaTahap,
         },
         {
           withCredentials: true,
@@ -79,6 +81,7 @@ const popUpTable2 = ({
       setIsLoading(false);
       onClose();
       onFinish();
+      console.log(response);
     } catch (error) {
       console.error('Error fetching data:', error);
       setIsLoading(false);
@@ -226,6 +229,15 @@ const popUpTable2 = ({
         >
           Simpan
         </button>
+        <label>Tahap lain ikut berubah?</label>
+        <input
+          type="checkbox"
+          id="checkboxLabelTwo"
+          defaultValue={semuaTahap}
+          onChange={() => {
+            setSemuaTahap(!semuaTahap);
+          }}
+        />
       </div>
     </div>
   );

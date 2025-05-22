@@ -96,10 +96,15 @@ const PopUpTable = ({
     }`;
     try {
       setIsLoading(true);
-      await axios.put(url, { data_jadwal: data }, { withCredentials: true });
+      const res = await axios.put(
+        url,
+        { data_jadwal: data },
+        { withCredentials: true },
+      );
       setIsLoading(false);
       onClose();
       onFinish();
+      console.log(res);
     } catch (error) {
       console.error('Error updating data:', error);
       setIsLoading(false);

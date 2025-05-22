@@ -364,6 +364,32 @@ function ListBookingJo() {
     });
   };
 
+  const [editTanggal, setEditTanggal] = useState<any>();
+
+  async function updateTanggalKirim(id: any, tanggal: any) {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/ppic/jadwalProduksi/editTglKirim/${id}`;
+    try {
+      setIsLoading(true);
+      const res = await axios.put(
+        url,
+        { tgl_kirim: tanggal },
+        { withCredentials: true },
+      );
+
+      console.log(res);
+
+      if (res.data.status_code == 200) {
+        calculateJO(id, false);
+      }
+      setIsLoading(false);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
+
   return (
     <main className="overflow-x-scroll">
       {isLoading && <Loading />}
@@ -527,6 +553,21 @@ function ListBookingJo() {
                               <label className="text-[#016ae6] uppercase text-xl font-normal">
                                 : {convertTimeStampToDate(jo.tgl_kirim)}
                               </label>
+                              <label className="text-black text-xs font-bold">
+                                Edit Tanggal Kirim
+                              </label>
+                              <input
+                                type="date"
+                                onChange={(e) => setEditTanggal(e.target.value)}
+                              />
+                              <button
+                                onClick={() => {
+                                  updateTanggalKirim(jo.id, editTanggal);
+                                  console.log(jo.id, editTanggal);
+                                }}
+                              >
+                                Save
+                              </button>
                             </div>
                           </div>
                           <div className="flex flex-col">
