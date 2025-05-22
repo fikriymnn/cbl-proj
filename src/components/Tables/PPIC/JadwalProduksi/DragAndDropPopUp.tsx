@@ -174,14 +174,14 @@ const PopUpTable = ({
             : {formatInteger(data?.qty_pcs)}
           </label>
         </div>
-        <div>
+        {/* <div>
           <label className="text-black text-xs font-bold">Lembur</label>
           <input
             type="checkbox"
             checked={data.is_lembur} // Nilai default dari useState
             onChange={handleCheckboxChange}
           />
-        </div>
+        </div> */}
       </div>
       <div className="overflow-x-auto">
         <table className="table-auto w-full border-collapse border border-gray-300">

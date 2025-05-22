@@ -18,11 +18,11 @@ const popUpTable2 = ({
   // Initialize data with dataMap
   const [data, setData] = useState<any>(dataMap);
   const [semuaTahap, setSemuaTahap] = useState<any>(false);
-  const startDate = new Date(data.tanggal);
 
   const [isLoading, setIsLoading] = useState(false);
-  // Generate a list of 7 days from startDate
-  const generateDays = (startDate: any, daysCount: any) => {
+  const [startDate, setStartDate] = useState(new Date(dataMap?.tanggal));
+  const [daysList, setDaysList] = useState(generateDays(startDate, 7));
+  function generateDays(startDate: Date, daysCount: number) {
     let days = [];
     for (let i = 0; i < daysCount; i++) {
       let day = new Date(startDate);
@@ -30,13 +30,27 @@ const popUpTable2 = ({
       days.push(day);
     }
     return days;
-  };
+  }
 
-  const [daysList, setDaysList] = useState(generateDays(startDate, 7)); // Initial 7 days
+  // Handle Next & Prev Date Range
+  const handleChangeDateRange = (direction: 'next' | 'prev') => {
+    const newStartDate = new Date(startDate);
+    newStartDate.setDate(startDate.getDate() + (direction === 'next' ? 7 : -7)); // Move 7 days forward/backward
+
+    setStartDate(newStartDate);
+    setDaysList(generateDays(newStartDate, 7)); // Regenerate daysList
+  };
+  const handleChangeDate1Day = (direction: 'next' | 'prev') => {
+    const newStartDate = new Date(startDate);
+    newStartDate.setDate(startDate.getDate() + (direction === 'next' ? 1 : -1)); // Move 7 days forward/backward
+
+    setStartDate(newStartDate);
+    setDaysList(generateDays(newStartDate, 7)); // Regenerate daysList
+  };
   const hoursList = Array.from(
     { length: 24 },
     (_, index) => `${index.toString().padStart(2, '0')}:00:00`,
-  );
+  ); // Generate a list of 7 days from startDate
 
   // Handle the drop event to update the data (day and hour)
   const handleDrop = (event: any, newDay: any, newJam: any) => {
@@ -121,6 +135,40 @@ const popUpTable2 = ({
     <div className="max-w-full mx-auto p-4">
       {isLoading && <Loading />}
       <h2 className="text-2xl font-bold mb-4">Jadwal Mesin: {data.mesin}</h2>
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex flex-col ">
+          <button
+            onClick={() => handleChangeDateRange('prev')}
+            className="bg-gray-200 text-black px-3 py-2 rounded-md"
+          >
+            ⬅️ Prev 7 Days
+          </button>
+          <button
+            onClick={() => handleChangeDate1Day('prev')}
+            className="bg-gray-200 text-black px-3 py-2 rounded-md"
+          >
+            ⬅️ Prev 1 Day
+          </button>
+        </div>
+        <span className="text-lg font-semibold text-blue-600">
+          {convertTimeStampToDate(startDate.toISOString())} -{' '}
+          {convertTimeStampToDate(daysList[6].toISOString())}
+        </span>
+        <div className="flex flex-col ">
+          <button
+            onClick={() => handleChangeDateRange('next')}
+            className="bg-gray-200 text-black px-3 py-2 rounded-md"
+          >
+            Next 7 Days ➡️
+          </button>
+          <button
+            onClick={() => handleChangeDate1Day('next')}
+            className="bg-gray-200 text-black px-3 py-2 rounded-md"
+          >
+            Next 1 Day ➡️
+          </button>
+        </div>
+      </div>
       <div className="flex flex-col w-[50%]">
         <div className="grid grid-cols-2 gap-2">
           <label htmlFor="" className="text-black text-xs font-bold">
@@ -215,29 +263,31 @@ const popUpTable2 = ({
         </table>
       </div>
       <div className="flex gap-2">
-        <button
+        {/* <button
           onClick={() => {
             lemburOneDay();
           }}
           className="bg-primary text-white px-5 py-2 rounded-md my-auto mt-4"
         >
           Lembur
-        </button>
+        </button> */}
         <button
           onClick={() => putJadwalView()}
           className="bg-primary text-white px-5 py-2 rounded-md my-auto mt-4"
         >
           Simpan
         </button>
-        <label>Tahap lain ikut berubah?</label>
-        <input
-          type="checkbox"
-          id="checkboxLabelTwo"
-          defaultValue={semuaTahap}
-          onChange={() => {
-            setSemuaTahap(!semuaTahap);
-          }}
-        />
+        <div className="flex gap-1 items-center">
+          <label>Tahap lain ikut berubah?</label>
+          <input
+            type="checkbox"
+            id="checkboxLabelTwo"
+            defaultValue={semuaTahap}
+            onChange={() => {
+              setSemuaTahap(!semuaTahap);
+            }}
+          />
+        </div>
       </div>
     </div>
   );

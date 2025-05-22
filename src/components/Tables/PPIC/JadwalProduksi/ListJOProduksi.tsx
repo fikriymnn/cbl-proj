@@ -483,12 +483,12 @@ function ListJOProduksi() {
                         >
                           CALCULATE
                         </button>
-                        <button
+                        {/* <button
                           onClick={() => handleCalculateJO(jo.id, index, true)}
                           className="text-[#0065de] text-sm font-bold"
                         >
                           LEMBUR
-                        </button>
+                        </button> */}
                       </div>
                     )}
                   </div>

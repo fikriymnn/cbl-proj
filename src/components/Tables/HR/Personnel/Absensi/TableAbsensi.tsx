@@ -266,17 +266,61 @@ function TableAbsensi() {
 
     // Prepare data for export (excluding ID fields and converting timestamps)
     const exportData = filteredAbsen.map((item: any, index: number) => ({
-      No: index + 1,
-      Nama: item.name,
+      empNo: ' ',
+      'AC-No': '',
+      'No.': index + 1,
+      Name: item.name,
       Hari: item.hari,
-      'Tanggal Masuk': item.tgl_masuk,
-      'Tanggal Absen': item.tgl_absen,
-      'Tanggal Keluar': item.tgl_keluar || '',
-      'Waktu Masuk': formatTimestamp(item.waktu_masuk),
-      'Waktu Keluar': formatTimestamp(item.waktu_keluar),
-      'Jam Masuk': item.jam_masuk || '',
-      'Jam Keluar': item.jam_keluar || '',
-      Shift: item.shift || '',
+      Date: item.tgl_absen
+        ? new Date(item.tgl_absen).toLocaleDateString('en-GB')
+        : '',
+      'Clock In': item.jam_masuk || '',
+      'Clock Out': item.jam_keluar || '',
+      Timetable: item.shift || '',
+      'Tanggal Masuk': item.tgl_masuk
+        ? item.tgl_masuk.replace(
+            /(\d+)-(\w+)-(\d+)/,
+            (match: any, day: any, month: any, year: any) => {
+              const months: any = {
+                Jan: '01',
+                Feb: '02',
+                Mar: '03',
+                Apr: '04',
+                Mei: '05',
+                Jun: '06',
+                Jul: '07',
+                Agu: '08',
+                Sep: '09',
+                Okt: '10',
+                Nov: '11',
+                Des: '12',
+              };
+              return `${day.padStart(2, '0')}/${months[month]}/${year}`;
+            },
+          )
+        : '',
+      'Tanggal Keluar': item.tgl_keluar
+        ? item.tgl_keluar.replace(
+            /(\d+)-(\w+)-(\d+)/,
+            (match: any, day: any, month: any, year: any) => {
+              const months: any = {
+                Jan: '01',
+                Feb: '02',
+                Mar: '03',
+                Apr: '04',
+                Mei: '05',
+                Jun: '06',
+                Jul: '07',
+                Agu: '08',
+                Sep: '09',
+                Okt: '10',
+                Nov: '11',
+                Des: '12',
+              };
+              return `${day.padStart(2, '0')}/${months[month]}/${year}`;
+            },
+          )
+        : '',
       'Jenis Hari Masuk': item.jenis_hari_masuk,
       Department: item.nama_department,
       Divisi: item.nama_divisi,

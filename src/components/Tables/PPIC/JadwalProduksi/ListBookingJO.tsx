@@ -8,6 +8,16 @@ import formatInteger from '../../../../utils/formaterInteger';
 import PopUpTable from './DragAndDropPopUp';
 import ModalFull from './ModalFull';
 
+// New Action Loading Component
+const ActionLoading = () => (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-4">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <p className="text-gray-700 font-medium">Memproses permintaan...</p>
+    </div>
+  </div>
+);
+
 // Define proper TypeScript interfaces
 interface JOData {
   id: string;
@@ -57,6 +67,7 @@ interface DetailJOData {
 function ListBookingJo() {
   // Consolidated state management with proper typing
   const [isLoading, setIsLoading] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
   const [listJO, setListJO] = useState<{ data: JOData[] }>({ data: [] });
   const [selectedJO, setSelectedJO] = useState<DetailJOData | null>(null);
   const [mapData, setMapData] = useState<any[]>([]);
@@ -138,6 +149,33 @@ function ListBookingJo() {
 
   // Memoized API base URL
   const API_BASE = useMemo(() => import.meta.env.VITE_API_LINK, []);
+
+  // Refresh data functions without date filters
+  const refreshJadwalView = useCallback(async () => {
+    const url = `${API_BASE}/ppic/jadwalProduksiView`;
+    // Call without date parameters to get all data
+    const data = await fetchAPI(url, {});
+
+    if (data) {
+      setMapData(data.data || []);
+    }
+  }, [API_BASE, fetchAPI]);
+
+  const refreshJOList = useCallback(async () => {
+    const url = `${API_BASE}/ppic/jadwalProduksi`;
+    // Only use the required status_tiket parameter, no date filters
+    const params = {
+      status_tiket: 'incoming',
+      type: 'booking',
+    };
+
+    const data = await fetchAPI(url, params);
+
+    if (data) {
+      setListJO(data);
+    }
+  }, [API_BASE, fetchAPI]);
+
   // 1. Create separate functions for initial data loading without filters
   const getInitialJadwalView = useCallback(async () => {
     const url = `${API_BASE}/ppic/jadwalProduksiView`;
@@ -177,6 +215,7 @@ function ListBookingJo() {
       setListJO(data);
     }
   }, [API_BASE, fetchAPI]);
+
   const getJadwalView = useCallback(async () => {
     const url = `${API_BASE}/ppic/jadwalProduksiView`;
     const data = await fetchAPI(url, {
@@ -220,6 +259,7 @@ function ListBookingJo() {
       setListJO(data);
     }
   }, [API_BASE, fetchAPI, dateRange, searchTerm]);
+
   const getSingleJO = useCallback(
     async (id: string) => {
       const url = `${API_BASE}/ppic/jadwalProduksi/${id}`;
@@ -240,32 +280,54 @@ function ListBookingJo() {
         return false;
       }
 
-      const url = `${API_BASE}/ppic/calculateJadwalProduksi/${id}`;
-      const data = await fetchAPI(url, { is_lembur: isLembur });
+      setIsActionLoading(true);
+      try {
+        const url = `${API_BASE}/ppic/calculateJadwalProduksi/${id}`;
+        const response = await axios.get(url, {
+          params: { is_lembur: isLembur },
+          withCredentials: true,
+        });
 
-      if (data) {
-        // Refresh data after calculation
-        await getJOList();
-        return true;
+        if (response.data) {
+          // Refresh data without date filters
+          await refreshJOList();
+          await refreshJadwalView();
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error('Error calculating JO:', error);
+        return false;
+      } finally {
+        setIsActionLoading(false);
       }
-      return false;
     },
-    [API_BASE, fetchAPI, getJOList],
+    [API_BASE, refreshJOList, refreshJadwalView],
   );
 
   const submitToSchedule = useCallback(
     async (id: string) => {
-      const url = `${API_BASE}/ppic/jadwalProduksi/submit/${id}`;
-      const data = await fetchAPI(url, {}, 'put');
+      setIsActionLoading(true);
+      try {
+        const url = `${API_BASE}/ppic/jadwalProduksi/submit/${id}`;
+        const response = await axios.put(url, {}, { withCredentials: true });
 
-      if (data) {
-        await getJOList();
-        alert('Berhasil masuk jadwal');
-        return true;
+        if (response.data) {
+          // Refresh data without date filters
+          await refreshJOList();
+          await refreshJadwalView();
+          alert('Berhasil masuk jadwal');
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error('Error submitting to schedule:', error);
+        return false;
+      } finally {
+        setIsActionLoading(false);
       }
-      return false;
     },
-    [API_BASE, fetchAPI, getJOList],
+    [API_BASE, refreshJOList, refreshJadwalView],
   );
 
   // Handle UI actions
@@ -335,43 +397,21 @@ function ListBookingJo() {
     getJadwalView();
     getJOList();
   }, [getJadwalView, getJOList]);
-  const [bookingData, setBookingData] = useState({
-    tanggal: '',
-    mesin: '',
-    no_io: '',
-    nama_customer: '',
-    nama_item: '',
-    qty_pcs: '',
-    qty_druk: '',
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<any>(null);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  // Handle booking form input changes
-  const handleBookingChange = (e: any) => {
-    const { name, value } = e.target;
-
-    // Convert numeric fields to numbers
-    let processedValue = value;
-    if (name === 'qty_pcs' || name === 'qty_druk') {
-      processedValue = value === '' ? '' : Number(value);
-    }
-
-    setBookingData({
-      ...bookingData,
-      [name]: processedValue,
-    });
-  };
-
-  const [editTanggal, setEditTanggal] = useState<any>();
+  const [editTanggal, setEditTanggal] = useState<any>(null);
 
   async function updateTanggalKirim(id: any, tanggal: any) {
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/ppic/jadwalProduksi/editTglKirim/${id}`;
+    if (!tanggal) {
+      alert('Pilih tanggal terlebih dahulu');
+      return;
+    }
+
+    setIsActionLoading(true);
     try {
-      setIsLoading(true);
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/ppic/jadwalProduksi/editTglKirim/${id}`;
+
       const res = await axios.put(
         url,
         { tgl_kirim: tanggal },
@@ -381,18 +421,22 @@ function ListBookingJo() {
       console.log(res);
 
       if (res.data.status_code == 200) {
-        calculateJO(id, false);
+        await calculateJO(id, false);
+        // Refresh data without date filters
+        await refreshJOList();
+        await refreshJadwalView();
       }
-      setIsLoading(false);
     } catch (error: any) {
-      setIsLoading(false);
       console.log(error);
+    } finally {
+      setIsActionLoading(false);
     }
   }
 
   return (
     <main className="overflow-x-scroll">
       {isLoading && <Loading />}
+      {isActionLoading && <ActionLoading />}
       <div className="min-w-[700px] bg-white rounded-xl flex gap-1">
         <div className="flex w-full flex-col bg-[#D8EAFF]">
           {/* Filter Section */}
@@ -416,6 +460,7 @@ function ListBookingJo() {
                     onChange={(e) =>
                       handleDateChange('startDate', e.target.value)
                     }
+                    disabled={isActionLoading}
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -429,6 +474,7 @@ function ListBookingJo() {
                     onChange={(e) =>
                       handleDateChange('endDate', e.target.value)
                     }
+                    disabled={isActionLoading}
                   />
                 </div>
               </div>
@@ -442,6 +488,7 @@ function ListBookingJo() {
                   placeholder="Cari JO, item, dll..."
                   value={searchTerm}
                   onChange={handleSearchChange}
+                  disabled={isActionLoading}
                 />
               </div>
 
@@ -449,7 +496,8 @@ function ListBookingJo() {
               <div className="flex justify-start">
                 <button
                   onClick={handleApplyFilters}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
+                  disabled={isActionLoading}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Terapkan
                 </button>
@@ -497,7 +545,8 @@ function ListBookingJo() {
                     {jo.status === 'calculated' ? (
                       <button
                         onClick={() => handleViewCalculation(jo.id, index)}
-                        className="text-[#0065de] text-sm font-bold"
+                        disabled={isActionLoading}
+                        className="text-[#0065de] text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         VIEW
                       </button>
@@ -505,16 +554,18 @@ function ListBookingJo() {
                       <div className="flex flex-col gap-1">
                         <button
                           onClick={() => handleCalculateJO(jo.id, index, false)}
-                          className="text-[#0065de] text-sm font-bold"
+                          disabled={isActionLoading}
+                          className="text-[#0065de] text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           CALCULATE
                         </button>
-                        <button
+                        {/* <button
                           onClick={() => handleCalculateJO(jo.id, index, true)}
-                          className="text-[#0065de] text-sm font-bold"
+                          disabled={isActionLoading}
+                          className="text-[#0065de] text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           LEMBUR
-                        </button>
+                        </button> */}
                       </div>
                     )}
                   </div>
@@ -556,18 +607,36 @@ function ListBookingJo() {
                               <label className="text-black text-xs font-bold">
                                 Edit Tanggal Kirim
                               </label>
-                              <input
-                                type="date"
-                                onChange={(e) => setEditTanggal(e.target.value)}
-                              />
-                              <button
-                                onClick={() => {
-                                  updateTanggalKirim(jo.id, editTanggal);
-                                  console.log(jo.id, editTanggal);
-                                }}
-                              >
-                                Save
-                              </button>
+                              <div className="flex gap-1">
+                                <label className="text-[#016ae6] uppercase text-xl font-normal">
+                                  :{' '}
+                                </label>
+
+                                <input
+                                  type="date"
+                                  onChange={(e) =>
+                                    setEditTanggal(e.target.value)
+                                  }
+                                  disabled={isActionLoading}
+                                  className="disabled:opacity-50 border-2 border-[#016ae6] rounded-md px-2 py-1 text-xs"
+                                />
+                              </div>
+                              {editTanggal == null ? (
+                                <></>
+                              ) : (
+                                <>
+                                  <button
+                                    onClick={() => {
+                                      updateTanggalKirim(jo.id, editTanggal);
+                                      console.log(jo.id, editTanggal);
+                                    }}
+                                    disabled={isActionLoading}
+                                    className="bg-blue-500 text-white px-2 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    Simpan Tanggal Baru
+                                  </button>
+                                </>
+                              )}
                             </div>
                           </div>
                           <div className="flex flex-col">
@@ -646,25 +715,32 @@ function ListBookingJo() {
                                     {tahap?.jadwal_per_jam?.length === 0 ? (
                                       <label
                                         onClick={() =>
+                                          !isActionLoading &&
                                           handleOpenModalFull(
                                             `${index}-${tahapIndex}`,
                                             tahap.tahapan,
                                           )
                                         }
-                                        className="text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center cursor-pointer"
+                                        className={`text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center cursor-pointer ${
+                                          isActionLoading
+                                            ? 'opacity-50 cursor-not-allowed'
+                                            : ''
+                                        }`}
                                       >
                                         {formatCustomDate(tahap.tgl_from)}
                                       </label>
                                     ) : (
                                       <button
                                         onClick={() =>
+                                          !isActionLoading &&
                                           handleOpenModalFull(
                                             `${index}-${tahapIndex}`,
                                             tahap.tahapan,
                                             tahap.jadwal_per_jam[0],
                                           )
                                         }
-                                        className="text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center"
+                                        disabled={isActionLoading}
+                                        className="text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center disabled:opacity-50 disabled:cursor-not-allowed"
                                       >
                                         {convertTimeStampToDate(
                                           tahap.jadwal_per_jam[0]?.tanggal,
@@ -699,11 +775,14 @@ function ListBookingJo() {
                                                 `${index}-${tahapIndex}`,
                                               );
                                             }}
-                                            onFinish={() => {
+                                            onFinish={async () => {
                                               handleCloseModalFull(
                                                 `${index}-${tahapIndex}`,
                                               );
-                                              getSingleJO(jo.id);
+                                              await getSingleJO(jo.id);
+                                              // Refresh data without date filters
+                                              await refreshJOList();
+                                              await refreshJadwalView();
                                             }}
                                           />
                                         </div>
@@ -752,7 +831,8 @@ function ListBookingJo() {
                           <div>
                             <button
                               onClick={() => toggleDetailsView(jo.id)}
-                              className="text-xs w-full flex font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
+                              disabled={isActionLoading}
+                              className="text-xs w-full flex font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               DETAIL
                             </button>
@@ -769,7 +849,8 @@ function ListBookingJo() {
                                 }
                               });
                             }}
-                            className="text-base w-full flex justify-center font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
+                            disabled={isActionLoading}
+                            className="text-base w-full flex justify-center font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             MASUK JADWAL
                           </button>
