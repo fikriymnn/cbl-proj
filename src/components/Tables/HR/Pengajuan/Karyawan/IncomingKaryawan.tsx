@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Button } from '@mui/material';
-import convertTimeStampToDate from '../../../../../utils/converDateTime';
 import dateOnly from '../../../../../utils/convertDateOnly';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 import Loading from '../../../../Loading';
