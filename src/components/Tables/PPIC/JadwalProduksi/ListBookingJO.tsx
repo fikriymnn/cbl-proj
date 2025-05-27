@@ -412,21 +412,15 @@ function ListBookingJo() {
 
     setIsActionLoading(true);
     try {
-      const url = `${
-        import.meta.env.VITE_API_LINK
-      }/ppic/jadwalProduksi/editTglKirim/${id}`;
+      const url = `${import.meta.env.VITE_API_LINK}/ppic/perubahanTglKirim`;
 
-      const res = await axios.put(
+      const res = await axios.post(
         url,
-        { tgl_kirim: tanggal },
+        { id_tiket: id, tgl_kirim: tanggal },
         { withCredentials: true },
       );
 
-      console.log(res);
-
       if (res.data.status_code == 200) {
-        await calculateJO(id, false);
-        // Refresh data without date filters
         await refreshJOList();
         await refreshJadwalView();
       }
