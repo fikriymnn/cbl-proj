@@ -814,7 +814,8 @@ const Sidebar = ({
   const isMaintenanceDashboard = () => {
     return (
       bagian?.toLowerCase() === 'maintenance' ||
-      bagian?.toLowerCase() === 'pemeliharaan'
+      bagian?.toLowerCase() === 'pemeliharaan' ||
+      role?.toLowerCase() === 'super admin'
     );
   };
 
@@ -828,7 +829,7 @@ const Sidebar = ({
         // Only show main dashboard for maintenance bagian
         return (
           bagian?.toLowerCase() === 'maintenance' ||
-          bagian?.toLowerCase() === 'super admin' ||
+          role?.toLowerCase() === 'super admin' ||
           bagian?.toLowerCase() === 'pemeliharaan'
         );
       }

@@ -26,8 +26,12 @@ interface JOData {
   item: string;
   qty_pcs: number;
   qty_druk: number;
+  qty_lp: number;
+  qty_po: number;
   tgl_kirim: string;
   status: string;
+  nama_bahan?: string;
+  no_io?: string;
 }
 
 interface JadwalPerJam {
@@ -135,7 +139,7 @@ function ListBookingJo() {
             : method === 'put'
             ? await axios.put(url, config.data, config)
             : await axios.post(url, config.data, config);
-
+        console.log('API Response:', response.data);
         return response.data;
       } catch (error) {
         console.error(`Error in API call to ${url}:`, error);
@@ -438,9 +442,9 @@ function ListBookingJo() {
       {isLoading && <Loading />}
       {isActionLoading && <ActionLoading />}
       <div className="min-w-[700px] bg-white rounded-xl flex gap-1">
-        <div className="flex w-full flex-col bg-[#D8EAFF]">
+        <div className="flex w-full flex-col bg-gradient-to-br from-[#D8EAFF] to-[#E8F4FF]">
           {/* Filter Section */}
-          <div className="col-span-10 grid grid-cols-1 gap-4 md:grid-cols-2 bg-white rounded-t-md p-4">
+          <div className="col-span-10 grid grid-cols-1 gap-4 md:grid-cols-2 bg-white rounded-t-xl shadow-lg p-6 border border-gray-100">
             {/* Filter Section */}
             <div className="flex flex-col gap-4">
               <p className="text-sm text-primary font-semibold">
@@ -454,7 +458,7 @@ function ListBookingJo() {
                     Dari:
                   </p>
                   <input
-                    className="rounded-md bg-[#D8EAFF] px-3 py-1 text-sm"
+                    className="rounded-lg bg-[#D8EAFF] px-3 py-2 text-sm border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
                     type="date"
                     value={dateRange.startDate}
                     onChange={(e) =>
@@ -468,7 +472,7 @@ function ListBookingJo() {
                     Sampai:
                   </p>
                   <input
-                    className="rounded-md bg-[#D8EAFF] px-3 py-1 text-sm"
+                    className="rounded-lg bg-[#D8EAFF] px-3 py-2 text-sm border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
                     type="date"
                     value={dateRange.endDate}
                     onChange={(e) =>
@@ -483,7 +487,7 @@ function ListBookingJo() {
               <div className="flex items-center gap-2">
                 <p className="text-sm text-primary font-semibold">Cari:</p>
                 <input
-                  className="rounded-md bg-[#D8EAFF] px-3 py-1 text-sm flex-1"
+                  className="rounded-lg bg-[#D8EAFF] px-3 py-2 text-sm flex-1 border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
                   type="text"
                   placeholder="Cari JO, item, dll..."
                   value={searchTerm}
@@ -497,7 +501,7 @@ function ListBookingJo() {
                 <button
                   onClick={handleApplyFilters}
                   disabled={isActionLoading}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Terapkan
                 </button>
@@ -505,366 +509,461 @@ function ListBookingJo() {
             </div>
           </div>
 
-          {/* Table Header */}
-          <div className="grid grid-cols-12 bg-white border-b-8 border-[#D8EAFF] px-[1%] py-[1%]">
-            <p className="text-[#646464] text-xs font-bold col-span-2">
-              No Booking
-            </p>
-            <p className="text-[#646464] text-xs font-bold col-span-2">
-              Nama Item
-            </p>
-            <p className="text-[#646464] text-xs font-bold">Qty Pcs</p>
-            <p className="text-[#646464] text-xs font-bold">Qty Druk</p>
-            <p className="text-[#646464] text-xs font-bold col-span-4">
-              Tanggal Kirim
-            </p>
-          </div>
-
-          {/* JO List */}
-          <div className="max-h-[500px] overflow-y-scroll">
-            {listJO?.data?.length > 0 ? (
-              listJO.data.map((jo, index) => (
-                <div
-                  key={jo.id}
-                  className="grid grid-cols-12 bg-white border-b-8 border-[#D8EAFF] px-[1%] py-[1%]"
-                >
-                  <p className="text-[#646464] text-sm col-span-2">
-                    {jo.no_booking}
-                  </p>
-                  <p className="text-[#646464] text-sm col-span-2">{jo.item}</p>
-                  <p className="text-[#646464] text-sm">
-                    {formatInteger(jo.qty_pcs)}
-                  </p>
-                  <p className="text-[#646464] text-sm">
-                    {formatInteger(jo.qty_druk)}
-                  </p>
-                  <p className="text-[#646464] text-sm col-span-4">
-                    {jo.tgl_kirim}
-                  </p>
-                  <div className="col-span-2">
-                    {jo.status === 'calculated' ? (
-                      <button
-                        onClick={() => handleViewCalculation(jo.id, index)}
-                        disabled={isActionLoading}
-                        className="text-[#0065de] text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+          {/* Table Container */}
+          <div className="bg-white shadow-xl rounded-b-xl">
+            <div className="h-full overflow-y-auto rounded-b-xl">
+              <table className="w-full border-collapse">
+                <thead className="bg-gradient-to-r from-blue-600 to-blue-700 text-white sticky top-0 z-10">
+                  <tr>
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
+                      No
+                    </th>
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
+                      No Booking
+                    </th>
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
+                      No IO
+                    </th>
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
+                      Nama Item
+                    </th>
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
+                      Nama Bahan
+                    </th>
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
+                      Qty Pcs
+                    </th>
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
+                      Qty Druk
+                    </th>
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
+                      Qty LP
+                    </th>
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
+                      Qty PO
+                    </th>
+                    <th className="px-4 py-4 text-left text-xs font-bold uppercase tracking-wider border-r border-blue-500">
+                      Tanggal Kirim
+                    </th>
+                    <th className="px-4 py-4 text-center text-xs font-bold uppercase tracking-wider">
+                      Action
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {listJO?.data?.length > 0 ? (
+                    listJO.data.map((jo, index) => (
+                      <tr
+                        key={jo.id}
+                        className={`hover:bg-blue-50 transition-colors duration-150 ${
+                          index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                        }`}
                       >
-                        VIEW
-                      </button>
-                    ) : (
-                      <div className="flex flex-col gap-1">
-                        <button
-                          onClick={() => handleCalculateJO(jo.id, index, false)}
-                          disabled={isActionLoading}
-                          className="text-[#0065de] text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          CALCULATE
-                        </button>
-                        {/* <button
-                          onClick={() => handleCalculateJO(jo.id, index, true)}
-                          disabled={isActionLoading}
-                          className="text-[#0065de] text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          LEMBUR
-                        </button> */}
-                      </div>
-                    )}
-                  </div>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
+                          {index + 1}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
+                          {jo.no_booking}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700 border-r border-gray-200">
+                          {jo.no_io || '-'}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-700 border-r border-gray-200">
+                          {jo.item}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-700 border-r border-gray-200">
+                          {jo.nama_bahan || '-'}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-700 border-r border-gray-200">
+                          {formatInteger(jo.qty_pcs)}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-700 border-r border-gray-200">
+                          {formatInteger(jo.qty_druk)}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-700 border-r border-gray-200">
+                          {formatInteger(jo.qty_lp) || 0}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-700 border-r border-gray-200">
+                          {formatInteger(jo.qty_po) || 0}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-700 border-r border-gray-200">
+                          {jo.tgl_kirim}
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap text-center">
+                          {jo.status === 'calculated' ? (
+                            <button
+                              onClick={() =>
+                                handleViewCalculation(jo.id, index)
+                              }
+                              disabled={isActionLoading}
+                              className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              VIEW
+                            </button>
+                          ) : (
+                            <div className="flex flex-col gap-2">
+                              <button
+                                onClick={() =>
+                                  handleCalculateJO(jo.id, index, false)
+                                }
+                                disabled={isActionLoading}
+                                className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                CALCULATE
+                              </button>
+                              {/* <button
+                        onClick={() => handleCalculateJO(jo.id, index, true)}
+                        disabled={isActionLoading}
+                        className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        LEMBUR
+                      </button> */}
+                            </div>
+                          )}
+                        </td>
 
-                  {/* Calculation Modal */}
-                  {showCalculateIndex === index && selectedJO && (
-                    <ModalXL
-                      isOpen={showCalculateIndex === index}
-                      onClose={() => setShowCalculateIndex(null)}
-                      judul="Rumus Kalkulasi"
-                    >
-                      <>
-                        {/* JO Details */}
-                        <div className="grid grid-cols-2 gap-2 px-4 py-4 border-b-8 border-[#D8EAFF]">
-                          <div className="flex flex-col">
-                            <div className="grid grid-cols-2 gap-2">
-                              <label className="text-black text-xs font-bold">
-                                Nomor Booking
-                              </label>
-                              <label className="text-[#016ae6] uppercase text-xl font-normal">
-                                : {jo.no_booking}
-                              </label>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                              <label className="text-black text-xs font-bold">
-                                Item
-                              </label>
-                              <label className="text-[#016ae6] uppercase text-xl font-normal">
-                                : {jo.item}
-                              </label>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                              <label className="text-black text-xs font-bold">
-                                Tanggal Kirim
-                              </label>
-                              <label className="text-[#016ae6] uppercase text-xl font-normal">
-                                : {convertTimeStampToDate(jo.tgl_kirim)}
-                              </label>
-                              <label className="text-black text-xs font-bold">
-                                Edit Tanggal Kirim
-                              </label>
-                              <div className="flex gap-1">
-                                <label className="text-[#016ae6] uppercase text-xl font-normal">
-                                  :{' '}
-                                </label>
-
-                                <input
-                                  type="date"
-                                  onChange={(e) =>
-                                    setEditTanggal(e.target.value)
-                                  }
-                                  disabled={isActionLoading}
-                                  className="disabled:opacity-50 border-2 border-[#016ae6] rounded-md px-2 py-1 text-xs"
-                                />
-                              </div>
-                              {editTanggal == null ? (
-                                <></>
-                              ) : (
-                                <>
-                                  <button
-                                    onClick={() => {
-                                      updateTanggalKirim(jo.id, editTanggal);
-                                      console.log(jo.id, editTanggal);
-                                    }}
-                                    disabled={isActionLoading}
-                                    className="bg-blue-500 text-white px-2 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                                  >
-                                    Simpan Tanggal Baru
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex flex-col">
-                            <div className="grid grid-cols-2 gap-2">
-                              <label className="text-black text-xs font-bold">
-                                Qty Druk
-                              </label>
-                              <label className="text-[#016ae6] uppercase text-xl font-normal">
-                                : {formatInteger(jo.qty_druk)}
-                              </label>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                              <label className="text-black text-xs font-bold">
-                                Qty Pcs
-                              </label>
-                              <label className="text-[#016ae6] uppercase text-xl font-normal">
-                                : {formatInteger(jo.qty_pcs)}
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Tahapan Data */}
-                        <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF] gap-2 px-4 py-4">
-                          <div className="w-[150px] flex flex-col">
-                            <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]">
-                              TAHAPAN
-                            </label>
-                            <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]">
-                              TANGGAL
-                            </label>
-                            {showDetails[jo.id] && (
-                              <>
-                                <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]">
-                                  KATEGORI
-                                </label>
-                                <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]">
-                                  DRYING TIME
-                                </label>
-                                <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]">
-                                  MESIN
-                                </label>
-                                <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]">
-                                  KAPASITAS/JAM
-                                </label>
-                                <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]">
-                                  DRYING TIME (JAM)
-                                </label>
-                                <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]">
-                                  SETTING (JAM)
-                                </label>
-                                <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]">
-                                  KAPASITAS (JAM)
-                                </label>
-                                <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]">
-                                  TOLERANSI
-                                </label>
-                                <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]">
-                                  TOTAL WAKTU
-                                </label>
-                              </>
-                            )}
-                          </div>
-
-                          <div className="flex overflow-x-scroll max-w-screen">
-                            {selectedJO.data?.tahap?.map(
-                              (tahap, tahapIndex) => (
-                                <div
-                                  key={tahapIndex}
-                                  className="min-w-[150px] flex flex-col justify-center"
-                                >
-                                  <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]">
-                                    {tahap.tahapan}
-                                  </label>
-                                  <div className="justify-center border-2 border-stroke flex items-center h-[50px]">
-                                    {tahap?.jadwal_per_jam?.length === 0 ? (
-                                      <label
-                                        onClick={() =>
-                                          !isActionLoading &&
-                                          handleOpenModalFull(
-                                            `${index}-${tahapIndex}`,
-                                            tahap.tahapan,
-                                          )
-                                        }
-                                        className={`text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center cursor-pointer ${
-                                          isActionLoading
-                                            ? 'opacity-50 cursor-not-allowed'
-                                            : ''
-                                        }`}
-                                      >
-                                        {formatCustomDate(tahap.tgl_from)}
+                        {/* Calculation Modal */}
+                        {showCalculateIndex === index && selectedJO && (
+                          <ModalXL
+                            isOpen={showCalculateIndex === index}
+                            onClose={() => setShowCalculateIndex(null)}
+                            judul="Rumus Kalkulasi"
+                          >
+                            <>
+                              {/* JO Details */}
+                              <div className="pt-4"></div>
+                              <div className="grid grid-cols-2 gap-6 px-6 py-6 border-b-4 border-[#D8EAFF] bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg">
+                                <div className="flex flex-col space-y-4">
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <label className="text-black text-sm font-bold">
+                                      Nomor Booking
+                                    </label>
+                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
+                                      : {jo.no_booking}
+                                    </label>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <label className="text-black text-sm font-bold">
+                                      No IO
+                                    </label>
+                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
+                                      : {jo.no_io || '-'}
+                                    </label>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <label className="text-black text-sm font-bold">
+                                      Item
+                                    </label>
+                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
+                                      : {jo.item}
+                                    </label>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <label className="text-black text-sm font-bold">
+                                      Nama Bahan
+                                    </label>
+                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
+                                      : {jo.nama_bahan || '-'}
+                                    </label>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <label className="text-black text-sm font-bold">
+                                      Tanggal Kirim
+                                    </label>
+                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
+                                      : {convertTimeStampToDate(jo.tgl_kirim)}
+                                    </label>
+                                    <label className="text-black text-sm font-bold">
+                                      Edit Tanggal Kirim
+                                    </label>
+                                    <div className="flex gap-2">
+                                      <label className="text-[#016ae6] uppercase text-lg font-semibold">
+                                        :{' '}
                                       </label>
-                                    ) : (
-                                      <button
-                                        onClick={() =>
-                                          !isActionLoading &&
-                                          handleOpenModalFull(
-                                            `${index}-${tahapIndex}`,
-                                            tahap.tahapan,
-                                            tahap.jadwal_per_jam[0],
-                                          )
+                                      <input
+                                        type="date"
+                                        onChange={(e) =>
+                                          setEditTanggal(e.target.value)
                                         }
                                         disabled={isActionLoading}
-                                        className="text-blue-400 text-xs border-2 px-2 py-1 rounded-md border-blue-400 text-center disabled:opacity-50 disabled:cursor-not-allowed"
-                                      >
-                                        {convertTimeStampToDate(
-                                          tahap.jadwal_per_jam[0]?.tanggal,
-                                        )}{' '}
-                                        - {tahap.jadwal_per_jam[0]?.jam}
-                                      </button>
-                                    )}
-
-                                    {/* Modal Full Component */}
-                                    {showModalFull[
-                                      `${index}-${tahapIndex}`
-                                    ] && (
-                                      <ModalFull
-                                        isOpen={
-                                          showModalFull[
-                                            `${index}-${tahapIndex}`
-                                          ]
-                                        }
-                                        onClose={() =>
-                                          handleCloseModalFull(
-                                            `${index}-${tahapIndex}`,
-                                          )
-                                        }
-                                        judul={`Jadwal ${tahap.tahapan} - ${jo.no_jo}`}
-                                      >
-                                        <div className="col-span-5 flex flex-col gap-1">
-                                          <PopUpTable
-                                            dataMap={selectedData}
-                                            onClose={() => {
-                                              setSelectedData(null);
-                                              handleCloseModalFull(
-                                                `${index}-${tahapIndex}`,
-                                              );
-                                            }}
-                                            onFinish={async () => {
-                                              handleCloseModalFull(
-                                                `${index}-${tahapIndex}`,
-                                              );
-                                              await getSingleJO(jo.id);
-                                              // Refresh data without date filters
-                                              await refreshJOList();
-                                              await refreshJadwalView();
-                                            }}
-                                          />
-                                        </div>
-                                      </ModalFull>
+                                        className="disabled:opacity-50 border-2 border-[#016ae6] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                      />
+                                    </div>
+                                    {editTanggal == null ? (
+                                      <></>
+                                    ) : (
+                                      <>
+                                        <button
+                                          onClick={() => {
+                                            updateTanggalKirim(
+                                              jo.id,
+                                              editTanggal,
+                                            );
+                                            console.log(jo.id, editTanggal);
+                                          }}
+                                          disabled={isActionLoading}
+                                          className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                          Simpan Tanggal Baru
+                                        </button>
+                                      </>
                                     )}
                                   </div>
+                                </div>
+                                <div className="flex flex-col space-y-4">
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <label className="text-black text-sm font-bold">
+                                      Qty Druk
+                                    </label>
+                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
+                                      : {formatInteger(jo.qty_druk)}
+                                    </label>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <label className="text-black text-sm font-bold">
+                                      Qty Pcs
+                                    </label>
+                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
+                                      : {formatInteger(jo.qty_pcs)}
+                                    </label>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <label className="text-black text-sm font-bold">
+                                      Qty LP
+                                    </label>
+                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
+                                      : {formatInteger(jo.qty_lp) || 0}
+                                    </label>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <label className="text-black text-sm font-bold">
+                                      Qty PO
+                                    </label>
+                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
+                                      : {formatInteger(jo.qty_po) || 0}
+                                    </label>
+                                  </div>
+                                </div>
+                              </div>
 
-                                  {/* Details info */}
+                              {/* Tahapan Data */}
+                              <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF] gap-2 px-4 py-4 bg-gray-50">
+                                <div className="w-[150px] flex flex-col">
+                                  <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
+                                    TAHAPAN
+                                  </label>
+                                  <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
+                                    TANGGAL
+                                  </label>
                                   {showDetails[jo.id] && (
                                     <>
-                                      <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]">
-                                        {tahap.kategory}
+                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
+                                        KATEGORI
                                       </label>
-                                      <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]">
-                                        {tahap.kategory_drying_time}
+                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
+                                        DRYING TIME
                                       </label>
-                                      <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]">
-                                        {tahap.mesin}
+                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
+                                        MESIN
                                       </label>
-                                      <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]">
-                                        {tahap.kapasitas_per_jam}
+                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
+                                        KAPASITAS/JAM
                                       </label>
-                                      <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]">
-                                        {tahap.drying_time}
+                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
+                                        DRYING TIME (JAM)
                                       </label>
-                                      <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]">
-                                        {tahap.setting}
+                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
+                                        SETTING (JAM)
                                       </label>
-                                      <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]">
-                                        {tahap.kapasitas}
+                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
+                                        KAPASITAS (JAM)
                                       </label>
-                                      <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]">
-                                        {tahap.toleransi}
+                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
+                                        TOLERANSI
                                       </label>
-                                      <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]">
-                                        {tahap.total_waktu}
+                                      <label className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px] bg-blue-100 px-2">
+                                        TOTAL WAKTU
                                       </label>
                                     </>
                                   )}
                                 </div>
-                              ),
-                            )}
-                          </div>
 
-                          {/* Detail toggle button */}
-                          <div>
-                            <button
-                              onClick={() => toggleDetailsView(jo.id)}
-                              disabled={isActionLoading}
-                              className="text-xs w-full flex font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              DETAIL
-                            </button>
-                          </div>
-                        </div>
+                                <div className="flex overflow-x-scroll max-w-screen">
+                                  {selectedJO.data?.tahap?.map(
+                                    (tahap, tahapIndex) => (
+                                      <div
+                                        key={tahapIndex}
+                                        className="min-w-[150px] flex flex-col justify-center"
+                                      >
+                                        <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
+                                          {tahap.tahapan}
+                                        </label>
+                                        <div className="justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
+                                          {tahap?.jadwal_per_jam?.length ===
+                                          0 ? (
+                                            <label
+                                              onClick={() =>
+                                                !isActionLoading &&
+                                                handleOpenModalFull(
+                                                  `${index}-${tahapIndex}`,
+                                                  tahap.tahapan,
+                                                )
+                                              }
+                                              className={`text-blue-500 text-xs border-2 px-3 py-2 rounded-lg border-blue-400 text-center cursor-pointer hover:bg-blue-50 transition ${
+                                                isActionLoading
+                                                  ? 'opacity-50 cursor-not-allowed'
+                                                  : ''
+                                              }`}
+                                            >
+                                              {formatCustomDate(tahap.tgl_from)}
+                                            </label>
+                                          ) : (
+                                            <button
+                                              onClick={() =>
+                                                !isActionLoading &&
+                                                handleOpenModalFull(
+                                                  `${index}-${tahapIndex}`,
+                                                  tahap.tahapan,
+                                                  tahap.jadwal_per_jam[0],
+                                                )
+                                              }
+                                              disabled={isActionLoading}
+                                              className="text-blue-500 text-xs border-2 px-3 py-2 rounded-lg border-blue-400 text-center hover:bg-blue-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                              {convertTimeStampToDate(
+                                                tahap.jadwal_per_jam[0]
+                                                  ?.tanggal,
+                                              )}{' '}
+                                              - {tahap.jadwal_per_jam[0]?.jam}
+                                            </button>
+                                          )}
 
-                        {/* Submit Button */}
-                        <div className="flex justify-center items-center pt-1">
-                          <button
-                            onClick={() => {
-                              submitToSchedule(jo.id).then((success) => {
-                                if (success) {
-                                  setShowCalculateIndex(null);
-                                }
-                              });
-                            }}
-                            disabled={isActionLoading}
-                            className="text-base w-full flex justify-center font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            MASUK JADWAL
-                          </button>
+                                          {/* Modal Full Component */}
+                                          {showModalFull[
+                                            `${index}-${tahapIndex}`
+                                          ] && (
+                                            <ModalFull
+                                              isOpen={
+                                                showModalFull[
+                                                  `${index}-${tahapIndex}`
+                                                ]
+                                              }
+                                              onClose={() =>
+                                                handleCloseModalFull(
+                                                  `${index}-${tahapIndex}`,
+                                                )
+                                              }
+                                              judul={`Jadwal ${tahap.tahapan} - ${jo.no_jo}`}
+                                            >
+                                              <div className="col-span-5 flex flex-col gap-1">
+                                                <PopUpTable
+                                                  dataMap={selectedData}
+                                                  onClose={() => {
+                                                    setSelectedData(null);
+                                                    handleCloseModalFull(
+                                                      `${index}-${tahapIndex}`,
+                                                    );
+                                                  }}
+                                                  onFinish={async () => {
+                                                    handleCloseModalFull(
+                                                      `${index}-${tahapIndex}`,
+                                                    );
+                                                    await getSingleJO(jo.id);
+                                                    // Refresh data without date filters
+                                                    await refreshJOList();
+                                                    await refreshJadwalView();
+                                                  }}
+                                                />
+                                              </div>
+                                            </ModalFull>
+                                          )}
+                                        </div>
+
+                                        {/* Details info */}
+                                        {showDetails[jo.id] && (
+                                          <>
+                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
+                                              {tahap.kategory}
+                                            </label>
+                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
+                                              {tahap.kategory_drying_time}
+                                            </label>
+                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
+                                              {tahap.mesin}
+                                            </label>
+                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
+                                              {tahap.kapasitas_per_jam}
+                                            </label>
+                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
+                                              {tahap.drying_time}
+                                            </label>
+                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
+                                              {tahap.setting}
+                                            </label>
+                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
+                                              {tahap.kapasitas}
+                                            </label>
+                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
+                                              {tahap.toleransi}
+                                            </label>
+                                            <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
+                                              {tahap.total_waktu}
+                                            </label>
+                                          </>
+                                        )}
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
+
+                                {/* Detail toggle button */}
+                                <div>
+                                  <button
+                                    onClick={() => toggleDetailsView(jo.id)}
+                                    disabled={isActionLoading}
+                                    className="text-xs w-full flex font-bold text-white px-3 bg-gradient-to-r from-blue-600 to-blue-700 py-2 border-blue-700 border rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    DETAIL
+                                  </button>
+                                </div>
+                              </div>
+
+                              {/* Submit Button */}
+                              <div className="flex justify-center items-center pt-4">
+                                <button
+                                  onClick={() => {
+                                    submitToSchedule(jo.id).then((success) => {
+                                      if (success) {
+                                        setShowCalculateIndex(null);
+                                      }
+                                    });
+                                  }}
+                                  disabled={isActionLoading}
+                                  className="text-lg w-full flex justify-center font-bold text-white px-6 bg-gradient-to-r from-green-600 to-green-700 py-4 border-green-700 border rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  MASUK JADWAL
+                                </button>
+                              </div>
+                            </>
+                          </ModalXL>
+                        )}
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={10} className="px-4 py-12 text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <div className="text-gray-400 text-6xl mb-4">📋</div>
+                          <p className="text-gray-500 text-lg">
+                            Tidak ada data yang ditemukan
+                          </p>
                         </div>
-                      </>
-                    </ModalXL>
+                      </td>
+                    </tr>
                   )}
-                </div>
-              ))
-            ) : (
-              <div className="flex justify-center items-center py-6 bg-white">
-                <p className="text-gray-500">Tidak ada data yang ditemukan</p>
-              </div>
-            )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
