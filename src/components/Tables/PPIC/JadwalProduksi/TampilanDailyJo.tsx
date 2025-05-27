@@ -80,6 +80,38 @@ function TampilanDailyJO() {
     getmasterKategori();
   }, []);
 
+  // Function to check for conflicts in schedule
+  const hasScheduleConflict = (currentData: any, allData: any[]) => {
+    const normalizeMesin = (mesin: string) => {
+      const lowerMesin = mesin.toLowerCase().replace(/\s|-/g, '');
+      if (lowerMesin.includes('manual1') || lowerMesin === 'manual')
+        return 'M1';
+      if (lowerMesin.includes('manual2')) return 'M2';
+      if (lowerMesin.includes('manual3')) return 'M3';
+      return lowerMesin.toUpperCase();
+    };
+
+    const currentMesin = normalizeMesin(currentData.mesin);
+    const currentJam = currentData.jam;
+    const currentTanggal = new Date(currentData.tanggal).toDateString();
+
+    // Count items with same mesin, jam, and tanggal
+    const conflicts = allData.filter((item: any) => {
+      if (item.id === currentData.id) return false; // Exclude current item
+
+      const itemMesin = normalizeMesin(item.mesin);
+      const itemTanggal = new Date(item.tanggal).toDateString();
+
+      return (
+        itemMesin === currentMesin &&
+        item.jam === currentJam &&
+        itemTanggal === currentTanggal
+      );
+    });
+
+    return conflicts.length > 0;
+  };
+
   const [listJO1, setJo1] = useState<any>();
   async function get1Tiket(id: any, i: any) {
     const url = `${import.meta.env.VITE_API_LINK}/ppic/jadwalProduksi/${id}`;
@@ -379,12 +411,22 @@ function TampilanDailyJO() {
                           d.jam === hour && normalizeMesin(d.mesin) === machine, // Direct comparison
                       );
 
+                      // Check for conflicts
+                      const hasConflict = matchingData
+                        ? hasScheduleConflict(matchingData, mapData)
+                        : false;
+
+                      // Determine cell background color
+                      let cellBgColor =
+                        colIndex % 2 === 1 ? 'bg-white' : 'bg-[#eaf4ff]';
+                      if (hasConflict) {
+                        cellBgColor = 'bg-red-500'; // Red background for conflicts
+                      }
+
                       return (
                         <div
                           key={colIndex}
-                          className={`flex w-[6%] justify-center items-center ${
-                            colIndex % 2 === 1 ? 'bg-white' : 'bg-[#eaf4ff]'
-                          }`}
+                          className={`flex w-[6%] justify-center items-center ${cellBgColor}`}
                         >
                           {matchingData ? (
                             <div className="flex flex-col items-center">
@@ -394,21 +436,14 @@ function TampilanDailyJO() {
                                   setHoveredJobOrder(matchingData)
                                 }
                                 onMouseLeave={() => setHoveredJobOrder(null)}
-                                className="text-center text-[#0065de] text-[11px] font-semibold"
+                                className={`text-center text-[11px] font-semibold ${
+                                  matchingData.no_booking
+                                    ? 'text-[#FF6B00]' // Orange if has booking
+                                    : 'text-[#0065de]' // Blue if no booking
+                                }`}
                               >
                                 {matchingData.no_jo}
                               </button>
-                              {matchingData.no_booking && (
-                                <button
-                                  onMouseEnter={() =>
-                                    setHoveredJobOrder(matchingData)
-                                  }
-                                  onMouseLeave={() => setHoveredJobOrder(null)}
-                                  className="text-center text-[#FF6B00] text-[11px] font-semibold"
-                                >
-                                  {matchingData.no_booking}
-                                </button>
-                              )}
                             </div>
                           ) : (
                             <p className="text-[#bbb] text-[11px]">-</p> // Placeholder for empty slot

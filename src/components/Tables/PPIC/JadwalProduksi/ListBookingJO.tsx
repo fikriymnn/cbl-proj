@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import ModalXL from './ModalXL';
-import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 import axios from 'axios';
 import Loading from '../../../Loading';
 import convertTimeStampToDate from '../../../../utils/convertDate';
@@ -430,6 +429,27 @@ function ListBookingJo() {
       setIsActionLoading(false);
     }
   }
+  async function getTanggalPerubahan() {
+    setIsActionLoading(true);
+    try {
+      const url = `${import.meta.env.VITE_API_LINK}/ppic/perubahanTglKirim`;
+
+      const res = await axios.get(
+        url,
+
+        { withCredentials: true },
+      );
+
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error);
+    } finally {
+      setIsActionLoading(false);
+    }
+  }
+  useEffect(() => {
+    getTanggalPerubahan();
+  }, []);
 
   return (
     <main className="overflow-x-scroll">
