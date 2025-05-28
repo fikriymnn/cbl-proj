@@ -43,6 +43,11 @@ const ECommerce: React.FC = () => {
   const [showLifetimeModal, setShowLifetimeModal] = useState(false);
   const [showStockModal, setShowStockModal] = useState(false);
 
+  // Helper function to format numbers with thousand separators
+  const formatNumber = (num: number): string => {
+    return num.toLocaleString('id-ID'); // Indonesian locale uses dot as thousand separator
+  };
+
   useEffect(() => {
     getStokSparepart();
     getMasterSparepart();
@@ -208,7 +213,7 @@ const ECommerce: React.FC = () => {
                 data.real_sisa_umur < 0 ? 'text-red-600' : 'text-green-500'
               }`}
             >
-              Sisa Umur: {data.real_sisa_umur}
+              Sisa Umur: {formatNumber(data.real_sisa_umur)}
               {data.real_sisa_umur < 0 && ' (Overdue)'}
             </p>
           </div>
@@ -260,11 +265,12 @@ const ECommerce: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-4 mb-2">
             <p className={statusColor}>
-              <span className="font-medium">Current Stock:</span> {data.stok}
+              <span className="font-medium">Current Stock:</span>{' '}
+              {formatNumber(data.stok)}
             </p>
             <p className="text-amber-500">
               <span className="font-medium">Minimum Stock:</span>{' '}
-              {data.limit_stok}
+              {formatNumber(data.limit_stok)}
             </p>
           </div>
 
@@ -280,6 +286,31 @@ const ECommerce: React.FC = () => {
       );
     }
     return null;
+  };
+
+  // Custom formatter for X-axis labels
+  const formatXAxisLabel = (value: number) => {
+    return formatNumber(value);
+  };
+
+  // Custom label formatter for bar chart labels
+  const CustomLabel = (props: any) => {
+    const { x, y, width, height, value } = props;
+    const formattedValue = formatNumber(value);
+
+    return (
+      <text
+        x={x + width / 2}
+        y={y + height / 2}
+        fill="#FFFFFF"
+        textAnchor="middle"
+        dy={0}
+        fontSize="12"
+        fontWeight="bold"
+      >
+        {formattedValue}
+      </text>
+    );
   };
 
   // Modal component for full chart display
@@ -383,6 +414,7 @@ const ECommerce: React.FC = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis
                     type="number"
+                    tickFormatter={formatXAxisLabel}
                     label={{
                       value: 'Remaining Lifetime',
                       position: 'insideBottom',
@@ -420,6 +452,7 @@ const ECommerce: React.FC = () => {
                       position="inside"
                       fill="#FFFFFF"
                       style={{ fontSize: '12px', fontWeight: 'bold' }}
+                      formatter={formatNumber}
                     />
                   </Bar>
                 </RechartsBarChart>
@@ -466,6 +499,7 @@ const ECommerce: React.FC = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis
                     type="number"
+                    tickFormatter={formatXAxisLabel}
                     label={{
                       value: 'Stock Quantity',
                       position: 'insideBottom',
@@ -497,6 +531,7 @@ const ECommerce: React.FC = () => {
                       position="inside"
                       fill="#FFFFFF"
                       style={{ fontSize: '12px', fontWeight: 'bold' }}
+                      formatter={formatNumber}
                     />
                   </Bar>
                 </RechartsBarChart>
@@ -529,6 +564,7 @@ const ECommerce: React.FC = () => {
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               type="number"
+              tickFormatter={formatXAxisLabel}
               label={{
                 value: 'Remaining Lifetime',
                 position: 'insideBottom',
@@ -561,6 +597,7 @@ const ECommerce: React.FC = () => {
                 position="inside"
                 fill="#FFFFFF"
                 style={{ fontSize: '14px', fontWeight: 'bold' }}
+                formatter={formatNumber}
               />
             </Bar>
           </RechartsBarChart>
@@ -592,6 +629,7 @@ const ECommerce: React.FC = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis
                 type="number"
+                tickFormatter={formatXAxisLabel}
                 label={{
                   value: 'Stock Quantity',
                   position: 'insideBottom',
@@ -618,6 +656,7 @@ const ECommerce: React.FC = () => {
                   position="inside"
                   fill="#FFFFFF"
                   style={{ fontSize: '14px', fontWeight: 'bold' }}
+                  formatter={formatNumber}
                 />
               </Bar>
             </RechartsBarChart>
