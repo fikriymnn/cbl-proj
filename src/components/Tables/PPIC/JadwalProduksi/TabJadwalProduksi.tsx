@@ -12,6 +12,7 @@ import TampilanDailyJO from './TampilanDailyJo';
 import TampilanWeeklyJO from './TampilanWeeklyJo';
 import TampilanMonthlyJO from './TampilanMonthlyJo';
 import ListBookingJo from './ListBookingJO';
+import PerubahanTanggalKirim from './PerubahanTanggalKirim';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -123,15 +124,20 @@ export default function TabJadwalProduksi() {
               },
             }}
             textColor="inherit"
-            variant="standard"
+            variant="scrollable"
             aria-label="full width tabs example"
             className="bg-white text-[#00499F] font-semibold mb-2 "
           >
             <Tab label="List JO" {...a11yProps(0)} className="" />
             <Tab label="Jo Booking" {...a11yProps(1)} className="" />
-            <Tab label="Overview Daily" {...a11yProps(2)} className="" />
-            <Tab label="Overview Weekly" {...a11yProps(3)} className="" />
-            <Tab label="Overview Monthly" {...a11yProps(4)} className="" />
+            <Tab
+              label="Perubahan Tanggal Kirim"
+              {...a11yProps(2)}
+              className=""
+            />
+            <Tab label="Overview Daily" {...a11yProps(3)} className="" />
+            <Tab label="Overview Weekly" {...a11yProps(4)} className="" />
+            <Tab label="Overview Monthly" {...a11yProps(5)} className="" />
           </Tabs>
         </ThemeProvider>
       </AppBar>
@@ -142,12 +148,15 @@ export default function TabJadwalProduksi() {
         <ListBookingJo />
       </TabPanel>
       <TabPanel value={value} index={2} dir={theme.direction}>
-        <TampilanDailyJO />
+        <PerubahanTanggalKirim />
       </TabPanel>
       <TabPanel value={value} index={3} dir={theme.direction}>
-        <TampilanWeeklyJO />
+        <TampilanDailyJO />
       </TabPanel>
       <TabPanel value={value} index={4} dir={theme.direction}>
+        <TampilanWeeklyJO />
+      </TabPanel>
+      <TabPanel value={value} index={5} dir={theme.direction}>
         <TampilanMonthlyJO />
       </TabPanel>
     </Box>

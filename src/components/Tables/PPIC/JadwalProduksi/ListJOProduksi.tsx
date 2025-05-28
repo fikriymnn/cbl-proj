@@ -20,6 +20,7 @@ interface JOData {
   tgl_kirim: string;
   status: string;
   nama_bahan: string;
+  no_io: string;
 }
 
 interface JadwalPerJam {
@@ -66,7 +67,7 @@ function ListJOProduksi() {
     startDate: new Date().toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0],
   });
-
+  const [isActionLoading, setIsActionLoading] = useState(false);
   // Add search state
   const [searchTerm, setSearchTerm] = useState<string>('');
 
@@ -325,90 +326,211 @@ function ListJOProduksi() {
     [],
   );
 
-  // Handle search input change
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchTerm(e.target.value);
-    },
-    [],
-  );
+  const handleSearchChange = useCallback((e: any) => {
+    setSearchTerm(e.target.value);
+  }, []);
 
   // Apply filters
   const handleApplyFilters = useCallback(() => {
     getJadwalView();
     getJOList();
   }, [getJadwalView, getJOList]);
-  const [bookingData, setBookingData] = useState({
-    tanggal: '',
-    mesin: '',
-    no_io: '',
-    nama_customer: '',
-    nama_item: '',
-    qty_pcs: '',
-    qty_druk: '',
-  });
+
+  const filteredJOData = useMemo(() => {
+    if (!listJO?.data) return [];
+
+    let filtered = listJO.data;
+
+    // Apply search filter
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter((jo) => {
+        // Search in multiple fields - adjust these based on your data structure
+        const searchableFields = [
+          jo.no_jo,
+          jo.item,
+          jo.nama_bahan,
+          jo.no_io,
+
+          // Add other fields you want to search in
+        ];
+
+        return searchableFields.some(
+          (field) =>
+            field && field.toString().toLowerCase().includes(searchLower),
+        );
+      });
+    }
+
+    return filtered;
+  }, [listJO?.data, searchTerm]);
   return (
     <main className="overflow-x-scroll">
       {isLoading && <Loading />}
       <div className="min-w-[700px] bg-white rounded-xl flex gap-1">
         <div className="flex w-full flex-col bg-gradient-to-br from-[#D8EAFF] to-[#E8F4FF]">
           {/* Filter Section */}
-          <div className="col-span-10 grid grid-cols-1 gap-4 md:grid-cols-2 bg-white rounded-t-xl shadow-lg p-6 border border-gray-100">
-            {/* Filter Section */}
-            <div className="flex flex-col gap-4">
-              <p className="text-sm text-primary font-semibold">
-                Pilih Tanggal
+          <div className="col-span-10 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-slate-50 to-gray-50 px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <svg
+                  className="w-5 h-5 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z"
+                  />
+                </svg>
+                Filter & Pencarian Data
+              </h3>
+              <p className="text-sm text-gray-600 mt-1">
+                Gunakan filter di bawah untuk menyaring data sesuai kebutuhan
               </p>
+            </div>
 
-              {/* Date Range Picker */}
-              <div className="flex gap-4 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm text-primary font-semibold min-w-[50px]">
-                    Dari:
-                  </p>
-                  <input
-                    className="rounded-lg bg-[#D8EAFF] px-3 py-2 text-sm border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                    type="date"
-                    value={dateRange.startDate}
-                    onChange={(e) =>
-                      handleDateChange('startDate', e.target.value)
-                    }
-                  />
+            {/* Filter Content */}
+            <div className="p-6">
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {/* Date Range Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <svg
+                      className="w-4 h-4 text-blue-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <label className="text-sm font-semibold text-gray-700">
+                      Rentang Tanggal
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
+                        Tanggal Mulai
+                      </label>
+                      <input
+                        className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-500 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        type="date"
+                        value={dateRange.startDate}
+                        onChange={(e) =>
+                          handleDateChange('startDate', e.target.value)
+                        }
+                        disabled={isLoading}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-medium text-gray-600 uppercase tracking-wide">
+                        Tanggal Akhir
+                      </label>
+                      <input
+                        className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-500 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        type="date"
+                        value={dateRange.endDate}
+                        onChange={(e) =>
+                          handleDateChange('endDate', e.target.value)
+                        }
+                        disabled={isLoading}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm text-primary font-semibold min-w-[50px]">
-                    Sampai:
-                  </p>
+
+                {/* Search and Status Section */}
+                <div className="flex justify-end flex-col">
+                  {/* Search Field */}
+
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-4 h-4 text-blue-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
+                    </svg>
+                    <label className="text-sm font-semibold text-gray-700">
+                      Pencarian
+                    </label>
+                  </div>
                   <input
-                    className="rounded-lg bg-[#D8EAFF] px-3 py-2 text-sm border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                    type="date"
-                    value={dateRange.endDate}
-                    onChange={(e) =>
-                      handleDateChange('endDate', e.target.value)
-                    }
+                    className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-500 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    type="text"
+                    placeholder="Cari berdasarkan No Booking, item, atau data lainnya..."
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    disabled={isLoading}
                   />
                 </div>
               </div>
 
-              {/* Search Field */}
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-primary font-semibold">Cari:</p>
-                <input
-                  className="rounded-lg bg-[#D8EAFF] px-3 py-2 text-sm flex-1 border border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                  type="text"
-                  placeholder="Cari JO, item, dll..."
-                  value={searchTerm}
-                  onChange={handleSearchChange}
-                />
-              </div>
-
-              {/* Apply Button */}
-              <div className="flex justify-start">
+              {/* Action Button */}
+              <div className="flex justify-end pt-6 mt-6 border-t border-gray-200">
                 <button
                   onClick={handleApplyFilters}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg"
+                  disabled={isLoading}
+                  className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2.5 rounded-lg font-medium hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                  Terapkan
+                  {isLoading ? (
+                    <>
+                      <svg
+                        className="animate-spin w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Memproses...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      Terapkan Filter
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -416,7 +538,7 @@ function ListJOProduksi() {
 
           {/* Table Container */}
           <div className="bg-white shadow-xl rounded-b-xl">
-            <div className="h-full overflow-y-auto rounded-b-xl max-h-[500px]">
+            <div className="h-full overflow-y-auto rounded-b-xl ">
               <table className="w-full border-collapse">
                 <thead className="bg-gradient-to-r from-blue-600 to-blue-700 text-white sticky top-0 z-10">
                   <tr>
@@ -453,8 +575,8 @@ function ListJOProduksi() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {listJO?.data?.length > 0 ? (
-                    listJO.data.map((jo, index) => (
+                  {filteredJOData?.length > 0 ? (
+                    filteredJOData.map((jo, index) => (
                       <tr
                         key={jo.id}
                         className={`hover:bg-blue-50 transition-colors duration-150 ${
