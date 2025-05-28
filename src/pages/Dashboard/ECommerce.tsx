@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import CardDataStats from '../../components/CardDataStats';
-
 import DefaultLayout from '../../layout/DefaultLayout';
 import Production from '../../images/icon/production.svg';
 import Maintenance from '../../images/icon/maintenance.svg';
@@ -90,7 +89,7 @@ const ECommerce: React.FC = () => {
     }
   }
 
-  // Get stock data with configurable limit
+  // Get stock data with configurable limit - simplified to show only stock
   const getStockData = (limit = 10) => {
     if (!stokSparepart || stokSparepart.length === 0) return [];
 
@@ -99,17 +98,17 @@ const ECommerce: React.FC = () => {
       .sort((a, b) => a.stok - b.stok)
       .slice(0, limit)
       .map((item) => {
+        const displayStok = item.stok < 0 ? 0 : item.stok;
         // Calculate stock percentage compared to limit
-        const stockPercentage = Math.round((item.stok / item.limit_stok) * 100);
+        const stockPercentage = Math.round(
+          (displayStok / item.limit_stok) * 100,
+        );
 
         return {
           name: item.nama_sparepart,
-          stok: item.stok,
+          stok: displayStok,
           limit_stok: item.limit_stok,
           stockPercentage: stockPercentage,
-          // Create separate datapoints for below limit and above limit
-          belowLimitStock: item.stok <= item.limit_stok ? item.stok : 0,
-          aboveLimitStock: item.stok > item.limit_stok ? item.stok : 0,
           // Status for color coding
           status: item.stok <= item.limit_stok ? 'low' : 'safe',
         };
@@ -127,10 +126,9 @@ const ECommerce: React.FC = () => {
       .map((item) => {
         // Handle negative values for display purposes
         const displaySisaUmur = item.sisa_umur < 0 ? 0 : item.sisa_umur;
-        const umurOri = item.actual_umur;
+        const umurOri = item.actual_umur + item.sisa_umur;
 
         // Calculate percentages
-        const actualPercentage = Math.round((item.actual_umur / umurOri) * 100);
         const remainingPercentage = Math.round(
           (displaySisaUmur / umurOri) * 100,
         );
@@ -154,10 +152,8 @@ const ECommerce: React.FC = () => {
             item.mesin?.nama_mesin || ''
           }`,
           displayInfo: `${item.nama_sparepart} (${item.posisi_part})`,
-          actualPercentage: actualPercentage,
           remainingPercentage: remainingPercentage,
           healthStatus: healthStatus,
-          totalPercentage: actualPercentage + remainingPercentage,
         };
       });
   };
@@ -166,7 +162,7 @@ const ECommerce: React.FC = () => {
   const stockData = getStockData(10); // Always top 10 for main chart
   const lifetimeData = getLifetimeData(10); // Always top 10 for main chart
 
-  // Custom tooltip for lifetime chart with enhanced details
+  // Custom tooltip for lifetime chart - simplified for sisa_umur only
   const LifetimeTooltip = ({
     active,
     payload,
@@ -206,23 +202,13 @@ const ECommerce: React.FC = () => {
             </p>
           </div>
 
-          <div className="w-full bg-gray-200 h-4 rounded-full mb-3">
-            <div
-              className="bg-red-500 h-4 rounded-l-full"
-              style={{ width: `${data.actualPercentage}%` }}
-            ></div>
-          </div>
-
           <div className="flex justify-between mb-1">
-            <p className="text-red-500 font-medium">
-              Umur Aktual: {data.actual_umur}
-            </p>
             <p
               className={`font-medium ${
                 data.real_sisa_umur < 0 ? 'text-red-600' : 'text-green-500'
               }`}
             >
-              Sisa Umur: {data.real_sisa_umur} ({data.remainingPercentage}%)
+              Sisa Umur: {data.real_sisa_umur}
               {data.real_sisa_umur < 0 && ' (Overdue)'}
             </p>
           </div>
@@ -251,7 +237,7 @@ const ECommerce: React.FC = () => {
     return null;
   };
 
-  // Custom tooltip for stock chart with enhanced details
+  // Custom tooltip for stock chart - simplified for stock only
   const StockTooltip = ({
     active,
     payload,
@@ -267,32 +253,18 @@ const ECommerce: React.FC = () => {
         data.stok <= data.limit_stok ? 'Low Stock' : 'Safe Stock';
       const statusColor =
         data.stok <= data.limit_stok ? 'text-red-500' : 'text-blue-500';
-      const percentageColor =
-        data.stockPercentage < 100
-          ? 'text-red-500'
-          : data.stockPercentage <= 150
-          ? 'text-amber-500'
-          : 'text-green-500';
 
       return (
         <div className="p-4 bg-white border border-gray-200 rounded-md shadow-md">
           <p className="font-bold text-primary text-lg mb-2">{data.name}</p>
 
-          <div className="w-full bg-gray-200 h-4 rounded-full mb-3">
-            <div
-              className={`h-4 rounded-l-full ${
-                data.stockPercentage < 100 ? 'bg-red-500' : 'bg-blue-500'
-              }`}
-              style={{ width: `${Math.min(data.stockPercentage, 100)}%` }}
-            ></div>
-          </div>
-
           <div className="grid grid-cols-2 gap-4 mb-2">
             <p className={statusColor}>
-              <span className="font-medium">Current:</span> {data.stok}
+              <span className="font-medium">Current Stock:</span> {data.stok}
             </p>
             <p className="text-amber-500">
-              <span className="font-medium">Minimum:</span> {data.limit_stok}
+              <span className="font-medium">Minimum Stock:</span>{' '}
+              {data.limit_stok}
             </p>
           </div>
 
@@ -300,7 +272,7 @@ const ECommerce: React.FC = () => {
             <p className={`${statusColor} font-semibold`}>
               Status: {stockStatus}
             </p>
-            <p className={`${percentageColor} font-bold`}>
+            <p className="text-gray-600 font-medium">
               {data.stockPercentage}% of minimum
             </p>
           </div>
@@ -308,54 +280,6 @@ const ECommerce: React.FC = () => {
       );
     }
     return null;
-  };
-
-  // Custom label formatter for percentages
-  const renderCustomizedPercentageLabel = (props: any) => {
-    const { x, y, width, height, value, index, dataKey } = props;
-    const item = lifetimeData[index];
-    const percentage =
-      dataKey === 'actual_umur'
-        ? item.actualPercentage
-        : item?.remainingPercentage;
-
-    return (
-      <g>
-        <text
-          x={x + width + 5}
-          y={y + height / 2}
-          fill="#000000"
-          textAnchor="start"
-          dominantBaseline="middle"
-          fontSize={12}
-          fontWeight="normal"
-        >
-          {percentage}%
-        </text>
-      </g>
-    );
-  };
-
-  // Custom label formatter for stock percentages
-  const renderCustomizedStockLabel = (props: any) => {
-    const { x, y, width, height, value, index } = props;
-    const item = stockData[index];
-
-    return (
-      <g>
-        <text
-          x={x + width + 5}
-          y={y + height / 2}
-          fill="#000000"
-          textAnchor="start"
-          dominantBaseline="middle"
-          fontSize={12}
-          fontWeight="normal"
-        >
-          {item?.stockPercentage}%
-        </text>
-      </g>
-    );
   };
 
   // Modal component for full chart display
@@ -427,7 +351,7 @@ const ECommerce: React.FC = () => {
           <div className="flex items-center gap-3">
             <img src={Production} alt="Logo" className="w-5" />
             <p className="text-primary text-lg font-medium">
-              Sparepart Lifetime Overview
+              Sparepart Remaining Lifetime
             </p>
           </div>
           <button
@@ -450,18 +374,17 @@ const ECommerce: React.FC = () => {
                   layout="vertical"
                   margin={{
                     top: 15,
-                    right: 80, // Increased right margin to accommodate percentage labels
+                    right: 60,
                     left: 0,
                     bottom: 5,
                   }}
                   barSize={20}
-                  barGap={0}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis
                     type="number"
                     label={{
-                      value: 'Lifetime',
+                      value: 'Remaining Lifetime',
                       position: 'insideBottom',
                       offset: -5,
                     }}
@@ -475,25 +398,9 @@ const ECommerce: React.FC = () => {
                   />
                   <Tooltip content={<LifetimeTooltip />} />
                   <Legend />
-                  <Bar dataKey="actual_umur" name="Umur Aktual" fill="#FF4D4F">
-                    {lifetimeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} />
-                    ))}
-                    <LabelList
-                      dataKey="actual_umur"
-                      position="inside"
-                      fill="#FFFFFF"
-                      style={{ fontSize: '12px', fontWeight: 'bold' }}
-                    />
-                    <LabelList
-                      content={renderCustomizedPercentageLabel}
-                      dataKey="actual_umur"
-                    />
-                  </Bar>
                   <Bar
                     dataKey="sisa_umur"
                     name="Sisa Umur"
-                    fill="#52C41A"
                     radius={[0, 4, 4, 0]}
                   >
                     {lifetimeData.map((entry, index) => (
@@ -514,10 +421,6 @@ const ECommerce: React.FC = () => {
                       fill="#FFFFFF"
                       style={{ fontSize: '12px', fontWeight: 'bold' }}
                     />
-                    <LabelList
-                      content={renderCustomizedPercentageLabel}
-                      dataKey="sisa_umur"
-                    />
                   </Bar>
                 </RechartsBarChart>
               </ResponsiveContainer>
@@ -525,12 +428,13 @@ const ECommerce: React.FC = () => {
           )}
         </div>
       </div>
+
       <div className="w-full p-4 bg-white my-[26px] rounded-[10px] flex flex-col">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <img src={Maintenance} alt="Logo" className="w-5" />
             <p className="text-primary text-lg font-medium">
-              Sparepart Stock Overview
+              Sparepart Current Stock
             </p>
           </div>
           <button
@@ -553,7 +457,7 @@ const ECommerce: React.FC = () => {
                   layout="vertical"
                   margin={{
                     top: 15,
-                    right: 80, // Increased right margin for percentage labels
+                    right: 60,
                     left: 0,
                     bottom: 5,
                   }}
@@ -563,7 +467,7 @@ const ECommerce: React.FC = () => {
                   <XAxis
                     type="number"
                     label={{
-                      value: 'Quantity',
+                      value: 'Stock Quantity',
                       position: 'insideBottom',
                       offset: -5,
                     }}
@@ -578,34 +482,21 @@ const ECommerce: React.FC = () => {
                   <Tooltip content={<StockTooltip />} />
                   <Legend />
                   <Bar
-                    dataKey="aboveLimitStock"
-                    name="Current Stock (Safe)"
-                    fill="#0065DE"
-                    stackId="stock"
-                  />
-                  <Bar
-                    dataKey="belowLimitStock"
-                    name="Current Stock (Low)"
-                    fill="#FF4D4F"
-                    stackId="stock"
+                    dataKey="stok"
+                    name="Current Stock"
                     radius={[0, 4, 4, 0]}
                   >
+                    {stockData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.status === 'low' ? '#FF4D4F' : '#0065DE'}
+                      />
+                    ))}
                     <LabelList
-                      content={renderCustomizedStockLabel}
-                      dataKey="belowLimitStock"
-                    />
-                  </Bar>
-                  <Bar
-                    dataKey="limit_stok"
-                    name="Stock Limit"
-                    fill="#FFBB28"
-                    radius={[0, 4, 4, 0]}
-                  >
-                    <LabelList
-                      dataKey="limit_stok"
-                      position="right"
-                      fill="#000000"
-                      style={{ fontSize: '12px' }}
+                      dataKey="stok"
+                      position="inside"
+                      fill="#FFFFFF"
+                      style={{ fontSize: '12px', fontWeight: 'bold' }}
                     />
                   </Bar>
                 </RechartsBarChart>
@@ -615,11 +506,11 @@ const ECommerce: React.FC = () => {
         </div>
       </div>
 
-      {/* Modal for Full Lifetime Chart - Always shows all data */}
+      {/* Modal for Full Lifetime Chart - Shows only sisa_umur */}
       <ChartModal
         isOpen={showLifetimeModal}
         onClose={() => setShowLifetimeModal(false)}
-        title="Complete Sparepart Lifetime Overview"
+        title="Complete Sparepart Remaining Lifetime"
       >
         <div className="h-full overflow-y-auto">
           <RechartsBarChart
@@ -629,18 +520,17 @@ const ECommerce: React.FC = () => {
             height={Math.max(masterSparepart.length * 40, 800)}
             margin={{
               top: 15,
-              right: 80, // Increased for percentage labels
+              right: 60,
               left: 0,
               bottom: 20,
             }}
             barSize={20}
-            barGap={0}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               type="number"
               label={{
-                value: 'Lifetime',
+                value: 'Remaining Lifetime',
                 position: 'insideBottom',
                 offset: -5,
               }}
@@ -653,25 +543,7 @@ const ECommerce: React.FC = () => {
             />
             <Tooltip content={<LifetimeTooltip />} />
             <Legend />
-            <Bar dataKey="actual_umur" name="Umur Aktual" fill="#FF4D4F">
-              <LabelList
-                dataKey="actual_umur"
-                position="inside"
-                fill="#FFFFFF"
-                style={{ fontSize: '14px', fontWeight: 'bold' }}
-              />
-              <LabelList
-                content={renderCustomizedPercentageLabel}
-                dataKey="actual_umur"
-              />
-            </Bar>
-            <Bar
-              dataKey="sisa_umur"
-              name="Sisa Umur"
-              fill="#52C41A"
-              radius={[0, 4, 4, 0]}
-            >
-              {/* Conditional coloring based on health status */}
+            <Bar dataKey="sisa_umur" name="Sisa Umur" radius={[0, 4, 4, 0]}>
               {getLifetimeData(masterSparepart.length).map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
@@ -690,20 +562,16 @@ const ECommerce: React.FC = () => {
                 fill="#FFFFFF"
                 style={{ fontSize: '14px', fontWeight: 'bold' }}
               />
-              <LabelList
-                content={renderCustomizedPercentageLabel}
-                dataKey="sisa_umur"
-              />
             </Bar>
           </RechartsBarChart>
         </div>
       </ChartModal>
 
-      {/* Modal for Full Stock Chart - Always shows all data */}
+      {/* Modal for Full Stock Chart - Shows only stok */}
       <ChartModal
         isOpen={showStockModal}
         onClose={() => setShowStockModal(false)}
-        title="Complete Sparepart Stock Overview"
+        title="Complete Sparepart Current Stock"
       >
         <div className="h-full overflow-y-auto">
           <ResponsiveContainer
@@ -715,7 +583,7 @@ const ECommerce: React.FC = () => {
               layout="vertical"
               margin={{
                 top: 15,
-                right: 80, // Increased for percentage labels
+                right: 60,
                 left: 0,
                 bottom: 20,
               }}
@@ -725,7 +593,7 @@ const ECommerce: React.FC = () => {
               <XAxis
                 type="number"
                 label={{
-                  value: 'Quantity',
+                  value: 'Stock Quantity',
                   position: 'insideBottom',
                   offset: -5,
                 }}
@@ -738,35 +606,18 @@ const ECommerce: React.FC = () => {
               />
               <Tooltip content={<StockTooltip />} />
               <Legend />
-              <Bar
-                dataKey="aboveLimitStock"
-                name="Current Stock (Safe)"
-                fill="#0065DE"
-                stackId="stock"
-              />
-              <Bar
-                dataKey="belowLimitStock"
-                name="Current Stock (Low)"
-                fill="#FF4D4F"
-                stackId="stock"
-                radius={[0, 4, 4, 0]}
-              >
+              <Bar dataKey="stok" name="Current Stock" radius={[0, 4, 4, 0]}>
+                {getStockData(stokSparepart.length).map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={entry.status === 'low' ? '#FF4D4F' : '#0065DE'}
+                  />
+                ))}
                 <LabelList
-                  content={renderCustomizedStockLabel}
-                  dataKey="belowLimitStock"
-                />
-              </Bar>
-              <Bar
-                dataKey="limit_stok"
-                name="Stock Limit"
-                fill="#FFBB28"
-                radius={[0, 4, 4, 0]}
-              >
-                <LabelList
-                  dataKey="limit_stok"
-                  position="right"
-                  fill="#000000"
-                  style={{ fontSize: '14px' }}
+                  dataKey="stok"
+                  position="inside"
+                  fill="#FFFFFF"
+                  style={{ fontSize: '14px', fontWeight: 'bold' }}
                 />
               </Bar>
             </RechartsBarChart>
