@@ -785,6 +785,7 @@ const Sidebar = ({
           icon: 'breakdown',
         },
         { name: 'Laporan Waste', path: '/produksi/waste', icon: 'waste' },
+        { name: 'OS2', path: '/produksi/os2', icon: 'machine' },
       ],
     },
   ];

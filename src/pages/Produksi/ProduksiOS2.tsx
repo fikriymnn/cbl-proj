@@ -1,15 +1,15 @@
 import DefaultLayout from '../../layout/DefaultLayout';
-import TabRekapProduksi from './TabRekap';
+import TabOSProduksi from './TabOSProduksi';
 
-const ProduksiWaste = () => {
+const ProduksiOS2 = () => {
   return (
     <DefaultLayout>
       <p className="font-semibold md:text-[28px] text-[20px] text-primary mb-[18px]">
-        Produksi &gt; Waste
+        Produksi &gt; OS2
       </p>
-      <TabRekapProduksi />
+      <TabOSProduksi />
     </DefaultLayout>
   );
 };
 
-export default ProduksiWaste;
+export default ProduksiOS2;

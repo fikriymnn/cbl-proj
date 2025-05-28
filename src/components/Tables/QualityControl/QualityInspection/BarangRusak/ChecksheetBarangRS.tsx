@@ -413,25 +413,6 @@ function ChecksheetBarangRS() {
     }
   }
 
-  // async function pendingRabut(id: number) {
-  //   const url = `${
-  //     import.meta.env.VITE_API_LINK
-  //   }/qc/cs/inspeksiAmparLem/pending/${id}`;
-  //   try {
-  //     const res = await axios.put(
-  //       url,
-  //       {},
-  //       {
-  //         withCredentials: true,
-  //       },
-  //     );
-
-  //     getRabutMesin();
-  //   } catch (error: any) {
-  //     console.log(error.data.msg);
-  //   }
-  // }
-
   async function tambahDefectPeriode(
     id: number,
     idDefect: number,
@@ -1568,6 +1549,34 @@ function ChecksheetBarangRS() {
                           className=" h-10 w-full rounded-md bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
                         >
                           DRUK AWAL
+                        </button>
+                        <button
+                          type="button"
+                          value="button"
+                          disabled={isLoading}
+                          onClick={() =>
+                            tambahTaskRabut(
+                              RabutMesin?.data?.id,
+                              'cabutan operator',
+                            )
+                          }
+                          className=" h-10 w-full rounded-md bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
+                        >
+                          CABUTAN OPERATOR
+                        </button>
+                        <button
+                          type="button"
+                          value="button"
+                          disabled={isLoading}
+                          onClick={() =>
+                            tambahTaskRabut(
+                              RabutMesin?.data?.id,
+                              'penandaan operator',
+                            )
+                          }
+                          className=" h-10 w-full rounded-md bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
+                        >
+                          PENANDAAN OPERATOR
                         </button>
                       </div>
                     </div>

@@ -198,6 +198,7 @@ import RekapHRPage from './pages/HR/Rekap/RekapHR';
 import PayrollBulanPage from './pages/HR/Payroll/PayrollBulanPage';
 import MasterDoc from './pages/MasterData/QC/MasterDoc';
 import JadwalKirimPPIC from './pages/PPIC/JadwalPPIC/JadwalKirim';
+import ProduksiOS2 from './pages/Produksi/ProduksiOS2';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -2038,6 +2039,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <ProduksiWaste />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/produksi/os2"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProduksiOS2 />
               </ProtectedRoute>
             </>
           }
