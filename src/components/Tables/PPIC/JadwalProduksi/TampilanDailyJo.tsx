@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ModalXL from './ModalXL';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import axios from 'axios';
@@ -68,6 +68,9 @@ function TampilanDailyJO() {
   });
   const [todayDate, setTodayDate] = useState(formattedDate);
   const [formattedDisplayDate, setFormattedDisplayDate] = useState('');
+  const [conflictSelection, setConflictSelection] = useState<{
+    [key: string]: number;
+  }>({});
 
   useEffect(() => {
     // Set formatted display date whenever startDate changes
@@ -80,8 +83,8 @@ function TampilanDailyJO() {
     getmasterKategori();
   }, []);
 
-  // Function to check for conflicts in schedule
-  const hasScheduleConflict = (currentData: any, allData: any[]) => {
+  // Function to get conflicts for a specific time and machine
+  const getConflictingJobs = (hour: string, machine: string) => {
     const normalizeMesin = (mesin: string) => {
       const lowerMesin = mesin.toLowerCase().replace(/\s|-/g, '');
       if (lowerMesin.includes('manual1') || lowerMesin === 'manual')
@@ -91,25 +94,45 @@ function TampilanDailyJO() {
       return lowerMesin.toUpperCase();
     };
 
-    const currentMesin = normalizeMesin(currentData.mesin);
-    const currentJam = currentData.jam;
-    const currentTanggal = new Date(currentData.tanggal).toDateString();
-
-    // Count items with same mesin, jam, and tanggal
-    const conflicts = allData.filter((item: any) => {
-      if (item.id === currentData.id) return false; // Exclude current item
-
+    const sameTimeAndMachine = mapData.filter((item: any) => {
       const itemMesin = normalizeMesin(item.mesin);
-      const itemTanggal = new Date(item.tanggal).toDateString();
-
-      return (
-        itemMesin === currentMesin &&
-        item.jam === currentJam &&
-        itemTanggal === currentTanggal
-      );
+      return item.jam === hour && itemMesin === machine;
     });
 
-    return conflicts.length > 0;
+    // Always return the jobs for display
+    return sameTimeAndMachine;
+  };
+
+  // Helper function to determine if jobs are actually conflicting
+  // Helper function to determine if jobs are actually conflicting
+  const hasRealConflicts = (jobs: any[]) => {
+    if (jobs.length <= 1) return false;
+
+    // Group by no_jo and no_booking to identify unique jobs
+    const uniqueJobs = new Set();
+
+    jobs.forEach((item: any) => {
+      const key = `${item.no_jo || 'no_jo'}_${item.no_booking || 'no_booking'}`;
+      uniqueJobs.add(key);
+    });
+
+    // Only consider it a conflict if there are multiple different jobs
+    return uniqueJobs.size > 1;
+  };
+
+  // Helper function to get display jobs (remove duplicates for non-conflicts)
+  const getDisplayJobs = (jobs: any[]) => {
+    if (jobs.length <= 1) return jobs;
+
+    const isRealConflict = hasRealConflicts(jobs);
+
+    if (isRealConflict) {
+      // Show all jobs if there are real conflicts
+      return jobs;
+    } else {
+      // Show only one job if they're the same (same no_jo or no_booking)
+      return [jobs[0]];
+    }
   };
 
   const [listJO1, setJo1] = useState<any>();
@@ -295,6 +318,49 @@ function TampilanDailyJO() {
   const [selectedIndex, setSelectedIndex] = useState<any>();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hoveredJobOrder, setHoveredJobOrder] = useState<any>(null);
+
+  const headerScrollRef = useRef<HTMLDivElement | null>(null);
+  const dataScrollRef = useRef<HTMLDivElement | null>(null);
+
+  // Add synchronized scrolling effect
+  useEffect(() => {
+    const headerScroll = headerScrollRef.current;
+    const dataScroll = dataScrollRef.current;
+
+    if (!headerScroll || !dataScroll) return;
+
+    let isScrolling = false;
+
+    const syncHeaderToData = () => {
+      if (!isScrolling) {
+        isScrolling = true;
+        dataScroll.scrollLeft = headerScroll.scrollLeft;
+        requestAnimationFrame(() => {
+          isScrolling = false;
+        });
+      }
+    };
+
+    const syncDataToHeader = () => {
+      if (!isScrolling) {
+        isScrolling = true;
+        headerScroll.scrollLeft = dataScroll.scrollLeft;
+        requestAnimationFrame(() => {
+          isScrolling = false;
+        });
+      }
+    };
+
+    // Add event listeners
+    headerScroll.addEventListener('scroll', syncHeaderToData);
+    dataScroll.addEventListener('scroll', syncDataToHeader);
+
+    // Cleanup function
+    return () => {
+      headerScroll.removeEventListener('scroll', syncHeaderToData);
+      dataScroll.removeEventListener('scroll', syncDataToHeader);
+    };
+  }, []);
   return (
     <main className="overflow-x-scroll ' ">
       {isLoading && <Loading />}
@@ -355,18 +421,23 @@ function TampilanDailyJO() {
 
             <div className="flex w-full flex-col">
               {/* Header Row (Ensures All Machines Are Always Visible) */}
-              <div className="flex bg-white border-b-8 border-[#D8EAFF]">
-                <p className="text-center text-[#0065de] text-[11px] w-[6%] font-semibold py-[1%]">
-                  TIME
-                </p>
+              <div
+                ref={headerScrollRef}
+                className="flex bg-white border-b-8 border-[#D8EAFF] overflow-x-auto"
+              >
+                <div className="flex min-w-[80px] py-[1%] justify-center items-center min-h-[60px] flex-shrink-0">
+                  <p className="text-center text-[#0065de] text-[9px] font-semibold">
+                    TIME
+                  </p>
+                </div>
                 {machineList.map((machine, i1) => (
                   <div
                     key={i1}
-                    className={`flex w-[6%] justify-center items-center ${
+                    className={`flex min-w-[120px] max-w-[200px] flex-shrink-0 justify-center items-center min-h-[60px] ${
                       i1 % 2 === 1 ? 'bg-white' : 'bg-[#eaf4ff]'
                     }`}
                   >
-                    <p className="text-center text-[#0065de] text-[11px] font-semibold">
+                    <p className="text-center text-[#0065de] text-[9px] font-semibold">
                       {machine}
                     </p>
                   </div>
@@ -374,98 +445,150 @@ function TampilanDailyJO() {
               </div>
 
               {/* Rows for Hours and Data */}
-              <div className="flex w-full bg-white border-b-8 border-[#D8EAFF] flex-col">
+              <div
+                ref={dataScrollRef}
+                className="flex w-full bg-white border-b-8 border-[#D8EAFF] flex-col overflow-x-auto"
+              >
                 {hours.map((hour, rowIndex) => (
                   <div
                     key={rowIndex}
-                    className="flex border-b-8 border-[#D8EAFF]"
+                    className="flex border-b-8 border-[#D8EAFF] min-w-max"
                   >
-                    {/* Hour Column */}
-                    <div className="flex w-[6%] py-[1%] justify-center items-center">
-                      <p className="text-center text-[#0065de] text-[11px] font-semibold">
+                    {/* Hour Column - Fixed width for consistency */}
+                    <div className="flex min-w-[80px] py-[1%] justify-center items-center min-h-[60px] flex-shrink-0">
+                      <p className="text-center text-[#0065de] text-[9px] font-semibold">
                         {hour}
                       </p>
                     </div>
 
                     {machineList.map((machine, colIndex) => {
-                      // Normalize mesin name for flexible matching
-                      const normalizeMesin = (mesin: string) => {
-                        const lowerMesin = mesin
-                          .toLowerCase()
-                          .replace(/\s|-/g, ''); // Remove spaces & dashes
-
-                        if (
-                          lowerMesin.includes('manual1') ||
-                          lowerMesin === 'manual'
-                        )
-                          return 'M1';
-                        if (lowerMesin.includes('manual2')) return 'M2';
-                        if (lowerMesin.includes('manual3')) return 'M3';
-
-                        return lowerMesin.toUpperCase(); // Ensure it's in uppercase for consistency
-                      };
-
-                      // Find matching data
-                      const matchingData = mapData.find(
-                        (d: any) =>
-                          d.jam === hour && normalizeMesin(d.mesin) === machine, // Direct comparison
-                      );
-
-                      // Check for conflicts
-                      const hasConflict = matchingData
-                        ? hasScheduleConflict(matchingData, mapData)
-                        : false;
+                      // Get all conflicting jobs for this time slot and machine
+                      const allJobs = getConflictingJobs(hour, machine);
+                      const isRealConflict = hasRealConflicts(allJobs);
+                      const displayJobs = getDisplayJobs(allJobs);
 
                       // Determine cell background color
                       let cellBgColor =
                         colIndex % 2 === 1 ? 'bg-white' : 'bg-[#eaf4ff]';
-                      if (hasConflict) {
-                        cellBgColor = 'bg-red-500'; // Red background for conflicts
+                      if (isRealConflict) {
+                        cellBgColor = 'bg-red-300'; // Red background for real conflicts
                       }
 
                       return (
                         <div
                           key={colIndex}
-                          className={`flex w-[6%] justify-center items-center ${cellBgColor}`}
+                          className={`flex justify-center items-center min-h-[80px] ${cellBgColor} p-2 min-w-[120px] max-w-[200px] flex-shrink-0`}
                         >
-                          {matchingData ? (
-                            <div className="flex flex-col items-center">
-                              <button
-                                onClick={() => openModal3(matchingData?.id)}
-                                onMouseEnter={() =>
-                                  setHoveredJobOrder(matchingData)
-                                }
-                                onMouseLeave={() => setHoveredJobOrder(null)}
-                                className={`text-center text-[11px] font-semibold ${
-                                  matchingData.no_booking
-                                    ? 'text-[#FF6B00]' // Orange if has booking
-                                    : 'text-[#0065de]' // Blue if no booking
-                                }`}
-                              >
-                                {matchingData.no_jo}
-                              </button>
+                          {displayJobs.length > 0 ? (
+                            <div className="flex flex-col items-center w-full space-y-1">
+                              {displayJobs.length === 1 ? (
+                                // Single job - display both no_jo and no_booking
+                                <div className="flex flex-col items-center w-full space-y-1">
+                                  <button
+                                    onClick={() =>
+                                      openModal3(displayJobs[0]?.id)
+                                    }
+                                    onMouseEnter={() =>
+                                      setHoveredJobOrder(displayJobs[0])
+                                    }
+                                    onMouseLeave={() =>
+                                      setHoveredJobOrder(null)
+                                    }
+                                    className={`text-center text-[8px] font-semibold px-2 py-2 rounded w-full transition-all duration-200 hover:shadow-md ${
+                                      displayJobs[0].no_booking
+                                        ? 'text-[#FF6B00] bg-orange-100 hover:bg-orange-200'
+                                        : 'text-[#0065de] bg-blue-100 hover:bg-blue-200'
+                                    }`}
+                                    title={`JO: ${
+                                      displayJobs[0].no_jo
+                                    }\nBooking: ${
+                                      displayJobs[0].no_booking || ''
+                                    }`}
+                                  >
+                                    <div className="text-[8px] font-bold mb-1 break-words">
+                                      {displayJobs[0].no_jo}
+                                    </div>
+                                    {displayJobs[0].no_booking && (
+                                      <div className="text-[7px] opacity-80 break-words">
+                                        {displayJobs[0].no_booking}
+                                      </div>
+                                    )}
+                                  </button>
+                                </div>
+                              ) : (
+                                // Multiple jobs - show based on whether they're real conflicts
+                                <div
+                                  className={`flex flex-col items-center w-full space-y-2 ${
+                                    isRealConflict ? 'bg-red-300' : ''
+                                  }`}
+                                >
+                                  {isRealConflict && (
+                                    <div className="text-[8px] text-white font-bold text-center">
+                                      CONFLICT ({allJobs.length})
+                                    </div>
+                                  )}
+                                  <div className="flex flex-col space-y-1 w-full max-h-[150px] overflow-y-auto">
+                                    {displayJobs.map(
+                                      (job: any, jobIndex: any) => (
+                                        <button
+                                          key={job.id}
+                                          onClick={() => openModal3(job.id)}
+                                          onMouseEnter={() =>
+                                            setHoveredJobOrder(job)
+                                          }
+                                          onMouseLeave={() =>
+                                            setHoveredJobOrder(null)
+                                          }
+                                          className={`text-[7px] font-semibold px-2 py-2 rounded w-full transition-all duration-200 hover:shadow-md border-2 ${
+                                            job.no_booking
+                                              ? 'text-[#FF6B00] bg-orange-100 hover:bg-orange-200 border-orange-300'
+                                              : 'text-[#0065de] bg-blue-100 hover:bg-blue-200 border-blue-300'
+                                          }`}
+                                          title={`JO: ${job.no_jo}\nBooking: ${
+                                            job.no_booking || ''
+                                          }`}
+                                        >
+                                          <div className="text-[7px] font-bold mb-1 break-words">
+                                            {job.no_jo}
+                                          </div>
+                                          {job.no_booking && (
+                                            <div className="text-[6px] opacity-80 break-words">
+                                              {job.no_booking}
+                                            </div>
+                                          )}
+                                        </button>
+                                      ),
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Show modals for any clicked job - use allJobs here to maintain all modal functionality */}
+                              {allJobs.map(
+                                (job: any) =>
+                                  showModal3[job.id] && (
+                                    <ModalKosongan
+                                      key={job.id}
+                                      isOpen={showModal3[job.id]}
+                                      onClose={() => closeModal3(job.id)}
+                                      judul={'Drag And Drop Edit'}
+                                    >
+                                      <PopUpTable2
+                                        dataMap={mapData.find(
+                                          (data: any) => data.id === job.id,
+                                        )}
+                                        onClose={() => closeModal3(job.id)}
+                                        onFinish={() =>
+                                          getJadwalView(startDate, endDate)
+                                        }
+                                        tgl={startDate}
+                                      />
+                                    </ModalKosongan>
+                                  ),
+                              )}
                             </div>
                           ) : (
-                            <p className="text-[#bbb] text-[11px]">-</p> // Placeholder for empty slot
-                          )}
-
-                          {matchingData && showModal3[matchingData?.id] && (
-                            <ModalKosongan
-                              isOpen={showModal3[matchingData?.id]}
-                              onClose={() => closeModal3(matchingData?.id)}
-                              judul={'Drag And Drop Edit'}
-                            >
-                              <PopUpTable2
-                                dataMap={mapData.find(
-                                  (data: any) => data.id === matchingData?.id,
-                                )}
-                                onClose={() => closeModal3(matchingData?.id)}
-                                onFinish={() =>
-                                  getJadwalView(startDate, endDate)
-                                }
-                                tgl={startDate}
-                              />
-                            </ModalKosongan>
+                            <p className="text-[#bbb] text-[9px]">-</p>
                           )}
                         </div>
                       );
@@ -474,6 +597,7 @@ function TampilanDailyJO() {
                 ))}
               </div>
             </div>
+
             {/* Render JobOrderTable with both lists */}
             {isDetailVisible && (
               <JobOrderTable
@@ -491,7 +615,7 @@ function TampilanDailyJO() {
               />
             )}
             {hoveredJobOrder && (
-              <div className="fixed bottom-4 right-4 bg-white s p-4 rounded-md border-2 border-black">
+              <div className="fixed bottom-4 right-4 bg-white s p-4 rounded-md border-2 border-black z-50">
                 <h3 className="font-bold text-sm mb-2">Job Order Details</h3>
                 <p>Job Order: {hoveredJobOrder.no_jo}</p>
                 {hoveredJobOrder.no_booking && (
@@ -643,12 +767,7 @@ function TampilanDailyJO() {
                         >
                           KAPASITAS (JAM)
                         </label>
-                        <label
-                          htmlFor=""
-                          className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]"
-                        >
-                          TOLERANSI
-                        </label>
+
                         <label
                           htmlFor=""
                           className="text-black text-xs font-bold border-b-2 border-stroke flex items-center h-[50px]"
@@ -742,12 +861,7 @@ function TampilanDailyJO() {
                               >
                                 {data2.kapasitas}
                               </label>
-                              <label
-                                htmlFor=""
-                                className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]"
-                              >
-                                {data2.toleransi}
-                              </label>
+
                               <label
                                 htmlFor=""
                                 className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px]"

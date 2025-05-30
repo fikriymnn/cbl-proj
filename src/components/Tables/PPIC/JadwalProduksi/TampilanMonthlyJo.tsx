@@ -441,6 +441,124 @@ function TampilanMonthlyJO() {
       setIsLoading(false);
     }
   };
+
+  const jobOrderColorMap = new Map();
+  const bookingColorMap = new Map();
+  const usedJobOrderColors = new Set();
+  const usedBookingColors = new Set();
+
+  // Define booking text colors (for orange background)
+  const bookingTextColors = [
+    'text-red-700',
+    'text-blue-700',
+    'text-green-700',
+    'text-purple-700',
+    'text-pink-700',
+    'text-indigo-700',
+    'text-yellow-700',
+    'text-gray-700',
+    'text-cyan-700',
+    'text-emerald-700',
+    'text-violet-700',
+    'text-amber-700',
+  ];
+
+  // Function to get consistent color for a job order
+  const getJobOrderColor = (jobOrderNumber: any) => {
+    // If this job order already has a color assigned, return it
+    if (jobOrderColorMap.has(jobOrderNumber)) {
+      return jobOrderColorMap.get(jobOrderNumber);
+    }
+
+    // Find an unused color or assign based on improved hash
+    let assignedColor;
+
+    if (usedJobOrderColors.size < jobOrderColors.length) {
+      // Try hash-based assignment first
+      const hash = createBetterHash(jobOrderNumber);
+      const colorIndex = Math.abs(hash) % jobOrderColors.length;
+      const potentialColor = jobOrderColors[colorIndex];
+
+      if (!usedJobOrderColors.has(potentialColor)) {
+        assignedColor = potentialColor;
+      } else {
+        // Find first unused color
+        assignedColor =
+          jobOrderColors.find((color) => !usedJobOrderColors.has(color)) ||
+          jobOrderColors[0];
+      }
+    } else {
+      // All colors used, cycle through them
+      const hash = createBetterHash(jobOrderNumber);
+      const colorIndex = Math.abs(hash) % jobOrderColors.length;
+      assignedColor = jobOrderColors[colorIndex];
+    }
+
+    // Store the mapping and mark color as used
+    jobOrderColorMap.set(jobOrderNumber, assignedColor);
+    usedJobOrderColors.add(assignedColor);
+
+    return assignedColor;
+  };
+
+  // Function to get consistent text color for booking numbers
+  const getBookingTextColor = (bookingNumber: any) => {
+    // If this booking already has a color assigned, return it
+    if (bookingColorMap.has(bookingNumber)) {
+      return bookingColorMap.get(bookingNumber);
+    }
+
+    // Find an unused color or assign based on hash
+    let assignedColor;
+
+    if (usedBookingColors.size < bookingTextColors.length) {
+      // Try hash-based assignment first
+      const hash = createBetterHash(bookingNumber);
+      const colorIndex = Math.abs(hash) % bookingTextColors.length;
+      const potentialColor = bookingTextColors[colorIndex];
+
+      if (!usedBookingColors.has(potentialColor)) {
+        assignedColor = potentialColor;
+      } else {
+        // Find first unused color
+        assignedColor =
+          bookingTextColors.find((color) => !usedBookingColors.has(color)) ||
+          bookingTextColors[0];
+      }
+    } else {
+      // All colors used, cycle through them
+      const hash = createBetterHash(bookingNumber);
+      const colorIndex = Math.abs(hash) % bookingTextColors.length;
+      assignedColor = bookingTextColors[colorIndex];
+    }
+
+    // Store the mapping and mark color as used
+    bookingColorMap.set(bookingNumber, assignedColor);
+    usedBookingColors.add(assignedColor);
+
+    return assignedColor;
+  };
+
+  // Better hash function to reduce collisions
+  const createBetterHash = (str: any) => {
+    let hash = 0;
+    if (str.length === 0) return hash;
+
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+
+    // Additional mixing to reduce collisions
+    hash = hash ^ (hash >>> 16);
+    hash = hash * 0x85ebca6b;
+    hash = hash ^ (hash >>> 13);
+    hash = hash * 0xc2b2ae35;
+    hash = hash ^ (hash >>> 16);
+
+    return hash;
+  };
   return (
     <main className="overflow-x-scroll ' ">
       {isLoading && <Loading />}
@@ -771,9 +889,6 @@ function TampilanMonthlyJO() {
                                 );
                               });
 
-                              // Unique job orders tracking
-                              const uniqueJobOrders: any = [];
-
                               return (
                                 <div
                                   key={machineIndex}
@@ -790,25 +905,9 @@ function TampilanMonthlyJO() {
                                     <div className="flex flex-col items-center gap-1 p-0.5 w-full">
                                       {matchingData.map(
                                         (data: any, index: any) => {
-                                          // Color assignment logic
-                                          let jobOrderColorClass = '';
-                                          const existingIndex =
-                                            uniqueJobOrders.indexOf(data.no_jo);
-
-                                          if (existingIndex !== -1) {
-                                            jobOrderColorClass =
-                                              jobOrderColors[
-                                                existingIndex %
-                                                  jobOrderColors.length
-                                              ];
-                                          } else {
-                                            uniqueJobOrders.push(data.no_jo);
-                                            jobOrderColorClass =
-                                              jobOrderColors[
-                                                uniqueJobOrders.length -
-                                                  (1 % jobOrderColors.length)
-                                              ];
-                                          }
+                                          // Get consistent color for this job order
+                                          const jobOrderColorClass =
+                                            getJobOrderColor(data.no_jo);
 
                                           return (
                                             <div
@@ -826,7 +925,11 @@ function TampilanMonthlyJO() {
                                               >
                                                 {data.no_jo}
                                                 {data.no_booking && (
-                                                  <span className="text-[7px] font-medium text-gray-700 bg-gray-100 p-0.5 rounded-sm mt-0.5 w-full overflow-hidden text-center">
+                                                  <span
+                                                    className={`text-[9px] font-semibold bg-white rounded-md p-0.5 line-clamp-2 mt-0.5 w-full overflow-hidden text-center ${getBookingTextColor(
+                                                      data.no_booking,
+                                                    )}`}
+                                                  >
                                                     {data.no_booking}
                                                   </span>
                                                 )}
@@ -986,6 +1089,7 @@ function TampilanMonthlyJO() {
                 <div className="fixed bottom-4 right-4 bg-white s p-4 rounded-md border-2 border-black">
                   <h3 className="font-bold text-sm mb-2">Job Order Details</h3>
                   <p>Job Order: {hoveredJobOrder.no_jo}</p>
+                  <p>No Booking: {hoveredJobOrder.no_booking}</p>
                   <p>Item: {hoveredJobOrder.item}</p>
                   {/* Add more details as needed */}
                 </div>

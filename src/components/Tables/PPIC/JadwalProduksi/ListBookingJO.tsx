@@ -76,8 +76,8 @@ function ListBookingJo() {
   const [selectedJO, setSelectedJO] = useState<DetailJOData | null>(null);
   const [mapData, setMapData] = useState<any[]>([]);
   const [dateRange, setDateRange] = useState({
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0],
+    startDate: '',
+    endDate: '',
   });
 
   // Add search state
@@ -583,7 +583,6 @@ function ListBookingJo() {
                       <input
                         className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-500 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
                         type="date"
-                        value={dateRange.startDate}
                         onChange={(e) =>
                           handleDateChange('startDate', e.target.value)
                         }
@@ -597,7 +596,6 @@ function ListBookingJo() {
                       <input
                         className="w-full rounded-lg bg-gray-50 border border-gray-300 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-500 focus:bg-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
                         type="date"
-                        value={dateRange.endDate}
                         onChange={(e) =>
                           handleDateChange('endDate', e.target.value)
                         }
@@ -963,7 +961,7 @@ function ListBookingJo() {
                                                         : 'bg-yellow-100 text-yellow-800'
                                                     }`}
                                                   >
-                                                    {perubahan.status.toUpperCase()}
+                                                    {perubahan.status}
                                                   </span>
                                                 </div>
 

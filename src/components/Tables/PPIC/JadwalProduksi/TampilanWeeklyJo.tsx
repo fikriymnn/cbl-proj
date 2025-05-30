@@ -265,6 +265,139 @@ function TampilanWeeklyJO() {
     return lowerMesin.toUpperCase(); // Ensure it's in uppercase for consistency
   };
   const [hoveredJobOrder, setHoveredJobOrder] = useState<any>(null);
+
+  // Create global mappings for job orders and bookings
+  const jobOrderColorMap = new Map();
+  const bookingColorMap = new Map();
+  const usedJobOrderColors = new Set();
+  const usedBookingColors = new Set();
+
+  // Define booking text colors (for orange background)
+  const bookingTextColors = [
+    'text-red-700',
+    'text-blue-700',
+    'text-green-700',
+    'text-purple-700',
+    'text-pink-700',
+    'text-indigo-700',
+    'text-yellow-700',
+    'text-gray-700',
+    'text-cyan-700',
+    'text-emerald-700',
+    'text-violet-700',
+    'text-amber-700',
+  ];
+
+  // Function to get consistent color for a job order
+  const getJobOrderColor = (jobOrderNumber: any) => {
+    // If this job order already has a color assigned, return it
+    if (jobOrderColorMap.has(jobOrderNumber)) {
+      return jobOrderColorMap.get(jobOrderNumber);
+    }
+
+    // Color palette for different job orders
+    const jobOrderColors = [
+      'bg-blue-500 text-white', // Primary blue
+      'bg-green-500 text-white', // Green
+      'bg-purple-500 text-white', // Purple
+      'bg-orange-500 text-white', // Orange
+      'bg-teal-500 text-white', // Teal
+      'bg-red-500 text-white', // Red
+      'bg-indigo-500 text-white', // Indigo
+      'bg-pink-500 text-white', // Pink
+      'bg-cyan-500 text-white', // Cyan
+      'bg-amber-500 text-white', // Amber
+    ];
+
+    // Find an unused color or assign based on improved hash
+    let assignedColor;
+
+    if (usedJobOrderColors.size < jobOrderColors.length) {
+      // Try hash-based assignment first
+      const hash = createBetterHash(jobOrderNumber);
+      const colorIndex = Math.abs(hash) % jobOrderColors.length;
+      const potentialColor = jobOrderColors[colorIndex];
+
+      if (!usedJobOrderColors.has(potentialColor)) {
+        assignedColor = potentialColor;
+      } else {
+        // Find first unused color
+        assignedColor =
+          jobOrderColors.find((color) => !usedJobOrderColors.has(color)) ||
+          jobOrderColors[0];
+      }
+    } else {
+      // All colors used, cycle through them
+      const hash = createBetterHash(jobOrderNumber);
+      const colorIndex = Math.abs(hash) % jobOrderColors.length;
+      assignedColor = jobOrderColors[colorIndex];
+    }
+
+    // Store the mapping and mark color as used
+    jobOrderColorMap.set(jobOrderNumber, assignedColor);
+    usedJobOrderColors.add(assignedColor);
+
+    return assignedColor;
+  };
+
+  // Function to get consistent text color for booking numbers
+  const getBookingTextColor = (bookingNumber: any) => {
+    // If this booking already has a color assigned, return it
+    if (bookingColorMap.has(bookingNumber)) {
+      return bookingColorMap.get(bookingNumber);
+    }
+
+    // Find an unused color or assign based on hash
+    let assignedColor;
+
+    if (usedBookingColors.size < bookingTextColors.length) {
+      // Try hash-based assignment first
+      const hash = createBetterHash(bookingNumber);
+      const colorIndex = Math.abs(hash) % bookingTextColors.length;
+      const potentialColor = bookingTextColors[colorIndex];
+
+      if (!usedBookingColors.has(potentialColor)) {
+        assignedColor = potentialColor;
+      } else {
+        // Find first unused color
+        assignedColor =
+          bookingTextColors.find((color) => !usedBookingColors.has(color)) ||
+          bookingTextColors[0];
+      }
+    } else {
+      // All colors used, cycle through them
+      const hash = createBetterHash(bookingNumber);
+      const colorIndex = Math.abs(hash) % bookingTextColors.length;
+      assignedColor = bookingTextColors[colorIndex];
+    }
+
+    // Store the mapping and mark color as used
+    bookingColorMap.set(bookingNumber, assignedColor);
+    usedBookingColors.add(assignedColor);
+
+    return assignedColor;
+  };
+
+  // Better hash function to reduce collisions
+  const createBetterHash = (str: any) => {
+    let hash = 0;
+    if (str.length === 0) return hash;
+
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+
+    // Additional mixing to reduce collisions
+    hash = hash ^ (hash >>> 16);
+    hash = hash * 0x85ebca6b;
+    hash = hash ^ (hash >>> 13);
+    hash = hash * 0xc2b2ae35;
+    hash = hash ^ (hash >>> 16);
+
+    return hash;
+  };
   return (
     <main className="overflow-x-scroll ' ">
       {isLoading && <Loading />}
@@ -326,16 +459,23 @@ function TampilanWeeklyJO() {
               </div>
             </div>
 
-            <div className="flex w-full flex-col">
+            <div className="flex w-full flex-col overflow-x-auto">
               {/* Header Row (Machines) */}
-              <div className="flex bg-white border-b-8 border-[#D8EAFF]">
-                <p className="text-center text-[#0065de] text-[11px] w-[12%] font-semibold py-[1%]">
+              <div
+                className="flex bg-white border-b-8 border-[#D8EAFF]"
+                style={{ minWidth: `${(machineList.length + 1) * 120}px` }}
+              >
+                <div
+                  className="text-center text-[#0065de] text-[11px] font-semibold py-[1%] flex items-center justify-center"
+                  style={{ width: '120px' }}
+                >
                   DATE
-                </p>
+                </div>
                 {machineList.map((machine: any, i: any) => (
                   <div
                     key={i}
-                    className="flex w-[12%] justify-center items-center bg-[#eaf4ff]"
+                    className="flex justify-center items-center bg-[#eaf4ff]"
+                    style={{ width: '120px' }}
                   >
                     <p className="text-center text-[#0065de] text-[11px] font-semibold">
                       {machine}
@@ -359,10 +499,12 @@ function TampilanWeeklyJO() {
                   <div
                     key={rowIndex}
                     className={`flex border-b-4 border-[#D8EAFF] ${rowBackgroundColor}`}
+                    style={{ minWidth: `${(machineList.length + 1) * 120}px` }}
                   >
                     {/* Date Column */}
                     <div
-                      className={`flex w-[12%] py-[1%] justify-center items-center border-r border-[#D8EAFF]`}
+                      className="flex py-[1%] justify-center items-center border-r border-[#D8EAFF]"
+                      style={{ width: '120px' }}
                     >
                       <p className="text-center text-[#0065de] text-[11px] font-semibold">
                         {convertTimeStampToDate(currentRowDate)}
@@ -371,18 +513,6 @@ function TampilanWeeklyJO() {
 
                     {machineList.map((machine: any, colIndex: any) => {
                       const normalizedMachine = normalizeMesin(machine);
-
-                      // Color palette for different job orders
-                      const jobOrderColors = [
-                        'bg-blue-500 text-white', // Primary blue
-                        'bg-green-500 text-white', // Green
-                        'bg-purple-500 text-white', // Purple
-                        'bg-orange-500 text-white', // Orange
-                        'bg-teal-500 text-white', // Teal
-                      ];
-
-                      // Track unique job orders to assign consistent colors
-                      const uniqueJobOrders: string[] = [];
 
                       const groupedMatchingData = mapData.reduce(
                         (acc: any, d: any) => {
@@ -426,33 +556,17 @@ function TampilanWeeklyJO() {
                       return (
                         <div
                           key={colIndex}
-                          className={`flex w-[12%] justify-center items-center border-r border-[#D8EAFF] ${colBackgroundColor}`}
+                          className={`flex justify-center items-center border-r border-[#D8EAFF] ${colBackgroundColor}`}
+                          style={{ width: '120px' }}
                         >
                           {matchingDataArray.length > 0 ? (
                             <div className="flex flex-col items-center w-full">
                               {matchingDataArray.map(
                                 (data: any, index: any) => {
-                                  // Find or assign a color for this job order
-                                  let jobOrderColorClass = '';
-                                  const existingIndex = uniqueJobOrders.indexOf(
+                                  // Get consistent color for this job order
+                                  const jobOrderColorClass = getJobOrderColor(
                                     data.no_jo,
                                   );
-
-                                  if (existingIndex !== -1) {
-                                    // Use existing color for repeated job order
-                                    jobOrderColorClass =
-                                      jobOrderColors[
-                                        existingIndex % jobOrderColors.length
-                                      ];
-                                  } else {
-                                    // Assign a new color for a new job order
-                                    uniqueJobOrders.push(data.no_jo);
-                                    jobOrderColorClass =
-                                      jobOrderColors[
-                                        uniqueJobOrders.length -
-                                          (1 % jobOrderColors.length)
-                                      ];
-                                  }
 
                                   return (
                                     <div
@@ -470,9 +584,13 @@ function TampilanWeeklyJO() {
                                       >
                                         {data.no_jo}
                                         {data.no_booking && (
-                                          <span className="">
+                                          <div
+                                            className={`bg-white p-0.5 rounded-md line-clamp-2 mt-0.5 w-full overflow-hidden text-center ${getBookingTextColor(
+                                              data.no_booking,
+                                            )}`}
+                                          >
                                             {data.no_booking}
-                                          </span>
+                                          </div>
                                         )}
                                       </button>
                                     </div>
