@@ -477,6 +477,23 @@ const Sidebar = ({
           ],
         },
         { name: 'SPB', path: '/maintenance/spb', icon: 'service' },
+        {
+          name: 'Pengajuan Ke HR',
+          path: '/pengajuanallkehr',
+          icon: 'document',
+          children: [
+            {
+              name: 'Pengajuan ',
+              path: '/pengajuanallkehr',
+              icon: 'submition',
+            },
+            {
+              name: 'History ',
+              path: '/pengajuanallkehrhistory',
+              icon: 'history',
+            },
+          ],
+        },
       ],
     },
     {
@@ -518,6 +535,23 @@ const Sidebar = ({
           ],
         },
         { name: 'QC Absensi', path: '/qc/absensi', icon: 'attendance' },
+        {
+          name: 'Pengajuan Ke HR',
+          path: '/pengajuanallkehr',
+          icon: 'document',
+          children: [
+            {
+              name: 'Pengajuan ',
+              path: '/pengajuanallkehr',
+              icon: 'submition',
+            },
+            {
+              name: 'History ',
+              path: '/pengajuanallkehrhistory',
+              icon: 'history',
+            },
+          ],
+        },
       ],
     },
     {
@@ -770,6 +804,23 @@ const Sidebar = ({
         },
         { name: 'Rekap PPIC', path: '/ppic/rekap', icon: 'recap' },
         { name: 'Laporan Waste', path: '/produksi/waste', icon: 'waste' },
+        {
+          name: 'Pengajuan Ke HR',
+          path: '/pengajuanallkehr',
+          icon: 'document',
+          children: [
+            {
+              name: 'Pengajuan ',
+              path: '/pengajuanallkehr',
+              icon: 'submition',
+            },
+            {
+              name: 'History ',
+              path: '/pengajuanallkehrhistory',
+              icon: 'history',
+            },
+          ],
+        },
       ],
     },
     {
