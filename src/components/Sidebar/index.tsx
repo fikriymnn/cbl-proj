@@ -788,6 +788,11 @@ const Sidebar = ({
           icon: 'schedule',
         },
         {
+          name: 'Jo Terjadwal',
+          path: '/ppic/joterjadwal',
+          icon: 'schedule',
+        },
+        {
           name: 'Jadwal Kirim',
           path: '/ppic/jadwalKirim',
           icon: 'schedule',

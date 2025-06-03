@@ -199,6 +199,7 @@ import PayrollBulanPage from './pages/HR/Payroll/PayrollBulanPage';
 import MasterDoc from './pages/MasterData/QC/MasterDoc';
 import JadwalKirimPPIC from './pages/PPIC/JadwalPPIC/JadwalKirim';
 import ProduksiOS2 from './pages/Produksi/ProduksiOS2';
+import JoTerjadwal from './pages/PPIC/JadwalPPIC/JOTerjadwalPPIC';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1951,6 +1952,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <JadwalPPIC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/ppic/joterjadwal"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JoTerjadwal />
               </ProtectedRoute>
             </>
           }
