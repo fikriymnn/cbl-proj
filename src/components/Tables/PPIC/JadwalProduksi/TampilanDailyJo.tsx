@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ModalXL from './ModalXL';
 import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import axios from 'axios';
@@ -361,6 +361,158 @@ function TampilanDailyJO() {
       dataScroll.removeEventListener('scroll', syncDataToHeader);
     };
   }, []);
+
+  // Add this function at the top of your component or in a utils file
+  interface ColorStyle {
+    bg: string;
+    text: string;
+    border: string;
+    hover: string;
+  }
+
+  const generateJobOrderColors = (allJobs: any) => {
+    // Get all unique job orders
+    const uniqueJobOrders = [
+      ...new Set(allJobs.map((job: JobOrder) => job.no_jo)),
+    ];
+
+    // Predefined color palette for better visibility
+    const colorPalette: ColorStyle[] = [
+      {
+        bg: 'bg-purple-100',
+        text: 'text-purple-800',
+        border: 'border-purple-300',
+        hover: 'hover:bg-purple-200',
+      },
+      {
+        bg: 'bg-green-100',
+        text: 'text-green-800',
+        border: 'border-green-300',
+        hover: 'hover:bg-green-200',
+      },
+      {
+        bg: 'bg-yellow-100',
+        text: 'text-yellow-800',
+        border: 'border-yellow-300',
+        hover: 'hover:bg-yellow-200',
+      },
+      {
+        bg: 'bg-pink-100',
+        text: 'text-pink-800',
+        border: 'border-pink-300',
+        hover: 'hover:bg-pink-200',
+      },
+      {
+        bg: 'bg-indigo-100',
+        text: 'text-indigo-800',
+        border: 'border-indigo-300',
+        hover: 'hover:bg-indigo-200',
+      },
+      {
+        bg: 'bg-teal-100',
+        text: 'text-teal-800',
+        border: 'border-teal-300',
+        hover: 'hover:bg-teal-200',
+      },
+      {
+        bg: 'bg-red-100',
+        text: 'text-red-800',
+        border: 'border-red-300',
+        hover: 'hover:bg-red-200',
+      },
+      {
+        bg: 'bg-cyan-100',
+        text: 'text-cyan-800',
+        border: 'border-cyan-300',
+        hover: 'hover:bg-cyan-200',
+      },
+      {
+        bg: 'bg-lime-100',
+        text: 'text-lime-800',
+        border: 'border-lime-300',
+        hover: 'hover:bg-lime-200',
+      },
+      {
+        bg: 'bg-amber-100',
+        text: 'text-amber-800',
+        border: 'border-amber-300',
+        hover: 'hover:bg-amber-200',
+      },
+      {
+        bg: 'bg-emerald-100',
+        text: 'text-emerald-800',
+        border: 'border-emerald-300',
+        hover: 'hover:bg-emerald-200',
+      },
+      {
+        bg: 'bg-violet-100',
+        text: 'text-violet-800',
+        border: 'border-violet-300',
+        hover: 'hover:bg-violet-200',
+      },
+      {
+        bg: 'bg-rose-100',
+        text: 'text-rose-800',
+        border: 'border-rose-300',
+        hover: 'hover:bg-rose-200',
+      },
+      {
+        bg: 'bg-sky-100',
+        text: 'text-sky-800',
+        border: 'border-sky-300',
+        hover: 'hover:bg-sky-200',
+      },
+      {
+        bg: 'bg-orange-100',
+        text: 'text-orange-800',
+        border: 'border-orange-300',
+        hover: 'hover:bg-orange-200',
+      },
+    ];
+
+    // Create color mapping for each unique JO
+    const joColorMap: { [key: string]: ColorStyle } = {};
+    uniqueJobOrders.forEach((jo: any, index: any) => {
+      joColorMap[jo] = colorPalette[index % colorPalette.length];
+    });
+
+    return joColorMap;
+  };
+  const getJobOrderColor = (job: any, joColorMap: any) => {
+    // If job has booking, keep the existing booking color logic
+    if (job.no_booking) {
+      return {
+        bg: 'bg-orange-100',
+        text: 'text-[#FF6B00]',
+        border: 'border-orange-300',
+        hover: 'hover:bg-orange-200',
+      };
+    }
+
+    // Use JO color mapping
+    return (
+      joColorMap[job.no_jo] || {
+        bg: 'bg-blue-100',
+        text: 'text-[#0065de]',
+        border: 'border-blue-300',
+        hover: 'hover:bg-blue-200',
+      }
+    );
+  };
+  const joColorMap = useMemo(() => {
+    // Collect all jobs from your mapData
+    const allJobs: any = [];
+
+    // Iterate through all hours and machines to collect all jobs
+    hours.forEach((hour) => {
+      machineList.forEach((machine) => {
+        const jobs = getConflictingJobs(hour, machine);
+        allJobs.push(...jobs);
+      });
+    });
+
+    return generateJobOrderColors(allJobs);
+  }, [mapData]);
   return (
     <main className="overflow-x-scroll ' ">
       {isLoading && <Loading />}
@@ -482,38 +634,42 @@ function TampilanDailyJO() {
                           {displayJobs.length > 0 ? (
                             <div className="flex flex-col items-center w-full space-y-1">
                               {displayJobs.length === 1 ? (
-                                // Single job - display both no_jo and no_booking
+                                // Single job - display both no_jo and no_booking with JO color
                                 <div className="flex flex-col items-center w-full space-y-1">
-                                  <button
-                                    onClick={() =>
-                                      openModal3(displayJobs[0]?.id)
-                                    }
-                                    onMouseEnter={() =>
-                                      setHoveredJobOrder(displayJobs[0])
-                                    }
-                                    onMouseLeave={() =>
-                                      setHoveredJobOrder(null)
-                                    }
-                                    className={`text-center text-[8px] font-semibold px-2 py-2 rounded w-full transition-all duration-200 hover:shadow-md ${
-                                      displayJobs[0].no_booking
-                                        ? 'text-[#FF6B00] bg-orange-100 hover:bg-orange-200'
-                                        : 'text-[#0065de] bg-blue-100 hover:bg-blue-200'
-                                    }`}
-                                    title={`JO: ${
-                                      displayJobs[0].no_jo
-                                    }\nBooking: ${
-                                      displayJobs[0].no_booking || ''
-                                    }`}
-                                  >
-                                    <div className="text-[8px] font-bold mb-1 break-words">
-                                      {displayJobs[0].no_jo}
-                                    </div>
-                                    {displayJobs[0].no_booking && (
-                                      <div className="text-[7px] opacity-80 break-words">
-                                        {displayJobs[0].no_booking}
-                                      </div>
-                                    )}
-                                  </button>
+                                  {(() => {
+                                    const jobColors = getJobOrderColor(
+                                      displayJobs[0],
+                                      joColorMap,
+                                    );
+                                    return (
+                                      <button
+                                        onClick={() =>
+                                          openModal3(displayJobs[0]?.id)
+                                        }
+                                        onMouseEnter={() =>
+                                          setHoveredJobOrder(displayJobs[0])
+                                        }
+                                        onMouseLeave={() =>
+                                          setHoveredJobOrder(null)
+                                        }
+                                        className={`text-center text-[8px] font-semibold px-2 py-2 rounded w-full transition-all duration-200 hover:shadow-md ${jobColors.bg} ${jobColors.text} ${jobColors.hover}`}
+                                        title={`JO: ${
+                                          displayJobs[0].no_jo
+                                        }\nBooking: ${
+                                          displayJobs[0].no_booking || ''
+                                        }`}
+                                      >
+                                        <div className="text-[8px] font-bold mb-1 break-words">
+                                          {displayJobs[0].no_jo}
+                                        </div>
+                                        {displayJobs[0].no_booking && (
+                                          <div className="text-[7px] opacity-80 break-words">
+                                            {displayJobs[0].no_booking}
+                                          </div>
+                                        )}
+                                      </button>
+                                    );
+                                  })()}
                                 </div>
                               ) : (
                                 // Multiple jobs - show based on whether they're real conflicts
@@ -529,35 +685,39 @@ function TampilanDailyJO() {
                                   )}
                                   <div className="flex flex-col space-y-1 w-full max-h-[150px] overflow-y-auto">
                                     {displayJobs.map(
-                                      (job: any, jobIndex: any) => (
-                                        <button
-                                          key={job.id}
-                                          onClick={() => openModal3(job.id)}
-                                          onMouseEnter={() =>
-                                            setHoveredJobOrder(job)
-                                          }
-                                          onMouseLeave={() =>
-                                            setHoveredJobOrder(null)
-                                          }
-                                          className={`text-[7px] font-semibold px-2 py-2 rounded w-full transition-all duration-200 hover:shadow-md border-2 ${
-                                            job.no_booking
-                                              ? 'text-[#FF6B00] bg-orange-100 hover:bg-orange-200 border-orange-300'
-                                              : 'text-[#0065de] bg-blue-100 hover:bg-blue-200 border-blue-300'
-                                          }`}
-                                          title={`JO: ${job.no_jo}\nBooking: ${
-                                            job.no_booking || ''
-                                          }`}
-                                        >
-                                          <div className="text-[7px] font-bold mb-1 break-words">
-                                            {job.no_jo}
-                                          </div>
-                                          {job.no_booking && (
-                                            <div className="text-[6px] opacity-80 break-words">
-                                              {job.no_booking}
+                                      (job: any, jobIndex: any) => {
+                                        const jobColors = getJobOrderColor(
+                                          job,
+                                          joColorMap,
+                                        );
+                                        return (
+                                          <button
+                                            key={job.id}
+                                            onClick={() => openModal3(job.id)}
+                                            onMouseEnter={() =>
+                                              setHoveredJobOrder(job)
+                                            }
+                                            onMouseLeave={() =>
+                                              setHoveredJobOrder(null)
+                                            }
+                                            className={`text-[7px] font-semibold px-2 py-2 rounded w-full transition-all duration-200 hover:shadow-md border-2 ${jobColors.bg} ${jobColors.text} ${jobColors.border} ${jobColors.hover}`}
+                                            title={`JO: ${
+                                              job.no_jo
+                                            }\nBooking: ${
+                                              job.no_booking || ''
+                                            }`}
+                                          >
+                                            <div className="text-[7px] font-bold mb-1 break-words">
+                                              {job.no_jo}
                                             </div>
-                                          )}
-                                        </button>
-                                      ),
+                                            {job.no_booking && (
+                                              <div className="text-[6px] opacity-80 break-words">
+                                                {job.no_booking}
+                                              </div>
+                                            )}
+                                          </button>
+                                        );
+                                      },
                                     )}
                                   </div>
                                 </div>
