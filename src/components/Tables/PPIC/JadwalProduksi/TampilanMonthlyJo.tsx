@@ -654,22 +654,47 @@ function TampilanMonthlyJO() {
                           Machines
                         </p>
                       </div>
-                      {machineList.map((machine, index) => (
-                        <div
-                          key={index}
-                          className={`flex items-center justify-center cursor-pointer hover:bg-[#DEF0FF] ${
-                            index % 2 === 0 ? 'bg-[#F0F7FF]' : 'bg-white'
-                          }`}
-                          style={{
-                            height: `${calculateRowHeight(machine)}px`,
-                          }}
-                          onClick={() => openEdit(index, machine)}
-                        >
-                          <p className="text-[#0065de] text-[11px] font-semibold">
-                            {machine}
-                          </p>
-                        </div>
-                      ))}
+                      {machineList.map((machine, index) => {
+                        // Calculate the maximum height needed for this machine row across all dates
+                        const maxHeightForMachine = Math.max(
+                          ...generateMonthDates().map((date) => {
+                            const normalizedMachine = normalizeMesin(machine);
+                            const matchingData = mapData.filter((d: any) => {
+                              const dateTanggal = new Date(d.tanggal);
+                              return (
+                                dateTanggal.getFullYear() ===
+                                  date.getFullYear() &&
+                                dateTanggal.getMonth() === date.getMonth() &&
+                                dateTanggal.getDate() === date.getDate() &&
+                                normalizeMesin(d.mesin) === normalizedMachine
+                              );
+                            });
+                            // Calculate height: base height + (number of items * item height) + padding
+                            return Math.max(
+                              60,
+                              40 + matchingData.length * 32 + 8,
+                            );
+                          }),
+                          60, // Minimum height
+                        );
+
+                        return (
+                          <div
+                            key={index}
+                            className={`flex items-center justify-center cursor-pointer hover:bg-[#DEF0FF] ${
+                              index % 2 === 0 ? 'bg-[#F0F7FF]' : 'bg-white'
+                            }`}
+                            style={{
+                              height: `${maxHeightForMachine}px`,
+                            }}
+                            onClick={() => openEdit(index, machine)}
+                          >
+                            <p className="text-[#0065de] text-[11px] font-semibold">
+                              {machine}
+                            </p>
+                          </div>
+                        );
+                      })}
                     </div>
 
                     {machineList.map(
@@ -889,20 +914,47 @@ function TampilanMonthlyJO() {
                                 );
                               });
 
+                              // Calculate the maximum height needed for this machine row across all dates
+                              const maxHeightForMachine = Math.max(
+                                ...generateMonthDates().map((dateItem) => {
+                                  const matchingDataForHeight = mapData.filter(
+                                    (d: any) => {
+                                      const dateTanggal = new Date(d.tanggal);
+                                      return (
+                                        dateTanggal.getFullYear() ===
+                                          dateItem.getFullYear() &&
+                                        dateTanggal.getMonth() ===
+                                          dateItem.getMonth() &&
+                                        dateTanggal.getDate() ===
+                                          dateItem.getDate() &&
+                                        normalizeMesin(d.mesin) ===
+                                          normalizedMachine
+                                      );
+                                    },
+                                  );
+                                  return Math.max(
+                                    60,
+                                    40 + matchingDataForHeight.length * 32 + 8,
+                                  );
+                                }),
+                                60, // Minimum height
+                              );
+
                               return (
                                 <div
                                   key={machineIndex}
-                                  className={`flex items-center justify-center ${
+                                  className={`flex flex-col items-center justify-start p-1 ${
                                     machineIndex % 2 === 0
                                       ? 'bg-[#F0F7FF]'
                                       : 'bg-white'
                                   }`}
                                   style={{
-                                    height: `${calculateRowHeight(machine)}px`,
+                                    height: `${maxHeightForMachine}px`,
+                                    minHeight: '60px',
                                   }}
                                 >
                                   {matchingData.length > 0 && (
-                                    <div className="flex flex-col items-center gap-1 p-0.5 w-full">
+                                    <div className="flex flex-col items-center gap-1 w-full h-full overflow-y-auto">
                                       {matchingData.map(
                                         (data: any, index: any) => {
                                           // Get consistent color for this job order
@@ -912,7 +964,8 @@ function TampilanMonthlyJO() {
                                           return (
                                             <div
                                               key={index}
-                                              className="flex flex-col w-full items-center"
+                                              className="flex flex-col w-full items-center flex-shrink-0"
+                                              style={{ minHeight: '30px' }}
                                             >
                                               <button
                                                 onMouseEnter={() =>
@@ -921,14 +974,21 @@ function TampilanMonthlyJO() {
                                                 onMouseLeave={() =>
                                                   setHoveredJobOrder(null)
                                                 }
-                                                className={`text-[8px] font-semibold border border-opacity-50 p-0.5 rounded-sm w-full ${jobOrderColorClass}`}
+                                                className={`text-[8px] font-semibold border border-opacity-50 p-1 rounded-sm w-full min-h-[28px] flex flex-col items-center justify-center ${jobOrderColorClass}`}
                                               >
-                                                {data.no_jo}
+                                                <span className="leading-tight">
+                                                  {data.no_jo}
+                                                </span>
                                                 {data.no_booking && (
                                                   <span
-                                                    className={`text-[9px] font-semibold bg-white rounded-md p-0.5 line-clamp-2 mt-0.5 w-full overflow-hidden text-center ${getBookingTextColor(
+                                                    className={`text-[7px] font-semibold bg-white rounded-sm px-1 py-0.5 mt-0.5 w-full overflow-hidden text-center leading-tight ${getBookingTextColor(
                                                       data.no_booking,
                                                     )}`}
+                                                    style={{
+                                                      wordBreak: 'break-all',
+                                                      fontSize: '7px',
+                                                      lineHeight: '1.1',
+                                                    }}
                                                   >
                                                     {data.no_booking}
                                                   </span>
