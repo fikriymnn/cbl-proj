@@ -126,6 +126,7 @@ function TableAbsensiQC() {
     lama: any,
     i: any,
     id: any,
+    p: any,
   ) {
     if (
       window.confirm(
@@ -145,7 +146,7 @@ function TableAbsensiQC() {
             lama_lembur_absen: lama,
             id_pengaju_ketidaksesuaian: idPengaju,
             alasan_ketidaksesuaian: '',
-            penanganan: '',
+            penanganan: p,
           },
           {
             withCredentials: true,
@@ -639,28 +640,42 @@ function TableAbsensiQC() {
                                       </div>
 
                                       <div className="flex w-full justify-end items-end px-7 py-4">
-                                        <button
-                                          onClick={() => {
-                                            console.log(
-                                              catatan_ketidaksesuaian,
-                                              tipe_lembur,
-                                              data.jam_lembur,
-                                              i,
-                                              data.id_pengajuan_lembur,
-                                            );
-                                            postLemburKurang(
-                                              catatan_ketidaksesuaian,
-                                              tipe_lembur,
-                                              data.jam_lembur,
-                                              i,
-                                              data.id_pengajuan_lembur,
-                                            );
-                                          }}
-                                          disabled={isLoading}
-                                          className="flex px-4 py-1 justify-center items-center bg-blue-600 text-white font-semibold rounded-md"
-                                        >
-                                          AJUKAN
-                                        </button>
+                                        <div className="flex gap-2 w-full px-4 pt-1">
+                                          <button
+                                            disabled={isLoading}
+                                            onClick={() =>
+                                              postLemburKurang(
+                                                catatan_ketidaksesuaian,
+                                                tipe_lembur,
+                                                data.jam_lembur,
+                                                i,
+                                                data.id_pengajuan_lembur,
+                                                1,
+                                              )
+                                            }
+                                            className="bg-green-500 w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm"
+                                          >
+                                            SESUAI ABSEN
+                                          </button>
+                                          {isLoading && <Loading />}
+                                          <button
+                                            disabled={isLoading}
+                                            onClick={() =>
+                                              postLemburKurang(
+                                                catatan_ketidaksesuaian,
+                                                tipe_lembur,
+                                                data.jam_lembur,
+                                                i,
+                                                data.id_pengajuan_lembur,
+                                                0,
+                                              )
+                                            }
+                                            className="bg-red-500 w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm"
+                                          >
+                                            SESUAI SPL
+                                          </button>
+                                          {isLoading && <Loading />}
+                                        </div>
                                       </div>
                                     </div>
                                   </>

@@ -405,14 +405,14 @@ function TampilanWeeklyJO() {
         <>
           <div className="flex w-full flex-col ">
             <div className="flex flex-col gap-3 w-full py-3 border-b-4 border-stroke">
-              <div className="flex w-full justify-end">
+              {/* <div className="flex w-full justify-end">
                 <button
                   onClick={() => setIsDetailVisible(!isDetailVisible)}
                   className=" bg-primary text-white font-semibold text-md flex justify-center w-[10%] rounded-md"
                 >
                   {isDetailVisible ? 'Hide JO Terjadwal ' : 'Show JO Terjadwal'}
                 </button>
-              </div>
+              </div> */}
               <div className="flex flex-col gap-2  w-[30%]">
                 <p className="text-sm text-primary font-semibold">Tanggal:</p>
                 <input

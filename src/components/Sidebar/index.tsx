@@ -859,7 +859,8 @@ const Sidebar = ({
         (item) =>
           item.name !== 'Role Master' &&
           item.name !== 'All User Master' &&
-          item.name !== 'Access Master',
+          item.name !== 'Access Master' &&
+          item.name !== 'payroll',
       );
     }
     return items;

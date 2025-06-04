@@ -565,14 +565,14 @@ function TampilanMonthlyJO() {
       <div className="min-w-[700px]  bg-white rounded-xl flex gap-1  px-4 py-4">
         <>
           <div className="flex w-full flex-col ">
-            <div className="flex w-full justify-end">
+            {/* <div className="flex w-full justify-end">
               <button
                 onClick={() => setIsDetailVisible(!isDetailVisible)}
                 className=" bg-primary text-white font-semibold text-md flex justify-center w-[10%] rounded-md"
               >
                 {isDetailVisible ? 'Hide JO Terjadwal ' : 'Show JO Terjadwal'}
               </button>
-            </div>
+            </div> */}
             <div className="flex flex-col gap-3 w-full py-3 border-b-4 border-stroke">
               <div className="flex w-full justify-between items-center">
                 <button

@@ -387,7 +387,7 @@ function OsKetidaksesuaianSPL() {
                                   htmlFor=""
                                   className="text-black text-xs font-bold"
                                 >
-                                  PENANGANAN
+                                  PENANGANAN DISARANKAN DARI SPV
                                 </label>
                                 <label
                                   htmlFor=""
@@ -405,7 +405,7 @@ function OsKetidaksesuaianSPL() {
                                   htmlFor=""
                                   className="text-black text-xs font-bold"
                                 >
-                                  ALASAN KETIDAKSESUAIAN{' '}
+                                  CATATAN HR{' '}
                                   <span className="text-red-600">*</span>
                                 </label>
                                 <textarea
@@ -421,7 +421,7 @@ function OsKetidaksesuaianSPL() {
                                   }
                                   className="bg-green-500 w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm"
                                 >
-                                  APPROVE
+                                  SESUAI ABSEN
                                 </button>
                                 {isLoading && <Loading />}
                                 <button
@@ -431,7 +431,7 @@ function OsKetidaksesuaianSPL() {
                                   }
                                   className="bg-red-500 w-[50%] rounded-md px-3 py-3 text-white font-semibold text-sm"
                                 >
-                                  REJECT
+                                  SESUAI SPL
                                 </button>
                                 {isLoading && <Loading />}
                               </div>
