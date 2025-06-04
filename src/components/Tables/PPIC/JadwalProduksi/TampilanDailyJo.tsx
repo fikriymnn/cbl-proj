@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ModalXL from './ModalXL';
-import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
 import axios from 'axios';
 import Loading from '../../../Loading';
 import convertTimeStampToDate from '../../../../utils/convertDate';
@@ -8,6 +7,7 @@ import formatInteger from '../../../../utils/formaterInteger';
 
 import PopUpTable2 from './PopUpTable2';
 import JobOrderTable from './JobOrderTable';
+import ModalFull from './ModalFull';
 
 interface JobOrder {
   id: number;
@@ -103,36 +103,52 @@ function TampilanDailyJO() {
     return sameTimeAndMachine;
   };
 
-  // Helper function to determine if jobs are actually conflicting
-  // Helper function to determine if jobs are actually conflicting
   const hasRealConflicts = (jobs: any[]) => {
     if (jobs.length <= 1) return false;
 
-    // Group by no_jo and no_booking to identify unique jobs
-    const uniqueJobs = new Set();
+    // Get unique jobs first (remove duplicates)
+    const uniqueJobsMap = new Map();
 
-    jobs.forEach((item: any) => {
-      const key = `${item.no_jo || 'no_jo'}_${item.no_booking || 'no_booking'}`;
-      uniqueJobs.add(key);
+    jobs.forEach((job: any) => {
+      const key = `${job.no_jo || 'no_jo'}_${job.no_booking || 'no_booking'}`;
+      if (!uniqueJobsMap.has(key)) {
+        uniqueJobsMap.set(key, job);
+      }
     });
 
-    // Only consider it a conflict if there are multiple different jobs
-    return uniqueJobs.size > 1;
+    const uniqueJobs = Array.from(uniqueJobsMap.values());
+
+    // Check if there are different job order numbers
+    const uniqueJobNumbers = new Set(uniqueJobs.map((job) => job.no_jo));
+
+    // Only consider it a conflict if there are multiple different job orders
+    return uniqueJobNumbers.size > 1;
   };
 
-  // Helper function to get display jobs (remove duplicates for non-conflicts)
   const getDisplayJobs = (jobs: any[]) => {
     if (jobs.length <= 1) return jobs;
 
-    const isRealConflict = hasRealConflicts(jobs);
+    // Create a Map to store unique jobs based on no_jo and no_booking combination
+    const uniqueJobsMap = new Map();
 
-    if (isRealConflict) {
-      // Show all jobs if there are real conflicts
-      return jobs;
-    } else {
-      // Show only one job if they're the same (same no_jo or no_booking)
-      return [jobs[0]];
-    }
+    jobs.forEach((job: any) => {
+      // Create a unique key based on no_jo and no_booking
+      const key = `${job.no_jo || 'no_jo'}_${job.no_booking || 'no_booking'}`;
+
+      // Only add if this combination doesn't exist yet
+      if (!uniqueJobsMap.has(key)) {
+        uniqueJobsMap.set(key, job);
+      }
+    });
+
+    // Convert map values back to array
+    const uniqueJobs = Array.from(uniqueJobsMap.values());
+
+    // Check if there are real conflicts (different job orders)
+    const uniqueJobNumbers = new Set(uniqueJobs.map((job) => job.no_jo));
+    const isRealConflict = uniqueJobNumbers.size > 1;
+
+    return uniqueJobs;
   };
 
   const [listJO1, setJo1] = useState<any>();
@@ -618,7 +634,11 @@ function TampilanDailyJO() {
                       const allJobs = getConflictingJobs(hour, machine);
                       const isRealConflict = hasRealConflicts(allJobs);
                       const displayJobs = getDisplayJobs(allJobs);
-
+                      // Calculate actual unique job count for display
+                      const uniqueJobNumbers = new Set(
+                        allJobs.map((job: JobOrder) => job.no_jo),
+                      );
+                      const conflictCount = uniqueJobNumbers.size;
                       // Determine cell background color
                       let cellBgColor =
                         colIndex % 2 === 1 ? 'bg-white' : 'bg-[#eaf4ff]';
@@ -680,7 +700,7 @@ function TampilanDailyJO() {
                                 >
                                   {isRealConflict && (
                                     <div className="text-[8px] text-white font-bold text-center">
-                                      CONFLICT ({allJobs.length})
+                                      CONFLICT ({conflictCount})
                                     </div>
                                   )}
                                   <div className="flex flex-col space-y-1 w-full max-h-[150px] overflow-y-auto">
@@ -723,11 +743,10 @@ function TampilanDailyJO() {
                                 </div>
                               )}
 
-                              {/* Show modals for any clicked job - use allJobs here to maintain all modal functionality */}
                               {allJobs.map(
                                 (job: any) =>
                                   showModal3[job.id] && (
-                                    <ModalKosongan
+                                    <ModalFull
                                       key={job.id}
                                       isOpen={showModal3[job.id]}
                                       onClose={() => closeModal3(job.id)}
@@ -743,7 +762,7 @@ function TampilanDailyJO() {
                                         }
                                         tgl={startDate}
                                       />
-                                    </ModalKosongan>
+                                    </ModalFull>
                                   ),
                               )}
                             </div>
