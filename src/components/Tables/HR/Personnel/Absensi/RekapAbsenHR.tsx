@@ -2,454 +2,857 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Loading from '../../../../Loading';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
+import convertTimeStampToDate from '../../../../../utils/convertDate';
 
 function RekapAbsenHR() {
-    const [isLoading, setIsLoading] = useState(false);
-    const [absen, setabsen] = useState<any>();
+  const [isLoading, setIsLoading] = useState(false);
+  const [absen, setabsen] = useState<any>();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateFrom, setDateFrom] = useState<any>(null);
+  const [dateTo, setDateTo] = useState<any>(null);
+  const [idDepartment, setidDepartment] = useState<any>();
+  const [department, setDepartment] = useState<any>();
 
-    const [searchQuery, setSearchQuery] = useState('');
+  const filteredAbsen = absen?.filter((data: any) =>
+    data.nama_karyawan.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
-    const filteredAbsen = absen?.filter((data: any) =>
-        data.nama_karyawan.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    useEffect(() => {
+  useEffect(() => {
+    getDepartment();
+  }, []);
 
-        getDepartment()
-
-    }, []);
-
-    const [dateFrom, setDateFrom] = useState<any>(null);
-    const [dateTo, setDateTo] = useState<any>(null);
-    const [idDepartment, setidDepartment] = useState<any>();
-    const [department, setDepartment] = useState<any>();
-    async function getDepartment() {
-        const url = `${import.meta.env.VITE_API_LINK
-            }/master/hr/department`;
-        try {
-            setIsLoading(true)
-            const res = await axios.get(
-                url,
-
-                {
-                    withCredentials: true,
-                },
-            );
-            setIsLoading(false)
-            setDepartment(res.data)
-            console.log(res.data)
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
-        }
+  async function getDepartment() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/hr/department`;
+    try {
+      setIsLoading(true);
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      setIsLoading(false);
+      setDepartment(res.data);
+      console.log(res.data);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
     }
-    async function getabsen(dateFrom1: any, dateTo1: any) {
-        const url = `${import.meta.env.VITE_API_LINK}/hr/absensiRekap`;
-        try {
-            setIsLoading(true)
-            const res = await axios.get(url, {
-                params: {
+  }
 
-                    startDate: dateFrom1,
-                    endDate: dateTo1,
-                    idDepartment: idDepartment
-                },
-                withCredentials: true,
-            });
-            setIsLoading(false)
-            setabsen(res.data.data);
-            console.log(res.data);
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
-        }
+  async function getabsen(dateFrom1: any, dateTo1: any) {
+    const url = `${import.meta.env.VITE_API_LINK}/hr/absensiRekap`;
+    try {
+      setIsLoading(true);
+      const res = await axios.get(url, {
+        params: {
+          startDate: dateFrom1,
+          endDate: dateTo1,
+          idDepartment: idDepartment,
+        },
+        withCredentials: true,
+      });
+      setIsLoading(false);
+      setabsen(res.data.data);
+      console.log(res.data);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
     }
-    const [showModal, setShowModal] = useState<boolean[]>([]);
-    const openModalModal = (i: any) => {
-        const onchangeVal: any = [...showModal];
-        onchangeVal[i] = true;
+  }
 
-        setShowModal(onchangeVal);
+  // Calculate overtime hours based on status_lembur
+  const calculateOvertimeHours = (absensiData: any[]) => {
+    let lemburBiasa = 0;
+    let lemburLibur = 0;
+    let lemburDenganSPL = 0;
+    let lemburTanpaSPL = 0;
+
+    absensiData?.forEach((record: any) => {
+      const jamLembur = parseFloat(record.jam_lembur || 0);
+
+      if (
+        record.status_lembur === 'Lembur' ||
+        record.status_lembur === 'lembur'
+      ) {
+        lemburBiasa += jamLembur;
+      } else if (record.status_lembur === 'Lembur Libur') {
+        lemburLibur += jamLembur;
+      }
+
+      if (record.status_lembur_spl === 'dengan SPL') {
+        lemburDenganSPL += jamLembur;
+      } else if (record.status_lembur_spl === 'tidak dengan SPL') {
+        lemburTanpaSPL += jamLembur;
+      }
+    });
+
+    return {
+      lemburBiasa: lemburBiasa.toFixed(1),
+      lemburLibur: lemburLibur.toFixed(1),
+      lemburDenganSPL: lemburDenganSPL.toFixed(1),
+      lemburTanpaSPL: lemburTanpaSPL.toFixed(1),
     };
-    const closeModalModal = (i: any) => {
-        const onchangeVal: any = [...showModal];
-        onchangeVal[i] = false;
+  };
 
-        setShowModal(onchangeVal);
+  // Calculate late minutes and early leave minutes
+  const calculateTimeMetrics = (absensiData: any[]) => {
+    let totalTerlambat = 0;
+    let totalPulangCepat = 0;
+    let totalIstirahatLembur = 0;
+    let jumlahHariTerlambat = 0;
+
+    absensiData?.forEach((record: any) => {
+      const menitTerlambat = parseInt(record.menit_terlambat || 0);
+      const menitPulangCepat = parseInt(record.menit_pulang_cepat || 0);
+      const jamIstirahatLembur = parseFloat(record.jam_istirahat_lembur || 0);
+
+      totalTerlambat += menitTerlambat;
+      totalPulangCepat += menitPulangCepat;
+      totalIstirahatLembur += jamIstirahatLembur;
+
+      if (menitTerlambat > 0) {
+        jumlahHariTerlambat++;
+      }
+    });
+
+    return {
+      totalTerlambat,
+      totalPulangCepat,
+      totalIstirahatLembur: totalIstirahatLembur.toFixed(1),
+      jumlahHariTerlambat,
     };
+  };
 
-    const [showDetail, setShowDetail] = useState<boolean[]>(
-        new Array(absen != null && absen.length).fill(false),
-    );
-    const handleClickDetail = (index: number) => {
-        setShowDetail((prevState) => {
-            const updatedShowDetail = [...prevState]; // Create a copy
-            updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
-            return updatedShowDetail;
-        });
-    };
-    return (
-        <>
-            <main className="overflow-x-scroll">
-                {isLoading && <Loading />}
-                <div className="bg-white rounded-md shadow-md md:w-12/12 mb-5 border-2 border-stroke">
-                    <div className="grid md:gap-4 gap-1 md:flex-row grid-cols-12 items-center px-4 py-4 md:mt-0 ">
-                        <div className='flex flex-col gap-1 col-span-3'>
-                            <div className='flex flex-col'>
-                                <p className="my-auto text-sm text-primary font-semibold ">
-                                    Pilih Tanggal
-                                </p>
+  const [showModal, setShowModal] = useState<boolean[]>([]);
+  const openModalModal = (i: any) => {
+    const onchangeVal: any = [...showModal];
+    onchangeVal[i] = true;
+    setShowModal(onchangeVal);
+  };
 
-                            </div>
+  const closeModalModal = (i: any) => {
+    const onchangeVal: any = [...showModal];
+    onchangeVal[i] = false;
+    setShowModal(onchangeVal);
+  };
 
-                            <div className='flex gap-3 flex-col'>
-                                <div className="flex md:justify-center items-center gap-2">
-                                    <p className="text-sm text-primary font-semibold md:w-3/12 w-2/12">
-                                        Dari:
-                                    </p>
+  const [showDetail, setShowDetail] = useState<boolean[]>(
+    new Array(absen != null && absen.length).fill(false),
+  );
 
-                                    <input
-                                        className='rounded-full bg-[#D8EAFF] px-2'
-                                        type="date"
-                                        onChange={(e) => {
-                                            setDateFrom(e.target.value)
-                                            console.log(e.target.value)
-                                        }}
-                                    ></input>
+  const handleClickDetail = (index: number) => {
+    setShowDetail((prevState) => {
+      const updatedShowDetail = [...prevState];
+      updatedShowDetail[index] = !updatedShowDetail[index];
+      return updatedShowDetail;
+    });
+  };
 
-                                </div>
-                                <div className="flex md:justify-center items-center gap-2">
-                                    <p className=" my-auto text-sm text-primary font-semibold md:w-3/12 w-2/12">
-                                        Sampai:
-                                    </p>
-                                    <input
-                                        className='rounded-full bg-[#D8EAFF] px-2'
-                                        type="date"
-                                        onChange={(e) => setDateTo(e.target.value)}
-                                    ></input>
+  return (
+    <>
+      <main className="overflow-x-scroll">
+        {isLoading && <Loading />}
 
-                                </div>
-                            </div>
+        {/* Filter Section - Improved Layout */}
+        <div className="bg-white rounded-md shadow-md mb-5 border-2 border-stroke">
+          <div className="p-6">
+            <h3 className="text-lg font-semibold text-primary mb-4">
+              Filter Rekap Absensi
+            </h3>
 
-                        </div>
-                        <div className='flex flex-col gap-1 col-span-4'>
-                            <label className='text-sm text-primary font-semibold'>
-                                Department
-                            </label>
-                            <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                                <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                    <svg
-                                        width="20"
-                                        height="20"
-                                        viewBox="0 0 20 20"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
+            {/* Filter Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Date Range Section */}
+              <div className="lg:col-span-2">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h4 className="text-sm font-semibold text-primary mb-3">
+                    Periode Tanggal
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tanggal Mulai
+                      </label>
+                      <input
+                        className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        type="date"
+                        value={dateFrom || ''}
+                        onChange={(e) => {
+                          setDateFrom(e.target.value);
+                          console.log(e.target.value);
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Tanggal Selesai
+                      </label>
+                      <input
+                        className="w-full rounded-lg bg-white border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        type="date"
+                        value={dateTo || ''}
+                        onChange={(e) => setDateTo(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-                                    </svg>
+              {/* Department Section */}
+              <div>
+                <div className="bg-gray-50 p-4 rounded-lg h-full">
+                  <h4 className="text-sm font-semibold text-primary mb-3">
+                    Department
+                  </h4>
+                  <select
+                    name="nama_department"
+                    onChange={(e) => setidDepartment(e.target.value)}
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="" className="text-gray-500">
+                      Pilih Department
+                    </option>
+                    {department?.data?.map((data: any, i: number) => (
+                      <option key={i} value={data.id} className="text-gray-800">
+                        {data.nama_department}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Search and Action Section */}
+              <div>
+                <div className="bg-gray-50 p-4 rounded-lg h-full">
+                  <h4 className="text-sm font-semibold text-primary mb-3">
+                    Pencarian
+                  </h4>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Cari nama karyawan..."
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+
+                    {dateFrom == null || dateTo == null ? (
+                      <button
+                        disabled
+                        className="w-full bg-gray-400 text-white px-4 py-2 rounded-lg text-sm cursor-not-allowed"
+                      >
+                        Pilih Tanggal Dulu
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => getabsen(dateFrom, dateTo)}
+                        className="w-full bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                      >
+                        Tampilkan Data
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Data Table */}
+        <div className="min-w-[700px] bg-white rounded-xl shadow-md">
+          <div className="w-full h-full flex-col">
+            {/* Table Header */}
+            <div className="grid grid-cols-12 px-6 py-4 bg-gray-50 rounded-t-xl border-b gap-4">
+              <div className="flex col-span-2 gap-2">
+                <label className="text-gray-700 text-sm font-semibold">
+                  No.
+                </label>
+                <label className="text-gray-700 text-sm font-semibold">
+                  NIK
+                </label>
+              </div>
+              <label className="text-gray-700 text-sm font-semibold col-span-3">
+                Nama Karyawan
+              </label>
+              <label className="text-gray-700 text-sm font-semibold col-span-2">
+                Department
+              </label>
+              <label className="text-gray-700 text-sm font-semibold col-span-2">
+                Divisi
+              </label>
+              <label className="text-gray-700 text-sm font-semibold col-span-3 flex justify-end">
+                Aksi
+              </label>
+            </div>
+
+            {/* Table Body */}
+            {filteredAbsen?.map((data: any, i: any) => {
+              const overtimeCalc = calculateOvertimeHours(data.absensi);
+              const timeMetrics = calculateTimeMetrics(data.absensi);
+
+              return (
+                <div
+                  key={i}
+                  className="grid grid-cols-12 px-6 py-4 border-b hover:bg-gray-50 gap-4"
+                >
+                  <div className="flex col-span-2 gap-2">
+                    <label className="text-gray-600 text-sm">{i + 1}.</label>
+                    <label className="text-gray-600 text-sm">{data.nik}</label>
+                  </div>
+                  <label className="text-gray-600 text-sm col-span-3">
+                    {data.nama_karyawan}
+                  </label>
+                  <label className="text-gray-600 text-sm col-span-2">
+                    {data.department}
+                  </label>
+                  <label className="text-gray-600 text-sm col-span-2">
+                    {data.divisi}
+                  </label>
+                  <div className="col-span-3 flex justify-end">
+                    <button
+                      onClick={() => openModalModal(i)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+                    >
+                      Lihat Detail
+                    </button>
+                  </div>
+
+                  {/* Modal */}
+                  {showModal[i] === true && (
+                    <ModalKosongan
+                      isOpen={showModal[i]}
+                      onClose={() => closeModalModal(i)}
+                      judul={'Detail Rekap Absensi'}
+                    >
+                      <div className="p-6">
+                        <div className="mb-6">
+                          <h4 className="text-lg font-bold text-gray-800 mb-4">
+                            DETAIL REKAP ABSENSI Periode :{' '}
+                            {convertTimeStampToDate(dateFrom)} ~{' '}
+                            {convertTimeStampToDate(dateTo)}
+                          </h4>
+
+                          {/* Employee Info - Compact Grid */}
+                          <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-2 text-sm">
+                              <div className="flex">
+                                <span className="w-20 text-gray-600">Nama</span>
+                                <span className="text-gray-800">
+                                  : {data.nama_karyawan}
                                 </span>
-
-                                <select
-                                    name='nama_department'
-                                    onChange={(e) => setidDepartment(e.target.value)}
-                                    className={`relative z-20  bg-[#D8EAFF]  appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
-                                >
-                                    <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                        PILIH DEPARTMENT
-                                    </option>
-                                    {department?.data?.map((data: any, i: number) => {
-
-                                        return (
-                                            <option
-                                                value={data.id}
-                                                className="text-gray-800 text-xs font-light dark:text-bodydark"
-                                            >
-                                                {data.nama_department}
-                                            </option>
-                                        )
-                                    }
-                                    )}
-
-                                </select>
-
-
-
+                              </div>
+                              <div className="flex">
+                                <span className="w-20 text-gray-600">NIK</span>
+                                <span className="text-gray-800">
+                                  : {data.nik}
+                                </span>
+                              </div>
+                              <div className="flex">
+                                <span className="w-20 text-gray-600">
+                                  Jabatan
+                                </span>
+                                <span className="text-gray-800">
+                                  : {data.jabatan || '-'}
+                                </span>
+                              </div>
+                              <div className="flex">
+                                <span className="w-20 text-gray-600">Dept</span>
+                                <span className="text-gray-800">
+                                  : {data.department}
+                                </span>
+                              </div>
+                              <div className="flex">
+                                <span className="w-20 text-gray-600">
+                                  Divisi
+                                </span>
+                                <span className="text-gray-800">
+                                  : {data.divisi}
+                                </span>
+                              </div>
                             </div>
-                        </div>
-                        <div className="flex  my-5 col-span-2">
-                            {(dateFrom == null || dateTo == null) ?
-                                <>
-                                    <button
+                          </div>
 
-                                        className="bg-red-600 text-white px-5 py-2 rounded-md my-auto "
-                                    >
-                                        Pilih Tanggal
-                                    </button>
-                                </> :
-                                <>
-                                    <button
-                                        onClick={() => {
-                                            getabsen(dateFrom, dateTo)
-                                        }}
-                                        className="bg-primary text-white px-5 py-2 rounded-md my-auto "
-                                    >
-                                        Tampilkan
-                                    </button>
-                                </>
-                            }
-
-
-                        </div>
-
-                        <div className="flex flex-col col-span-2 justify-end">
-                            <p className=" my-auto text-sm text-primary font-semibold   ">
-                                Cari Karyawan:
-                            </p>
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder="Cari Nama Karyawan"
-                                className="border p-2 rounded mb-4"
-                            />
-                        </div>
-
-                    </div>
-                </div>
-                <div className="min-w-[700px] bg-white rounded-xl">
-                    <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
-                        <div className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-                            <div className='flex col-span-2 gap-2'>
-                                <label className="text-neutral-500 text-sm font-semibold ">
-                                    No.
-                                </label>
-                                <label className="text-neutral-500 text-sm font-semibold">
-                                    NIK
-                                </label>
+                          {/* Summary Cards - Compact */}
+                          <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-4">
+                            <div className="bg-green-50 p-2 rounded text-center">
+                              <div className="text-lg font-bold text-green-600">
+                                {data.absensi?.length || 0}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                Hari Masuk
+                              </div>
                             </div>
-                            <label className="text-neutral-500 text-sm font-semibold col-span-4">
-                                Nama
-                            </label>
-                            <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                Department
-                            </label>
-                            <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                Divisi
-                            </label>
-                        </div>
-                        <div className="w-2 h-full ">
+                            <div className="bg-blue-50 p-2 rounded text-center">
+                              <div className="text-lg font-bold text-blue-600">
+                                {data.jumlah_hari_cuti_tahunan || 0}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                Cuti Tahunan
+                              </div>
+                            </div>
+                            <div className="bg-purple-50 p-2 rounded text-center">
+                              <div className="text-lg font-bold text-purple-600">
+                                {data.jumlah_hari_cuti_khusus || 0}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                Cuti Khusus
+                              </div>
+                            </div>
+                            <div className="bg-yellow-50 p-2 rounded text-center">
+                              <div className="text-lg font-bold text-yellow-600">
+                                {data.jumlah_hari_izin || 0}
+                              </div>
+                              <div className="text-xs text-gray-600">Izin</div>
+                            </div>
+                            <div className="bg-orange-50 p-2 rounded text-center">
+                              <div className="text-lg font-bold text-orange-600">
+                                {data.jumlah_hari_sakit || 0}
+                              </div>
+                              <div className="text-xs text-gray-600">Sakit</div>
+                            </div>
+                            <div className="bg-red-50 p-2 rounded text-center">
+                              <div className="text-lg font-bold text-red-600">
+                                {data.jumlah_hari_mangkir || 0}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                Mangkir
+                              </div>
+                            </div>
+                          </div>
 
+                          {/* Lembur & Keterlambatan - Compact Side by Side */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            {/* Lembur */}
+                            <div className="bg-blue-50 p-3 rounded-lg">
+                              <h5 className="text-sm font-semibold text-blue-800 mb-2">
+                                LEMBUR
+                              </h5>
+                              <div className="space-y-1 text-xs">
+                                <div className="flex justify-between">
+                                  <span>Dengan SPL:</span>
+                                  <span className="font-medium">
+                                    {overtimeCalc.lemburDenganSPL} jam
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Lembur Libur:</span>
+                                  <span className="font-medium">
+                                    {overtimeCalc.lemburLibur} jam
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Istirahat:</span>
+                                  <span className="font-medium">
+                                    {timeMetrics.totalIstirahatLembur} jam
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
 
-                        </div>
-                        {filteredAbsen?.map((data: any, i: any) => {
+                            {/* Keterlambatan */}
+                            <div className="bg-yellow-50 p-3 rounded-lg">
+                              <h5 className="text-sm font-semibold text-yellow-800 mb-2">
+                                KETERLAMBATAN
+                              </h5>
+                              <div className="space-y-1 text-xs">
+                                <div className="flex justify-between">
+                                  <span>Hari Terlambat:</span>
+                                  <span className="font-medium">
+                                    {timeMetrics.jumlahHariTerlambat} hari
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Total Jam:</span>
+                                  <span className="font-medium">
+                                    {timeMetrics.totalTerlambat} Jam
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
 
-                            return (
-                                <>
-                                    <div className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-                                        <div className='flex col-span-2 gap-2'>
-                                            <label className="text-neutral-500 text-sm  ">
-                                                {i + 1}.
-                                            </label>
-                                            <label className="text-neutral-500 text-sm  ">
-                                                {data.nik}
-                                            </label>
-                                        </div>
-                                        <label className="text-neutral-500 text-sm  col-span-4">
-                                            {data.nama_karyawan}
-                                        </label>
-                                        <label className="text-neutral-500 text-sm  col-span-2">
-                                            {data.department}
-                                        </label>
-                                        <label className="text-neutral-500 text-sm  col-span-3">
-                                            {data.divisi}
-                                        </label>
-                                        <button
-                                            onClick={() => openModalModal(i)}
-                                            className="w-full bg-blue-600 text-white text-sm py-1 rounded-md"
+                          {/* Cuti Details */}
+                          {(data.cuti_tahunan?.length > 0 ||
+                            data.cuti_khusus?.length > 0) && (
+                            <div className="bg-indigo-50 p-3 rounded-lg mb-4">
+                              <h5 className="text-sm font-semibold text-indigo-800 mb-2">
+                                RIWAYAT CUTI
+                              </h5>
+
+                              {/* Cuti Tahunan */}
+                              {data.cuti_tahunan?.length > 0 && (
+                                <div className="mb-3">
+                                  <h6 className="text-xs font-semibold text-gray-700 mb-1">
+                                    Cuti Tahunan ({data.cuti_tahunan.length}{' '}
+                                    periode):
+                                  </h6>
+                                  <div className="space-y-1">
+                                    {data.cuti_tahunan.map(
+                                      (cuti: any, idx: number) => (
+                                        <div
+                                          key={idx}
+                                          className="bg-white p-2 rounded text-xs"
                                         >
-                                            Detail
-                                        </button>
-                                        {showModal[i] == true && (
-                                            <>
-                                                <ModalKosongan
-                                                    isOpen={showModal[i]}
-                                                    onClose={() => closeModalModal(i)}
-                                                    judul={'Detail Rekap Absensi'}>
-                                                    <>
-                                                        <div className='grid gap-2 px-4 py-4'>
-                                                            <div className='flex flex-col '>
-                                                                <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                    DETAIL ABSENSI
-                                                                </label>
-                                                                <div className='grid grid-cols-3'>
-                                                                    <div className='flex flex-col'>
-                                                                        <label className="text-neutral-500 text-sm  ">
-                                                                            Nama
-                                                                        </label>
-                                                                        <label className="text-neutral-500 text-sm  ">
-                                                                            Department
-                                                                        </label>
-                                                                        <label className="text-neutral-500 text-sm  ">
-                                                                            Divisi
-                                                                        </label>
-                                                                        <label className="text-neutral-500 text-sm  ">
-                                                                            Jam Lembur
-                                                                        </label>
-                                                                        <label className="text-neutral-500 text-sm  ">
-                                                                            Menit Pulang Cepat
-                                                                        </label>
-                                                                        <label className="text-neutral-500 text-sm  ">
-                                                                            Menit Terlambat
-                                                                        </label>
-                                                                        <label className="text-neutral-500 text-sm  ">
-                                                                            Masuk
-                                                                        </label>
-                                                                        <label className="text-neutral-500 text-sm  ">
-                                                                            Izin
-                                                                        </label>
-                                                                        <label className="text-neutral-500 text-sm  ">
-                                                                            Sakit
-                                                                        </label>
+                                          <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                              <strong>Periode:</strong>{' '}
+                                              {new Date(
+                                                cuti.dari,
+                                              ).toLocaleDateString(
+                                                'id-ID',
+                                              )}{' '}
+                                              -{' '}
+                                              {new Date(
+                                                cuti.sampai,
+                                              ).toLocaleDateString('id-ID')}
+                                            </div>
+                                            <div>
+                                              <strong>Jumlah:</strong>{' '}
+                                              {cuti.jumlah_hari} hari
+                                            </div>
+                                            <div className="col-span-2">
+                                              <strong>Alasan:</strong>{' '}
+                                              {cuti.alasan_cuti}
+                                            </div>
+                                            {cuti.catatan_hr && (
+                                              <div className="col-span-2">
+                                                <strong>Catatan HR:</strong>{' '}
+                                                {cuti.catatan_hr}
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
+                                </div>
+                              )}
 
-                                                                    </div>
-                                                                    <div className='flex flex-col'>
-                                                                        <label className="text-neutral-500 text-sm  ">
-                                                                            : {data.nama_karyawan} - {data.nik}
-                                                                        </label>
-                                                                        <label className="text-neutral-500 text-sm  ">
-                                                                            : {data.department}
-                                                                        </label>
-                                                                        <label className="text-neutral-500 text-sm  ">
-                                                                            : {data.divisi}
-                                                                        </label>
-                                                                        {(() => {
-                                                                            const totalMasuk = data.absensi?.reduce((sum: any, item: any) => sum + (item.status_absen === "masuk" ? 1 : 0), 0);
-                                                                            const totalIzin = data.absensi?.reduce((sum: any, item: any) => sum + (item.status_absen === "izin" ? 1 : 0), 0);
-                                                                            const totalSakit = data.absensi?.reduce((sum: any, item: any) => sum + (item.status_absen === "sakit" ? 1 : 0), 0);
-                                                                            const totalLembur = data.absensi?.reduce((sum: any, item: any) => sum + (item.jam_lembur || 0), 0);
-                                                                            const totalMenitTerlambat = data.absensi?.reduce((sum: any, item: any) => sum + (item.menit_terlambat || 0), 0);
-                                                                            const totalMenitPulcep = data.absensi?.reduce((sum: any, item: any) => sum + (item.menit_pulang_cepat || 0), 0);
+                              {/* Cuti Khusus */}
+                              {data.cuti_khusus?.length > 0 && (
+                                <div className="mb-3">
+                                  <h6 className="text-xs font-semibold text-gray-700 mb-1">
+                                    Cuti Khusus ({data.cuti_khusus.length}{' '}
+                                    periode):
+                                  </h6>
+                                  <div className="space-y-1">
+                                    {data.cuti_khusus.map(
+                                      (cuti: any, idx: number) => (
+                                        <div
+                                          key={idx}
+                                          className="bg-white p-2 rounded text-xs"
+                                        >
+                                          <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                              <strong>Periode:</strong>{' '}
+                                              {new Date(
+                                                cuti.dari,
+                                              ).toLocaleDateString(
+                                                'id-ID',
+                                              )}{' '}
+                                              -{' '}
+                                              {new Date(
+                                                cuti.sampai,
+                                              ).toLocaleDateString('id-ID')}
+                                            </div>
+                                            <div>
+                                              <strong>Jumlah:</strong>{' '}
+                                              {cuti.jumlah_hari} hari
+                                            </div>
+                                            <div className="col-span-2">
+                                              <strong>Alasan:</strong>{' '}
+                                              {cuti.alasan_cuti}
+                                            </div>
+                                            {cuti.catatan_hr && (
+                                              <div className="col-span-2">
+                                                <strong>Catatan HR:</strong>{' '}
+                                                {cuti.catatan_hr}
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
 
-                                                                            return (
-                                                                                <>
-                                                                                    <label className="text-neutral-500 text-sm">: {totalLembur} Jam</label>
-                                                                                    <label className="text-neutral-500 text-sm">: {totalMenitPulcep} Menit</label>
-                                                                                    <label className="text-neutral-500 text-sm">: {totalMenitTerlambat} Jam</label>
-                                                                                    <label className="text-neutral-500 text-sm">: {totalMasuk} Hari</label>
-                                                                                    <label className="text-neutral-500 text-sm">: {totalIzin} Hari</label>
-                                                                                    <label className="text-neutral-500 text-sm">: {totalSakit} Hari</label>
+                          {/* Sakit/Izin/Mangkir Details - Compact */}
+                          {(data.sakit?.length > 0 ||
+                            data.izin?.length > 0 ||
+                            data.mangkir?.length > 0) && (
+                            <div className="bg-red-50 p-3 rounded-lg mb-4">
+                              <h5 className="text-sm font-semibold text-red-800 mb-2">
+                                SAKIT/IZIN/MANGKIR
+                              </h5>
 
-                                                                                </>
-                                                                            );
-                                                                        })()}
-                                                                    </div>
-                                                                </div>
-                                                                <div className='flex w-full justify-end'>
-                                                                    <button
-                                                                        title="button"
-                                                                        onClick={() => handleClickDetail(i)}
-                                                                        className="text-xs w-[20%] flex items-center justify-center font-bold text-white px-1 bg-blue-700 py-2 border-blue-700 border rounded-md"
-                                                                    >
-                                                                        DETAIL ABSENSI
-                                                                    </button>
-                                                                </div>
-                                                                {showDetail[i] && (
-                                                                    <>
-                                                                        <div className="grid grid-cols-10  py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-                                                                            <div className='flex col-span-2 gap-2'>
-                                                                                <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                    No.
-                                                                                </label>
-                                                                                <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                    Nama
-                                                                                </label>
-                                                                            </div>
+                              {/* Sakit Details */}
+                              {data.sakit?.length > 0 && (
+                                <div className="mb-2">
+                                  <h6 className="text-xs font-semibold text-gray-700 mb-1">
+                                    Sakit ({data.sakit.length} periode):
+                                  </h6>
+                                  <div className="space-y-1">
+                                    {data.sakit.map(
+                                      (sakit: any, idx: number) => (
+                                        <div
+                                          key={idx}
+                                          className="bg-white p-2 rounded text-xs"
+                                        >
+                                          <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                              <strong>Tanggal:</strong>{' '}
+                                              {new Date(
+                                                sakit.dari,
+                                              ).toLocaleDateString(
+                                                'id-ID',
+                                              )}{' '}
+                                              -{' '}
+                                              {new Date(
+                                                sakit.sampai,
+                                              ).toLocaleDateString('id-ID')}
+                                            </div>
+                                            <div>
+                                              <strong>Jumlah:</strong>{' '}
+                                              {sakit.jumlah_hari} hari
+                                            </div>
+                                            {sakit.catatan_hr && (
+                                              <div className="col-span-2">
+                                                <strong>Catatan HR:</strong>{' '}
+                                                {sakit.catatan_hr}
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
+                                </div>
+                              )}
 
-                                                                            <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                                                                Tanggal
-                                                                            </label>
-                                                                            <div className="flex gap-2  col-span-2">
-                                                                                <p className="text-neutral-500 text-sm font-semibold ">Waktu </p>
+                              {/* Izin Details */}
+                              {data.izin?.length > 0 && (
+                                <div className="mb-2">
+                                  <h6 className="text-xs font-semibold text-gray-700 mb-1">
+                                    Izin ({data.izin.length} periode):
+                                  </h6>
+                                  <div className="space-y-1">
+                                    {data.izin.map((izin: any, idx: number) => (
+                                      <div
+                                        key={idx}
+                                        className="bg-white p-2 rounded text-xs"
+                                      >
+                                        <div className="grid grid-cols-2 gap-2">
+                                          <div>
+                                            <strong>Tanggal:</strong>{' '}
+                                            {new Date(
+                                              izin.dari,
+                                            ).toLocaleDateString('id-ID')}{' '}
+                                            -{' '}
+                                            {new Date(
+                                              izin.sampai,
+                                            ).toLocaleDateString('id-ID')}
+                                          </div>
+                                          <div>
+                                            <strong>Jumlah:</strong>{' '}
+                                            {izin.jumlah_hari} hari
+                                          </div>
+                                          <div className="col-span-2">
+                                            <strong>Alasan:</strong>{' '}
+                                            {izin.alasan_izin}
+                                          </div>
+                                          {izin.catatan_hr && (
+                                            <div className="col-span-2">
+                                              <strong>Catatan HR:</strong>{' '}
+                                              {izin.catatan_hr}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
 
-                                                                            </div>
-                                                                            <label className="text-neutral-500 text-sm font-semibold flex gap-1">
-                                                                                Shift
-                                                                            </label>
-                                                                            <label className="text-neutral-500 text-sm font-semibold">
-                                                                                Lembur
-                                                                            </label>
-                                                                            <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                Terlambat
-                                                                            </label>
-                                                                            <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                Status
-                                                                            </label>
-                                                                        </div>
-                                                                        <div className="w-2 h-full "></div>
-                                                                        {data.absensi?.map((data2: any, ii: any) => (
-                                                                            <>
+                              {/* Mangkir Details */}
+                              {data.mangkir?.length > 0 && (
+                                <div className="mb-2">
+                                  <h6 className="text-xs font-semibold text-gray-700 mb-1">
+                                    Mangkir ({data.mangkir.length} hari):
+                                  </h6>
+                                  <div className="space-y-1">
+                                    {data.mangkir.map(
+                                      (mangkir: any, idx: number) => (
+                                        <div
+                                          key={idx}
+                                          className="bg-white p-2 rounded text-xs"
+                                        >
+                                          <div className="grid grid-cols-2 gap-2">
+                                            <div>
+                                              <strong>Tanggal:</strong>{' '}
+                                              {new Date(
+                                                mangkir.tanggal,
+                                              ).toLocaleDateString('id-ID')}
+                                            </div>
+                                            {mangkir.catatan_hr && (
+                                              <div>
+                                                <strong>Catatan HR:</strong>{' '}
+                                                {mangkir.catatan_hr}
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
 
-                                                                                <div className="grid grid-cols-10  py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-                                                                                    <div className='flex col-span-2 gap-2'>
-                                                                                        <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                            {ii + 1}.
-                                                                                        </label>
-                                                                                        <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                            {data2.name}
-                                                                                        </label>
-                                                                                    </div>
+                          {/* Detail Button */}
+                          <div className="flex justify-end mt-4">
+                            <button
+                              onClick={() => handleClickDetail(i)}
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            >
+                              {showDetail[i]
+                                ? 'Sembunyikan Detail'
+                                : 'Tampilkan Detail Absensi'}
+                            </button>
+                          </div>
 
-                                                                                    <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                                                                                        {data2.tgl_masuk}
-                                                                                    </label>
-                                                                                    <div className="flex gap-2 flex-col col-span-2">
-                                                                                        <label className="text-neutral-500 text-sm font-semibold  ">
-                                                                                            Masuk :  {(data2.jam_masuk == null || data2.jam_masuk == 0) ? ' ~' : data2.jam_masuk}
-                                                                                        </label>
-                                                                                        <label className="text-neutral-500 text-sm font-semibold  ">
-                                                                                            Keluar : {(data2.jam_keluar == null || data2.jam_keluar == 0) ? ' ~' : data2.jam_keluar}
-                                                                                        </label>
+                          {/* Detailed Attendance Records */}
+                          {showDetail[i] && (
+                            <div className="mt-4 border-t pt-4">
+                              <h5 className="text-sm font-semibold text-gray-800 mb-3">
+                                Riwayat Absensi Detail
+                              </h5>
 
-                                                                                    </div>
-                                                                                    <label className="text-neutral-500 text-sm font-semibold flex gap-1">
-                                                                                        {(data2.shift == null || data2.shift == 0) ? ' ~' : data2.shift}
-                                                                                    </label>
-                                                                                    <label className="text-neutral-500 text-sm font-semibold">
-                                                                                        {(data2.status_lembur == null || data2.status_lembur == 0) ? ' ~' : data2.status_lembur} {(data2.jam_lembur == null || data2.jam_lembur == 0) ? '' : '~ ' + data2.jam_lembur + 'Jam'}
-                                                                                    </label>
-                                                                                    <div className='flex flex-col gap-1'>
-                                                                                        <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                            {data2.status_masuk}
-                                                                                        </label>
-                                                                                        <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                            {(data2.menit_terlambat == null || data2.menit_terlambat == 0) ? '~' : '~ ' + data2.menit_terlambat + ' Jam'}
-                                                                                        </label>
-                                                                                    </div>
-                                                                                    <label className="text-neutral-500 text-sm font-semibold ">
-                                                                                        {data2.status_absen}
-                                                                                    </label>
-                                                                                </div>
-                                                                            </>
-                                                                        ))}
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </>
-                                                </ModalKosongan>
-                                            </>
-                                        )}
+                              {/* Detail Table Header */}
+                              <div className="grid grid-cols-12 gap-2 bg-gray-100 p-2 rounded text-xs font-semibold text-gray-700 mb-2">
+                                <div className="col-span-1">No.</div>
+                                <div className="col-span-2">Tanggal</div>
+                                <div className="col-span-1">Masuk</div>
+                                <div className="col-span-1">Keluar</div>
+                                <div className="col-span-1">Shift</div>
+                                <div className="col-span-1">Status</div>
+                                <div className="col-span-1">Lembur</div>
+                                <div className="col-span-1">Istirahat</div>
+                                <div className="col-span-3">Keterangan</div>
+                              </div>
+
+                              {/* Detail Table Body */}
+                              <div className="max-h-96 overflow-y-auto">
+                                {data.absensi?.map((record: any, ii: any) => (
+                                  <div
+                                    key={ii}
+                                    className="grid grid-cols-12 gap-2 p-3 border-b text-sm hover:bg-gray-50"
+                                  >
+                                    <div className="col-span-1">{ii + 1}</div>
+                                    <div className="col-span-2">
+                                      {record.tgl_masuk || '-'}
                                     </div>
-                                </>
-                            )
-                        }
-                        )
-                        }
-                    </div>
+                                    <div className="col-span-1">
+                                      {record.jam_masuk &&
+                                      record.jam_masuk !== '0'
+                                        ? record.jam_masuk
+                                        : '-'}
+                                    </div>
+                                    <div className="col-span-1">
+                                      {record.jam_keluar &&
+                                      record.jam_keluar !== '0'
+                                        ? record.jam_keluar
+                                        : '-'}
+                                    </div>
+                                    <div className="col-span-1">
+                                      {record.shift && record.shift !== '0'
+                                        ? record.shift
+                                        : '-'}
+                                    </div>
+                                    <div className="col-span-1">
+                                      <span
+                                        className={`px-1 py-1 rounded text-xs ${
+                                          record.status_absen === 'masuk'
+                                            ? 'bg-green-100 text-green-800'
+                                            : record.status_absen === 'izin'
+                                            ? 'bg-yellow-100 text-yellow-800'
+                                            : record.status_absen === 'sakit'
+                                            ? 'bg-red-100 text-red-800'
+                                            : 'bg-gray-100 text-gray-800'
+                                        }`}
+                                      >
+                                        {record.status_absen || '-'}
+                                      </span>
+                                    </div>
+                                    <div className="col-span-1">
+                                      {record.jam_lembur &&
+                                      record.jam_lembur !== '0'
+                                        ? `${record.jam_lembur} jam`
+                                        : '-'}
+                                    </div>
+                                    <div className="col-span-1">
+                                      {record.jam_istirahat_lembur &&
+                                      record.jam_istirahat_lembur !== '0'
+                                        ? `${record.jam_istirahat_lembur} jam`
+                                        : '-'}
+                                    </div>
+                                    <div className="col-span-3">
+                                      <div className="text-xs space-y-1">
+                                        {record.status_masuk && (
+                                          <div className="text-gray-600">
+                                            Status: {record.status_masuk}
+                                          </div>
+                                        )}
+                                        {record.menit_terlambat > 0 && (
+                                          <div className="text-red-600">
+                                            Terlambat: {record.menit_terlambat}{' '}
+                                            Jam
+                                          </div>
+                                        )}
+                                        {record.menit_pulang_cepat > 0 && (
+                                          <div className="text-orange-600">
+                                            Pulang Cepat:{' '}
+                                            {record.menit_pulang_cepat} Jam
+                                          </div>
+                                        )}
+                                        {record.status_lembur &&
+                                          record.status_lembur !== '-' && (
+                                            <div className="text-blue-600">
+                                              {record.status_lembur}
+                                            </div>
+                                          )}
+                                        {record.status_lembur_spl &&
+                                          record.status_lembur_spl !== '-' && (
+                                            <div className="text-purple-600 text-xs">
+                                              SPL: {record.status_lembur_spl}
+                                            </div>
+                                          )}
+                                        {record.keterangan &&
+                                          record.keterangan !== '-' && (
+                                            <div className="text-gray-500">
+                                              {record.keterangan}
+                                            </div>
+                                          )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </ModalKosongan>
+                  )}
                 </div>
-            </main >
-        </>
-    );
+              );
+            })}
+          </div>
+        </div>
+      </main>
+    </>
+  );
 }
 
 export default RekapAbsenHR;
