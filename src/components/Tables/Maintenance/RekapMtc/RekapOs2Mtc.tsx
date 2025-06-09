@@ -8,7 +8,7 @@ import convertTimeStampToDate from '../../../../utils/convertDate';
 import BarChartProductionQuality from '../../../../pages/UiElements/BarchartProductionQuality';
 import BarChartMesinOnly from '../../../../pages/UiElements/BarchartMesinOnly';
 import ModalFull from '../../PPIC/JadwalProduksi/ModalFull';
-import { ExportButton } from './export-button';
+import { EnhancedExportButton } from './export-button';
 import Loading from '../../../Loading';
 
 interface DataState {
@@ -124,6 +124,9 @@ function RekapOs2Mtc() {
     queryDari: string;
     querySampai: string;
     data: any[];
+    listBulan: Array<{
+      nama_bulan: string;
+    }>;
   }
 
   const [data, setData] = useState({
@@ -339,6 +342,7 @@ function RekapOs2Mtc() {
             },
             withCredentials: true,
           });
+          console.log(res);
           setData((prev) => ({ ...prev, breakDownMonth: res.data }));
         } catch (error) {
           console.error('Error fetching breakdown month data:', error);
@@ -692,10 +696,12 @@ function RekapOs2Mtc() {
                 </div>
                 {/* {data2.defectOs2 && ( */}
                 <div className="flex justify-center my-5">
-                  <ExportButton
+                  <EnhancedExportButton
                     data={data.defectOs2?.jenis_masalah}
                     type="mesinProblem"
                     label="Export"
+                    includeCharts={true}
+                    chartTypes={['bar']}
                     dateRange={{
                       from: params?.mesinProblem?.from,
                       to: params?.mesinProblem?.to,
@@ -848,10 +854,12 @@ function RekapOs2Mtc() {
                     </button>
                   </div>
                   <div className="flex justify-center my-5">
-                    <ExportButton
+                    <EnhancedExportButton
                       data={data.oneMesin?.data_jenis_masalah}
                       type="oneMesin"
                       label="Export"
+                      includeCharts={true}
+                      chartTypes={['bar']}
                       dateRange={{
                         from: params?.oneMesin?.from,
                         to: params?.oneMesin?.to,
@@ -1047,10 +1055,12 @@ function RekapOs2Mtc() {
                     </button>
                   </div>
                   <div className="flex justify-center my-5">
-                    <ExportButton
+                    <EnhancedExportButton
                       data={data.qualityDefect}
                       type="quality"
                       label="Export"
+                      includeCharts={true}
+                      chartTypes={['bar']}
                       dateRange={{
                         from: params?.quality?.from,
                         to: params?.quality?.to,
@@ -1180,10 +1190,12 @@ function RekapOs2Mtc() {
                     </button>
                   </div>
                   <div className="flex justify-center my-5">
-                    <ExportButton
+                    <EnhancedExportButton
                       data={data.produksiDefect}
                       type="produksi"
                       label="Export"
+                      includeCharts={true}
+                      chartTypes={['bar']}
                       dateRange={{
                         from: params?.produksi?.from,
                         to: params?.produksi?.to,
@@ -1328,10 +1340,12 @@ function RekapOs2Mtc() {
                       </button>
                     </div>
                     <div className="fex justify-center ">
-                      <ExportButton
+                      <EnhancedExportButton
                         data={data.responTime}
                         type="responTime"
                         label="Export"
+                        includeCharts={true}
+                        chartTypes={['bar']}
                         dateRange={{
                           year: params?.responTime?.year || '',
                           month: params?.responTime?.month || '',
@@ -1463,10 +1477,12 @@ function RekapOs2Mtc() {
                     </button>
                   </div>
                   <div className="flex justify-center my-5">
-                    <ExportButton
+                    <EnhancedExportButton
                       data={data.responTimeBulan?.data}
                       type="responTimeBulan"
                       label="Export"
+                      includeCharts={true}
+                      chartTypes={['bar']}
                       dateRange={{
                         from: params?.responTimeBulan?.from,
                         to: params?.responTimeBulan?.to,
@@ -1482,61 +1498,136 @@ function RekapOs2Mtc() {
                   </label>
                 </div>
 
-                <div className="md:grid grid-cols-1 gap-5 px-10 pb-10 pt-5">
-                  <div>
-                    <div className="flex gap-3 p-3">
-                      <img src={Production} alt="Logo" />
-                      <p className="text-xl font-semibold text-[#0065DE]">
-                        Response Time
-                      </p>
+                <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+                  <div className="max-w-7xl mx-auto">
+                    {/* Chart Section */}
+                    <div className="mb-8 bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                      <div className="flex gap-3 mb-4">
+                        <img src={Production} alt="Logo" />
+                        <p className="text-xl font-semibold text-[#0065DE]">
+                          Response Time
+                        </p>
+                      </div>
+                      <BarChartResponMonth value={data.responTimeBulan} />
                     </div>
-                    <BarChartResponMonth value={data.responTimeBulan} />
-                  </div>
-                  <div className="flex flex-col ">
-                    {data.responTimeBulan?.data.map((data: any, i: any) => {
-                      return (
-                        <>
-                          <div className="flex  py-1 px-2   border-black  gap-4 pt-4">
-                            <label className="text-sm font-semibold">
-                              {i + 1}.
-                            </label>
-                            <label className="text-sm col-span-2 font-semibold">
-                              {data.mesin}
-                            </label>
+
+                    {/* Enhanced Data Table */}
+                    <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                      {/* Table Header */}
+                      <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                        <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                          <svg
+                            className="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          Response Time Data
+                        </h2>
+                      </div>
+
+                      {data.responTimeBulan?.data.map((item, i) => (
+                        <div
+                          key={i}
+                          className="border-b border-gray-200 last:border-b-0"
+                        >
+                          {/* Machine Header */}
+                          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full font-bold text-sm">
+                                {i + 1}
+                              </div>
+                              <div>
+                                <h3 className="text-lg font-bold text-gray-800">
+                                  {item.mesin}
+                                </h3>
+                              </div>
+                            </div>
                           </div>
-                          <div className="grid grid-cols-12 border-2 border-black px-1 justify-center gap-4 bg-slate-300">
-                            {data.responTimeBulan?.listBulan?.map(
-                              (bulan: any) => (
-                                <label
-                                  key={bulan.nama_bulan}
-                                  className="text-xs font-semibold"
-                                >
-                                  {bulan.nama_bulan}
-                                </label>
-                              ),
-                            )}
+
+                          {/* Month Headers */}
+                          <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-3">
+                            <div className="grid grid-cols-12 gap-4 text-center">
+                              {data.responTimeBulan?.listBulan?.map(
+                                (month: any, j: any) => (
+                                  <div key={j} className="text-white">
+                                    <div className="font-semibold text-sm">
+                                      {month.nama_bulan}
+                                    </div>
+                                  </div>
+                                ),
+                              )}
+                            </div>
                           </div>
-                          <div className="grid grid-cols-12 border-x-2 py-1 px-2  border-b-2 border-black  justify-center gap-4">
-                            {data.data?.map((data2: any, i: any) => {
-                              return (
-                                <>
-                                  {data.data?.map((data2: any) => (
-                                    <label
-                                      key={data2.jumlah_waktu_jam}
-                                      className="text-xs"
-                                    >
-                                      {parseFloat(
-                                        data2.jumlah_waktu_jam,
-                                      ).toFixed(2)}
-                                    </label>
-                                  ))}
-                                </>
-                              );
-                            })}
+
+                          {/* Data Row */}
+                          <div className="px-6 py-4 bg-green-50">
+                            <div className="flex items-center mb-2">
+                              <svg
+                                className="w-4 h-4 text-green-600 mr-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                                />
+                              </svg>
+                              <span className="text-sm font-semibold text-green-800">
+                                Response Time (Hours)
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-12 gap-4 text-center">
+                              {item.data?.map((monthData: any, k: any) => (
+                                <div key={k}>
+                                  <span className="text-sm font-medium text-green-600 px-2 py-1 rounded-md bg-green-100">
+                                    {parseFloat(
+                                      monthData.jumlah_waktu_jam,
+                                    ).toFixed(2)}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </>
-                      );
-                    })}
+                        </div>
+                      ))}
+
+                      {/* Empty State */}
+                      {(!data.responTimeBulan?.data ||
+                        data.responTimeBulan.data.length === 0) && (
+                        <div className="text-center py-12">
+                          <svg
+                            className="mx-auto h-12 w-12 text-gray-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                          </svg>
+                          <h3 className="mt-2 text-sm font-medium text-gray-900">
+                            No data available
+                          </h3>
+                          <p className="mt-1 text-sm text-gray-500">
+                            No response time data found for the selected period.
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1623,10 +1714,12 @@ function RekapOs2Mtc() {
                       </button>
                     </div>
                     <div className="fex justify-center ">
-                      <ExportButton
+                      <EnhancedExportButton
                         data={data.breakDown}
                         type="breakDown"
                         label="Export"
+                        includeCharts={true}
+                        chartTypes={['bar']}
                         dateRange={{
                           year: params?.breakdownTime?.year || '',
                           month: params?.breakdownTime?.month || '',
@@ -1758,10 +1851,12 @@ function RekapOs2Mtc() {
                     </button>
                   </div>
                   <div className="flex justify-center my-5">
-                    <ExportButton
+                    <EnhancedExportButton
                       data={data.breakDownMonth?.data}
                       type="breakDownMonth"
                       label="Export"
+                      includeCharts={true}
+                      chartTypes={['bar']}
                       dateRange={{
                         from: params?.breakDownMonth?.from,
                         to: params?.breakDownMonth?.to,
@@ -1777,67 +1872,314 @@ function RekapOs2Mtc() {
                   </label>
                 </div>
 
-                <div className="md:grid grid-cols-1 gap-5 px-10 pb-10 pt-5">
-                  <div>
-                    <div className="flex gap-3 p-3">
-                      <img src={Production} alt="Logo" />
-                      <p className="text-xl font-semibold text-[#0065DE]">
-                        Breakdown Time
-                      </p>
+                <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-6">
+                  <div className="max-w-7xl mx-auto">
+                    {/* Chart Section */}
+                    <div className="mb-8 bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                      <BarChartResponMonth value={data.breakDownMonth} />
                     </div>
-                    <BarChartResponMonth value={data.breakDownMonth} />
-                  </div>
 
-                  <div className="flex flex-col">
-                    {data.breakDownMonth?.data.map((item, i) => (
-                      <React.Fragment key={i}>
-                        <div className="flex py-1 px-2 border-black gap-4 pt-4">
-                          <label className="text-sm font-semibold">
-                            {i + 1}.
-                          </label>
-                          <label className="text-sm col-span-2 font-semibold">
-                            {item.mesin}
-                          </label>
-                        </div>
+                    {/* Enhanced Data Table */}
+                    <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                      {/* Table Header */}
+                      <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                        <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                          <svg
+                            className="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                            />
+                          </svg>
+                          Machine Breakdown Data
+                        </h2>
+                      </div>
 
-                        <div className="grid grid-cols-12 border-2 border-black px-1 justify-center gap-4 bg-slate-300">
-                          {data.breakDownMonth?.listBulan?.map((month, j) => (
-                            <label key={j} className="text-xs font-semibold">
-                              {month.nama_bulan}
-                            </label>
-                          ))}
-                        </div>
+                      {data.breakDownMonth?.data.map((item, i) => (
+                        <div
+                          key={i}
+                          className="border-b border-gray-200 last:border-b-0"
+                        >
+                          {/* Machine Header */}
+                          <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                            <div className="flex items-center gap-4">
+                              <div className="flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full font-bold text-sm">
+                                {i + 1}
+                              </div>
+                              <div>
+                                <h3 className="text-lg font-bold text-gray-800">
+                                  {item.mesin}
+                                </h3>
+                              </div>
+                            </div>
+                          </div>
 
-                        <div className="grid grid-cols-12 border-x-2 py-1 px-2 border-b-2 border-black justify-center gap-4">
-                          {item.data?.map((monthData, k) => (
-                            <div key={`value-${i}-${k}`}>
-                              <button
-                                className="text-xs text-blue-500 hover:underline"
-                                onClick={() => toggleModal(i, k, true)}
-                              >
-                                {parseFloat(monthData.jumlah_waktu_jam).toFixed(
-                                  2,
-                                )}
-                              </button>
-
-                              {showModal[i] && showModal[i][k] && (
-                                <ModalFull
-                                  isOpen={true}
-                                  onClose={() => toggleModal(i, k, false)}
-                                  judul="Detail Data"
-                                >
-                                  <DetailTable
-                                    mesin={item.mesin}
-                                    month={monthData.nama_bulan}
-                                    details={monthData.details}
-                                  />
-                                </ModalFull>
+                          {/* Month Headers */}
+                          <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-3">
+                            <div className="grid grid-cols-12 gap-4 text-center">
+                              {data.breakDownMonth?.listBulan?.map(
+                                (month, j) => (
+                                  <div key={j} className="text-white">
+                                    <div className="font-semibold text-sm">
+                                      {month.nama_bulan}
+                                    </div>
+                                  </div>
+                                ),
                               )}
                             </div>
-                          ))}
+                          </div>
+
+                          {/* Data Rows */}
+                          <div className="divide-y divide-gray-100">
+                            {/* Total QC Time Row */}
+                            <div className="px-6 py-4 bg-purple-50">
+                              <div className="flex items-center mb-2">
+                                <svg
+                                  className="w-4 h-4 text-purple-600 mr-2"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
+                                </svg>
+                                <span className="text-sm font-semibold text-purple-800">
+                                  QC Breakdown Time (Hours)
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-12 gap-4 text-center">
+                                {item.data?.map((monthData, k) => {
+                                  // Calculate total QC time from details
+                                  const totalQcTime =
+                                    monthData.details?.reduce((acc, detail) => {
+                                      let validasiQcMs = 0;
+                                      let verifikasiQcMs = 0;
+
+                                      if (
+                                        detail.createdAt &&
+                                        detail.waktu_respon_qc
+                                      ) {
+                                        const startQc = new Date(
+                                          detail.createdAt,
+                                        );
+                                        const endQc = new Date(
+                                          detail.waktu_respon_qc,
+                                        );
+                                        const qcTimeDiff =
+                                          endQc.getTime() - startQc.getTime();
+                                        if (
+                                          !isNaN(qcTimeDiff) &&
+                                          qcTimeDiff > 0
+                                        ) {
+                                          validasiQcMs = qcTimeDiff;
+                                        }
+                                      }
+
+                                      if (
+                                        detail.waktu_selesai_mtc &&
+                                        detail.waktu_selesai
+                                      ) {
+                                        const startVerif = new Date(
+                                          detail.waktu_selesai_mtc,
+                                        );
+                                        const endVerif = new Date(
+                                          detail.waktu_selesai,
+                                        );
+                                        const verifTimeDiff =
+                                          endVerif.getTime() -
+                                          startVerif.getTime();
+                                        if (
+                                          !isNaN(verifTimeDiff) &&
+                                          verifTimeDiff > 0
+                                        ) {
+                                          verifikasiQcMs = verifTimeDiff;
+                                        }
+                                      }
+
+                                      return (
+                                        acc + (validasiQcMs + verifikasiQcMs)
+                                      );
+                                    }, 0) || 0;
+
+                                  const totalQcHours =
+                                    totalQcTime / (1000 * 60 * 60);
+
+                                  return (
+                                    <div key={`qc-${i}-${k}`}>
+                                      <button
+                                        className="text-sm font-medium text-purple-600 hover:text-purple-800 hover:underline px-2 py-1 rounded-md hover:bg-purple-100 transition-colors"
+                                        onClick={() => toggleModal(i, k, true)}
+                                      >
+                                        {totalQcHours.toFixed(2)}
+                                      </button>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* MTC Breakdown Time Row */}
+                            <div className="px-6 py-4 bg-orange-50">
+                              <div className="flex items-center mb-2">
+                                <svg
+                                  className="w-4 h-4 text-orange-600 mr-2"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                                  />
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                  />
+                                </svg>
+                                <span className="text-sm font-semibold text-orange-800">
+                                  MTC Breakdown Time (Hours)
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-12 gap-4 text-center">
+                                {item.data?.map((monthData, k) => {
+                                  // Calculate total MTC time from details
+                                  const totalMtcTime =
+                                    monthData.details?.reduce((acc, detail) => {
+                                      let breakdownMtcMs = 0;
+
+                                      if (
+                                        detail.waktu_respon_mtc &&
+                                        detail.waktu_selesai_mtc
+                                      ) {
+                                        const startMtc = new Date(
+                                          detail.waktu_respon_mtc,
+                                        );
+                                        const endMtc = new Date(
+                                          detail.waktu_selesai_mtc,
+                                        );
+                                        const mtcTimeDiff =
+                                          endMtc.getTime() - startMtc.getTime();
+                                        if (
+                                          !isNaN(mtcTimeDiff) &&
+                                          mtcTimeDiff > 0
+                                        ) {
+                                          breakdownMtcMs = mtcTimeDiff;
+                                        }
+                                      }
+
+                                      return acc + breakdownMtcMs;
+                                    }, 0) || 0;
+
+                                  const totalMtcHours =
+                                    totalMtcTime / (1000 * 60 * 60);
+
+                                  return (
+                                    <div key={`mtc-${i}-${k}`}>
+                                      <button
+                                        className="text-sm font-medium text-orange-600 hover:text-orange-800 hover:underline px-2 py-1 rounded-md hover:bg-orange-100 transition-colors"
+                                        onClick={() => toggleModal(i, k, true)}
+                                      >
+                                        {totalMtcHours.toFixed(2)}
+                                      </button>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Total Breakdown Time Row */}
+                            <div className="px-6 py-4 bg-red-50">
+                              <div className="flex items-center mb-2">
+                                <svg
+                                  className="w-4 h-4 text-red-600 mr-2"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
+                                </svg>
+                                <span className="text-sm font-semibold text-red-800">
+                                  Total Breakdown Time (Hours)
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-12 gap-4 text-center">
+                                {item.data?.map((monthData, k) => (
+                                  <div key={`breakdown-${i}-${k}`}>
+                                    <button
+                                      className="text-sm font-bold text-red-600 hover:text-red-800 hover:underline px-2 py-1 rounded-md hover:bg-red-100 transition-colors"
+                                      onClick={() => toggleModal(i, k, true)}
+                                    >
+                                      {parseFloat(
+                                        monthData.jumlah_waktu_jam,
+                                      ).toFixed(2)}
+                                    </button>
+
+                                    {showModal[i] && showModal[i][k] && (
+                                      <ModalFull
+                                        isOpen={true}
+                                        onClose={() => toggleModal(i, k, false)}
+                                        judul="Detail Data"
+                                      >
+                                        <DetailTable
+                                          mesin={item.mesin}
+                                          month={monthData.nama_bulan}
+                                          details={monthData.details}
+                                        />
+                                      </ModalFull>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </React.Fragment>
-                    ))}
+                      ))}
+
+                      {/* Empty State */}
+                      {(!data.breakDownMonth?.data ||
+                        data.breakDownMonth.data.length === 0) && (
+                        <div className="text-center py-12">
+                          <svg
+                            className="mx-auto h-12 w-12 text-gray-400"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                            />
+                          </svg>
+                          <h3 className="mt-2 text-sm font-medium text-gray-900">
+                            No data available
+                          </h3>
+                          <p className="mt-1 text-sm text-gray-500">
+                            No breakdown data found for the selected period.
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1860,218 +2202,467 @@ interface DetailTableProps {
     waktu_respon_mtc: string;
     waktu_selesai_mtc: string;
     waktu_respon_qc: string;
+    no_jo?: string;
+    operator?: string;
+    verifikator?: string;
+    eksekutor?: string;
+    kode_lkh?: string;
+    nama_kendala?: string;
     [key: string]: any;
   }>;
 }
 
 const DetailTable: React.FC<DetailTableProps> = ({ mesin, month, details }) => {
-  // Sort and process details as before
+  const formatTime = (milliseconds: number): string => {
+    if (milliseconds <= 0) return '-';
+
+    const hours = Math.floor(milliseconds / (1000 * 60 * 60));
+    const minutes = Math.floor((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((milliseconds % (1000 * 60)) / 1000);
+
+    return `${hours}h ${minutes}m ${seconds}s`;
+  };
+
+  const processedDetails = details
+    ?.slice()
+    .map((data3: any) => {
+      // Calculate breakdown time
+      let breakdownTimeMs = 0;
+      if (data3.createdAt && data3.waktu_selesai) {
+        const startTime = new Date(data3.createdAt);
+        const endTime = new Date(data3.waktu_selesai);
+        const timeDiff = endTime.getTime() - startTime.getTime();
+        if (!isNaN(timeDiff) && timeDiff > 0) {
+          breakdownTimeMs = timeDiff;
+        }
+      }
+
+      // Calculate BreakdownMtc time
+      let breakdownMtcMs = 0;
+      if (data3.waktu_respon_mtc && data3.waktu_selesai_mtc) {
+        const startMtc = new Date(data3.waktu_respon_mtc);
+        const endMtc = new Date(data3.waktu_selesai_mtc);
+        const mtcTimeDiff = endMtc.getTime() - startMtc.getTime();
+        if (!isNaN(mtcTimeDiff) && mtcTimeDiff > 0) {
+          breakdownMtcMs = mtcTimeDiff;
+        }
+      }
+
+      // Calculate Validasi QC time
+      let validasiQcMs = 0;
+      if (data3.createdAt && data3.waktu_respon_qc) {
+        const startQc = new Date(data3.createdAt);
+        const endQc = new Date(data3.waktu_respon_qc);
+        const qcTimeDiff = endQc.getTime() - startQc.getTime();
+        if (!isNaN(qcTimeDiff) && qcTimeDiff > 0) {
+          validasiQcMs = qcTimeDiff;
+        }
+      }
+
+      // Calculate Verifikasi QC time
+      let verifikasiQcMs = 0;
+      if (data3.waktu_selesai_mtc && data3.waktu_selesai) {
+        const startVerif = new Date(data3.waktu_selesai_mtc);
+        const endVerif = new Date(data3.waktu_selesai);
+        const verifTimeDiff = endVerif.getTime() - startVerif.getTime();
+        if (!isNaN(verifTimeDiff) && verifTimeDiff > 0) {
+          verifikasiQcMs = verifTimeDiff;
+        }
+      }
+
+      // Calculate sum of QC times
+      const totalQcMs = validasiQcMs + verifikasiQcMs;
+
+      return {
+        ...data3,
+        breakdownTimeMs,
+        breakdownMtcMs,
+        validasiQcMs,
+        verifikasiQcMs,
+        totalQcMs,
+      };
+    })
+    .sort((a: any, b: any) => b.breakdownTimeMs - a.breakdownTimeMs);
 
   return (
-    <div className="overflow-x-auto pt-4">
-      <label className="text-sm font-semibold">
-        {mesin} - {month}
-      </label>
-      <table className="min-w-full divide-y divide-gray-200 border border-blue-200 rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200 border border-blue-200 rounded-lg overflow-hidden">
-          <thead className="bg-blue-600 text-white font-semibold">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                No JO
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Operator
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Verifikator
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Eksekutor
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Kode
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Nama Kendala
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Validasi QC
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Breakdown Mtc
-              </th>
+    <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Section */}
+        <div className="mb-8 text-center">
+          <div className="inline-flex items-center px-6 py-3 bg-white rounded-full shadow-lg border border-blue-200">
+            <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+            <h2 className="text-xl font-bold text-gray-800">
+              Detail Breakdown - {mesin}
+            </h2>
+          </div>
+          <p className="text-gray-600 mt-2 text-lg font-medium">{month}</p>
+        </div>
 
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Verifikasi QC
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Breakdown Time
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {details
-              ?.slice()
-              .map((data3: any) => {
-                // Calculate breakdown time for sorting
-                let breakdownTimeMs = 0;
-                if (data3.createdAt && data3.waktu_selesai) {
-                  const startTime = new Date(data3.createdAt);
-                  const endTime = new Date(data3.waktu_selesai);
-                  // Calculate difference in milliseconds
-                  const timeDiff = endTime.getTime() - startTime.getTime();
-                  if (!isNaN(timeDiff) && timeDiff > 0) {
-                    breakdownTimeMs = timeDiff;
-                  }
-                }
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">
+                  Total Records
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {details?.length || 0}
+                </p>
+              </div>
+              <div className="p-3 bg-blue-100 rounded-full">
+                <svg
+                  className="w-6 h-6 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
 
-                // Calculate BreakdownMtc time
-                let breakdownMtcMs = 0;
-                if (data3.waktu_respon_mtc && data3.waktu_selesai_mtc) {
-                  const startMtc = new Date(data3.waktu_respon_mtc);
-                  const endMtc = new Date(data3.waktu_selesai_mtc);
-                  const mtcTimeDiff = endMtc.getTime() - startMtc.getTime();
-                  if (!isNaN(mtcTimeDiff) && mtcTimeDiff > 0) {
-                    breakdownMtcMs = mtcTimeDiff;
-                  }
-                }
+          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">
+                  Avg Breakdown
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {formatTime(
+                    processedDetails?.reduce(
+                      (acc, item) => acc + item.breakdownTimeMs,
+                      0,
+                    ) / (processedDetails?.length || 1),
+                  )}
+                </p>
+              </div>
+              <div className="p-3 bg-green-100 rounded-full">
+                <svg
+                  className="w-6 h-6 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
 
-                // Calculate Validasi QC time
-                let validasiQcMs = 0;
-                if (data3.createdAt && data3.waktu_respon_qc) {
-                  const startQc = new Date(data3.createdAt);
-                  const endQc = new Date(data3.waktu_respon_qc);
-                  const qcTimeDiff = endQc.getTime() - startQc.getTime();
-                  if (!isNaN(qcTimeDiff) && qcTimeDiff > 0) {
-                    validasiQcMs = qcTimeDiff;
-                  }
-                }
+          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-orange-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">
+                  Avg Breakdowntime MTC
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {formatTime(
+                    processedDetails?.reduce(
+                      (acc, item) => acc + item.breakdownMtcMs,
+                      0,
+                    ) / (processedDetails?.length || 1),
+                  )}
+                </p>
+              </div>
+              <div className="p-3 bg-orange-100 rounded-full">
+                <svg
+                  className="w-6 h-6 text-orange-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
 
-                // Calculate Verifikasi QC time
-                let verifikasiQcMs = 0;
-                if (data3.waktu_selesai_mtc && data3.waktu_selesai) {
-                  const startVerif = new Date(data3.waktu_selesai_mtc);
-                  const endVerif = new Date(data3.waktu_selesai);
-                  const verifTimeDiff =
-                    endVerif.getTime() - startVerif.getTime();
-                  if (!isNaN(verifTimeDiff) && verifTimeDiff > 0) {
-                    verifikasiQcMs = verifTimeDiff;
-                  }
-                }
+          <div className="bg-white rounded-xl shadow-md p-6 border-l-4 border-purple-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">
+                  Avg Breakdowntime QC
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {formatTime(
+                    processedDetails?.reduce(
+                      (acc, item) => acc + item.totalQcMs,
+                      0,
+                    ) / (processedDetails?.length || 1),
+                  )}
+                </p>
+              </div>
+              <div className="p-3 bg-purple-100 rounded-full">
+                <svg
+                  className="w-6 h-6 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
 
-                // Add the calculated milliseconds to each item for sorting
-                return {
-                  ...data3,
-                  breakdownTimeMs,
-                  breakdownMtcMs,
-                  validasiQcMs,
-                  verifikasiQcMs,
-                };
-              })
-              // Sort by breakdown time (descending)
-              .sort((a: any, b: any) => b.breakdownTimeMs - a.breakdownTimeMs)
-              .map((data3: any, index: any) => {
-                // Format the breakdown time for display
-                let breakdownTime = '-';
-                if (data3.breakdownTimeMs > 0) {
-                  const hours = Math.floor(
-                    data3.breakdownTimeMs / (1000 * 60 * 60),
-                  );
-                  const minutes = Math.floor(
-                    (data3.breakdownTimeMs % (1000 * 60 * 60)) / (1000 * 60),
-                  );
-                  const seconds = Math.floor(
-                    (data3.breakdownTimeMs % (1000 * 60)) / 1000,
-                  );
-                  breakdownTime = `${hours}h ${minutes}m ${seconds}s`;
-                }
+        {/* Main Table */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gradient-to-r from-blue-600 to-blue-700">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider border-r border-blue-500">
+                    <div className="flex items-center space-x-2">
+                      <span>#</span>
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider border-r border-blue-500">
+                    <div className="flex items-center space-x-2">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                      <span>Job Order</span>
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider border-r border-blue-500">
+                    <div className="flex items-center space-x-2">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                      <span>Operator</span>
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider border-r border-blue-500">
+                    Problem Details
+                  </th>
 
-                // Format the BreakdownMtc time
-                let breakdownMtc = '-';
-                if (data3.breakdownMtcMs > 0) {
-                  const hoursMtc = Math.floor(
-                    data3.breakdownMtcMs / (1000 * 60 * 60),
-                  );
-                  const minutesMtc = Math.floor(
-                    (data3.breakdownMtcMs % (1000 * 60 * 60)) / (1000 * 60),
-                  );
-                  const secondsMtc = Math.floor(
-                    (data3.breakdownMtcMs % (1000 * 60)) / 1000,
-                  );
-                  breakdownMtc = `${hoursMtc}h ${minutesMtc}m ${secondsMtc}s`;
-                }
-
-                // Format the Validasi QC time
-                let validasiQc = '-';
-                if (data3.validasiQcMs > 0) {
-                  const hoursQc = Math.floor(
-                    data3.validasiQcMs / (1000 * 60 * 60),
-                  );
-                  const minutesQc = Math.floor(
-                    (data3.validasiQcMs % (1000 * 60 * 60)) / (1000 * 60),
-                  );
-                  const secondsQc = Math.floor(
-                    (data3.validasiQcMs % (1000 * 60)) / 1000,
-                  );
-                  validasiQc = `${hoursQc}h ${minutesQc}m ${secondsQc}s`;
-                }
-
-                // Format the Verifikasi QC time
-                let verifikasiQc = '-';
-                if (data3.verifikasiQcMs > 0) {
-                  const hoursVerif = Math.floor(
-                    data3.verifikasiQcMs / (1000 * 60 * 60),
-                  );
-                  const minutesVerif = Math.floor(
-                    (data3.verifikasiQcMs % (1000 * 60 * 60)) / (1000 * 60),
-                  );
-                  const secondsVerif = Math.floor(
-                    (data3.verifikasiQcMs % (1000 * 60)) / 1000,
-                  );
-                  verifikasiQc = `${hoursVerif}h ${minutesVerif}m ${secondsVerif}s`;
-                }
-
-                return (
+                  <th className="px-6 py-4 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-blue-500">
+                    <div className="flex items-center justify-center space-x-2">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
+                      <span>Breakdowntime MTC</span>
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-bold text-white uppercase tracking-wider">
+                    <div className="flex items-center justify-center space-x-2">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span>Breakdowntime QC</span>
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 text-center text-xs font-bold text-white uppercase tracking-wider border border-blue-500">
+                    <div className="flex items-center justify-center space-x-2">
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span>Breakdown Time</span>
+                    </div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-100">
+                {processedDetails?.map((data3: any, index: number) => (
                   <tr
                     key={index}
-                    className={index % 2 === 0 ? 'bg-blue-50' : 'bg-white'}
+                    className={`${
+                      index % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                    } hover:bg-blue-50 transition-colors duration-200`}
                   >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {data3.no_jo}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
+                      <div className="flex items-center justify-center w-8 h-8 bg-blue-100 rounded-full">
+                        {index + 1}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {data3.operator}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
+                      <div className="font-medium text-blue-600">
+                        {data3.no_jo || '-'}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {data3.verifikator}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 border-r border-gray-200">
+                      <div>
+                        <div className="font-medium">
+                          {data3.operator || '-'}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Verifikator: {data3.verifikator || '-'}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Eksekutor: {data3.eksekutor || '-'}
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {data3.eksekutor}
+                    <td className="px-6 py-4 text-sm text-gray-900 border-r border-gray-200">
+                      <div>
+                        <div className="font-medium text-gray-800">
+                          {data3.nama_kendala || '-'}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          Kode: {data3.kode_lkh || '-'}
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {data3.kode_lkh}
+
+                    <td className="px-6 py-4 whitespace-nowrap text-center border-r border-gray-200">
+                      <div
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                          data3.breakdownMtcMs > 2 * 60 * 60 * 1000 // > 2 hours
+                            ? 'bg-red-100 text-red-800'
+                            : data3.breakdownMtcMs > 1 * 60 * 60 * 1000 // > 1 hour
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-green-100 text-green-800'
+                        }`}
+                      >
+                        {formatTime(data3.breakdownMtcMs)}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {data3.nama_kendala}
+                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <div
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                          data3.totalQcMs > 1 * 60 * 60 * 1000 // > 1 hour
+                            ? 'bg-red-100 text-red-800'
+                            : data3.totalQcMs > 30 * 60 * 1000 // > 30 minutes
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-green-100 text-green-800'
+                        }`}
+                      >
+                        {formatTime(data3.totalQcMs)}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Validasi : {formatTime(data3.validasiQcMs)} |
+                        Verifikasi: {formatTime(data3.verifikasiQcMs)}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {validasiQc}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {breakdownMtc}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {verifikasiQc}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {breakdownTime}
+                    <td className="px-6 py-4 whitespace-nowrap text-center border border-gray-200">
+                      <div
+                        className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                          data3.breakdownTimeMs > 4 * 60 * 60 * 1000 // > 4 hours
+                            ? 'bg-red-100 text-red-800'
+                            : data3.breakdownTimeMs > 2 * 60 * 60 * 1000 // > 2 hours
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-green-100 text-green-800'
+                        }`}
+                      >
+                        {formatTime(data3.breakdownTimeMs)}
+                      </div>
                     </td>
                   </tr>
-                );
-              })}
-          </tbody>
-        </table>
-      </table>
+                ))}
+              </tbody>
+            </table>
+
+            {(!details || details.length === 0) && (
+              <div className="text-center py-12">
+                <svg
+                  className="mx-auto h-12 w-12 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">
+                  No data available
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  No breakdown records found for this period.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
