@@ -97,6 +97,8 @@ function RekapAbsenQC() {
     let totalPulangCepat = 0;
     let totalIstirahatLembur = 0;
     let jumlahHariTerlambat = 0;
+    let terlambatKurangDari30Menit = 0; // <= 0.5 hours (30 minutes)
+    let terlambatLebihDari30Menit = 0; // > 0.5 hours (30 minutes)
 
     absensiData?.forEach((record: any) => {
       const menitTerlambat = parseInt(record.menit_terlambat || 0);
@@ -109,14 +111,28 @@ function RekapAbsenQC() {
 
       if (menitTerlambat > 0) {
         jumlahHariTerlambat++;
+
+        // Convert minutes to hours for comparison
+        const jamTerlambat = menitTerlambat / 60;
+
+        if (jamTerlambat <= 0.5) {
+          terlambatKurangDari30Menit++;
+        } else {
+          terlambatLebihDari30Menit++;
+        }
       }
     });
 
+    // Convert total minutes to hours
+    const totalJamTerlambat = totalTerlambat.toFixed(1);
+
     return {
-      totalTerlambat,
+      totalTerlambat: totalJamTerlambat, // Now in hours
       totalPulangCepat,
       totalIstirahatLembur: totalIstirahatLembur.toFixed(1),
       jumlahHariTerlambat,
+      terlambatKurangDari30Menit, // <= 0.5 hours
+      terlambatLebihDari30Menit, // > 0.5 hours
     };
   };
 
@@ -433,15 +449,28 @@ function RekapAbsenQC() {
                               </h5>
                               <div className="space-y-1 text-xs">
                                 <div className="flex justify-between">
-                                  <span>Hari Terlambat:</span>
-                                  <span className="font-medium">
-                                    {timeMetrics.jumlahHariTerlambat} hari
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
                                   <span>Total Jam:</span>
                                   <span className="font-medium">
                                     {timeMetrics.totalTerlambat} Jam
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Terlambat ≤ 30 menit:</span>
+                                  <span className="font-medium">
+                                    {timeMetrics.terlambatKurangDari30Menit}{' '}
+                                    hari
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Terlambat {'>'} 30 menit:</span>
+                                  <span className="font-medium">
+                                    {timeMetrics.terlambatLebihDari30Menit} hari
+                                  </span>
+                                </div>
+                                <div className="flex justify-between border-t pt-1 mt-2">
+                                  <span>Total Hari Terlambat:</span>
+                                  <span className="font-medium">
+                                    {timeMetrics.jumlahHariTerlambat} hari
                                   </span>
                                 </div>
                               </div>
