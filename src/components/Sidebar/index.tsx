@@ -511,6 +511,11 @@ const Sidebar = ({
           icon: 'inspection',
         },
         {
+          name: 'Kalibrasi Alat Ukur',
+          path: '/qc/kalibrasi',
+          icon: 'qms',
+        },
+        {
           name: 'QC Outstanding',
           path: '/qc/outstanding',
           icon: 'outstanding',
