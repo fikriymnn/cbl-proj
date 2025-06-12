@@ -472,7 +472,7 @@ function ContohPurchase(): JSX.Element {
                               ) : (
                                 <FileText className="w-3 h-3" />
                               )}
-                              Edit
+                              Respon
                             </button>
                           )}
                           {(item.status === 'done' ||

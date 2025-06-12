@@ -30,14 +30,16 @@ interface KalibrasiAlatUkur {
   sertifikat: string;
   keterangan: string;
   file: string;
+  data_tiket?: KalibrasiHistory[];
 }
 
 interface KalibrasiHistory {
   id: number;
-  tanggal_kalibrasi: string;
-  hasil: string;
-  teknisi: string;
-  catatan: string;
+  id_kalibrasi_alat_ukur: number;
+  tgl_kalibrasi: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface FormData {
@@ -111,17 +113,25 @@ function KalibrasiAlatUkurPage(): JSX.Element {
           limit: pagination.itemsPerPage,
         },
       });
+      console.log(res.data);
 
-      // Assuming API returns data in this format
-      const { data, total, page, limit, totalPages } = res.data;
+      // Updated to match your backend response structure
+      const { data, total_page } = res.data;
 
       setKalibrasi(data || []);
       setPagination({
-        currentPage: page || 1,
-        totalPages: totalPages || Math.ceil(total / limit) || 1,
-        totalItems: total || 0,
-        itemsPerPage: limit || 10,
+        currentPage: pagination.currentPage,
+        totalPages: total_page || 1,
+        totalItems: (data?.length || 0) * total_page, // Estimate total items
+        itemsPerPage: pagination.itemsPerPage,
       });
+      const initialHistoryData: Record<number, KalibrasiHistory[]> = {};
+      data?.forEach((item: KalibrasiAlatUkur) => {
+        if (item.data_tiket && item.data_tiket.length > 0) {
+          initialHistoryData[item.id] = item.data_tiket;
+        }
+      });
+      setHistoryData(initialHistoryData);
     } catch (error: any) {
       console.error('Error fetching data:', error);
       setKalibrasi([]);
@@ -214,34 +224,27 @@ function KalibrasiAlatUkurPage(): JSX.Element {
       // Load history data if not already loaded
       if (!historyData[id]) {
         try {
-          // This is a placeholder for future history API call
-          // const historyUrl = `${import.meta.env.VITE_API_LINK}/qc/kalibrasiAlatUkur/${id}/history`;
-          // const historyRes = await axios.get(historyUrl, { withCredentials: true });
+          // Use real API endpoint for history
+          const historyUrl = `${
+            import.meta.env.VITE_API_LINK
+          }/qc/kalibrasiAlatUkur/${id}`;
+          const historyRes = await axios.get(historyUrl, {
+            withCredentials: true,
+          });
 
-          // For now, using mock data
-          const mockHistory: KalibrasiHistory[] = [
-            {
-              id: 1,
-              tanggal_kalibrasi: '2024-09-01',
-              hasil: 'Lulus',
-              teknisi: 'John Doe',
-              catatan: 'Kalibrasi normal',
-            },
-            {
-              id: 2,
-              tanggal_kalibrasi: '2023-09-01',
-              hasil: 'Lulus',
-              teknisi: 'Jane Smith',
-              catatan: 'Semua parameter dalam batas normal',
-            },
-          ];
+          // Extract data_tiket from the response
+          const historyData = historyRes.data?.data_tiket || [];
 
           setHistoryData((prev) => ({
             ...prev,
-            [id]: mockHistory,
+            [id]: historyData,
           }));
         } catch (error: any) {
           console.error('Error loading history:', error);
+          setHistoryData((prev) => ({
+            ...prev,
+            [id]: [],
+          }));
         }
       }
     }
@@ -284,7 +287,6 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     return expiry < today;
   }
 
-  // Pagination functions
   function handlePageChange(page: number): void {
     if (page >= 1 && page <= pagination.totalPages) {
       setPagination({ ...pagination, currentPage: page });
@@ -295,7 +297,7 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     setPagination({
       ...pagination,
       itemsPerPage,
-      currentPage: 1,
+      currentPage: 1, // Reset to first page when changing items per page
     });
   }
 
@@ -303,10 +305,13 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     return (pagination.currentPage - 1) * pagination.itemsPerPage + index + 1;
   }
 
+  // Updated renderPagination function
   function renderPagination(): JSX.Element {
-    const { currentPage, totalPages, totalItems } = pagination;
+    const { currentPage, totalPages } = pagination;
+    const currentItemsCount = kalibrasi.length;
     const startItem = (currentPage - 1) * pagination.itemsPerPage + 1;
-    const endItem = Math.min(currentPage * pagination.itemsPerPage, totalItems);
+    const endItem =
+      (currentPage - 1) * pagination.itemsPerPage + currentItemsCount;
 
     const getPageNumbers = () => {
       const pages = [];
@@ -342,7 +347,8 @@ function KalibrasiAlatUkurPage(): JSX.Element {
       <div className="flex items-center justify-between px-6 py-4 bg-white border-t border-gray-200">
         <div className="flex items-center text-sm text-gray-600">
           <span>
-            Menampilkan {startItem} - {endItem} dari {totalItems} data
+            Menampilkan {startItem} - {endItem} dari halaman {currentPage} dari{' '}
+            {totalPages}
           </span>
           <div className="ml-6 flex items-center">
             <label className="text-sm text-gray-600 mr-2">Per halaman:</label>
@@ -420,7 +426,20 @@ function KalibrasiAlatUkurPage(): JSX.Element {
       </div>
     );
   }
+  function getLatestCalibrationDate(item: KalibrasiAlatUkur): string {
+    if (!item.data_tiket || item.data_tiket.length === 0) {
+      return formatDate(item.kalibrasi_terakhir);
+    }
 
+    // Find the latest tgl_kalibrasi from data_tiket
+    const latestDate = item.data_tiket.reduce((latest, ticket) => {
+      const ticketDate = new Date(ticket.tgl_kalibrasi);
+      const latestDate = new Date(latest);
+      return ticketDate > latestDate ? ticket.tgl_kalibrasi : latest;
+    }, item.data_tiket[0].tgl_kalibrasi);
+
+    return formatDate(latestDate);
+  }
   return (
     <div className="p-6 bg-white rounded-md min-h-screen">
       {/* Header */}
@@ -620,7 +639,7 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                                   Kalibrasi Terakhir
                                 </label>
                                 <p className="text-sm text-gray-900 font-medium">
-                                  {formatDate(item.kalibrasi_terakhir)}
+                                  {getLatestCalibrationDate(item)}
                                 </p>
                               </div>
                             </div>
@@ -631,52 +650,46 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                                 <thead className="bg-gray-50 border-b border-gray-200">
                                   <tr>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                                      Tanggal
+                                      Tanggal Kalibrasi
                                     </th>
+
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                                      Hasil
-                                    </th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                                      Teknisi
-                                    </th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                                      Catatan
+                                      Status
                                     </th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                   {historyData[item.id || index]?.length > 0 ? (
-                                    historyData[item.id || index].map(
-                                      (history) => (
+                                    historyData[item.id || index]
+                                      .sort(
+                                        (a: any, b: any) =>
+                                          new Date(b.createdAt).getTime() -
+                                          new Date(a.createdAt).getTime(),
+                                      )
+                                      .map((history) => (
                                         <tr
                                           key={history.id}
                                           className="hover:bg-gray-50"
                                         >
                                           <td className="px-4 py-3 text-sm text-gray-900">
-                                            {formatDate(
-                                              history.tanggal_kalibrasi,
-                                            )}
+                                            {formatDate(history.tgl_kalibrasi)}
                                           </td>
+
                                           <td className="px-4 py-3">
                                             <span
                                               className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${
-                                                history.hasil === 'Lulus'
+                                                history.status === 'history'
                                                   ? 'bg-green-100 text-green-700 border-green-200'
-                                                  : 'bg-red-100 text-red-700 border-red-200'
+                                                  : history.status === 'active'
+                                                  ? 'bg-blue-100 text-blue-700 border-blue-200'
+                                                  : 'bg-gray-100 text-gray-700 border-gray-200'
                                               }`}
                                             >
-                                              {history.hasil}
+                                              {history.status}
                                             </span>
                                           </td>
-                                          <td className="px-4 py-3 text-sm text-gray-900">
-                                            {history.teknisi}
-                                          </td>
-                                          <td className="px-4 py-3 text-sm text-gray-900">
-                                            {history.catatan}
-                                          </td>
                                         </tr>
-                                      ),
-                                    )
+                                      ))
                                   ) : (
                                     <tr>
                                       <td
