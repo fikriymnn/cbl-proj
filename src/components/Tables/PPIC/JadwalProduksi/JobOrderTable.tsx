@@ -49,6 +49,7 @@ const ModalXL = ({
 const JobOrderTable = ({
   historyListJO,
   penjadwalanListJO,
+  canceledListJO, // Add canceled list prop
   get1Tiket,
   setSelectedJO,
   setSelectedIndex,
@@ -59,9 +60,11 @@ const JobOrderTable = ({
   title = 'Job Order List',
   getmasterKategori,
   listJO1,
+  cancelJobOrder,
 }: {
   historyListJO: ListJOData;
   penjadwalanListJO: ListJOData;
+  canceledListJO: ListJOData; // Add canceled list prop type
   get1Tiket: (id: number, index: number) => void;
   setSelectedJO: (jo: JobOrder) => void;
   setSelectedIndex: (index: number) => void;
@@ -77,14 +80,15 @@ const JobOrderTable = ({
     searchTerm: string,
   ) => void;
   listJO1?: any;
+  cancelJobOrder?: (jobOrder: JobOrder) => void;
 }) => {
-  // State for filters
+  // State for filters - Updated to include canceled status
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeStatus, setActiveStatus] = useState<'history' | 'penjadwalan'>(
-    'history',
-  );
+  const [activeStatus, setActiveStatus] = useState<
+    'history' | 'penjadwalan' | 'canceled'
+  >('history');
 
   // Modal states - Fixed initialization
   const [isModalOpenLocal, setIsModalOpenLocal] = useState(false);
@@ -107,25 +111,46 @@ const JobOrderTable = ({
     return new Date(dateString).toLocaleDateString();
   };
 
-  // Get the correct data based on activeStatus
-  const activeData =
-    activeStatus === 'history' ? historyListJO : penjadwalanListJO;
+  // Get the correct data based on activeStatus - Updated to include canceled
+  const getActiveData = () => {
+    switch (activeStatus) {
+      case 'history':
+        return historyListJO;
+      case 'penjadwalan':
+        return penjadwalanListJO;
+      case 'canceled':
+        return canceledListJO;
+      default:
+        return historyListJO;
+    }
+  };
+
+  const activeData = getActiveData();
 
   // Debug: Log the data to see what we're getting
   useEffect(() => {
     console.log('Active Status:', activeStatus);
     console.log('History Data:', historyListJO);
     console.log('Penjadwalan Data:', penjadwalanListJO);
+    console.log('Canceled Data:', canceledListJO);
     console.log('Active Data:', activeData);
-  }, [activeStatus, historyListJO, penjadwalanListJO, activeData]);
+  }, [
+    activeStatus,
+    historyListJO,
+    penjadwalanListJO,
+    canceledListJO,
+    activeData,
+  ]);
 
   // Handler for search button click
   const handleSearch = () => {
     getmasterKategori(activeStatus, startDate, endDate, searchTerm);
   };
 
-  // Handler for status change
-  const handleStatusChange = (status: 'history' | 'penjadwalan') => {
+  // Handler for status change - Updated to include canceled
+  const handleStatusChange = (
+    status: 'history' | 'penjadwalan' | 'canceled',
+  ) => {
     setActiveStatus(status);
     setStartDate('');
     setEndDate('');
@@ -154,9 +179,22 @@ const JobOrderTable = ({
     setShowDetail(newShowDetail);
   };
 
-  // Function to get data array safely
+  // Function to get data array safely - Updated to include canceled
   const getDataArray = () => {
-    const data = activeStatus === 'history' ? historyListJO : penjadwalanListJO;
+    let data;
+    switch (activeStatus) {
+      case 'history':
+        data = historyListJO;
+        break;
+      case 'penjadwalan':
+        data = penjadwalanListJO;
+        break;
+      case 'canceled':
+        data = canceledListJO;
+        break;
+      default:
+        data = historyListJO;
+    }
 
     if (Array.isArray(data)) {
       return data;
@@ -169,12 +207,40 @@ const JobOrderTable = ({
 
   const dataArray = getDataArray();
 
-  // Filter UI
+  // Helper function to get status display name
+  const getStatusDisplayName = (status: string) => {
+    switch (status) {
+      case 'history':
+        return 'Jadwal';
+      case 'penjadwalan':
+        return 'Booking';
+      case 'canceled':
+        return 'Canceled';
+      default:
+        return status;
+    }
+  };
+
+  // Helper function to get status color
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'history':
+        return 'bg-blue-600 text-white';
+      case 'penjadwalan':
+        return 'bg-green-600 text-white';
+      case 'canceled':
+        return 'bg-red-600 text-white';
+      default:
+        return 'bg-gray-200 text-gray-700 hover:bg-gray-300';
+    }
+  };
+
+  // Filter UI - Updated to include canceled status
   const renderFilters = () => (
     <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        {/* Status Toggle */}
-        <div className="flex flex-col">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+        {/* Status Toggle - Updated to include canceled */}
+        <div className="flex flex-col col-span-2">
           <label className="text-sm font-medium mb-1 text-gray-700">
             Status Tiket
           </label>
@@ -183,7 +249,7 @@ const JobOrderTable = ({
               onClick={() => handleStatusChange('history')}
               className={`px-3 py-2 text-sm rounded-md transition-colors ${
                 activeStatus === 'history'
-                  ? 'bg-blue-600 text-white'
+                  ? getStatusColor('history')
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
@@ -193,11 +259,21 @@ const JobOrderTable = ({
               onClick={() => handleStatusChange('penjadwalan')}
               className={`px-3 py-2 text-sm rounded-md transition-colors ${
                 activeStatus === 'penjadwalan'
-                  ? 'bg-blue-600 text-white'
+                  ? getStatusColor('penjadwalan')
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >
               Booking
+            </button>
+            <button
+              onClick={() => handleStatusChange('canceled')}
+              className={`px-3 py-2 text-sm rounded-md transition-colors ${
+                activeStatus === 'canceled'
+                  ? getStatusColor('canceled')
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              Canceled
             </button>
           </div>
         </div>
@@ -257,16 +333,16 @@ const JobOrderTable = ({
     </div>
   );
 
-  // Render the table content
+  // Render the table content - Updated header logic
   const renderTable = () => (
     <div className="overflow-x-auto py-2">
       <table className="w-full border-collapse shadow-lg rounded-md overflow-hidden">
-        {/* Table Header */}
+        {/* Table Header - Updated to handle canceled status */}
         <thead className="bg-blue-500 text-white font-semibold">
           <tr>
             <th className="border border-blue-600 px-4 py-2">No</th>
             <th className="border border-blue-600 px-4 py-2">
-              {activeStatus === 'history' ? 'No JO' : 'No Booking'}
+              {activeStatus === 'penjadwalan' ? 'No Booking' : 'No JO'}
             </th>
             <th className="border border-blue-600 px-4 py-2">Item</th>
             <th className="border border-blue-600 px-4 py-2">Qty Druk</th>
@@ -293,15 +369,17 @@ const JobOrderTable = ({
                 key={jo.id || index}
                 className={`${
                   index % 2 === 0 ? 'bg-blue-50' : 'bg-white'
-                } hover:bg-blue-100 transition duration-200`}
+                } hover:bg-blue-100 transition duration-200 ${
+                  activeStatus === 'canceled' ? 'opacity-75' : ''
+                }`}
               >
                 <td className="border border-blue-200 px-4 py-2 text-center">
                   {index + 1}
                 </td>
                 <td className="border border-blue-200 px-4 py-2 text-center">
-                  {activeStatus === 'history'
-                    ? jo.no_jo || 'N/A'
-                    : jo.no_booking || jo.no_jo || 'N/A'}
+                  {activeStatus === 'penjadwalan'
+                    ? jo.no_booking || jo.no_jo || 'N/A'
+                    : jo.no_jo || 'N/A'}
                 </td>
                 <td className="border border-blue-200 px-4 py-2 text-center">
                   {jo.item || 'N/A'}
@@ -315,13 +393,35 @@ const JobOrderTable = ({
                 <td className="border border-blue-200 px-4 py-2 text-center">
                   {jo.tgl_kirim || 'N/A'}
                 </td>
-                <td className="border border-blue-200 px-4 py-2 text-center">
-                  <button
-                    onClick={() => handleDetailClick(jo, index)}
-                    className="text-[#0065de] text-sm font-bold hover:text-blue-800 transition-colors"
-                  >
-                    DETAIL
-                  </button>
+                <td className="border border-blue-200 px-4 py-2 text-center gap-2">
+                  <div className="flex flex-col gap-2 justify-center items-center">
+                    <button
+                      onClick={() => handleDetailClick(jo, index)}
+                      className="text-[#0065de] text-sm font-bold hover:text-blue-800 transition-colors px-2 py-1 rounded"
+                    >
+                      DETAIL
+                    </button>
+                    {/* Only show cancel button for non-canceled items */}
+                    {cancelJobOrder && activeStatus !== 'canceled' && (
+                      <button
+                        onClick={() => cancelJobOrder(jo)}
+                        className="bg-red-500 text-white text-sm font-bold px-3 py-1 rounded hover:bg-red-600 transition-colors"
+                        title={`Cancel ${
+                          activeStatus === 'penjadwalan'
+                            ? jo.no_booking || jo.no_jo
+                            : jo.no_jo
+                        }`}
+                      >
+                        CANCEL
+                      </button>
+                    )}
+                    {/* Show status badge for canceled items */}
+                    {activeStatus === 'canceled' && (
+                      <span className="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded">
+                        CANCELED
+                      </span>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))
@@ -344,9 +444,9 @@ const JobOrderTable = ({
                   </svg>
                   <p>No data available</p>
                   <p className="text-sm text-gray-400 mt-1">
-                    {activeStatus === 'history'
-                      ? 'No scheduled jobs found'
-                      : 'No bookings found'}
+                    {activeStatus === 'history' && 'No scheduled jobs found'}
+                    {activeStatus === 'penjadwalan' && 'No bookings found'}
+                    {activeStatus === 'canceled' && 'No canceled jobs found'}
                   </p>
                 </div>
               </td>
@@ -359,6 +459,7 @@ const JobOrderTable = ({
       {!loading && dataArray.length > 0 && (
         <div className="mt-2 text-sm text-gray-600">
           Showing {dataArray.length} {dataArray.length === 1 ? 'item' : 'items'}
+          {activeStatus === 'canceled' && ' (canceled)'}
         </div>
       )}
     </div>

@@ -31,8 +31,9 @@ interface JadwalPerJam {
 
 interface TahapData {
   tahapan: string;
-  kategory: string;
-  kategory_drying_time: string;
+  kategori: string;
+  nama_kategori: string;
+  kategori_drying_time: string;
   mesin: string;
   kapasitas_per_jam: number;
   drying_time: number;
@@ -837,10 +838,11 @@ function ListJOProduksi() {
                                         {showDetails[jo.id] && (
                                           <>
                                             <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
-                                              {tahap.kategory}
+                                              {tahap.kategori} -{' '}
+                                              {tahap.nama_kategori}
                                             </label>
                                             <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
-                                              {tahap.kategory_drying_time}
+                                              {tahap.kategori_drying_time}
                                             </label>
                                             <label className="text-black text-xs justify-center border-2 border-stroke flex items-center h-[50px] bg-white">
                                               {tahap.mesin}

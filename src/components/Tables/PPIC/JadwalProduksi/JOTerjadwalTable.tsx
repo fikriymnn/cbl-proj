@@ -20,6 +20,9 @@ interface ListJOData {
 function JOTerjadwalTable() {
   const [isLoading, setIsLoading] = useState(false);
   const [historyListJO, setHistoryListJO] = useState<ListJOData>({ data: [] });
+  const [canceledListJO, setCanceledListJO] = useState<ListJOData>({
+    data: [],
+  });
   const [penjadwalanListJO, setPenjadwalanListJO] = useState<ListJOData>({
     data: [],
   });
@@ -55,6 +58,56 @@ function JOTerjadwalTable() {
     } catch (error: any) {
       setIsLoading(false);
       console.error('Error fetching single ticket:', error);
+    }
+  }
+
+  // Handle cancel with confirmation
+  const handleCancelJobOrder = async (jobOrder: JobOrder) => {
+    const confirmMessage = `Apa anda yakin ingin membatalkan Job Order "${jobOrder.no_jo}" untuk item "${jobOrder.item}"?`;
+
+    if (window.confirm(confirmMessage)) {
+      await cancelJobOrder(jobOrder.id);
+    }
+  };
+
+  // New cancel function
+  async function cancelJobOrder(id: number) {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/ppic/jadwalProduksi/cancel/${id}`;
+    try {
+      setIsLoading(true);
+
+      const res = await axios.delete(
+        url,
+
+        {
+          withCredentials: true,
+        },
+      );
+
+      console.log('Job Order cancelled successfully:', res.data);
+
+      // Refresh the data after successful cancellation
+      await Promise.all([
+        getmasterKategori('history'),
+        getmasterKategori('penjadwalan'),
+      ]);
+
+      setIsLoading(false);
+
+      // Show success message
+      alert('Job Order cancelled successfully!');
+
+      return res.data;
+    } catch (error: any) {
+      setIsLoading(false);
+      console.error('Error cancelling job order:', error);
+
+      // Show error message
+      alert('Failed to cancel job order. Please try again.');
+
+      throw error;
     }
   }
 
@@ -108,6 +161,12 @@ function JOTerjadwalTable() {
       } else if (statusTiket === 'penjadwalan') {
         setPenjadwalanListJO(responseData);
         console.log('penjadwalanListJO set to:', responseData);
+      } else if (statusTiket === 'penjadwalan') {
+        setPenjadwalanListJO(responseData);
+        console.log('penjadwalanListJO set to:', responseData);
+      } else if (statusTiket === 'canceled') {
+        setCanceledListJO(responseData);
+        console.log('canceledListJO set to:', responseData);
       }
 
       setIsLoading(false);
@@ -144,6 +203,8 @@ function JOTerjadwalTable() {
             title="Job Order List"
             getmasterKategori={getmasterKategori}
             listJO1={listJO1}
+            cancelJobOrder={handleCancelJobOrder} // Pass the handler function to the table component
+            canceledListJO={canceledListJO}
           />
         </div>
       </div>
