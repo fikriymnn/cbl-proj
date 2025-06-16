@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
-import Loading from '../../../../Loading';
+import Loading from '../../../Loading';
 
 function BuatPlusKaryawanKeHR() {
   const [isLoading, setIsLoading] = useState(false);

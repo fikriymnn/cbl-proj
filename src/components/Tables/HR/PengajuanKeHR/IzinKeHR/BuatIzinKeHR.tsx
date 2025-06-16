@@ -134,6 +134,26 @@ function BuatIzinKeHR() {
   const [tglSampai, setTglSampai] = useState<any>();
   const [alasanIzin, setAlasanIzin] = useState<any>();
 
+  // Function to clear the form
+  const clearForm = () => {
+    setIdKaryawan(null);
+    setSelectedEmployee(null);
+    setTglDari(null);
+    setTglSampai(null);
+    setAlasanIzin('');
+    setDaysDifference(null);
+    setHolidaysLoaded(false);
+    setKaryawanJadwal([]);
+    setProduksiJadwal([]);
+    setShowError(false);
+
+    // Clear date inputs
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    dateInputs.forEach((input: any) => {
+      input.value = '';
+    });
+  };
+
   async function postIzin() {
     if (!idKaryawan) {
       alert('Karyawan Belum Dipilih');
@@ -170,8 +190,8 @@ function BuatIzinKeHR() {
         },
       );
       setIsLoading(false);
-      alert('Pengajuan izin berhasil disubmit!');
-      window.location.reload();
+      alert('Pengajuan Izin Berhasil');
+      clearForm(); // Clear the form instead of reloading
     } catch (error: any) {
       setIsLoading(false);
       console.log(error);
@@ -313,6 +333,14 @@ function BuatIzinKeHR() {
               <Select
                 placeholder="Pilih Karyawan..."
                 options={options}
+                value={
+                  selectedEmployee
+                    ? options.find(
+                        (option: any) =>
+                          option.value === selectedEmployee.userid,
+                      )
+                    : null
+                }
                 onChange={handleChangePointDepatment}
                 className="relative z-[60] w-full appearance-none rounded-lg border-2 border-white/20 bg-white/10 backdrop-blur-sm py-3 px-4 outline-none transition-all duration-200 focus:border-white focus:bg-white/20 active:border-white text-white placeholder-orange-200"
                 menuPortalTarget={document.body}
@@ -498,7 +526,7 @@ function BuatIzinKeHR() {
               <div className="relative flex-1">
                 <textarea
                   name="alasan_izin"
-                  value={alasanIzin}
+                  value={alasanIzin || ''}
                   onChange={(e) => setAlasanIzin(e.target.value)}
                   className="peer h-full min-h-[280px] w-full resize-none border-2 border-gray-300 rounded-lg px-4 py-4 text-gray-800 font-medium focus:border-orange-500 focus:ring-2 focus:ring-orange-200 transition-all duration-200"
                   placeholder="Jelaskan alasan pengajuan izin Anda..."

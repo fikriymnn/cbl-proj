@@ -10,7 +10,6 @@ function BuatDinasKeHR() {
 
   useEffect(() => {
     getMe();
-    getMasterUser();
   }, []);
 
   const [me, setMe] = useState<any>();
@@ -25,20 +24,18 @@ function BuatDinasKeHR() {
 
       setMe(res.data);
       setIdPengaju(res.data.id_karyawan);
-
+      getMasterUser(res?.data.karyawan.biodata_karyawan[0]?.id_department);
       console.log('getme', res.data);
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
 
-  async function getMasterUser() {
+  const getMasterUser = async (id: any) => {
     const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
     try {
       const res = await axios.get(url, {
-        params: {
-          is_active: true,
-        },
+        params: { is_active: true, id_department: id },
         withCredentials: true,
       });
 
@@ -59,7 +56,7 @@ function BuatDinasKeHR() {
     } catch (error: any) {
       console.log(error);
     }
-  }
+  };
 
   const handleChangePointDepatment = (selected: any) => {
     const { value } = selected;

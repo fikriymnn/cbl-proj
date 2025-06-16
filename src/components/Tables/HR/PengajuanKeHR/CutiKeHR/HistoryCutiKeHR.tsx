@@ -51,7 +51,6 @@ function HistoryCutiKeHR() {
         status_tiket: 'history',
         page: page,
         limit: 10,
-        id_department: idDept,
       };
 
       // Add filters if they exist
@@ -78,7 +77,6 @@ function HistoryCutiKeHR() {
       const res = await axios.get(url, {
         params: {
           is_active: true,
-          id_department: idDept,
         },
         withCredentials: true,
       });

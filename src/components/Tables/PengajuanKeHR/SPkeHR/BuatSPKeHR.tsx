@@ -1,8 +1,8 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Select from 'react-select';
-import Loading from '../../../../Loading';
-import convertTimeStampToDate from '../../../../../utils/convertDate';
+import Loading from '../../../Loading';
+import convertTimeStampToDate from '../../../../utils/convertDate';
 
 interface Employee {
   userid: string;
@@ -84,7 +84,7 @@ function BuatSPKeHR() {
   const initializeData = async () => {
     setIsLoading(true);
     try {
-      await Promise.all([getCurrentUser(), getEmployeeList(), getSPTypes()]);
+      await Promise.all([getCurrentUser(), getSPTypes()]);
     } catch (error) {
       console.error('Error initializing data:', error);
     } finally {
@@ -92,28 +92,28 @@ function BuatSPKeHR() {
     }
   };
 
-  const getCurrentUser = async () => {
+  async function getCurrentUser() {
+    const url = `${import.meta.env.VITE_API_LINK}/me`;
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_LINK}/me`, {
+      const res = await axios.get(url, {
         withCredentials: true,
       });
-      setCurrentUser(response.data);
+
+      setCurrentUser(res.data);
+      getEmployeeList(res?.data.karyawan.biodata_karyawan[0]?.id_department);
+      console.log('getme', res.data);
     } catch (error: any) {
-      console.error('Error fetching current user:', error);
-      throw error;
+      console.log(error.data.msg);
     }
-  };
+  }
 
-  const getEmployeeList = async () => {
+  const getEmployeeList = async (id: any) => {
+    const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_LINK}/hr/karyawan`,
-        {
-          params: { is_active: true },
-          withCredentials: true,
-        },
-      );
-
+      const response = await axios.get(url, {
+        params: { is_active: true, id_department: id },
+        withCredentials: true,
+      });
       const employees = response.data.data;
       setEmployeeList(employees);
 

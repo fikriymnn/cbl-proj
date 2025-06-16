@@ -53,7 +53,6 @@ function HistorySPLkeHR() {
         status_tiket: 'history',
         page: page,
         limit: 10,
-        id_department: idDept, // Use the department ID from getMe
       };
 
       // Add filters if they exist
@@ -84,7 +83,6 @@ function HistorySPLkeHR() {
       const res = await axios.get(url, {
         params: {
           is_active: true,
-          id_department: idDept, // Use the department ID from getMe
         },
         withCredentials: true,
       });

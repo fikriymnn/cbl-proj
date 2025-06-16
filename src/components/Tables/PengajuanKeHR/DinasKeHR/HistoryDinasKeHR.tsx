@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import dateOnly from '../../../../../utils/convertDateOnly';
-import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
-import Loading from '../../../../Loading';
+import dateOnly from '../../../../utils/convertDateOnly';
+import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
+import Loading from '../../../Loading';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import Select from 'react-select';
 import * as XLSX from 'xlsx';
+import { get } from 'lodash';
 
-function HistoryPinjamanKeHR() {
+function HistoryDinasKeHR() {
   const [isLoading, setIsLoading] = useState(false);
-  const [pinjaman, setPinjaman] = useState<any>();
+  const [izin, setIzin] = useState<any>();
   const [page, setPage] = useState(1);
   const [userList, setUserList] = useState<any>();
   const [idKaryawan, setIdKaryawan] = useState<any>([]);
@@ -35,14 +36,14 @@ function HistoryPinjamanKeHR() {
 
       setIdPengaju(res?.data.karyawan.biodata_karyawan[0]?.id_department);
       getMasterUser(res?.data.karyawan.biodata_karyawan[0]?.id_department);
-      getPinjaman(res?.data.karyawan.biodata_karyawan[0]?.id_department);
+      getIzin(res?.data.karyawan.biodata_karyawan[0]?.id_department);
       console.log('getme', res.data);
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
-  async function getPinjaman(idDept: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanPinjaman`;
+  async function getIzin(idDept: any) {
+    const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanDinas`;
     try {
       setIsLoading(true);
 
@@ -51,6 +52,7 @@ function HistoryPinjamanKeHR() {
         status_tiket: 'history',
         page: page,
         limit: 10,
+        id_department: idDept,
       };
 
       // Add filters if they exist
@@ -63,7 +65,7 @@ function HistoryPinjamanKeHR() {
         withCredentials: true,
       });
       setIsLoading(false);
-      setPinjaman(res.data);
+      setIzin(res.data);
       console.log(res.data);
     } catch (error: any) {
       setIsLoading(false);
@@ -77,9 +79,11 @@ function HistoryPinjamanKeHR() {
       const res = await axios.get(url, {
         params: {
           is_active: true,
+          id_department: idDept,
         },
         withCredentials: true,
       });
+
       setUserList(res.data.data);
       console.log('user list', res.data.data);
       setOptions(
@@ -114,7 +118,7 @@ function HistoryPinjamanKeHR() {
 
   const handleApplyFilters = () => {
     setPage(1); // Reset to first page when filters are applied
-    getPinjaman(idPengaju);
+    getIzin(idPengaju);
   };
 
   const handleResetFilters = () => {
@@ -124,17 +128,17 @@ function HistoryPinjamanKeHR() {
     setSelectedEmployees([]);
     setPage(1);
     // Trigger API call with reset filters
-    setTimeout(() => getPinjaman(idPengaju), 100);
+    setTimeout(() => getIzin(idPengaju), 100);
   };
 
   const exportToExcel = () => {
-    if (!pinjaman?.data || pinjaman.data.length === 0) {
+    if (!izin?.data || izin.data.length === 0) {
       alert('No data to export');
       return;
     }
 
     // Prepare data for Excel
-    const excelData = pinjaman.data.map((item: any, index: number) => ({
+    const excelData = izin.data.map((item: any, index: number) => ({
       No: index + 1,
       'Nama Personnel': item.karyawan?.name || '',
       Department:
@@ -142,16 +146,13 @@ function HistoryPinjamanKeHR() {
           ?.nama_department || '',
       Supervisor: item.karyawan_pengaju?.name || '',
       'Tanggal Pengajuan': dateOnly(item.createdAt),
-      Status: item.status?.toUpperCase(),
+      Dari: dateOnly(item.dari),
+      Sampai: dateOnly(item.sampai),
+      'Lama Dinas (Hari)': item.jumlah_hari,
+      'Alasan Dinas': item.alasan_dinas || '',
+      Status: item.status.toUpperCase(),
       'Yang Menyetujui': item.karyawan_hr?.name || '',
-      'Jumlah Pinjaman': formatCurrency(item.jumlah_pinjaman),
-      'Tempo Cicilan': item.tempo_cicilan,
-      'Tipe Cicilan': item.tipe_cicilan?.toUpperCase(),
-      'Jumlah Cicilan': formatCurrency(item.jumlah_cicilan),
-      'Jaminan Pinjaman': item.jaminan_pinjaman?.toUpperCase(),
-      'Keperluan Pinjaman': item.keperluan_pinjaman,
-      'Sumber Pinjaman': item.sumber_pinjaman?.toUpperCase(),
-      'Respon HR': item.catatan_hr,
+      'Catatan HR': item.catatan_hr || '',
     }));
 
     // Create workbook and worksheet
@@ -169,10 +170,9 @@ function HistoryPinjamanKeHR() {
           }))
         : [];
     ws['!cols'] = colWidths;
-    XLSX.utils.book_append_sheet(wb, ws, 'Data Pinjaman');
-
+    XLSX.utils.book_append_sheet(wb, ws, 'Data Dinas');
     const currentDate = new Date().toISOString().split('T')[0];
-    let filename = 'Data_Pinjaman';
+    let filename = 'Data_Dinas';
 
     if (startDate && endDate) {
       filename += `_${startDate}_to_${endDate}`;
@@ -200,9 +200,32 @@ function HistoryPinjamanKeHR() {
     setShowModal(onchangeVal);
   };
 
-  const formatCurrency = (amount: number): string => {
-    return `Rp. ${amount.toLocaleString('id-ID')}`;
-  };
+  async function hapusDinas(id: any, dari: any, sampai: any, name: any) {
+    if (
+      window.confirm(
+        `Apakah Anda yakin ingin Membatalkan Dinas Untuk Karyawan  ${name} pada tanggal ${dari} - ${sampai}   ?`,
+      )
+    ) {
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/hr/pengajuanDinas/reject/${id}`;
+      try {
+        setIsLoading(true);
+        const res = await axios.put(
+          url,
+          {},
+          {
+            withCredentials: true,
+          },
+        );
+        setIsLoading(false);
+        getIzin(idPengaju);
+      } catch (error: any) {
+        setIsLoading(false);
+        console.log(error);
+      }
+    }
+  }
 
   return (
     <>
@@ -227,7 +250,7 @@ function HistoryPinjamanKeHR() {
                       d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
                     />
                   </svg>
-                  Filter Data Pinjaman
+                  Filter Data
                 </h3>
               </div>
 
@@ -289,11 +312,11 @@ function HistoryPinjamanKeHR() {
                     Pilih Karyawan
                   </label>
                   <Select
+                    isMulti
                     placeholder="Cari karyawan..."
                     options={options}
                     value={selectedEmployees}
                     onChange={handleChangePointKaryawan}
-                    isMulti
                     className="relative z-50"
                     classNamePrefix="select"
                     styles={{
@@ -353,7 +376,7 @@ function HistoryPinjamanKeHR() {
                   </button>
                   <button
                     onClick={handleResetFilters}
-                    className="flex items-center px-4 py-2 bg-red-500 text-white font-medium rounded-md hover:bg-red-600 transition-colors"
+                    className="flex items-center px-4 py-2 bg-red-500 text-white font-medium rounded-md hover:bg-gray-600 transition-colors"
                   >
                     <svg
                       className="w-4 h-4 mr-2"
@@ -377,11 +400,11 @@ function HistoryPinjamanKeHR() {
 
           {/* Data Table */}
           <div className="w-full h-full flex-col border-b-8 border-[#D8EAFF]">
-            <div className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 bg-gray-50">
+            <div className="grid grid-cols-11 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 bg-gray-50">
               <label className="text-neutral-500 text-sm font-semibold">
                 No
               </label>
-              <label className="text-neutral-500 text-sm font-semibold col-span-2">
+              <label className="text-neutral-500 text-sm font-semibold col-span-3">
                 Tanggal
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
@@ -393,24 +416,28 @@ function HistoryPinjamanKeHR() {
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Status
               </label>
-              <label className="text-neutral-500 text-sm font-semibold justify-center col-span-3">
+              <label className="text-neutral-500 text-sm font-semibold justify-center">
                 Aksi
               </label>
             </div>
             <div className="w-2 h-full"></div>
-            {pinjaman?.data?.map((data: any, i: any) => {
+            {izin?.data?.map((data: any, i: any) => {
               return (
                 <div
                   key={data.id || i}
-                  className="grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center px-10"
+                  className="grid grid-cols-11 border-b-8 border-[#D8EAFF] gap-2 items-center px-10"
                 >
                   <label className="text-neutral-500 text-sm font-semibold">
                     {(page - 1) * 10 + i + 1}
                   </label>
-
-                  <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                    {dateOnly(data.createdAt)}
-                  </label>
+                  <div className="flex flex-col gap-1 col-span-3">
+                    <label className="text-neutral-500 text-sm font-semibold">
+                      Dari : {dateOnly(data.dari)}
+                    </label>
+                    <label className="text-neutral-500 text-sm font-semibold">
+                      Sampai :{dateOnly(data.sampai)}
+                    </label>
+                  </div>
 
                   <label className="text-neutral-500 text-sm font-semibold col-span-2">
                     {
@@ -421,232 +448,201 @@ function HistoryPinjamanKeHR() {
                   <label className="text-neutral-500 text-sm font-semibold col-span-2">
                     {data.karyawan?.name}
                   </label>
-                  <label className="text-neutral-500 text-sm uppercase font-semibold col-span-2">
+                  <label className="text-neutral-500 text-sm font-semibold uppercase">
                     {data.status}
                   </label>
-                  <div className="justify-end flex pr-2 col-span-3">
+                  <div className="justify-end flex flex-col pr-2 col-span-2">
                     <button
                       onClick={() => openModalModal(i)}
-                      className="uppercase px-5 inline-flex rounded-[3px] items-center text-white text-xs font-bold py-2 my-2 hover:bg-blue-400 border bg-blue-600 border-blue-600 justify-center"
+                      className="uppercase px-2 inline-flex rounded-[3px] items-center text-white text-xs font-bold py-2 my-2 hover:bg-blue-400 border bg-blue-600 border-blue-600 justify-center"
                     >
                       DETAIL
                     </button>
+                    {/* <button
+                      onClick={() =>
+                        hapusDinas(
+                          data.id,
+                          dateOnly(data.dari),
+                          dateOnly(data.sampai),
+                          data.karyawan?.name,
+                        )
+                      }
+                      className="uppercase px-2 inline-flex rounded-[3px] items-center text-white text-xs font-bold py-2 my-2 hover:bg-red-400 border bg-red-600 border-red-600 justify-center"
+                    >
+                      Batalkan
+                    </button> */}
                     {showModal[i] == true && (
                       <ModalKosongan
                         isOpen={showModal[i]}
                         onClose={() => closeModalModal(i)}
-                        judul={'Permohonan Pinjaman'}
+                        judul={'Permohonan Dinas'}
                       >
-                        <>
-                          <div className="grid grid-cols-2 gap-2 px-4 py-4">
-                            <div className="flex flex-col">
-                              <label
-                                htmlFor=""
-                                className="text-black text-xs font-bold"
-                              >
-                                Status
-                              </label>
-                              <label
-                                htmlFor=""
-                                className="text-[#016ae6] uppercase text-xl font-normal"
-                              >
-                                {data.status}
-                              </label>
-                            </div>
-                            <div className="flex flex-col">
-                              <label
-                                htmlFor=""
-                                className="text-black text-xs font-bold"
-                              >
-                                Yang Menyetujui
-                              </label>
-                              <label
-                                htmlFor=""
-                                className="text-[#016ae6] uppercase text-xl font-normal"
-                              >
-                                {data.karyawan_hr?.name}
-                              </label>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2 px-4 py-4">
-                            <div className="flex flex-col gap-2">
-                              <div className="flex flex-col">
-                                <label
-                                  htmlFor=""
-                                  className="text-black text-xs font-bold"
-                                >
-                                  NAMA PERSONNEL
-                                </label>
-                                <label
-                                  htmlFor=""
-                                  className="text-[#7a7a7a] text-xl font-normal"
-                                >
-                                  {data.karyawan?.name}
-                                </label>
-                              </div>
-                              <div className="flex flex-col">
-                                <label
-                                  htmlFor=""
-                                  className="text-black text-xs font-bold"
-                                >
-                                  DEPARTEMEN
-                                </label>
-                                <label
-                                  htmlFor=""
-                                  className="text-[#7a7a7a] text-xl font-normal"
-                                >
-                                  {
-                                    data.karyawan_pengaju?.biodata_karyawan[0]
-                                      ?.department?.nama_department
-                                  }
-                                </label>
-                              </div>
-                              <div className="flex flex-col">
-                                <label
-                                  htmlFor=""
-                                  className="text-black text-xs font-bold"
-                                >
-                                  TANGGAL
-                                </label>
-                                <label
-                                  htmlFor=""
-                                  className="text-[#7a7a7a] text-xl font-normal"
-                                >
-                                  {dateOnly(data.createdAt)}
-                                </label>
-                              </div>
-                              <div className="flex flex-col">
-                                <label
-                                  htmlFor=""
-                                  className="text-black text-xs font-bold"
-                                >
-                                  SUPERVISOR
-                                </label>
-                                <label
-                                  htmlFor=""
-                                  className="text-[#7a7a7a] text-xl font-normal"
-                                >
-                                  {data.karyawan_pengaju?.name}
-                                </label>
-                              </div>
-                            </div>
-                            <div className="flex flex-col gap-2">
-                              <div className="flex flex-col">
-                                <label
-                                  htmlFor=""
-                                  className="text-black text-xs font-bold"
-                                >
-                                  JUMLAH PINJAMAN
-                                </label>
-                                <label
-                                  htmlFor=""
-                                  className="text-[#016ae6] text-xl font-normal"
-                                >
-                                  {formatCurrency(data.jumlah_pinjaman)}
-                                </label>
-                              </div>
-                              <div className="flex flex-col">
-                                <label
-                                  htmlFor=""
-                                  className="text-black text-xs font-bold"
-                                >
-                                  TEMPO CICILAN
-                                </label>
-                                <label
-                                  htmlFor=""
-                                  className="text-[#016ae6] text-xl font-normal"
-                                >
-                                  {data.tempo_cicilan}
-                                </label>
-                              </div>
-                              <div className="flex flex-col">
-                                <label
-                                  htmlFor=""
-                                  className="text-black text-xs font-bold"
-                                >
-                                  TIPE CICILAN
-                                </label>
-                                <label
-                                  htmlFor=""
-                                  className="text-[#016ae6] uppercase text-xl font-normal"
-                                >
-                                  {data.tipe_cicilan}
-                                </label>
-                              </div>
-                              <div className="flex flex-col">
-                                <label
-                                  htmlFor=""
-                                  className="text-black text-xs font-bold"
-                                >
-                                  JUMLAH CICILAN
-                                </label>
-                                <label
-                                  htmlFor=""
-                                  className="text-[#016ae6] uppercase text-xl font-normal"
-                                >
-                                  {formatCurrency(data.jumlah_cicilan)}
-                                </label>
-                              </div>
-                              <div className="flex flex-col">
-                                <label
-                                  htmlFor=""
-                                  className="text-black text-xs font-bold"
-                                >
-                                  JAMINAN PINJAMAN
-                                </label>
-                                <label
-                                  htmlFor=""
-                                  className="text-[#016ae6] uppercase text-xl font-normal"
-                                >
-                                  {data.jaminan_pinjaman}
-                                </label>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="flex flex-col w-full px-4">
+                        <div className="grid grid-cols-2 gap-2 px-4 py-4">
+                          <div className="flex flex-col">
                             <label
                               htmlFor=""
                               className="text-black text-xs font-bold"
                             >
-                              KEPERLUAN PINJAMAN
-                            </label>
-                            <label
-                              htmlFor=""
-                              className="text-[#7a7a7a] text-xl font-normal"
-                            >
-                              {data.keperluan_pinjaman}
-                            </label>
-                          </div>
-                          <div className="flex flex-col w-[50%] px-4">
-                            <label
-                              htmlFor=""
-                              className="text-black text-xs font-bold"
-                            >
-                              SUMBER PINJAMAN
-                              <span className="text-red-600">*</span>
+                              Status
                             </label>
                             <label
                               htmlFor=""
                               className="text-[#016ae6] uppercase text-xl font-normal"
                             >
-                              {data.sumber_pinjaman}
+                              {data.status}
                             </label>
                           </div>
-                          <div className="flex flex-col w-full px-4">
+                          <div className="flex flex-col">
                             <label
                               htmlFor=""
                               className="text-black text-xs font-bold"
                             >
-                              RESPON HR
-                              <span className="text-red-600">*</span>
+                              Yang Menyetujui
                             </label>
-                            <textarea
-                              readOnly
-                              defaultValue={data.catatan_hr}
-                              className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                            ></textarea>
+                            <label
+                              htmlFor=""
+                              className="text-[#016ae6] uppercase text-xl font-normal"
+                            >
+                              {data.karyawan_hr?.name}
+                            </label>
                           </div>
-                        </>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 px-4 py-4">
+                          <div className="flex flex-col gap-2">
+                            <div className="flex flex-col">
+                              <label
+                                htmlFor=""
+                                className="text-black text-xs font-bold"
+                              >
+                                NAMA PERSONNEL
+                              </label>
+                              <label
+                                htmlFor=""
+                                className="text-[#7a7a7a] text-xl font-normal"
+                              >
+                                {data.karyawan?.name}
+                              </label>
+                            </div>
+                            <div className="flex flex-col">
+                              <label
+                                htmlFor=""
+                                className="text-black text-xs font-bold"
+                              >
+                                DEPARTEMEN
+                              </label>
+                              <label
+                                htmlFor=""
+                                className="text-[#7a7a7a] text-xl font-normal"
+                              >
+                                {
+                                  data.karyawan_pengaju?.biodata_karyawan[0]
+                                    ?.department?.nama_department
+                                }
+                              </label>
+                            </div>
+                            <div className="flex flex-col">
+                              <label
+                                htmlFor=""
+                                className="text-black text-xs font-bold"
+                              >
+                                TANGGAL
+                              </label>
+                              <label
+                                htmlFor=""
+                                className="text-[#7a7a7a] text-xl font-normal"
+                              >
+                                {dateOnly(data.createdAt)}
+                              </label>
+                            </div>
+                            <div className="flex flex-col">
+                              <label
+                                htmlFor=""
+                                className="text-black text-xs font-bold"
+                              >
+                                SUPERVISOR
+                              </label>
+                              <label
+                                htmlFor=""
+                                className="text-[#7a7a7a] text-xl font-normal"
+                              >
+                                {data.karyawan_pengaju?.name}
+                              </label>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <div className="flex flex-col">
+                              <label
+                                htmlFor=""
+                                className="text-black text-xs font-bold"
+                              >
+                                LAMA DINAS
+                              </label>
+                              <label
+                                htmlFor=""
+                                className="text-[#016ae6] text-xl font-normal"
+                              >
+                                {data.jumlah_hari} HARI
+                              </label>
+                            </div>
+                            <div className="flex flex-col">
+                              <label
+                                htmlFor=""
+                                className="text-black text-xs font-bold"
+                              >
+                                DARI
+                              </label>
+                              <label
+                                htmlFor=""
+                                className="text-[#016ae6] text-xl font-normal"
+                              >
+                                {dateOnly(data.dari)}
+                              </label>
+                            </div>
+                            <div className="flex flex-col">
+                              <label
+                                htmlFor=""
+                                className="text-black text-xs font-bold"
+                              >
+                                SAMPAI
+                              </label>
+                              <label
+                                htmlFor=""
+                                className="text-[#016ae6] text-xl font-normal"
+                              >
+                                {dateOnly(data.sampai)}
+                              </label>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex flex-col w-full px-4">
+                          <label
+                            htmlFor=""
+                            className="text-black text-xs font-bold"
+                          >
+                            ALASAN DINAS
+                          </label>
+                          <label
+                            htmlFor=""
+                            className="text-[#7a7a7a] text-xl font-normal"
+                          >
+                            {data.alasan_dinas}
+                          </label>
+                        </div>
+                        <div className="flex flex-col w-full px-4">
+                          <label
+                            htmlFor=""
+                            className="text-black text-xs font-bold"
+                          >
+                            RESPON HR
+                            <span className="text-red-600">*</span>
+                          </label>
+                          <textarea
+                            readOnly
+                            value={data.catatan_hr}
+                            className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                          ></textarea>
+                        </div>
                       </ModalKosongan>
                     )}
                   </div>
@@ -655,11 +651,10 @@ function HistoryPinjamanKeHR() {
             })}
           </div>
         </div>
-        {/* Pagination */}
         <div className="flex items-center gap-2 mt-4">
           <Stack spacing={2}>
             <Pagination
-              count={pinjaman?.total_page}
+              count={izin?.total_page}
               color="primary"
               page={page}
               onChange={(e, i) => {
@@ -674,4 +669,4 @@ function HistoryPinjamanKeHR() {
   );
 }
 
-export default HistoryPinjamanKeHR;
+export default HistoryDinasKeHR;

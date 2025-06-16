@@ -52,6 +52,11 @@ function BuatCutiKeHR() {
   const [karyawanJadwal, setKaryawanJadwal] = useState<JadwalItem[]>([]);
   const [produksiJadwal, setProduksiJadwal] = useState<JadwalItem[]>([]);
   const [selectedEmployeeType, setSelectedEmployeeType] = useState<string>('');
+  const [selectedEmployee, setSelectedEmployee] = useState<any>();
+
+  // State untuk success message
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Initialize data on component mount
   useEffect(() => {
@@ -65,6 +70,39 @@ function BuatCutiKeHR() {
       getMasterUser(),
       getMasterSettings(),
     ]);
+  };
+
+  // Function to reset/clear form
+  const resetForm = () => {
+    setSelectedEmployee(null);
+    setIdKaryawan(null);
+    setTipeCuti('');
+    setTglDari(null);
+    setTglSampai(null);
+    setAlasanCuti('');
+    setSisaCuti(0);
+    setDaysDifference(null);
+    setShowError(false);
+    setShowErrorEarlyDate(false);
+    setSelectedEmployeeType('');
+    setKaryawanJadwal([]);
+    setProduksiJadwal([]);
+
+    // Clear date inputs
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    dateInputs.forEach((input: any) => {
+      input.value = '';
+    });
+  };
+
+  // Function to show success message
+  const showSuccess = (message: string) => {
+    setSuccessMessage(message);
+    setShowSuccessMessage(true);
+    setTimeout(() => {
+      setShowSuccessMessage(false);
+      setSuccessMessage('');
+    }, 5000); // Hide after 5 seconds
   };
 
   // API calls
@@ -180,7 +218,7 @@ function BuatCutiKeHR() {
       setIsLoading(false);
     }
   };
-  const [selectedEmployee, setSelectedEmployee] = useState<any>();
+
   // Holiday calculation functions
   const getHolidaysForEmployee = (employeeType: string): Date[] => {
     const scheduleData =
@@ -415,9 +453,15 @@ function BuatCutiKeHR() {
     try {
       setIsLoading(true);
       await axios.post(url, data, { withCredentials: true });
-      window.location.reload();
+
+      // Show success message instead of reload
+      alert('✅ Pengajuan cuti berhasil disubmit!');
+
+      // Reset form after success
+      resetForm();
     } catch (error: any) {
       console.log(error);
+      alert('Terjadi kesalahan saat mengajukan cuti. Silakan coba lagi.');
     } finally {
       setIsLoading(false);
     }
@@ -472,6 +516,7 @@ function BuatCutiKeHR() {
   return (
     <main className="overflow-x-scroll min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {isLoading && <Loading />}
+
       <div className="min-w-[700px] bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
         {/* Employee Selection Section */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 text-white">
@@ -494,6 +539,13 @@ function BuatCutiKeHR() {
                 <Select
                   placeholder="Pilih Karyawan..."
                   options={options}
+                  value={
+                    selectedEmployee
+                      ? options.find(
+                          (opt: any) => opt.value === selectedEmployee.userid,
+                        )
+                      : null
+                  }
                   onChange={handleChangePointDepatment}
                   className="relative z-[60] w-full appearance-none rounded-lg border-2 border-white/20 bg-white/10 backdrop-blur-sm py-3 px-4 outline-none transition-all duration-200 focus:border-white focus:bg-white/20 active:border-white text-white placeholder-blue-200"
                   menuPortalTarget={document.body}

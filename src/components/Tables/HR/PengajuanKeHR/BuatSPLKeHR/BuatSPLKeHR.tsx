@@ -36,12 +36,32 @@ function BuatSPLKeHR() {
   const [tipeLembur, setTipeLembur] = useState('');
   const [jumlahMakan, setJumlahMakan] = useState('');
   const [timeError, setTimeError] = useState('');
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
+  const [selectedJobOrder, setSelectedJobOrder] = useState(null);
 
   useEffect(() => {
     getMe();
     getMasterUser();
     getjoReal();
   }, []);
+
+  // Function to clear all form fields
+  const clearForm = () => {
+    setIdKaryawan([]);
+    setTglDari('');
+    setTglSampai('');
+    setSisaCuti(0);
+    setjoReal('');
+    setHourDifference(0);
+    setAlasanLembur('');
+    setTargetLembur('');
+    setTipeLembur('');
+    setJumlahMakan('');
+    setTimeError('');
+    setSelectedEmployees([]);
+    setSelectedJobOrder(null);
+    setIsCheck(false);
+  };
 
   async function getMe() {
     const url = `${import.meta.env.VITE_API_LINK}/me`;
@@ -106,6 +126,8 @@ function BuatSPLKeHR() {
   }
 
   const handleChangePointDepatment = (selectedOptions: any) => {
+    setSelectedEmployees(selectedOptions || []);
+
     if (!selectedOptions || selectedOptions.length === 0) {
       setSisaCuti(0);
       setIdKaryawan([]);
@@ -122,6 +144,13 @@ function BuatSPLKeHR() {
   };
 
   const handleChangePointDepatmentNoJO = (selected: any) => {
+    setSelectedJobOrder(selected);
+
+    if (!selected) {
+      setjoReal('');
+      return;
+    }
+
     const { value } = selected;
     const filteredData = joList.find((item: any) => item.e_no_jo === value);
     setjoReal(filteredData?.e_no_jo || '');
@@ -268,7 +297,9 @@ function BuatSPLKeHR() {
       setIsLoading(false);
       console.log(res);
       alert('Pengajuan lembur berhasil disubmit!');
-      window.location.reload();
+
+      // Clear form instead of reloading the page
+      clearForm();
     } catch (error) {
       setIsLoading(false);
       console.log(error);
@@ -324,6 +355,7 @@ function BuatSPLKeHR() {
                 isMulti
                 placeholder="Search and select employees..."
                 options={options}
+                value={selectedEmployees}
                 onChange={handleChangePointDepatment}
                 className="relative z-[60] w-full appearance-none rounded-lg border-2 border-white/20 bg-white/10 backdrop-blur-sm py-3 px-4 outline-none transition-all duration-200 focus:border-white focus:bg-white/20 active:border-white text-white placeholder-orange-200"
                 menuPortalTarget={document.body}
@@ -352,6 +384,7 @@ function BuatSPLKeHR() {
               <Select
                 placeholder="Select Job Order..."
                 options={options3}
+                value={selectedJobOrder}
                 onChange={handleChangePointDepatmentNoJO}
                 className="relative z-[60] w-full appearance-none rounded-lg border-2 border-white/20 bg-white/10 backdrop-blur-sm py-3 px-4 outline-none transition-all duration-200 focus:border-white focus:bg-white/20 active:border-white text-white placeholder-orange-200"
                 menuPortalTarget={document.body}
@@ -499,7 +532,7 @@ function BuatSPLKeHR() {
                 clipRule="evenodd"
               />
             </svg>
-            {isLoading ? 'PROCESSING...' : 'SUBMIT REQUEST'}
+            {isLoading ? 'PROCESSING...' : 'AJUKAN LEMBUR'}
           </button>
         </div>
       </div>

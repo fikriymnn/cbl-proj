@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import dateOnly from '../../../../../utils/convertDateOnly';
-import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
-import Loading from '../../../../Loading';
+import dateOnly from '../../../../utils/convertDateOnly';
+import ModalKosongan from '../../../Modals/Qc/NCR/NCRResponQC';
+import Loading from '../../../Loading';
 import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import * as XLSX from 'xlsx';
@@ -47,6 +47,7 @@ function HistoryPlusKaryawanKeHR() {
         status_tiket: 'history',
         page: page,
         limit: 10,
+        id_department: idDept,
       };
 
       // Add filters if they exist
