@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import {
   BarChart,
@@ -40,13 +40,29 @@ function AttendanceRecapChart() {
   useEffect(() => {
     getDepartment();
   }, []);
-
   useEffect(() => {
     if (absen && absen.length > 0) {
-      generateChartData(absen);
-      setFilteredData(absen);
+      const dataForChart = searchQuery ? filteredAbsen : absen;
+      generateChartData(dataForChart);
+      setFilteredData(dataForChart);
+      // Reset selected bar when search changes
+      setSelectedBar(null);
     }
-  }, [absen]);
+  }, [searchQuery, absen]);
+
+  const resetDepartmentFilter = () => {
+    setSelectedBar(null);
+    // Don't modify filteredData, displayData will handle it
+  };
+  // Update chart when search query changes
+  useEffect(() => {
+    if (absen && absen.length > 0) {
+      const dataForChart = searchQuery ? filteredAbsen : absen;
+      generateChartData(dataForChart);
+      // Reset selected bar when search changes
+      setSelectedBar(null);
+    }
+  }, [searchQuery, filteredAbsen]);
 
   async function getDepartment() {
     const url = `${import.meta.env.VITE_API_LINK}/master/hr/department`;
@@ -152,6 +168,8 @@ function AttendanceRecapChart() {
 
   interface Employee {
     department: string;
+    nama_karyawan: string;
+    nik: string;
     absensi?: {
       jam_lembur?: string;
       status_lembur?: string;
@@ -241,11 +259,7 @@ function AttendanceRecapChart() {
 
   const handleBarClick = (data: any) => {
     setSelectedBar(data);
-    // Filter employees by department
-    const deptEmployees = absen.filter(
-      (emp) => emp.department === data.department,
-    );
-    setFilteredData(deptEmployees);
+    // Don't modify filteredData, let displayData handle the filtering
   };
 
   const handleFilter = () => {
@@ -291,10 +305,24 @@ function AttendanceRecapChart() {
     return null;
   };
 
-  // Use filtered data based on search query
-  const displayData = searchQuery ? filteredAbsen : filteredData;
+  const displayData = useMemo(() => {
+    let data = searchQuery ? filteredAbsen : absen;
 
-  // Calculate summary statistics
+    // If a department bar is selected, filter by department
+    if (selectedBar) {
+      data = data.filter((emp) => emp.department === selectedBar.department);
+    }
+
+    // Remove duplicates based on NIK (employee ID)
+    const uniqueData = data.filter(
+      (employee, index, self) =>
+        index === self.findIndex((emp) => emp.nik === employee.nik),
+    );
+
+    return uniqueData;
+  }, [searchQuery, filteredAbsen, absen, selectedBar]);
+
+  // Calculate summary statistics based on display data
   const summaryStats = {
     totalKaryawan: displayData.length,
     totalJamLembur: displayData.reduce((sum: any, emp: any) => {
@@ -353,6 +381,11 @@ function AttendanceRecapChart() {
         </h1>
         <p className="text-gray-600">
           Analisis kehadiran karyawan berdasarkan department
+          {searchQuery && (
+            <span className="ml-2 text-blue-600 font-medium">
+              (Filtered by: "{searchQuery}")
+            </span>
+          )}
         </p>
       </div>
 
@@ -439,6 +472,14 @@ function AttendanceRecapChart() {
             >
               Reset
             </button>
+            {selectedBar && (
+              <button
+                onClick={resetDepartmentFilter}
+                className="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-lg transition-colors"
+              >
+                Show All Departments
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -522,6 +563,11 @@ function AttendanceRecapChart() {
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-800">
               Rekap Absensi per Department
+              {searchQuery && (
+                <span className="text-sm font-normal text-blue-600 ml-2">
+                  (Filtered by search)
+                </span>
+              )}
             </h3>
             {selectedBar && (
               <div className="text-sm text-gray-600">
@@ -590,6 +636,11 @@ function AttendanceRecapChart() {
           </h3>
           <p className="text-sm text-gray-600">
             Menampilkan {displayData.length} karyawan
+            {searchQuery && (
+              <span className="ml-1 text-blue-600">
+                (filtered by "{searchQuery}")
+              </span>
+            )}
           </p>
         </div>
 
@@ -718,14 +769,9 @@ function AttendanceRecapChart() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="flex flex-col space-y-1">
-                        {timeMetrics.jumlahHariTerlambat > 0 && (
-                          <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs">
-                            {timeMetrics.jumlahHariTerlambat} hari
-                          </span>
-                        )}
-                        {timeMetrics.totalTerlambat > 0 && (
-                          <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">
-                            {timeMetrics.totalTerlambat} jam
+                        {employee.jumlah_hari_terlambat > 0 && (
+                          <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
+                            Terlambat: {employee.jumlah_hari_terlambat} hari
                           </span>
                         )}
                       </div>
