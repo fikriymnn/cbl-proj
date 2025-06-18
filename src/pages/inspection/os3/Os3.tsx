@@ -170,9 +170,9 @@ function TableOS3() {
         withCredentials: true,
       });
 
-      setTiket(res.data);
+      setTiket(res.data.data);
 
-      const initialState = new Array(res.data.length).fill(false);
+      const initialState = new Array(res.data.data.length).fill(false);
       setShowModal1(initialState);
       setShowModalDetail(initialState);
       setShowTwoButtons(initialState);

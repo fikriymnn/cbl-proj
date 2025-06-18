@@ -771,7 +771,8 @@ function TableAbsensi() {
                         <div className="flex flex-col gap-1">
                           {data.status_absen}
                           <span className="text-neutral-500 text-sm font-semibold">
-                            {data.status_keluar != 'Pulang Cepat' ? (
+                            {data.status_keluar != 'Pulang Cepat' &&
+                            data.status_keluar != 'Keluar' ? (
                               <>{data.status_keluar}</>
                             ) : (
                               <></>

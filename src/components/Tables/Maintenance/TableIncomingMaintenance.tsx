@@ -220,9 +220,9 @@ const OS3MaintenanceTables = () => {
         withCredentials: true,
       });
 
-      setProcessingTickets(res.data);
+      setProcessingTickets(res.data.data);
 
-      const initialState = new Array(res.data.length).fill(false);
+      const initialState = new Array(res.data.data.length).fill(false);
       setShowModal1(initialState);
       setShowModalDetail(initialState);
       setShowTwoButtons(initialState);
