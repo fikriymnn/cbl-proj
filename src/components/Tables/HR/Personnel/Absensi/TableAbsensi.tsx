@@ -12,6 +12,8 @@ function TableAbsensi() {
   const [absen, setabsen] = useState<any>();
   const [idPengaju, setIdPengaju] = useState<any>();
   const [tipeIzin, settipeIzin] = useState<any>();
+  const [tipePulang, settipePulang] = useState<any>();
+  const [alasanPulang, setAlasanPulang] = useState<any>();
   const today = new Date();
 
   const year = today.getFullYear();
@@ -239,23 +241,6 @@ function TableAbsensi() {
         data.tipe_penggajian === selectedTipePenggajian)
     );
   });
-  // Function to convert timestamp to readable format
-  const formatTimestamp = (timestamp: string | null) => {
-    if (!timestamp) return '';
-    try {
-      const date = new Date(timestamp);
-      return date.toLocaleString('id-ID', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      });
-    } catch (error) {
-      return timestamp;
-    }
-  };
 
   // Function to export data to Excel
   const exportToExcel = () => {
@@ -398,6 +383,42 @@ function TableAbsensi() {
     XLSX.writeFile(workbook, filename);
   };
 
+  async function postPulangCepat(
+    tglAbsen: any,
+    id_KKaryawan: any,
+    name: any,
+    jamKeluar: any,
+  ) {
+    if (
+      window.confirm(
+        `Apakah Anda yakin akan mengajukan Pulang Cepat untuk karyawan ${name}`,
+      )
+    ) {
+      const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanPulangCepat`;
+      try {
+        setIsLoading(true);
+        const res = await axios.post(
+          url,
+          {
+            id_karyawan: id_KKaryawan,
+            id_pengaju: idPengaju,
+            tanggal: tglAbsen,
+            jam_pulang: jamKeluar,
+            type_izin: tipePulang,
+            alasan: alasanPulang,
+          },
+          {
+            withCredentials: true,
+          },
+        );
+        setIsLoading(false);
+        window.location.reload();
+      } catch (error: any) {
+        setIsLoading(false);
+        console.log(error);
+      }
+    }
+  }
   return (
     <>
       <main className="overflow-x-scroll">
@@ -747,7 +768,16 @@ function TableAbsensi() {
                         </div>
                       </td>
                       <td className="p-2 text-neutral-500 text-sm font-semibold">
-                        {data.status_absen}
+                        <div className="flex flex-col gap-1">
+                          {data.status_absen}
+                          <span className="text-neutral-500 text-sm font-semibold">
+                            {data.status_keluar != 'Pulang Cepat' ? (
+                              <>{data.status_keluar}</>
+                            ) : (
+                              <></>
+                            )}
+                          </span>
+                        </div>
                       </td>
                       <td className="p-2">
                         <div className="flex flex-col gap-1">
@@ -980,7 +1010,173 @@ function TableAbsensi() {
                                   judul={'Lapor'}
                                 >
                                   <>
+                                    {' '}
                                     <TabPengajuanLangsung data={data} />
+                                  </>
+                                </ModalKosongan>
+                              )}
+                            </>
+                          ) : (
+                            <></>
+                          )}
+                          {data.status_keluar == 'Pulang Cepat' ? (
+                            <>
+                              <button
+                                onClick={() => openEdit(i)}
+                                className="w-full bg-blue-600 text-white text-sm py-1 rounded-md"
+                              >
+                                Pulang Cepat
+                              </button>
+                              {showEdit[i] == true && (
+                                <ModalKosongan
+                                  isOpen={showEdit[i]}
+                                  onClose={() => closeEdit(i)}
+                                  judul={'Lapor Pulang Cepat'}
+                                >
+                                  <>
+                                    <div className="bg-white">
+                                      <div className="grid grid-cols-2 gap-5 px-7 py-4">
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Nama
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {data.name}
+                                          </label>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Department
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {data.nama_department}
+                                          </label>
+                                        </div>
+                                      </div>
+
+                                      <div className="grid grid-cols-2 gap-5 px-7 py-4">
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Tanggal
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {data.tgl_masuk}
+                                          </label>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Jam Keluar
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {data.jam_keluar == null ||
+                                            data.jam_keluar == 0
+                                              ? '~'
+                                              : data.jam_keluar}
+                                          </label>
+                                        </div>
+                                      </div>
+
+                                      <div className="grid grid-cols-2 gap-5 px-7 py-4">
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Status Keluar
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm text-orange-600 font-semibold">
+                                            {data.status_keluar}
+                                          </label>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Shift
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {data.shift == null ||
+                                            data.shift == 0
+                                              ? '~'
+                                              : data.shift}
+                                          </label>
+                                        </div>
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-5 px-7 py-4">
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Tipe Izin
+                                          </label>
+                                          <select
+                                            onChange={(e) =>
+                                              settipePulang(e.target.value)
+                                            }
+                                            className="text-[#6c6b6b] h-8 text-sm border-2 border-stroke rounded-md"
+                                          >
+                                            <option selected disabled>
+                                              Pilih Tipe Izin
+                                            </option>
+                                            <option value={'dinas'}>
+                                              Dinas
+                                            </option>
+                                            <option value={'pribadi'}>
+                                              Pribadi
+                                            </option>
+                                          </select>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Alasan Pulang Cepat
+                                          </label>
+                                          <textarea
+                                            onChange={(e) =>
+                                              setAlasanPulang(e.target.value)
+                                            }
+                                            className="text-[#6c6b6b] h-8 text-sm border-2 border-stroke rounded-md"
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="px-7 py-4">
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Keterangan
+                                          </label>
+                                          <p className="text-[#6c6b6b] text-sm">
+                                            Karyawan pulang lebih cepat dari
+                                            jadwal yang ditentukan. Apakah Anda
+                                            ingin mengajukan laporan pulang
+                                            cepat untuk karyawan ini?
+                                          </p>
+                                        </div>
+                                      </div>
+
+                                      <div className="flex w-full justify-end items-end gap-3 px-7 py-4">
+                                        <button
+                                          onClick={() => closeEdit(i)}
+                                          className="flex px-4 py-1 justify-center items-center bg-gray-500 text-white font-semibold rounded-md"
+                                        >
+                                          BATAL
+                                        </button>
+                                        <button
+                                          onClick={() => {
+                                            console.log(
+                                              'Posting Pulang Cepat:',
+                                              data.tgl_absen,
+                                              data.userid,
+                                              data.name,
+                                              i,
+                                            );
+                                            postPulangCepat(
+                                              data.tgl_absen,
+                                              data.userid,
+                                              data.name,
+                                              data.jam_keluar,
+                                            );
+                                          }}
+                                          disabled={isLoading}
+                                          className="flex px-4 py-1 justify-center items-center bg-blue-600 text-white font-semibold rounded-md disabled:opacity-50"
+                                        >
+                                          {isLoading
+                                            ? 'MEMPROSES...'
+                                            : 'AJUKAN'}
+                                        </button>
+                                      </div>
+                                    </div>
                                   </>
                                 </ModalKosongan>
                               )}

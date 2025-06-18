@@ -189,6 +189,7 @@ export default function TabOSHR() {
                 }`}
                 {...a11yProps(3)}
               />
+
               <Tab label="History All Kendala" {...a11yProps(4)} />
               {/* <Tab label="History Ketidaksesuaian SPL" {...a11yProps(5)} /> */}
               <div className="flex w-full justify-end pr-4">

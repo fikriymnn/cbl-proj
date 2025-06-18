@@ -18,6 +18,7 @@ import DiprosesSP from './SP/IncomingSP';
 import DiProsesDinasHR from './Dinas/DiprosesDinas';
 import DiProsesSPHR from './SP/DiprosesSP';
 import DiprosesKaryawan from './Karyawan/DiprosesKaryawan';
+import HistoryPulangCepat from './HistoryPulangCepat';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -157,7 +158,7 @@ export default function TabResponHistoryPengajuanHR() {
               <Tab label={`Dinas`} {...a11yProps(7)} />
               <Tab label="SP" {...a11yProps(8)} />
               <Tab label="Penambahan Karyawan" {...a11yProps(9)} />
-
+              <Tab label="Pulang Cepat" {...a11yProps(10)} />
               <div className="flex w-full justify-end pr-4">
                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                   {tanggal}
@@ -201,6 +202,9 @@ export default function TabResponHistoryPengajuanHR() {
         </TabPanel>
         <TabPanel value={value} index={9} dir={theme.direction}>
           <DiprosesKaryawan />
+        </TabPanel>
+        <TabPanel value={value} index={10} dir={theme.direction}>
+          <HistoryPulangCepat />
         </TabPanel>
       </Box>
     </>

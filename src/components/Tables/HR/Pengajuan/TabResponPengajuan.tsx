@@ -18,6 +18,7 @@ import IncomingMangkirHR from './Mangkir/IncomingMangkirHR';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import IncomingTerlambat from './Terlambat/IncommingTerlambat';
+import IncomingPulangCepat from './PulangCepat';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -244,6 +245,7 @@ export default function TabResponPengajuanHR() {
                 }`}
                 {...a11yProps(9)}
               />
+              <Tab label={`Pulang Cepat `} {...a11yProps(10)} />
             </Tabs>
           </ThemeProvider>
         </AppBar>
@@ -285,6 +287,10 @@ export default function TabResponPengajuanHR() {
 
         <TabPanel value={value} index={9} dir={theme.direction}>
           <IncomingKaryawan />
+        </TabPanel>
+
+        <TabPanel value={value} index={10} dir={theme.direction}>
+          <IncomingPulangCepat />
         </TabPanel>
       </Box>
     </>
