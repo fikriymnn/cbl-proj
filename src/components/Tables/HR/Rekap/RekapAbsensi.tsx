@@ -9,7 +9,10 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  LineChart,
+  Line,
 } from 'recharts';
+import MonthlyLineChart from './MonthlyCharts';
 
 // Configure axios defaults
 axios.defaults.withCredentials = true;
@@ -17,9 +20,17 @@ axios.defaults.withCredentials = true;
 function AttendanceRecapChart() {
   const [isLoading, setIsLoading] = useState(false);
   const [absen, setAbsen] = useState<Employee[]>([]);
+  const [monthlyData, setMonthlyData] = useState<MonthlyDataItem[]>([]);
   const [chartData, setChartData] = useState<ChartDataItem[]>([]);
+  const [monthlyChartData, setMonthlyChartData] = useState<MonthlyChartData[]>(
+    [],
+  );
   const [filteredData, setFilteredData] = useState<Employee[]>([]);
   const [selectedBar, setSelectedBar] = useState<ChartDataItem | null>(null);
+  const [selectedMonthBar, setSelectedMonthBar] =
+    useState<MonthlyChartData | null>(null);
+  const [isMonthlyView, setIsMonthlyView] = useState(false);
+
   interface Department {
     id: string;
     nama_department: string;
@@ -40,29 +51,54 @@ function AttendanceRecapChart() {
   useEffect(() => {
     getDepartment();
   }, []);
+
   useEffect(() => {
-    if (absen && absen.length > 0) {
+    if (isMonthlyView && monthlyData.length > 0) {
+      const filteredMonthly = searchQuery
+        ? monthlyData.map((month) => ({
+            ...month,
+            employees: month.employees.filter((emp) =>
+              emp.nama_karyawan
+                .toLowerCase()
+                .includes(searchQuery.toLowerCase()),
+            ),
+          }))
+        : monthlyData;
+
+      generateMonthlyChartData(filteredMonthly);
+    } else if (absen && absen.length > 0) {
       const dataForChart = searchQuery ? filteredAbsen : absen;
       generateChartData(dataForChart);
       setFilteredData(dataForChart);
-      // Reset selected bar when search changes
       setSelectedBar(null);
     }
-  }, [searchQuery, absen]);
+  }, [searchQuery, absen, monthlyData, isMonthlyView]);
 
   const resetDepartmentFilter = () => {
     setSelectedBar(null);
-    // Don't modify filteredData, displayData will handle it
+    setSelectedMonthBar(null);
   };
+
   // Update chart when search query changes
   useEffect(() => {
-    if (absen && absen.length > 0) {
+    if (!isMonthlyView && absen && absen.length > 0) {
       const dataForChart = searchQuery ? filteredAbsen : absen;
       generateChartData(dataForChart);
       // Reset selected bar when search changes
       setSelectedBar(null);
     }
-  }, [searchQuery, filteredAbsen]);
+  }, [searchQuery, filteredAbsen, isMonthlyView]);
+
+  // Helper function to calculate months difference
+  const getMonthsDifference = (dateFrom: string, dateTo: string) => {
+    const startDate = new Date(dateFrom);
+    const endDate = new Date(dateTo);
+    return (
+      (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+      (endDate.getMonth() - startDate.getMonth()) +
+      1
+    );
+  };
 
   async function getDepartment() {
     const url = `${import.meta.env.VITE_API_LINK}/master/hr/department`;
@@ -81,7 +117,13 @@ function AttendanceRecapChart() {
   }
 
   async function getAbsen(dateFrom1: any, dateTo1: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/hr/absensiRekap`;
+    const monthsDiff = getMonthsDifference(dateFrom1, dateTo1);
+    const useMonthlyAPI = monthsDiff > 1 && idDepartment;
+
+    const url = useMonthlyAPI
+      ? `${import.meta.env.VITE_API_LINK}/hr/absensiRekapPeriode`
+      : `${import.meta.env.VITE_API_LINK}/hr/absensiRekap`;
+
     const params = {
       startDate: dateFrom1,
       endDate: dateTo1,
@@ -95,8 +137,28 @@ function AttendanceRecapChart() {
         withCredentials: true,
       });
       setIsLoading(false);
-      setAbsen(response.data.data);
-      console.log(response.data.data);
+
+      if (useMonthlyAPI) {
+        // Transform the new API response to match expected structure
+        const transformedData = response.data.data.map((monthItem: any) => ({
+          month: monthItem.bulan.split(' ')[0], // Extract month name
+          year: parseInt(monthItem.bulan.split(' ')[1]), // Extract year
+          monthYear: monthItem.bulan, // Keep full month year string
+          startPeriode: monthItem.startPeriode,
+          endPeriode: monthItem.endPeriode,
+          employees: monthItem.rekapAbsen || [], // Map rekapAbsen to employees
+        }));
+
+        setMonthlyData(transformedData);
+        setAbsen([]);
+        setIsMonthlyView(true);
+        console.log('Monthly data:', transformedData);
+      } else {
+        setAbsen(response.data.data);
+        setMonthlyData([]);
+        setIsMonthlyView(false);
+        console.log('Regular data:', response.data.data);
+      }
     } catch (error) {
       setIsLoading(false);
       console.log(error);
@@ -170,6 +232,7 @@ function AttendanceRecapChart() {
     department: string;
     nama_karyawan: string;
     nik: string;
+    divisi: string;
     absensi?: {
       jam_lembur?: string;
       status_lembur?: string;
@@ -181,6 +244,23 @@ function AttendanceRecapChart() {
     jumlah_hari_sakit?: number;
     jumlah_hari_mangkir?: number;
     jumlah_hari_terlambat?: number;
+    // New fields from the monthly API
+    jam_lembur_biasa?: number;
+    jam_lembur_libur?: number;
+    cuti_tahunan?: any[];
+    cuti_khusus?: any[];
+    izin?: any[];
+    sakit?: any[];
+    mangkir?: any[];
+  }
+
+  interface MonthlyDataItem {
+    month: string;
+    year: number;
+    monthYear: string;
+    startPeriode: string;
+    endPeriode: string;
+    employees: Employee[];
   }
 
   interface ChartDataItem {
@@ -198,6 +278,19 @@ function AttendanceRecapChart() {
     lemburLibur: number;
     lemburDenganSPL: number;
     lemburTanpaSPL: number;
+  }
+
+  interface MonthlyChartData {
+    monthYear: string;
+    totalEmployees: number;
+    totalHariMasuk: number;
+    totalCutiTahunan: number;
+    totalCutiKhusus: number;
+    totalIzin: number;
+    totalSakit: number;
+    totalMangkir: number;
+    totalTerlambat: number;
+    totalJamLembur: number;
   }
 
   const generateChartData = (data: Employee[]) => {
@@ -235,31 +328,95 @@ function AttendanceRecapChart() {
       chartDataMap[dept].totalMangkir += employee.jumlah_hari_mangkir || 0;
       chartDataMap[dept].totalTerlambat += employee.jumlah_hari_terlambat || 0;
 
-      // Calculate overtime hours using the new method
-      const overtimeData = calculateOvertimeHours(employee.absensi);
-      chartDataMap[dept].lemburBiasa += parseFloat(overtimeData.lemburBiasa);
-      chartDataMap[dept].lemburLibur += parseFloat(overtimeData.lemburLibur);
-      chartDataMap[dept].lemburDenganSPL += parseFloat(
-        overtimeData.lemburDenganSPL,
-      );
-      chartDataMap[dept].lemburTanpaSPL += parseFloat(
-        overtimeData.lemburTanpaSPL,
-      );
+      // Handle both old and new overtime data structure
+      if (
+        employee.jam_lembur_biasa !== undefined &&
+        employee.jam_lembur_libur !== undefined
+      ) {
+        // New monthly API structure
+        chartDataMap[dept].lemburBiasa += employee.jam_lembur_biasa || 0;
+        chartDataMap[dept].lemburLibur += employee.jam_lembur_libur || 0;
+        chartDataMap[dept].totalJamLembur +=
+          (employee.jam_lembur_biasa || 0) + (employee.jam_lembur_libur || 0);
+      } else {
+        // Old structure - Calculate overtime hours using the existing method
+        const overtimeData = calculateOvertimeHours(employee.absensi);
+        chartDataMap[dept].lemburBiasa += parseFloat(overtimeData.lemburBiasa);
+        chartDataMap[dept].lemburLibur += parseFloat(overtimeData.lemburLibur);
+        chartDataMap[dept].lemburDenganSPL += parseFloat(
+          overtimeData.lemburDenganSPL,
+        );
+        chartDataMap[dept].lemburTanpaSPL += parseFloat(
+          overtimeData.lemburTanpaSPL,
+        );
 
-      // Calculate total overtime hours
-      const totalLembur =
-        employee.absensi?.reduce((sum: any, record: any) => {
-          return sum + (parseFloat(record.jam_lembur) || 0);
-        }, 0) || 0;
-      chartDataMap[dept].totalJamLembur += totalLembur;
+        // Calculate total overtime hours
+        const totalLembur =
+          employee.absensi?.reduce((sum: any, record: any) => {
+            return sum + (parseFloat(record.jam_lembur) || 0);
+          }, 0) || 0;
+        chartDataMap[dept].totalJamLembur += totalLembur;
+      }
     });
 
     setChartData(Object.values(chartDataMap));
   };
 
+  const generateMonthlyChartData = (data: MonthlyDataItem[]) => {
+    const monthlyChartData: MonthlyChartData[] = data.map((monthData) => {
+      const employees = monthData.employees;
+
+      return {
+        monthYear: monthData.monthYear,
+        totalEmployees: employees.length,
+        totalHariMasuk: employees.reduce(
+          (sum, emp) => sum + (emp.absensi?.length || 0),
+          0,
+        ),
+        totalCutiTahunan: employees.reduce(
+          (sum, emp) => sum + (emp.jumlah_hari_cuti_tahunan || 0),
+          0,
+        ),
+        totalCutiKhusus: employees.reduce(
+          (sum, emp) => sum + (emp.jumlah_hari_cuti_khusus || 0),
+          0,
+        ),
+        totalIzin: employees.reduce(
+          (sum, emp) => sum + (emp.jumlah_hari_izin || 0),
+          0,
+        ),
+        totalSakit: employees.reduce(
+          (sum, emp) => sum + (emp.jumlah_hari_sakit || 0),
+          0,
+        ),
+        totalMangkir: employees.reduce(
+          (sum, emp) => sum + (emp.jumlah_hari_mangkir || 0),
+          0,
+        ),
+        totalTerlambat: employees.reduce(
+          (sum, emp) => sum + (emp.jumlah_hari_terlambat || 0),
+          0,
+        ),
+        totalJamLembur: employees.reduce((sum, emp) => {
+          // Use the new structure fields directly
+          const jamLemburBiasa = emp.jam_lembur_biasa || 0;
+          const jamLemburLibur = emp.jam_lembur_libur || 0;
+          return sum + jamLemburBiasa + jamLemburLibur;
+        }, 0),
+      };
+    });
+
+    setMonthlyChartData(monthlyChartData);
+  };
+
   const handleBarClick = (data: any) => {
-    setSelectedBar(data);
-    // Don't modify filteredData, let displayData handle the filtering
+    if (isMonthlyView) {
+      setSelectedMonthBar(data);
+      setSelectedBar(null);
+    } else {
+      setSelectedBar(data);
+      setSelectedMonthBar(null);
+    }
   };
 
   const handleFilter = () => {
@@ -276,9 +433,13 @@ function AttendanceRecapChart() {
     setDateTo('');
     setIdDepartment('');
     setSelectedBar(null);
+    setSelectedMonthBar(null);
     setAbsen([]);
+    setMonthlyData([]);
     setFilteredData([]);
     setChartData([]);
+    setMonthlyChartData([]);
+    setIsMonthlyView(false);
   };
 
   const CustomTooltip = ({
@@ -293,7 +454,9 @@ function AttendanceRecapChart() {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white p-3 border border-gray-300 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-800">{`Department: ${label}`}</p>
+          <p className="font-semibold text-gray-800">
+            {isMonthlyView ? `Month: ${label}` : `Department: ${label}`}
+          </p>
           {payload.map((entry: any, index: any) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
               {`${entry.dataKey}: ${entry.value}`}
@@ -306,11 +469,33 @@ function AttendanceRecapChart() {
   };
 
   const displayData = useMemo(() => {
-    let data = searchQuery ? filteredAbsen : absen;
+    let data: Employee[] = [];
 
-    // If a department bar is selected, filter by department
-    if (selectedBar) {
-      data = data.filter((emp) => emp.department === selectedBar.department);
+    if (isMonthlyView && monthlyData.length > 0) {
+      if (selectedMonthBar) {
+        // Find the specific month data
+        const monthData = monthlyData.find(
+          (m) => m.monthYear === selectedMonthBar.monthYear,
+        );
+        data = monthData ? monthData.employees : [];
+      } else {
+        // Show all employees from all months
+        data = monthlyData.flatMap((monthData) => monthData.employees);
+      }
+    } else {
+      data = searchQuery ? filteredAbsen : absen;
+
+      // If a department bar is selected, filter by department
+      if (selectedBar) {
+        data = data.filter((emp) => emp.department === selectedBar.department);
+      }
+    }
+
+    // Apply search filter
+    if (searchQuery && !isMonthlyView) {
+      data = data.filter((emp) =>
+        emp.nama_karyawan.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
     }
 
     // Remove duplicates based on NIK (employee ID)
@@ -320,17 +505,31 @@ function AttendanceRecapChart() {
     );
 
     return uniqueData;
-  }, [searchQuery, filteredAbsen, absen, selectedBar]);
+  }, [
+    searchQuery,
+    filteredAbsen,
+    absen,
+    selectedBar,
+    selectedMonthBar,
+    monthlyData,
+    isMonthlyView,
+  ]);
 
   // Calculate summary statistics based on display data
   const summaryStats = {
     totalKaryawan: displayData.length,
     totalJamLembur: displayData.reduce((sum: any, emp: any) => {
-      const empLembur =
-        emp.absensi?.reduce((empSum: any, record: any) => {
-          return empSum + (parseFloat(record.jam_lembur) || 0);
-        }, 0) || 0;
-      return sum + empLembur;
+      // For monthly data, use the direct fields
+      if (isMonthlyView) {
+        return sum + (emp.jam_lembur_biasa || 0) + (emp.jam_lembur_libur || 0);
+      } else {
+        // For regular data, calculate from absensi records
+        const empLembur =
+          emp.absensi?.reduce((empSum: any, record: any) => {
+            return empSum + (parseFloat(record.jam_lembur) || 0);
+          }, 0) || 0;
+        return sum + empLembur;
+      }
     }, 0),
     totalCutiTahunan: displayData.reduce(
       (sum, emp) => sum + (emp.jumlah_hari_cuti_tahunan || 0),
@@ -380,10 +579,17 @@ function AttendanceRecapChart() {
           Rekap Absensi Dashboard
         </h1>
         <p className="text-gray-600">
-          Analisis kehadiran karyawan berdasarkan department
-          {searchQuery && (
+          {isMonthlyView
+            ? 'Analisis kehadiran karyawan per bulan'
+            : 'Analisis kehadiran karyawan berdasarkan department'}
+          {searchQuery && !isMonthlyView && (
             <span className="ml-2 text-blue-600 font-medium">
               (Filtered by: "{searchQuery}")
+            </span>
+          )}
+          {isMonthlyView && (
+            <span className="ml-2 text-green-600 font-medium">
+              (Monthly View - {getMonthsDifference(dateFrom, dateTo)} months)
             </span>
           )}
         </p>
@@ -427,6 +633,13 @@ function AttendanceRecapChart() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Department
+              {dateFrom &&
+                dateTo &&
+                getMonthsDifference(dateFrom, dateTo) > 1 && (
+                  <span className="text-orange-500 text-xs ml-1">
+                    (Required for monthly view)
+                  </span>
+                )}
             </label>
             <select
               value={idDepartment}
@@ -442,7 +655,6 @@ function AttendanceRecapChart() {
             </select>
           </div>
 
-          {/* Search */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Cari Karyawan
@@ -472,159 +684,185 @@ function AttendanceRecapChart() {
             >
               Reset
             </button>
-            {selectedBar && (
+            {(selectedBar || selectedMonthBar) && (
               <button
                 onClick={resetDepartmentFilter}
                 className="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-lg transition-colors"
               >
-                Show All Departments
+                {isMonthlyView ? 'Show All Months' : 'Show All Departments'}
               </button>
             )}
           </div>
         </div>
+
+        {/* Info about monthly view */}
+        {dateFrom && dateTo && getMonthsDifference(dateFrom, dateTo) > 1 && (
+          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <span className="font-medium">Multi-month range detected:</span>
+              {idDepartment
+                ? ' Using monthly API to show data grouped by month'
+                : ' Select a department to view monthly breakdown, or use regular view for all departments'}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Enhanced Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-green-500">
-          <h3 className="text-sm font-medium text-gray-600">
-            Total Hari Masuk
-          </h3>
-          <p className="text-2xl font-bold text-green-600">
-            {summaryStats.totalHariMasuk}
-          </p>
-        </div>
+      {/* Additional Info Panel for Monthly View */}
+      {isMonthlyView && monthlyChartData.length > 0 ? (
+        <MonthlyLineChart data={monthlyChartData} isVisible={true} />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mb-6">
+            <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-green-500">
+              <h3 className="text-sm font-medium text-gray-600">
+                Total Hari Masuk
+              </h3>
+              <p className="text-2xl font-bold text-green-600">
+                {summaryStats.totalHariMasuk}
+              </p>
+            </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-purple-500">
-          <h3 className="text-sm font-medium text-gray-600">
-            Total Jam Lembur
-          </h3>
-          <p className="text-2xl font-bold text-purple-600">
-            {summaryStats.totalJamLembur.toFixed(1)}
-          </p>
-        </div>
+            <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-purple-500">
+              <h3 className="text-sm font-medium text-gray-600">
+                Total Jam Lembur
+              </h3>
+              <p className="text-2xl font-bold text-purple-600">
+                {summaryStats.totalJamLembur.toFixed(1)}
+              </p>
+            </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-indigo-500">
-          <h3 className="text-sm font-medium text-gray-600">
-            Total Hari Cuti Tahunan
-          </h3>
-          <p className="text-2xl font-bold text-indigo-600">
-            {summaryStats.totalCutiTahunan}
-          </p>
-        </div>
+            <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-indigo-500">
+              <h3 className="text-sm font-medium text-gray-600">
+                Total Hari Cuti Tahunan
+              </h3>
+              <p className="text-2xl font-bold text-indigo-600">
+                {summaryStats.totalCutiTahunan}
+              </p>
+            </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-pink-500">
-          <h3 className="text-sm font-medium text-gray-600">
-            Total Hari Cuti Khusus
-          </h3>
-          <p className="text-2xl font-bold text-pink-600">
-            {summaryStats.totalCutiKhusus}
-          </p>
-        </div>
+            <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-pink-500">
+              <h3 className="text-sm font-medium text-gray-600">
+                Total Hari Cuti Khusus
+              </h3>
+              <p className="text-2xl font-bold text-pink-600">
+                {summaryStats.totalCutiKhusus}
+              </p>
+            </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-yellow-500">
-          <h3 className="text-sm font-medium text-gray-600">Total Hari Izin</h3>
-          <p className="text-2xl font-bold text-yellow-600">
-            {summaryStats.totalIzin}
-          </p>
-        </div>
+            <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-yellow-500">
+              <h3 className="text-sm font-medium text-gray-600">
+                Total Hari Izin
+              </h3>
+              <p className="text-2xl font-bold text-yellow-600">
+                {summaryStats.totalIzin}
+              </p>
+            </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-red-500">
-          <h3 className="text-sm font-medium text-gray-600">
-            Total Hari Sakit
-          </h3>
-          <p className="text-2xl font-bold text-red-600">
-            {summaryStats.totalSakit}
-          </p>
-        </div>
+            <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-red-500">
+              <h3 className="text-sm font-medium text-gray-600">
+                Total Hari Sakit
+              </h3>
+              <p className="text-2xl font-bold text-red-600">
+                {summaryStats.totalSakit}
+              </p>
+            </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-gray-500">
-          <h3 className="text-sm font-medium text-gray-600">
-            Total Hari Mangkir
-          </h3>
-          <p className="text-2xl font-bold text-gray-600">
-            {summaryStats.totalMangkir}
-          </p>
-        </div>
+            <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-gray-500">
+              <h3 className="text-sm font-medium text-gray-600">
+                Total Hari Mangkir
+              </h3>
+              <p className="text-2xl font-bold text-gray-600">
+                {summaryStats.totalMangkir}
+              </p>
+            </div>
 
-        <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-orange-500">
-          <h3 className="text-sm font-medium text-gray-600">
-            Total Hari Terlambat
-          </h3>
-          <p className="text-2xl font-bold text-orange-600">
-            {summaryStats.totalTerlambat}
-          </p>
-        </div>
-      </div>
+            <div className="bg-white p-4 rounded-lg shadow-md border-l-4 border-orange-500">
+              <h3 className="text-sm font-medium text-gray-600">
+                Total Hari Terlambat
+              </h3>
+              <p className="text-2xl font-bold text-orange-600">
+                {summaryStats.totalTerlambat}
+              </p>
+            </div>
+          </div>
+        </>
+      )}
 
-      {/* Bar Chart */}
-      {chartData.length > 0 && (
+      {/* Chart Section */}
+      {(chartData.length > 0 || monthlyChartData.length > 0) && (
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-800">
-              Rekap Absensi per Department
-              {searchQuery && (
+              {isMonthlyView ? '' : 'Rekap Absensi per Department'}
+              {searchQuery && !isMonthlyView && (
                 <span className="text-sm font-normal text-blue-600 ml-2">
                   (Filtered by search)
                 </span>
               )}
             </h3>
-            {selectedBar && (
+            {(selectedBar || selectedMonthBar) && (
               <div className="text-sm text-gray-600">
                 Menampilkan detail untuk:{' '}
-                <span className="font-semibold">{selectedBar.department}</span>
+                <span className="font-semibold">
+                  {isMonthlyView
+                    ? selectedMonthBar?.monthYear
+                    : selectedBar?.department}
+                </span>
               </div>
             )}
           </div>
 
-          <ResponsiveContainer width="100%" height={400}>
-            <BarChart
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="department" />
-              <YAxis />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-
-              <Bar
-                dataKey="totalCutiTahunan"
-                fill="#10B981"
-                name="Cuti Tahunan"
-                cursor="pointer"
-                onClick={handleBarClick}
-              />
-              <Bar
-                dataKey="totalCutiKhusus"
-                fill="#8B5CF6"
-                name="Cuti Khusus"
-                cursor="pointer"
-                onClick={handleBarClick}
-              />
-              <Bar
-                dataKey="totalIzin"
-                fill="#F59E0B"
-                name="Izin"
-                cursor="pointer"
-                onClick={handleBarClick}
-              />
-              <Bar
-                dataKey="totalSakit"
-                fill="#EF4444"
-                name="Sakit"
-                cursor="pointer"
-                onClick={handleBarClick}
-              />
-              <Bar
-                dataKey="totalTerlambat"
-                fill="#F97316"
-                name="Terlambat"
-                cursor="pointer"
-                onClick={handleBarClick}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          {!isMonthlyView && (
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart
+                data={chartData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="department" />
+                <YAxis />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                <Bar
+                  dataKey="totalCutiTahunan"
+                  fill="#10B981"
+                  name="Cuti Tahunan"
+                  cursor="pointer"
+                  onClick={handleBarClick}
+                />
+                <Bar
+                  dataKey="totalCutiKhusus"
+                  fill="#8B5CF6"
+                  name="Cuti Khusus"
+                  cursor="pointer"
+                  onClick={handleBarClick}
+                />
+                <Bar
+                  dataKey="totalIzin"
+                  fill="#F59E0B"
+                  name="Izin"
+                  cursor="pointer"
+                  onClick={handleBarClick}
+                />
+                <Bar
+                  dataKey="totalSakit"
+                  fill="#EF4444"
+                  name="Sakit"
+                  cursor="pointer"
+                  onClick={handleBarClick}
+                />
+                <Bar
+                  dataKey="totalTerlambat"
+                  fill="#F97316"
+                  name="Terlambat"
+                  cursor="pointer"
+                  onClick={handleBarClick}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       )}
 
@@ -632,13 +870,25 @@ function AttendanceRecapChart() {
       <div className="bg-white rounded-lg shadow-md">
         <div className="p-6 border-b">
           <h3 className="text-lg font-semibold text-gray-800">
-            Detail Karyawan {selectedBar ? `- ${selectedBar.department}` : ''}
+            Detail Karyawan
+            {isMonthlyView && selectedMonthBar
+              ? ` - ${selectedMonthBar.monthYear}`
+              : selectedBar
+              ? ` - ${selectedBar.department}`
+              : ''}
           </h3>
           <p className="text-sm text-gray-600">
             Menampilkan {displayData.length} karyawan
-            {searchQuery && (
+            {searchQuery && !isMonthlyView && (
               <span className="ml-1 text-blue-600">
                 (filtered by "{searchQuery}")
+              </span>
+            )}
+            {isMonthlyView && (
+              <span className="ml-1 text-green-600">
+                {selectedMonthBar
+                  ? `(from ${selectedMonthBar.monthYear})`
+                  : '(from all months)'}
               </span>
             )}
           </p>
@@ -663,6 +913,11 @@ function AttendanceRecapChart() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Divisi
                 </th>
+                {isMonthlyView && (
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Bulan
+                  </th>
+                )}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Hari Masuk
                 </th>
@@ -685,16 +940,32 @@ function AttendanceRecapChart() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {displayData.map((employee: any, index: any) => {
-                const totalLembur =
-                  employee.absensi?.reduce((sum: any, record: any) => {
-                    return sum + (parseFloat(record.jam_lembur) || 0);
-                  }, 0) || 0;
+                const totalLembur = isMonthlyView
+                  ? (employee.jam_lembur_biasa || 0) +
+                    (employee.jam_lembur_libur || 0)
+                  : employee.absensi?.reduce((sum: any, record: any) => {
+                      return sum + (parseFloat(record.jam_lembur) || 0);
+                    }, 0) || 0;
 
                 const overtimeData = calculateOvertimeHours(employee.absensi);
                 const timeMetrics = calculateTimeMetrics(employee.absensi);
 
+                // For monthly view, find which month this employee belongs to
+                let employeeMonth = '';
+                if (isMonthlyView && monthlyData.length > 0) {
+                  const monthData = monthlyData.find((m) =>
+                    m.employees.some((emp) => emp.nik === employee.nik),
+                  );
+                  employeeMonth = monthData
+                    ? `${monthData.month} ${monthData.year}`
+                    : '';
+                }
+
                 return (
-                  <tr key={employee.nik} className="hover:bg-gray-50">
+                  <tr
+                    key={`${employee.nik}-${employeeMonth || index}`}
+                    className="hover:bg-gray-50"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {index + 1}
                     </td>
@@ -710,6 +981,13 @@ function AttendanceRecapChart() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {employee.divisi}
                     </td>
+                    {isMonthlyView && (
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                          {employeeMonth}
+                        </span>
+                      </td>
+                    )}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
                         {employee.absensi?.length || 0} hari
@@ -722,26 +1000,43 @@ function AttendanceRecapChart() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
                       <div className="flex flex-wrap gap-1">
-                        {parseFloat(overtimeData.lemburBiasa) > 0 && (
-                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                            Biasa: {overtimeData.lemburBiasa} jam
-                          </span>
-                        )}
-                        {parseFloat(overtimeData.lemburLibur) > 0 && (
-                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                            Libur: {overtimeData.lemburLibur} jam
-                          </span>
+                        {isMonthlyView ? (
+                          <>
+                            {(employee.jam_lembur_biasa || 0) > 0 && (
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                                Biasa: {employee.jam_lembur_biasa} jam
+                              </span>
+                            )}
+                            {(employee.jam_lembur_libur || 0) > 0 && (
+                              <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                                Libur: {employee.jam_lembur_libur} jam
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {parseFloat(overtimeData.lemburBiasa) > 0 && (
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                                Biasa: {overtimeData.lemburBiasa} jam
+                              </span>
+                            )}
+                            {parseFloat(overtimeData.lemburLibur) > 0 && (
+                              <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                                Libur: {overtimeData.lemburLibur} jam
+                              </span>
+                            )}
+                          </>
                         )}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="flex flex-wrap gap-1">
-                        {employee.jumlah_hari_cuti_tahunan > 0 && (
+                        {(employee.jumlah_hari_cuti_tahunan || 0) > 0 && (
                           <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
                             Tahunan: {employee.jumlah_hari_cuti_tahunan} hari
                           </span>
                         )}
-                        {employee.jumlah_hari_cuti_khusus > 0 && (
+                        {(employee.jumlah_hari_cuti_khusus || 0) > 0 && (
                           <span className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-xs">
                             Khusus: {employee.jumlah_hari_cuti_khusus} hari
                           </span>
@@ -749,18 +1044,18 @@ function AttendanceRecapChart() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="flex space-x-1">
-                        {employee.jumlah_hari_izin > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {(employee.jumlah_hari_izin || 0) > 0 && (
                           <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
                             Izin: {employee.jumlah_hari_izin} hari
                           </span>
                         )}
-                        {employee.jumlah_hari_sakit > 0 && (
+                        {(employee.jumlah_hari_sakit || 0) > 0 && (
                           <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">
                             Sakit: {employee.jumlah_hari_sakit} hari
                           </span>
                         )}
-                        {employee.jumlah_hari_mangkir > 0 && (
+                        {(employee.jumlah_hari_mangkir || 0) > 0 && (
                           <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
                             Mangkir: {employee.jumlah_hari_mangkir} hari
                           </span>
@@ -769,8 +1064,8 @@ function AttendanceRecapChart() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="flex flex-col space-y-1">
-                        {employee.jumlah_hari_terlambat > 0 && (
-                          <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs">
+                        {(employee.jumlah_hari_terlambat || 0) > 0 && (
+                          <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs">
                             Terlambat: {employee.jumlah_hari_terlambat} hari
                           </span>
                         )}
@@ -786,7 +1081,7 @@ function AttendanceRecapChart() {
         {displayData.length === 0 && !isLoading && (
           <div className="text-center py-12">
             <p className="text-gray-500">
-              {absen.length === 0
+              {absen.length === 0 && monthlyData.length === 0
                 ? 'Silakan pilih tanggal dan klik "Filter Data" untuk menampilkan data absensi'
                 : 'Tidak ada data yang ditemukan'}
             </p>

@@ -137,6 +137,7 @@ function HistoryTerlambat() {
       Status: item.status?.toUpperCase(),
       'Yang Menyetujui': item.karyawan_hr?.name || '',
       'Alasan Terlambat': item.type_izin,
+      'Jam Masuk': item.jam_masuk,
       'Respon HR': item.catatan_hr,
     }));
 
@@ -172,72 +173,6 @@ function HistoryTerlambat() {
 
     XLSX.writeFile(wb, filename);
   };
-
-  async function approveIzin(id: any, index: any) {
-    if (catatanHr == null) {
-      alert('Catatan Wajib Diisi');
-      return;
-    }
-    const url = `${
-      import.meta.env.VITE_API_LINK
-    }/hr/pengajuanTerlambat/approve/${id}`;
-    try {
-      setIsLoading(true);
-      const res = await axios.put(
-        url,
-        {
-          catatan_hr: catatanHr,
-        },
-        {
-          withCredentials: true,
-        },
-      );
-      setIsLoading(false);
-      getIzin();
-      console.log(res.data);
-      const updatedModalStates = [...showModal];
-      updatedModalStates[index] = false;
-      setShowModal(updatedModalStates);
-    } catch (error: any) {
-      setIsLoading(false);
-      console.log(error);
-    }
-  }
-
-  async function rejectIzin(id: any, index: number) {
-    if (catatanHr == null) {
-      alert('Catatan Wajib Diisi');
-      return;
-    }
-    if (
-      window.confirm('Apakah Anda yakin ingin menolak pengajuan Terlambat ini?')
-    ) {
-      const url = `${
-        import.meta.env.VITE_API_LINK
-      }/hr/pengajuanTerlambat/reject/${id}`;
-      try {
-        setIsLoading(true);
-        const res = await axios.put(
-          url,
-          {
-            catatan_hr: catatanHr,
-          },
-          {
-            withCredentials: true,
-          },
-        );
-        setIsLoading(false);
-        getIzin();
-        console.log(res.data);
-        const updatedModalStates = [...showModal];
-        updatedModalStates[index] = false;
-        setShowModal(updatedModalStates);
-      } catch (error: any) {
-        setIsLoading(false);
-        console.log(error);
-      }
-    }
-  }
 
   const [showModal, setShowModal] = useState<boolean[]>([]);
   const openModalModal = (i: any) => {
@@ -429,7 +364,7 @@ function HistoryTerlambat() {
               <label className="text-neutral-500 text-sm font-semibold">
                 No
               </label>
-              <label className="text-neutral-500 text-sm font-semibold col-span-3">
+              <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Tanggal
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
@@ -441,7 +376,10 @@ function HistoryTerlambat() {
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Status
               </label>
-              <label className="text-neutral-500 text-sm font-semibold col-span-3">
+              <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                Jam Masuk
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold col-span-1">
                 Aksi
               </label>
             </div>
@@ -455,8 +393,8 @@ function HistoryTerlambat() {
                   <label className="text-neutral-500 text-sm font-semibold">
                     {(page - 1) * 10 + i + 1}
                   </label>
-                  <div className="flex flex-col gap-1 col-span-3">
-                    {convertTimeStampToDate(data.tanggal)}
+                  <div className="flex flex-col gap-1 col-span-2">
+                    {dateOnly(data.tanggal)}
                   </div>
                   <label className="text-neutral-500 text-sm font-semibold col-span-2">
                     {
@@ -467,10 +405,13 @@ function HistoryTerlambat() {
                   <label className="text-neutral-500 text-sm font-semibold col-span-2">
                     {data.karyawan?.name}
                   </label>
-                  <label className="text-neutral-500 text-sm font-semibold uppercase">
+                  <label className="text-neutral-500 text-sm font-semibold uppercase col-span-2">
                     {data.status}
                   </label>
-                  <div className="justify-end flex pr-2 col-span-3">
+                  <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                    {data.jam_masuk}
+                  </label>
+                  <div className="justify-end flex pr-2 col-span-1">
                     <button
                       onClick={() => openModalModal(i)}
                       className="uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold py-2 my-2 hover:bg-blue-400 border bg-blue-600 border-blue-600 justify-center"
@@ -589,6 +530,20 @@ function HistoryTerlambat() {
                                   className="text-[#016ae6] text-xl font-normal"
                                 >
                                   {dateOnly(data.tanggal)}
+                                </label>
+                              </div>
+                              <div className="flex flex-col">
+                                <label
+                                  htmlFor=""
+                                  className="text-black text-xs font-bold"
+                                >
+                                  Jam Masuk
+                                </label>
+                                <label
+                                  htmlFor=""
+                                  className="text-[#016ae6] text-xl font-normal"
+                                >
+                                  {data.jam_masuk}
                                 </label>
                               </div>
                             </div>

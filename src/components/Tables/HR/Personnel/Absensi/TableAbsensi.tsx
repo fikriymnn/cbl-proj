@@ -90,6 +90,7 @@ function TableAbsensi() {
     id_KKaryawan: any,
     nama: any,
     index: any,
+    jamMasuk: any,
   ) {
     if (
       window.confirm(
@@ -106,6 +107,7 @@ function TableAbsensi() {
             id_pengaju: idPengaju,
             type_izin: tipeIzin,
             tanggal: tglAbsen,
+            jam_masuk: jamMasuk,
           },
           {
             withCredentials: true,
@@ -925,6 +927,14 @@ function TableAbsensi() {
                                         </div>
                                         <div className="flex flex-col gap-1">
                                           <label className="text-[#6c6b6b] text-sm font-semibold">
+                                            Jam Masuk
+                                          </label>
+                                          <label className="text-[#6c6b6b] text-sm">
+                                            {data.jam_masuk}
+                                          </label>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                          <label className="text-[#6c6b6b] text-sm font-semibold">
                                             Tipe Izin
                                           </label>
                                           <select
@@ -977,6 +987,7 @@ function TableAbsensi() {
                                                   data.userid,
                                                   data.name,
                                                   i,
+                                                  data.jam_masuk,
                                                 );
                                               }}
                                               disabled={isLoading}
