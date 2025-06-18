@@ -80,7 +80,7 @@ function RekapAbsenHR() {
       if (record.status_lembur_spl === 'dengan SPL') {
         lemburDenganSPL += jamLembur;
       } else if (record.status_lembur_spl === 'tidak dengan SPL') {
-        lemburTanpaSPL += jamLembur;
+        lemburTanpaSPL++;
       }
     });
 
@@ -88,7 +88,7 @@ function RekapAbsenHR() {
       lemburBiasa: lemburBiasa.toFixed(1),
       lemburLibur: lemburLibur.toFixed(1),
       lemburDenganSPL: lemburDenganSPL.toFixed(1),
-      lemburTanpaSPL: lemburTanpaSPL.toFixed(1),
+      lemburTanpaSPL: lemburTanpaSPL.toFixed(0),
     };
   };
 
@@ -113,10 +113,7 @@ function RekapAbsenHR() {
       if (menitTerlambat > 0) {
         jumlahHariTerlambat++;
 
-        // Convert minutes to hours for comparison
-        const jamTerlambat = menitTerlambat / 60;
-
-        if (jamTerlambat <= 0.5) {
+        if (menitTerlambat <= 0.5) {
           terlambatKurangDari30Menit++;
         } else {
           terlambatLebihDari30Menit++;
@@ -452,6 +449,12 @@ function RekapAbsenHR() {
                                   <span>Lembur Libur:</span>
                                   <span className="font-medium">
                                     {overtimeCalc.lemburLibur} jam
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Lembur Tanpa SPL:</span>
+                                  <span className="font-medium">
+                                    {overtimeCalc.lemburTanpaSPL} Kali
                                   </span>
                                 </div>
                                 <div className="flex justify-between">

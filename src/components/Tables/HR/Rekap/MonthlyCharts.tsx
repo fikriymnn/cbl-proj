@@ -118,34 +118,83 @@ export default function MonthlyLineChart({
         </LineChart>
       </ResponsiveContainer>
 
-      {/* Tabel Ringkasan */}
-      <div className="overflow-x-auto mt-6">
-        <table className="min-w-full table-auto text-sm text-left border border-gray-200">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-4 py-2 border">Bulan</th>
-              {chartKeys.map(({ key, label }) => (
-                <th key={key} className="px-4 py-2 border">
-                  {label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((item, index) => (
-              <tr key={index} className="even:bg-gray-50">
-                <td className="px-4 py-2 border font-medium">
-                  {item.monthYear}
-                </td>
-                {chartKeys.map(({ key }) => (
-                  <td key={key} className="px-4 py-2 border">
-                    {item[key as keyof MonthlyChartData]}
-                  </td>
+      {/* Tabel Ringkasan Professional */}
+      <div className="mt-8">
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+            <h3 className="text-lg font-semibold text-white">
+              Ringkasan Data Bulanan
+            </h3>
+          </div>
+
+          {/* Table Container */}
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-200 sticky left-0 bg-gray-50 z-10">
+                    Bulan
+                  </th>
+                  {chartKeys.map(({ key, label }, index) => (
+                    <th
+                      key={key}
+                      className={`px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider ${
+                        index < chartKeys.length - 1
+                          ? 'border-r border-gray-200'
+                          : ''
+                      }`}
+                    >
+                      <div className="flex flex-col items-center space-y-1">
+                        <span>{label}</span>
+                        <div className="w-8 h-0.5 bg-blue-400 rounded"></div>
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {data.map((item, index) => (
+                  <tr
+                    key={index}
+                    className="hover:bg-blue-50 transition-colors duration-150 group"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200 sticky left-0 bg-white group-hover:bg-blue-50 z-10">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span>{item.monthYear}</span>
+                      </div>
+                    </td>
+                    {chartKeys.map(({ key }, colIndex) => (
+                      <td
+                        key={key}
+                        className={`px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center ${
+                          colIndex < chartKeys.length - 1
+                            ? 'border-r border-gray-200'
+                            : ''
+                        }`}
+                      >
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-md font-medium bg-gray-100 text-gray-800 group-hover:bg-blue-100 group-hover:text-blue-800 transition-colors duration-150">
+                          {item[key as keyof MonthlyChartData]}
+                        </span>
+                      </td>
+                    ))}
+                  </tr>
                 ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Footer */}
+          <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <span>Total {data.length} periode data</span>
+              <span>
+                Terakhir diperbarui: {new Date().toLocaleDateString('id-ID')}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

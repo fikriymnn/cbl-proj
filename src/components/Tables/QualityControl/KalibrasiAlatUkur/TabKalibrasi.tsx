@@ -8,6 +8,8 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import KalibrasiAlatUkurPage from './KalibrasiPage';
 import ContohPurchase from './ContohPurchase';
+import KalibrasiInternal from './KalibrasiInternal';
+import PendingKalibrasi from './PendingKalibrasi';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -124,7 +126,9 @@ export default function TabKalibrasi() {
             className="bg-white text-[#00499F] font-semibold mb-2 "
           >
             <Tab label="Kalibrasi" {...a11yProps(0)} className="" />
-            <Tab label="Contoh Purchase" {...a11yProps(1)} />
+            <Tab label="Pending" {...a11yProps(1)} className="" />
+            <Tab label="Kalibrasi Internal" {...a11yProps(2)} />
+            <Tab label="Contoh Purchase" {...a11yProps(3)} />
           </Tabs>
         </ThemeProvider>
       </AppBar>
@@ -132,6 +136,12 @@ export default function TabKalibrasi() {
         <KalibrasiAlatUkurPage />
       </TabPanel>
       <TabPanel value={value} index={1} dir={theme.direction}>
+        <PendingKalibrasi />
+      </TabPanel>
+      <TabPanel value={value} index={2} dir={theme.direction}>
+        <KalibrasiInternal />
+      </TabPanel>
+      <TabPanel value={value} index={3} dir={theme.direction}>
         <ContohPurchase />
       </TabPanel>
     </Box>

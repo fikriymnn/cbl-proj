@@ -443,19 +443,24 @@ function DiProsesCutiHR() {
                     >
                       DETAIL
                     </button>
-                    <button
-                      onClick={() =>
-                        hapusCuti(
-                          data.id,
-                          dateOnly(data.dari),
-                          dateOnly(data.sampai),
-                          data.karyawan?.name,
-                        )
-                      }
-                      className="uppercase px-2 inline-flex rounded-[3px] items-center text-white text-xs font-bold py-2 my-2 hover:bg-red-400 border bg-red-600 border-red-600 justify-center"
-                    >
-                      Batalkan
-                    </button>
+                    {data.status != 'rejected' && (
+                      <>
+                        {' '}
+                        <button
+                          onClick={() =>
+                            hapusCuti(
+                              data.id,
+                              dateOnly(data.dari),
+                              dateOnly(data.sampai),
+                              data.karyawan?.name,
+                            )
+                          }
+                          className="uppercase px-2 inline-flex rounded-[3px] items-center text-white text-xs font-bold py-2 my-2 hover:bg-red-400 border bg-red-600 border-red-600 justify-center"
+                        >
+                          Batalkan
+                        </button>
+                      </>
+                    )}
                     {showModal[i] == true && (
                       <ModalKosongan
                         isOpen={showModal[i]}

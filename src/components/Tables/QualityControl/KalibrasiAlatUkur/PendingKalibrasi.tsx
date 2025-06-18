@@ -10,6 +10,8 @@ import {
   Calendar,
   X,
   History,
+  ShoppingCart,
+  Settings,
 } from 'lucide-react';
 
 interface KalibrasiAlatUkur {
@@ -38,42 +40,41 @@ interface CalibrationTicket {
   status: string;
   tgl_kalibrasi: string | null;
   updatedAt: string;
-  nama_inspektor: string | null;
-  validator: {
-    nama: string;
-  };
 }
 
-interface DateInputModalProps {
+interface ValidationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (date: string) => void;
+  onConfirm: (bagian: 'qc' | 'purchase') => void;
   loading: boolean;
+  ticketData?: CalibrationTicket | null;
 }
 
-function DateInputModal({
+function ValidationModal({
   isOpen,
   onClose,
   onConfirm,
   loading,
-}: DateInputModalProps): JSX.Element | null {
-  const [selectedDate, setSelectedDate] = useState<string>('');
-
-  useEffect(() => {
-    if (isOpen) {
-      const today = new Date().toISOString().split('T')[0];
-      setSelectedDate(today);
-    }
-  }, [isOpen]);
-
+  ticketData,
+}: ValidationModalProps): JSX.Element | null {
   if (!isOpen) return null;
+
+  const handleValidation = (bagian: 'qc' | 'purchase') => {
+    // Show confirmation alert
+    const bagianText = bagian === 'qc' ? 'QC' : 'Purchase';
+    const confirmMessage = `Apakah Anda yakin ingin memvalidasi tiket ini ke bagian ${bagianText}?`;
+
+    if (window.confirm(confirmMessage)) {
+      onConfirm(bagian);
+    }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
         <div className="flex items-center justify-between p-6 border-b">
           <h3 className="text-lg font-semibold text-gray-900">
-            Input Tanggal Kalibrasi
+            Pilih Bagian Validasi
           </h3>
           <button
             onClick={onClose}
@@ -85,23 +86,77 @@ function DateInputModal({
         </div>
 
         <div className="p-6">
-          <div className="mb-4">
-            <label
-              htmlFor="calibration-date"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Tanggal Kalibrasi
-            </label>
-            <div className="relative">
-              <input
-                type="date"
-                id="calibration-date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          {ticketData && (
+            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+              <h4 className="text-sm font-medium text-gray-900 mb-2">
+                Detail Tiket:
+              </h4>
+              <p className="text-sm text-gray-700">
+                <strong>Alat:</strong>{' '}
+                {ticketData.kalibrasi_alat_ukur.nama_alat_ukur}
+              </p>
+              <p className="text-sm text-gray-700">
+                <strong>Merk/Model:</strong>{' '}
+                {ticketData.kalibrasi_alat_ukur.merk_model}
+              </p>
+              <p className="text-sm text-gray-700">
+                <strong>No. Seri:</strong>{' '}
+                {ticketData.kalibrasi_alat_ukur.no_seri}
+              </p>
+            </div>
+          )}
+
+          <div className="mb-6">
+            <p className="text-sm text-gray-600 mb-4">
+              Pilih bagian untuk memvalidasi tiket kalibrasi ini:
+            </p>
+
+            <div className="grid grid-cols-1 gap-3">
+              <button
+                onClick={() => handleValidation('qc')}
                 disabled={loading}
-              />
-              <Calendar className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
+                className="flex items-center gap-3 p-4 border-2 border-blue-200 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
+              >
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200">
+                    <Settings className="w-5 h-5 text-blue-600" />
+                  </div>
+                </div>
+                <div className="text-left">
+                  <h5 className="text-sm font-medium text-gray-900">
+                    QC (Quality Control)
+                  </h5>
+                  <p className="text-xs text-gray-600">
+                    Validasi oleh bagian Quality Control
+                  </p>
+                </div>
+                {loading && (
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-600 ml-auto" />
+                )}
+              </button>
+
+              <button
+                onClick={() => handleValidation('purchase')}
+                disabled={loading}
+                className="flex items-center gap-3 p-4 border-2 border-green-200 rounded-lg hover:border-green-400 hover:bg-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group"
+              >
+                <div className="flex-shrink-0">
+                  <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-green-200">
+                    <ShoppingCart className="w-5 h-5 text-green-600" />
+                  </div>
+                </div>
+                <div className="text-left">
+                  <h5 className="text-sm font-medium text-gray-900">
+                    Purchase
+                  </h5>
+                  <p className="text-xs text-gray-600">
+                    Validasi oleh bagian Purchase
+                  </p>
+                </div>
+                {loading && (
+                  <Loader2 className="w-4 h-4 animate-spin text-green-600 ml-auto" />
+                )}
+              </button>
             </div>
           </div>
 
@@ -113,18 +168,6 @@ function DateInputModal({
             >
               Batal
             </button>
-            <button
-              onClick={() => selectedDate && onConfirm(selectedDate)}
-              disabled={!selectedDate || loading}
-              className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <CheckCircle className="w-4 h-4" />
-              )}
-              {loading ? 'Memproses...' : 'Konfirmasi'}
-            </button>
           </div>
         </div>
       </div>
@@ -132,17 +175,19 @@ function DateInputModal({
   );
 }
 
-function ContohPurchase(): JSX.Element {
+function PendingKalibrasi(): JSX.Element {
   const [data, setData] = useState<CalibrationTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processingIds, setProcessingIds] = useState<Set<number>>(new Set());
-  const [modalState, setModalState] = useState<{
+  const [validationModalState, setValidationModalState] = useState<{
     isOpen: boolean;
     ticketId: number | null;
+    ticketData: CalibrationTicket | null;
   }>({
     isOpen: false,
     ticketId: null,
+    ticketData: null,
   });
 
   useEffect(() => {
@@ -156,9 +201,6 @@ function ContohPurchase(): JSX.Element {
       setLoading(true);
       setError(null);
       const res = await axios.get(url, {
-        params: {
-          bagian: 'purchase',
-        },
         withCredentials: true,
       });
 
@@ -177,33 +219,41 @@ function ContohPurchase(): JSX.Element {
     }
   }
 
-  async function handleResponse(
+  async function handleValidation(
     id: number,
-    calibrationDate: string,
+    bagian: 'qc' | 'purchase',
   ): Promise<void> {
     const url = `${
       import.meta.env.VITE_API_LINK
-    }/qc/kalibrasiAlatUkurTiket/done/${id}`;
+    }/qc/kalibrasiAlatUkurTiket/validasi/${id}`;
 
     try {
       setProcessingIds((prev) => new Set(prev).add(id));
 
       const payload = {
-        tgl_kalibrasi: calibrationDate,
+        bagian: bagian,
       };
 
       await axios.put(url, payload, {
         withCredentials: true,
       });
 
-      // Refresh the data after successful response
+      // Refresh the data after successful validation
       await getKalibrasi();
 
-      // Close modal
-      setModalState({ isOpen: false, ticketId: null });
+      // Close validation modal
+      setValidationModalState({
+        isOpen: false,
+        ticketId: null,
+        ticketData: null,
+      });
+
+      // Show success message
+      alert(`Tiket berhasil divalidasi ke bagian ${bagian.toUpperCase()}`);
     } catch (error: any) {
-      console.error('Error responding to ticket:', error);
-      setError('Gagal merespon tiket kalibrasi');
+      console.error('Error validating ticket:', error);
+      setError(`Gagal memvalidasi tiket ke bagian ${bagian.toUpperCase()}`);
+      alert(`Gagal memvalidasi tiket ke bagian ${bagian.toUpperCase()}`);
     } finally {
       setProcessingIds((prev) => {
         const newSet = new Set(prev);
@@ -213,17 +263,26 @@ function ContohPurchase(): JSX.Element {
     }
   }
 
-  function openModal(ticketId: number) {
-    setModalState({ isOpen: true, ticketId });
+  function openValidationModal(ticketId: number) {
+    const ticketData = data.find((item) => item.id === ticketId) || null;
+    setValidationModalState({
+      isOpen: true,
+      ticketId,
+      ticketData,
+    });
   }
 
-  function closeModal() {
-    setModalState({ isOpen: false, ticketId: null });
+  function closeValidationModal() {
+    setValidationModalState({
+      isOpen: false,
+      ticketId: null,
+      ticketData: null,
+    });
   }
 
-  function handleModalConfirm(date: string) {
-    if (modalState.ticketId) {
-      handleResponse(modalState.ticketId, date);
+  function handleValidationModalConfirm(bagian: 'qc' | 'purchase') {
+    if (validationModalState.ticketId) {
+      handleValidation(validationModalState.ticketId, bagian);
     }
   }
 
@@ -243,7 +302,6 @@ function ContohPurchase(): JSX.Element {
         icon: <AlertCircle className="w-3 h-3" />,
         text: 'Incoming',
       },
-
       cancelled: {
         color: 'bg-red-100 text-red-800 border-red-200',
         icon: <XCircle className="w-3 h-3" />,
@@ -273,8 +331,7 @@ function ContohPurchase(): JSX.Element {
   // Calculate statistics
   const stats = {
     total: data.length,
-    incoming: data.filter((item) => item.status === 'pending').length,
-
+    incoming: data.filter((item) => item.status === 'incoming').length,
     history: data.filter((item) => item.status === 'history').length,
     cancelled: data.filter((item) => item.status === 'cancelled').length,
   };
@@ -402,9 +459,6 @@ function ContohPurchase(): JSX.Element {
                         Tanggal Kalibrasi
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Inspektor
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Aksi
                       </th>
                     </tr>
@@ -470,35 +524,37 @@ function ContohPurchase(): JSX.Element {
                               : '-'}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">
-                          {item.nama_inspektor || '-'}
-                        </td>
                         <td className="px-6 py-4">
-                          {item.status === 'pending' && (
-                            <button
-                              onClick={() => openModal(item.id)}
-                              disabled={processingIds.has(item.id)}
-                              className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded border border-blue-300 hover:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                              {processingIds.has(item.id) ? (
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                              ) : (
-                                <FileText className="w-3 h-3" />
-                              )}
-                              Respon
-                            </button>
-                          )}
-                          {(item.status === 'done' ||
-                            item.status === 'history') && (
-                            <span className="text-xs text-green-600 font-medium">
-                              {item.status === 'done' ? 'History' : 'History'}
-                            </span>
-                          )}
-                          {item.status === 'cancelled' && (
-                            <span className="text-xs text-red-600 font-medium">
-                              Dibatalkan
-                            </span>
-                          )}
+                          <div className="flex gap-2">
+                            {/* Validation Button - Show for incoming status */}
+                            {item.status === 'pending' && (
+                              <button
+                                onClick={() => openValidationModal(item.id)}
+                                disabled={processingIds.has(item.id)}
+                                className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-purple-700 bg-purple-100 rounded border border-purple-300 hover:bg-purple-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                              >
+                                {processingIds.has(item.id) ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="w-3 h-3" />
+                                )}
+                                Validasi
+                              </button>
+                            )}
+
+                            {/* Status Display for other statuses */}
+                            {(item.status === 'done' ||
+                              item.status === 'history') && (
+                              <span className="text-xs text-green-600 font-medium">
+                                History
+                              </span>
+                            )}
+                            {item.status === 'cancelled' && (
+                              <span className="text-xs text-red-600 font-medium">
+                                Dibatalkan
+                              </span>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -510,17 +566,20 @@ function ContohPurchase(): JSX.Element {
         </div>
       </div>
 
-      {/* Date Input Modal */}
-      <DateInputModal
-        isOpen={modalState.isOpen}
-        onClose={closeModal}
-        onConfirm={handleModalConfirm}
+      {/* Validation Modal */}
+      <ValidationModal
+        isOpen={validationModalState.isOpen}
+        onClose={closeValidationModal}
+        onConfirm={handleValidationModalConfirm}
         loading={
-          modalState.ticketId ? processingIds.has(modalState.ticketId) : false
+          validationModalState.ticketId
+            ? processingIds.has(validationModalState.ticketId)
+            : false
         }
+        ticketData={validationModalState.ticketData}
       />
     </>
   );
 }
 
-export default ContohPurchase;
+export default PendingKalibrasi;

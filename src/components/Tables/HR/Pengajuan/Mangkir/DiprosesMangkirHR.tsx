@@ -177,10 +177,32 @@ function DiprosesMangkirHR() {
     setShowModal(onchangeVal);
   };
 
-  const formatCurrency = (amount: number): string => {
-    return `Rp. ${amount.toLocaleString('id-ID')}`;
-  };
-
+  async function hapusCuti(id: any, dari: any, sampai: any, name: any) {
+    if (
+      window.confirm(
+        `Apakah Anda yakin ingin Membatalkan SPL Untuk Karyawan  ${name} pada tanggal ${dari} - ${sampai}   ?`,
+      )
+    ) {
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/hr/pengajuanMangkir/reject/${id}`;
+      try {
+        setIsLoading(true);
+        const res = await axios.put(
+          url,
+          {},
+          {
+            withCredentials: true,
+          },
+        );
+        setIsLoading(false);
+        getMangkir();
+      } catch (error: any) {
+        setIsLoading(false);
+        console.log(error);
+      }
+    }
+  }
   return (
     <>
       <main className="overflow-x-scroll">
@@ -367,10 +389,10 @@ function DiprosesMangkirHR() {
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Personnel
               </label>
-              <label className="text-neutral-500 text-sm font-semibold col-span-2">
+              <label className="text-neutral-500 text-sm font-semibold col-span-3">
                 Status
               </label>
-              <label className="text-neutral-500 text-sm font-semibold justify-center col-span-3">
+              <label className="text-neutral-500 text-sm font-semibold justify-center col-span-2">
                 Aksi
               </label>
             </div>
@@ -398,16 +420,34 @@ function DiprosesMangkirHR() {
                   <label className="text-neutral-500 text-sm font-semibold col-span-2">
                     {data.karyawan?.name}
                   </label>
-                  <label className="text-neutral-500 text-sm font-semibold uppercase col-span-2">
+                  <label className="text-neutral-500 text-sm font-semibold uppercase col-span-3">
                     {data.status}
                   </label>
-                  <div className="justify-end flex pr-2 col-span-3">
+                  <div className="justify-end flex flex-col pr-2 col-span-2">
                     <button
                       onClick={() => openModalModal(i)}
-                      className="uppercase px-5 inline-flex rounded-[3px] items-center text-white text-xs font-bold py-2 my-2 hover:bg-blue-400 border bg-blue-600 border-blue-600 justify-center"
+                      className="uppercase  inline-flex rounded-[3px] items-center text-white text-xs font-bold py-2 my-2 hover:bg-blue-400 border bg-blue-600 border-blue-600 justify-center"
                     >
                       DETAIL
                     </button>
+                    {data.status != 'rejected' && (
+                      <>
+                        {' '}
+                        <button
+                          onClick={() =>
+                            hapusCuti(
+                              data.id,
+                              dateOnly(data.dari),
+                              dateOnly(data.sampai),
+                              data.karyawan?.name,
+                            )
+                          }
+                          className="uppercase px-2 inline-flex rounded-[3px] items-center text-white text-xs font-bold py-2 my-2 hover:bg-red-400 border bg-red-600 border-red-600 justify-center"
+                        >
+                          Batalkan
+                        </button>
+                      </>
+                    )}
                     {showModal[i] == true && (
                       <ModalKosongan
                         isOpen={showModal[i]}

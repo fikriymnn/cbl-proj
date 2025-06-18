@@ -132,7 +132,7 @@ function DateInputModal({
   );
 }
 
-function ContohPurchase(): JSX.Element {
+function KalibrasiInternal(): JSX.Element {
   const [data, setData] = useState<CalibrationTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -157,7 +157,7 @@ function ContohPurchase(): JSX.Element {
       setError(null);
       const res = await axios.get(url, {
         params: {
-          bagian: 'purchase',
+          bagian: 'qc',
         },
         withCredentials: true,
       });
@@ -523,4 +523,4 @@ function ContohPurchase(): JSX.Element {
   );
 }
 
-export default ContohPurchase;
+export default KalibrasiInternal;
