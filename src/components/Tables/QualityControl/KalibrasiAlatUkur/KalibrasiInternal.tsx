@@ -147,6 +147,7 @@ function KalibrasiInternal(): JSX.Element {
 
   useEffect(() => {
     getKalibrasi();
+    getMe();
   }, []);
 
   async function getKalibrasi(): Promise<void> {
@@ -176,7 +177,20 @@ function KalibrasiInternal(): JSX.Element {
       setLoading(false);
     }
   }
+  const [namaPelapor, setnamaPelapor] = useState<any>();
 
+  async function getMe() {
+    const url = `${import.meta.env.VITE_API_LINK}/me`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+
+      setnamaPelapor(res.data.nama);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
   async function handleResponse(
     id: number,
     calibrationDate: string,
@@ -189,6 +203,7 @@ function KalibrasiInternal(): JSX.Element {
       setProcessingIds((prev) => new Set(prev).add(id));
 
       const payload = {
+        nama_inspektor: namaPelapor, // Replace with actual inspector name if needed
         tgl_kalibrasi: calibrationDate,
       };
 

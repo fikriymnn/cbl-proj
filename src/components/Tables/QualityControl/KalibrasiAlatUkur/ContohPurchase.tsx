@@ -147,8 +147,22 @@ function ContohPurchase(): JSX.Element {
 
   useEffect(() => {
     getKalibrasi();
+    getMe();
   }, []);
+  const [namaPelapor, setnamaPelapor] = useState<any>();
 
+  async function getMe() {
+    const url = `${import.meta.env.VITE_API_LINK}/me`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+
+      setnamaPelapor(res.data.nama);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
   async function getKalibrasi(): Promise<void> {
     const url = `${import.meta.env.VITE_API_LINK}/qc/kalibrasiAlatUkurTiket`;
 
@@ -189,6 +203,7 @@ function ContohPurchase(): JSX.Element {
       setProcessingIds((prev) => new Set(prev).add(id));
 
       const payload = {
+        nama_inspektor: namaPelapor,
         tgl_kalibrasi: calibrationDate,
       };
 
