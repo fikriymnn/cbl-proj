@@ -36,6 +36,7 @@ interface KalibrasiAlatUkur {
 interface KalibrasiHistory {
   id: number;
   id_kalibrasi_alat_ukur: number;
+  nama_inspektor: string;
   tgl_kalibrasi: string;
   status: string;
   createdAt: string;
@@ -652,7 +653,9 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
                                       Tanggal Kalibrasi
                                     </th>
-
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+                                      Inspektor
+                                    </th>
                                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
                                       Status
                                     </th>
@@ -674,7 +677,9 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                                           <td className="px-4 py-3 text-sm text-gray-900">
                                             {formatDate(history.tgl_kalibrasi)}
                                           </td>
-
+                                          <td className="px-4 py-3 text-sm text-gray-900">
+                                            {history.nama_inspektor || '-'}
+                                          </td>
                                           <td className="px-4 py-3">
                                             <span
                                               className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${

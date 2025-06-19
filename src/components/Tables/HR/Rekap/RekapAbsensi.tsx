@@ -105,6 +105,7 @@ function AttendanceRecapChart() {
     try {
       setIsLoading(true);
       const response = await axios.get(url, {
+        params: { is_active: true },
         withCredentials: true,
       });
       setIsLoading(false);

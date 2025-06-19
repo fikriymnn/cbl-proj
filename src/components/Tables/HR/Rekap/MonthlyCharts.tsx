@@ -1,12 +1,13 @@
 import {
-  LineChart,
-  Line,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   Tooltip,
   Legend,
   ResponsiveContainer,
   CartesianGrid,
+  LabelList,
 } from 'recharts';
 import { useState } from 'react';
 
@@ -23,7 +24,7 @@ interface MonthlyChartData {
   totalJamLembur: number;
 }
 
-interface MonthlyLineChartProps {
+interface MonthlyBarChartProps {
   data: MonthlyChartData[];
   isVisible: boolean;
 }
@@ -40,35 +41,34 @@ const chartKeys = [
   { key: 'totalJamLembur', label: 'Jam Lembur', color: '#f97316' },
 ];
 
-export default function MonthlyLineChart({
+export default function MonthlyBarChart({
   data,
   isVisible,
-}: MonthlyLineChartProps) {
-  const [visibleLines, setVisibleLines] = useState<string[]>(
+}: MonthlyBarChartProps) {
+  const [visibleBars, setVisibleBars] = useState<string[]>(
     chartKeys.map((k) => k.key),
   );
 
   if (!isVisible || data.length === 0) return null;
 
-  const toggleLine = (key: string) => {
-    setVisibleLines((prev) =>
+  const toggleBar = (key: string) => {
+    setVisibleBars((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
     );
   };
 
-  const allSelected = visibleLines.length === chartKeys.length;
+  const allSelected = visibleBars.length === chartKeys.length;
 
   const toggleAll = () => {
-    setVisibleLines(allSelected ? [] : chartKeys.map((k) => k.key));
+    setVisibleBars(allSelected ? [] : chartKeys.map((k) => k.key));
   };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mt-6">
       <h3 className="text-lg font-semibold text-gray-800 mb-4">
-        Ringkasan Bulanan
+        Ringkasan Bulanan (Bar Chart)
       </h3>
 
-      {/* Filter Switch */}
       <div className="flex flex-wrap gap-4 mb-4 items-center">
         <button
           onClick={toggleAll}
@@ -82,8 +82,8 @@ export default function MonthlyLineChart({
             <label key={key} className="flex items-center space-x-2 text-sm">
               <input
                 type="checkbox"
-                checked={visibleLines.includes(key)}
-                onChange={() => toggleLine(key)}
+                checked={visibleBars.includes(key)}
+                onChange={() => toggleBar(key)}
                 className="accent-blue-600"
               />
               <span>{label}</span>
@@ -93,7 +93,7 @@ export default function MonthlyLineChart({
       </div>
 
       <ResponsiveContainer width="100%" height={450}>
-        <LineChart
+        <BarChart
           data={data}
           margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
         >
@@ -105,30 +105,23 @@ export default function MonthlyLineChart({
 
           {chartKeys.map(
             ({ key, label, color }) =>
-              visibleLines.includes(key) && (
-                <Line
-                  key={key}
-                  type="monotone"
-                  dataKey={key}
-                  stroke={color}
-                  name={label}
-                />
+              visibleBars.includes(key) && (
+                <Bar key={key} dataKey={key} fill={color} name={label}>
+                  <LabelList dataKey={key} position="top" />
+                </Bar>
               ),
           )}
-        </LineChart>
+        </BarChart>
       </ResponsiveContainer>
 
-      {/* Tabel Ringkasan Professional */}
       <div className="mt-8">
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          {/* Header */}
           <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
             <h3 className="text-lg font-semibold text-white">
               Ringkasan Data Bulanan
             </h3>
           </div>
 
-          {/* Table Container */}
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -185,7 +178,6 @@ export default function MonthlyLineChart({
             </table>
           </div>
 
-          {/* Footer */}
           <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
             <div className="flex items-center justify-between text-xs text-gray-500">
               <span>Total {data.length} periode data</span>
