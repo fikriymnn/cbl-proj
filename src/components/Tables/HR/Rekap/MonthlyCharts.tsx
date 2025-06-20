@@ -27,6 +27,8 @@ interface MonthlyChartData {
 interface MonthlyBarChartProps {
   data: MonthlyChartData[];
   isVisible: boolean;
+  onSelectMonth?: (monthYear: string) => void;
+  onSelectDetail?: (monthYear: string, field: keyof MonthlyChartData) => void;
 }
 
 const chartKeys = [
@@ -41,9 +43,11 @@ const chartKeys = [
   { key: 'totalJamLembur', label: 'Jam Lembur', color: '#f97316' },
 ];
 
-export default function MonthlyBarChart({
+function MonthlyCharts({
   data,
   isVisible,
+  onSelectMonth,
+  onSelectDetail,
 }: MonthlyBarChartProps) {
   const [visibleBars, setVisibleBars] = useState<string[]>(
     chartKeys.map((k) => k.key),
@@ -61,6 +65,17 @@ export default function MonthlyBarChart({
 
   const toggleAll = () => {
     setVisibleBars(allSelected ? [] : chartKeys.map((k) => k.key));
+  };
+
+  const handleCellClick = (
+    e: React.MouseEvent,
+    monthYear: string,
+    field: keyof MonthlyChartData,
+  ) => {
+    e.stopPropagation(); // Prevent row click
+    if (onSelectDetail) {
+      onSelectDetail(monthYear, field);
+    }
   };
 
   return (
@@ -106,7 +121,17 @@ export default function MonthlyBarChart({
           {chartKeys.map(
             ({ key, label, color }) =>
               visibleBars.includes(key) && (
-                <Bar key={key} dataKey={key} fill={color} name={label}>
+                <Bar
+                  key={key}
+                  dataKey={key}
+                  fill={color}
+                  name={label}
+                  onClick={(data) => {
+                    if (onSelectMonth) {
+                      onSelectMonth(data.monthYear);
+                    }
+                  }}
+                >
                   <LabelList dataKey={key} position="top" />
                 </Bar>
               ),
@@ -120,6 +145,9 @@ export default function MonthlyBarChart({
             <h3 className="text-lg font-semibold text-white">
               Ringkasan Data Bulanan
             </h3>
+            <p className="text-blue-100 text-sm mt-1">
+              Klik pada angka untuk melihat detail karyawan
+            </p>
           </div>
 
           <div className="overflow-x-auto">
@@ -161,13 +189,25 @@ export default function MonthlyBarChart({
                     {chartKeys.map(({ key }, colIndex) => (
                       <td
                         key={key}
-                        className={`px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-center ${
+                        className={`px-6 py-4 whitespace-nowrap text-center ${
                           colIndex < chartKeys.length - 1
                             ? 'border-r border-gray-200'
                             : ''
                         }`}
                       >
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-md font-medium bg-gray-100 text-gray-800 group-hover:bg-blue-100 group-hover:text-blue-800 transition-colors duration-150">
+                        <span
+                          className="inline-block px-3 py-1 text-sm font-medium text-gray-900 hover:bg-blue-100 hover:text-blue-700 rounded-md cursor-pointer transition-colors duration-150"
+                          onClick={(e) =>
+                            handleCellClick(
+                              e,
+                              item.monthYear,
+                              key as keyof MonthlyChartData,
+                            )
+                          }
+                          title={`Klik untuk melihat detail ${chartKeys.find(
+                            (c) => c.key === key,
+                          )?.label} di ${item.monthYear}`}
+                        >
                           {item[key as keyof MonthlyChartData]}
                         </span>
                       </td>
@@ -191,3 +231,4 @@ export default function MonthlyBarChart({
     </div>
   );
 }
+export default MonthlyCharts;

@@ -12,7 +12,7 @@ import {
   LineChart,
   Line,
 } from 'recharts';
-import MonthlyLineChart from './MonthlyCharts';
+import MonthlyCharts from './MonthlyCharts';
 
 // Configure axios defaults
 axios.defaults.withCredentials = true;
@@ -25,10 +25,10 @@ function AttendanceRecapChart() {
   const [monthlyChartData, setMonthlyChartData] = useState<MonthlyChartData[]>(
     [],
   );
+  const [selectedDivisi, setSelectedDivisi] = useState('');
   const [filteredData, setFilteredData] = useState<Employee[]>([]);
   const [selectedBar, setSelectedBar] = useState<ChartDataItem | null>(null);
-  const [selectedMonthBar, setSelectedMonthBar] =
-    useState<MonthlyChartData | null>(null);
+
   const [isMonthlyView, setIsMonthlyView] = useState(false);
 
   interface Department {
@@ -36,7 +36,14 @@ function AttendanceRecapChart() {
     nama_department: string;
   }
   const [department, setDepartment] = useState<Department[]>([]);
+  const [selectedDetail, setSelectedDetail] = useState<{
+    monthYear: string;
+    field: keyof MonthlyChartData;
+  } | null>(null);
 
+  const [selectedMonthBar, setSelectedMonthBar] = useState<{
+    monthYear: string;
+  } | null>(null);
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFrom, setDateFrom] = useState('');
@@ -44,9 +51,22 @@ function AttendanceRecapChart() {
   const [idDepartment, setIdDepartment] = useState('');
 
   // Get filtered data based on search query
-  const filteredAbsen = absen?.filter((data: any) =>
-    data.nama_karyawan.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredAbsen = useMemo(() => {
+    const source = isMonthlyView ? [] : absen;
+    return selectedDivisi
+      ? source.filter((emp) => emp.divisi === selectedDivisi)
+      : source;
+  }, [absen, selectedDivisi, isMonthlyView]);
+
+  const filteredMonthly = useMemo(() => {
+    if (!isMonthlyView) return [];
+    return monthlyData.map((month) => ({
+      ...month,
+      employees: selectedDivisi
+        ? month.employees.filter((emp) => emp.divisi === selectedDivisi)
+        : month.employees,
+    }));
+  }, [monthlyData, selectedDivisi, isMonthlyView]);
 
   useEffect(() => {
     getDepartment();
@@ -79,15 +99,14 @@ function AttendanceRecapChart() {
     setSelectedMonthBar(null);
   };
 
-  // Update chart when search query changes
   useEffect(() => {
-    if (!isMonthlyView && absen && absen.length > 0) {
-      const dataForChart = searchQuery ? filteredAbsen : absen;
-      generateChartData(dataForChart);
-      // Reset selected bar when search changes
-      setSelectedBar(null);
+    if (isMonthlyView && filteredMonthly.length > 0) {
+      generateMonthlyChartData(filteredMonthly);
+    } else if (!isMonthlyView && filteredAbsen.length > 0) {
+      generateChartData(filteredAbsen);
+      setFilteredData(filteredAbsen);
     }
-  }, [searchQuery, filteredAbsen, isMonthlyView]);
+  }, [filteredAbsen, filteredMonthly, isMonthlyView]);
 
   // Helper function to calculate months difference
   const getMonthsDifference = (dateFrom: string, dateTo: string) => {
@@ -99,6 +118,15 @@ function AttendanceRecapChart() {
       1
     );
   };
+
+  const uniqueDivisiOptions = useMemo(() => {
+    const source = isMonthlyView
+      ? monthlyData.flatMap((m) => m.employees)
+      : absen;
+
+    const divisiSet = new Set(source.map((emp) => emp.divisi).filter(Boolean));
+    return Array.from(divisiSet);
+  }, [absen, monthlyData, isMonthlyView]);
 
   async function getDepartment() {
     const url = `${import.meta.env.VITE_API_LINK}/master/hr/department`;
@@ -472,57 +500,116 @@ function AttendanceRecapChart() {
   const displayData = useMemo(() => {
     let data: Employee[] = [];
 
+    // First, get the base data based on view mode
     if (isMonthlyView && monthlyData.length > 0) {
-      if (selectedMonthBar) {
-        // Find the specific month data
+      if (selectedDetail) {
+        // If detail is selected, get employees from specific month that match the criteria
+        const monthData = monthlyData.find(
+          (m) => m.monthYear === selectedDetail.monthYear,
+        );
+        if (monthData) {
+          data = monthData.employees.filter((emp) => {
+            const { field } = selectedDetail;
+
+            switch (field) {
+              case 'totalEmployees':
+                return true; // All employees
+              case 'totalHariMasuk':
+                return (emp.absensi?.length || 0) > 0;
+              case 'totalCutiTahunan':
+                return (emp.jumlah_hari_cuti_tahunan || 0) > 0;
+              case 'totalCutiKhusus':
+                return (emp.jumlah_hari_cuti_khusus || 0) > 0;
+              case 'totalIzin':
+                return (emp.jumlah_hari_izin || 0) > 0;
+              case 'totalSakit':
+                return (emp.jumlah_hari_sakit || 0) > 0;
+              case 'totalMangkir':
+                return (emp.jumlah_hari_mangkir || 0) > 0;
+              case 'totalTerlambat':
+                return (emp.jumlah_hari_terlambat || 0) > 0;
+              case 'totalJamLembur':
+                return (
+                  (emp.jam_lembur_biasa || 0) > 0 ||
+                  (emp.jam_lembur_libur || 0) > 0
+                );
+              default:
+                return false;
+            }
+          });
+        }
+      } else if (selectedMonthBar) {
+        // If month bar is selected, get all employees from that month
         const monthData = monthlyData.find(
           (m) => m.monthYear === selectedMonthBar.monthYear,
         );
         data = monthData ? monthData.employees : [];
       } else {
-        // Show all employees from all months
+        // Default: get all employees from all months
         data = monthlyData.flatMap((monthData) => monthData.employees);
       }
     } else {
-      data = searchQuery ? filteredAbsen : absen;
-
-      // If a department bar is selected, filter by department
-      if (selectedBar) {
-        data = data.filter((emp) => emp.department === selectedBar.department);
-      }
+      // Non-monthly view: use regular absen data
+      data = absen;
     }
 
-    // Apply search filter
-    if (searchQuery && !isMonthlyView) {
-      data = data.filter((emp) =>
-        emp.nama_karyawan.toLowerCase().includes(searchQuery.toLowerCase()),
+    // Apply department bar click (only for non-monthly view)
+    if (!isMonthlyView && selectedBar) {
+      data = data.filter((emp) => emp.department === selectedBar.department);
+    }
+
+    // Apply search query filter
+    if (searchQuery) {
+      data = data.filter(
+        (emp) =>
+          emp.nama_karyawan?.toLowerCase().includes(searchQuery.toLowerCase()),
       );
     }
 
-    // Remove duplicates based on NIK (employee ID)
-    const uniqueData = data.filter(
-      (employee, index, self) =>
-        index === self.findIndex((emp) => emp.nik === employee.nik),
-    );
+    // Apply divisi filter
+    if (selectedDivisi) {
+      data = data.filter((emp) => emp.divisi === selectedDivisi);
+    }
+
+    // Apply department filter (from dropdown)
+    if (idDepartment) {
+      const selectedDepartment = department.find((d) => d.id === idDepartment);
+      if (selectedDepartment) {
+        data = data.filter(
+          (emp) => emp.department === selectedDepartment.nama_department,
+        );
+      }
+    }
+
+    // Remove duplicates by NIK
+    const uniqueData = data.filter((employee, index, self) => {
+      const firstIndex = self.findIndex((emp) => emp.nik === employee.nik);
+      return index === firstIndex;
+    });
 
     return uniqueData;
   }, [
-    searchQuery,
-    filteredAbsen,
     absen,
+    monthlyData,
     selectedBar,
     selectedMonthBar,
-    monthlyData,
+    selectedDetail, // Add this dependency
     isMonthlyView,
+    searchQuery,
+    selectedDivisi,
+    idDepartment,
+    department,
   ]);
 
   // Calculate summary statistics based on display data
   const summaryStats = {
     totalKaryawan: displayData.length,
     totalJamLembur: displayData.reduce((sum: any, emp: any) => {
-      // For monthly data, use the direct fields
+      // For monthly data, use the direct fields (handle null values)
       if (isMonthlyView) {
-        return sum + (emp.jam_lembur_biasa || 0) + (emp.jam_lembur_libur || 0);
+        const lemburBiasa = emp.jam_lembur_biasa || 0;
+        const lemburLibur = emp.jam_lembur_libur || 0;
+        return sum + lemburBiasa + lemburLibur;
       } else {
         // For regular data, calculate from absensi records
         const empLembur =
@@ -561,7 +648,13 @@ function AttendanceRecapChart() {
       0,
     ),
   };
-
+  const handleMonthClick = (monthYear: string) => {
+    const selected = monthlyChartData.find((m) => m.monthYear === monthYear);
+    if (selected) {
+      setSelectedMonthBar(selected);
+      setSelectedBar(null);
+    }
+  };
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       {/* Loading Indicator */}
@@ -655,7 +748,24 @@ function AttendanceRecapChart() {
               ))}
             </select>
           </div>
-
+          {/* Divisi Filter */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Divisi
+            </label>
+            <select
+              value={selectedDivisi}
+              onChange={(e) => setSelectedDivisi(e.target.value)}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Semua Divisi</option>
+              {uniqueDivisiOptions.map((div) => (
+                <option key={div} value={div}>
+                  {div}
+                </option>
+              ))}
+            </select>
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Cari Karyawan
@@ -712,7 +822,20 @@ function AttendanceRecapChart() {
       {/* Enhanced Summary Cards */}
       {/* Additional Info Panel for Monthly View */}
       {isMonthlyView && monthlyChartData.length > 0 ? (
-        <MonthlyLineChart data={monthlyChartData} isVisible={true} />
+        <MonthlyCharts
+          data={monthlyChartData}
+          isVisible={true}
+          onSelectMonth={(monthYear) => {
+            // Handle month selection (for clicking the month name)
+            setSelectedMonthBar({ monthYear });
+            setSelectedDetail(null); // Clear detail selection
+          }}
+          onSelectDetail={(monthYear, field) => {
+            // Handle detail selection (for clicking specific numbers)
+            setSelectedDetail({ monthYear, field });
+            setSelectedMonthBar(null); // Clear month bar selection
+          }}
+        />
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-4 mb-6">
@@ -872,28 +995,169 @@ function AttendanceRecapChart() {
         <div className="p-6 border-b">
           <h3 className="text-lg font-semibold text-gray-800">
             Detail Karyawan
-            {isMonthlyView && selectedMonthBar
-              ? ` - ${selectedMonthBar.monthYear}`
-              : selectedBar
-              ? ` - ${selectedBar.department}`
-              : ''}
+            {(() => {
+              // Function to get field label in Indonesian
+              type MonthlyChartDataField =
+                | 'totalEmployees'
+                | 'totalHariMasuk'
+                | 'totalCutiTahunan'
+                | 'totalCutiKhusus'
+                | 'totalIzin'
+                | 'totalSakit'
+                | 'totalMangkir'
+                | 'totalTerlambat'
+                | 'totalJamLembur';
+
+              const getFieldLabel = (field: MonthlyChartDataField) => {
+                const fieldLabels: Record<MonthlyChartDataField, string> = {
+                  totalEmployees: 'Semua Karyawan',
+                  totalHariMasuk: 'Hari Masuk',
+                  totalCutiTahunan: 'Cuti Tahunan',
+                  totalCutiKhusus: 'Cuti Khusus',
+                  totalIzin: 'Izin',
+                  totalSakit: 'Sakit',
+                  totalMangkir: 'Mangkir',
+                  totalTerlambat: 'Terlambat',
+                  totalJamLembur: 'Jam Lembur',
+                };
+                return fieldLabels[field] || field;
+              };
+
+              if (isMonthlyView && selectedDetail) {
+                return ` - ${getFieldLabel(
+                  selectedDetail.field as MonthlyChartDataField,
+                )} (${selectedDetail.monthYear})`;
+              } else if (isMonthlyView && selectedMonthBar) {
+                return ` - ${selectedMonthBar.monthYear}`;
+              } else if (selectedBar) {
+                return ` - ${selectedBar.department}`;
+              }
+              return '';
+            })()}
           </h3>
           <p className="text-sm text-gray-600">
             Menampilkan {displayData.length} karyawan
-            {searchQuery && !isMonthlyView && (
-              <span className="ml-1 text-blue-600">
-                (filtered by "{searchQuery}")
-              </span>
-            )}
-            {isMonthlyView && (
-              <span className="ml-1 text-green-600">
-                {selectedMonthBar
-                  ? `(from ${selectedMonthBar.monthYear})`
-                  : '(from all months)'}
-              </span>
-            )}
+            {(() => {
+              // Function to get description based on selection
+              type MonthlyChartDataField =
+                | 'totalEmployees'
+                | 'totalHariMasuk'
+                | 'totalCutiTahunan'
+                | 'totalCutiKhusus'
+                | 'totalIzin'
+                | 'totalSakit'
+                | 'totalMangkir'
+                | 'totalTerlambat'
+                | 'totalJamLembur';
+
+              const getFieldDescription = (field: MonthlyChartDataField) => {
+                const descriptions: Record<MonthlyChartDataField, string> = {
+                  totalEmployees: 'semua karyawan',
+                  totalHariMasuk: 'yang masuk kerja',
+                  totalCutiTahunan: 'yang mengambil cuti tahunan',
+                  totalCutiKhusus: 'yang mengambil cuti khusus',
+                  totalIzin: 'yang mengambil izin',
+                  totalSakit: 'yang sakit',
+                  totalMangkir: 'yang mangkir',
+                  totalTerlambat: 'yang terlambat',
+                  totalJamLembur: 'yang lembur',
+                };
+                return descriptions[field] || '';
+              };
+
+              if (searchQuery && !isMonthlyView) {
+                return (
+                  <span className="ml-1 text-blue-600">
+                    (filtered by "{searchQuery}")
+                  </span>
+                );
+              }
+
+              if (isMonthlyView && selectedDetail) {
+                return (
+                  <span className="ml-1 text-green-600">
+                    (
+                    {(() => {
+                      // Only call getFieldDescription if the field is a valid MonthlyChartDataField
+                      const validFields: MonthlyChartDataField[] = [
+                        'totalEmployees',
+                        'totalHariMasuk',
+                        'totalCutiTahunan',
+                        'totalCutiKhusus',
+                        'totalIzin',
+                        'totalSakit',
+                        'totalMangkir',
+                        'totalTerlambat',
+                        'totalJamLembur',
+                      ];
+                      return validFields.includes(
+                        selectedDetail.field as MonthlyChartDataField,
+                      )
+                        ? getFieldDescription(
+                            selectedDetail.field as MonthlyChartDataField,
+                          )
+                        : '';
+                    })()}{' '}
+                    di {selectedDetail.monthYear})
+                  </span>
+                );
+              }
+
+              if (isMonthlyView) {
+                return (
+                  <span className="ml-1 text-green-600">
+                    {selectedMonthBar
+                      ? `(dari ${selectedMonthBar.monthYear})`
+                      : '(dari semua bulan)'}
+                  </span>
+                );
+              }
+
+              return null;
+            })()}
           </p>
         </div>
+
+        {/* Add additional info if detail is selected */}
+        {isMonthlyView && selectedDetail && (
+          <div className="px-6 py-2 bg-blue-50 border-b">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-blue-700">
+                📊 Detail:{' '}
+                {(() => {
+                  const fieldLabels: Record<
+                    Exclude<keyof MonthlyChartData, 'monthYear'>,
+                    string
+                  > = {
+                    totalEmployees: 'Semua Karyawan',
+                    totalHariMasuk: 'Karyawan yang Masuk Kerja',
+                    totalCutiTahunan: 'Karyawan yang Cuti Tahunan',
+                    totalCutiKhusus: 'Karyawan yang Cuti Khusus',
+                    totalIzin: 'Karyawan yang Izin',
+                    totalSakit: 'Karyawan yang Sakit',
+                    totalMangkir: 'Karyawan yang Mangkir',
+                    totalTerlambat: 'Karyawan yang Terlambat',
+                    totalJamLembur: 'Karyawan yang Lembur',
+                  };
+                  return (
+                    fieldLabels[
+                      selectedDetail.field as Exclude<
+                        keyof MonthlyChartData,
+                        'monthYear'
+                      >
+                    ] || selectedDetail.field
+                  );
+                })()}
+              </span>
+              <button
+                onClick={() => setSelectedDetail(null)}
+                className="text-xs text-blue-600 hover:text-blue-800 underline"
+              >
+                Lihat Semua Karyawan
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -1005,12 +1269,12 @@ function AttendanceRecapChart() {
                           <>
                             {(employee.jam_lembur_biasa || 0) > 0 && (
                               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                                Biasa: {employee.jam_lembur_biasa} jam
+                                Biasa: {employee.jam_lembur_biasa || 0} jam
                               </span>
                             )}
                             {(employee.jam_lembur_libur || 0) > 0 && (
                               <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                                Libur: {employee.jam_lembur_libur} jam
+                                Libur: {employee.jam_lembur_libur || 0} jam
                               </span>
                             )}
                           </>
