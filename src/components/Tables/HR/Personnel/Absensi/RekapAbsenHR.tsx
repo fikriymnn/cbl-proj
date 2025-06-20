@@ -457,12 +457,12 @@ function RekapAbsenHR() {
                                     {overtimeCalc.lemburTanpaSPL} Kali
                                   </span>
                                 </div>
-                                <div className="flex justify-between">
+                                {/* <div className="flex justify-between">
                                   <span>Istirahat:</span>
                                   <span className="font-medium">
                                     {timeMetrics.totalIstirahatLembur} jam
                                   </span>
-                                </div>
+                                </div> */}
                               </div>
                             </div>
 

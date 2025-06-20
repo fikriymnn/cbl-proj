@@ -124,7 +124,7 @@ function ValidationModal({
                 </div>
                 <div className="text-left">
                   <h5 className="text-sm font-medium text-gray-900">
-                    QC (Quality Control)
+                    Internal
                   </h5>
                   <p className="text-xs text-gray-600">
                     Validasi oleh bagian Quality Control
@@ -147,7 +147,7 @@ function ValidationModal({
                 </div>
                 <div className="text-left">
                   <h5 className="text-sm font-medium text-gray-900">
-                    Purchase
+                    External
                   </h5>
                   <p className="text-xs text-gray-600">
                     Validasi oleh bagian Purchase

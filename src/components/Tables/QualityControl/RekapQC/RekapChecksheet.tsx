@@ -22,10 +22,7 @@ function RekapChecksheet() {
   const [loading, setLoading] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
 
-  useEffect(() => {
-    // Initial data fetch with default dates
-    getRekapChecksheet();
-  }, []);
+  useEffect(() => {}, []);
 
   async function getRekapChecksheet() {
     setLoading(true);
