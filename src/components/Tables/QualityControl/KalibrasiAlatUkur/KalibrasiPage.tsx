@@ -28,6 +28,8 @@ interface KalibrasiAlatUkur {
   kalibrasi_terakhir: string;
   masa_berlaku: string;
   sertifikat: string;
+  no_sertifikat?: string;
+  vendor?: string;
   keterangan: string;
   file: string;
   data_tiket?: KalibrasiHistory[];
@@ -43,17 +45,31 @@ interface KalibrasiHistory {
   updatedAt: string;
 }
 
+interface StatusKalibrasi {
+  id: number;
+  status: string;
+  keterangan?: string;
+}
+
+interface LokasiKalibrasi {
+  id: number;
+  lokasi: string;
+  keterangan?: string;
+}
+
 interface FormData {
   nama_alat_ukur: string;
   merk_model: string;
   no_seri: string;
   spesifikasi: string;
-  lokasi_penyimpanan: string;
-  status: string;
+  lokasi_penyimpanan: string; // This will store the ID
+  status: string; // This will store the ID
   frekuensi: number;
   kalibrasi_terakhir: string;
   masa_berlaku: string;
   sertifikat: string;
+  no_sertifikat?: string;
+  vendor?: string;
   keterangan: string;
   file: string;
 }
@@ -75,6 +91,15 @@ function KalibrasiAlatUkurPage(): JSX.Element {
   const [historyData, setHistoryData] = useState<
     Record<number, KalibrasiHistory[]>
   >({});
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string>('');
+  const [uploading, setUploading] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string>('');
+
+  // Master data state
+  const [statusKalibrasi, setStatusKalibrasi] = useState<StatusKalibrasi[]>([]);
+  const [lokasiKalibrasi, setLokasiKalibrasi] = useState<LokasiKalibrasi[]>([]);
+  const [masterDataLoading, setMasterDataLoading] = useState<boolean>(true);
 
   // Pagination state
   const [pagination, setPagination] = useState<PaginationData>({
@@ -90,7 +115,7 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     no_seri: '',
     spesifikasi: '',
     lokasi_penyimpanan: '',
-    status: 'ok',
+    status: '',
     frekuensi: 1,
     kalibrasi_terakhir: '',
     masa_berlaku: '',
@@ -99,9 +124,141 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     file: '',
   });
 
+  // Load master data
+  async function loadMasterData(): Promise<void> {
+    setMasterDataLoading(true);
+    try {
+      const [statusResponse, lokasiResponse] = await Promise.all([
+        axios.get(
+          `${import.meta.env.VITE_API_LINK}/master/qc/statusKalibrasi`,
+          {
+            withCredentials: true,
+          },
+        ),
+        axios.get(
+          `${import.meta.env.VITE_API_LINK}/master/qc/lokasiKalibrasi`,
+          {
+            withCredentials: true,
+          },
+        ),
+      ]);
+
+      setStatusKalibrasi(statusResponse.data.data || statusResponse.data || []);
+      setLokasiKalibrasi(lokasiResponse.data.data || lokasiResponse.data || []);
+    } catch (error: any) {
+      console.error('Error loading master data:', error);
+      setStatusKalibrasi([]);
+      setLokasiKalibrasi([]);
+    } finally {
+      setMasterDataLoading(false);
+    }
+  }
+
+  // Helper functions to get display text from master data
+  function getStatusText(statusId: string): string {
+    const status = statusKalibrasi.find((s) => s.id.toString() === statusId);
+    return status ? status.status : statusId;
+  }
+
+  function getLokasiText(lokasiId: string): string {
+    const lokasi = lokasiKalibrasi.find((l) => l.id.toString() === lokasiId);
+    return lokasi ? lokasi.lokasi : lokasiId;
+  }
+
+  async function handleFileUpload(file: File): Promise<string> {
+    setUploading(true);
+    setUploadError('');
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_LINK}/images`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+
+      const fileName =
+        response.data.fileName || response.data.filename || response.data.file;
+      return fileName;
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      setUploadError('Failed to upload file');
+      throw error;
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleFileDelete(fileName: string): Promise<void> {
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_LINK}/images/${fileName}`,
+        { withCredentials: true },
+      );
+    } catch (error: any) {
+      console.error('Error deleting file:', error);
+      throw error;
+    }
+  }
+
+  function handleFileSelect(event: React.ChangeEvent<HTMLInputElement>): void {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        setUploadError('Please select an image file');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError('File size must be less than 5MB');
+        return;
+      }
+
+      setSelectedFile(file);
+      setUploadError('');
+
+      const previewUrl = URL.createObjectURL(file);
+      setFilePreview(previewUrl);
+    }
+  }
+
+  function clearFileSelection(): void {
+    setSelectedFile(null);
+    setFilePreview('');
+    setUploadError('');
+
+    if (filePreview) {
+      URL.revokeObjectURL(filePreview);
+    }
+  }
+
+  async function removeExistingFile(): Promise<void> {
+    if (formData.file) {
+      try {
+        await handleFileDelete(formData.file);
+        setFormData({ ...formData, file: '' });
+      } catch (error) {
+        console.error('Error removing file:', error);
+      }
+    }
+  }
+
   useEffect(() => {
-    getKalibrasi();
-  }, [pagination.currentPage, pagination.itemsPerPage]);
+    loadMasterData();
+  }, []);
+
+  useEffect(() => {
+    if (!masterDataLoading) {
+      getKalibrasi();
+    }
+  }, [pagination.currentPage, pagination.itemsPerPage, masterDataLoading]);
 
   async function getKalibrasi(): Promise<void> {
     setLoading(true);
@@ -116,14 +273,13 @@ function KalibrasiAlatUkurPage(): JSX.Element {
       });
       console.log(res.data);
 
-      // Updated to match your backend response structure
       const { data, total_page } = res.data;
 
       setKalibrasi(data || []);
       setPagination({
         currentPage: pagination.currentPage,
         totalPages: total_page || 1,
-        totalItems: (data?.length || 0) * total_page, // Estimate total items
+        totalItems: (data?.length || 0) * total_page,
         itemsPerPage: pagination.itemsPerPage,
       });
       const initialHistoryData: Record<number, KalibrasiHistory[]> = {};
@@ -151,15 +307,27 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     e: React.FormEvent<HTMLFormElement>,
   ): Promise<void> {
     e.preventDefault();
-    const url = editMode
-      ? `${import.meta.env.VITE_API_LINK}/qc/kalibrasiAlatUkur/${editId}`
-      : `${import.meta.env.VITE_API_LINK}/qc/kalibrasiAlatUkur`;
 
     try {
+      let fileUrl = formData.file;
+
+      if (selectedFile) {
+        fileUrl = await handleFileUpload(selectedFile);
+      }
+
+      const submitData = {
+        ...formData,
+        file: fileUrl,
+      };
+
+      const url = editMode
+        ? `${import.meta.env.VITE_API_LINK}/qc/kalibrasiAlatUkur/${editId}`
+        : `${import.meta.env.VITE_API_LINK}/qc/kalibrasiAlatUkur`;
+
       if (editMode) {
-        await axios.put(url, formData, { withCredentials: true });
+        await axios.put(url, submitData, { withCredentials: true });
       } else {
-        await axios.post(url, formData, { withCredentials: true });
+        await axios.post(url, submitData, { withCredentials: true });
       }
 
       setShowModal(false);
@@ -177,14 +345,18 @@ function KalibrasiAlatUkurPage(): JSX.Element {
       no_seri: '',
       spesifikasi: '',
       lokasi_penyimpanan: '',
-      status: 'ok',
+      status: '',
       frekuensi: 1,
       kalibrasi_terakhir: '',
       masa_berlaku: '',
       sertifikat: 'ada',
       keterangan: '',
+      vendor: '',
+      no_sertifikat: '',
       file: '',
     });
+
+    clearFileSelection();
     setEditMode(false);
     setEditId(null);
   }
@@ -196,12 +368,14 @@ function KalibrasiAlatUkurPage(): JSX.Element {
       no_seri: item.no_seri || '',
       spesifikasi: item.spesifikasi || '',
       lokasi_penyimpanan: item.lokasi_penyimpanan || '',
-      status: item.status || 'ok',
+      status: item.status || '',
       frekuensi: item.frekuensi || 1,
       kalibrasi_terakhir: item.kalibrasi_terakhir || '',
       masa_berlaku: item.masa_berlaku || '',
       sertifikat: item.sertifikat || 'ada',
       keterangan: item.keterangan || '',
+      no_sertifikat: item.no_sertifikat || '',
+      vendor: item.vendor || '',
       file: item.file || '',
     });
     setEditMode(true);
@@ -222,10 +396,8 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     } else {
       newExpanded.add(id);
 
-      // Load history data if not already loaded
       if (!historyData[id]) {
         try {
-          // Use real API endpoint for history
           const historyUrl = `${
             import.meta.env.VITE_API_LINK
           }/qc/kalibrasiAlatUkur/${id}`;
@@ -233,7 +405,6 @@ function KalibrasiAlatUkurPage(): JSX.Element {
             withCredentials: true,
           });
 
-          // Extract data_tiket from the response
           const historyData = historyRes.data?.data_tiket || [];
 
           setHistoryData((prev) => ({
@@ -254,11 +425,13 @@ function KalibrasiAlatUkurPage(): JSX.Element {
   }
 
   function getStatusColor(status?: string): string {
-    switch (status?.toLowerCase()) {
+    // Check if status is an ID, get the actual status text
+    const statusText = getStatusText(status || '');
+
+    switch (statusText?.toLowerCase()) {
       case 'ok':
       case 'aktif':
         return 'text-green-700 bg-green-100 border-green-200';
-
       case 'not ok':
       case 'perbaikan':
         return 'text-red-700 bg-red-100 border-red-200';
@@ -298,7 +471,7 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     setPagination({
       ...pagination,
       itemsPerPage,
-      currentPage: 1, // Reset to first page when changing items per page
+      currentPage: 1,
     });
   }
 
@@ -306,7 +479,6 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     return (pagination.currentPage - 1) * pagination.itemsPerPage + index + 1;
   }
 
-  // Updated renderPagination function
   function renderPagination(): JSX.Element {
     const { currentPage, totalPages } = pagination;
     const currentItemsCount = kalibrasi.length;
@@ -420,19 +592,19 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     );
   }
 
-  if (loading) {
+  if (loading || masterDataLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
+
   function getLatestCalibrationDate(item: KalibrasiAlatUkur): string {
     if (!item.data_tiket || item.data_tiket.length === 0) {
       return formatDate(item.kalibrasi_terakhir);
     }
 
-    // Find the latest tgl_kalibrasi from data_tiket
     const latestDate = item.data_tiket.reduce((latest, ticket) => {
       const ticketDate = new Date(ticket.tgl_kalibrasi);
       const latestDate = new Date(latest);
@@ -441,6 +613,7 @@ function KalibrasiAlatUkurPage(): JSX.Element {
 
     return formatDate(latestDate);
   }
+
   return (
     <div className="p-6 bg-white rounded-md min-h-screen">
       {/* Header */}
@@ -535,19 +708,20 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                             item.status,
                           )}`}
                         >
-                          {item.status === 'ok' ? (
+                          {getStatusText(item.status)?.toLowerCase() ===
+                          'ok' ? (
                             <CheckCircle className="w-3 h-3 mr-1" />
                           ) : (
                             <XCircle className="w-3 h-3 mr-1" />
                           )}
-                          {item.status || 'Unknown'}
+                          {getStatusText(item.status) || 'Unknown'}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center text-sm text-gray-900">
                           <MapPin className="w-4 h-4 mr-1 text-gray-400 flex-shrink-0" />
                           <span className="truncate">
-                            {item.lokasi_penyimpanan || '-'}
+                            {getLokasiText(item.lokasi_penyimpanan) || '-'}
                           </span>
                         </div>
                       </td>
@@ -618,7 +792,7 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                             </h4>
 
                             {/* Basic Info */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
                               <div>
                                 <label className="text-sm font-medium text-gray-500">
                                   Frekuensi Kalibrasi
@@ -643,6 +817,26 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                                   {getLatestCalibrationDate(item)}
                                 </p>
                               </div>
+                              <div className="px-6 py-4">
+                                {item.file ? (
+                                  <div className="flex items-center">
+                                    <img
+                                      src={`${
+                                        import.meta.env.VITE_API_LINK
+                                      }/images/${item.file}`}
+                                      alt="File"
+                                      className=" object-cover rounded border"
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                      }}
+                                    />
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-400 text-sm">
+                                    No file
+                                  </span>
+                                )}
+                              </div>
                             </div>
 
                             {/* History Table */}
@@ -661,6 +855,7 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                                     </th>
                                   </tr>
                                 </thead>
+
                                 <tbody className="divide-y divide-gray-200">
                                   {historyData[item.id || index]?.length > 0 ? (
                                     historyData[item.id || index]
@@ -814,10 +1009,9 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Lokasi Penyimpanan *
                     </label>
-                    <input
-                      type="text"
+                    <select
                       value={formData.lokasi_penyimpanan}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                         setFormData({
                           ...formData,
                           lokasi_penyimpanan: e.target.value,
@@ -825,7 +1019,14 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
-                    />
+                    >
+                      <option value="">Pilih Lokasi Penyimpanan</option>
+                      {lokasiKalibrasi.map((lokasi) => (
+                        <option key={lokasi.id} value={lokasi.id.toString()}>
+                          {lokasi.lokasi}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
@@ -840,11 +1041,14 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
                     >
-                      <option value="ok">OK</option>
-                      <option value="not ok">NOT OK</option>
+                      <option value="">Pilih Status</option>
+                      {statusKalibrasi.map((status) => (
+                        <option key={status.id} value={status.id.toString()}>
+                          {status.status}
+                        </option>
+                      ))}
                     </select>
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Frekuensi Kalibrasi (per tahun)
@@ -894,7 +1098,6 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                         })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
                     />
                   </div>
 
@@ -913,20 +1116,130 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                       <option value="tidak ada">Tidak Ada</option>
                     </select>
                   </div>
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      No Sertifikat
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.no_sertifikat}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setFormData({
+                          ...formData,
+                          no_sertifikat: e.target.value,
+                        })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Vendor
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.vendor}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setFormData({ ...formData, vendor: e.target.value })
+                      }
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Upload Image
+                    </label>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Keterangan
-                  </label>
-                  <textarea
-                    value={formData.keterangan}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                      setFormData({ ...formData, keterangan: e.target.value })
-                    }
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+                    {/* File Input */}
+                    <div className="mb-4">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelect}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      {uploadError && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {uploadError}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* File Preview Section */}
+                    <div className="space-y-4">
+                      {/* New File Preview */}
+                      {filePreview && (
+                        <div className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm font-medium text-gray-700">
+                              New Image Preview:
+                            </span>
+                            <button
+                              type="button"
+                              onClick={clearFileSelection}
+                              className="text-red-500 hover:text-red-700 text-sm"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                          <img
+                            src={filePreview}
+                            alt="Preview"
+                            className="max-w-full h-48 object-contain border border-gray-200 rounded"
+                          />
+                          {selectedFile && (
+                            <p className="text-sm text-gray-500 mt-2">
+                              {selectedFile.name} (
+                              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Existing File Preview */}
+                      {formData.file && !filePreview && (
+                        <div className="border border-gray-200 rounded-lg p-4">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-sm font-medium text-gray-700">
+                              Current Image:
+                            </span>
+                            <button
+                              type="button"
+                              onClick={removeExistingFile}
+                              className="text-red-500 hover:text-red-700 text-sm"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                          <img
+                            src={`${import.meta.env.VITE_API_LINK}/images/${
+                              formData.file
+                            }`}
+                            alt="Current file"
+                            className="max-w-full h-48 object-contain border border-gray-200 rounded"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                          <p className="text-sm text-gray-500 mt-2">
+                            {formData.file}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Upload Progress */}
+                    {uploading && (
+                      <div className="mt-2">
+                        <div className="flex items-center">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                          <span className="text-sm text-gray-600">
+                            Uploading...
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex justify-end space-x-3 pt-4">

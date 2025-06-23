@@ -560,6 +560,30 @@ const Sidebar = ({
       ],
     },
     {
+      name: 'MR',
+      icon: QC,
+      items: [
+        {
+          name: 'QMS',
+          path: '/mr/qms',
+          icon: 'qms',
+          children: [
+            { name: 'QMS NCR', path: '/mr/qms/ncr', icon: 'ncr' },
+            { name: 'QMS CAPA', path: '/mr/qms/capa', icon: 'capa' },
+          ],
+        },
+        {
+          name: 'Lapor',
+          path: '/mr/lapor',
+          icon: 'qms',
+          children: [
+            { name: 'MR NCR Report', path: '/mr/lapor/ncr', icon: 'ncr' },
+            { name: 'MR CAPA Report', path: '/mr/lapor/capa', icon: 'capa' },
+          ],
+        },
+      ],
+    },
+    {
       name: 'QC Master Data',
       icon: MasterDataIcon,
       items: [
@@ -578,6 +602,11 @@ const Sidebar = ({
           name: 'Outsourcing Barang Jadi Master',
           path: '/masterdataqc/outsourcing_bj',
           icon: 'outsourcing',
+        },
+        {
+          name: 'Kalibrasi Master',
+          path: '/masterdataqc/kalibrasimaster',
+          icon: 'document',
         },
       ],
     },

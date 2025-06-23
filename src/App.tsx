@@ -201,6 +201,7 @@ import JadwalKirimPPIC from './pages/PPIC/JadwalPPIC/JadwalKirim';
 import ProduksiOS2 from './pages/Produksi/ProduksiOS2';
 import JoTerjadwal from './pages/PPIC/JadwalPPIC/JOTerjadwalPPIC';
 import KalibrasiAlatUkur from './pages/QualityControl/Kalibrasi/kalibrasiqc';
+import KalibrasiMaster from './pages/QualityControl/Kalibrasi/KalibrasiMaster';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -723,6 +724,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <KalibrasiAlatUkur />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdataqc/kalibrasimaster"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <KalibrasiMaster />
               </ProtectedRoute>
             </>
           }
