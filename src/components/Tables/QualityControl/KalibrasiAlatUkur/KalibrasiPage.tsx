@@ -798,7 +798,7 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                                   Frekuensi Kalibrasi
                                 </label>
                                 <p className="text-sm text-gray-900 font-medium">
-                                  {item.frekuensi || '-'} kali/tahun
+                                  Per {item.frekuensi || '-'} Bulan
                                 </p>
                               </div>
                               <div>
@@ -1051,7 +1051,7 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Frekuensi Kalibrasi (per tahun)
+                      Frekuensi Kalibrasi (Bulan)
                     </label>
                     <input
                       type="number"
