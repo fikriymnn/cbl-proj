@@ -154,6 +154,18 @@ function IncomingSPL() {
                       <label className="text-neutral-500 text-sm font-semibold ">
                         Sampai :{convertTimeStampToDateTime(data.sampai)}
                       </label>
+                      {/* Display dari_2 and sampai_2 if they exist */}
+                      {data.dari_2 && data.dari_2 !== '' && (
+                        <label className="text-neutral-500 text-sm font-semibold ">
+                          Dari (2) : {convertTimeStampToDateTime(data.dari_2)}
+                        </label>
+                      )}
+                      {data.sampai_2 && data.sampai_2 !== '' && (
+                        <label className="text-neutral-500 text-sm font-semibold ">
+                          Sampai (2) :
+                          {convertTimeStampToDateTime(data.sampai_2)}
+                        </label>
+                      )}
                     </div>
                     <label className="text-neutral-500 text-sm font-semibold col-span-2">
                       {data.lama_lembur} Jam
@@ -292,6 +304,43 @@ function IncomingSPL() {
                                         )}
                                       </label>
                                     </div>
+                                    {/* Display dari_2 and sampai_2 in modal if they exist */}
+                                    {data.dari_2 && data.dari_2 !== '' && (
+                                      <div className="flex flex-col ">
+                                        <label
+                                          htmlFor=""
+                                          className="text-black text-xs font-bold"
+                                        >
+                                          DARI (2)
+                                        </label>
+                                        <label
+                                          htmlFor=""
+                                          className="text-[#016ae6] text-xl font-normal"
+                                        >
+                                          {convertTimeStampToDateTime(
+                                            data.dari_2,
+                                          )}
+                                        </label>
+                                      </div>
+                                    )}
+                                    {data.sampai_2 && data.sampai_2 !== '' && (
+                                      <div className="flex flex-col ">
+                                        <label
+                                          htmlFor=""
+                                          className="text-black text-xs font-bold"
+                                        >
+                                          SAMPAI (2)
+                                        </label>
+                                        <label
+                                          htmlFor=""
+                                          className="text-[#016ae6] text-xl font-normal"
+                                        >
+                                          {convertTimeStampToDateTime(
+                                            data.sampai_2,
+                                          )}
+                                        </label>
+                                      </div>
+                                    )}
                                     <div className="flex flex-col ">
                                       <label
                                         htmlFor=""
@@ -308,20 +357,7 @@ function IncomingSPL() {
                                     </div>
                                   </div>
                                 </div>
-                                <div className="flex flex-col w-full px-4">
-                                  <label
-                                    htmlFor=""
-                                    className="text-black text-xs font-bold"
-                                  >
-                                    TARGET LEMBUR
-                                  </label>
-                                  <label
-                                    htmlFor=""
-                                    className="text-[#7a7a7a] text-xl font-normal"
-                                  >
-                                    {data.target_lembur}
-                                  </label>
-                                </div>
+
                                 <div className="flex flex-col w-full px-4">
                                   <label
                                     htmlFor=""
@@ -335,21 +371,6 @@ function IncomingSPL() {
                                   >
                                     {data.alasan_lembur}
                                   </label>
-                                </div>
-                                {/* <div className='px-4 py-2'>
-                                                                    <button className='bg-blue-600 rounded-md px-3 py-2 text-white font-semibold text-sm'>
-                                                                        CETAK SURAT
-                                                                    </button>
-                                                                </div> */}
-                                <div className="grid grid-cols-2 gap-2 px-4 py-2">
-                                  {/* <div className='flex flex-col gap-1'>
-                                                                        <label htmlFor="" className='text-black text-xs font-bold'>
-                                                                            TANGGAL MASUK KEMBALI
-                                                                        </label>
-                                                                        <label htmlFor="" className='text-[#7a7a7a] text-xl font-normal'>
-                                                                            {dateOnly(formattedDate)}
-                                                                        </label>
-                                                                    </div> */}
                                 </div>
                                 <div className="flex flex-col w-full px-4 ">
                                   <label

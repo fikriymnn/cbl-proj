@@ -331,7 +331,7 @@ function PendingKalibrasi(): JSX.Element {
   // Calculate statistics
   const stats = {
     total: data.length,
-    incoming: data.filter((item) => item.status === 'incoming').length,
+    incoming: data.filter((item) => item.status === 'pending').length,
     history: data.filter((item) => item.status === 'history').length,
     cancelled: data.filter((item) => item.status === 'cancelled').length,
   };

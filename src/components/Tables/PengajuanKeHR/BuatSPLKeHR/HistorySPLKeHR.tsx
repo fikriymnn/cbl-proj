@@ -153,6 +153,8 @@ function HistorySPLkeHR() {
       'Tanggal Pengajuan': convertTimeStampToDate(item.createdAt),
       Dari: convertTimeStampToDateTime(item.dari),
       Sampai: convertTimeStampToDateTime(item.sampai),
+      Dari2: convertTimeStampToDateTime(item.dari_2),
+      Sampai2: convertTimeStampToDateTime(item.sampai_2),
       'Lama Lembur (Jam)': item.lama_lembur,
       'Lama Lembur Aktual (Jam)': item.lama_lembur_aktual || '',
       'Target Lembur': item.target_lembur || '',
@@ -414,12 +416,23 @@ function HistorySPLkeHR() {
                   </label>
 
                   <div className="flex flex-col gap-1 col-span-3">
-                    <label className="text-neutral-500 text-sm font-semibold">
+                    <label className="text-neutral-500 text-sm font-semibold ">
                       Dari : {convertTimeStampToDateTime(data.dari)}
                     </label>
-                    <label className="text-neutral-500 text-sm font-semibold">
+                    <label className="text-neutral-500 text-sm font-semibold ">
                       Sampai :{convertTimeStampToDateTime(data.sampai)}
                     </label>
+                    {/* Display dari_2 and sampai_2 if they exist */}
+                    {data.dari_2 && data.dari_2 !== '' && (
+                      <label className="text-neutral-500 text-sm font-semibold ">
+                        Dari (2) : {convertTimeStampToDateTime(data.dari_2)}
+                      </label>
+                    )}
+                    {data.sampai_2 && data.sampai_2 !== '' && (
+                      <label className="text-neutral-500 text-sm font-semibold ">
+                        Sampai (2) :{convertTimeStampToDateTime(data.sampai_2)}
+                      </label>
+                    )}
                   </div>
                   <label className="text-neutral-500 text-sm font-semibold">
                     {data.lama_lembur} Jam
@@ -585,6 +598,39 @@ function HistorySPLkeHR() {
                                 {convertTimeStampToDateTime(data.sampai)}
                               </label>
                             </div>
+                            {/* Display dari_2 and sampai_2 in modal if they exist */}
+                            {data.dari_2 && data.dari_2 !== '' && (
+                              <div className="flex flex-col ">
+                                <label
+                                  htmlFor=""
+                                  className="text-black text-xs font-bold"
+                                >
+                                  DARI (2)
+                                </label>
+                                <label
+                                  htmlFor=""
+                                  className="text-[#016ae6] text-xl font-normal"
+                                >
+                                  {convertTimeStampToDateTime(data.dari_2)}
+                                </label>
+                              </div>
+                            )}
+                            {data.sampai_2 && data.sampai_2 !== '' && (
+                              <div className="flex flex-col ">
+                                <label
+                                  htmlFor=""
+                                  className="text-black text-xs font-bold"
+                                >
+                                  SAMPAI (2)
+                                </label>
+                                <label
+                                  htmlFor=""
+                                  className="text-[#016ae6] text-xl font-normal"
+                                >
+                                  {convertTimeStampToDateTime(data.sampai_2)}
+                                </label>
+                              </div>
+                            )}
                             <div className="flex flex-col">
                               <label
                                 htmlFor=""
@@ -601,20 +647,7 @@ function HistorySPLkeHR() {
                             </div>
                           </div>
                         </div>
-                        <div className="flex flex-col w-full px-4">
-                          <label
-                            htmlFor=""
-                            className="text-black text-xs font-bold"
-                          >
-                            TARGET LEMBUR
-                          </label>
-                          <label
-                            htmlFor=""
-                            className="text-[#7a7a7a] text-xl font-normal"
-                          >
-                            {data.target_lembur}
-                          </label>
-                        </div>
+
                         <div className="flex flex-col w-full px-4">
                           <label
                             htmlFor=""

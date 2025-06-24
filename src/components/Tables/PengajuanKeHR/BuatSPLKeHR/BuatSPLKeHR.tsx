@@ -22,12 +22,18 @@ function BuatSPLKeHR() {
   const [userList, setUserList] = useState<UserData[]>([]);
   const [joList, setJoList] = useState<Array<{ e_no_jo: string }>>([]);
   const [idKaryawan, setIdKaryawan] = useState<string[]>([]);
-  const [error, setError] = useState('');
-  const [isCheck, setIsCheck] = useState(false);
   const [me, setMe] = useState(null);
   const [idPengaju, setIdPengaju] = useState(null);
+
+  // First period
   const [tglDari, setTglDari] = useState('');
   const [tglSampai, setTglSampai] = useState('');
+
+  // Second period (optional)
+  const [tglDari2, setTglDari2] = useState('');
+  const [tglSampai2, setTglSampai2] = useState('');
+  const [hasSecondPeriod, setHasSecondPeriod] = useState(false);
+
   const [sisaCuti, setSisaCuti] = useState(0);
   const [joReal, setjoReal] = useState('');
   const [hourDifference, setHourDifference] = useState(0);
@@ -36,6 +42,7 @@ function BuatSPLKeHR() {
   const [tipeLembur, setTipeLembur] = useState('');
   const [jumlahMakan, setJumlahMakan] = useState('');
   const [timeError, setTimeError] = useState('');
+  const [timeError2, setTimeError2] = useState('');
   const [selectedEmployees, setSelectedEmployees] = useState([]);
   const [selectedJobOrder, setSelectedJobOrder] = useState(null);
 
@@ -50,6 +57,9 @@ function BuatSPLKeHR() {
     setIdKaryawan([]);
     setTglDari('');
     setTglSampai('');
+    setTglDari2('');
+    setTglSampai2('');
+    setHasSecondPeriod(false);
     setSisaCuti(0);
     setjoReal('');
     setHourDifference(0);
@@ -58,11 +68,10 @@ function BuatSPLKeHR() {
     setTipeLembur('');
     setJumlahMakan('');
     setTimeError('');
+    setTimeError2('');
     setSelectedEmployees([]);
     setSelectedJobOrder(null);
-    setIsCheck(false);
   };
-
   async function getMe() {
     const url = `${import.meta.env.VITE_API_LINK}/me`;
     try {
@@ -160,83 +169,128 @@ function BuatSPLKeHR() {
 
   const validateTimeIncrement = (dari: any, sampai: any) => {
     if (!dari || !sampai) {
-      setTimeError('Please fill in both date fields.');
-      return false;
+      return { isValid: false, error: 'Please fill in both date fields.' };
     }
 
     const dariDate = new Date(dari);
     const sampaiDate = new Date(sampai);
 
     if (sampaiDate <= dariDate) {
-      setTimeError('End time must be after start time.');
-      return false;
+      return { isValid: false, error: 'End time must be after start time.' };
     }
 
     const timeDiffMs = sampaiDate.getTime() - dariDate.getTime();
     let hourDiff = timeDiffMs / (1000 * 60 * 60);
-
-    if (isCheck) {
-      hourDiff -= 0.5; // Subtract 30 minutes (0.5 hours) for break
-    }
 
     // Check if the time difference is in 30-minute increments
     const remainder = (hourDiff * 60) % 30;
     if (remainder !== 0) {
-      setTimeError(
-        'Durasi lembur harus dalam kelipatan 30 menit (misalnya: 0.5j, 1j, 1.5j, 2j)',
-      );
-      return false;
+      return {
+        isValid: false,
+        error:
+          'Durasi lembur harus dalam kelipatan 30 menit (misalnya: 0.5j, 1j, 1.5j, 2j)',
+      };
     }
 
     if (hourDiff < 0.5) {
-      setTimeError('Minimal durasi lembur adalah 30 menit.');
-      return false;
+      return {
+        isValid: false,
+        error: 'Minimal durasi lembur adalah 30 menit.',
+      };
     }
 
-    setTimeError('');
-    return true;
+    return { isValid: true, error: '', hours: hourDiff };
   };
 
-  const calculateHourDifference = (dari: any, sampai: any) => {
-    if (!validateTimeIncrement(dari, sampai)) {
-      setHourDifference(0);
-      return 0;
+  // Add useEffect to recalculate total hours whenever time values change
+  useEffect(() => {
+    let totalHours = 0;
+
+    // Calculate first period
+    if (tglDari && tglSampai) {
+      const validation1 = validateTimeIncrement(tglDari, tglSampai);
+      if (validation1.isValid) {
+        totalHours += validation1.hours || 0;
+      }
     }
 
-    const dariDate = new Date(dari);
-    const sampaiDate = new Date(sampai);
-
-    const timeDiffMs = sampaiDate.getTime() - dariDate.getTime();
-    let hourDiff = timeDiffMs / (1000 * 60 * 60);
-
-    if (isCheck) {
-      hourDiff -= 0.5;
+    // Calculate second period if exists
+    if (hasSecondPeriod && tglDari2 && tglSampai2) {
+      const validation2 = validateTimeIncrement(tglDari2, tglSampai2);
+      if (validation2.isValid) {
+        totalHours += validation2.hours || 0;
+      }
     }
 
-    const finalHours = Math.max(0, hourDiff);
-    setHourDifference(finalHours);
-    return finalHours;
+    setHourDifference(totalHours);
+  }, [tglDari, tglSampai, tglDari2, tglSampai2, hasSecondPeriod]);
+
+  const calculateTotalHours = () => {
+    let totalHours = 0;
+
+    // Calculate first period
+    if (tglDari && tglSampai) {
+      const validation1 = validateTimeIncrement(tglDari, tglSampai);
+      if (validation1.isValid) {
+        totalHours += validation1.hours || 0;
+      }
+    }
+
+    // Calculate second period if exists
+    if (hasSecondPeriod && tglDari2 && tglSampai2) {
+      const validation2 = validateTimeIncrement(tglDari2, tglSampai2);
+      if (validation2.isValid) {
+        totalHours += validation2.hours || 0;
+      }
+    }
+
+    return totalHours;
+  };
+  const removeSecondPeriod = () => {
+    setHasSecondPeriod(false);
+    setTglDari2('');
+    setTglSampai2('');
+    setTimeError2('');
   };
 
   const handleDariChange = (value: any) => {
     setTglDari(value);
     if (tglSampai) {
-      calculateHourDifference(value, tglSampai);
+      const validation = validateTimeIncrement(value, tglSampai);
+      setTimeError(validation.error);
     }
+    calculateTotalHours();
   };
 
   const handleSampaiChange = (value: any) => {
     setTglSampai(value);
     if (tglDari) {
-      calculateHourDifference(tglDari, value);
+      const validation = validateTimeIncrement(tglDari, value);
+      setTimeError(validation.error);
     }
+    calculateTotalHours();
   };
 
-  const handleCheckChange = (checked: any) => {
-    setIsCheck(checked);
-    if (tglDari && tglSampai) {
-      calculateHourDifference(tglDari, tglSampai);
+  const handleDari2Change = (value: any) => {
+    setTglDari2(value);
+    if (tglSampai2) {
+      const validation = validateTimeIncrement(value, tglSampai2);
+      setTimeError2(validation.error);
     }
+    calculateTotalHours();
+  };
+
+  const handleSampai2Change = (value: any) => {
+    setTglSampai2(value);
+    if (tglDari2) {
+      const validation = validateTimeIncrement(tglDari2, value);
+      setTimeError2(validation.error);
+    }
+    calculateTotalHours();
+  };
+
+  const addSecondPeriod = () => {
+    setHasSecondPeriod(true);
   };
 
   const formatDuration = (hours: any) => {
@@ -259,10 +313,14 @@ function BuatSPLKeHR() {
       return;
     }
     if (!tglDari || !tglSampai) {
-      alert('Tanggal dan waktu belum lengkap');
+      alert('Tanggal dan waktu periode pertama belum lengkap');
       return;
     }
-    if (timeError) {
+    if (hasSecondPeriod && (!tglDari2 || !tglSampai2)) {
+      alert('Tanggal dan waktu periode kedua belum lengkap');
+      return;
+    }
+    if (timeError || timeError2) {
       alert('Perbaiki error waktu terlebih dahulu');
       return;
     }
@@ -274,28 +332,30 @@ function BuatSPLKeHR() {
     setIsLoading(true);
     const url = `${import.meta.env.VITE_API_LINK}/hr/pengajuanLembur`;
     try {
-      const hitung = calculateHourDifference(tglDari, tglSampai);
-      console.log(hitung);
-      console.log(tglDari, tglSampai);
-      const res = await axios.post(
-        url,
-        {
-          karyawan: idKaryawan,
-          id_pengaju: idPengaju,
-          dari: tglDari,
-          sampai: tglSampai,
-          jo_lembur: joReal,
-          lama_lembur: hitung,
-          alasan_lembur: alasanLembur,
-          target_lembur: targetLembur,
-          isIstirahat: isCheck,
-          tipe_lembur: tipeLembur,
-          jumlah_makan: jumlahMakan,
-        },
-        {
-          withCredentials: true,
-        },
-      );
+      const totalHours = calculateTotalHours();
+
+      const requestData = {
+        karyawan: idKaryawan,
+        id_pengaju: idPengaju,
+        dari: tglDari,
+        sampai: tglSampai,
+        dari_2: hasSecondPeriod ? tglDari2 : '',
+        sampai_2: hasSecondPeriod ? tglSampai2 : '',
+        jo_lembur: joReal,
+        lama_lembur: totalHours,
+        alasan_lembur: alasanLembur,
+        target_lembur: targetLembur,
+        isIstirahat: '',
+        tipe_lembur: tipeLembur,
+        jumlah_makan: jumlahMakan,
+      };
+
+      console.log('Request data:', requestData);
+
+      const res = await axios.post(url, requestData, {
+        withCredentials: true,
+      });
+
       setIsLoading(false);
       console.log(res);
       alert('Pengajuan lembur berhasil disubmit!');
@@ -404,6 +464,7 @@ function BuatSPLKeHR() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Time Selection */}
             <div className="flex flex-col gap-6">
+              {/* First Period */}
               <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-xl p-6 border border-orange-200">
                 <h3 className="text-lg font-semibold text-orange-800 mb-4 flex items-center gap-2">
                   <svg
@@ -417,7 +478,7 @@ function BuatSPLKeHR() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  Periode Lembur
+                  Periode Lembur 1
                 </h3>
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
@@ -463,12 +524,15 @@ function BuatSPLKeHR() {
                     </p>
                   </div>
                 )}
+              </div>
 
-                {hourDifference > 0 && !timeError && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex items-center gap-2">
+              {/* Second Period */}
+              {hasSecondPeriod && (
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold text-green-800 flex items-center gap-2">
                       <svg
-                        className="w-5 h-5 text-blue-500"
+                        className="w-5 h-5"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >
@@ -478,18 +542,120 @@ function BuatSPLKeHR() {
                           clipRule="evenodd"
                         />
                       </svg>
-                      <div>
-                        <p className="text-blue-700 font-medium">
-                          Durasi Lembur:{' '}
-                          <span className="font-bold text-lg">
-                            {formatDuration(hourDifference)}
-                          </span>
-                        </p>
-                      </div>
+                      Periode Lembur 2
+                    </h3>
+                    <button
+                      onClick={removeSecondPeriod}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg p-2 transition-all duration-200"
+                      title="Hapus periode kedua"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm text-green-700 font-semibold">
+                        Start Time
+                      </label>
+                      <input
+                        className="rounded-lg bg-white border-2 border-green-300 px-4 py-3 text-gray-800 font-medium focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200"
+                        type="datetime-local"
+                        value={tglDari2}
+                        onChange={(e) => handleDari2Change(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm text-green-700 font-semibold">
+                        End Time
+                      </label>
+                      <input
+                        className="rounded-lg bg-white border-2 border-green-300 px-4 py-3 text-gray-800 font-medium focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200"
+                        type="datetime-local"
+                        value={tglSampai2}
+                        onChange={(e) => handleSampai2Change(e.target.value)}
+                      />
                     </div>
                   </div>
-                )}
-              </div>
+
+                  {timeError2 && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                      <p className="text-red-700 text-sm font-medium flex items-center gap-2">
+                        <svg
+                          className="w-4 h-4"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                        {timeError2}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Add Second Period Button */}
+              {!hasSecondPeriod && (
+                <button
+                  onClick={addSecondPeriod}
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  Tambah Periode Kedua
+                </button>
+              )}
+
+              {/* Total Duration Display */}
+              {hourDifference > 0 && !timeError && !timeError2 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-5 h-5 text-blue-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <div>
+                      <p className="text-blue-700 font-medium">
+                        Total Durasi Lembur:{' '}
+                        <span className="font-bold text-lg">
+                          {formatDuration(hourDifference)}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Reason and Target */}
@@ -524,7 +690,9 @@ function BuatSPLKeHR() {
         <div className="flex w-full justify-end items-center px-8 py-6 bg-gray-50 border-t border-gray-200">
           <button
             onClick={postSPL}
-            disabled={isLoading || !!timeError || !idKaryawan.length}
+            disabled={
+              isLoading || !!timeError || !!timeError2 || !idKaryawan.length
+            }
             className="flex px-8 py-3 justify-center items-center gap-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 shadow-lg hover:shadow-xl text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:cursor-not-allowed"
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

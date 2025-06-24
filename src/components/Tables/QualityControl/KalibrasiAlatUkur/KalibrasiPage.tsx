@@ -101,6 +101,28 @@ function KalibrasiAlatUkurPage(): JSX.Element {
   const [lokasiKalibrasi, setLokasiKalibrasi] = useState<LokasiKalibrasi[]>([]);
   const [masterDataLoading, setMasterDataLoading] = useState<boolean>(true);
 
+  const [sendingTicket, setSendingTicket] = useState<number | null>(null);
+  async function handleSendTicket(id: number): Promise<void> {
+    setSendingTicket(id);
+    try {
+      await axios.post(
+        `${import.meta.env.VITE_API_LINK}/qc/kalibrasiAlatUkurTiket`,
+        { id_kalibrasi_alat_ukur: id },
+        { withCredentials: true },
+      );
+
+      // Refresh the data after successful ticket submission
+      getKalibrasi();
+
+      // Optional: Show success message
+      alert('Tiket berhasil dikirim');
+    } catch (error: any) {
+      console.error('Error sending ticket:', error);
+      alert('Gagal mengirim tiket');
+    } finally {
+      setSendingTicket(null);
+    }
+  }
   // Pagination state
   const [pagination, setPagination] = useState<PaginationData>({
     currentPage: 1,
@@ -764,6 +786,22 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                           <Edit className="w-4 h-4 mr-1" />
                           Edit
                         </button>
+                        {isExpired(item.masa_berlaku) && (
+                          <button
+                            onClick={() => handleSendTicket(item.id)}
+                            disabled={sendingTicket === item.id}
+                            className="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-600 rounded-md hover:bg-red-100 transition-colors text-sm font-medium border border-red-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {sendingTicket === item.id ? (
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600 mr-1"></div>
+                            ) : (
+                              <Calendar className="w-4 h-4 mr-1" />
+                            )}
+                            {sendingTicket === item.id
+                              ? 'Mengirim...'
+                              : 'Kirim'}
+                          </button>
+                        )}
                       </td>
                       <td className="px-6 py-4 text-center">
                         <button
