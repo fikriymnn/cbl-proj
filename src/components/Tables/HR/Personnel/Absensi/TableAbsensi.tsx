@@ -737,7 +737,8 @@ function TableAbsensi() {
             }`}
                           >
                             {data.status_ketidaksesuaian == null ||
-                            data.status_ketidaksesuaian == 0
+                            data.status_ketidaksesuaian == 0 ||
+                            data.status_ketidaksesuaian == 'none'
                               ? ''
                               : data.status_ketidaksesuaian}
                           </span>
