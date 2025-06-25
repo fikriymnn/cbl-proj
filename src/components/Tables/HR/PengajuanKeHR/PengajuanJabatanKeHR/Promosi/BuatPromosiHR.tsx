@@ -70,7 +70,7 @@ function BuatPromosiHR() {
 
           return {
             value: item.userid,
-            label: `${item.biodata_karyawan[0]?.nik} - ${item.name} - ${item.biodata_karyawan[0]?.nama_jabatan} - ${latestBagianMesin}`,
+            label: `${item.biodata_karyawan[0]?.nik} - ${item.name} - ${item.biodata_karyawan[0]?.jabatan?.nama_jabatan} - ${latestBagianMesin}`,
           };
         }),
       );
@@ -81,10 +81,13 @@ function BuatPromosiHR() {
   async function getMasterDept() {
     const url = `${import.meta.env.VITE_API_LINK}/master/hr/department`;
     try {
+      setIsLoading(true);
       const res = await axios.get(url, {
+        params: {
+          is_active: true,
+        },
         withCredentials: true,
       });
-
       setdeptList(res.data.data);
       console.log('Dept list', res.data.data);
       setOptionsDept(
@@ -93,7 +96,9 @@ function BuatPromosiHR() {
           label: item.nama_department,
         })),
       );
+      setIsLoading(false);
     } catch (error: any) {
+      setIsLoading(false);
       console.log(error);
     }
   }

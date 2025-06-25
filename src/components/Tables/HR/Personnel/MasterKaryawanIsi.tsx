@@ -486,9 +486,11 @@ function MasterKaryawanIsi() {
                       <td className="px-2 py-2 whitespace-nowrap">
                         <span
                           className="text-xs text-gray-600 truncate block max-w-20"
-                          title={data.biodata_karyawan[0]?.nama_jabatan}
+                          title={
+                            data.biodata_karyawan[0]?.jabatan?.nama_jabatan
+                          }
                         >
-                          {data.biodata_karyawan[0]?.nama_jabatan}
+                          {data.biodata_karyawan[0]?.jabatan?.nama_jabatan}
                         </span>
                       </td>
                       <td className="px-2 py-2 whitespace-nowrap">
