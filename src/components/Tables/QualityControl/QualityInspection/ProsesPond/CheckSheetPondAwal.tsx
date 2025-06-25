@@ -168,6 +168,10 @@ function CheckSheetPondAwal() {
   }
   const [alasanPending, setalasanPending] = useState<any>();
   async function pendingCekAwal(id: number) {
+    if (alasanPending == null) {
+      alert('Catatan Wajib Diisi');
+      return;
+    }
     const url = `${
       import.meta.env.VITE_API_LINK
     }/qc/cs/inspeksiPondAwal/pending/${id}`;

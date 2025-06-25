@@ -400,6 +400,10 @@ function CheckSheetCetakPeriode() {
   }
   const [alasanPending, setalasanPending] = useState<any>();
   async function pendingCekPeriode(id: number) {
+    if (alasanPending == null) {
+      alert('Catatan Wajib Diisi');
+      return;
+    }
     const url = `${
       import.meta.env.VITE_API_LINK
     }/qc/cs/inspeksiCetakPeriode/pending/${id}`;

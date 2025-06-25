@@ -2,20 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import ptcbl from '../../../../../images/ptcbl.png';
+import { X, Printer, Eye } from 'lucide-react';
+import convertTimeStampToDateOnly from '../../../../../utils/convertDateOnly';
 
 function HistoryIncoming() {
   const [isMobile, setIsMobile] = useState(false);
-  const kosong: any = [];
-  const today = new Date();
-  const month = today.getMonth() + 1;
-  const year = today.getFullYear();
-  const date = today.getDate();
-  const currentDate = month + '/' + date + '/' + year;
-  const navigate = useNavigate();
-
   const { id } = useParams();
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
+  };
+
+  const [isStatusQualityPreviewOpen, setIsStatusQualityPreviewOpen] =
+    useState(false);
+  const openStatusQualityPreview = () => {
+    setIsStatusQualityPreviewOpen(true);
+  };
+
+  const closeStatusQualityPreview = () => {
+    setIsStatusQualityPreviewOpen(false);
   };
   useEffect(() => {
     handleResize();
@@ -96,7 +100,231 @@ function HistoryIncoming() {
   const closePreview = () => {
     setIsOpen(false);
   };
+  const printStatusQuality = () => {
+    const printArea = document.getElementById('status-quality-print-area');
+    if (!printArea) return;
 
+    const currentPage = window.location.href;
+    const printWindow = window.open(
+      currentPage,
+      '_blank',
+      'toolbar=0,location=1,menubar=0',
+    );
+
+    if (!printWindow) {
+      alert('Please allow pop-ups for printing functionality');
+      return;
+    }
+
+    const styles = Array.from(document.styleSheets)
+      .map((styleSheet) => {
+        try {
+          return Array.from(styleSheet.cssRules)
+            .map((rule) => rule.cssText)
+            .join('');
+        } catch (e) {
+          if (styleSheet.href) {
+            return `<link rel="stylesheet" href="${styleSheet.href}">`;
+          }
+          return '';
+        }
+      })
+      .filter(Boolean);
+
+    printWindow.document.open();
+    printWindow.document.write(`
+      <html>
+        <head>
+          <style>
+            ${styles.join('')}
+            
+            @page {
+              size: A4;
+              margin: 10mm;
+            }
+            
+            body {
+              margin: 0;
+              padding: 0;
+              font-family: Arial, sans-serif;
+            }
+            
+            .print-container {
+              width: 100%;
+              max-width: 100%;
+              box-sizing: border-box;
+              transform: scale(0.95);
+              transform-origin: top left;
+            }
+            
+            .print-container * {
+              font-size: 10px !important;
+            }
+            
+            .print-container h3, 
+            .print-container .text-lg, 
+            .print-container .font-semibold {
+              font-size: 12px !important;
+            }
+            
+            .print-container table td {
+              padding: 2px !important;
+            }
+            
+            .print-container table {
+              width: 100% !important;
+              table-layout: fixed;
+            }
+            
+            @media print {
+              html, body {
+                width: 210mm;
+              }
+              
+              .print-container {
+                page-break-inside: auto;
+              }
+              
+              tr {
+                page-break-inside: avoid;
+              }
+              
+              thead {
+                display: table-header-group;
+              }
+              
+              h1, h2, h3, h4, h5 {
+                page-break-after: avoid;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-container">
+            ${printArea.innerHTML}
+          </div>
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.print();
+                window.onafterprint = function() {
+                  window.close();
+                }
+              }, 500);
+            }
+          </script>
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+  };
+
+  const StatusQualityContent = () => (
+    <div className="bg-white p-6 max-w-4xl mx-auto font-sans">
+      {/* Header */}
+      <div className="text-center mb-6 border-b pb-4 h-[200px]">
+        <div className="bg-gray-500 text-white p-4 mb-4">
+          <h2 className="text-lg font-bold"></h2>
+          <p className="text-sm font-bold"></p>
+          <p className="text-sm font-bold"></p>
+        </div>
+      </div>
+
+      {/* Status Quality Section */}
+      <div className="mb-8">
+        <h3 className="text-xl font-bold text-center mb-6 underline">
+          STATUS QUALITY
+        </h3>
+
+        <div className="space-y-3 mb-8 text-sm">
+          <div className="flex">
+            <span className="font-bold w-40">Tgl Kedatangan :</span>
+            <span className="font-medium">
+              {convertTimeStampToDateOnly(incoming?.createdAt) ||
+                '(tarik dari tgl checksheet incoming)'}
+            </span>
+          </div>
+
+          <div className="flex">
+            <span className="font-bold w-40">Jenis Kertas :</span>
+            <span className="font-bold text-blue-600">
+              {incoming?.jenis_kertas || 'DPC / IVORY / AP / HVS / CHROMO'}
+            </span>
+          </div>
+
+          <div className="flex">
+            <span className="font-bold w-40">Ukuran :</span>
+            <span className="font-medium">
+              {incoming?.ukuran || '(....) x (....) Cm'}
+            </span>
+          </div>
+
+          <div className="flex">
+            <span className="font-bold w-40">Supplier :</span>
+            <span className="font-medium">
+              {incoming?.supplier ||
+                '(Muncul nama supplier sesuai Checksheet Incoming)'}
+            </span>
+          </div>
+
+          <div className="flex">
+            <span className="font-bold w-40">No Lot :</span>
+            <span className="font-medium">
+              {incoming?.no_lot || '(Muncul sesuai Checksheet Incoming)'}
+            </span>
+          </div>
+
+          <div className="flex">
+            <span className="font-bold w-40">No Surat Jalan :</span>
+            <span className="font-medium">
+              {incoming?.no_surat_jalan ||
+                '(Muncul sesuai Checksheet Incoming)'}
+            </span>
+          </div>
+
+          <div className="flex">
+            <span className="font-bold w-40">Keterangan :</span>
+            <span className="font-medium">
+              {incoming?.keterangan ||
+                '(list JO by surat jalan Kiriman Dari p1)'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Decision Section */}
+      <div className="mb-8">
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <h3 className="text-3xl font-bold text-blue-600 mb-4">
+              {incoming?.verifikasi === 'Diterima' ? 'DITERIMA' : 'DITOLAK'}
+            </h3>
+            <div className="flex items-center">
+              <div className="border border-gray-400 p-3 bg-gray-50 min-w-60">
+                <span className="font-medium text-sm">
+                  {incoming?.catatan ||
+                    'ini muncul otomatis dari checksheet incoming'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="text-right ">
+            <p className="font-bold text-sm mb-1">QA Inspector,</p>
+            <div className="mb-16">
+              <br />
+            </div>
+            <div className="border-2 border-gray-800 p-2 w-20 h-10 flex items-center justify-center bg-white">
+              <span className="text-xs font-bold">
+                {incoming?.inspector || 'PM-QA-007'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   const printChecksheet = () => {
     const printArea = document.getElementById('print-area');
 
@@ -266,6 +494,7 @@ function HistoryIncoming() {
                     </svg>
                     Print Checksheet
                   </button>
+
                   <button
                     onClick={closePreview}
                     className="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-gray-300"
@@ -950,26 +1179,70 @@ function HistoryIncoming() {
                 </svg>{' '}
                 Incoming Inspection Checksheet
               </div>
-              <button
-                onClick={openPreview}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
-              >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
+              <div className="flex gap-2">
+                <div id="status-quality-print-area" className="hidden">
+                  <StatusQualityContent />
+                </div>
+                {isStatusQualityPreviewOpen && (
+                  <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-lg max-w-5xl max-h-[90vh] overflow-auto w-full">
+                      <div className="flex justify-between items-center p-4 border-b">
+                        <h2 className="text-lg font-semibold">
+                          Status Quality Print Preview
+                        </h2>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={printStatusQuality}
+                            className="flex items-center gap-2 bg-indigo-500 text-white px-3 py-1 rounded text-sm hover:bg-indigo-600 transition-colors"
+                          >
+                            <Printer size={14} />
+                            Print
+                          </button>
+                          <button
+                            onClick={closeStatusQualityPreview}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            <X size={20} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="p-4">
+                        <StatusQualityContent />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={openStatusQualityPreview}
+                  className="flex items-center gap-2 bg-purple-500 text-white px-3 py-1 rounded text-sm hover:bg-purple-600 transition-colors"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
-                  />
-                </svg>
-                Preview Checksheet
-              </button>
+                  <Eye size={14} />
+                  Status Quality Preview
+                </button>
+                <button
+                  onClick={openPreview}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center"
+                >
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                    />
+                  </svg>
+                  Preview Checksheet
+                </button>
+              </div>
             </p>
 
             <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
