@@ -875,6 +875,11 @@ const Sidebar = ({
         { name: 'OS2', path: '/produksi/os2', icon: 'machine' },
       ],
     },
+    {
+      name: 'Pre-Press',
+      icon: ProductionIcon,
+      items: [{ name: 'Pre Press', path: '/prepress', icon: 'machine' }],
+    },
   ];
   // NEW FUNCTION: Check if user can access department-specific master data
   const canAccessDepartmentMasterData = () => {
