@@ -240,11 +240,12 @@ function CheckSheetCetakAwal() {
     }
   }
   const [alasanPending, setalasanPending] = useState<any>();
-  if (alasanPending == null) {
-    alert('Catatan Wajib Diisi');
-    return;
-  }
+
   async function pendingCekAwal(id: number) {
+    if (alasanPending == null) {
+      alert('Catatan Wajib Diisi');
+      return;
+    }
     const url = `${
       import.meta.env.VITE_API_LINK
     }/qc/cs/inspeksiCetakAwal/pending/${id}`;

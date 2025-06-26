@@ -89,7 +89,6 @@ function ProsesCetakMesin() {
 
   return (
     <>
-
       <main className="overflow-x-scroll">
         <div className="min-w-[700px] bg-white rounded-xl">
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
@@ -155,12 +154,11 @@ function ProsesCetakMesin() {
                     </div>
                   </div>
                 </>
-              )
+              );
             })}
           </div>
         </div>
       </main>
-
     </>
   );
 }
