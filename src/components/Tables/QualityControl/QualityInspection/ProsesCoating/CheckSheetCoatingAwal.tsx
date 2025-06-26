@@ -326,7 +326,8 @@ function CheckSheetCoatingAwal() {
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold"></label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {coatingMesinAwalHistory?.no_jo}
+                              : {coatingMesinAwalHistory?.no_jo} /{' '}
+                              {coatingMesinAwalHistory?.no_io}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {coatingMesinAwalHistory?.nama_produk}
@@ -574,7 +575,7 @@ function CheckSheetCoatingAwal() {
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold"></label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {coatingMesinAwal?.no_jo}
+                  : {coatingMesinAwal?.no_jo} / {coatingMesinAwal?.no_io}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {coatingMesinAwal?.nama_produk}

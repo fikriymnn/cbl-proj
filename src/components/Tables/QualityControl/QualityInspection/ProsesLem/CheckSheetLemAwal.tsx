@@ -205,11 +205,6 @@ function CheckSheetLemAwal() {
   const tanggal = convertTimeStampToDateOnly(cetakMesinAwal?.tanggal);
   const jam = convertDateToTime(cetakMesinAwal?.tanggal);
 
-  const tanggalHistory = convertTimeStampToDateOnly(
-    cetakMesinAwalHistory?.tanggal,
-  );
-  const jamHistory = convertDateToTime(cetakMesinAwalHistory?.tanggal);
-
   const jumlahWaktuCheck = formatElapsedTime(
     cetakMesinAwal?.inspeksi_lem_awal[0].waktu_check,
   );
@@ -321,7 +316,8 @@ function CheckSheetLemAwal() {
 
                             <label className="text-neutral-500 text-sm font-semibold"></label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {cetakMesinAwalHistory?.no_jo}
+                              : {cetakMesinAwalHistory?.no_jo} /{' '}
+                              {cetakMesinAwalHistory?.no_io}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {cetakMesinAwalHistory?.nama_produk}
@@ -563,7 +559,7 @@ function CheckSheetLemAwal() {
 
                 <label className="text-neutral-500 text-sm font-semibold"></label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.no_jo}
+                  : {cetakMesinAwal?.no_jo} / {cetakMesinAwal?.no_io}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {cetakMesinAwal?.nama_produk}

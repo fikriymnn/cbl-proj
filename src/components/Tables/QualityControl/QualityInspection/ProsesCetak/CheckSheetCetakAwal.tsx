@@ -418,7 +418,8 @@ function CheckSheetCetakAwal() {
                             </label>
 
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {cetakMesinAwalHistory?.no_jo}
+                              : {cetakMesinAwalHistory?.no_jo} /{' '}
+                              {cetakMesinAwalHistory?.no_io}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {cetakMesinAwalHistory?.nama_produk}
@@ -678,7 +679,7 @@ function CheckSheetCetakAwal() {
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold"></label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.no_jo}
+                  : {cetakMesinAwal?.no_jo} / {cetakMesinAwal?.no_io}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {cetakMesinAwal?.nama_produk}

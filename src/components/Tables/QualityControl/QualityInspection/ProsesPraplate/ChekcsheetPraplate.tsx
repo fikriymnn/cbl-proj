@@ -43,7 +43,7 @@ function ChecksheetPraplate() {
         withCredentials: true,
       });
 
-      console.log(res.data.data);
+      console.log('tiket', res.data.data || res.data);
       setIncoming(res.data.data);
     } catch (error: any) {
       console.log(error.data.msg);

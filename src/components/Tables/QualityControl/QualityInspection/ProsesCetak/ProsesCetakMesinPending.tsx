@@ -98,7 +98,7 @@ function ProsesCetakMesinPending() {
               </label>
 
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                No. JO
+                No. JO / IO
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Nama JO
@@ -131,7 +131,7 @@ function ProsesCetakMesinPending() {
                     </div>
 
                     <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-6">
-                      {data.no_jo}
+                      {data.no_jo} / {data.no_io}
                     </label>
                     <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
                       {data.nama_produk}

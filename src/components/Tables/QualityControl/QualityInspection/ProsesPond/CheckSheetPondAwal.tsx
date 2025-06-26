@@ -333,7 +333,8 @@ function CheckSheetPondAwal() {
                             </label>
 
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {pondMesinAwalHistory?.no_jo}
+                              : {pondMesinAwalHistory?.no_jo} /{' '}
+                              {pondMesinAwalHistory?.no_io}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {pondMesinAwalHistory?.nama_produk}
