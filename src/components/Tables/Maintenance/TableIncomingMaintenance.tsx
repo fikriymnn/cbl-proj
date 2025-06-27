@@ -259,8 +259,8 @@ const OS3MaintenanceTables = () => {
       getIncomingTickets();
       alert('Response successful');
     } catch (error: any) {
-      console.log(error.response);
-      alert('error');
+      console.log(error.response.data.msg);
+      alert(error.response.data.msg);
       setIsLoading(false);
     }
   };
