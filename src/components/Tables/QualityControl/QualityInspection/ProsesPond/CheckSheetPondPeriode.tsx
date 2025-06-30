@@ -824,7 +824,7 @@ function CheckSheetPondPeriode() {
                   : {pondMesinPeriode?.operator}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {pondMesinPeriode?.status}
+                  : {pondMesinPeriode?.status_jo}
                 </label>
               </div>
             </div>
