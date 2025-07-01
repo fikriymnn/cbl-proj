@@ -789,6 +789,10 @@ function CheckSheetHasilRabut() {
                               <td className="font-semibold w-32">Status JO</td>
                               <td>: {RabutMesin?.data?.status_jo}</td>
                             </tr>
+                            <tr>
+                              <td className="font-semibold w-32">QTY JO</td>
+                              <td>: {RabutMesin?.data?.qty_jo}</td>
+                            </tr>
                           </tbody>
                         </table>
 
@@ -1203,6 +1207,9 @@ function CheckSheetHasilRabut() {
               <label className="text-neutral-500 text-sm font-semibold">
                 Status Jo
               </label>
+              <label className="text-neutral-500 text-sm font-semibold">
+                QTY Jo
+              </label>
             </div>
             <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
               <label className="text-neutral-500 text-sm font-semibold">
@@ -1216,6 +1223,9 @@ function CheckSheetHasilRabut() {
               </label>
               <label className="text-neutral-500 text-sm font-semibold">
                 : {RabutMesin?.data?.status_jo}
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold">
+                : {formatInteger(RabutMesin?.data?.qty_jo)}
               </label>
             </div>
           </div>

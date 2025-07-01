@@ -10,6 +10,7 @@ import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import Select from 'react-select';
 import convertTimeStampToDateTime from '../../../../../utils/converDateTime';
 import ptcbl from '../../../../../images/ptcbl.png';
+import formatInteger from '../../../../../utils/formaterInteger';
 
 function CheckSheetHasilRabut() {
   const { id } = useParams();
@@ -781,9 +782,17 @@ function CheckSheetHasilRabut() {
                             </div>
                             <div className="flex">
                               <span className="font-semibold w-32">
-                                Status:
+                                Status JO:
                               </span>
-                              <span>{RabutMesin?.data?.status}</span>
+                              <span>{RabutMesin?.data?.status_jo}</span>
+                            </div>
+                            <div className="flex">
+                              <span className="font-semibold w-32">
+                                QTY JO:
+                              </span>
+                              <span>
+                                {formatInteger(RabutMesin?.data?.qty_jo)}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -1072,6 +1081,9 @@ function CheckSheetHasilRabut() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   Status Jo
                 </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  QTY JO
+                </label>
               </div>
               <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
@@ -1085,6 +1097,9 @@ function CheckSheetHasilRabut() {
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {RabutMesin?.data?.status_jo}
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  : {formatInteger(RabutMesin?.data?.qty_jo)}
                 </label>
               </div>
             </div>

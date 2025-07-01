@@ -805,6 +805,10 @@ function ChecksheetBarangRS() {
                               <td className="font-semibold w-32">Status JO</td>
                               <td>: {RabutMesin?.data?.status_jo}</td>
                             </tr>
+                            <tr>
+                              <td className="font-semibold w-32">QTY JO</td>
+                              <td>: {RabutMesin?.data?.qty_jo}</td>
+                            </tr>
                           </tbody>
                         </table>
 
@@ -1077,6 +1081,9 @@ function ChecksheetBarangRS() {
                   <label className="text-neutral-500 text-sm font-semibold">
                     Status Jo
                   </label>
+                  <label className="text-neutral-500 text-sm font-semibold">
+                    QTY Jo
+                  </label>
                 </div>
                 <div className="flex flex-col gap-2 ">
                   <label className="text-neutral-500 text-sm font-semibold">
@@ -1096,6 +1103,9 @@ function ChecksheetBarangRS() {
                   </label>
                   <label className="text-neutral-500 text-sm font-semibold">
                     : {RabutMesin?.data?.status_jo}
+                  </label>
+                  <label className="text-neutral-500 text-sm font-semibold">
+                    : {formatInteger(RabutMesin?.data?.qty_jo)}
                   </label>
                 </div>
               </div>
