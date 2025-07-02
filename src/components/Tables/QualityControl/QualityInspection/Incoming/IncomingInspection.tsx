@@ -688,7 +688,9 @@ function IncomingInspection() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   Inspector
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold"></label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  Keterangan JO
+                </label>
 
                 <label className="text-black text-lg font-bold">
                   STANDAR PEMERIKSAAN
@@ -697,6 +699,7 @@ function IncomingInspection() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   Jumlah
                 </label>
+
                 <label className="text-neutral-500 text-sm font-semibold">
                   √N + 1
                 </label>
@@ -708,7 +711,9 @@ function IncomingInspection() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {incoming?.inspector}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold"></label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  : {incoming?.keterangan}
+                </label>
 
                 <label className="text-black text-lg font-bold mt-12"> </label>
                 <label className="text-neutral-500 text-sm font-semibold">

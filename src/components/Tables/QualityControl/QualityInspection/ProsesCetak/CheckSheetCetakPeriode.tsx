@@ -584,6 +584,10 @@ function CheckSheetCetakPeriode() {
                               {formatInteger(
                                 parseInt(cetakMesinPeriodeHistory?.jumlah_pcs),
                               )}
+                              /{' '}
+                              {formatInteger(
+                                parseInt(cetakMesinPeriodeHistory?.mata),
+                              )}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {cetakMesinPeriodeHistory?.jenis_kertas}
@@ -855,7 +859,8 @@ function CheckSheetCetakPeriode() {
                   : {formatInteger(parseInt(cetakMesinPeriode?.jumlah_druk))}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {formatInteger(parseInt(cetakMesinPeriode?.jumlah_pcs))}
+                  : {formatInteger(parseInt(cetakMesinPeriode?.jumlah_pcs))} /{' '}
+                  {formatInteger(parseInt(cetakMesinPeriode?.mata))}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {cetakMesinPeriode?.jenis_kertas}

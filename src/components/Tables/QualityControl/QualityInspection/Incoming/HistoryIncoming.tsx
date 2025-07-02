@@ -100,6 +100,7 @@ function HistoryIncoming() {
   const closePreview = () => {
     setIsOpen(false);
   };
+  // Modified printStatusQuality function with columns fully stretched to full width
   const printStatusQuality = () => {
     const printArea = document.getElementById('status-quality-print-area');
     if (!printArea) return;
@@ -133,192 +134,348 @@ function HistoryIncoming() {
 
     printWindow.document.open();
     printWindow.document.write(`
-      <html>
-        <head>
-          <style>
-            ${styles.join('')}
-            
-            @page {
-              size: A4;
-              margin: 10mm;
-            }
-            
-            body {
-              margin: 0;
-              padding: 0;
-              font-family: Arial, sans-serif;
-            }
-            
-            .print-container {
-              width: 100%;
-              max-width: 100%;
-              box-sizing: border-box;
-              transform: scale(0.95);
-              transform-origin: top left;
-            }
-            
-            .print-container * {
-              font-size: 10px !important;
-            }
-            
-            .print-container h3, 
-            .print-container .text-lg, 
-            .print-container .font-semibold {
-              font-size: 12px !important;
-            }
-            
-            .print-container table td {
-              padding: 2px !important;
-            }
-            
-            .print-container table {
-              width: 100% !important;
-              table-layout: fixed;
-            }
-            
-            @media print {
-              html, body {
-                width: 210mm;
-              }
-              
-              .print-container {
-                page-break-inside: auto;
-              }
-              
-              tr {
-                page-break-inside: avoid;
-              }
-              
-              thead {
-                display: table-header-group;
-              }
-              
-              h1, h2, h3, h4, h5 {
-                page-break-after: avoid;
-              }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="print-container">
-            ${printArea.innerHTML}
-          </div>
-          <script>
-            window.onload = function() {
-              setTimeout(function() {
-                window.print();
-                window.onafterprint = function() {
-                  window.close();
-                }
-              }, 500);
-            }
-          </script>
-        </body>
-      </html>
-    `);
+  <html>
+    <head>
+      <style>
+        ${styles.join('')}
 
+        @page {
+          size: A4 landscape;
+          margin: 8mm;
+        }
+
+        html, body {
+          width: 100%;
+          height: 100%;
+          margin: 0;
+          padding: 0;
+          overflow: hidden;
+          background: white;
+        }
+
+        body {
+          font-family: Arial, sans-serif;
+          font-size: 11px;
+          line-height: 1.2;
+          display: flex;
+          align-items: flex-end;
+          justify-content: stretch;
+        }
+
+        .print-container {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: flex-end;
+          justify-content: stretch;
+        }
+
+        .content-wrapper {
+          width: 100%;
+          height: auto;
+          display: flex;
+          position: relative;
+          padding-bottom: 12mm;
+        }
+
+        .content-wrapper::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 50%;
+          width: 0;
+          border-left: 4px dashed #dc2626;
+          transform: translateX(-1px);
+          z-index: 1;
+        }
+
+        .column {
+          flex: 1;
+          height: 100%;
+          padding: 0 4mm;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+
+        .status-title {
+          font-size: 18px;
+          font-weight: bold;
+          text-align: center;
+          margin-bottom: 12px;
+          letter-spacing: 1.5px;
+          color: #3b0a0a;
+          text-transform: uppercase;
+        }
+
+        .info-row {
+          display: flex;
+          margin-bottom: 4px;
+          font-size: 11px;
+        }
+
+        .info-label {
+          font-weight: bold;
+          width: 85px;
+        }
+
+        .info-colon {
+          margin: 0 6px;
+          font-weight: bold;
+        }
+
+        .info-value {
+          flex: 1;
+          line-height: 1.3;
+        }
+
+        .catatan-label {
+          color: #dc2626;
+          font-style: italic;
+        }
+
+        .decision-text {
+          font-size: 22px;
+          font-weight: bold;
+          color: #2563eb;
+          text-align: left;
+          margin-top: 16px;
+          margin-bottom: 8px;
+        }
+
+        .inspector-label {
+          font-size: 12px;
+          font-weight: bold;
+          margin-bottom: 8px;
+        }
+
+        .signature-box {
+          border: 2px solid #000;
+          width: 80px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: none;
+          font-size: 10px;
+          font-weight: bold;
+        }
+
+        .bottom-section {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          margin-top: 16px;
+        }
+
+        .inspector-name {
+          font-size: 11px;
+        }
+
+        @media print {
+          * {
+            print-color-adjust: exact !important;
+            -webkit-print-color-adjust: exact !important;
+            page-break-inside: avoid !important;
+          }
+
+          body::after {
+            content: "";
+            display: block;
+            page-break-after: avoid !important;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="print-container">
+        <div class="content-wrapper">
+          ${printArea.innerHTML}
+        </div>
+      </div>
+      <script>
+        window.onload = function() {
+          setTimeout(function() {
+            window.print();
+            window.onafterprint = function() {
+              window.close();
+            };
+          }, 500);
+        }
+      </script>
+    </body>
+  </html>
+  `);
     printWindow.document.close();
   };
 
   const StatusQualityContent = () => (
-    <div className="bg-white p-6 max-w-4xl mx-auto font-sans">
-      {/* Header */}
-      <div className="text-center mb-6 border-b pb-4 h-[200px]">
-        <div className="bg-gray-500 text-white p-4 mb-4">
-          <h2 className="text-lg font-bold"></h2>
-          <p className="text-sm font-bold"></p>
-          <p className="text-sm font-bold"></p>
-        </div>
-      </div>
-
-      {/* Status Quality Section */}
-      <div className="mb-8">
-        <h3 className="text-xl font-bold text-center mb-6 underline">
-          STATUS QUALITY
-        </h3>
-
-        <div className="space-y-3 mb-8 text-sm">
-          <div className="flex">
-            <span className="font-bold w-40">Tgl Kedatangan :</span>
-            <span className="font-medium">
-              {convertTimeStampToDateOnly(incoming?.createdAt) ||
-                '(tarik dari tgl checksheet incoming)'}
-            </span>
-          </div>
-
-          <div className="flex">
-            <span className="font-bold w-40">Jenis Kertas :</span>
-            <span className="font-bold text-blue-600">
-              {incoming?.jenis_kertas || 'DPC / IVORY / AP / HVS / CHROMO'}
-            </span>
-          </div>
-
-          <div className="flex">
-            <span className="font-bold w-40">Ukuran :</span>
-            <span className="font-medium">
-              {incoming?.ukuran || '(....) x (....) Cm'}
-            </span>
-          </div>
-
-          <div className="flex">
-            <span className="font-bold w-40">Supplier :</span>
-            <span className="font-medium">
-              {incoming?.supplier ||
-                '(Muncul nama supplier sesuai Checksheet Incoming)'}
-            </span>
-          </div>
-
-          <div className="flex">
-            <span className="font-bold w-40">No Lot :</span>
-            <span className="font-medium">
-              {incoming?.no_lot || '(Muncul sesuai Checksheet Incoming)'}
-            </span>
-          </div>
-
-          <div className="flex">
-            <span className="font-bold w-40">No Surat Jalan :</span>
-            <span className="font-medium">
-              {incoming?.no_surat_jalan ||
-                '(Muncul sesuai Checksheet Incoming)'}
-            </span>
-          </div>
-
-          <div className="flex">
-            <span className="font-bold w-40">Keterangan :</span>
-            <span className="font-medium">
-              {incoming?.keterangan ||
-                '(list JO by surat jalan Kiriman Dari p1)'}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Decision Section */}
-      <div className="mb-8">
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <h3 className="text-3xl font-bold text-blue-600 mb-4">
-              {incoming?.verifikasi === 'Diterima' ? 'DITERIMA' : 'DITOLAK'}
+    <div className="bg-white p-6 w-full mx-auto font-sans">
+      <div className="border-2 border-black flex">
+        {/* Left Column */}
+        <div className="flex-1 p-4 border-r-2 border-dashed border-red-600 flex flex-col justify-between min-h-96">
+          <div>
+            <h3 className="text-lg font-bold text-center mb-4 tracking-wider">
+              STATUS QUALITY
             </h3>
-            <div className="flex items-center">
-              <div className="border border-gray-400 p-3 bg-gray-50 min-w-60">
-                <span className="font-medium text-sm">
-                  {incoming?.catatan ||
-                    'ini muncul otomatis dari checksheet incoming'}
+
+            <div className="space-y-1 text-sm mb-4">
+              <div className="flex">
+                <span className="font-bold w-24">Tgl Kedatangan</span>
+                <span className="mx-2">:</span>
+                <span>
+                  {convertTimeStampToDateOnly(incoming?.createdAt) || '-'}
+                </span>
+              </div>
+
+              <div className="flex">
+                <span className="font-bold w-24">Bahan</span>
+                <span className="mx-2">:</span>
+                <span>{incoming?.jenis_kertas || '-'}</span>
+              </div>
+
+              <div className="flex">
+                <span className="font-bold w-24">Ukuran</span>
+                <span className="mx-2">:</span>
+                <span>{incoming?.ukuran || '-'}</span>
+              </div>
+
+              <div className="flex">
+                <span className="font-bold w-24">Grammature</span>
+                <span className="mx-2">:</span>
+                <span>{incoming?.grammature || '-'}</span>
+              </div>
+
+              <div className="flex">
+                <span className="font-bold w-24">Supplier</span>
+                <span className="mx-2">:</span>
+                <span>{incoming?.supplier || '-'}</span>
+              </div>
+
+              <div className="flex">
+                <span className="font-bold w-24">NO Lot</span>
+                <span className="mx-2">:</span>
+                <span>{incoming?.no_lot || '-'}</span>
+              </div>
+
+              <div className="flex">
+                <span className="font-bold w-24">Keterangan</span>
+                <span className="mx-2">:</span>
+                <span>{incoming?.keterangan || '-'}</span>
+              </div>
+
+              <div className="flex">
+                <span className="font-bold w-24">Catatan</span>
+                <span className="mx-2">:</span>
+                <span className="text-red-600 italic">
+                  {incoming?.catatan || '-'}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="text-right ">
-            <p className="font-bold text-sm mb-1">QA Inspector,</p>
-            <div className="mb-16">
-              <br />
+          <div>
+            <div className="mb-4">
+              <h3 className="text-2xl font-bold text-blue-600 mb-2 text-left">
+                {incoming?.verifikasi === 'Diterima' ? 'DITERIMA' : 'DITERIMA'}
+              </h3>
+              <p className="font-bold text-sm mb-2">QA Inspector,</p>
             </div>
-            <div className="border-2 border-gray-800 p-2 w-20 h-10 flex items-center justify-center bg-white">
-              <span className="text-xs font-bold">
-                {incoming?.inspector || 'PM-QA-007'}
-              </span>
+
+            <div className="flex justify-between items-end pt-6">
+              <div>
+                <p className="text-sm mb-2">({incoming?.inspector || '-'})</p>
+              </div>
+              <div className="border-2 border-black p-2  h-7 flex items-center justify-center bg-white">
+                <span className="text-xs font-bold">
+                  {incoming?.no_doc || '-'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column */}
+        <div className="flex-1 p-4 flex flex-col justify-between min-h-96">
+          <div>
+            <h3 className="text-lg font-bold text-center mb-4 tracking-wider">
+              STATUS QUALITY
+            </h3>
+
+            <div className="space-y-1 text-sm mb-4">
+              <div className="flex">
+                <span className="font-bold w-24">Tgl Kedatangan</span>
+                <span className="mx-2">:</span>
+                <span>
+                  {convertTimeStampToDateOnly(incoming?.createdAt) || '-'}
+                </span>
+              </div>
+
+              <div className="flex">
+                <span className="font-bold w-24">Bahan</span>
+                <span className="mx-2">:</span>
+                <span>{incoming?.jenis_kertas || '-'}</span>
+              </div>
+
+              <div className="flex">
+                <span className="font-bold w-24">Ukuran</span>
+                <span className="mx-2">:</span>
+                <span>{incoming?.ukuran || '-'}</span>
+              </div>
+
+              <div className="flex">
+                <span className="font-bold w-24">Grammature</span>
+                <span className="mx-2">:</span>
+                <span>{incoming?.grammature || '-'}</span>
+              </div>
+
+              <div className="flex">
+                <span className="font-bold w-24">Supplier</span>
+                <span className="mx-2">:</span>
+                <span>{incoming?.supplier || '-'}</span>
+              </div>
+
+              <div className="flex">
+                <span className="font-bold w-24">NO Lot</span>
+                <span className="mx-2">:</span>
+                <span>{incoming?.no_lot || '-'}</span>
+              </div>
+
+              <div className="flex">
+                <span className="font-bold w-24">Keterangan</span>
+                <span className="mx-2">:</span>
+                <span>{incoming?.keterangan || '-'}</span>
+              </div>
+
+              <div className="flex">
+                <span className="font-bold w-24">Catatan</span>
+                <span className="mx-2">:</span>
+                <span className="text-red-600 italic">
+                  {incoming?.catatan || '-'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="">
+            <div className="mb-4">
+              <h3 className="text-2xl font-bold text-blue-600 mb-2 text-left">
+                {incoming?.verifikasi === 'Diterima' ? 'DITERIMA' : 'DITERIMA'}
+              </h3>
+              <p className="font-bold text-sm mb-2">QA Inspector,</p>
+            </div>
+
+            <div className="flex justify-between items-end pt-6">
+              <div>
+                <p className="text-sm mb-2">({incoming?.inspector || '-'})</p>
+              </div>
+              <div className="border-2 border-black p-2  h-7 flex items-center justify-center bg-white">
+                <span className="text-xs font-bold">
+                  {incoming?.no_doc || '-'}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -586,9 +743,9 @@ function HistoryIncoming() {
                             </div>
                             <div className="col-span-3"></div>
 
-                            <div className="font-semibold">Status JO</div>
+                            <div className="font-semibold">Keterangan JO</div>
                             <div className="col-span-2">
-                              : {incoming?.status_jo}
+                              : {incoming?.keterangan}
                             </div>
 
                             <div className="font-semibold">
@@ -597,7 +754,10 @@ function HistoryIncoming() {
                             <div className="col-span-2">
                               : {incoming?.jumlah} LP
                             </div>
-
+                            <div className="font-semibold">Jumlah Pallet</div>
+                            <div className="col-span-2">
+                              : {incoming?.hasil_rumus}
+                            </div>
                             <div className="font-semibold">√N + 1</div>
                             <div className="col-span-2">
                               : {incoming?.hasil_rumus}
@@ -1295,7 +1455,7 @@ function HistoryIncoming() {
                   Inspector
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  Status Jo
+                  Keterangan JO
                 </label>
 
                 <label className="text-black text-lg font-bold">
@@ -1304,6 +1464,9 @@ function HistoryIncoming() {
 
                 <label className="text-neutral-500 text-sm font-semibold">
                   Jumlah
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  Jumlah Pallet
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   √N + 1
@@ -1317,12 +1480,15 @@ function HistoryIncoming() {
                   : {incoming?.inspector}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {incoming?.status_jo}
+                  : {incoming?.keterangan}
                 </label>
 
                 <label className="text-black text-lg font-bold mt-12"> </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {incoming?.jumlah} LP
+                </label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  :{incoming?.hasil_rumus}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   :{incoming?.hasil_rumus}

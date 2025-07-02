@@ -371,6 +371,10 @@ function CheckSheetCetakAwal() {
                               {formatInteger(
                                 parseInt(cetakMesinAwalHistory?.jumlah_pcs),
                               )}
+                              /{' '}
+                              {formatInteger(
+                                parseInt(cetakMesinAwalHistory?.mata),
+                              )}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {cetakMesinAwalHistory?.jenis_kertas}
@@ -631,7 +635,8 @@ function CheckSheetCetakAwal() {
                   : {formatInteger(parseInt(cetakMesinAwal?.jumlah_druk))}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {formatInteger(parseInt(cetakMesinAwal?.jumlah_pcs))}
+                  : {formatInteger(parseInt(cetakMesinAwal?.jumlah_pcs))} /{' '}
+                  {formatInteger(parseInt(cetakMesinAwal?.mata))}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {cetakMesinAwal?.jenis_kertas}
