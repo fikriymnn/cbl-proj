@@ -1738,7 +1738,7 @@ function App() {
           }
         />
         <Route
-          path="/hr/pm/masterkaryawan/lengkapi"
+          path="/hr/pm/masterkaryawan/lengkapi/:id"
           element={
             <>
               <LengkapiMasterKaryawan />
