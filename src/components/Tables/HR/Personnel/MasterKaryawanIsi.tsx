@@ -557,7 +557,7 @@ function MasterKaryawanIsi() {
                           {openDropdown === data.userid && (
                             <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
                               <div className="py-1">
-                                <Link
+                                {/* <Link
                                   to={`/hr/pm/masterkaryawan/lengkapi/${data.userid}`}
                                   className="flex items-center px-4 py-2 text-sm text-yellow-700 hover:bg-yellow-50 transition-colors duration-150"
                                   onClick={() => setOpenDropdown(null)}
@@ -576,7 +576,7 @@ function MasterKaryawanIsi() {
                                     />
                                   </svg>
                                   Lengkapi Data
-                                </Link>
+                                </Link> */}
 
                                 <Link
                                   to={`/hr/pm/masterkaryawan/detail/${data.userid}`}
