@@ -425,717 +425,540 @@ function EditMasterKaryawanIsi() {
     <main className="overflow-x-scroll">
       {isLoading && <Loading />}
       <div className="min-w-[700px]  bg-white rounded-t-md border-b-8 border-[#D8EAFF] h-12"></div>
-      <div className="min-w-[700px]  bg-white  rounded-md ">
-        <div className="flex w-full bg-[#eeeeee] px-6 py-3">
-          <label className="text-[#0065de] text-sm font-semibold">
-            BIODATA
+      <div className="min-w-[700px] bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="flex w-full bg-gradient-to-r from-blue-50 to-blue-100 px-8 py-4 rounded-t-lg">
+          <label className="text-[#0065de] text-lg font-bold tracking-wide">
+            BIODATA KARYAWAN
           </label>
         </div>
-        <div className=" w-full bg-white px-6 py-4 grid grid-cols-2 gap-3 rounded-md border">
-          <div className="flex flex-col gap-2 justify-between">
-            <div>
-              <label className=" text-sm font-semibold">NIK</label>
-              <div className="flex w-full gap-7">
-                <input
-                  defaultValue={karyawan?.biodata_karyawan[0]?.nik}
-                  onChange={(e) => setnik(e.target.value)}
-                  type="text"
-                  className="border-stroke border-2 rounded-md w-[40%]"
-                />
-                <div>
-                  <label className=" text-sm font-semibold">
-                    Jenis Kelamin :
+
+        <div className="w-full bg-white px-8 py-8 grid grid-cols-2 gap-8 rounded-b-lg">
+          {/* Left Column */}
+          <div className="flex flex-col gap-6">
+            {/* NIK and Gender Section */}
+            <div className="space-y-4">
+              <div className="flex items-start gap-8">
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    NIK
                   </label>
-                  <div className="flex gap-1">
-                    <input
-                      onChange={(e) => setjenisKelamin(e.target.value)}
-                      type="radio"
-                      name="kelamin"
-                      id="kelamin1"
-                      value="Laki-Laki"
-                      checked={jenisKelamin === 'Laki-Laki'} // Controlled by state
-                    />
-                    Laki-Laki
-                  </div>
-                  <div className="flex gap-1">
-                    <input
-                      onChange={(e) => setjenisKelamin(e.target.value)}
-                      type="radio"
-                      name="kelamin"
-                      id="kelamin2"
-                      value="Perempuan"
-                      checked={jenisKelamin === 'Perempuan'} // Controlled by state
-                    />
-                    Perempuan
+                  <input
+                    defaultValue={karyawan?.biodata_karyawan[0]?.nik}
+                    onChange={(e) => setnik(e.target.value)}
+                    type="text"
+                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Jenis Kelamin
+                  </label>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        onChange={(e) => setjenisKelamin(e.target.value)}
+                        type="radio"
+                        name="kelamin"
+                        value="Laki-Laki"
+                        checked={jenisKelamin === 'Laki-Laki'}
+                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">Laki-Laki</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        onChange={(e) => setjenisKelamin(e.target.value)}
+                        type="radio"
+                        name="kelamin"
+                        value="Perempuan"
+                        checked={jenisKelamin === 'Perempuan'}
+                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">Perempuan</span>
+                    </label>
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col gap-1">
-                <label className=" text-sm font-semibold">Nama Karyawan</label>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Nama Karyawan
+                </label>
                 <input
                   defaultValue={karyawan?.name}
                   onChange={(e) => setnamaKaryawan(e.target.value)}
                   type="text"
-                  className="border-stroke border-2 rounded-md w-[40%]"
+                  className="w-3/5 px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
                 />
               </div>
-              <div className="flex flex-col gap-1 pt-2">
-                <label className=" text-sm font-semibold">
-                  Tipe Karyawan :
-                </label>
-                <div className="flex w-full gap-7">
-                  <div className="flex gap-1">
-                    <input
-                      onChange={(e) => seTipeKaryawan(e.target.value)}
-                      type="radio"
-                      name="tipeKryawan"
-                      id="tipeKryawan1"
-                      value={'produksi'}
-                      checked={tipeKaryawan === 'produksi'}
-                    />
-                    Produksi
-                  </div>
 
-                  <div className="flex gap-1">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tipe Karyawan
+                </label>
+                <div className="flex gap-8">
+                  <label className="flex items-center gap-3 cursor-pointer">
                     <input
                       onChange={(e) => seTipeKaryawan(e.target.value)}
                       type="radio"
                       name="tipeKryawan"
-                      id="tipeKryawan2"
-                      value={'staff'}
-                      checked={tipeKaryawan === 'staff'}
+                      value="produksi"
+                      checked={tipeKaryawan === 'produksi'}
+                      className="w-4 h-4 text-blue-600 focus:ring-blue-500"
                     />
-                    Staff
-                  </div>
+                    <span className="text-sm text-gray-700">Produksi</span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      onChange={(e) => seTipeKaryawan(e.target.value)}
+                      type="radio"
+                      name="tipeKryawan"
+                      value="staff"
+                      checked={tipeKaryawan === 'staff'}
+                      className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700">Staff</span>
+                  </label>
                 </div>
               </div>
             </div>
-            <div>
-              <div className="flex flex-col gap-1">
-                <label className=" text-sm font-semibold">Department :</label>
-                <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                  <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    ></svg>
-                  </span>
 
+            {/* Department Section */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Department
+                </label>
+                <div className="relative">
                   <select
                     value={idDepartment}
                     name="nama_department"
                     onChange={(e) => setidDepartment(e.target.value)}
-                    className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
+                    className="w-full px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors appearance-none"
                   >
-                    <option
-                      selected
-                      disabled
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      PILIH DEPARTMENT
+                    <option selected disabled className="text-gray-500">
+                      Pilih Department
                     </option>
-                    {department?.data?.map((data: any, i: number) => {
-                      return (
-                        <option
-                          value={data.id}
-                          className="text-gray-800 text-xs font-light dark:text-bodydark"
-                        >
-                          {data.nama_department}
-                        </option>
-                      );
-                    })}
+                    {department?.data?.map((data: any, i: any) => (
+                      <option key={i} value={data.id} className="text-gray-800">
+                        {data.nama_department}
+                      </option>
+                    ))}
                   </select>
-
-                  <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                     <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
+                      className="w-5 h-5 text-gray-400"
                       fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      <g opacity="0.8">
-                        <path
-                          fillRule="evenodd"
-                          clipRule="evenodd"
-                          d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                          fill="#637381"
-                        ></path>
-                      </g>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
                     </svg>
-                  </span>
+                  </div>
                 </div>
               </div>
-              <div className="flex gap-4">
-                <div className="flex flex-col gap-1 w-[60%]">
-                  <label className=" text-sm font-semibold">Divisi :</label>
-                  <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                    <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      ></svg>
-                    </span>
 
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Divisi
+                  </label>
+                  <div className="relative">
                     <select
                       value={idDivisi}
                       name="nama_divisi"
                       onChange={(e) => seidDivisi(e.target.value)}
-                      className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
+                      className="w-full px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors appearance-none"
                     >
-                      <option
-                        selected
-                        disabled
-                        className="text-[#646464] text-xs dark:text-bodydark"
-                      >
-                        PILIH DIVISI
+                      <option selected disabled className="text-gray-500">
+                        Pilih Divisi
                       </option>
-                      {divisi?.data?.map((data: any, i: number) => {
-                        return (
-                          <option
-                            value={data.id}
-                            className="text-gray-800 text-xs font-light dark:text-bodydark"
-                          >
-                            {data.nama_divisi}
-                          </option>
-                        );
-                      })}
+                      {divisi?.data?.map((data: any, i: any) => (
+                        <option
+                          key={i}
+                          value={data.id}
+                          className="text-gray-800"
+                        >
+                          {data.nama_divisi}
+                        </option>
+                      ))}
                     </select>
-
-                    <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
+                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                       <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
+                        className="w-5 h-5 text-gray-400"
                         fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
                       >
-                        <g opacity="0.8">
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                            fill="#637381"
-                          ></path>
-                        </g>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 9l-7 7-7-7"
+                        ></path>
                       </svg>
-                    </span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex flex-col gap-1 w-[40%]">
-                  <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                    <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      ></svg>
-                    </span>
-
-                    <label className=" text-sm font-semibold">Grade :</label>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Jabatan
+                  </label>
+                  <div className="relative">
                     <select
-                      value={grade}
-                      name="grade"
-                      onChange={(e) => setgrade(e.target.value)}
-                      className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
+                      value={jabatan}
+                      onChange={(e) => sejabatan(e.target.value)}
+                      className="w-full px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors appearance-none"
                     >
-                      <option
-                        selected
-                        disabled
-                        className="text-[#646464] text-xs dark:text-bodydark"
-                      >
-                        PILIH GRADE
+                      <option selected disabled className="text-gray-500">
+                        Pilih Jabatan
                       </option>
-                      {gradeMaster?.data?.map((data: any, i: number) => {
-                        return (
-                          <option
-                            value={data.id}
-                            className="text-gray-800 text-xs font-light dark:text-bodydark"
-                          >
-                            {data.kategori}
-                          </option>
-                        );
-                      })}
+                      {jabatanMaster?.data?.map((data: any, i: any) => (
+                        <option
+                          key={i}
+                          value={data.id}
+                          className="text-gray-800"
+                        >
+                          {data.nama_jabatan}
+                        </option>
+                      ))}
                     </select>
-                    <span className="absolute top-10 right-4 z-10 -translate-y-1/2">
+                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                       <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
+                        className="w-5 h-5 text-gray-400"
                         fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
                       >
-                        <g opacity="0.8">
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                            fill="#637381"
-                          ></path>
-                        </g>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 9l-7 7-7-7"
+                        ></path>
                       </svg>
-                    </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Grade
+                </label>
+                <div className="relative">
+                  <select
+                    value={grade}
+                    name="grade"
+                    onChange={(e) => setgrade(e.target.value)}
+                    className="w-full px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors appearance-none"
+                  >
+                    <option selected disabled className="text-gray-500">
+                      Pilih Grade
+                    </option>
+                    {gradeMaster?.data?.map((data: any, i: any) => (
+                      <option key={i} value={data.id} className="text-gray-800">
+                        {data.kategori}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div className="">
-            <div className="flex w-full gap-3">
-              <div className="flex flex-col gap-1 w-[50%]">
-                <label className=" text-sm font-semibold">
-                  Tanggal Masuk :
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tanggal Masuk
                 </label>
                 <input
                   value={tglMasuk}
                   onChange={handleTglMasukChange}
                   type="date"
-                  className="border-2 border-stroke rounded-md"
-                ></input>
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                />
               </div>
-              <div className="flex flex-col gap-1 w-[50%]">
-                <label className=" text-sm font-semibold">
-                  Status Karyawan :
-                </label>
-                <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                  <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    ></svg>
-                  </span>
 
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Status Karyawan
+                </label>
+                <div className="relative">
                   <select
                     value={idStatusKaryawan}
                     name="nama_department"
                     onChange={handleStatusChange}
-                    className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
+                    className="w-full px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors appearance-none"
                   >
-                    <option
-                      selected
-                      disabled
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      PILIH STATUS KARYAWAN
+                    <option selected disabled className="text-gray-500">
+                      Pilih Status Karyawan
                     </option>
-                    {karyawanStatus?.data?.map((data: any, i: number) => {
-                      return (
-                        <option
-                          value={data.id}
-                          className="text-gray-800 text-xs font-light dark:text-bodydark"
-                        >
-                          {data.nama_status === 'tetap' ||
-                          data.nama_status === 'keluar'
-                            ? data.nama_status
-                            : `${data.nama_status} - ${data.waktu_bulan} - ${
-                                data.type === null ? 'Bulan' : data.type
-                              }`}
-                        </option>
-                      );
-                    })}
+                    {karyawanStatus?.data?.map((data: any, i: any) => (
+                      <option key={i} value={data.id} className="text-gray-800">
+                        {data.nama_status === 'tetap' ||
+                        data.nama_status === 'keluar'
+                          ? data.nama_status
+                          : `${data.nama_status} - ${data.waktu_bulan} - ${
+                              data.type === null ? 'Bulan' : data.type
+                            }`}
+                      </option>
+                    ))}
                   </select>
-
-                  <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                     <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
+                      className="w-5 h-5 text-gray-400"
                       fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      <g opacity="0.8">
-                        <path
-                          fillRule="evenodd"
-                          clipRule="evenodd"
-                          d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                          fill="#637381"
-                        ></path>
-                      </g>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
                     </svg>
-                  </span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex w-full gap-3">
-              <div className="flex flex-col gap-1 w-[50%]">
-                <label className="text-sm font-semibold">Tanggal Keluar:</label>
-                <p>{tglKeluar}</p>
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tanggal Keluar
+                </label>
+                <div className="px-4 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg text-gray-700">
+                  {tglKeluar || '-'}
+                </div>
               </div>
 
-              <div className="flex flex-col gap-1 w-[50%]">
-                <label className=" text-sm font-semibold">Status Pajak :</label>
-                <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                  <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    ></svg>
-                  </span>
-
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Status Pajak
+                </label>
+                <div className="relative">
                   <select
                     value={statusPajak}
                     onChange={(e) => sestatusPajak(e.target.value)}
-                    className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
+                    className="w-full px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors appearance-none"
                   >
-                    <option
-                      selected
-                      disabled
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      Status Pajak
+                    <option selected disabled className="text-gray-500">
+                      Pilih Status Pajak
                     </option>
-                    <option
-                      value={'TK0'}
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      TK0
-                    </option>
-                    <option
-                      value={'TK1'}
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      TK1
-                    </option>
-                    <option
-                      value={'TK2'}
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      TK2
-                    </option>
-                    <option
-                      value={'TK3'}
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      TK3
-                    </option>
-                    <option
-                      value={'K0'}
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      K0
-                    </option>
-                    <option
-                      value={'K1'}
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      K1
-                    </option>
-                    <option
-                      value={'K2'}
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      K2
-                    </option>
-                    <option
-                      value={'K3'}
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      K3
-                    </option>
-                    <option
-                      value={'KI0'}
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      KI0
-                    </option>
-                    <option
-                      value={'KI1'}
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      KI1
-                    </option>
-                    <option
-                      value={'KI2'}
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      KI2
-                    </option>
-                    <option
-                      value={'KI3'}
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      KI3
-                    </option>
+                    {[
+                      'TK0',
+                      'TK1',
+                      'TK2',
+                      'TK3',
+                      'K0',
+                      'K1',
+                      'K2',
+                      'K3',
+                      'KI0',
+                      'KI1',
+                      'KI2',
+                      'KI3',
+                    ].map((status) => (
+                      <option
+                        key={status}
+                        value={status}
+                        className="text-gray-800"
+                      >
+                        {status}
+                      </option>
+                    ))}
                   </select>
-
-                  <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                     <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
+                      className="w-5 h-5 text-gray-400"
                       fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      <g opacity="0.8">
-                        <path
-                          fillRule="evenodd"
-                          clipRule="evenodd"
-                          d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                          fill="#637381"
-                        ></path>
-                      </g>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
                     </svg>
-                  </span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-1 w-full">
-              <div className="flex flex-col gap-1">
-                <label className=" text-sm font-semibold">
-                  Tipe Penggajian :
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tipe Penggajian
                 </label>
-                <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                  <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 20 20"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    ></svg>
-                  </span>
-
+                <div className="relative">
                   <select
                     value={tipePenggajian}
                     onChange={(e) => settipePenggajian(e.target.value)}
-                    className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
+                    className="w-full px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors appearance-none"
                   >
-                    <option
-                      selected
-                      disabled
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      Tipe Penggajian
+                    <option selected disabled className="text-gray-500">
+                      Pilih Tipe Penggajian
                     </option>
-                    <option
-                      value={'mingguan'}
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      MINGGUAN
+                    <option value="mingguan" className="text-gray-800">
+                      Mingguan
                     </option>
-                    <option
-                      value={'bulanan'}
-                      className="text-[#646464] text-xs dark:text-bodydark"
-                    >
-                      BULANAN
+                    <option value="bulanan" className="text-gray-800">
+                      Bulanan
                     </option>
                   </select>
-
-                  <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                     <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
+                      className="w-5 h-5 text-gray-400"
                       fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      <g opacity="0.8">
-                        <path
-                          fillRule="evenodd"
-                          clipRule="evenodd"
-                          d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                          fill="#637381"
-                        ></path>
-                      </g>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
                     </svg>
-                  </span>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-1 w-full">
-                <label className=" text-sm font-semibold">Gaji :</label>
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Gaji
+                </label>
                 <input
                   value={gaji}
                   onChange={(e) => setGaji(e.target.value)}
                   type="number"
-                  className="border-stroke border-2 rounded-md w-full"
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                  placeholder="Masukkan gaji"
                 />
               </div>
             </div>
 
-            <div className="flex flex-col">
-              <label className=" text-sm font-semibold">Bagian :</label>
-              <div className="flex flex-col gap-1 w-[50%]">
-                <div className="z-50">
+            {/* Bagian Section */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Bagian
+                </label>
+                <div className="space-y-3">
                   {bagianMesin?.map((item: any, index: any) => (
-                    <div
-                      key={index}
-                      style={{ marginBottom: '10px' }}
-                      className="flex gap-1"
-                    >
-                      <Select
-                        options={options} // Options for the dropdown
-                        onChange={(selected) =>
-                          handleChangePointDepartment(selected, index)
-                        }
-                        value={
-                          item.nama_bagian_mesin
-                            ? options.find(
-                                (option) =>
-                                  option.value === item.nama_bagian_mesin,
-                              )
-                            : null
-                        }
-                        placeholder="Select Mesin"
-                        className={`w-[90%] ${
-                          index === 0 ? 'font-bold' : 'font-normal'
-                        }`}
-                      />
+                    <div key={index} className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <Select
+                          options={options}
+                          onChange={(selected) =>
+                            handleChangePointDepartment(selected, index)
+                          }
+                          value={
+                            item.nama_bagian_mesin
+                              ? options.find(
+                                  (option) =>
+                                    option.value === item.nama_bagian_mesin,
+                                )
+                              : null
+                          }
+                          placeholder="Pilih Bagian Mesin"
+                          className="w-full"
+                        />
+                      </div>
                       <button
                         type="button"
-                        className=" px-1 text-white bg-red-500 hover:bg-red-600 rounded"
+                        className="p-2 text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
                         onClick={() => deleteBagian(item.id)}
                       >
-                        X
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          ></path>
+                        </svg>
                       </button>
                     </div>
                   ))}
                   <button
                     type="button"
                     onClick={openModal1}
-                    className="mt-2 px-2 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
                   >
-                    + Tambah Bagian
-                  </button>
-                  {showModal1 && (
-                    <ModalAddPeriode
-                      isOpen={showModal1}
-                      onClose={closeModal1}
-                      judul={'TAMBAH BAGIAN MESIN'}
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
                     >
-                      <>
-                        <div className="flex flex-col gap-1 w-full">
-                          <div className="z-50">
-                            <>
-                              <div
-                                style={{ marginBottom: '10px' }}
-                                className="flex gap-1"
-                              >
-                                <Select
-                                  options={options}
-                                  onChange={(selected) =>
-                                    handleChangePointDepatment(selected)
-                                  }
-                                  placeholder="Select Mesin"
-                                  className={`w-[90%]`}
-                                />
-                              </div>
-                            </>
-
-                            <button
-                              type="button"
-                              onClick={() => tambahBagian()}
-                              className="mt-2 px-2 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded"
-                            >
-                              Tambah Bagian
-                            </button>
-                          </div>
-                        </div>
-                      </>
-                    </ModalAddPeriode>
-                  )}
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      ></path>
+                    </svg>
+                    Tambah Bagian
+                  </button>
                 </div>
               </div>
-              <div className="flex gap-3">
-                <div className="flex flex-col gap-1 w-[50%]"></div>
-                <div className="flex flex-col gap-1 w-[50%]">
-                  <label className=" text-sm font-semibold">Level</label>
+
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Level
+                  </label>
                   <input
                     defaultValue={karyawan?.biodata_karyawan[0]?.level}
                     onChange={(e) => setlevel(e.target.value)}
                     type="text"
-                    className="border-stroke border-2 rounded-md w-[50%]"
+                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                    placeholder="Masukkan level"
                   />
                 </div>
-              </div>
-              <div className="flex gap-3">
-                <div className="flex flex-col gap-1 w-[50%]">
-                  <label className=" text-sm font-semibold">Jabatan :</label>
-                  <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                    <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 20 20"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      ></svg>
-                    </span>
-                    <select
-                      value={jabatan}
-                      onChange={(e) => sejabatan(e.target.value)}
-                      className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
-                    >
-                      <option
-                        selected
-                        disabled
-                        className="text-[#646464] text-xs dark:text-bodydark"
-                      >
-                        PILIH JABATAN
-                      </option>
-                      {jabatanMaster?.data?.map((data: any, i: number) => {
-                        return (
-                          <option
-                            value={data.id}
-                            className="text-gray-800 text-xs font-light dark:text-bodydark"
-                          >
-                            {data.nama_jabatan}
-                          </option>
-                        );
-                      })}
-                    </select>
 
-                    <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
-                      <svg
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <g opacity="0.8">
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                            fill="#637381"
-                          ></path>
-                        </g>
-                      </svg>
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-1 w-[50%]">
-                  <label className=" text-sm font-semibold">Sub-Level</label>
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Sub-Level
+                  </label>
                   <input
                     defaultValue={karyawan?.biodata_karyawan[0]?.sub_level}
                     onChange={(e) => setsubLevel(e.target.value)}
                     type="text"
-                    className="border-stroke border-2 rounded-md w-[50%]"
+                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                    placeholder="Masukkan sub-level"
                   />
                 </div>
               </div>
@@ -1143,18 +966,48 @@ function EditMasterKaryawanIsi() {
           </div>
         </div>
 
-        <div className="flex w-full justify-end items-end px-8 py-5">
+        {/* Modal */}
+        {showModal1 && (
+          <ModalAddPeriode
+            isOpen={showModal1}
+            onClose={closeModal1}
+            judul="TAMBAH BAGIAN MESIN"
+          >
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Pilih Bagian Mesin
+                </label>
+                <Select
+                  options={options}
+                  onChange={(selected) => handleChangePointDepatment(selected)}
+                  placeholder="Pilih Bagian Mesin"
+                  className="w-full"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => tambahBagian()}
+                className="w-full px-4 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+              >
+                Tambah Bagian
+              </button>
+            </div>
+          </ModalAddPeriode>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex justify-end items-center px-8 py-6 bg-gray-50 border-t border-gray-200 rounded-b-lg">
           <button
             onClick={() => {
               tambahKaryawan(karyawan?.userid);
               console.log(tglKeluar);
             }}
-            className="bg-blue-500 text-white text-md px-4 py-1 rounded-md font-semibold"
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-sm"
           >
-            SIMPAN
+            SIMPAN DATA
           </button>
         </div>
-        <div className="flex w-full h-2 bg-[#D8EAFF]"></div>
       </div>
       <LengkapiMasterKaryawanIsi />
     </main>

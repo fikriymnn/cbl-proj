@@ -322,13 +322,13 @@ function AddMasterKaryawanIsi() {
     <div className="flex flex-col gap-1">
       <label className="text-sm font-semibold">
         {label}
-        {required && <span className="text-red-600">*</span>}
+        {required}
       </label>
       <div className="relative z-20 h-10 bg-white dark:bg-form-input w-full">
         <select
           value={value}
           onChange={onChange}
-          className="relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input"
+          className="w-full px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors appearance-none"
         >
           <option
             value=""
@@ -347,24 +347,21 @@ function AddMasterKaryawanIsi() {
             </option>
           ))}
         </select>
-        <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
+        <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
           <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
+            className="w-5 h-5 text-gray-400"
             fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            <g opacity="0.8">
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                fill="#637381"
-              ></path>
-            </g>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M19 9l-7 7-7-7"
+            ></path>
           </svg>
-        </span>
+        </div>
       </div>
     </div>
   );
@@ -389,7 +386,7 @@ function AddMasterKaryawanIsi() {
     <div className="flex flex-col gap-1 pt-2">
       <label className="text-sm font-semibold">
         {label}
-        {required && <span className="text-red-600">*</span>}
+        {required}
       </label>
       <div className="flex w-full gap-7">
         {options.map((option, i) => (
@@ -413,65 +410,85 @@ function AddMasterKaryawanIsi() {
     <main className="overflow-x-scroll">
       {isLoading && <Loading />}
       <div className="min-w-[700px] bg-white rounded-t-md border-b-8 border-[#D8EAFF] h-12"></div>
-      <div className="min-w-[700px] h-screen bg-white border-b-8 border-[#D8EAFF]">
-        <div className="flex w-full bg-[#eeeeee] px-6 py-3">
-          <label className="text-[#0065de] text-sm font-semibold">
-            BIODATA
+      <div className="min-w-[700px] bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="flex w-full bg-gradient-to-r from-blue-50 to-blue-100 px-8 py-4 rounded-t-lg">
+          <label className="text-[#0065de] text-lg font-bold tracking-wide">
+            BIODATA KARYAWAN
           </label>
         </div>
 
-        <div className="w-full bg-white px-6 py-4 grid grid-cols-2 gap-3">
+        <div className="w-full bg-white px-8 py-8 grid grid-cols-2 gap-8 rounded-b-lg">
           {/* Left Column */}
-          <div className="flex flex-col gap-2 justify-between">
-            <div>
-              <label className="text-sm font-semibold">
-                NIK<span className="text-red-600">*</span>
-              </label>
-              <div className="flex w-full gap-7">
+          <div className="flex flex-col gap-6">
+            {/* NIK and Gender Row */}
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  NIK<span className="text-red-600">*</span>
+                </label>
                 <input
                   value={formData.nik}
                   onChange={(e) => updateFormData('nik', e.target.value)}
                   type="text"
-                  className="border-stroke border-2 rounded-md w-[40%]"
-                />
-                <RadioGroup
-                  name="kelamin"
-                  options={GENDER_OPTIONS}
-                  value={formData.jenisKelamin}
-                  onChange={(e) =>
-                    updateFormData('jenisKelamin', e.target.value)
-                  }
-                  label={''}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
                 />
               </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-sm font-semibold">
-                  Nama Karyawan<span className="text-red-600">*</span>
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Jenis Kelamin
                 </label>
-                <input
-                  value={formData.namaKaryawan}
-                  onChange={(e) =>
-                    updateFormData('namaKaryawan', e.target.value)
-                  }
-                  type="text"
-                  className="border-stroke border-2 rounded-md w-[40%]"
-                />
+                <div className="space-y-2">
+                  <RadioGroup
+                    name="kelamin"
+                    options={GENDER_OPTIONS}
+                    value={formData.jenisKelamin}
+                    onChange={(e) =>
+                      updateFormData('jenisKelamin', e.target.value)
+                    }
+                    label={''}
+                  />
+                </div>
               </div>
+            </div>
 
-              <RadioGroup
-                label="Tipe Karyawan"
-                name="tipeKaryawan"
-                options={EMPLOYEE_TYPE_OPTIONS}
-                value={formData.tipeKaryawan}
-                onChange={(e) => updateFormData('tipeKaryawan', e.target.value)}
-                required
+            {/* Nama Karyawan */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Nama Karyawan<span className="text-red-600">*</span>
+              </label>
+              <input
+                value={formData.namaKaryawan}
+                onChange={(e) => updateFormData('namaKaryawan', e.target.value)}
+                type="text"
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
               />
             </div>
 
+            {/* Tipe Karyawan */}
             <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Tipe Karyawan<span className="text-red-600">*</span>
+              </label>
+              <div className="space-y-2">
+                <RadioGroup
+                  name="tipeKaryawan"
+                  options={EMPLOYEE_TYPE_OPTIONS}
+                  value={formData.tipeKaryawan}
+                  onChange={(e) =>
+                    updateFormData('tipeKaryawan', e.target.value)
+                  }
+                  required
+                  label={''}
+                />
+              </div>
+            </div>
+
+            {/* Department */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Department<span className="text-red-600">*</span>
+              </label>
               <SelectField
-                label="Department"
                 value={formData.idDepartment}
                 onChange={(e) => updateFormData('idDepartment', e.target.value)}
                 options={masterData.department?.data?.map((data: any) => ({
@@ -480,58 +497,83 @@ function AddMasterKaryawanIsi() {
                 }))}
                 placeholder="PILIH DEPARTMENT"
                 required
+                label={''}
               />
+            </div>
 
-              <div className="flex gap-4">
-                <div className="w-[60%]">
-                  <SelectField
-                    label="Divisi"
-                    value={formData.idDivisi}
-                    onChange={(e) => updateFormData('idDivisi', e.target.value)}
-                    options={masterData.divisi?.data?.map((data: any) => ({
-                      value: data.id,
-                      label: data.nama_divisi,
-                    }))}
-                    placeholder="PILIH DIVISI"
-                    required
-                  />
-                </div>
-
-                <div className="w-[40%]">
-                  <SelectField
-                    label="Grade"
-                    value={formData.grade}
-                    onChange={(e) => updateFormData('grade', e.target.value)}
-                    options={masterData.gradeMaster?.data?.map((data: any) => ({
-                      value: data.id,
-                      label: data.kategori,
-                    }))}
-                    placeholder="PILIH GRADE"
-                    required
-                  />
-                </div>
+            {/* Divisi and Grade Row */}
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Divisi<span className="text-red-600">*</span>
+                </label>
+                <SelectField
+                  value={formData.idDivisi}
+                  onChange={(e) => updateFormData('idDivisi', e.target.value)}
+                  options={masterData.divisi?.data?.map((data: any) => ({
+                    value: data.id,
+                    label: data.nama_divisi,
+                  }))}
+                  placeholder="PILIH DIVISI"
+                  required
+                  label={''}
+                />
               </div>
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Jabatan<span className="text-red-600">*</span>
+                </label>
+                <SelectField
+                  value={formData.jabatan}
+                  onChange={(e) => updateFormData('jabatan', e.target.value)}
+                  options={masterData.jabatanMaster?.data?.map((data: any) => ({
+                    value: data.id,
+                    label: data.nama_jabatan,
+                  }))}
+                  placeholder="PILIH JABATAN"
+                  required
+                  label={''}
+                />
+              </div>
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Grade<span className="text-red-600">*</span>
+              </label>
+              <SelectField
+                value={formData.grade}
+                onChange={(e) => updateFormData('grade', e.target.value)}
+                options={masterData.gradeMaster?.data?.map((data: any) => ({
+                  value: data.id,
+                  label: data.kategori,
+                }))}
+                placeholder="PILIH GRADE"
+                required
+                label={''}
+              />
             </div>
           </div>
 
           {/* Right Column */}
-          <div>
-            <div className="flex w-full gap-3">
-              <div className="flex flex-col gap-1 w-[50%]">
-                <label className="text-sm font-semibold">
+          <div className="flex flex-col gap-6">
+            {/* Tanggal Masuk and Status Karyawan Row */}
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Tanggal Masuk<span className="text-red-600">*</span>
                 </label>
                 <input
                   value={formData.tglMasuk || ''}
                   onChange={handleTglMasukChange}
                   type="date"
-                  className="border-2 border-stroke rounded-md"
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
                 />
               </div>
-
-              <div className="w-[50%]">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Status Karyawan<span className="text-red-600">*</span>
+                </label>
                 <SelectField
-                  label="Status Karyawan"
                   value={formData.idStatusKaryawan}
                   onChange={handleStatusChange}
                   options={masterData.karyawanStatus?.data?.map(
@@ -548,19 +590,26 @@ function AddMasterKaryawanIsi() {
                   )}
                   placeholder="PILIH STATUS KARYAWAN"
                   required
+                  label={''}
                 />
               </div>
             </div>
 
-            <div className="flex w-full gap-3">
-              <div className="flex flex-col gap-1 w-[50%]">
-                <label className="text-sm font-semibold">Tanggal Keluar:</label>
-                <p>{formData.tglKeluar}</p>
+            {/* Tanggal Keluar and Status Pajak Row */}
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tanggal Keluar
+                </label>
+                <div className="px-4 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg text-gray-700">
+                  {formData.tglKeluar || '-'}
+                </div>
               </div>
-
-              <div className="w-[50%]">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Status Pajak<span className="text-red-600">*</span>
+                </label>
                 <SelectField
-                  label="Status Pajak"
                   value={formData.statusPajak}
                   onChange={(e) =>
                     updateFormData('statusPajak', e.target.value)
@@ -571,129 +620,148 @@ function AddMasterKaryawanIsi() {
                   }))}
                   placeholder="Status Pajak"
                   required
+                  label={''}
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-1 w-full">
-              <SelectField
-                label="Tipe Penggajian"
-                value={formData.tipePenggajian}
-                onChange={(e) =>
-                  updateFormData('tipePenggajian', e.target.value)
-                }
-                options={SALARY_TYPE_OPTIONS}
-                placeholder="Tipe Penggajian"
-                required
-              />
-
-              <div className="flex flex-col gap-1 w-full">
-                <label className="text-sm font-semibold">
+            {/* Tipe Penggajian and Gaji Row */}
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tipe Penggajian<span className="text-red-600">*</span>
+                </label>
+                <SelectField
+                  value={formData.tipePenggajian}
+                  onChange={(e) =>
+                    updateFormData('tipePenggajian', e.target.value)
+                  }
+                  options={SALARY_TYPE_OPTIONS}
+                  placeholder="Tipe Penggajian"
+                  required
+                  label={''}
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Gaji<span className="text-red-600">*</span>
                 </label>
                 <input
                   value={formData.gaji}
                   onChange={(e) => updateFormData('gaji', e.target.value)}
                   type="text"
-                  className="border-stroke border-2 rounded-md w-full"
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                  placeholder="0"
                 />
               </div>
             </div>
 
-            <div className="flex flex-col">
-              <div className="flex gap-3">
-                <div className="flex flex-col gap-1 w-[50%]">
-                  <div className="z-50">
-                    {bagianMesin?.map((item, index) => (
-                      <div
-                        key={index}
-                        style={{ marginBottom: '10px' }}
-                        className="flex gap-1"
-                      >
-                        <Select
-                          options={masterData.mesinOptions}
-                          onChange={(selected) =>
-                            handleChangePointDepartment(selected, index)
-                          }
-                          value={
-                            item.nama_bagian_mesin
-                              ? masterData.mesinOptions.find(
-                                  (option: any) =>
-                                    option.value === item.nama_bagian_mesin,
-                                )
-                              : null
-                          }
-                          placeholder="Select Mesin"
-                          className={`w-[90%] ${
-                            index === 0 ? 'font-bold' : 'font-normal'
-                          }`}
-                        />
-                        <button
-                          type="button"
-                          className="px-1 text-white bg-red-500 hover:bg-red-600 rounded"
-                          onClick={() => handleDeletePoint(index)}
-                        >
-                          X
-                        </button>
-                      </div>
-                    ))}
-
+            {/* Bagian Mesin */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Bagian Mesin
+              </label>
+              <div className="space-y-3">
+                {bagianMesin?.map((item, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <Select
+                        options={masterData.mesinOptions}
+                        onChange={(selected) =>
+                          handleChangePointDepartment(selected, index)
+                        }
+                        value={
+                          item.nama_bagian_mesin
+                            ? masterData.mesinOptions.find(
+                                (option: any) =>
+                                  option.value === item.nama_bagian_mesin,
+                              )
+                            : null
+                        }
+                        placeholder="Select Mesin"
+                      />
+                    </div>
                     <button
                       type="button"
-                      onClick={handleAddPoint}
-                      className="mt-2 px-2 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded"
+                      className="p-2 text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+                      onClick={() => handleDeletePoint(index)}
                     >
-                      + Tambah Bagian
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M6 18L18 6M6 6l12 12"
+                        ></path>
+                      </svg>
                     </button>
                   </div>
-                </div>
-
-                <div className="flex flex-col gap-1 w-[50%]">
-                  <label className="text-sm font-semibold">Level</label>
-                  <input
-                    value={formData.level}
-                    onChange={(e) => updateFormData('level', e.target.value)}
-                    type="text"
-                    className="border-stroke border-2 rounded-md w-[50%]"
-                  />
-                </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleAddPoint}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    ></path>
+                  </svg>
+                  Tambah Bagian
+                </button>
               </div>
+            </div>
 
-              <div className="flex gap-3">
-                <div className="w-[50%]">
-                  <SelectField
-                    label="Jabatan"
-                    value={formData.jabatan}
-                    onChange={(e) => updateFormData('jabatan', e.target.value)}
-                    options={masterData.jabatanMaster?.data?.map(
-                      (data: any) => ({
-                        value: data.id,
-                        label: data.nama_jabatan,
-                      }),
-                    )}
-                    placeholder="PILIH JABATAN"
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1 w-[50%]">
-                  <label className="text-sm font-semibold">Sub-Level</label>
-                  <input
-                    value={formData.subLevel}
-                    onChange={(e) => updateFormData('subLevel', e.target.value)}
-                    type="text"
-                    className="border-stroke border-2 rounded-md w-[50%]"
-                  />
-                </div>
+            {/* Jabatan and Level Row */}
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Level
+                </label>
+                <input
+                  value={formData.level}
+                  onChange={(e) => updateFormData('level', e.target.value)}
+                  type="text"
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                  placeholder="Masukkan level"
+                />
               </div>
+            </div>
+
+            {/* Sub-Level */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Sub-Level
+              </label>
+              <input
+                value={formData.subLevel}
+                onChange={(e) => updateFormData('subLevel', e.target.value)}
+                type="text"
+                className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                placeholder="Masukkan sub-level"
+              />
             </div>
           </div>
         </div>
 
-        <div className="flex w-full justify-end items-end px-8 py-5">
+        {/* Action Buttons */}
+        <div className="flex justify-end items-center px-8 py-6 bg-gray-50 border-t border-gray-200 rounded-b-lg">
           <button
             onClick={tambahKaryawan}
-            className="bg-blue-500 text-white text-md px-4 py-1 rounded-md font-semibold"
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-sm"
           >
             SIMPAN
           </button>
