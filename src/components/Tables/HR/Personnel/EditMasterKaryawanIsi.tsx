@@ -425,7 +425,7 @@ function EditMasterKaryawanIsi() {
     <main className="overflow-x-scroll">
       {isLoading && <Loading />}
       <div className="min-w-[700px]  bg-white rounded-t-md border-b-8 border-[#D8EAFF] h-12"></div>
-      <div className="min-w-[700px]  bg-white  border-b-8 border-[#D8EAFF] rounded-md ">
+      <div className="min-w-[700px]  bg-white  rounded-md ">
         <div className="flex w-full bg-[#eeeeee] px-6 py-3">
           <label className="text-[#0065de] text-sm font-semibold">
             BIODATA
@@ -1154,8 +1154,9 @@ function EditMasterKaryawanIsi() {
             SIMPAN
           </button>
         </div>
-        <LengkapiMasterKaryawanIsi />
+        <div className="flex w-full h-2 bg-[#D8EAFF]"></div>
       </div>
+      <LengkapiMasterKaryawanIsi />
     </main>
   );
 }
