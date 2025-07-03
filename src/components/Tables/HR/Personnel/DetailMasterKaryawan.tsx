@@ -16,6 +16,7 @@ import convertTimeStampToDateOnly from '../../../../utils/convertDateOnly';
 import formatInteger from '../../../../utils/formaterInteger';
 import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 import convertTimeStampToDate from '../../../../utils/convertDate';
+import LengkapiMasterKaryawanIsi from './LengkapiMasterKaryawanIsi';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -1512,6 +1513,8 @@ export default function DetailMasterKaryawanIsi() {
           </DetailTabMasterKaryawan>
         </TabPanel>
       </Box>
+
+      <LengkapiMasterKaryawanIsi />
     </>
   );
 }
