@@ -17,6 +17,7 @@ interface Employee {
   userid: string;
   name: string;
   biodata_karyawan: Array<{
+    jabatan: any;
     nik: string;
     nama_jabatan: string;
     tgl_masuk: string;
@@ -186,7 +187,7 @@ function BuatStatusKaryawan() {
       .filter(
         (absen: any) =>
           absen.userid === selectedEmployee.id &&
-          absen.status_masuk === 'Terlambat ',
+          absen.status_masuk?.includes('Terlambat'),
       );
   }, [rekapAbsen, selectedEmployee.id]);
 
@@ -262,6 +263,7 @@ function BuatStatusKaryawan() {
           },
           withCredentials: true,
         });
+
         setRekapAbsen(res.data);
       } catch (error: any) {
         console.error('Error fetching rekap absen data:', error);
@@ -865,6 +867,7 @@ function BuatStatusKaryawan() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b-2">
+                      <th className="text-left p-2">Tipe Terlambat</th>
                       <th className="text-left p-2">Tanggal</th>
                       <th className="text-left p-2">Hari</th>
                       <th className="text-left p-2">Jam Masuk</th>
@@ -874,6 +877,7 @@ function BuatStatusKaryawan() {
                   <tbody>
                     {keterlambatanData.map((absen: any, index: number) => (
                       <tr key={index} className="border-b">
+                        <td className="p-2">{absen.status_masuk}</td>
                         <td className="p-2">{absen.tgl_masuk}</td>
                         <td className="p-2">{absen.hari}</td>
                         <td className="p-2">{absen.jam_masuk}</td>
@@ -881,6 +885,25 @@ function BuatStatusKaryawan() {
                       </tr>
                     ))}
                   </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 bg-gray-50 font-semibold">
+                      <td className="p-2">Total</td>
+                      <td className="p-2">-</td>
+                      <td className="p-2">{keterlambatanData.length} Hari</td>
+                      <td className="p-2">-</td>
+                      <td className="p-2">
+                        {keterlambatanData.reduce(
+                          (total: number, absen: any) => {
+                            return (
+                              total + parseFloat(absen.menit_terlambat || 0)
+                            );
+                          },
+                          0,
+                        )}{' '}
+                        Jam
+                      </td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             ) : (
