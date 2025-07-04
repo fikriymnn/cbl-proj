@@ -312,7 +312,7 @@ function AttendanceRecapChart() {
   interface MonthlyChartData {
     monthYear: string;
     totalEmployees: number;
-    totalHariMasuk: number;
+
     totalCutiTahunan: number;
     totalCutiKhusus: number;
     totalIzin: number;
@@ -514,8 +514,6 @@ function AttendanceRecapChart() {
             switch (field) {
               case 'totalEmployees':
                 return true; // All employees
-              case 'totalHariMasuk':
-                return (emp.absensi?.length || 0) > 0;
               case 'totalCutiTahunan':
                 return (emp.jumlah_hari_cuti_tahunan || 0) > 0;
               case 'totalCutiKhusus':
@@ -545,8 +543,56 @@ function AttendanceRecapChart() {
         );
         data = monthData ? monthData.employees : [];
       } else {
-        // Default: get all employees from all months
-        data = monthlyData.flatMap((monthData) => monthData.employees);
+        // Default: get all employees from all months and aggregate their data
+        const employeeMap = new Map<string, Employee>();
+
+        monthlyData.forEach((monthData) => {
+          monthData.employees.forEach((emp) => {
+            if (employeeMap.has(emp.nik)) {
+              // Employee already exists, aggregate the data
+              const existingEmp = employeeMap.get(emp.nik)!;
+              employeeMap.set(emp.nik, {
+                ...existingEmp,
+                // Sum up all the numeric fields
+                jam_lembur_biasa:
+                  (existingEmp.jam_lembur_biasa || 0) +
+                  (emp.jam_lembur_biasa || 0),
+                jam_lembur_libur:
+                  (existingEmp.jam_lembur_libur || 0) +
+                  (emp.jam_lembur_libur || 0),
+                jumlah_hari_cuti_tahunan:
+                  (existingEmp.jumlah_hari_cuti_tahunan || 0) +
+                  (emp.jumlah_hari_cuti_tahunan || 0),
+                jumlah_hari_cuti_khusus:
+                  (existingEmp.jumlah_hari_cuti_khusus || 0) +
+                  (emp.jumlah_hari_cuti_khusus || 0),
+                jumlah_hari_izin:
+                  (existingEmp.jumlah_hari_izin || 0) +
+                  (emp.jumlah_hari_izin || 0),
+                jumlah_hari_sakit:
+                  (existingEmp.jumlah_hari_sakit || 0) +
+                  (emp.jumlah_hari_sakit || 0),
+                jumlah_hari_mangkir:
+                  (existingEmp.jumlah_hari_mangkir || 0) +
+                  (emp.jumlah_hari_mangkir || 0),
+                jumlah_hari_terlambat:
+                  (existingEmp.jumlah_hari_terlambat || 0) +
+                  (emp.jumlah_hari_terlambat || 0),
+                // Combine absensi arrays if they exist
+                absensi: [
+                  ...(existingEmp.absensi || []),
+                  ...(emp.absensi || []),
+                ],
+              });
+            } else {
+              // First time seeing this employee, add them to the map
+              employeeMap.set(emp.nik, { ...emp });
+            }
+          });
+        });
+
+        // Convert map back to array
+        data = Array.from(employeeMap.values());
       }
     } else {
       // Non-monthly view: use regular absen data
@@ -581,26 +627,22 @@ function AttendanceRecapChart() {
       }
     }
 
-    // Remove duplicates by NIK
-    const uniqueData = data.filter((employee, index, self) => {
-      const firstIndex = self.findIndex((emp) => emp.nik === employee.nik);
-      return index === firstIndex;
-    });
+    // Note: Removed the duplicate removal by NIK since we're already handling
+    // aggregation in the monthly view logic above
 
-    return uniqueData;
+    return data;
   }, [
     absen,
     monthlyData,
     selectedBar,
     selectedMonthBar,
-    selectedDetail, // Add this dependency
+    selectedDetail,
     isMonthlyView,
     searchQuery,
     selectedDivisi,
     idDepartment,
     department,
   ]);
-
   // Calculate summary statistics based on display data
   const summaryStats = {
     totalKaryawan: displayData.length,
@@ -648,13 +690,7 @@ function AttendanceRecapChart() {
       0,
     ),
   };
-  const handleMonthClick = (monthYear: string) => {
-    const selected = monthlyChartData.find((m) => m.monthYear === monthYear);
-    if (selected) {
-      setSelectedMonthBar(selected);
-      setSelectedBar(null);
-    }
-  };
+
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       {/* Loading Indicator */}
@@ -999,7 +1035,6 @@ function AttendanceRecapChart() {
               // Function to get field label in Indonesian
               type MonthlyChartDataField =
                 | 'totalEmployees'
-                | 'totalHariMasuk'
                 | 'totalCutiTahunan'
                 | 'totalCutiKhusus'
                 | 'totalIzin'
@@ -1011,7 +1046,7 @@ function AttendanceRecapChart() {
               const getFieldLabel = (field: MonthlyChartDataField) => {
                 const fieldLabels: Record<MonthlyChartDataField, string> = {
                   totalEmployees: 'Semua Karyawan',
-                  totalHariMasuk: 'Hari Masuk',
+
                   totalCutiTahunan: 'Cuti Tahunan',
                   totalCutiKhusus: 'Cuti Khusus',
                   totalIzin: 'Izin',
@@ -1041,7 +1076,6 @@ function AttendanceRecapChart() {
               // Function to get description based on selection
               type MonthlyChartDataField =
                 | 'totalEmployees'
-                | 'totalHariMasuk'
                 | 'totalCutiTahunan'
                 | 'totalCutiKhusus'
                 | 'totalIzin'
@@ -1053,7 +1087,7 @@ function AttendanceRecapChart() {
               const getFieldDescription = (field: MonthlyChartDataField) => {
                 const descriptions: Record<MonthlyChartDataField, string> = {
                   totalEmployees: 'semua karyawan',
-                  totalHariMasuk: 'yang masuk kerja',
+
                   totalCutiTahunan: 'yang mengambil cuti tahunan',
                   totalCutiKhusus: 'yang mengambil cuti khusus',
                   totalIzin: 'yang mengambil izin',
@@ -1081,7 +1115,7 @@ function AttendanceRecapChart() {
                       // Only call getFieldDescription if the field is a valid MonthlyChartDataField
                       const validFields: MonthlyChartDataField[] = [
                         'totalEmployees',
-                        'totalHariMasuk',
+
                         'totalCutiTahunan',
                         'totalCutiKhusus',
                         'totalIzin',
@@ -1130,7 +1164,7 @@ function AttendanceRecapChart() {
                     string
                   > = {
                     totalEmployees: 'Semua Karyawan',
-                    totalHariMasuk: 'Karyawan yang Masuk Kerja',
+
                     totalCutiTahunan: 'Karyawan yang Cuti Tahunan',
                     totalCutiKhusus: 'Karyawan yang Cuti Khusus',
                     totalIzin: 'Karyawan yang Izin',
@@ -1178,14 +1212,7 @@ function AttendanceRecapChart() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Divisi
                 </th>
-                {isMonthlyView && (
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Bulan
-                  </th>
-                )}
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hari Masuk
-                </th>
+
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Jam Lembur
                 </th>
@@ -1213,7 +1240,6 @@ function AttendanceRecapChart() {
                     }, 0) || 0;
 
                 const overtimeData = calculateOvertimeHours(employee.absensi);
-                const timeMetrics = calculateTimeMetrics(employee.absensi);
 
                 // For monthly view, find which month this employee belongs to
                 let employeeMonth = '';
@@ -1246,18 +1272,7 @@ function AttendanceRecapChart() {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {employee.divisi}
                     </td>
-                    {isMonthlyView && (
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                          {employeeMonth}
-                        </span>
-                      </td>
-                    )}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                        {employee.absensi?.length || 0} hari
-                      </span>
-                    </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">
                         {totalLembur.toFixed(1)} jam

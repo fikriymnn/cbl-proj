@@ -13,8 +13,7 @@ import { useState } from 'react';
 
 interface MonthlyChartData {
   monthYear: string;
-  totalEmployees: number;
-  totalHariMasuk: number;
+
   totalCutiTahunan: number;
   totalCutiKhusus: number;
   totalIzin: number;
@@ -32,14 +31,12 @@ interface MonthlyBarChartProps {
 }
 
 const chartKeys = [
-  { key: 'totalEmployees', label: 'Total Karyawan', color: '#4f46e5' },
-  { key: 'totalHariMasuk', label: 'Hari Masuk', color: '#10b981' },
   { key: 'totalCutiTahunan', label: 'Cuti Tahunan', color: '#f59e0b' },
-  { key: 'totalCutiKhusus', label: 'Cuti Khusus', color: '#ef4444' },
+  { key: 'totalCutiKhusus', label: 'Cuti Khusus', color: '#ADD8E6' },
   { key: 'totalIzin', label: 'Izin', color: '#6366f1' },
   { key: 'totalSakit', label: 'Sakit', color: '#14b8a6' },
   { key: 'totalMangkir', label: 'Mangkir', color: '#f43f5e' },
-  { key: 'totalTerlambat', label: 'Terlambat', color: '#8b5cf6' },
+  { key: 'totalTerlambat', label: 'Terlambat', color: '#39FF14' },
   { key: 'totalJamLembur', label: 'Jam Lembur', color: '#f97316' },
 ];
 
