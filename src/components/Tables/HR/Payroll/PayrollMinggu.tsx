@@ -681,7 +681,7 @@ function PayrollMinggu() {
                                         <div>{data2.status_masuk}</div>
                                         {data2.menit_terlambat > 0 && (
                                           <div className="text-xs text-red-600">
-                                            {data2.menit_terlambat} menit
+                                            {data2.menit_terlambat} Jam
                                           </div>
                                         )}
                                       </td>
