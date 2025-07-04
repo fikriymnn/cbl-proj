@@ -606,8 +606,8 @@ function CheckSheetCetakAwal() {
               </div>
             </div>
 
-            <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
-              <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">
+            <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF]">
+              <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   Tanggal
                 </label>
@@ -627,43 +627,69 @@ function CheckSheetCetakAwal() {
                   Warna
                 </label>
               </div>
-              <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
+
+              <div className="grid grid-rows-6 gap-2 col-span-2 py-4">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={tanggal}
+                >
                   : {tanggal}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={formatInteger(parseInt(cetakMesinAwal?.jumlah_druk))}
+                >
                   : {formatInteger(parseInt(cetakMesinAwal?.jumlah_druk))}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={`${formatInteger(
+                    parseInt(cetakMesinAwal?.jumlah_pcs),
+                  )} / ${formatInteger(parseInt(cetakMesinAwal?.mata))}`}
+                >
                   : {formatInteger(parseInt(cetakMesinAwal?.jumlah_pcs))} /{' '}
                   {formatInteger(parseInt(cetakMesinAwal?.mata))}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinAwal?.jenis_kertas}
+                >
                   : {cetakMesinAwal?.jenis_kertas}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinAwal?.jenis_gramatur}
+                >
                   : {cetakMesinAwal?.jenis_gramatur}
                 </label>
 
-                <div className="grid grid-cols-2">
-                  <label className="text-neutral-500 text-sm font-semibold flex">
-                    Depan
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    : {cetakMesinAwal?.warna_depan}
-                  </label>
-                </div>
-                <div className="grid grid-cols-2">
-                  <label className="text-neutral-500 text-sm font-semibold flex">
-                    Belakang
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    : {cetakMesinAwal?.warna_belakang}
-                  </label>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-neutral-500 text-sm font-semibold min-w-[60px]">
+                      Depan
+                    </span>
+                    <span
+                      className="text-neutral-700 text-sm font-medium truncate flex-1"
+                      title={cetakMesinAwal?.warna_depan}
+                    >
+                      : {cetakMesinAwal?.warna_depan}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-neutral-500 text-sm font-semibold min-w-[60px]">
+                      Belakang
+                    </span>
+                    <span
+                      className="text-neutral-700 text-sm font-medium truncate flex-1"
+                      title={cetakMesinAwal?.warna_belakang}
+                    >
+                      : {cetakMesinAwal?.warna_belakang}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
+              <div className="grid grid-rows-6 gap-2 col-span-2 px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   Jam
                 </label>
@@ -678,26 +704,39 @@ function CheckSheetCetakAwal() {
                   Customer
                 </label>
               </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
+
+              <div className="grid grid-rows-6 gap-2 col-span-2 px-2 py-4">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={jam}
+                >
                   : {jam}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold"></label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label className="text-neutral-700 text-sm font-medium"></label>
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={`${cetakMesinAwal?.no_jo} / ${cetakMesinAwal?.no_io}`}
+                >
                   : {cetakMesinAwal?.no_jo} / {cetakMesinAwal?.no_io}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinAwal?.nama_produk}
+                >
                   : {cetakMesinAwal?.nama_produk}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinAwal?.customer}
+                >
                   : {cetakMesinAwal?.customer}
                 </label>
               </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
+
+              <div className="grid grid-rows-6 gap-2 col-span-2 px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   Shift
                 </label>
-
                 <label className="text-neutral-500 text-sm font-semibold">
                   Mesin
                 </label>
@@ -708,17 +747,30 @@ function CheckSheetCetakAwal() {
                   Status Jo
                 </label>
               </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
+
+              <div className="grid grid-rows-6 gap-2 col-span-2 px-2 py-4">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinAwal?.shift}
+                >
                   : {cetakMesinAwal?.shift}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinAwal?.mesin}
+                >
                   : {cetakMesinAwal?.mesin}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinAwal?.operator}
+                >
                   : {cetakMesinAwal?.operator}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinAwal?.status_jo}
+                >
                   : {cetakMesinAwal?.status_jo}
                 </label>
               </div>

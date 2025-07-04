@@ -62,8 +62,9 @@ function RekapAbsenHR() {
   const calculateOvertimeHours = (absensiData: any[]) => {
     let lemburBiasa = 0;
     let lemburLibur = 0;
-    let lemburDenganSPL = 0;
-    let lemburTanpaSPL = 0;
+    let lemburBiasaDenganSPL = 0;
+    let lemburLiburDenganSPL = 0;
+    let lemburLiburTanpaSPL = 0;
 
     absensiData?.forEach((record: any) => {
       const jamLembur = parseFloat(record.jam_lembur || 0);
@@ -73,22 +74,25 @@ function RekapAbsenHR() {
         record.status_lembur === 'lembur'
       ) {
         lemburBiasa += jamLembur;
+        if (record.status_lembur_spl === 'dengan SPL') {
+          lemburBiasaDenganSPL += jamLembur;
+        }
       } else if (record.status_lembur === 'Lembur Libur') {
         lemburLibur += jamLembur;
-      }
-
-      if (record.status_lembur_spl === 'dengan SPL') {
-        lemburDenganSPL += jamLembur;
-      } else if (record.status_lembur_spl === 'tidak dengan SPL') {
-        lemburTanpaSPL++;
+        if (record.status_lembur_spl === 'dengan SPL') {
+          lemburLiburDenganSPL++;
+        } else if (record.status_lembur_spl === 'tidak dengan SPL') {
+          lemburLiburTanpaSPL++;
+        }
       }
     });
 
     return {
       lemburBiasa: lemburBiasa.toFixed(1),
       lemburLibur: lemburLibur.toFixed(1),
-      lemburDenganSPL: lemburDenganSPL.toFixed(1),
-      lemburTanpaSPL: lemburTanpaSPL.toFixed(0),
+      lemburBiasaDenganSPL: lemburBiasaDenganSPL.toFixed(1),
+      lemburLiburDenganSPL: lemburLiburDenganSPL.toFixed(0),
+      lemburLiburTanpaSPL: lemburLiburTanpaSPL.toFixed(0),
     };
   };
 
@@ -431,8 +435,8 @@ function RekapAbsenHR() {
                             </div>
                           </div>
 
-                          {/* Lembur & Keterlambatan - Compact Side by Side */}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          {/* Lembur & Lembur Libur & Keterlambatan - Split into 3 sections */}
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                             {/* Lembur */}
                             <div className="bg-blue-50 p-3 rounded-lg">
                               <h5 className="text-sm font-semibold text-blue-800 mb-2">
@@ -442,27 +446,36 @@ function RekapAbsenHR() {
                                 <div className="flex justify-between">
                                   <span>Dengan SPL:</span>
                                   <span className="font-medium">
-                                    {overtimeCalc.lemburDenganSPL} jam
+                                    {overtimeCalc.lemburBiasaDenganSPL} jam
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span>Lembur Libur:</span>
+                                  <span>Lembur Biasa:</span>
                                   <span className="font-medium">
-                                    {overtimeCalc.lemburLibur} jam
+                                    {overtimeCalc.lemburBiasa} jam
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Lembur Libur */}
+                            <div className="bg-purple-50 p-3 rounded-lg">
+                              <h5 className="text-sm font-semibold text-purple-800 mb-2">
+                                LEMBUR LIBUR
+                              </h5>
+                              <div className="space-y-1 text-xs">
+                                <div className="flex justify-between">
+                                  <span>Dengan SPL:</span>
+                                  <span className="font-medium">
+                                    {overtimeCalc.lemburLiburDenganSPL} Kali
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span>Lembur Tanpa SPL:</span>
+                                  <span>Tanpa SPL:</span>
                                   <span className="font-medium">
-                                    {overtimeCalc.lemburTanpaSPL} Kali
+                                    {overtimeCalc.lemburLiburTanpaSPL} Kali
                                   </span>
                                 </div>
-                                {/* <div className="flex justify-between">
-                                  <span>Istirahat:</span>
-                                  <span className="font-medium">
-                                    {timeMetrics.totalIstirahatLembur} jam
-                                  </span>
-                                </div> */}
                               </div>
                             </div>
 

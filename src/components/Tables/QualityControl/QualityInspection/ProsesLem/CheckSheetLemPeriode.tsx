@@ -713,8 +713,8 @@ function CheckSheetLemPeriode() {
               </div>
             </div>
 
-            <div className="grid grid-cols-12  ">
-              <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">
+            <div className="grid grid-cols-12">
+              <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   Tanggal
                 </label>
@@ -728,44 +728,59 @@ function CheckSheetLemPeriode() {
                   Jenis Lem
                 </label>
               </div>
-              <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
+
+              <div className="grid grid-rows-6 gap-2 col-span-2 py-4">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={tanggal}
+                >
                   : {tanggal}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={LemMesinPeriode?.jumlah}
+                >
                   : {LemMesinPeriode?.jumlah}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={formatInteger(parseInt(LemMesinPeriode?.jumlah_pcs))}
+                >
                   : {formatInteger(parseInt(LemMesinPeriode?.jumlah_pcs))}
                 </label>
 
                 {LemMesinPeriode?.jenis_lem == null ? (
-                  <div className="flex md:gap-1 font-semibold">
-                    :{' '}
+                  <div className="flex items-center gap-2">
+                    <span className="text-neutral-700 text-sm font-medium">
+                      :
+                    </span>
                     <input
-                      className="border rounded p-1"
+                      className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       type="text"
+                      placeholder="Masukkan jenis lem"
                       onChange={(e) => setJenisLem(e.target.value)}
                     />
                   </div>
                 ) : (
-                  <div className="flex gap-1 font-semibold">
-                    :{' '}
+                  <div className="flex items-center gap-2">
+                    <span className="text-neutral-700 text-sm font-medium">
+                      :
+                    </span>
                     <input
                       type="text"
                       disabled
                       defaultValue={LemMesinPeriode?.jenis_lem}
+                      className="border border-gray-300 rounded px-2 py-1 text-sm bg-gray-100 text-gray-600 cursor-not-allowed"
                       onChange={(e) => setJenisLem(e.target.value)}
                     />
                   </div>
                 )}
               </div>
 
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
+              <div className="grid grid-rows-6 gap-2 col-span-2 px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   Jam
                 </label>
-
                 <label className="text-neutral-500 text-sm font-semibold">
                   No. JO
                 </label>
@@ -779,29 +794,44 @@ function CheckSheetLemPeriode() {
                   Customer
                 </label>
               </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
+
+              <div className="grid grid-rows-6 gap-2 col-span-2 px-2 py-4">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={jam}
+                >
                   : {jam}
                 </label>
-
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={LemMesinPeriode?.no_jo}
+                >
                   : {LemMesinPeriode?.no_jo}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={LemMesinPeriode?.no_io}
+                >
                   : {LemMesinPeriode?.no_io}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={LemMesinPeriode?.nama_produk}
+                >
                   : {LemMesinPeriode?.nama_produk}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={LemMesinPeriode?.customer}
+                >
                   : {LemMesinPeriode?.customer}
                 </label>
               </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
+
+              <div className="grid grid-rows-6 gap-2 col-span-2 px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   Shift
                 </label>
-
                 <label className="text-neutral-500 text-sm font-semibold">
                   Mesin
                 </label>
@@ -812,17 +842,30 @@ function CheckSheetLemPeriode() {
                   Status Jo
                 </label>
               </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
+
+              <div className="grid grid-rows-6 gap-2 col-span-2 px-2 py-4">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={LemMesinPeriode?.shift}
+                >
                   : {LemMesinPeriode?.shift}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={LemMesinPeriode?.mesin}
+                >
                   : {LemMesinPeriode?.mesin}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={LemMesinPeriode?.operator}
+                >
                   : {LemMesinPeriode?.operator}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={LemMesinPeriode?.status_jo}
+                >
                   : {LemMesinPeriode?.status_jo}
                 </label>
               </div>

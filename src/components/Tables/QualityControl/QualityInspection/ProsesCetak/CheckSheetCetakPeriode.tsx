@@ -830,8 +830,8 @@ function CheckSheetCetakPeriode() {
               </div>
             </div>
 
-            <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
-              <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">
+            <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF]">
+              <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   Tanggal
                 </label>
@@ -851,43 +851,71 @@ function CheckSheetCetakPeriode() {
                   Warna
                 </label>
               </div>
-              <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
+
+              <div className="grid grid-rows-6 gap-2 col-span-2 py-4">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={tanggal}
+                >
                   : {tanggal}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={formatInteger(
+                    parseInt(cetakMesinPeriode?.jumlah_druk),
+                  )}
+                >
                   : {formatInteger(parseInt(cetakMesinPeriode?.jumlah_druk))}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={`${formatInteger(
+                    parseInt(cetakMesinPeriode?.jumlah_pcs),
+                  )} / ${formatInteger(parseInt(cetakMesinPeriode?.mata))}`}
+                >
                   : {formatInteger(parseInt(cetakMesinPeriode?.jumlah_pcs))} /{' '}
                   {formatInteger(parseInt(cetakMesinPeriode?.mata))}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinPeriode?.jenis_kertas}
+                >
                   : {cetakMesinPeriode?.jenis_kertas}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinPeriode?.jenis_gramatur}
+                >
                   : {cetakMesinPeriode?.jenis_gramatur}
                 </label>
 
-                <div className="grid grid-cols-2">
-                  <label className="text-neutral-500 text-sm font-semibold flex">
-                    Depan
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    : {cetakMesinPeriode?.warna_depan}
-                  </label>
-                </div>
-                <div className="grid grid-cols-2">
-                  <label className="text-neutral-500 text-sm font-semibold flex">
-                    Belakang
-                  </label>
-                  <label className="text-neutral-500 text-sm font-semibold">
-                    : {cetakMesinPeriode?.warna_belakang}
-                  </label>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-neutral-500 text-sm font-semibold min-w-[60px]">
+                      Depan
+                    </span>
+                    <span
+                      className="text-neutral-700 text-sm font-medium truncate flex-1"
+                      title={cetakMesinPeriode?.warna_depan}
+                    >
+                      : {cetakMesinPeriode?.warna_depan}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-neutral-500 text-sm font-semibold min-w-[60px]">
+                      Belakang
+                    </span>
+                    <span
+                      className="text-neutral-700 text-sm font-medium truncate flex-1"
+                      title={cetakMesinPeriode?.warna_belakang}
+                    >
+                      : {cetakMesinPeriode?.warna_belakang}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
+              <div className="grid grid-rows-6 gap-2 col-span-2 px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   Jam
                 </label>
@@ -904,28 +932,44 @@ function CheckSheetCetakPeriode() {
                   Customer
                 </label>
               </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
+
+              <div className="grid grid-rows-6 gap-2 col-span-2 px-2 py-4">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={jam}
+                >
                   : {jam}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinPeriode?.no_jo}
+                >
                   : {cetakMesinPeriode?.no_jo}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinPeriode?.no_io}
+                >
                   : {cetakMesinPeriode?.no_io}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinPeriode?.nama_produk}
+                >
                   : {cetakMesinPeriode?.nama_produk}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinPeriode?.customer}
+                >
                   : {cetakMesinPeriode?.customer}
                 </label>
               </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
+
+              <div className="grid grid-rows-6 gap-2 col-span-2 px-10 py-4">
                 <label className="text-neutral-500 text-sm font-semibold">
                   Shift
                 </label>
-
                 <label className="text-neutral-500 text-sm font-semibold">
                   Mesin
                 </label>
@@ -936,17 +980,30 @@ function CheckSheetCetakPeriode() {
                   Status Jo
                 </label>
               </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
+
+              <div className="grid grid-rows-6 gap-2 col-span-2 px-2 py-4">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinPeriode?.shift}
+                >
                   : {cetakMesinPeriode?.shift}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinPeriode?.mesin}
+                >
                   : {cetakMesinPeriode?.mesin}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinPeriode?.operator}
+                >
                   : {cetakMesinPeriode?.operator}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold">
+                <label
+                  className="text-neutral-700 text-sm font-medium truncate"
+                  title={cetakMesinPeriode?.status_jo}
+                >
                   : {cetakMesinPeriode?.status_jo}
                 </label>
               </div>

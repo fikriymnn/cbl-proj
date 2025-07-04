@@ -82,6 +82,15 @@ interface PaginationData {
 }
 
 function KalibrasiAlatUkurPage(): JSX.Element {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const openFullscreen = () => {
+    setIsFullscreen(true);
+  };
+
+  const closeFullscreen = () => {
+    setIsFullscreen(false);
+  };
   const [kalibrasi, setKalibrasi] = useState<KalibrasiAlatUkur[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -863,7 +872,8 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                                         import.meta.env.VITE_API_LINK
                                       }/images/${item.file}`}
                                       alt="File"
-                                      className=" object-cover rounded border"
+                                      className="object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                                      onClick={openFullscreen}
                                       onError={(e) => {
                                         e.currentTarget.style.display = 'none';
                                       }}
@@ -875,6 +885,31 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                                   </span>
                                 )}
                               </div>
+
+                              {/* Full Screen Modal */}
+                              {isFullscreen && (
+                                <div
+                                  className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50"
+                                  onClick={closeFullscreen}
+                                >
+                                  <div className="relative max-w-screen-lg max-h-screen-lg p-4">
+                                    <img
+                                      src={`${
+                                        import.meta.env.VITE_API_LINK
+                                      }/images/${item.file}`}
+                                      alt="File"
+                                      className="max-w-full max-h-full object-contain"
+                                      onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on image
+                                    />
+                                    <button
+                                      className="absolute top-2 right-2 text-white bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center hover:bg-opacity-70 transition-colors"
+                                      onClick={closeFullscreen}
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+                                </div>
+                              )}
                             </div>
 
                             {/* History Table */}
