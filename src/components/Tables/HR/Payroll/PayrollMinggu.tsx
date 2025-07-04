@@ -489,7 +489,9 @@ function PayrollMinggu() {
                                           key={ii}
                                           className="text-gray-700 flex justify-between"
                                         >
-                                          <span>{data2.label}</span>
+                                          <span>
+                                            {data2.label} x {data2.jumlah}
+                                          </span>
                                           <span className="font-medium">
                                             Rp. {formatInteger(data2.total)}
                                           </span>
