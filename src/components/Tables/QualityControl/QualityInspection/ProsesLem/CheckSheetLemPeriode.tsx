@@ -713,162 +713,133 @@ function CheckSheetLemPeriode() {
               </div>
             </div>
 
-            <div className="grid grid-cols-12">
-              <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Tanggal
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Jumlah
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Jumlah Pcs
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Jenis Lem
-                </label>
-              </div>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-max">
+                <tbody>
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Tanggal
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words">
+                      : {tanggal}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Jam
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {jam}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Shift
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {LemMesinPeriode?.shift}
+                    </td>
+                  </tr>
 
-              <div className="grid grid-rows-6 gap-2 col-span-2 py-4">
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={tanggal}
-                >
-                  : {tanggal}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={LemMesinPeriode?.jumlah}
-                >
-                  : {LemMesinPeriode?.jumlah}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={formatInteger(parseInt(LemMesinPeriode?.jumlah_pcs))}
-                >
-                  : {formatInteger(parseInt(LemMesinPeriode?.jumlah_pcs))}
-                </label>
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Jumlah
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words">
+                      : {LemMesinPeriode?.jumlah}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      No. JO
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {LemMesinPeriode?.no_jo}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Mesin
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {LemMesinPeriode?.mesin}
+                    </td>
+                  </tr>
 
-                {LemMesinPeriode?.jenis_lem == null ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-neutral-700 text-sm font-medium">
-                      :
-                    </span>
-                    <input
-                      className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      type="text"
-                      placeholder="Masukkan jenis lem"
-                      onChange={(e) => setJenisLem(e.target.value)}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <span className="text-neutral-700 text-sm font-medium">
-                      :
-                    </span>
-                    <input
-                      type="text"
-                      disabled
-                      defaultValue={LemMesinPeriode?.jenis_lem}
-                      className="border border-gray-300 rounded px-2 py-1 text-sm bg-gray-100 text-gray-600 cursor-not-allowed"
-                      onChange={(e) => setJenisLem(e.target.value)}
-                    />
-                  </div>
-                )}
-              </div>
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Jumlah Pcs
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words">
+                      : {formatInteger(parseInt(LemMesinPeriode?.jumlah_pcs))}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      No. IO
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {LemMesinPeriode?.no_io}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Operator
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {LemMesinPeriode?.operator}
+                    </td>
+                  </tr>
 
-              <div className="grid grid-rows-6 gap-2 col-span-2 px-10 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Jam
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  No. JO
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  No. IO
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Nama Produk
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Customer
-                </label>
-              </div>
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Jenis Lem
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2">
+                      {LemMesinPeriode?.jenis_lem == null ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-neutral-700 text-sm font-medium">
+                            :
+                          </span>
+                          <input
+                            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            type="text"
+                            placeholder="Masukkan jenis lem"
+                            onChange={(e) => setJenisLem(e.target.value)}
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-neutral-700 text-sm font-medium">
+                            :
+                          </span>
+                          <input
+                            type="text"
+                            disabled
+                            defaultValue={LemMesinPeriode?.jenis_lem}
+                            className="border border-gray-300 rounded px-2 py-1 text-sm bg-gray-100 text-gray-600 cursor-not-allowed"
+                            onChange={(e) => setJenisLem(e.target.value)}
+                          />
+                        </div>
+                      )}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Nama Produk
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {LemMesinPeriode?.nama_produk}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Status Jo
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {LemMesinPeriode?.status_jo}
+                    </td>
+                  </tr>
 
-              <div className="grid grid-rows-6 gap-2 col-span-2 px-2 py-4">
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={jam}
-                >
-                  : {jam}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={LemMesinPeriode?.no_jo}
-                >
-                  : {LemMesinPeriode?.no_jo}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={LemMesinPeriode?.no_io}
-                >
-                  : {LemMesinPeriode?.no_io}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={LemMesinPeriode?.nama_produk}
-                >
-                  : {LemMesinPeriode?.nama_produk}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={LemMesinPeriode?.customer}
-                >
-                  : {LemMesinPeriode?.customer}
-                </label>
-              </div>
-
-              <div className="grid grid-rows-6 gap-2 col-span-2 px-10 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Shift
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Mesin
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Operator
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Status Jo
-                </label>
-              </div>
-
-              <div className="grid grid-rows-6 gap-2 col-span-2 px-2 py-4">
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={LemMesinPeriode?.shift}
-                >
-                  : {LemMesinPeriode?.shift}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={LemMesinPeriode?.mesin}
-                >
-                  : {LemMesinPeriode?.mesin}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={LemMesinPeriode?.operator}
-                >
-                  : {LemMesinPeriode?.operator}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={LemMesinPeriode?.status_jo}
-                >
-                  : {LemMesinPeriode?.status_jo}
-                </label>
-              </div>
+                  <tr>
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap"></td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words"></td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Customer
+                    </td>
+                    <td
+                      className="text-neutral-700 text-sm font-medium px-2 py-2 break-words"
+                      colSpan={3}
+                    >
+                      : {LemMesinPeriode?.customer}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
             {/* =============================chekcsheet========================= */}

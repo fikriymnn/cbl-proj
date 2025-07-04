@@ -830,183 +830,143 @@ function CheckSheetCetakPeriode() {
               </div>
             </div>
 
-            <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF]">
-              <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Tanggal
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Jumlah Druk
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Jumlah Pcs
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Jenis Kertas
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Jenis Gramatur
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Warna
-                </label>
-              </div>
+            <div className="border-b-8 border-[#D8EAFF] overflow-x-auto">
+              <table className="w-full min-w-max">
+                <tbody>
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Tanggal
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words">
+                      : {tanggal}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Jam
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {jam}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Shift
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {cetakMesinPeriode?.shift}
+                    </td>
+                  </tr>
 
-              <div className="grid grid-rows-6 gap-2 col-span-2 py-4">
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={tanggal}
-                >
-                  : {tanggal}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={formatInteger(
-                    parseInt(cetakMesinPeriode?.jumlah_druk),
-                  )}
-                >
-                  : {formatInteger(parseInt(cetakMesinPeriode?.jumlah_druk))}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={`${formatInteger(
-                    parseInt(cetakMesinPeriode?.jumlah_pcs),
-                  )} / ${formatInteger(parseInt(cetakMesinPeriode?.mata))}`}
-                >
-                  : {formatInteger(parseInt(cetakMesinPeriode?.jumlah_pcs))} /{' '}
-                  {formatInteger(parseInt(cetakMesinPeriode?.mata))}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={cetakMesinPeriode?.jenis_kertas}
-                >
-                  : {cetakMesinPeriode?.jenis_kertas}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={cetakMesinPeriode?.jenis_gramatur}
-                >
-                  : {cetakMesinPeriode?.jenis_gramatur}
-                </label>
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Jumlah Druk
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words">
+                      :{' '}
+                      {formatInteger(parseInt(cetakMesinPeriode?.jumlah_druk))}{' '}
+                      / {formatInteger(parseInt(cetakMesinPeriode?.mata))}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      No. JO
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {cetakMesinPeriode?.no_jo}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Mesin
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {cetakMesinPeriode?.mesin}
+                    </td>
+                  </tr>
 
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-neutral-500 text-sm font-semibold min-w-[60px]">
-                      Depan
-                    </span>
-                    <span
-                      className="text-neutral-700 text-sm font-medium truncate flex-1"
-                      title={cetakMesinPeriode?.warna_depan}
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Jumlah Pcs
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words">
+                      : {formatInteger(parseInt(cetakMesinPeriode?.jumlah_pcs))}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      No. IO
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {cetakMesinPeriode?.no_io}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Operator
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {cetakMesinPeriode?.operator}
+                    </td>
+                  </tr>
+
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Jenis Kertas
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words">
+                      : {cetakMesinPeriode?.jenis_kertas}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Nama Produk
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {cetakMesinPeriode?.nama_produk}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Status Jo
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {cetakMesinPeriode?.status_jo}
+                    </td>
+                  </tr>
+
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Jenis Gramatur
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words">
+                      : {cetakMesinPeriode?.jenis_gramatur}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Customer
+                    </td>
+                    <td
+                      className="text-neutral-700 text-sm font-medium px-2 py-2 break-words"
+                      colSpan={3}
                     >
-                      : {cetakMesinPeriode?.warna_depan}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-neutral-500 text-sm font-semibold min-w-[60px]">
-                      Belakang
-                    </span>
-                    <span
-                      className="text-neutral-700 text-sm font-medium truncate flex-1"
-                      title={cetakMesinPeriode?.warna_belakang}
+                      : {cetakMesinPeriode?.customer}
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Warna
+                    </td>
+                    <td
+                      className="text-neutral-700 text-sm font-medium px-4 py-2"
+                      colSpan={5}
                     >
-                      : {cetakMesinPeriode?.warna_belakang}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-rows-6 gap-2 col-span-2 px-10 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Jam
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  No. JO
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  No. IO
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Nama Produk
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Customer
-                </label>
-              </div>
-
-              <div className="grid grid-rows-6 gap-2 col-span-2 px-2 py-4">
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={jam}
-                >
-                  : {jam}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={cetakMesinPeriode?.no_jo}
-                >
-                  : {cetakMesinPeriode?.no_jo}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={cetakMesinPeriode?.no_io}
-                >
-                  : {cetakMesinPeriode?.no_io}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={cetakMesinPeriode?.nama_produk}
-                >
-                  : {cetakMesinPeriode?.nama_produk}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={cetakMesinPeriode?.customer}
-                >
-                  : {cetakMesinPeriode?.customer}
-                </label>
-              </div>
-
-              <div className="grid grid-rows-6 gap-2 col-span-2 px-10 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Shift
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Mesin
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Operator
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Status Jo
-                </label>
-              </div>
-
-              <div className="grid grid-rows-6 gap-2 col-span-2 px-2 py-4">
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={cetakMesinPeriode?.shift}
-                >
-                  : {cetakMesinPeriode?.shift}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={cetakMesinPeriode?.mesin}
-                >
-                  : {cetakMesinPeriode?.mesin}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={cetakMesinPeriode?.operator}
-                >
-                  : {cetakMesinPeriode?.operator}
-                </label>
-                <label
-                  className="text-neutral-700 text-sm font-medium truncate"
-                  title={cetakMesinPeriode?.status_jo}
-                >
-                  : {cetakMesinPeriode?.status_jo}
-                </label>
-              </div>
+                      <div className="space-y-1">
+                        <div className="flex items-start gap-2">
+                          <span className="text-neutral-500 text-sm font-semibold min-w-[60px] whitespace-nowrap">
+                            Depan
+                          </span>
+                          <span className="text-neutral-700 text-sm font-medium break-words">
+                            : {cetakMesinPeriode?.warna_depan}
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <span className="text-neutral-500 text-sm font-semibold min-w-[60px] whitespace-nowrap">
+                            Belakang
+                          </span>
+                          <span className="text-neutral-700 text-sm font-medium break-words">
+                            : {cetakMesinPeriode?.warna_belakang}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
             {/* =============================chekcsheet========================= */}
