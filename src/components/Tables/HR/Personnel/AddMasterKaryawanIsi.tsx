@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom'; // Add this import
 import Loading from '../../../Loading';
 import Select from 'react-select';
 
@@ -154,6 +155,7 @@ const useFormState = () => {
 };
 
 function AddMasterKaryawanIsi() {
+  const navigate = useNavigate(); // Add this hook
   const { masterData, isLoading, setIsLoading, fetchMasterData } = useApiData();
   const { formData, bagianMesin, setBagianMesin, updateFormData } =
     useFormState();
@@ -266,7 +268,7 @@ function AddMasterKaryawanIsi() {
     const url = `${API_BASE}/hr/karyawan`;
     try {
       setIsLoading(true);
-      await axios.post(
+      const response = await axios.post(
         url,
         {
           id_status_karyawan: formData.idStatusKaryawan,
@@ -291,14 +293,28 @@ function AddMasterKaryawanIsi() {
         },
         { withCredentials: true },
       );
+      console.log(response);
+      // Check if the request was successful and get the ID from response
+      if (response.status === 200 || response.status === 201) {
+        // Assuming the API returns the created karyawan data with an ID
+        // Adjust the property name based on your API response structure
+        const karyawanId = response.data.id || response.data.data?.id_karyawan;
 
-      window.location.reload();
+        if (karyawanId) {
+          // Navigate to the edit page with the ID
+          navigate(`/hr/pm/masterkaryawan/edit/${karyawanId}`);
+        } else {
+          console.error('No ID returned from API response');
+          // Optionally show an error message to the user
+        }
+      }
     } catch (error) {
       console.error('Save Error:', error);
+      // Optionally show an error message to the user
     } finally {
       setIsLoading(false);
     }
-  }, [formData, bagianMesin]);
+  }, [formData, bagianMesin, navigate]);
 
   // SelectField props interface
   interface SelectFieldProps {
