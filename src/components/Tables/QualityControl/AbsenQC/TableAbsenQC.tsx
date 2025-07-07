@@ -510,31 +510,29 @@ function TableAbsensiQC() {
                         <div className="flex flex-col gap-1">
                           <span
                             className={`uppercase text-sm font-semibold 
-                              ${
-                                data.status_ketidaksesuaian == 'history'
-                                  ? 'text-green-500'
-                                  : data.status_ketidaksesuaian == 'rejected'
-                                  ? 'text-red-500'
-                                  : 'text-black'
-                              }`}
+    ${
+      data.status_ketidaksesuaian == 'history'
+        ? 'text-green-500'
+        : data.status_ketidaksesuaian == 'rejected'
+        ? 'text-red-500'
+        : 'text-black'
+    }`}
                           >
                             {data.status_ketidaksesuaian == null ||
-                            data.status_ketidaksesuaian == 0
-                              ? ''
-                              : data.status_ketidaksesuaian}
-                          </span>
-                          <span className="text-neutral-500 text-sm font-semibold">
-                            {data.status_lembur == null ||
-                            data.status_lembur == 0
-                              ? ' ~'
-                              : data.status_lembur}{' '}
-                            {data.status_lembur == 'Belum Pulang' ||
-                            data.status_lembur == 'Tidak Lembur'
-                              ? ''
-                              : data.status_lembur_spl}{' '}
-                            {data.jam_lembur == null || data.jam_lembur == 0
-                              ? ''
-                              : '~ ' + data.jam_lembur + 'Jam'}
+                            data.status_ketidaksesuaian == 0 ||
+                            (data.status_ketidaksesuaian == 'none' &&
+                              data.status_lembur_spl == 'dengan SPL' &&
+                              data.jam_lembur == data.jam_lembur_spl)
+                              ? '' // Don't show anything
+                              : data.status_ketidaksesuaian == 'none' &&
+                                data.status_lembur_spl == 'dengan SPL' &&
+                                data.jam_lembur != data.jam_lembur_spl
+                              ? 'Belum Diajukan'
+                              : data.status_ketidaksesuaian == 'history'
+                              ? 'Diterima'
+                              : data.status_ketidaksesuaian == 'rejected'
+                              ? 'Ditolak'
+                              : ''}
                           </span>
                         </div>
                       </td>

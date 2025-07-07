@@ -26,6 +26,9 @@ function RekapAbsenHR() {
     try {
       setIsLoading(true);
       const res = await axios.get(url, {
+        params: {
+          is_active: true,
+        },
         withCredentials: true,
       });
       setIsLoading(false);
@@ -46,6 +49,8 @@ function RekapAbsenHR() {
           startDate: dateFrom1,
           endDate: dateTo1,
           idDepartment: idDepartment,
+          page: 1,
+          limit: 10,
         },
         withCredentials: true,
       });
@@ -58,11 +63,10 @@ function RekapAbsenHR() {
     }
   }
 
-  // Calculate overtime hours based on status_lembur
+  // Updated calculation function
   const calculateOvertimeHours = (absensiData: any[]) => {
-    let lemburBiasa = 0;
-    let lemburLibur = 0;
-    let lemburBiasaDenganSPL = 0;
+    let lemburDenganSPL = 0;
+    let lemburTanpaSPL = 0;
     let lemburLiburDenganSPL = 0;
     let lemburLiburTanpaSPL = 0;
 
@@ -73,29 +77,27 @@ function RekapAbsenHR() {
         record.status_lembur === 'Lembur' ||
         record.status_lembur === 'lembur'
       ) {
-        lemburBiasa += jamLembur;
         if (record.status_lembur_spl === 'dengan SPL') {
-          lemburBiasaDenganSPL += jamLembur;
+          lemburDenganSPL += jamLembur;
+        } else {
+          lemburTanpaSPL += 1; // Count times/occurrences
         }
       } else if (record.status_lembur === 'Lembur Libur') {
-        lemburLibur += jamLembur;
         if (record.status_lembur_spl === 'dengan SPL') {
-          lemburLiburDenganSPL++;
-        } else if (record.status_lembur_spl === 'tidak dengan SPL') {
-          lemburLiburTanpaSPL++;
+          lemburLiburDenganSPL += jamLembur;
+        } else {
+          lemburLiburTanpaSPL += 1; // Count times/occurrences
         }
       }
     });
 
     return {
-      lemburBiasa: lemburBiasa.toFixed(1),
-      lemburLibur: lemburLibur.toFixed(1),
-      lemburBiasaDenganSPL: lemburBiasaDenganSPL.toFixed(1),
-      lemburLiburDenganSPL: lemburLiburDenganSPL.toFixed(0),
+      lemburDenganSPL: lemburDenganSPL.toFixed(1),
+      lemburTanpaSPL: lemburTanpaSPL.toFixed(0),
+      lemburLiburDenganSPL: lemburLiburDenganSPL.toFixed(1),
       lemburLiburTanpaSPL: lemburLiburTanpaSPL.toFixed(0),
     };
   };
-
   // Calculate late minutes and early leave minutes
   const calculateTimeMetrics = (absensiData: any[]) => {
     let totalTerlambat = 0;
@@ -389,14 +391,6 @@ function RekapAbsenHR() {
 
                           {/* Summary Cards - Compact */}
                           <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-4">
-                            <div className="bg-green-50 p-2 rounded text-center">
-                              <div className="text-lg font-bold text-green-600">
-                                {data.absensi?.length || 0}
-                              </div>
-                              <div className="text-xs text-gray-600">
-                                Hari Masuk
-                              </div>
-                            </div>
                             <div className="bg-blue-50 p-2 rounded text-center">
                               <div className="text-lg font-bold text-blue-600">
                                 {data.jumlah_hari_cuti_tahunan || 0}
@@ -446,13 +440,13 @@ function RekapAbsenHR() {
                                 <div className="flex justify-between">
                                   <span>Dengan SPL:</span>
                                   <span className="font-medium">
-                                    {overtimeCalc.lemburBiasaDenganSPL} jam
+                                    {overtimeCalc.lemburDenganSPL} Jam
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span>Lembur Biasa:</span>
+                                  <span>Tanpa SPL:</span>
                                   <span className="font-medium">
-                                    {overtimeCalc.lemburBiasa} jam
+                                    {overtimeCalc.lemburTanpaSPL} Kali
                                   </span>
                                 </div>
                               </div>
@@ -467,7 +461,7 @@ function RekapAbsenHR() {
                                 <div className="flex justify-between">
                                   <span>Dengan SPL:</span>
                                   <span className="font-medium">
-                                    {overtimeCalc.lemburLiburDenganSPL} Kali
+                                    {overtimeCalc.lemburLiburDenganSPL} Jam
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
