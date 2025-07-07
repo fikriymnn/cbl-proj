@@ -343,12 +343,6 @@ function HistoryIncoming() {
               </div>
 
               <div className="flex">
-                <span className="font-bold w-24">Grammature</span>
-                <span className="mx-2">:</span>
-                <span>{incoming?.grammature || '-'}</span>
-              </div>
-
-              <div className="flex">
                 <span className="font-bold w-24">Supplier</span>
                 <span className="mx-2">:</span>
                 <span>{incoming?.supplier || '-'}</span>

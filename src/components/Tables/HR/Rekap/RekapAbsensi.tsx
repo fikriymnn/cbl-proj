@@ -194,86 +194,19 @@ function AttendanceRecapChart() {
     }
   }
 
-  // Calculate overtime hours based on status_lembur
-  const calculateOvertimeHours = (absensiData: any) => {
-    let lemburBiasa = 0;
-    let lemburLibur = 0;
-    let lemburDenganSPL = 0;
-    let lemburTanpaSPL = 0;
-
-    absensiData?.forEach((record: any) => {
-      const jamLembur = parseFloat(record.jam_lembur || 0);
-
-      if (
-        record.status_lembur === 'Lembur' ||
-        record.status_lembur === 'lembur'
-      ) {
-        lemburBiasa += jamLembur;
-      } else if (record.status_lembur === 'Lembur Libur') {
-        lemburLibur += jamLembur;
-      }
-
-      if (record.status_lembur_spl === 'dengan SPL') {
-        lemburDenganSPL += jamLembur;
-      } else if (record.status_lembur_spl === 'tidak dengan SPL') {
-        lemburTanpaSPL += jamLembur;
-      }
-    });
-
-    return {
-      lemburBiasa: lemburBiasa.toFixed(1),
-      lemburLibur: lemburLibur.toFixed(1),
-      lemburDenganSPL: lemburDenganSPL.toFixed(1),
-      lemburTanpaSPL: lemburTanpaSPL.toFixed(1),
-    };
-  };
-
-  // Calculate late minutes and early leave minutes
-  const calculateTimeMetrics = (absensiData: any) => {
-    let totalTerlambat = 0;
-    let totalPulangCepat = 0;
-    let totalIstirahatLembur = 0;
-    let jumlahHariTerlambat = 0;
-
-    absensiData?.forEach((record: any) => {
-      const menitTerlambat = parseInt(record.menit_terlambat || 0);
-      const menitPulangCepat = parseInt(record.menit_pulang_cepat || 0);
-      const jamIstirahatLembur = parseFloat(record.jam_istirahat_lembur || 0);
-
-      totalTerlambat += menitTerlambat;
-      totalPulangCepat += menitPulangCepat;
-      totalIstirahatLembur += jamIstirahatLembur;
-
-      if (menitTerlambat > 0) {
-        jumlahHariTerlambat++;
-      }
-    });
-
-    return {
-      totalTerlambat,
-      totalPulangCepat,
-      totalIstirahatLembur: totalIstirahatLembur.toFixed(1),
-      jumlahHariTerlambat,
-    };
-  };
-
   interface Employee {
     department: string;
     nama_karyawan: string;
     nik: string;
     divisi: string;
-    absensi?: {
-      jam_lembur?: string;
-      status_lembur?: string;
-      status_lembur_spl?: string;
-    }[];
+    absensi?: any[]; // Make optional or remove entirely
     jumlah_hari_cuti_tahunan?: number;
     jumlah_hari_cuti_khusus?: number;
     jumlah_hari_izin?: number;
     jumlah_hari_sakit?: number;
     jumlah_hari_mangkir?: number;
     jumlah_hari_terlambat?: number;
-    // New fields from the monthly API
+    // Keep these fields as they're what we'll use
     jam_lembur_biasa?: number;
     jam_lembur_libur?: number;
     cuti_tahunan?: any[];
@@ -357,35 +290,14 @@ function AttendanceRecapChart() {
       chartDataMap[dept].totalMangkir += employee.jumlah_hari_mangkir || 0;
       chartDataMap[dept].totalTerlambat += employee.jumlah_hari_terlambat || 0;
 
-      // Handle both old and new overtime data structure
-      if (
-        employee.jam_lembur_biasa !== undefined &&
-        employee.jam_lembur_libur !== undefined
-      ) {
-        // New monthly API structure
-        chartDataMap[dept].lemburBiasa += employee.jam_lembur_biasa || 0;
-        chartDataMap[dept].lemburLibur += employee.jam_lembur_libur || 0;
-        chartDataMap[dept].totalJamLembur +=
-          (employee.jam_lembur_biasa || 0) + (employee.jam_lembur_libur || 0);
-      } else {
-        // Old structure - Calculate overtime hours using the existing method
-        const overtimeData = calculateOvertimeHours(employee.absensi);
-        chartDataMap[dept].lemburBiasa += parseFloat(overtimeData.lemburBiasa);
-        chartDataMap[dept].lemburLibur += parseFloat(overtimeData.lemburLibur);
-        chartDataMap[dept].lemburDenganSPL += parseFloat(
-          overtimeData.lemburDenganSPL,
-        );
-        chartDataMap[dept].lemburTanpaSPL += parseFloat(
-          overtimeData.lemburTanpaSPL,
-        );
+      // REPLACE THIS ENTIRE SECTION:
+      // Use only jam_lembur_biasa and jam_lembur_libur
+      const lemburBiasa = employee.jam_lembur_biasa || 0;
+      const lemburLibur = employee.jam_lembur_libur || 0;
 
-        // Calculate total overtime hours
-        const totalLembur =
-          employee.absensi?.reduce((sum: any, record: any) => {
-            return sum + (parseFloat(record.jam_lembur) || 0);
-          }, 0) || 0;
-        chartDataMap[dept].totalJamLembur += totalLembur;
-      }
+      chartDataMap[dept].lemburBiasa += lemburBiasa;
+      chartDataMap[dept].lemburLibur += lemburLibur;
+      chartDataMap[dept].totalJamLembur += lemburBiasa + lemburLibur;
     });
 
     setChartData(Object.values(chartDataMap));
@@ -398,10 +310,6 @@ function AttendanceRecapChart() {
       return {
         monthYear: monthData.monthYear,
         totalEmployees: employees.length,
-        totalHariMasuk: employees.reduce(
-          (sum, emp) => sum + (emp.absensi?.length || 0),
-          0,
-        ),
         totalCutiTahunan: employees.reduce(
           (sum, emp) => sum + (emp.jumlah_hari_cuti_tahunan || 0),
           0,
@@ -647,24 +555,16 @@ function AttendanceRecapChart() {
   const summaryStats = {
     totalKaryawan: displayData.length,
     totalJamLembur: displayData.reduce((sum: any, emp: any) => {
-      // For monthly data, use the direct fields (handle null values)
-      if (isMonthlyView) {
-        const lemburBiasa = emp.jam_lembur_biasa || 0;
-        const lemburLibur = emp.jam_lembur_libur || 0;
-        return sum + lemburBiasa + lemburLibur;
-      } else {
-        // For regular data, calculate from absensi records
-        const empLembur =
-          emp.absensi?.reduce((empSum: any, record: any) => {
-            return empSum + (parseFloat(record.jam_lembur) || 0);
-          }, 0) || 0;
-        return sum + empLembur;
-      }
+      // REPLACE THIS: Use consistent calculation for both views
+      const lemburBiasa = emp.jam_lembur_biasa || 0;
+      const lemburLibur = emp.jam_lembur_libur || 0;
+      return sum + lemburBiasa + lemburLibur;
     }, 0),
     totalCutiTahunan: displayData.reduce(
       (sum, emp) => sum + (emp.jumlah_hari_cuti_tahunan || 0),
       0,
     ),
+
     totalCutiKhusus: displayData.reduce(
       (sum, emp) => sum + (emp.jumlah_hari_cuti_khusus || 0),
       0,
@@ -1223,14 +1123,9 @@ function AttendanceRecapChart() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {displayData.map((employee: any, index: any) => {
-                const totalLembur = isMonthlyView
-                  ? (employee.jam_lembur_biasa || 0) +
-                    (employee.jam_lembur_libur || 0)
-                  : employee.absensi?.reduce((sum: any, record: any) => {
-                      return sum + (parseFloat(record.jam_lembur) || 0);
-                    }, 0) || 0;
-
-                const overtimeData = calculateOvertimeHours(employee.absensi);
+                const totalLembur =
+                  (employee.jam_lembur_biasa || 0) +
+                  (employee.jam_lembur_libur || 0);
 
                 // For monthly view, find which month this employee belongs to
                 let employeeMonth = '';
@@ -1270,32 +1165,15 @@ function AttendanceRecapChart() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
                       <div className="flex flex-wrap gap-1">
-                        {isMonthlyView ? (
-                          <>
-                            {(employee.jam_lembur_biasa || 0) > 0 && (
-                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                                Biasa: {employee.jam_lembur_biasa || 0} jam
-                              </span>
-                            )}
-                            {(employee.jam_lembur_libur || 0) > 0 && (
-                              <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                                Libur: {employee.jam_lembur_libur || 0} jam
-                              </span>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            {parseFloat(overtimeData.lemburBiasa) > 0 && (
-                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
-                                Biasa: {overtimeData.lemburBiasa} jam
-                              </span>
-                            )}
-                            {parseFloat(overtimeData.lemburLibur) > 0 && (
-                              <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                                Libur: {overtimeData.lemburLibur} jam
-                              </span>
-                            )}
-                          </>
+                        {(employee.jam_lembur_biasa || 0) > 0 && (
+                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                            Biasa: {employee.jam_lembur_biasa || 0} jam
+                          </span>
+                        )}
+                        {(employee.jam_lembur_libur || 0) > 0 && (
+                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
+                            Libur: {employee.jam_lembur_libur || 0} jam
+                          </span>
                         )}
                       </div>
                     </td>

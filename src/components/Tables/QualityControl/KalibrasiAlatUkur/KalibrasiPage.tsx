@@ -889,20 +889,20 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                               {/* Full Screen Modal */}
                               {isFullscreen && (
                                 <div
-                                  className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50"
+                                  className="fixed inset-0 bg-black bg-opacity-90 z-50 overflow-auto"
                                   onClick={closeFullscreen}
                                 >
-                                  <div className="relative max-w-screen-lg max-h-screen-lg p-4">
+                                  <div className="relative w-full min-h-screen flex justify-center p-4">
                                     <img
                                       src={`${
                                         import.meta.env.VITE_API_LINK
                                       }/images/${item.file}`}
                                       alt="File"
-                                      className="max-w-full max-h-full object-contain"
+                                      className="max-w-full h-auto block"
                                       onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on image
                                     />
                                     <button
-                                      className="absolute top-2 right-2 text-white bg-black bg-opacity-50 rounded-full w-8 h-8 flex items-center justify-center hover:bg-opacity-70 transition-colors"
+                                      className="fixed top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors text-xl font-bold"
                                       onClick={closeFullscreen}
                                     >
                                       ×

@@ -121,7 +121,7 @@ function BuatStatusKaryawan() {
   const [isLoading, setIsLoading] = useState(false);
   const [userList, setUserList] = useState<Employee[]>([]);
   const [absenData, setAbsenData] = useState<any>(null);
-  const [rekapAbsen, setRekapAbsen] = useState<any>(null);
+
   const [idPengaju, setIdPengaju] = useState<string>('');
 
   // Employee states
@@ -181,15 +181,12 @@ function BuatStatusKaryawan() {
   );
 
   const keterlambatanData = useMemo(() => {
-    if (!rekapAbsen?.data || !selectedEmployee.id) return [];
-    return rekapAbsen.data
-      .flatMap((item: any) => item.absensi || [])
-      .filter(
-        (absen: any) =>
-          absen.userid === selectedEmployee.id &&
-          absen.status_masuk?.includes('Terlambat'),
-      );
-  }, [rekapAbsen, selectedEmployee.id]);
+    if (!absenData?.absen_terlambat || !selectedEmployee.id) return [];
+
+    return absenData.absen_terlambat.filter(
+      (absen: any) => absen.status_masuk?.includes('Terlambat'),
+    );
+  }, [absenData, selectedEmployee.id]);
 
   // API calls
   const getMe = useCallback(async () => {
@@ -232,7 +229,7 @@ function BuatStatusKaryawan() {
           },
           withCredentials: true,
         });
-
+        console.log(res.data);
         setAbsenData(res.data);
 
         if (res.data) {
@@ -245,28 +242,6 @@ function BuatStatusKaryawan() {
         }
       } catch (error: any) {
         console.error('Error fetching absen data:', error);
-      }
-    },
-    [selectedEmployee.id, today],
-  );
-
-  const getRekapAbsen = useCallback(
-    async (startDate: string) => {
-      if (!selectedEmployee.id || !startDate) return;
-
-      const url = `${import.meta.env.VITE_API_LINK}/hr/absensiRekap`;
-      try {
-        const res = await axios.get(url, {
-          params: {
-            startDate: startDate,
-            endDate: today,
-          },
-          withCredentials: true,
-        });
-
-        setRekapAbsen(res.data);
-      } catch (error: any) {
-        console.error('Error fetching rekap absen data:', error);
       }
     },
     [selectedEmployee.id, today],
@@ -313,14 +288,12 @@ function BuatStatusKaryawan() {
         setWarnings({ ke1: '', ke2: '', ke3: '' });
       }
 
-      // Fetch attendance data if period is set
       if (periods.awal) {
         const startDate = `${periods.awal}-01`;
         getAbsen(startDate);
-        getRekapAbsen(startDate);
       }
     },
-    [userList, periods.awal, getAbsen, getRekapAbsen],
+    [userList, periods.awal, getAbsen],
   );
 
   const handlePeriodChange = useCallback(
@@ -330,10 +303,9 @@ function BuatStatusKaryawan() {
       if (type === 'awal' && value && selectedEmployee.id) {
         const startDate = `${value}-01`;
         getAbsen(startDate);
-        getRekapAbsen(startDate);
       }
     },
-    [selectedEmployee.id, getAbsen, getRekapAbsen],
+    [selectedEmployee.id, getAbsen],
   );
 
   const handlePenilaianChange = useCallback(
@@ -582,7 +554,7 @@ function BuatStatusKaryawan() {
           label: 'Keterlambatan',
           value: absenceData.keterlambatan,
           field: 'keterlambatan' as keyof typeof absenceData,
-          readonly: rekapAbsen !== null,
+          readonly: absenData?.absen_terlambat !== undefined,
         },
       ].map(({ label, value, field, readonly }) => (
         <div key={label} className="grid grid-cols-12 mb-3 items-center">
@@ -610,9 +582,9 @@ function BuatStatusKaryawan() {
       <div className="mb-4">
         <button
           onClick={() => setShowAbsenModal(true)}
-          disabled={!absenData && !rekapAbsen}
+          disabled={!absenData}
           className={`px-4 py-2 rounded-md flex items-center gap-2 ${
-            absenData || rekapAbsen
+            absenData
               ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
               : 'bg-gray-100 text-gray-400 cursor-not-allowed'
           }`}
@@ -878,7 +850,8 @@ function BuatStatusKaryawan() {
                     {keterlambatanData.map((absen: any, index: number) => (
                       <tr key={index} className="border-b">
                         <td className="p-2">{absen.status_masuk}</td>
-                        <td className="p-2">{absen.tgl_masuk}</td>
+                        <td className="p-2">{absen.tgl_absen}</td>{' '}
+                        {/* Changed from tgl_masuk */}
                         <td className="p-2">{absen.hari}</td>
                         <td className="p-2">{absen.jam_masuk}</td>
                         <td className="p-2">{absen.menit_terlambat} Jam</td>
