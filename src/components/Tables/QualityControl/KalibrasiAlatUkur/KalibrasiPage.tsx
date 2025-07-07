@@ -63,8 +63,10 @@ interface FormData {
   merk_model: string;
   no_seri: string;
   spesifikasi: string;
-  lokasi_penyimpanan: any; // Changed back - this will be used for API calls
-  status: any; // Changed back - this will be used for API calls
+  lokasi_penyimpanan: any; // For CREATE
+  status: any; // For CREATE
+  id_lokasi?: any; // For EDIT - ADD THIS
+  id_status?: any; // For EDIT - ADD THIS
   frekuensi: number;
   kalibrasi_terakhir: string;
   masa_berlaku: string;
@@ -146,8 +148,10 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     merk_model: '',
     no_seri: '',
     spesifikasi: '',
-    lokasi_penyimpanan: null, // Changed back for API calls
-    status: null, // Changed back for API calls
+    lokasi_penyimpanan: null,
+    status: null,
+    id_lokasi: null, // ADD THIS
+    id_status: null, // ADD THIS
     frekuensi: 1,
     kalibrasi_terakhir: '',
     masa_berlaku: '',
@@ -339,10 +343,23 @@ function KalibrasiAlatUkurPage(): JSX.Element {
         console.log('File uploaded successfully:', fileUrl);
       }
 
-      const submitData = {
-        ...formData,
-        file: fileUrl,
-      };
+      const submitData = editMode
+        ? {
+            // For EDIT mode - use id_lokasi and id_status
+            ...formData,
+            file: fileUrl,
+            // Remove the create-specific fields
+            lokasi_penyimpanan: undefined,
+            status: undefined,
+          }
+        : {
+            // For CREATE mode - use lokasi_penyimpanan and status
+            ...formData,
+            file: fileUrl,
+            // Remove the edit-specific fields
+            id_lokasi: undefined,
+            id_status: undefined,
+          };
 
       console.log('Submit data prepared:', submitData);
 
@@ -381,8 +398,10 @@ function KalibrasiAlatUkurPage(): JSX.Element {
       merk_model: '',
       no_seri: '',
       spesifikasi: '',
-      lokasi_penyimpanan: null, // Changed back for API calls
-      status: null, // Changed back for API calls
+      lokasi_penyimpanan: null,
+      status: null,
+      id_lokasi: null, // ADD THIS
+      id_status: null, // ADD THIS
       frekuensi: 1,
       kalibrasi_terakhir: '',
       masa_berlaku: '',
@@ -397,14 +416,35 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     setEditMode(false);
     setEditId(null);
   }
+  function getStatusText(statusId: string): string {
+    const status = statusKalibrasi.find((s) => s.id.toString() === statusId);
+    return status ? status.status : statusId;
+  }
+  function getStatusColor(status?: string): string {
+    // Check if status is an ID, get the actual status text
+    const statusText = getStatusText(status || '');
+
+    switch (statusText?.toLowerCase()) {
+      case 'ok':
+      case 'aktif':
+        return 'text-green-700 bg-green-100 border-green-200';
+      case 'not ok':
+      case 'perbaikan':
+        return 'text-red-700 bg-red-100 border-red-200';
+      default:
+        return 'text-gray-700 bg-gray-100 border-gray-200';
+    }
+  }
   function handleEdit(item: KalibrasiAlatUkur): void {
     setFormData({
       nama_alat_ukur: item.nama_alat_ukur || '',
       merk_model: item.merk_model || '',
       no_seri: item.no_seri || '',
       spesifikasi: item.spesifikasi || '',
-      lokasi_penyimpanan: item.lokasi_kalibrasi?.id || '', // Use ID for API call
-      status: item.status_kalibrasi?.id || '', // Use ID for API call
+      lokasi_penyimpanan: null, // Keep null for create mode
+      status: null, // Keep null for create mode
+      id_lokasi: item.lokasi_kalibrasi?.id || '', // CHANGE THIS LINE
+      id_status: item.status_kalibrasi?.id || '', // CHANGE THIS LINE
       frekuensi: item.frekuensi || 1,
       kalibrasi_terakhir: item.kalibrasi_terakhir || '',
       masa_berlaku: item.masa_berlaku || '',
@@ -724,7 +764,9 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border `}
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
+                            item.status_kalibrasi?.status,
+                          )}`}
                         >
                           {item.status_kalibrasi?.status?.toLowerCase() ===
                           'ok' ? (
@@ -1072,11 +1114,16 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                       Lokasi Penyimpanan {!editMode && '*'}
                     </label>
                     <select
-                      value={formData.lokasi_penyimpanan}
+                      value={
+                        editMode
+                          ? formData.id_lokasi
+                          : formData.lokasi_penyimpanan
+                      }
                       onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                         setFormData({
                           ...formData,
-                          lokasi_penyimpanan: e.target.value,
+                          [editMode ? 'id_lokasi' : 'lokasi_penyimpanan']:
+                            e.target.value,
                         })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1096,11 +1143,11 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                       Status {!editMode && '*'}
                     </label>
                     <select
-                      value={formData.status}
+                      value={editMode ? formData.id_status : formData.status}
                       onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                         setFormData({
                           ...formData,
-                          status: e.target.value,
+                          [editMode ? 'id_status' : 'status']: e.target.value,
                         })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
