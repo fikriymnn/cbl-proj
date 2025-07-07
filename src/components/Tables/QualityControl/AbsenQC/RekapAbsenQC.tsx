@@ -56,13 +56,12 @@ function RekapAbsenQC() {
       console.log(error);
     }
   }
-
-  // Calculate overtime hours based on status_lembur
+  // Updated calculation function
   const calculateOvertimeHours = (absensiData: any[]) => {
-    let lemburBiasa = 0;
-    let lemburLibur = 0;
     let lemburDenganSPL = 0;
     let lemburTanpaSPL = 0;
+    let lemburLiburDenganSPL = 0;
+    let lemburLiburTanpaSPL = 0;
 
     absensiData?.forEach((record: any) => {
       const jamLembur = parseFloat(record.jam_lembur || 0);
@@ -71,23 +70,25 @@ function RekapAbsenQC() {
         record.status_lembur === 'Lembur' ||
         record.status_lembur === 'lembur'
       ) {
-        lemburBiasa += jamLembur;
+        if (record.status_lembur_spl === 'dengan SPL') {
+          lemburDenganSPL += jamLembur;
+        } else {
+          lemburTanpaSPL += 1; // Count times/occurrences
+        }
       } else if (record.status_lembur === 'Lembur Libur') {
-        lemburLibur += jamLembur;
-      }
-
-      if (record.status_lembur_spl === 'dengan SPL') {
-        lemburDenganSPL += jamLembur;
-      } else if (record.status_lembur_spl === 'tidak dengan SPL') {
-        lemburTanpaSPL++;
+        if (record.status_lembur_spl === 'dengan SPL') {
+          lemburLiburDenganSPL += jamLembur;
+        } else {
+          lemburLiburTanpaSPL += 1; // Count times/occurrences
+        }
       }
     });
 
     return {
-      lemburBiasa: lemburBiasa.toFixed(1),
-      lemburLibur: lemburLibur.toFixed(1),
       lemburDenganSPL: lemburDenganSPL.toFixed(1),
       lemburTanpaSPL: lemburTanpaSPL.toFixed(0),
+      lemburLiburDenganSPL: lemburLiburDenganSPL.toFixed(1),
+      lemburLiburTanpaSPL: lemburLiburTanpaSPL.toFixed(0),
     };
   };
 
@@ -421,27 +422,36 @@ function RekapAbsenQC() {
                                 <div className="flex justify-between">
                                   <span>Dengan SPL:</span>
                                   <span className="font-medium">
-                                    {overtimeCalc.lemburDenganSPL} jam
+                                    {overtimeCalc.lemburDenganSPL} Jam
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span>Lembur Libur:</span>
+                                  <span>Tanpa SPL:</span>
                                   <span className="font-medium">
-                                    {overtimeCalc.lemburLibur} jam
+                                    {overtimeCalc.lemburTanpaSPL} Kali
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Lembur Libur */}
+                            <div className="bg-purple-50 p-3 rounded-lg">
+                              <h5 className="text-sm font-semibold text-purple-800 mb-2">
+                                LEMBUR LIBUR
+                              </h5>
+                              <div className="space-y-1 text-xs">
+                                <div className="flex justify-between">
+                                  <span>Dengan SPL:</span>
+                                  <span className="font-medium">
+                                    {overtimeCalc.lemburLiburDenganSPL} Jam
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span>Lembur Tanpa SPL:</span>
+                                  <span>Tanpa SPL:</span>
                                   <span className="font-medium">
-                                    {overtimeCalc.lemburTanpaSPL} kali
+                                    {overtimeCalc.lemburLiburTanpaSPL} Kali
                                   </span>
                                 </div>
-                                {/* <div className="flex justify-between">
-                                  <span>Istirahat:</span>
-                                  <span className="font-medium">
-                                    {timeMetrics.totalIstirahatLembur} jam
-                                  </span>
-                                </div> */}
                               </div>
                             </div>
 

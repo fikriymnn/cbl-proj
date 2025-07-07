@@ -17,13 +17,13 @@ import {
 
 // TypeScript Interfaces
 interface KalibrasiAlatUkur {
+  status_kalibrasi: StatusKalibrasi;
+  lokasi_kalibrasi: LokasiKalibrasi;
   id: number;
   nama_alat_ukur: string;
   merk_model: string;
   no_seri: string;
   spesifikasi: string;
-  lokasi_penyimpanan: string;
-  status: string;
   frekuensi: number;
   kalibrasi_terakhir: string;
   masa_berlaku: string;
@@ -36,6 +36,7 @@ interface KalibrasiAlatUkur {
 }
 
 interface KalibrasiHistory {
+  status_kalibrasi: any;
   id: number;
   id_kalibrasi_alat_ukur: number;
   nama_inspektor: string;
@@ -62,8 +63,8 @@ interface FormData {
   merk_model: string;
   no_seri: string;
   spesifikasi: string;
-  lokasi_penyimpanan: string; // This will store the ID
-  status: string; // This will store the ID
+  lokasi_penyimpanan: any; // Changed back - this will be used for API calls
+  status: any; // Changed back - this will be used for API calls
   frekuensi: number;
   kalibrasi_terakhir: string;
   masa_berlaku: string;
@@ -145,8 +146,8 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     merk_model: '',
     no_seri: '',
     spesifikasi: '',
-    lokasi_penyimpanan: '',
-    status: '',
+    lokasi_penyimpanan: null, // Changed back for API calls
+    status: null, // Changed back for API calls
     frekuensi: 1,
     kalibrasi_terakhir: '',
     masa_berlaku: '',
@@ -183,17 +184,6 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     } finally {
       setMasterDataLoading(false);
     }
-  }
-
-  // Helper functions to get display text from master data
-  function getStatusText(statusId: string): string {
-    const status = statusKalibrasi.find((s) => s.id.toString() === statusId);
-    return status ? status.status : statusId;
-  }
-
-  function getLokasiText(lokasiId: string): string {
-    const lokasi = lokasiKalibrasi.find((l) => l.id.toString() === lokasiId);
-    return lokasi ? lokasi.lokasi : lokasiId;
   }
 
   async function handleFileUpload(file: File): Promise<string> {
@@ -338,12 +328,15 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     e: React.FormEvent<HTMLFormElement>,
   ): Promise<void> {
     e.preventDefault();
+    console.log('Form submission started');
 
     try {
       let fileUrl = formData.file;
 
       if (selectedFile) {
+        console.log('File selected, uploading:', selectedFile.name);
         fileUrl = await handleFileUpload(selectedFile);
+        console.log('File uploaded successfully:', fileUrl);
       }
 
       const submitData = {
@@ -351,21 +344,34 @@ function KalibrasiAlatUkurPage(): JSX.Element {
         file: fileUrl,
       };
 
+      console.log('Submit data prepared:', submitData);
+
       const url = editMode
         ? `${import.meta.env.VITE_API_LINK}/qc/kalibrasiAlatUkur/${editId}`
         : `${import.meta.env.VITE_API_LINK}/qc/kalibrasiAlatUkur`;
 
       if (editMode) {
-        await axios.put(url, submitData, { withCredentials: true });
+        console.log('Updating existing record with ID:', editId);
+        const response = await axios.put(url, submitData, {
+          withCredentials: true,
+        });
+        console.log('Update response:', response.data);
       } else {
-        await axios.post(url, submitData, { withCredentials: true });
+        console.log('Creating new record');
+        const response = await axios.post(url, submitData, {
+          withCredentials: true,
+        });
+        console.log('Create response:', response.data);
       }
 
+      console.log('Data saved successfully');
       setShowModal(false);
       resetForm();
       getKalibrasi();
+      console.log('Form reset and data refreshed');
     } catch (error: any) {
       console.error('Error saving data:', error);
+      console.error('Error details:', error.response?.data || error.message);
     }
   }
 
@@ -375,8 +381,8 @@ function KalibrasiAlatUkurPage(): JSX.Element {
       merk_model: '',
       no_seri: '',
       spesifikasi: '',
-      lokasi_penyimpanan: '',
-      status: '',
+      lokasi_penyimpanan: null, // Changed back for API calls
+      status: null, // Changed back for API calls
       frekuensi: 1,
       kalibrasi_terakhir: '',
       masa_berlaku: '',
@@ -391,15 +397,14 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     setEditMode(false);
     setEditId(null);
   }
-
   function handleEdit(item: KalibrasiAlatUkur): void {
     setFormData({
       nama_alat_ukur: item.nama_alat_ukur || '',
       merk_model: item.merk_model || '',
       no_seri: item.no_seri || '',
       spesifikasi: item.spesifikasi || '',
-      lokasi_penyimpanan: item.lokasi_penyimpanan || '',
-      status: item.status || '',
+      lokasi_penyimpanan: item.lokasi_kalibrasi?.id || '', // Use ID for API call
+      status: item.status_kalibrasi?.id || '', // Use ID for API call
       frekuensi: item.frekuensi || 1,
       kalibrasi_terakhir: item.kalibrasi_terakhir || '',
       masa_berlaku: item.masa_berlaku || '',
@@ -453,22 +458,6 @@ function KalibrasiAlatUkurPage(): JSX.Element {
     }
 
     setExpandedRows(newExpanded);
-  }
-
-  function getStatusColor(status?: string): string {
-    // Check if status is an ID, get the actual status text
-    const statusText = getStatusText(status || '');
-
-    switch (statusText?.toLowerCase()) {
-      case 'ok':
-      case 'aktif':
-        return 'text-green-700 bg-green-100 border-green-200';
-      case 'not ok':
-      case 'perbaikan':
-        return 'text-red-700 bg-red-100 border-red-200';
-      default:
-        return 'text-gray-700 bg-gray-100 border-gray-200';
-    }
   }
 
   function formatDate(dateString?: string): string {
@@ -735,24 +724,22 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(
-                            item.status,
-                          )}`}
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border `}
                         >
-                          {getStatusText(item.status)?.toLowerCase() ===
+                          {item.status_kalibrasi?.status?.toLowerCase() ===
                           'ok' ? (
                             <CheckCircle className="w-3 h-3 mr-1" />
                           ) : (
                             <XCircle className="w-3 h-3 mr-1" />
                           )}
-                          {getStatusText(item.status) || 'Unknown'}
+                          {item.status_kalibrasi?.status || 'Unknown'}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center text-sm text-gray-900">
                           <MapPin className="w-4 h-4 mr-1 text-gray-400 flex-shrink-0" />
                           <span className="truncate">
-                            {getLokasiText(item.lokasi_penyimpanan) || '-'}
+                            {item.lokasi_kalibrasi?.lokasi || '-'}
                           </span>
                         </div>
                       </td>
@@ -951,14 +938,16 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                                           <td className="px-4 py-3">
                                             <span
                                               className={`inline-flex px-2 py-1 text-xs font-medium rounded-full border ${
-                                                history.status === 'history'
+                                                history.status_kalibrasi
+                                                  ?.status === 'history'
                                                   ? 'bg-green-100 text-green-700 border-green-200'
-                                                  : history.status === 'active'
+                                                  : history.status_kalibrasi
+                                                      ?.status === 'active'
                                                   ? 'bg-blue-100 text-blue-700 border-blue-200'
                                                   : 'bg-gray-100 text-gray-700 border-gray-200'
                                               }`}
                                             >
-                                              {history.status}
+                                              {history.status_kalibrasi?.status}
                                             </span>
                                           </td>
                                         </tr>
@@ -1015,7 +1004,7 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Nama Alat Ukur *
+                      Nama Alat Ukur {!editMode && '*'}
                     </label>
                     <input
                       type="text"
@@ -1027,13 +1016,13 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                         })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
+                      required={!editMode}
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Merk/Model *
+                      Merk/Model {!editMode && '*'}
                     </label>
                     <input
                       type="text"
@@ -1042,13 +1031,13 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                         setFormData({ ...formData, merk_model: e.target.value })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
+                      required={!editMode}
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      No. Seri *
+                      No. Seri {!editMode && '*'}
                     </label>
                     <input
                       type="text"
@@ -1057,7 +1046,7 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                         setFormData({ ...formData, no_seri: e.target.value })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
+                      required={!editMode}
                     />
                   </div>
 
@@ -1080,7 +1069,7 @@ function KalibrasiAlatUkurPage(): JSX.Element {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Lokasi Penyimpanan *
+                      Lokasi Penyimpanan {!editMode && '*'}
                     </label>
                     <select
                       value={formData.lokasi_penyimpanan}
@@ -1091,11 +1080,11 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                         })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
+                      required={!editMode}
                     >
                       <option value="">Pilih Lokasi Penyimpanan</option>
                       {lokasiKalibrasi.map((lokasi) => (
-                        <option key={lokasi.id} value={lokasi.id.toString()}>
+                        <option key={lokasi.id} value={lokasi.id}>
                           {lokasi.lokasi}
                         </option>
                       ))}
@@ -1104,19 +1093,22 @@ function KalibrasiAlatUkurPage(): JSX.Element {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Status *
+                      Status {!editMode && '*'}
                     </label>
                     <select
                       value={formData.status}
                       onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                        setFormData({ ...formData, status: e.target.value })
+                        setFormData({
+                          ...formData,
+                          status: e.target.value,
+                        })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
+                      required={!editMode}
                     >
                       <option value="">Pilih Status</option>
                       {statusKalibrasi.map((status) => (
-                        <option key={status.id} value={status.id.toString()}>
+                        <option key={status.id} value={status.id}>
                           {status.status}
                         </option>
                       ))}
@@ -1159,7 +1151,7 @@ function KalibrasiAlatUkurPage(): JSX.Element {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Masa Berlaku *
+                      Masa Berlaku {!editMode && '*'}
                     </label>
                     <input
                       type="date"
@@ -1171,6 +1163,7 @@ function KalibrasiAlatUkurPage(): JSX.Element {
                         })
                       }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required={!editMode}
                     />
                   </div>
 
