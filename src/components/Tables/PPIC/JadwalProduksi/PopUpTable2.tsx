@@ -337,6 +337,59 @@ const popUpTable2 = ({
       setIsLoading(false);
     }
   };
+  const handleSimpan = async () => {
+    try {
+      // Show loading state (optional)
+      console.log('Saving data...', data);
+
+      // Call your API to save the data
+      // const response = await saveJobData(data);
+
+      // Example API call structure:
+      // const response = await fetch('/api/job/update', {
+      //   method: 'PUT',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(data)
+      // });
+
+      // if (response.ok) {
+      //   alert('Data berhasil disimpan!');
+      //   // Optional: redirect or update UI state
+      // } else {
+      //   throw new Error('Failed to save data');
+      // }
+
+      // For now, just show success message
+      alert('Data berhasil disimpan!');
+    } catch (error) {
+      console.error('Error saving data:', error);
+      alert('Gagal menyimpan data. Silakan coba lagi.');
+    }
+  };
+
+  // Handle date change function
+  const handleDateChange = (newDate: any) => {
+    // Update the data object with new date
+    setData((prevData: any) => ({
+      ...prevData,
+      tanggal: newDate,
+    }));
+
+    // Optional: You can also update the jam field if needed
+    if (newDate) {
+      const dateObj = new Date(newDate);
+      const timeString = dateObj.toTimeString().substring(0, 5); // HH:MM format
+      setData((prevData: any) => ({
+        ...prevData,
+        jam: timeString,
+      }));
+    }
+
+    // Optional: Call API to save changes immediately
+    // saveJobData({ ...data, tanggal: newDate });
+  };
 
   return (
     <div className="max-w-full mx-auto p-4">
@@ -383,6 +436,7 @@ const popUpTable2 = ({
           Job Being Edited (Machine: {data.mesin}, Hour:{' '}
           {data.jam?.substring(0, 5)}):
         </h3>
+
         <div className="grid grid-cols-2 gap-2">
           <label className="text-black text-xs font-bold">Nomor JO</label>
           <label className="text-[#016ae6] uppercase text-xl font-normal">
@@ -412,6 +466,26 @@ const popUpTable2 = ({
           <label className="text-[#016ae6] uppercase text-xl font-normal">
             : {formatInteger(data.qty_pcs)}
           </label>
+        </div>
+        {/* Date Time Input Section */}
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <label className="text-black text-xs font-bold">Ubah Tanggal</label>
+
+          <input
+            type="datetime-local"
+            className="text-[#016ae6] text-sm font-normal border border-yellow-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-yellow-400"
+            value={data.tanggal || ''}
+            onChange={(e) => handleDateChange(e.target.value)}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <div></div>
+          <button
+            onClick={handleSimpan}
+            className="px-6 py-2 bg-[#016ae6] text-white font-bold text-sm rounded hover:bg-[#0154c4] focus:outline-none focus:ring-2 focus:ring-[#016ae6] focus:ring-opacity-50 transition-colors duration-200"
+          >
+            Simpan
+          </button>
         </div>
       </div>
 

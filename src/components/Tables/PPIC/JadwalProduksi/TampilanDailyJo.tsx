@@ -791,6 +791,7 @@ function TampilanDailyJO() {
                 loading={isLoading}
                 title="Job Order List"
                 getmasterKategori={getmasterKategori}
+                canceledListJO={{ data: [] }}
               />
             )}
             {hoveredJobOrder && (
