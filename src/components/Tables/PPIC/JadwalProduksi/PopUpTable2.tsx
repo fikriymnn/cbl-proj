@@ -338,9 +338,23 @@ const popUpTable2 = ({
     }
   };
   const handleSimpan = async () => {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/ppic/jadwalProduksiView/move/${data.id}`;
     try {
       // Show loading state (optional)
       console.log('Saving data...', data);
+      const response = await axios.put(
+        url,
+        {
+          data_jadwal: data,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+      onClose();
+      onFinish();
 
       alert('Data berhasil disimpan!');
     } catch (error) {
