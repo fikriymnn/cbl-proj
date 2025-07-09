@@ -342,26 +342,6 @@ const popUpTable2 = ({
       // Show loading state (optional)
       console.log('Saving data...', data);
 
-      // Call your API to save the data
-      // const response = await saveJobData(data);
-
-      // Example API call structure:
-      // const response = await fetch('/api/job/update', {
-      //   method: 'PUT',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(data)
-      // });
-
-      // if (response.ok) {
-      //   alert('Data berhasil disimpan!');
-      //   // Optional: redirect or update UI state
-      // } else {
-      //   throw new Error('Failed to save data');
-      // }
-
-      // For now, just show success message
       alert('Data berhasil disimpan!');
     } catch (error) {
       console.error('Error saving data:', error);
@@ -371,13 +351,11 @@ const popUpTable2 = ({
 
   // Handle date change function
   const handleDateChange = (newDate: any) => {
-    // Update the data object with new date
     setData((prevData: any) => ({
       ...prevData,
       tanggal: newDate,
     }));
 
-    // Optional: You can also update the jam field if needed
     if (newDate) {
       const dateObj = new Date(newDate);
       const timeString = dateObj.toTimeString().substring(0, 5); // HH:MM format
@@ -386,9 +364,6 @@ const popUpTable2 = ({
         jam: timeString,
       }));
     }
-
-    // Optional: Call API to save changes immediately
-    // saveJobData({ ...data, tanggal: newDate });
   };
 
   return (
