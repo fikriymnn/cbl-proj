@@ -10,6 +10,8 @@ import {
   Calendar,
   X,
   History,
+  Upload,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 interface KalibrasiAlatUkur {
@@ -47,7 +49,7 @@ interface CalibrationTicket {
 interface DateInputModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (date: string) => void;
+  onConfirm: (date: string, file: File) => void;
   loading: boolean;
 }
 
@@ -58,19 +60,110 @@ function DateInputModal({
   loading,
 }: DateInputModalProps): JSX.Element | null {
   const [selectedDate, setSelectedDate] = useState<string>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [dragActive, setDragActive] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       const today = new Date().toISOString().split('T')[0];
       setSelectedDate(today);
+      setSelectedFile(null);
+      setPreviewUrl(null);
     }
   }, [isOpen]);
+
+  // Clean up preview URL when component unmounts or file changes
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const validateAndSetFile = (file: File) => {
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      alert('Hanya file gambar yang diperbolehkan');
+      return;
+    }
+
+    // Check file size (2MB = 2 * 1024 * 1024 bytes)
+    const maxSize = 2 * 1024 * 1024; // 2MB in bytes
+    if (file.size > maxSize) {
+      alert('Ukuran file maksimal 2 MB');
+      return;
+    }
+
+    // Clean up previous preview URL
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    // Create new preview URL
+    const newPreviewUrl = URL.createObjectURL(file);
+    setPreviewUrl(newPreviewUrl);
+    setSelectedFile(file);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      const file = e.dataTransfer.files[0];
+      validateAndSetFile(file);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      validateAndSetFile(file);
+    }
+  };
+
+  const removeFile = () => {
+    // Clean up preview URL
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    setSelectedFile(null);
+    setPreviewUrl(null);
+
+    // Reset input file
+    const fileInput = document.getElementById(
+      'file-upload',
+    ) as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
+  const handleConfirm = () => {
+    if (selectedDate && selectedFile) {
+      onConfirm(selectedDate, selectedFile);
+    }
+  };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b">
           <h3 className="text-lg font-semibold text-gray-900">
             Input Tanggal Kalibrasi
@@ -85,7 +178,8 @@ function DateInputModal({
         </div>
 
         <div className="p-6">
-          <div className="mb-4">
+          {/* Date Input */}
+          <div className="mb-6">
             <label
               htmlFor="calibration-date"
               className="block text-sm font-medium text-gray-700 mb-2"
@@ -105,6 +199,102 @@ function DateInputModal({
             </div>
           </div>
 
+          {/* File Upload - Now Required */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Upload Gambar Kalibrasi <span className="text-red-500">*</span>
+            </label>
+
+            {/* Upload Area */}
+            <div
+              className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                dragActive
+                  ? 'border-blue-400 bg-blue-50'
+                  : selectedFile
+                  ? 'border-green-400 bg-green-50'
+                  : 'border-gray-300 hover:border-gray-400'
+              }`}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+            >
+              <input
+                type="file"
+                id="file-upload"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                disabled={loading}
+              />
+
+              {selectedFile ? (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full">
+                    <ImageIcon className="w-6 h-6 text-green-600" />
+                  </div>
+                  <p className="text-sm font-medium text-gray-900">
+                    {selectedFile.name}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                  <button
+                    type="button"
+                    onClick={removeFile}
+                    className="text-xs text-red-600 hover:text-red-700"
+                    disabled={loading}
+                  >
+                    Hapus file
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-center w-12 h-12 mx-auto bg-gray-100 rounded-full">
+                    <Upload className="w-6 h-6 text-gray-400" />
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium text-blue-600">
+                      Klik untuk upload
+                    </span>{' '}
+                    atau drag and drop
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    PNG, JPG, JPEG hingga 2MB
+                  </p>
+                  <p className="text-xs text-red-500 mt-2">
+                    * File gambar wajib diupload
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Image Preview */}
+            {previewUrl && (
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Preview Gambar
+                </label>
+                <div className="relative bg-gray-50 rounded-lg p-4">
+                  <img
+                    src={previewUrl}
+                    alt="Preview gambar kalibrasi"
+                    className="w-full h-48 object-contain rounded-lg border border-gray-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={removeFile}
+                    className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                    disabled={loading}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Action Buttons */}
           <div className="flex gap-3 justify-end">
             <button
               onClick={onClose}
@@ -114,8 +304,8 @@ function DateInputModal({
               Batal
             </button>
             <button
-              onClick={() => selectedDate && onConfirm(selectedDate)}
-              disabled={!selectedDate || loading}
+              onClick={handleConfirm}
+              disabled={!selectedDate || !selectedFile || loading}
               className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {loading ? (
@@ -191,9 +381,38 @@ function KalibrasiInternal(): JSX.Element {
       console.log(error.data.msg);
     }
   }
+
+  // File upload function using the /images endpoint
+  async function handleFileUpload(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_LINK}/images`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+
+      // Return the filename from the response
+      const fileName =
+        response.data.fileName || response.data.filename || response.data.file;
+      return fileName;
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      throw new Error('Failed to upload file');
+    }
+  }
+
   async function handleResponse(
     id: number,
     calibrationDate: string,
+    file: File,
   ): Promise<void> {
     const url = `${
       import.meta.env.VITE_API_LINK
@@ -202,9 +421,13 @@ function KalibrasiInternal(): JSX.Element {
     try {
       setProcessingIds((prev) => new Set(prev).add(id));
 
+      // Upload file to /images endpoint and get filename
+      const fileName = await handleFileUpload(file);
+
       const payload = {
-        nama_inspektor: namaPelapor, // Replace with actual inspector name if needed
+        nama_inspektor: namaPelapor,
         tgl_kalibrasi: calibrationDate,
+        file: fileName, // Use the filename returned from upload
       };
 
       await axios.put(url, payload, {
@@ -236,9 +459,9 @@ function KalibrasiInternal(): JSX.Element {
     setModalState({ isOpen: false, ticketId: null });
   }
 
-  function handleModalConfirm(date: string) {
+  function handleModalConfirm(date: string, file: File) {
     if (modalState.ticketId) {
-      handleResponse(modalState.ticketId, date);
+      handleResponse(modalState.ticketId, date, file);
     }
   }
 
