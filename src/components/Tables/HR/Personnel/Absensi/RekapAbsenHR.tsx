@@ -434,19 +434,19 @@ function RekapAbsenHR() {
                             {/* Lembur */}
                             <div className="bg-blue-50 p-3 rounded-lg">
                               <h5 className="text-sm font-semibold text-blue-800 mb-2">
-                                LEMBUR
+                                LEMBUR DENGAN SPL
                               </h5>
                               <div className="space-y-1 text-xs">
                                 <div className="flex justify-between">
-                                  <span>Dengan SPL:</span>
+                                  <span>Lembur:</span>
                                   <span className="font-medium">
                                     {overtimeCalc.lemburDenganSPL} Jam
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span>Tanpa SPL:</span>
+                                  <span>Lembur Libur:</span>
                                   <span className="font-medium">
-                                    {overtimeCalc.lemburTanpaSPL} Kali
+                                    {overtimeCalc.lemburLiburDenganSPL} Jam
                                   </span>
                                 </div>
                               </div>
@@ -455,20 +455,22 @@ function RekapAbsenHR() {
                             {/* Lembur Libur */}
                             <div className="bg-purple-50 p-3 rounded-lg">
                               <h5 className="text-sm font-semibold text-purple-800 mb-2">
-                                LEMBUR LIBUR
+                                LEMBUR TANPA SPL
                               </h5>
                               <div className="space-y-1 text-xs">
-                                <div className="flex justify-between">
-                                  <span>Dengan SPL:</span>
-                                  <span className="font-medium">
-                                    {overtimeCalc.lemburLiburDenganSPL} Jam
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span>Tanpa SPL:</span>
-                                  <span className="font-medium">
-                                    {overtimeCalc.lemburLiburTanpaSPL} Kali
-                                  </span>
+                                <div className="flex flex-col">
+                                  <div className="flex justify-between">
+                                    <span>Lembur:</span>
+                                    <span className="font-medium">
+                                      {overtimeCalc.lemburTanpaSPL} Hari
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Lembur Libur:</span>
+                                    <span className="font-medium">
+                                      {overtimeCalc.lemburLiburTanpaSPL} Hari
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
