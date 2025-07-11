@@ -27,7 +27,6 @@ function Stockmaster() {
       });
       setStokSparepart(res.data);
       setIsLoading(false);
-      console.log(res.data);
     } catch (error: any) {
       setIsLoading(false);
       console.log(error.response);
@@ -70,6 +69,7 @@ function Stockmaster() {
   const [lokasi, setLokasi] = useState<any>();
   const [mesinEdit, setMesinEdit] = useState<any>();
   const [umurEdit, setumurEdit] = useState<any>();
+  const [limitStokEdit, setLimitStokEdit] = useState<any>();
 
   async function editStock(id: any, i: any) {
     if (isEditLoading) return; // Prevent multiple clicks
@@ -86,6 +86,7 @@ function Stockmaster() {
           lokasi: lokasi,
           id_mesin: mesinEdit,
           umur_sparepart: umurEdit,
+          limit_stok: limitStokEdit,
         },
         {
           withCredentials: true,
@@ -97,11 +98,11 @@ function Stockmaster() {
       setLokasi('');
       setMesinEdit('');
       setumurEdit('');
+      setLimitStokEdit('');
       setIsEditLoading(false);
       closeEdit(i);
       getStokSparepart();
       alert('Edit Success');
-      console.log(res.data);
     } catch (error: any) {
       setIsEditLoading(false);
       alert(error.response.data.msg);
@@ -135,7 +136,6 @@ function Stockmaster() {
       });
       setIsLoading(false);
       setmasterGrade(res.data);
-      console.log(res.data);
     } catch (error: any) {
       setIsLoading(false);
       console.log(error.data.msg);
@@ -172,7 +172,6 @@ function Stockmaster() {
       alert('Add Success');
       getStokSparepart();
       closeModalHistory();
-      console.log(res.data);
     } catch (error: any) {
       setIsAddLoading(false);
       alert(error.response.data.msg);
@@ -226,302 +225,196 @@ function Stockmaster() {
                 placeholder="Cari Berdasarkan kode, mesin, part number, atau nama sparepart"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="border p-2 mb-4 w-full"
+                className="border border-gray-300 rounded-lg px-4 py-2 mb-4 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div className="flex gap-5">
               <button
                 onClick={() => openModalHistory()}
                 disabled={isAddLoading}
-                className={`px-3 py-2 ${
-                  isAddLoading ? 'bg-gray-400' : 'bg-green-600'
-                } text-white font-semibold text-xs rounded-md`}
+                className={`px-6 py-2 rounded-lg font-semibold text-sm transition-all duration-200 ${
+                  isAddLoading
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg'
+                } text-white`}
               >
-                {isAddLoading ? 'LOADING...' : 'ADD ITEM'}
+                {isAddLoading ? 'Loading...' : '+ Add Item'}
               </button>
               {showHistory == true && (
                 <>
                   <ModalKosongan
                     isOpen={showHistory}
                     onClose={() => closeModalHistory()}
-                    judul={'Tambah Item'}
+                    judul={'Add New Item'}
                   >
                     <>
-                      <div className="grid md:grid-cols-3 gap-5 p-3 bg-white text-black">
-                        <div className="mt-5 flex flex-col justify-center px-2">
-                          <p className="text-xs font-semibold">Kode barang</p>
-                          <div className="flex justify-center items-center">
-                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
-                              <input
-                                name="kode"
-                                onChange={(e) => handleChangeData(e)}
-                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
-                                                }`}
-                              />
-                            </div>
+                      <div className="p-6 bg-white">
+                        <h3 className="text-lg font-semibold text-gray-800 mb-6 border-b pb-3">
+                          Add New Sparepart Item
+                        </h3>
+                        <div className="grid md:grid-cols-3 gap-6">
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                              Item Code *
+                            </label>
+                            <input
+                              name="kode"
+                              onChange={(e) => handleChangeData(e)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="Enter item code"
+                            />
                           </div>
-                        </div>
-                        <div className="mt-5 flex flex-col justify-center px-2">
-                          <p className="text-xs font-semibold">Part Number</p>
-                          <div className="flex justify-center items-center">
-                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
-                              <input
-                                name="part_number"
-                                onChange={(e) => handleChangeData(e)}
-                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
-                                                }`}
-                              />
-                            </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                              Part Number *
+                            </label>
+                            <input
+                              name="part_number"
+                              onChange={(e) => handleChangeData(e)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="Enter part number"
+                            />
                           </div>
-                        </div>
-                        <div className="mt-5 flex flex-col justify-center px-2">
-                          <p className="text-xs font-semibold">Nama Barang</p>
-                          <div className="flex justify-center items-center">
-                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
-                              <input
-                                name="nama_sparepart"
-                                onChange={(e) => handleChangeData(e)}
-                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
-                                                }`}
-                              />
-                            </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                              Item Name *
+                            </label>
+                            <input
+                              name="nama_sparepart"
+                              onChange={(e) => handleChangeData(e)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="Enter item name"
+                            />
                           </div>
-                        </div>
-                        <div className="mt-5 flex flex-col justify-center px-2">
-                          <p className="text-xs font-semibold">Nama Mesin</p>
-                          <div className="flex justify-center items-center">
-                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
-                              <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                <svg
-                                  width="20"
-                                  height="20"
-                                  viewBox="0 0 20 20"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                ></svg>
-                              </span>
-
-                              <select
-                                name="id_mesin"
-                                onChange={(e) => handleChangeData(e)}
-                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
-                                            }`}
-                              >
-                                <option
-                                  value=""
-                                  className="text-body dark:text-bodydark"
-                                >
-                                  Select Mesin
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                              Machine *
+                            </label>
+                            <select
+                              name="id_mesin"
+                              onChange={(e) => handleChangeData(e)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                              <option value="">Select Machine</option>
+                              {mesin?.map((data: any, index: number) => (
+                                <option key={index} value={data.id}>
+                                  {data.nama_mesin}
                                 </option>
-                                {mesin?.map((data: any, index: number) => {
-                                  return (
-                                    <option
-                                      key={index}
-                                      value={data.id}
-                                      className="text-body dark:text-bodydark"
-                                    >
-                                      {data.nama_mesin}
-                                    </option>
-                                  );
-                                })}
-                              </select>
-
-                              <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
-                                <svg
-                                  width="24"
-                                  height="24"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <g opacity="0.8">
-                                    <path
-                                      fillRule="evenodd"
-                                      clipRule="evenodd"
-                                      d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                      fill="#637381"
-                                    ></path>
-                                  </g>
-                                </svg>
-                              </span>
-                            </div>
+                              ))}
+                            </select>
                           </div>
-                        </div>
-                        <div className="mt-5 flex flex-col justify-center px-2">
-                          <p className="text-xs font-semibold">Lokasi</p>
-                          <div className="flex justify-center items-center">
-                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
-                              <input
-                                name="lokasi"
-                                onChange={(e) => handleChangeData(e)}
-                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
-                                            }`}
-                              />
-                            </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                              Location
+                            </label>
+                            <input
+                              name="lokasi"
+                              onChange={(e) => handleChangeData(e)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="Enter location"
+                            />
                           </div>
-                        </div>
-                        <div className="mt-5 flex flex-col justify-center px-2">
-                          <p className="text-xs font-semibold">Quantity Stok</p>
-                          <div className="flex justify-center items-center">
-                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
-                              <input
-                                name="stok"
-                                onChange={(e) => handleChangeData(e)}
-                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
-                                            }`}
-                              />
-                            </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                              Stock Quantity *
+                            </label>
+                            <input
+                              name="stok"
+                              type="number"
+                              onChange={(e) => handleChangeData(e)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="Enter stock quantity"
+                            />
                           </div>
-                        </div>
-                        <div className="mt-5 flex flex-col justify-center px-2">
-                          <p className="text-xs font-semibold">Umur Original</p>
-                          <div className="flex justify-center items-center">
-                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
-                              <input
-                                name="umur_sparepart"
-                                onChange={(e) => handleChangeData(e)}
-                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
-                                                }`}
-                              />
-                            </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                              Original Life (Hours)
+                            </label>
+                            <input
+                              name="umur_sparepart"
+                              type="number"
+                              onChange={(e) => handleChangeData(e)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="Enter original life in hours"
+                            />
                           </div>
-                        </div>
-                        <div className="mt-5 flex flex-col justify-center px-2">
-                          <p className="text-xs font-semibold">
-                            Grade (keperluan awal)
-                          </p>
-                          <div className="flex justify-center items-center">
-                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
-                              <select
-                                name="id_grade"
-                                onChange={(e) => handleChangeData(e)}
-                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
-                                                }`}
-                              >
-                                <option
-                                  value=""
-                                  className="text-body dark:text-bodydark"
-                                >
-                                  Select Grade
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                              Grade
+                            </label>
+                            <select
+                              name="id_grade"
+                              onChange={(e) => handleChangeData(e)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                              <option value="">Select Grade</option>
+                              {masterGrade?.map((data: any, index: number) => (
+                                <option key={index} value={data.id}>
+                                  {data.grade} - {data.percent}%
                                 </option>
-                                {masterGrade?.map(
-                                  (data: any, index: number) => {
-                                    return (
-                                      <option
-                                        key={index}
-                                        value={data.id}
-                                        className="text-body dark:text-bodydark"
-                                      >
-                                        {data.grade} - {data.percent}
-                                      </option>
-                                    );
-                                  },
-                                )}
-                              </select>
-                            </div>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                              Part Type *
+                            </label>
+                            <select
+                              name="type_part"
+                              onChange={(e) => handleChangeData(e)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            >
+                              <option value="">Select Part Type</option>
+                              <option value="CONSUMABLE">Consumable</option>
+                              <option value="NON CONSUMABLE">
+                                Non Consumable
+                              </option>
+                            </select>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                              Buffer Stock
+                            </label>
+                            <input
+                              name="limit_stok"
+                              type="number"
+                              onChange={(e) => handleChangeData(e)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="Enter buffer stock"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">
+                              Photo
+                            </label>
+                            <input
+                              name="foto"
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => handleChangeData(e)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            />
                           </div>
                         </div>
-
-                        <div className="mt-5 flex flex-col justify-center px-2">
-                          <p className="text-xs font-semibold">Type Part </p>
-                          <div className="flex justify-center items-center">
-                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
-                              <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                <svg
-                                  width="20"
-                                  height="20"
-                                  viewBox="0 0 20 20"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                ></svg>
-                              </span>
-
-                              <select
-                                name="type_part"
-                                onChange={(e) => handleChangeData(e)}
-                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
-                                            }`}
-                              >
-                                <option
-                                  value=""
-                                  selected
-                                  className="text-body dark:text-bodydark"
-                                >
-                                  SELECT DATA
-                                </option>
-                                <option
-                                  value="CONSUMABLE"
-                                  className="text-body dark:text-bodydark"
-                                >
-                                  CONSUMABLE
-                                </option>
-                                <option
-                                  value="NON CONSUMABLE"
-                                  className="text-body dark:text-bodydark"
-                                >
-                                  NON CONSUMABLE
-                                </option>
-                              </select>
-
-                              <span className="absolute top-1/2 right-4 z-10 -translate-y-1/2">
-                                <svg
-                                  width="24"
-                                  height="24"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <g opacity="0.8">
-                                    <path
-                                      fillRule="evenodd"
-                                      clipRule="evenodd"
-                                      d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                      fill="#637381"
-                                    ></path>
-                                  </g>
-                                </svg>
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="mt-5 flex flex-col justify-center px-2">
-                          <p className="text-xs font-semibold">
-                            Set Buffer Stock (Khusus Consumable)
-                          </p>
-                          <div className="flex justify-center items-center">
-                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
-                              <input
-                                name="limit_stok"
-                                onChange={(e) => handleChangeData(e)}
-                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
-                                                }`}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        <div className="mt-5 flex flex-col justify-center px-2">
-                          <p className="text-xs font-semibold">Foto</p>
-                          <div className="flex justify-center items-center">
-                            <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
-                              <input
-                                className={`relative font-medium z-20 w-full appearance-none rounded border border-stroke bg-transparent py-1   px-1 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-inputtext-black dark:text-white' 
-                                                }`}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex justify-end items-end ">
+                        <div className="flex justify-end gap-3 mt-8 pt-6 border-t">
+                          <button
+                            onClick={() => closeModalHistory()}
+                            className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                          >
+                            Cancel
+                          </button>
                           <button
                             onClick={() => {
                               addStok();
-                              console.log(addItem);
                             }}
                             disabled={isAddLoading}
-                            className={`h-9 w-full text-white font-semibold rounded-md text-xs ${
-                              isAddLoading ? 'bg-gray-400' : 'bg-green-500'
-                            }`}
+                            className={`px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${
+                              isAddLoading
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg'
+                            } text-white`}
                           >
-                            {isAddLoading ? 'LOADING...' : 'SAVE'}
+                            {isAddLoading ? 'Saving...' : 'Save Item'}
                           </button>
                         </div>
                       </div>
@@ -588,142 +481,159 @@ function Stockmaster() {
                       <button
                         onClick={() => openEdit(i)}
                         disabled={isEditLoading}
-                        className={`rounded-sm text-white text-xs font-bold px-4 py-1 ${
-                          isEditLoading ? 'bg-gray-400' : 'bg-blue-600'
+                        className={`rounded-lg text-white text-xs font-semibold px-4 py-1 transition-all duration-200 ${
+                          isEditLoading
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow-md'
                         }`}
                       >
-                        {isEditLoading ? 'LOADING...' : 'EDIT'}
+                        {isEditLoading ? 'Loading...' : 'Edit'}
                       </button>
                       {showEdit[i] == true && (
                         <ModalKosonganSmall
                           isOpen={showEdit[i]}
                           onClose={() => closeEdit(i)}
-                          judul={'Edit Stok Master'}
+                          judul={'Edit Stock Master'}
                         >
                           <>
-                            <div className="grid gap-3 w-full px-5 py-2">
-                              <>
-                                <div className="flex w-full flex-col">
-                                  <label className="text-black text-xs font-bold">
-                                    Kode
-                                  </label>
-                                  <div className="flex w-full">
+                            <div className="p-6 bg-white">
+                              <h3 className="text-lg font-semibold text-gray-800 mb-6 border-b pb-3">
+                                Edit Sparepart Information
+                              </h3>
+                              <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">
+                                      Item Code *
+                                    </label>
                                     <input
                                       name="kode"
                                       defaultValue={data.kode}
-                                      onChange={(e) => {
-                                        setKode(e.target.value);
-                                      }}
+                                      onChange={(e) => setKode(e.target.value)}
                                       type="text"
-                                      className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
                                   </div>
-                                </div>
-                                <div className="flex w-full flex-col">
-                                  <label className="text-black text-xs font-bold">
-                                    Part Number
-                                  </label>
-                                  <div className="flex w-full">
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">
+                                      Part Number *
+                                    </label>
                                     <input
                                       name="part_number"
                                       defaultValue={data.part_number}
-                                      onChange={(e) => {
-                                        setPartNumber(e.target.value);
-                                      }}
+                                      onChange={(e) =>
+                                        setPartNumber(e.target.value)
+                                      }
                                       type="text"
-                                      className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
                                   </div>
                                 </div>
-                                <div className="flex w-full flex-col">
-                                  <label className="text-black text-xs font-bold">
-                                    Nama SparePart
+                                <div className="space-y-2">
+                                  <label className="text-sm font-medium text-gray-700">
+                                    Sparepart Name *
                                   </label>
-                                  <div className="flex w-full">
-                                    <input
-                                      name="nama_sparepart"
-                                      defaultValue={data.nama_sparepart}
-                                      onChange={(e) => {
-                                        setNamaSparePart(e.target.value);
-                                      }}
-                                      type="text"
-                                      className=" w-[387px] h-10 border-2 border-stroke rounded-md"
-                                    />
-                                  </div>
+                                  <input
+                                    name="nama_sparepart"
+                                    defaultValue={data.nama_sparepart}
+                                    onChange={(e) =>
+                                      setNamaSparePart(e.target.value)
+                                    }
+                                    type="text"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  />
                                 </div>
-                                <div className="flex w-full flex-col">
-                                  <label className="text-black text-xs font-bold">
-                                    Lokasi
-                                  </label>
-                                  <div className="flex w-full">
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">
+                                      Location
+                                    </label>
                                     <input
                                       name="lokasi"
                                       defaultValue={data.lokasi}
-                                      onChange={(e) => {
-                                        setLokasi(e.target.value);
-                                      }}
+                                      onChange={(e) =>
+                                        setLokasi(e.target.value)
+                                      }
                                       type="text"
-                                      className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
                                   </div>
-                                </div>
-                                <div className="flex w-full flex-col">
-                                  <label className="text-black text-xs font-bold">
-                                    Umur Sparepart
-                                  </label>
-                                  <div className="flex w-full">
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">
+                                      Original Life (Hours)
+                                    </label>
                                     <input
                                       name="umur_sparepart"
                                       defaultValue={data.umur_sparepart}
-                                      onChange={(e) => {
-                                        setumurEdit(e.target.value);
-                                      }}
-                                      type="text"
-                                      className=" w-[387px] h-10 border-2 border-stroke rounded-md"
+                                      onChange={(e) =>
+                                        setumurEdit(e.target.value)
+                                      }
+                                      type="number"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
                                   </div>
                                 </div>
-                                <div className="flex w-full flex-col">
-                                  <label className="text-black text-xs font-bold">
-                                    Mesin
-                                  </label>
-                                  <select
-                                    name="id_mesin"
-                                    onChange={(e) => {
-                                      setMesinEdit(e.target.value);
-                                    }}
-                                    className={`w-[387px] h-10 border-2 border-stroke rounded-md' 
-                                            }`}
-                                  >
-                                    <option
-                                      value=""
-                                      className="text-body dark:text-bodydark"
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">
+                                      Machine *
+                                    </label>
+                                    <select
+                                      name="id_mesin"
+                                      defaultValue={data.mesin?.id}
+                                      onChange={(e) =>
+                                        setMesinEdit(e.target.value)
+                                      }
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     >
-                                      Select Mesin
-                                    </option>
-                                    {mesin?.map((data: any, index: number) => {
-                                      return (
-                                        <option
-                                          key={index}
-                                          value={data.id}
-                                          className="text-body dark:text-bodydark"
-                                        >
-                                          {data.nama_mesin}
-                                        </option>
-                                      );
-                                    })}
-                                  </select>
+                                      <option value="">Select Machine</option>
+                                      {mesin?.map(
+                                        (mesinData: any, index: number) => (
+                                          <option
+                                            key={index}
+                                            value={mesinData.id}
+                                          >
+                                            {mesinData.nama_mesin}
+                                          </option>
+                                        ),
+                                      )}
+                                    </select>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <label className="text-sm font-medium text-gray-700">
+                                      Buffer Stock
+                                    </label>
+                                    <input
+                                      name="limit_stok"
+                                      defaultValue={data.limit_stok}
+                                      onChange={(e) =>
+                                        setLimitStokEdit(e.target.value)
+                                      }
+                                      type="number"
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                  </div>
                                 </div>
-
-                                <div className=" pt-3">
-                                  <button
-                                    onClick={() => editStock(data.id, i)}
-                                    className="bg-[#0065DE] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
-                                  >
-                                    SIMPAN
-                                  </button>
-                                </div>
-                              </>
+                              </div>
+                              <div className="flex justify-end gap-3 mt-8 pt-6 border-t">
+                                <button
+                                  onClick={() => closeEdit(i)}
+                                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  onClick={() => editStock(data.id, i)}
+                                  disabled={isEditLoading}
+                                  className={`px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${
+                                    isEditLoading
+                                      ? 'bg-gray-400 cursor-not-allowed'
+                                      : 'bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg'
+                                  } text-white`}
+                                >
+                                  {isEditLoading ? 'Saving...' : 'Save Changes'}
+                                </button>
+                              </div>
                             </div>
                           </>
                         </ModalKosonganSmall>
