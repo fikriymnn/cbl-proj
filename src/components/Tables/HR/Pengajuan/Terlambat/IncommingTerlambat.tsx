@@ -282,7 +282,7 @@ function IncomingTerlambat() {
                                     htmlFor=""
                                     className="text-[#7a7a7a] text-xl font-normal"
                                   >
-                                    {data.type_izin}
+                                    {data.type_izin} : {data.alasan}
                                   </label>
                                 </div>
                                 {/* <div className='px-4 py-2'>

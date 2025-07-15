@@ -55,6 +55,7 @@ interface DetailJOData {
     tgl_kirim: string;
     status: string;
     tahap: TahapData[];
+    jadwal_per_jam: JadwalPerJam[];
   };
 }
 
@@ -68,12 +69,10 @@ function ListJOProduksi() {
     startDate: '',
     endDate: '',
   });
-  const [isActionLoading, setIsActionLoading] = useState(false);
-  // Add search state
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [mesinList, setmesinList] = useState<any>([]);
 
   // UI state
-  const [showListJo, setShowListJo] = useState(false);
   const [showCalculateIndex, setShowCalculateIndex] = useState<number | null>(
     null,
   );
@@ -142,7 +141,8 @@ function ListJOProduksi() {
 
   // Memoized API base URL
   const API_BASE = useMemo(() => import.meta.env.VITE_API_LINK, []);
-  // 1. Create separate functions for initial data loading without filters
+
+  // Create separate functions for initial data loading without filters
   const getInitialJadwalView = useCallback(async () => {
     const url = `${API_BASE}/ppic/jadwalProduksiView`;
     // Call without date parameters to get all data
@@ -153,7 +153,6 @@ function ListJOProduksi() {
     }
   }, [API_BASE, fetchAPI]);
 
-  const [mesinList, setmesinList] = useState<any>([]);
   async function getMasterMesin() {
     const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-mesin`;
     try {
@@ -182,6 +181,7 @@ function ListJOProduksi() {
       setListJO(data);
     }
   }, [API_BASE, fetchAPI]);
+
   const getJadwalView = useCallback(async () => {
     const url = `${API_BASE}/ppic/jadwalProduksiView`;
     const data = await fetchAPI(url, {
@@ -225,6 +225,7 @@ function ListJOProduksi() {
       setListJO(data);
     }
   }, [API_BASE, fetchAPI, dateRange, searchTerm]);
+
   const getSingleJO = useCallback(
     async (id: string) => {
       const url = `${API_BASE}/ppic/jadwalProduksi/${id}`;
@@ -271,6 +272,47 @@ function ListJOProduksi() {
       return false;
     },
     [API_BASE, fetchAPI, getJOList],
+  );
+
+  // New cancel function
+  const cancelJobOrder = useCallback(
+    async (id: string) => {
+      if (
+        !window.confirm('Apakah Anda yakin ingin membatalkan Job Order ini?')
+      ) {
+        return false;
+      }
+
+      const url = `${API_BASE}/ppic/jadwalProduksi/cancel/${id}`;
+      try {
+        setIsLoading(true);
+
+        const res = await axios.delete(url, {
+          withCredentials: true,
+        });
+
+        console.log('Job Order cancelled successfully:', res.data);
+
+        // Refresh the data after successful cancellation
+        await Promise.all([getInitialJadwalView(), getJOList()]);
+
+        setIsLoading(false);
+
+        // Show success message
+        alert('Job Order cancelled successfully!');
+
+        return res.data;
+      } catch (error: any) {
+        setIsLoading(false);
+        console.error('Error cancelling job order:', error);
+
+        // Show error message
+        alert('Failed to cancel job order. Please try again.');
+
+        throw error;
+      }
+    },
+    [API_BASE, getInitialJadwalView, getJOList],
   );
 
   // Handle UI actions
@@ -352,7 +394,6 @@ function ListJOProduksi() {
           jo.item,
           jo.nama_bahan,
           jo.no_io,
-
           // Add other fields you want to search in
         ];
 
@@ -365,6 +406,7 @@ function ListJOProduksi() {
 
     return filtered;
   }, [listJO?.data, searchTerm]);
+
   return (
     <main className="overflow-x-scroll">
       {isLoading && <Loading />}
@@ -452,7 +494,6 @@ function ListJOProduksi() {
                 {/* Search and Status Section */}
                 <div className="flex justify-end flex-col">
                   {/* Search Field */}
-
                   <div className="flex items-center gap-2">
                     <svg
                       className="w-4 h-4 text-blue-600"
@@ -575,7 +616,7 @@ function ListJOProduksi() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredJOData?.length > 0 ? (
-                    filteredJOData.map((jo, index) => (
+                    filteredJOData.map((jo: any, index) => (
                       <tr
                         key={jo.id}
                         className={`hover:bg-blue-50 transition-colors duration-150 ${
@@ -611,14 +652,22 @@ function ListJOProduksi() {
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-center">
                           {jo.status === 'calculated' ? (
-                            <button
-                              onClick={() =>
-                                handleViewCalculation(jo.id, index)
-                              }
-                              className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg"
-                            >
-                              VIEW
-                            </button>
+                            <div className="flex flex-col gap-2">
+                              <button
+                                onClick={() =>
+                                  handleViewCalculation(jo.id, index)
+                                }
+                                className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-lg"
+                              >
+                                VIEW
+                              </button>
+                              <button
+                                onClick={() => cancelJobOrder(jo.id)}
+                                className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg"
+                              >
+                                CANCEL
+                              </button>
+                            </div>
                           ) : (
                             <div className="flex flex-col gap-2">
                               <button
@@ -629,16 +678,15 @@ function ListJOProduksi() {
                               >
                                 CALCULATE
                               </button>
-                              {/* <button
-                          onClick={() => handleCalculateJO(jo.id, index, true)}
-                          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-3 py-1 rounded-lg text-xs font-semibold hover:from-orange-600 hover:to-orange-700 transition-all duration-200 shadow-md hover:shadow-lg"
-                        >
-                          LEMBUR
-                        </button> */}
+                              <button
+                                onClick={() => cancelJobOrder(jo.id)}
+                                className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-red-600 hover:to-red-700 transition-all duration-200 shadow-md hover:shadow-lg"
+                              >
+                                CANCEL
+                              </button>
                             </div>
                           )}
                         </td>
-
                         {/* Calculation Modal */}
                         {showCalculateIndex === index && selectedJO && (
                           <ModalXL
@@ -884,20 +932,25 @@ function ListJOProduksi() {
                               </div>
 
                               {/* Submit Button */}
-                              <div className="flex justify-center items-center pt-4">
-                                <button
-                                  onClick={() => {
-                                    submitToSchedule(jo.id).then((success) => {
-                                      if (success) {
-                                        setShowCalculateIndex(null);
-                                      }
-                                    });
-                                  }}
-                                  className="text-lg w-full flex justify-center font-bold text-white px-6 bg-gradient-to-r from-green-600 to-green-700 py-4 border-green-700 border rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg"
-                                >
-                                  MASUK JADWAL
-                                </button>
-                              </div>
+                              {/* Only show button if jadwal_per_jam has data */}
+                              {selectedJO.data?.jadwal_per_jam?.length > 0 && (
+                                <div className="flex justify-center items-center pt-4">
+                                  <button
+                                    onClick={() => {
+                                      submitToSchedule(jo.id).then(
+                                        (success) => {
+                                          if (success) {
+                                            setShowCalculateIndex(null);
+                                          }
+                                        },
+                                      );
+                                    }}
+                                    className="text-lg w-full flex justify-center font-bold text-white px-6 bg-gradient-to-r from-green-600 to-green-700 py-4 border-green-700 border rounded-lg hover:from-green-700 hover:to-green-800 transition-all duration-200 shadow-lg"
+                                  >
+                                    MASUK JADWAL
+                                  </button>
+                                </div>
+                              )}
                             </>
                           </ModalXL>
                         )}

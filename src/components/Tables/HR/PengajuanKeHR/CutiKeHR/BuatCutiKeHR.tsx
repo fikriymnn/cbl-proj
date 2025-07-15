@@ -54,10 +54,11 @@ function BuatCutiKeHR() {
   const [selectedEmployeeType, setSelectedEmployeeType] = useState<string>('');
   const [selectedEmployee, setSelectedEmployee] = useState<any>();
 
-  // State untuk success message
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string>('');
+  const [uploading, setUploading] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string>('');
+  const [uploadedFileName, setUploadedFileName] = useState<string>('');
   // Initialize data on component mount
   useEffect(() => {
     initializeData();
@@ -88,21 +89,14 @@ function BuatCutiKeHR() {
     setKaryawanJadwal([]);
     setProduksiJadwal([]);
 
+    // Add these new reset lines
+    clearFileSelection();
+
     // Clear date inputs
     const dateInputs = document.querySelectorAll('input[type="date"]');
     dateInputs.forEach((input: any) => {
       input.value = '';
     });
-  };
-
-  // Function to show success message
-  const showSuccess = (message: string) => {
-    setSuccessMessage(message);
-    setShowSuccessMessage(true);
-    setTimeout(() => {
-      setShowSuccessMessage(false);
-      setSuccessMessage('');
-    }, 5000); // Hide after 5 seconds
   };
 
   // API calls
@@ -140,7 +134,7 @@ function BuatCutiKeHR() {
       setUserList(res.data.data);
       console.log('user list', res.data.data);
 
-      const employeeOptions = res.data.data.map((item: Employee) => {
+      const employeeOptions = res.data.data.map((item: any) => {
         const latestBagianMesin =
           item.biodata_karyawan[0]?.bagian_mesin_karyawan?.slice(-1)[0]
             ?.nama_bagian_mesin || '';
@@ -427,7 +421,7 @@ function BuatCutiKeHR() {
     fetchScheduleForDateRange();
   }, [selectedEmployeeType, tipeCuti]);
 
-  // Form submission
+  // Replace the existing validateForm function with this:
   const validateForm = (): boolean => {
     if (!tipeCuti) {
       alert('Tipe Cuti Belum Diisi');
@@ -445,6 +439,19 @@ function BuatCutiKeHR() {
       alert('Alasan Cuti Belum Diisi');
       return false;
     }
+
+    // Check if file is still uploading
+    if (uploading) {
+      alert('Mohon tunggu hingga file selesai diupload');
+      return false;
+    }
+
+    // Check if there's a selected file that hasn't been uploaded yet
+    if (selectedFile && !uploadedFileName) {
+      alert('Mohon tunggu hingga file selesai diupload');
+      return false;
+    }
+
     return true;
   };
 
@@ -497,8 +504,9 @@ function BuatCutiKeHR() {
       jumlah_hari: daysDifference,
       alasan_cuti: alasanCuti,
       sisa_cuti: sisaCuti,
+      file: uploadedFileName || null, // Add the uploaded file name to the request body
     };
-
+    console.log('Posting cuti khusus with data:', data);
     await submitCuti('pengajuanCuti', data);
   };
 
@@ -512,7 +520,104 @@ function BuatCutiKeHR() {
       : tipeCuti === 'khusus' && tglDari && endDate
       ? getHolidaysInRange(tglDari, new Date(endDate), selectedEmployeeType)
       : [];
+  async function handleFileUpload(file: File): Promise<string> {
+    setUploading(true);
+    setUploadError('');
 
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_LINK}/images`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+
+      const fileName =
+        response.data.fileName || response.data.filename || response.data.file;
+      return fileName;
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      setUploadError('Failed to upload file');
+      throw error;
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleFileDelete(fileName: string): Promise<void> {
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_LINK}/images/${fileName}`,
+        {
+          withCredentials: true,
+        },
+      );
+    } catch (error: any) {
+      console.error('Error deleting file:', error);
+      throw error;
+    }
+  }
+
+  async function handleFileSelectAndUpload(
+    event: React.ChangeEvent<HTMLInputElement>,
+  ): Promise<void> {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        setUploadError('Please select an image file');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError('File size must be less than 5MB');
+        return;
+      }
+
+      setSelectedFile(file);
+      setUploadError('');
+
+      const previewUrl = URL.createObjectURL(file);
+      setFilePreview(previewUrl);
+
+      // Automatically upload the file
+      try {
+        const fileName = await handleFileUpload(file);
+        setUploadedFileName(fileName);
+        setSelectedFile(null); // Clear selected file after successful upload
+      } catch (error) {
+        console.error('Upload failed:', error);
+        setUploadError('Upload failed. Please try again.');
+      }
+    }
+  }
+
+  function clearFileSelection(): void {
+    setSelectedFile(null);
+    setFilePreview('');
+    setUploadError('');
+
+    if (filePreview) {
+      URL.revokeObjectURL(filePreview);
+    }
+  }
+
+  async function removeExistingFile(): Promise<void> {
+    if (uploadedFileName) {
+      try {
+        await handleFileDelete(uploadedFileName);
+        setUploadedFileName('');
+      } catch (error) {
+        console.error('Error removing file:', error);
+      }
+    }
+  }
   return (
     <main className="overflow-x-scroll min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {isLoading && <Loading />}
@@ -749,26 +854,171 @@ function BuatCutiKeHR() {
                 </div>
               </div>
             </div>
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
+              <h3 className="text-lg font-semibold text-blue-800 mb-4 flex items-center gap-2">
+                <svg
+                  className="w-5 h-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Lampiran Dokumen
+              </h3>
 
+              <div className="space-y-4">
+                {/* File Input */}
+                <div className="flex flex-col gap-3">
+                  <label className="text-sm text-blue-700 font-semibold">
+                    📎 Upload Gambar/Dokumen
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelectAndUpload} // Changed from handleFileSelect to handleFileSelectAndUpload
+                      className="hidden"
+                      id="file-upload"
+                    />
+                    <label
+                      htmlFor="file-upload"
+                      className="flex items-center justify-center w-full h-32 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer bg-blue-50 hover:bg-blue-100 transition-colors duration-200"
+                    >
+                      <div className="text-center">
+                        <svg
+                          className="mx-auto h-8 w-8 text-blue-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                          />
+                        </svg>
+                        <p className="mt-2 text-sm text-blue-600">
+                          <span className="font-semibold">Click to upload</span>{' '}
+                          or drag and drop
+                        </p>
+                        <p className="text-xs text-blue-500">
+                          PNG, JPG, GIF up to 5MB
+                        </p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Upload Error */}
+                {uploadError && (
+                  <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
+                    <div className="flex">
+                      <svg
+                        className="w-5 h-5 text-red-400"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      <p className="ml-3 text-sm text-red-700">{uploadError}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Uploaded File Display */}
+                {uploadedFileName && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0">
+                        <img
+                          src={`${
+                            import.meta.env.VITE_API_LINK
+                          }/images/${uploadedFileName}`}
+                          alt="Uploaded preview"
+                          className="w-20 h-20 object-cover rounded-lg border border-gray-200"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <svg
+                              className="w-5 h-5 text-green-600"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                            <div>
+                              <p className="text-sm font-medium text-green-800">
+                                File berhasil diupload
+                              </p>
+                              <p className="text-xs text-green-600">
+                                {uploadedFileName}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={async () => {
+                              await removeExistingFile();
+                            }}
+                            className="text-red-600 hover:text-red-800 text-sm font-medium"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Replace the existing submit button for cuti khusus */}
             <div className="flex w-full justify-end items-end px-8 py-6 bg-gray-50 border-t border-gray-200">
               {(tipeCuti === 'khusus' || sisaCuti >= 1) && (
                 <button
                   onClick={postCutiKhusus}
-                  disabled={isLoading}
-                  className={`flex px-8 py-3 justify-center items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:hover:shadow-lg`}
+                  disabled={Boolean(isLoading) || Boolean(uploading)} // Removed the selectedFile condition
+                  className={`flex px-8 py-3 justify-center items-center gap-2 ${
+                    isLoading || uploading
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl'
+                  } text-white font-bold rounded-lg transition-all duration-200 transform hover:scale-105 disabled:transform-none disabled:hover:shadow-lg`}
                 >
-                  <svg
-                    className="w-5 h-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  AJUKAN CUTI
+                  {uploading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      UPLOADING...
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        className="w-5 h-5"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      AJUKAN CUTI
+                    </>
+                  )}
                 </button>
               )}
             </div>

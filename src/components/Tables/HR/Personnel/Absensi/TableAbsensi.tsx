@@ -15,7 +15,7 @@ function TableAbsensi() {
   const [tipePulang, settipePulang] = useState<any>();
   const [alasanPulang, setAlasanPulang] = useState<any>();
   const today = new Date();
-
+  const [alasanTerlambat, setAlasanTerlambat] = useState<any>();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
   const day = String(today.getDate()).padStart(2, '0');
@@ -108,6 +108,7 @@ function TableAbsensi() {
             type_izin: tipeIzin,
             tanggal: tglAbsen,
             jam_masuk: jamMasuk,
+            alasan: alasanTerlambat,
           },
           {
             withCredentials: true,
@@ -729,30 +730,32 @@ function TableAbsensi() {
                         <div className="flex flex-col gap-1">
                           <span
                             className={`uppercase text-sm font-semibold 
-    ${
-      data.status_ketidaksesuaian == 'history'
-        ? 'text-green-500'
-        : data.status_ketidaksesuaian == 'rejected'
-        ? 'text-red-500'
-        : 'text-black'
-    }`}
+        ${
+          data.status_ketidaksesuaian == 'incoming'
+            ? 'text-blue-500'
+            : 'text-black'
+        }`}
                           >
-                            {data.status_ketidaksesuaian == null ||
-                            data.status_ketidaksesuaian == 0 ||
-                            (data.status_ketidaksesuaian == 'none' &&
-                              data.status_lembur_spl == 'dengan SPL' &&
-                              data.jam_lembur == data.jam_lembur_spl)
+                            {data.status_ketidaksesuaian == 'incoming'
+                              ? 'Sudah Diajukan'
+                              : data.status_ketidaksesuaian == null ||
+                                data.status_ketidaksesuaian == 0 ||
+                                (data.status_ketidaksesuaian == 'none' &&
+                                  data.status_lembur_spl == 'dengan SPL' &&
+                                  data.jam_lembur == data.jam_lembur_spl)
                               ? '' // Don't show anything
                               : data.status_ketidaksesuaian == 'none' &&
                                 data.status_lembur_spl == 'dengan SPL' &&
                                 data.jam_lembur != data.jam_lembur_spl
                               ? 'Belum Diajukan'
-                              : data.status_ketidaksesuaian == 'history'
-                              ? 'Diterima'
-                              : data.status_ketidaksesuaian == 'rejected'
-                              ? 'Ditolak'
                               : ''}
                           </span>
+                          {(data.status_ketidaksesuaian == 'Sesuai spl' ||
+                            data.status_ketidaksesuaian == 'Sesuai absen') && (
+                            <span className="uppercase text-sm font-semibold text-green-500">
+                              {data.status_ketidaksesuaian}
+                            </span>
+                          )}
                           <span className="text-neutral-500 text-sm font-semibold">
                             {data.status_lembur == null ||
                             data.status_lembur == 0
@@ -981,6 +984,18 @@ function TableAbsensi() {
                                           </select>
                                         </div>
                                       </div>
+                                      <div className="flex flex-col gap-1 px-7 py-4">
+                                        <label className="text-[#6c6b6b] text-sm font-semibold">
+                                          Alasan
+                                        </label>
+                                        <textarea
+                                          onChange={(e) =>
+                                            setAlasanTerlambat(e.target.value)
+                                          }
+                                          className="text-[#6c6b6b] h-16 text-sm border-2 border-stroke rounded-md p-2"
+                                          placeholder="Masukkan alasan ..."
+                                        />
+                                      </div>
                                       <div className="grid grid-cols-2 gap-5 px-7 py-4">
                                         <div className="flex flex-col gap-3">
                                           <label className="text-[#6c6b6b] text-sm font-semibold">
@@ -995,7 +1010,9 @@ function TableAbsensi() {
                                       </div>
 
                                       <div className="flex w-full justify-end items-end px-7 py-4">
-                                        {tipeIzin == null ? (
+                                        {tipeIzin == null ||
+                                        alasanTerlambat == null ||
+                                        alasanTerlambat.trim() === '' ? (
                                           <></>
                                         ) : (
                                           <>

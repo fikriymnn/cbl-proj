@@ -93,6 +93,28 @@ function MasterKaryawanIsi() {
     setOpenDropdown(null);
   }
 
+  // New function to activate cut-off employees
+  async function activateCutOffKaryawan(id: any) {
+    if (
+      window.confirm(
+        'Apakah Anda yakin ingin Mengaktifkan kembali Karyawan ini?',
+      )
+    ) {
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/hr/karyawan/activeCutOff/${id}`;
+      try {
+        const res = await axios.put(url, {
+          withCredentials: true,
+        });
+        getKaryawan();
+      } catch (error: any) {
+        console.log(error);
+      }
+    }
+    setOpenDropdown(null);
+  }
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
@@ -557,27 +579,6 @@ function MasterKaryawanIsi() {
                           {openDropdown === data.userid && (
                             <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
                               <div className="py-1">
-                                {/* <Link
-                                  to={`/hr/pm/masterkaryawan/lengkapi/${data.userid}`}
-                                  className="flex items-center px-4 py-2 text-sm text-yellow-700 hover:bg-yellow-50 transition-colors duration-150"
-                                  onClick={() => setOpenDropdown(null)}
-                                >
-                                  <svg
-                                    className="w-4 h-4 mr-2"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                    />
-                                  </svg>
-                                  Lengkapi Data
-                                </Link> */}
-
                                 <Link
                                   to={`/hr/pm/masterkaryawan/detail/${data.userid}`}
                                   className="flex items-center px-4 py-2 text-sm text-green-700 hover:bg-green-50 transition-colors duration-150"
@@ -626,8 +627,31 @@ function MasterKaryawanIsi() {
                                   Edit Data
                                 </Link>
 
-                                {data.biodata_karyawan[0]?.status_active !==
-                                  'cut off' && (
+                                {/* Conditional rendering based on status */}
+                                {data.biodata_karyawan[0]?.status_active ===
+                                'cut off' ? (
+                                  <button
+                                    onClick={() =>
+                                      activateCutOffKaryawan(data.userid)
+                                    }
+                                    className="flex items-center w-full px-4 py-2 text-sm text-green-700 hover:bg-green-50 transition-colors duration-150"
+                                  >
+                                    <svg
+                                      className="w-4 h-4 mr-2"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                                      />
+                                    </svg>
+                                    Aktifkan Karyawan
+                                  </button>
+                                ) : (
                                   <button
                                     onClick={() => cutOffKaryawan(data.userid)}
                                     className="flex items-center w-full px-4 py-2 text-sm text-orange-700 hover:bg-orange-50 transition-colors duration-150"
