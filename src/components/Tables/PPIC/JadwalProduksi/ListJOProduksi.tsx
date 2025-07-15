@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import ModalXL from './ModalXL';
-import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 import axios from 'axios';
 import Loading from '../../../Loading';
 import convertTimeStampToDate from '../../../../utils/convertDate';
