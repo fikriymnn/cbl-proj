@@ -202,6 +202,7 @@ import ProduksiOS2 from './pages/Produksi/ProduksiOS2';
 import JoTerjadwal from './pages/PPIC/JadwalPPIC/JOTerjadwalPPIC';
 import KalibrasiAlatUkur from './pages/QualityControl/Kalibrasi/kalibrasiqc';
 import KalibrasiMaster from './pages/QualityControl/Kalibrasi/KalibrasiMaster';
+import MasterKapasitasArmada from './pages/PPIC/MasterPPIC/MasterKapasitasArmada';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -2031,6 +2032,17 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterJadwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/ppic/master/kapasitasArmada"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterKapasitasArmada />
               </ProtectedRoute>
             </>
           }

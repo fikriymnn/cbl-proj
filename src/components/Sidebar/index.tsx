@@ -837,6 +837,11 @@ const Sidebar = ({
           icon: 'schedule',
         },
         {
+          name: 'Master Kapasitas Armada',
+          path: '/ppic/master/kapasitasArmada',
+          icon: 'schedule',
+        },
+        {
           name: 'PPIC Outstanding',
           path: '/ppic/outstanding',
           icon: 'outstanding',
