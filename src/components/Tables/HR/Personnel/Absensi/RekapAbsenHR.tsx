@@ -104,12 +104,13 @@ function RekapAbsenHR() {
     let totalPulangCepat = 0;
     let totalIstirahatLembur = 0;
     let jumlahHariTerlambat = 0;
-    let terlambatKurangDari30Menit = 0; // <= 0.5 hours (30 minutes)
-    let terlambatLebihDari30Menit = 0; // > 0.5 hours (30 minutes)
+    let terlambatKurangDari30Menit = 0; // <= 30 minutes
+    let terlambatLebihDari30Menit = 0; // > 30 minutes
 
     absensiData?.forEach((record: any) => {
-      const menitTerlambat = parseInt(record.menit_terlambat || 0);
-      const menitPulangCepat = parseInt(record.menit_pulang_cepat || 0);
+      // Use parseFloat to handle decimal values properly
+      const menitTerlambat = parseFloat(record.menit_terlambat || 0);
+      const menitPulangCepat = parseFloat(record.menit_pulang_cepat || 0);
       const jamIstirahatLembur = parseFloat(record.jam_istirahat_lembur || 0);
 
       totalTerlambat += menitTerlambat;
@@ -119,6 +120,7 @@ function RekapAbsenHR() {
       if (menitTerlambat > 0) {
         jumlahHariTerlambat++;
 
+        // Compare with 0.5 hours (30 minutes)
         if (menitTerlambat <= 0.5) {
           terlambatKurangDari30Menit++;
         } else {
@@ -127,16 +129,17 @@ function RekapAbsenHR() {
       }
     });
 
-    // Convert total minutes to hours
+    // Values are already in hours from API
     const totalJamTerlambat = totalTerlambat.toFixed(1);
+    const totalJamPulangCepat = totalPulangCepat.toFixed(1);
 
     return {
-      totalTerlambat: totalJamTerlambat, // Now in hours
-      totalPulangCepat,
+      totalTerlambat: totalJamTerlambat, // Already in hours
+      totalPulangCepat: totalJamPulangCepat, // Already in hours
       totalIstirahatLembur: totalIstirahatLembur.toFixed(1),
       jumlahHariTerlambat,
-      terlambatKurangDari30Menit, // <= 0.5 hours
-      terlambatLebihDari30Menit, // > 0.5 hours
+      terlambatKurangDari30Menit, // <= 30 minutes
+      terlambatLebihDari30Menit, // > 30 minutes
     };
   };
 
