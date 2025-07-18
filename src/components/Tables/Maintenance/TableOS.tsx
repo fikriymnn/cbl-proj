@@ -932,7 +932,7 @@ function TableOS() {
                 <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className="flex gap-2 ">
-                <p className="text-xs font-bold ">Mesin</p>
+                <p className="text-xs font-bold ">Mesin </p>
                 <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className="flex gap-2 col-span-3">
@@ -1303,7 +1303,7 @@ function TableOS() {
                                     Kode Tiket
                                   </p>
                                 </div>
-                                <div className="grid grid-cols-6 gap-3 w-10/12">
+                                <div className="grid grid-cols-7 gap-3 w-10/12">
                                   <div className="flex flex-col gap-2">
                                     <h5 className="text-xs font-bold">
                                       Pengerjaan Ke
@@ -1328,7 +1328,9 @@ function TableOS() {
                                       Jenis Perbaikan
                                     </p>
                                   </div>
-                                  <div className=""></div>
+                                  <div className="flex flex-col gap-2">
+                                    <p className="text-xs font-bold">Unit</p>
+                                  </div>
                                 </div>
                               </div>
                               <div className="flex px-5 ">
@@ -1354,7 +1356,7 @@ function TableOS() {
                                   </div>
                                 </div>
 
-                                <div className="grid grid-cols-6 gap-3 w-10/12">
+                                <div className="grid grid-cols-7 gap-3 w-10/12">
                                   {data.proses_mtcs.map(
                                     (proses: any, ii: any) => {
                                       const tglMulaiMtc = convertDatetimeToDate(
@@ -1434,6 +1436,11 @@ function TableOS() {
                                           <div className="flex flex-col gap-2">
                                             <p className="text-xs font-medium">
                                               {proses.cara_perbaikan}
+                                            </p>
+                                          </div>
+                                          <div className="flex flex-col gap-2">
+                                            <p className="text-xs font-medium">
+                                              {proses.unit}
                                             </p>
                                           </div>
                                           <div className="">
