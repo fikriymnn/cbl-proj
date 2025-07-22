@@ -944,18 +944,13 @@ const Sidebar = ({
             return {
               ...item,
               children: item.children.filter(
-                (child) => child.name !== 'History ',
+                (child) =>
+                  child.name !== 'History ' &&
+                  child.name !== 'History Pengajuan Jabatan',
               ),
             };
           }
-          if (item.name === 'Pengajuan Jabatan' && item.children) {
-            return {
-              ...item,
-              children: item.children.filter(
-                (child) => child.name !== 'History Pengajuan Jabatan',
-              ),
-            };
-          }
+
           return item;
         });
     }
