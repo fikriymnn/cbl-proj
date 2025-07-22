@@ -203,6 +203,8 @@ import JoTerjadwal from './pages/PPIC/JadwalPPIC/JOTerjadwalPPIC';
 import KalibrasiAlatUkur from './pages/QualityControl/Kalibrasi/kalibrasiqc';
 import KalibrasiMaster from './pages/QualityControl/Kalibrasi/KalibrasiMaster';
 import MasterKapasitasArmada from './pages/PPIC/MasterPPIC/MasterKapasitasArmada';
+import PengajuanJabatanAllDept from './pages/AllDept/PengajuanJabatanAll';
+import PengajuanJabatanAllDeptHistory from './pages/AllDept/PengajuanJabatanAllHistory';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -1492,6 +1494,28 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <PengajuanAllDept />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/pengajuanJabatanallkehr"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanJabatanAllDept />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/pengajuanJabatanallkehrhistory"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanJabatanAllDeptHistory />
               </ProtectedRoute>
             </>
           }

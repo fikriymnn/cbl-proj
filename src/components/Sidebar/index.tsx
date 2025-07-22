@@ -492,6 +492,16 @@ const Sidebar = ({
               path: '/pengajuanallkehrhistory',
               icon: 'history',
             },
+            {
+              name: 'Pengajuan Jabatan',
+              path: '/pengajuanJabatanallkehr',
+              icon: 'submition',
+            },
+            {
+              name: 'History Pengajuan Jabatan',
+              path: '/pengajuanJabatanallkehrhistory',
+              icon: 'history',
+            },
           ],
         },
       ],
@@ -553,6 +563,16 @@ const Sidebar = ({
             {
               name: 'History ',
               path: '/pengajuanallkehrhistory',
+              icon: 'history',
+            },
+            {
+              name: 'Pengajuan Jabatan',
+              path: '/pengajuanJabatanallkehr',
+              icon: 'submition',
+            },
+            {
+              name: 'History Pengajuan Jabatan',
+              path: '/pengajuanJabatanallkehrhistory',
               icon: 'history',
             },
           ],
@@ -863,6 +883,16 @@ const Sidebar = ({
               path: '/pengajuanallkehrhistory',
               icon: 'history',
             },
+            {
+              name: 'Pengajuan Jabatan',
+              path: '/pengajuanJabatanallkehr',
+              icon: 'submition',
+            },
+            {
+              name: 'History Pengajuan Jabatan',
+              path: '/pengajuanJabatanallkehrhistory',
+              icon: 'history',
+            },
           ],
         },
       ],
@@ -896,7 +926,41 @@ const Sidebar = ({
     ];
     return departmentMasterDataRoles.includes(role?.toLowerCase());
   };
-
+  const isInspectorRole = () => {
+    return role?.toLowerCase() === 'inspector';
+  };
+  const filterQCItems = (items: MenuItem[]) => {
+    if (isInspectorRole()) {
+      return items
+        .filter(
+          (item) =>
+            item.name !== 'QMS' &&
+            item.name !== 'Lapor' &&
+            item.name !== 'QC Absensi',
+        )
+        .map((item) => {
+          // For "Pengajuan Ke HR", filter out the "History" child
+          if (item.name === 'Pengajuan Ke HR' && item.children) {
+            return {
+              ...item,
+              children: item.children.filter(
+                (child) => child.name !== 'History ',
+              ),
+            };
+          }
+          if (item.name === 'Pengajuan Jabatan' && item.children) {
+            return {
+              ...item,
+              children: item.children.filter(
+                (child) => child.name !== 'History Pengajuan Jabatan',
+              ),
+            };
+          }
+          return item;
+        });
+    }
+    return items;
+  };
   const filterMasterDataItems = (items: MenuItem[]) => {
     if (role !== 'super admin') {
       return items.filter(
@@ -1255,6 +1319,13 @@ const Sidebar = ({
           return {
             ...category,
             items: filterMasterDataItems(category.items),
+          };
+        }
+        // Add this new condition for QC items filtering
+        if (category.name === 'Quality Control') {
+          return {
+            ...category,
+            items: filterQCItems(category.items),
           };
         }
         return category;
