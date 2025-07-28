@@ -11,6 +11,7 @@ import formatInteger from '../../../../../utils/formaterInteger';
 import Select from 'react-select';
 import convertTimeStampToDateTime from '../../../../../utils/converDateTime';
 import ptcbl from '../../../../../images/ptcbl.png';
+import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 
 function CheckSheetHasilRabut() {
   const [selectedECs, setSelectedECs] = useState<string[]>([]);
@@ -85,7 +86,208 @@ function CheckSheetHasilRabut() {
       console.log(error);
     }
   }
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingPalletIndex, setEditingPalletIndex] = useState<any>(null);
+  const [editingPalletData, setEditingPalletData] = useState<any>(null);
+  const [isLoadingEdit, setIsLoadingEdit] = useState(false);
 
+  // Master defect states for editing existing defects
+  const [editingDefectIndex, setEditingDefectIndex] = useState<any>(null);
+  const [editSelectedOption, setEditSelectedOption] = useState<any>(null);
+  const [editSelectedSecondOption, setEditSelectedSecondOption] =
+    useState<any>(null);
+  const [editSecondOptions, setEditSecondOptions] = useState<any[]>([]);
+  const openEditModal = (data: any, index: any) => {
+    setEditingPalletData({
+      id: data.id,
+      qty_pallet: data.qty_pallet,
+      catatan: data.catatan,
+      inspeksi_rabut_defect: [...data.inspeksi_rabut_defect], // Create a copy
+    });
+    setEditingPalletIndex(index);
+    setIsEditModalOpen(true);
+
+    // Reset master defect states
+    setEditingDefectIndex(null);
+    setEditSelectedOption(null);
+    setEditSelectedSecondOption(null);
+    setEditSecondOptions([]);
+
+    // Make sure to load master data if not already loaded
+    if (!defectMaster || defectMaster.length === 0) {
+      getMasterDefect();
+    }
+    if (!masterWaste || masterWaste.length === 0) {
+      fetchMasterWaste();
+    }
+  };
+
+  // Function to handle edit data changes
+  const handleEditDataChange = (e: any, defectIndex = null) => {
+    const { name, value } = e.target;
+
+    setEditingPalletData((prev: any) => {
+      if (defectIndex !== null) {
+        // Update defect data
+        const updatedDefects = [...prev.inspeksi_rabut_defect];
+        updatedDefects[defectIndex] = {
+          ...updatedDefects[defectIndex],
+          [name]: value,
+        };
+        return {
+          ...prev,
+          inspeksi_rabut_defect: updatedDefects,
+        };
+      } else {
+        // Update main data (like qty_pallet, catatan)
+        return {
+          ...prev,
+          [name]: value,
+        };
+      }
+    });
+  };
+
+  // Handle first dropdown change for master defect in edit modal (DefectMaster)
+  const handleEditChangePointSelect1 = (selectedOption: any) => {
+    setEditSelectedOption(selectedOption);
+    setEditSelectedSecondOption(null);
+
+    if (selectedOption) {
+      // Filter masterWaste based on matching kode_waste with selected defect kode
+      const matchingWaste = masterWaste?.find(
+        (waste: any) => waste.kode_waste === selectedOption.value,
+      );
+
+      if (matchingWaste && matchingWaste.waste) {
+        const wasteOptions = matchingWaste.waste.map((item: any) => ({
+          value: item.i_kendala,
+          label: `${item.kode_kendala} - ${item.kendala_desc}`,
+          kode_kendala: item.kode_kendala,
+          kendala_desc: item.kendala_desc,
+          i_kendala: item.i_kendala,
+        }));
+        setEditSecondOptions(wasteOptions);
+      } else {
+        setEditSecondOptions([]);
+      }
+    } else {
+      setEditSecondOptions([]);
+    }
+  };
+
+  // Handle second dropdown change for master defect in edit modal (MasterWaste)
+  const handleEditChangePointSelect2 = (selectedOption: any) => {
+    setEditSelectedSecondOption(selectedOption);
+  };
+
+  // Function to start editing a specific defect
+  const startEditingDefect = (defectIndex: any) => {
+    const defect = editingPalletData.inspeksi_rabut_defect[defectIndex];
+    setEditingDefectIndex(defectIndex);
+
+    // Find and set the first dropdown option from defectMaster
+    const firstOption = options.find((opt: any) => opt.value === defect.kode);
+    if (firstOption) {
+      setEditSelectedOption(firstOption);
+
+      // Filter masterWaste based on the current defect's kode
+      const matchingWaste = masterWaste?.find(
+        (waste: any) => waste.kode_waste === defect.kode,
+      );
+
+      if (matchingWaste && matchingWaste.waste) {
+        const wasteOptions = matchingWaste.waste.map((item: any) => ({
+          value: item.i_kendala,
+          label: `${item.kode_kendala} - ${item.kendala_desc}`,
+          kode_kendala: item.kode_kendala,
+          kendala_desc: item.kendala_desc,
+          i_kendala: item.i_kendala,
+        }));
+        setEditSecondOptions(wasteOptions);
+
+        // Find and set the second dropdown option based on kode_lkh
+        const secondOption = wasteOptions.find(
+          (opt: any) => opt.kode_kendala === defect.kode_lkh,
+        );
+        if (secondOption) {
+          setEditSelectedSecondOption(secondOption);
+        }
+      } else {
+        setEditSecondOptions([]);
+      }
+    }
+  };
+
+  const applyDefectChanges = () => {
+    if (
+      editingDefectIndex === null ||
+      !editSelectedOption ||
+      !editSelectedSecondOption
+    )
+      return;
+
+    setEditingPalletData((prev: any) => {
+      const updatedDefects = [...prev.inspeksi_rabut_defect];
+      updatedDefects[editingDefectIndex] = {
+        ...updatedDefects[editingDefectIndex],
+        kode: editSelectedOption.value,
+        masalah: editSelectedOption.label,
+        kode_lkh: editSelectedSecondOption.kode_kendala,
+        masalah_lkh: editSelectedSecondOption.kendala_desc,
+      };
+      return {
+        ...prev,
+        inspeksi_rabut_defect: updatedDefects,
+      };
+    });
+
+    // Reset editing state
+    setEditingDefectIndex(null);
+    setEditSelectedOption(null);
+    setEditSelectedSecondOption(null);
+    setEditSecondOptions([]);
+  };
+
+  // Function to cancel defect editing
+  const cancelDefectEditing = () => {
+    setEditingDefectIndex(null);
+    setEditSelectedOption(null);
+    setEditSelectedSecondOption(null);
+    setEditSecondOptions([]);
+  };
+
+  // Function to save edited data
+  const saveEditedData = async () => {
+    if (!editingPalletData || editingPalletIndex === null) return;
+    console.log('Saving edited data:', editingPalletData);
+    setIsLoadingEdit(true);
+    try {
+      const response = await axios.post(
+        `${
+          import.meta.env.VITE_API_LINK
+        }/qc/cs/inspeksiBarangRusakPointV2/edit/${editingPalletData.id}`,
+        {
+          data_pengecekan: editingPalletData,
+        },
+      );
+
+      if (response.data) {
+        // Close modal and reset states
+        setIsEditModalOpen(false);
+        setEditingPalletData(null);
+        setEditingPalletIndex(null);
+
+        // Refresh your main data
+        // You might want to call your main fetch function here
+      }
+    } catch (error) {
+      console.error('Error saving edited data:', error);
+      // Add your error handling here (toast notification, etc.)
+    } finally {
+      setIsLoadingEdit(false);
+    }
+  };
   const [options, setOptions] = useState<any>([]); // Options for the first dropdown
   const [secondOptions, setSecondOptions] = useState<any>([]); // Filtered options for the second dropdown
   const [defectMaster, setDefectMaster] = useState<any>([]); // Full data for the first dropdown
@@ -1451,260 +1653,267 @@ function CheckSheetHasilRabut() {
                   ) : (
                     <></>
                   )}
-                  <div className="flex flex-col py-6 px-10 ">
-                    <div className=" grid grid-cols-6 w-full  gap-2">
-                      <div className="w-11/12">
-                        <label className="text-neutral-500 text-sm font-semibold w-10/12">
-                          QTY PALET KE {index + 1}
-                        </label>
-                        {data.status == 'done' ? (
-                          <input
-                            name="qty_pallet"
-                            defaultValue={formatInteger(
-                              parseInt(data.qty_pallet),
-                            )}
-                            disabled
-                            onChange={(e) => handleChangeRabutPoint(e, index)}
-                            type="text"
-                            className="px-1 border rounded border-strokedark w-10/12"
-                          />
-                        ) : data.status == 'on progress' ? (
-                          <input
-                            name="qty_pallet"
-                            defaultValue={data.qty_pallet}
-                            onChange={(e) => handleChangeRabutPoint(e, index)}
-                            type="text"
-                            className="px-1 border rounded border-strokedark w-10/12"
-                          />
-                        ) : null}
-                      </div>
-                      <div className="flex flex-col">
-                        {data.status == 'on progress' ? (
-                          <>
-                            <select
-                              value={selectedECs[index]}
-                              onChange={(e) => {
-                                setEyeC(e.target.value);
-                                handleECChange(e, index);
-                              }}
-                            >
-                              {getAvailableECs().map((ec) => (
-                                <option key={ec} value={ec}>
-                                  {ec}
-                                </option>
-                              ))}
-                            </select>
-                          </>
-                        ) : (
-                          <label className="pl-2">{data.eye_c}</label>
-                        )}
-                      </div>
-                      <div className="flex flex-col">
-                        <label className="text-neutral-500 text-sm font-semibold ">
-                          INSPEKTOR
-                        </label>
-                        <label className="text-neutral-500 text-sm font-semibold ">
-                          {data.inspektor?.nama}
-                        </label>
-                      </div>
-                      <div className="flex flex-col">
-                        <label className="text-neutral-500 text-sm font-semibold ">
-                          WAKTU
-                        </label>
-                        <label className="text-neutral-500 text-sm font-semibold ">
-                          {lamaPengerjaan}
-                        </label>
-                      </div>
-                      <div className="flex flex-col">
-                        <label className="text-neutral-500 text-sm font-semibold ">
-                          Time :
-                        </label>
-                        <label className="text-neutral-500 text-sm font-semibold ">
-                          {convertTimeStampToDateTime(data.waktu_mulai)}
-                        </label>
-                      </div>
-                      <div className="flex flex-col ">
-                        <>
-                          <div className="flex flex-col ">
-                            <p className="md:text-[14px] text-[9px] font-semibold">
-                              Upload Foto (Optional):
-                            </p>
-
-                            <div className="">
-                              <input
-                                disabled
-                                type="file"
-                                name=""
-                                id=""
-                                className="w-40"
-                              />
-                            </div>
-                          </div>
-                        </>
-                      </div>
-                      <div className="flex flex-col ">
-                        <>
-                          {data.status == 'incoming' ? (
-                            <>
-                              <p className="font-bold text-[#DE0000]">
-                                Task Belum Dimulai
-                              </p>
-                              <button
-                                disabled={isLoading}
-                                type="button"
-                                onClick={() => {
-                                  startTaskRabut(data.id);
-                                }}
-                                className="flex w-full  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
-                              >
-                                <svg
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 14 14"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                    fill="white"
-                                  />
-                                </svg>
-                              </button>
-                            </>
-                          ) : data.status == 'on progress' ? (
-                            <>
-                              <p className="font-bold text-green-600">
-                                Task Dimulai
-                              </p>
-                              <p className="font-semibold">
-                                Time :{' '}
-                                {convertTimeStampToDateTime(data.waktu_mulai)}
-                              </p>
-                              <button
-                                disabled={isLoading}
-                                type="button"
-                                onClick={() => {
-                                  console.log(RabutMesin.data);
-                                  stopTaskRabut(
-                                    data.id,
-                                    data.waktu_mulai,
-                                    data.catatan,
-                                    data.qty_pallet,
-                                    data.inspeksi_rabut_defect,
-                                  );
-                                }}
-                                className="flex w-full  rounded-md bg-red-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
-                              >
-                                <svg
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 14 14"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                    fill="white"
-                                  />
-                                </svg>
-                              </button>
-                            </>
-                          ) : null}
-                        </>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-8">
-                    {data.inspeksi_rabut_defect.map((data2: any, i: number) => {
-                      return (
-                        <>
-                          <div className="grid py-4 px-4 items-center">
-                            <label className=" text-[#6c6b6b] text-sm font-semibold">
-                              {data2.kode} - {data2.masalah}
-                            </label>
-                            {data2.kode_lkh == '' || data2.kode_lkh == null ? (
-                              <></>
-                            ) : (
-                              <>
-                                <label className=" text-[#6c6b6b] text-sm font-semibold">
-                                  Dengan : {data2.kode_lkh} -{' '}
-                                  {data2.masalah_lkh}
-                                </label>
-                              </>
-                            )}
-                            {data.status == 'done' ? (
-                              <input
-                                type="text"
-                                name="hasil"
-                                defaultValue={data2.hasil}
-                                disabled
-                                onChange={(e) => handleChangePoint(e, index, i)}
-                                className="px-1 border rounded border-strokedark w-full"
-                              />
-                            ) : data.status == 'on progress' ? (
-                              <input
-                                type="text"
-                                name="hasil"
-                                onChange={(e) => handleChangePoint(e, index, i)}
-                                className="px-1 border rounded border-strokedark w-full "
-                              />
-                            ) : null}
-                          </div>
-                        </>
-                      );
-                    })}
-                    {data.status == 'on progress' ? (
-                      <>
-                        <button
-                          onClick={() => handleClickAdd(index)}
-                          className=" h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
-                        >
-                          Add
-                        </button>
-                      </>
-                    ) : null}
-                  </div>
-
-                  {showDetail[index] == true && (
-                    <>
-                      <ModalAddPeriode
-                        isOpen={showDetail[index]}
-                        onClose={() => handleClickAdd(index)}
-                        judul={'ADD PROBLEM CODE'}
-                      >
-                        <div className="flex flex-col gap-2">
-                          <label className="text-black text-sm font-bold pt-4">
-                            Master Defect
+                  {/*=============================editable========================= */}
+                  <>
+                    <div className="flex flex-col py-6 px-10 ">
+                      <div className=" grid grid-cols-6 w-full  gap-2">
+                        <div className="w-11/12">
+                          <label className="text-neutral-500 text-sm font-semibold w-10/12">
+                            QTY PALET KE {index + 1}
                           </label>
-                          <Select
-                            options={options}
-                            value={selectedOption}
-                            onChange={handleChangePointSelect1}
-                            placeholder="Select a Defect"
-                          />
-                          <Select
-                            options={secondOptions}
-                            value={selectedSecondOption}
-                            onChange={handleChangePointSelect2}
-                            placeholder="Select an Option"
-                            isDisabled={!selectedOption} // Disable until the first dropdown has a selection
-                          />
-                          {selectedOption && selectedSecondOption && (
+                          {data.status == 'done' ? (
+                            <input
+                              name="qty_pallet"
+                              defaultValue={formatInteger(
+                                parseInt(data.qty_pallet),
+                              )}
+                              disabled
+                              onChange={(e) => handleChangeRabutPoint(e, index)}
+                              type="text"
+                              className="px-1 border rounded border-strokedark w-10/12"
+                            />
+                          ) : data.status == 'on progress' ? (
+                            <input
+                              name="qty_pallet"
+                              defaultValue={data.qty_pallet}
+                              onChange={(e) => handleChangeRabutPoint(e, index)}
+                              type="text"
+                              className="px-1 border rounded border-strokedark w-10/12"
+                            />
+                          ) : null}
+                        </div>
+                        <div className="flex flex-col">
+                          {data.status == 'on progress' ? (
+                            <>
+                              <select
+                                value={selectedECs[index]}
+                                onChange={(e) => {
+                                  setEyeC(e.target.value);
+                                  handleECChange(e, index);
+                                }}
+                              >
+                                {getAvailableECs().map((ec) => (
+                                  <option key={ec} value={ec}>
+                                    {ec}
+                                  </option>
+                                ))}
+                              </select>
+                            </>
+                          ) : (
+                            <label className="pl-2">{data.eye_c}</label>
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            INSPEKTOR
+                          </label>
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            {data.inspektor?.nama}
+                          </label>
+                        </div>
+                        <div className="flex flex-col">
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            WAKTU
+                          </label>
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            {lamaPengerjaan}
+                          </label>
+                        </div>
+                        <div className="flex flex-col">
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            Time :
+                          </label>
+                          <label className="text-neutral-500 text-sm font-semibold ">
+                            {convertTimeStampToDateTime(data.waktu_mulai)}
+                          </label>
+                        </div>
+                        <div className="flex flex-col ">
+                          <>
+                            <div className="flex flex-col mb-2">
+                              <p className="md:text-[14px] text-[9px] font-semibold">
+                                Upload Foto (Optional):
+                              </p>
+                              <div className="">
+                                <input
+                                  disabled
+                                  type="file"
+                                  name=""
+                                  id=""
+                                  className="w-40"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Add Edit Button */}
                             <button
                               type="button"
-                              disabled={isLoading}
-                              onClick={() => {
-                                tambahDefectPeriode(
-                                  RabutMesin?.data?.id,
-                                  idDefect,
-                                  data.id,
-                                  index,
-                                  wasteSelectCode,
-                                  wasteSelectLkh,
-                                  selectedMesinJO,
-                                  selectedOperatorJO,
-                                ),
-                                  console.log(
+                              onClick={() => openEditModal(data, index)}
+                              className="flex w-full rounded-md bg-blue-600 justify-center items-center px-2 py-1 hover:cursor-pointer text-white text-xs font-semibold mt-1"
+                            >
+                              Edit Data
+                            </button>
+                          </>
+                        </div>
+                        <div className="flex flex-col ">
+                          <>
+                            {data.status == 'incoming' ? (
+                              <>
+                                <p className="font-bold text-[#DE0000]">
+                                  Task Belum Dimulai
+                                </p>
+                                <button
+                                  disabled={isLoading}
+                                  type="button"
+                                  onClick={() => {
+                                    startTaskRabut(data.id);
+                                  }}
+                                  className="flex w-full  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                >
+                                  <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 14 14"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                      fill="white"
+                                    />
+                                  </svg>
+                                </button>
+                              </>
+                            ) : data.status == 'on progress' ? (
+                              <>
+                                <p className="font-bold text-green-600">
+                                  Task Dimulai
+                                </p>
+                                <p className="font-semibold">
+                                  Time :{' '}
+                                  {convertTimeStampToDateTime(data.waktu_mulai)}
+                                </p>
+                                <button
+                                  disabled={isLoading}
+                                  type="button"
+                                  onClick={() => {
+                                    console.log(RabutMesin.data);
+                                    stopTaskRabut(
+                                      data.id,
+                                      data.waktu_mulai,
+                                      data.catatan,
+                                      data.qty_pallet,
+                                      data.inspeksi_rabut_defect,
+                                    );
+                                  }}
+                                  className="flex w-full  rounded-md bg-red-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
+                                >
+                                  <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 14 14"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                      fill="white"
+                                    />
+                                  </svg>
+                                </button>
+                              </>
+                            ) : null}
+                          </>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-8">
+                      {data.inspeksi_rabut_defect.map(
+                        (data2: any, i: number) => {
+                          return (
+                            <>
+                              <div className="grid py-4 px-4 items-center">
+                                <label className=" text-[#6c6b6b] text-sm font-semibold">
+                                  {data2.kode} - {data2.masalah}
+                                </label>
+                                {data2.kode_lkh == '' ||
+                                data2.kode_lkh == null ? (
+                                  <></>
+                                ) : (
+                                  <>
+                                    <label className=" text-[#6c6b6b] text-sm font-semibold">
+                                      Dengan : {data2.kode_lkh} -{' '}
+                                      {data2.masalah_lkh}
+                                    </label>
+                                  </>
+                                )}
+                                {data.status == 'done' ? (
+                                  <input
+                                    type="text"
+                                    name="hasil"
+                                    defaultValue={data2.hasil}
+                                    disabled
+                                    onChange={(e) =>
+                                      handleChangePoint(e, index, i)
+                                    }
+                                    className="px-1 border rounded border-strokedark w-full"
+                                  />
+                                ) : data.status == 'on progress' ? (
+                                  <input
+                                    type="text"
+                                    name="hasil"
+                                    onChange={(e) =>
+                                      handleChangePoint(e, index, i)
+                                    }
+                                    className="px-1 border rounded border-strokedark w-full "
+                                  />
+                                ) : null}
+                              </div>
+                            </>
+                          );
+                        },
+                      )}
+                      {data.status == 'on progress' ? (
+                        <>
+                          <button
+                            onClick={() => handleClickAdd(index)}
+                            className=" h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
+                          >
+                            Add
+                          </button>
+                        </>
+                      ) : null}
+                    </div>
+
+                    {showDetail[index] == true && (
+                      <>
+                        <ModalAddPeriode
+                          isOpen={showDetail[index]}
+                          onClose={() => handleClickAdd(index)}
+                          judul={'ADD PROBLEM CODE'}
+                        >
+                          <div className="flex flex-col gap-2">
+                            <label className="text-black text-sm font-bold pt-4">
+                              Master Defect
+                            </label>
+                            <Select
+                              options={options}
+                              value={selectedOption}
+                              onChange={handleChangePointSelect1}
+                              placeholder="Select a Defect"
+                            />
+                            <Select
+                              options={secondOptions}
+                              value={selectedSecondOption}
+                              onChange={handleChangePointSelect2}
+                              placeholder="Select an Option"
+                              isDisabled={!selectedOption} // Disable until the first dropdown has a selection
+                            />
+                            {selectedOption && selectedSecondOption && (
+                              <button
+                                type="button"
+                                disabled={isLoading}
+                                onClick={() => {
+                                  tambahDefectPeriode(
                                     RabutMesin?.data?.id,
                                     idDefect,
                                     data.id,
@@ -1713,42 +1922,207 @@ function CheckSheetHasilRabut() {
                                     wasteSelectLkh,
                                     selectedMesinJO,
                                     selectedOperatorJO,
-                                  );
-                              }}
-                              className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
-                            >
-                              TAMBAH MASALAH
-                            </button>
-                          )}
-                        </div>
-                      </ModalAddPeriode>
-                    </>
-                  )}
+                                  ),
+                                    console.log(
+                                      RabutMesin?.data?.id,
+                                      idDefect,
+                                      data.id,
+                                      index,
+                                      wasteSelectCode,
+                                      wasteSelectLkh,
+                                      selectedMesinJO,
+                                      selectedOperatorJO,
+                                    );
+                                }}
+                                className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
+                              >
+                                TAMBAH MASALAH
+                              </button>
+                            )}
+                          </div>
+                        </ModalAddPeriode>
+                      </>
+                    )}
 
-                  <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] px-4 py-4 gap-3">
-                    <div className="grid col-span-8">
-                      <label className=" text-[#6c6b6b] text-sm font-semibold">
-                        Catatan<span className="text-red-500">*</span> :
-                      </label>
-                      {data.status == 'on progress' ? (
-                        <textarea
-                          name="catatan"
-                          defaultValue={data.catatan}
-                          onChange={(e) => handleChangeRabutPoint(e, index)}
-                          className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                        ></textarea>
-                      ) : data.status == 'done' ? (
-                        <textarea
-                          name="catatan"
-                          disabled
-                          defaultValue={data.catatan}
-                          onChange={(e) => handleChangeRabutPoint(e, index)}
-                          className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                        ></textarea>
-                      ) : null}
+                    <div className="grid grid-cols-10 border-b-8 border-[#D8EAFF] px-4 py-4 gap-3">
+                      <div className="grid col-span-8">
+                        <label className=" text-[#6c6b6b] text-sm font-semibold">
+                          Catatan<span className="text-red-500">*</span> :
+                        </label>
+                        {data.status == 'on progress' ? (
+                          <textarea
+                            name="catatan"
+                            defaultValue={data.catatan}
+                            onChange={(e) => handleChangeRabutPoint(e, index)}
+                            className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                          ></textarea>
+                        ) : data.status == 'done' ? (
+                          <textarea
+                            name="catatan"
+                            disabled
+                            defaultValue={data.catatan}
+                            onChange={(e) => handleChangeRabutPoint(e, index)}
+                            className="peer h-full min-h-[100px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                          ></textarea>
+                        ) : null}
+                      </div>
+                      <div className="grid col-span-2 items-end justify-center"></div>
                     </div>
-                    <div className="grid col-span-2 items-end justify-center"></div>
-                  </div>
+                    {isEditModalOpen && editingPalletData && (
+                      <ModalKosongan
+                        isOpen={isEditModalOpen}
+                        onClose={() => {
+                          setIsEditModalOpen(false);
+                          setEditingPalletData(null);
+                          setEditingPalletIndex(null);
+                          setEditingDefectIndex(null);
+                          setEditSelectedOption(null);
+                          setEditSelectedSecondOption(null);
+                          setEditSecondOptions([]);
+                        }}
+                        judul={`EDIT DATA PALLET KE ${editingPalletIndex + 1}`}
+                      >
+                        <div className="flex flex-col gap-4 h-full overflow-y-auto">
+                          {/* Edit QTY Pallet */}
+                          <div className="flex flex-col">
+                            <label className="text-black text-sm font-bold">
+                              QTY PALLET KE {editingPalletIndex + 1}
+                            </label>
+                            <input
+                              name="qty_pallet"
+                              type="text"
+                              value={editingPalletData.qty_pallet || ''}
+                              onChange={handleEditDataChange}
+                              className="px-2 py-1 border rounded border-strokedark w-full"
+                            />
+                          </div>
+
+                          {/* Edit Problem Codes */}
+                          <div className="flex flex-col">
+                            <label className="text-black text-sm font-bold mb-2">
+                              Problem Codes:
+                            </label>
+                            <div className="grid grid-cols-1 gap-3">
+                              {editingPalletData.inspeksi_rabut_defect?.map(
+                                (defect: any, defectIndex: any) => (
+                                  <div
+                                    key={defectIndex}
+                                    className="border rounded p-3"
+                                  >
+                                    {editingDefectIndex === defectIndex ? (
+                                      // Edit mode for this defect
+                                      <div className="flex flex-col gap-2">
+                                        <label className="text-black text-sm font-semibold">
+                                          Changing Defect:
+                                        </label>
+                                        <Select
+                                          options={options} // This comes from getMasterDefect API
+                                          value={editSelectedOption}
+                                          onChange={
+                                            handleEditChangePointSelect1
+                                          }
+                                          placeholder="Select a Defect"
+                                        />
+                                        <Select
+                                          options={editSecondOptions} // Filtered waste options based on first selection
+                                          value={editSelectedSecondOption}
+                                          onChange={
+                                            handleEditChangePointSelect2
+                                          }
+                                          placeholder="Select Waste Type"
+                                          isDisabled={!editSelectedOption}
+                                        />
+                                        <div className="flex gap-2">
+                                          <button
+                                            type="button"
+                                            onClick={applyDefectChanges}
+                                            disabled={
+                                              !editSelectedOption ||
+                                              !editSelectedSecondOption
+                                            }
+                                            className="bg-green-600 rounded-md px-3 py-1 text-white font-semibold text-xs hover:bg-green-700 disabled:opacity-50"
+                                          >
+                                            Apply
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={cancelDefectEditing}
+                                            className="bg-gray-600 rounded-md px-3 py-1 text-white font-semibold text-xs hover:bg-gray-700"
+                                          >
+                                            Cancel
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      // Display mode
+                                      <div>
+                                        <div className="flex justify-between items-start mb-2">
+                                          <div className="flex-1">
+                                            <label className="text-[#6c6b6b] text-sm font-semibold block">
+                                              {defect.kode} - {defect.masalah}
+                                            </label>
+                                            {defect.kode_lkh && (
+                                              <label className="text-[#6c6b6b] text-xs block">
+                                                Dengan: {defect.kode_lkh} -{' '}
+                                                {defect.masalah_lkh}
+                                              </label>
+                                            )}
+                                          </div>
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              startEditingDefect(defectIndex)
+                                            }
+                                            className="bg-blue-500 text-white rounded px-2 py-1 text-xs hover:bg-blue-600"
+                                          >
+                                            Change Defect
+                                          </button>
+                                        </div>
+                                        <input
+                                          type="text"
+                                          name="hasil"
+                                          value={defect.hasil || ''}
+                                          onChange={(e) =>
+                                            handleEditDataChange(e, defectIndex)
+                                          }
+                                          className="px-2 py-1 border rounded border-strokedark w-full"
+                                          placeholder="Enter result..."
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                ),
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Edit Catatan */}
+                          <div className="flex flex-col">
+                            <label className="text-black text-sm font-bold mb-1">
+                              Catatan<span className="text-red-500">*</span>:
+                            </label>
+                            <textarea
+                              name="catatan"
+                              value={editingPalletData.catatan || ''}
+                              onChange={handleEditDataChange}
+                              className="peer h-full min-h-[80px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0"
+                              placeholder="Enter notes..."
+                            />
+                          </div>
+
+                          {/* Save Button */}
+                          <button
+                            type="button"
+                            disabled={isLoadingEdit}
+                            onClick={saveEditedData}
+                            className="bg-green-600 rounded-md w-full h-10 text-white font-semibold text-sm hover:bg-green-700 disabled:opacity-50"
+                          >
+                            {isLoadingEdit ? 'Saving...' : 'SAVE CHANGES'}
+                          </button>
+                        </div>
+                      </ModalKosongan>
+                    )}
+                  </>
                 </>
               );
             },
