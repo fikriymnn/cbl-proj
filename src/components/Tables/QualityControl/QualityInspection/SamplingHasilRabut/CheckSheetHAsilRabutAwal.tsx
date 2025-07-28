@@ -31,16 +31,16 @@ function CheckSheetHasilRabut() {
   const [sample3Value, setSample3Value] = useState<any>();
   const [result3, setResult3] = useState<any>();
 
-  const [details, setDetails] = useState<any>(null);
-
   const [showModal2, setShowModal2] = useState(false);
   const [add, setAdd] = useState<any>();
   const [showDetail, setShowDetail] = useState<boolean[]>(
     new Array(add != null && add.length).fill(false),
   );
+  const [historyData, setHistoryData] = useState<any>(null);
   const [eyeC, setEyeC] = useState<any>();
   useEffect(() => {
     getRabutMesin();
+
     getMasterDefect();
     fetchMasterWaste();
     if (RabutMesin?.data?.inspeksi_rabut_point) {
@@ -62,10 +62,27 @@ function CheckSheetHasilRabut() {
       });
       getKendalaByJO(res.data.data.no_jo);
       getmesinByJo(res.data.data.no_jo);
+      getHistoryRabutMesin(res.data.data.no_jo);
       setRabutMesin(res.data);
       console.log(res.data);
     } catch (error: any) {
       console.log(error.data.msg);
+    }
+  }
+  async function getHistoryRabutMesin(noJO: any) {
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBarangRusakV2/history/temuan`;
+    try {
+      const res = await axios.get(url, {
+        params: { no_jo: noJO, is_with_rabut: false },
+        withCredentials: true,
+      });
+
+      console.log('History Data:', res.data);
+      setHistoryData(res.data);
+    } catch (error: any) {
+      console.log(error);
     }
   }
 
@@ -685,6 +702,93 @@ function CheckSheetHasilRabut() {
 
     printWindow.document.close();
   };
+  // Function to render table for each category
+  const renderCategoryTable = (categoryData: any[], categoryName: string) => {
+    if (!categoryData || categoryData.length === 0) {
+      return (
+        <div className="mb-6">
+          <h3 className="text-blue-600 text-sm font-semibold mb-3">
+            {categoryName.toUpperCase()}
+          </h3>
+          <p className="text-gray-500 text-sm">Tidak ada data</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="mb-6">
+        <h3 className="text-blue-600 text-sm font-semibold mb-3">
+          {categoryName.toUpperCase()} {}
+        </h3>
+        <div className="overflow-x-auto">
+          <div className="grid grid-cols-12 gap-2 mb-2 bg-gray-100 p-2 rounded">
+            <label className="text-stone-600 text-xs font-semibold">No</label>
+            <label className="text-stone-600 text-xs font-semibold ">
+              Tanggal
+            </label>
+            <label className="text-stone-600 text-xs font-semibold ">
+              Operator
+            </label>
+            <label className="text-stone-600 text-xs font-semibold ">
+              Mesin
+            </label>
+            <label className="text-stone-600 text-xs font-semibold">Kode</label>
+            <label className="text-stone-600 text-xs font-semibold col-span-2">
+              Masalah
+            </label>
+            <label className="text-stone-600 text-xs font-semibold">
+              Jam Temuan
+            </label>
+            <label className="text-stone-600 text-xs font-semibold">
+              Periode
+            </label>
+            <label className="text-stone-600 text-xs font-semibold">
+              Jumlah
+            </label>
+            <label className="text-stone-600 text-xs font-semibold ">
+              Kendala
+            </label>
+            <label className="text-stone-600 text-xs font-semibold">
+              Inspektor
+            </label>
+          </div>
+          {categoryData.map((data: any, i: number) => (
+            <div
+              key={i}
+              className="grid grid-cols-12 gap-2 py-2 border-b border-gray-200"
+            >
+              <label className="text-stone-600 text-xs">{i + 1}.</label>
+              <label className="text-stone-600 text-xs ">
+                {new Date(data.createdAt).toLocaleDateString('id-ID')}
+              </label>
+              <label className="text-stone-600 text-xs ">{data.operator}</label>
+              <label className="text-stone-600 text-xs ">{data.mesin}</label>
+              <label className="text-stone-600 text-xs ">{data.kode}</label>
+              <label className="text-stone-600 text-xs col-span-2">
+                {data.masalah}
+              </label>
+              <label className="text-stone-600 text-xs">
+                {convertDateToTime(data.updatedAt)}
+              </label>
+              <label className="text-stone-600 text-xs">
+                {data.periode_ke}
+              </label>
+
+              <label className="text-stone-600 text-xs">
+                {data.jumlah_defect || 0}
+              </label>
+              <label className="text-stone-600 text-xs ">
+                {data.sumber_masalah}
+              </label>
+              <label className="text-stone-600 text-xs">
+                {data.nama_inspektor}
+              </label>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
   return (
     <>
       {isOpen && (
@@ -1237,60 +1341,110 @@ function CheckSheetHasilRabut() {
               return (
                 <>
                   <label
-                    className="text-blue-400 text-sm font-semibold  w-full flex justify-end px-4 py-2"
-                    onClick={() => handleClickGuide(index)}
+                    className="text-blue-400 text-sm font-semibold w-full flex justify-end px-4 py-2"
+                    onClick={() => {
+                      handleClickGuide(index);
+                      // Load history temuan data when opened
+                      if (!historyData) {
+                        getHistoryRabutMesin(RabutMesin?.data?.no_jo);
+                      }
+                    }}
                   >
                     History Kendala JO
                   </label>
                   {openGuide == index ? (
-                    <div className="  rounded-md bg-[#F3F3F3] border-gray flex px-5 mx-5 py-6 justify-between">
-                      <div className="grid grid-cols-1">
+                    <div className="rounded-md bg-[#F3F3F3] border-gray flex px-5 mx-5 py-6 justify-between">
+                      <div className="grid grid-cols-1 w-full">
                         <div className="flex flex-col">
-                          <label className="text-blue-600 text-sm font-semibold pb-6">
-                            Daftar Kendala : {RabutMesin?.data?.no_jo}
-                          </label>
-                          <div className="grid grid-cols-12 gap-2">
-                            <label className="text-stone-600 text-sm font-semibold ">
-                              No
+                          {/* History Kendala Section */}
+                          <div className="mb-8">
+                            <label className="text-blue-600 text-sm font-semibold pb-6">
+                              Daftar Kendala : {RabutMesin?.data?.no_jo}
                             </label>
-
-                            <label className="text-stone-600 text-sm font-semibold col-span-3">
-                              Tanggal Produksi
-                            </label>
-                            <label className="text-stone-600 text-sm font-semibold col-span-2">
-                              Durasi
-                            </label>
-                            <label className="text-stone-600 text-sm font-semibold col-span-2">
-                              Mesin
-                            </label>
-                            <label className="text-stone-600 text-sm font-semibold col-span-4">
-                              Kendala
-                            </label>
-                          </div>
-                          {kendalaByJo?.map((data: any, i: any) => (
-                            <>
+                            <div className="grid grid-cols-12 gap-2 mb-2">
+                              <label className="text-stone-600 text-sm font-semibold">
+                                No
+                              </label>
+                              <label className="text-stone-600 text-sm font-semibold col-span-3">
+                                Tanggal Produksi
+                              </label>
+                              <label className="text-stone-600 text-sm font-semibold col-span-2">
+                                Durasi
+                              </label>
+                              <label className="text-stone-600 text-sm font-semibold col-span-2">
+                                Mesin
+                              </label>
+                              <label className="text-stone-600 text-sm font-semibold col-span-4">
+                                Kendala
+                              </label>
+                            </div>
+                            {kendalaByJo?.map((data: any, i: any) => (
                               <div key={i} className="flex flex-col">
                                 <div className="grid grid-cols-12 gap-2">
-                                  <label className="text-stone-600 text-sm  ">
+                                  <label className="text-stone-600 text-sm">
                                     {i + 1}.
                                   </label>
-
-                                  <label className="text-stone-600 text-sm  col-span-3">
+                                  <label className="text-stone-600 text-sm col-span-3">
                                     {data.tgl_produksi}
                                   </label>
-                                  <label className="text-stone-600 text-sm  col-span-2">
+                                  <label className="text-stone-600 text-sm col-span-2">
                                     {data.durasi}
                                   </label>
-                                  <label className="text-stone-600 text-sm  col-span-2">
+                                  <label className="text-stone-600 text-sm col-span-2">
                                     {data.mesin}
                                   </label>
-                                  <label className="text-stone-600 text-sm  col-span-4">
+                                  <label className="text-stone-600 text-sm col-span-4">
                                     {data.kode_kendala} - {data.nama_kendala}
                                   </label>
                                 </div>
                               </div>
-                            </>
-                          ))}
+                            ))}
+                          </div>
+
+                          {/* Divider */}
+                          <hr className="border-gray-300 my-6" />
+
+                          {/* History Temuan Section */}
+                          <div>
+                            <label className="text-blue-600 text-sm font-semibold pb-6">
+                              History Temuan : {RabutMesin?.data?.no_jo}{' '}
+                              <span className="text-black font-extrabold">
+                                ||
+                              </span>{' '}
+                              {RabutMesin?.data?.nama_produk}{' '}
+                              <span className="text-black font-extrabold">
+                                ||
+                              </span>{' '}
+                              {RabutMesin?.data?.customer}
+                            </label>
+
+                            {historyData ? (
+                              <div className="mt-4">
+                                {renderCategoryTable(
+                                  historyData.dataCetak,
+                                  'Cetak',
+                                )}
+                                {renderCategoryTable(
+                                  historyData.dataCoating,
+                                  'Coating',
+                                )}
+                                {renderCategoryTable(
+                                  historyData.dataLem,
+                                  'Lem',
+                                )}
+                                {renderCategoryTable(
+                                  historyData.dataPond,
+                                  'Pond',
+                                )}
+                              </div>
+                            ) : (
+                              <div className="flex justify-center py-4 mt-4">
+                                <span className="text-gray-500">
+                                  Loading history temuan...
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
