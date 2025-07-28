@@ -756,9 +756,12 @@ function ChecksheetBarangRS() {
             <label className="text-stone-600 text-xs font-semibold">
               Jam Temuan
             </label>
-            <label className="text-stone-600 text-xs font-semibold">
-              Periode
-            </label>
+            {categoryName != 'Rabut' && (
+              <label className="text-stone-600 text-xs font-semibold">
+                Periode
+              </label>
+            )}
+
             <label className="text-stone-600 text-xs font-semibold">
               Jumlah
             </label>
@@ -787,13 +790,21 @@ function ChecksheetBarangRS() {
               <label className="text-stone-600 text-xs">
                 {convertDateToTime(data.updatedAt)}
               </label>
-              <label className="text-stone-600 text-xs">
-                {data.periode_ke}
-              </label>
+              {categoryName != 'Rabut' && (
+                <label className="text-stone-600 text-xs">
+                  {data.periode_ke}
+                </label>
+              )}
+              {categoryName != 'Rabut' ? (
+                <label className="text-stone-600 text-xs">
+                  {data.jumlah_defect || 0}
+                </label>
+              ) : (
+                <label className="text-stone-600 text-xs">
+                  {data.hasil || 0}
+                </label>
+              )}
 
-              <label className="text-stone-600 text-xs">
-                {data.jumlah_defect || 0}
-              </label>
               <label className="text-stone-600 text-xs ">
                 {data.sumber_masalah}
               </label>
