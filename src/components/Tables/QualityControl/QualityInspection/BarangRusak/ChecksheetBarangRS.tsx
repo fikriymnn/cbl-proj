@@ -12,6 +12,7 @@ import convertTimeStampToDateTime from '../../../../../utils/converDateTime';
 import formatInteger from '../../../../../utils/formaterInteger';
 import ModalKosonganSmall from '../../../../Modals/ModalKosonganSmall';
 import ptcbl from '../../../../../images/ptcbl.png';
+import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 
 function ChecksheetBarangRS() {
   const { id } = useParams();
@@ -34,8 +35,22 @@ function ChecksheetBarangRS() {
     getRabutMesin();
     getMasterDefect();
     fetchMasterWaste();
+    getMe();
   }, []);
+  const [me, setMe] = useState<any>();
 
+  async function getMe() {
+    const url = `${import.meta.env.VITE_API_LINK}/me`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      console.log('user', res.data);
+      setMe(res.data);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
   async function getRabutMesin() {
     const url = `${
       import.meta.env.VITE_API_LINK
@@ -120,7 +135,455 @@ function ChecksheetBarangRS() {
       console.error('Error fetching master waste:', error);
     }
   }
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingPalletIndex, setEditingPalletIndex] = useState<any>(null);
+  const [editingPalletData, setEditingPalletData] = useState<any>(null);
+  const [isLoadingEdit, setIsLoadingEdit] = useState(false);
 
+  // Master defect states for editing existing defects
+  const [editingDefectIndex, setEditingDefectIndex] = useState<any>(null);
+  const [editSelectedOption, setEditSelectedOption] = useState<any>(null);
+  const [editSelectedSecondOption, setEditSelectedSecondOption] =
+    useState<any>(null);
+  const [editSecondOptions, setEditSecondOptions] = useState<any[]>([]);
+
+  const [editSelectedMesinJO, setEditSelectedMesinJO] = useState<any>(null);
+  const [editSelectedOperatorJO, setEditSelectedOperatorJO] =
+    useState<any>(null);
+  const [editIdDefect, setEditIdDefect] = useState<any>(null);
+  const [editTujuanDepartment, setEditTujuanDepartment] = useState<string>('');
+  const [editWasteSelectCode, setEditWasteSelectCode] = useState<string>('');
+  const [editWasteSelectLkh, setEditWasteSelectLkh] = useState<string>('');
+
+  const openEditModal = (data: any, index: any) => {
+    setEditingPalletData({
+      id: data.id,
+      // Note: sub_total might not exist in the response, you may need to calculate it or use a different field
+      catatan: data.catatan,
+      inspeksi_barang_rusak_defect_v2: [
+        ...data.inspeksi_barang_rusak_defect_v2,
+      ], // Create a copy - updated to v2
+    });
+    setEditingPalletIndex(index);
+    setIsEditModalOpen(true);
+
+    // Reset all edit states
+    setEditingDefectIndex(null);
+    setEditSelectedOption(null);
+    setEditSelectedSecondOption(null);
+    setEditSecondOptions([]);
+    setEditSelectedMesinJO(null);
+    setEditSelectedOperatorJO(null);
+    setEditIdDefect(null);
+    setEditTujuanDepartment('');
+    setEditWasteSelectCode('');
+    setEditWasteSelectLkh('');
+
+    // Make sure to load master data if not already loaded
+    if (!defectMaster || defectMaster.length === 0) {
+      getMasterDefect();
+    }
+    if (!masterWaste || masterWaste.length === 0) {
+      fetchMasterWaste();
+    }
+  };
+
+  // Updated handleEditDataChange function
+  const handleEditDataChange = (e: any, defectIndex = null) => {
+    const { name, value } = e.target;
+
+    setEditingPalletData((prev: any) => {
+      if (defectIndex !== null) {
+        // Update defect data
+        const updatedDefects = [...prev.inspeksi_barang_rusak_defect_v2];
+        updatedDefects[defectIndex] = {
+          ...updatedDefects[defectIndex],
+          [name]: name === 'jumlah_defect' ? parseInt(value) || 0 : value,
+        };
+        return {
+          ...prev,
+          inspeksi_barang_rusak_defect_v2: updatedDefects,
+        };
+      } else {
+        // Update main data (like catatan)
+        return {
+          ...prev,
+          [name]: value,
+        };
+      }
+    });
+  };
+  const handleEditChangePointSelect1 = (selectedOption: any) => {
+    if (!selectedOption) {
+      console.warn('No selection provided to handleEditChangePointSelect1');
+      return;
+    }
+
+    const { value } = selectedOption;
+    console.log(`Processing edit selection: ${value}`);
+
+    // Log data availability
+    console.log('Data available for edit processing:', {
+      masterWasteAvailable:
+        Array.isArray(masterWaste) && masterWaste.length > 0,
+      defectMasterAvailable:
+        Array.isArray(defectMaster) && defectMaster.length > 0,
+      kendalaByJoAvailable:
+        Array.isArray(kendalaByJo) && kendalaByJo.length > 0,
+    });
+
+    // Check if defectMaster is defined before filtering
+    const filteredDefect = Array.isArray(defectMaster)
+      ? defectMaster.filter((item) => item.e_kode_produksi === value)
+      : [];
+
+    // Only proceed if filteredDefect has items
+    if (filteredDefect.length > 0) {
+      const firstFilteredItemDefect = filteredDefect[0];
+      console.log(firstFilteredItemDefect.i_id);
+      setEditIdDefect(firstFilteredItemDefect);
+      console.log(firstFilteredItemDefect.target_department);
+      setEditTujuanDepartment(firstFilteredItemDefect.target_department || '');
+    } else {
+      // Reset if no defect found
+      setEditIdDefect(null);
+      setEditTujuanDepartment('');
+    }
+
+    // Machine and operator selection logic
+    if (Array.isArray(kendalaByJo)) {
+      // Priority 1: Always check kendalaByJo first
+      const matchingKendala = kendalaByJo.find(
+        (kendala) => kendala.kode_kendala === value,
+      );
+
+      // If a match is found in kendalaByJo, always use that machine
+      if (matchingKendala) {
+        setEditSelectedMesinJO(matchingKendala.mesin);
+        setEditSelectedOperatorJO(matchingKendala.operator);
+        console.log(
+          `Using machine from kendalaByJo: ${matchingKendala.mesin} for kode_kendala: ${value}`,
+        );
+      }
+      // Fallback to process-based logic only if not found in kendalaByJo
+      else {
+        let targetProcess = '';
+
+        if (value.startsWith('CO')) {
+          targetProcess = 'coating';
+        } else if (value.startsWith('PT')) {
+          targetProcess = 'potong';
+        } else if (value.startsWith('C')) {
+          targetProcess = 'cetak';
+        } else if (value.startsWith('P')) {
+          targetProcess = 'pond';
+        } else if (value.startsWith('LP')) {
+          targetProcess = 'lipat';
+        } else if (value.startsWith('L')) {
+          targetProcess = 'lem';
+        }
+
+        // Check if mesinByJo is defined and has items before using find
+        if (targetProcess && Array.isArray(mesinByJo) && mesinByJo.length > 0) {
+          const matchingMachine = mesinByJo.find((mesin) =>
+            mesin.proses.toLowerCase().includes(targetProcess.toLowerCase()),
+          );
+
+          if (matchingMachine) {
+            setEditSelectedMesinJO(matchingMachine.mesin);
+            setEditSelectedOperatorJO(matchingMachine.operator);
+            console.log(
+              `Selected machine: ${matchingMachine.mesin} for process: ${targetProcess}`,
+            );
+          } else {
+            console.warn(`No machine found for process: ${targetProcess}`);
+            setEditSelectedMesinJO(null);
+            setEditSelectedOperatorJO(null);
+          }
+        } else {
+          console.warn(
+            `No valid process identified for kode_waste: ${value} or mesinByJo is empty`,
+          );
+          setEditSelectedMesinJO(null);
+          setEditSelectedOperatorJO(null);
+        }
+      }
+    } else {
+      console.warn('kendalaByJo is undefined or not an array');
+      setEditSelectedMesinJO(null);
+      setEditSelectedOperatorJO(null);
+    }
+
+    setEditSelectedOption(selectedOption);
+    setEditSelectedSecondOption(null);
+
+    if (selectedOption) {
+      // Filter masterWaste based on matching kode_waste with selected defect kode
+      const matchingWaste = masterWaste?.find(
+        (waste: any) => waste.kode_waste === selectedOption.value,
+      );
+
+      if (matchingWaste && matchingWaste.waste) {
+        const wasteOptions = matchingWaste.waste.map((item: any) => ({
+          value: item.i_kendala,
+          label: `${item.kode_kendala} - ${item.kendala_desc}`,
+          kode_kendala: item.kode_kendala,
+          kendala_desc: item.kendala_desc,
+          i_kendala: item.i_kendala,
+        }));
+        setEditSecondOptions(wasteOptions);
+      } else {
+        setEditSecondOptions([]);
+      }
+    } else {
+      setEditSecondOptions([]);
+    }
+  };
+
+  const handleEditChangePointSelect2 = (selectedOption: any) => {
+    console.log('Selected Edit Second Option:', selectedOption);
+    setEditSelectedSecondOption(selectedOption);
+
+    if (selectedOption?.label) {
+      const [code, description] = selectedOption.label.split(' - ');
+      const selectedCode = code?.trim() || '';
+      const selectedDescription = description?.trim() || '';
+
+      setEditWasteSelectCode(selectedCode);
+      setEditWasteSelectLkh(selectedDescription);
+
+      // Check if kendalaByJo is defined before using find
+      if (Array.isArray(kendalaByJo)) {
+        // Priority 1: Always check kendalaByJo first for the second dropdown as well
+        const matchingKendala = kendalaByJo.find(
+          (kendala) => kendala.kode_kendala === selectedCode,
+        );
+
+        // If found in kendalaByJo, always use that machine (overriding any previous selection)
+        if (matchingKendala) {
+          setEditSelectedMesinJO(matchingKendala.mesin);
+          setEditSelectedOperatorJO(matchingKendala.operator);
+          console.log(
+            `Updated machine from second edit selection: ${matchingKendala.mesin} for kode_kendala: ${selectedCode}`,
+          );
+        }
+        // Otherwise keep the machine that was set in the first dropdown
+      } else {
+        console.warn(
+          'kendalaByJo is undefined or not an array in second edit dropdown handler',
+        );
+        // No need to set anything here as we want to keep the previous selection
+      }
+    } else {
+      console.warn(
+        'Invalid selection for handleEditChangePointSelect2:',
+        selectedOption,
+      );
+      setEditWasteSelectCode('');
+      setEditWasteSelectLkh('');
+    }
+  };
+
+  // Updated startEditingDefect function
+  const startEditingDefect = (defectIndex: any) => {
+    const defect =
+      editingPalletData.inspeksi_barang_rusak_defect_v2[defectIndex]; // Updated to v2
+    setEditingDefectIndex(defectIndex);
+
+    // Set existing machine and operator data
+    setEditSelectedMesinJO(defect.mesin);
+    setEditSelectedOperatorJO(defect.operator);
+
+    // Find and set the first dropdown option from defectMaster
+    const firstOption = options.find((opt: any) => opt.value === defect.kode);
+    if (firstOption) {
+      setEditSelectedOption(firstOption);
+
+      // Set defect master data
+      const filteredDefect = Array.isArray(defectMaster)
+        ? defectMaster.filter((item) => item.e_kode_produksi === defect.kode)
+        : [];
+
+      if (filteredDefect.length > 0) {
+        setEditIdDefect(filteredDefect[0]);
+        setEditTujuanDepartment(filteredDefect[0].target_department);
+      }
+
+      // Filter masterWaste based on the current defect's kode
+      const matchingWaste = masterWaste?.find(
+        (waste: any) => waste.kode_waste === defect.kode,
+      );
+
+      if (matchingWaste && matchingWaste.waste) {
+        const wasteOptions = matchingWaste.waste.map((item: any) => ({
+          value: item.i_kendala,
+          label: `${item.kode_kendala} - ${item.kendala_desc}`,
+          kode_kendala: item.kode_kendala,
+          kendala_desc: item.kendala_desc,
+          i_kendala: item.i_kendala,
+        }));
+        setEditSecondOptions(wasteOptions);
+
+        // Find and set the second dropdown option based on kode_lkh
+        const secondOption = wasteOptions.find(
+          (opt: any) => opt.kode_kendala === defect.kode_lkh,
+        );
+        if (secondOption) {
+          setEditSelectedSecondOption(secondOption);
+          setEditWasteSelectCode(defect.kode_lkh);
+          setEditWasteSelectLkh(defect.masalah_lkh);
+        }
+      } else {
+        setEditSecondOptions([]);
+      }
+    }
+  };
+
+  // Updated applyDefectChanges function
+  const applyDefectChanges = () => {
+    if (
+      editingDefectIndex === null ||
+      !editSelectedOption ||
+      !editSelectedSecondOption
+    )
+      return;
+
+    setEditingPalletData((prev: any) => {
+      const updatedDefects = [...prev.inspeksi_barang_rusak_defect_v2]; // Updated to v2
+
+      // Remove the sumber_masalah logic as it's not in your API structure
+
+      updatedDefects[editingDefectIndex] = {
+        ...updatedDefects[editingDefectIndex],
+        kode: editSelectedOption.value,
+        masalah: editSelectedOption.kendala_desc, // Now this will have the correct value
+        kode_lkh: editSelectedSecondOption.kode_kendala,
+        masalah_lkh: editSelectedSecondOption.kendala_desc,
+        mesin: editSelectedMesinJO,
+        operator: editSelectedOperatorJO,
+        // Remove sumber_masalah as it's not in your API response structure
+      };
+
+      return {
+        ...prev,
+        inspeksi_barang_rusak_defect_v2: updatedDefects, // Updated to v2
+      };
+    });
+
+    // Reset editing state
+    setEditingDefectIndex(null);
+    setEditSelectedOption(null);
+    setEditSelectedSecondOption(null);
+    setEditSecondOptions([]);
+    setEditSelectedMesinJO(null);
+    setEditSelectedOperatorJO(null);
+    setEditIdDefect(null);
+    setEditTujuanDepartment('');
+    setEditWasteSelectCode('');
+    setEditWasteSelectLkh('');
+  };
+
+  const cancelDefectEditing = () => {
+    setEditingDefectIndex(null);
+    setEditSelectedOption(null);
+    setEditSelectedSecondOption(null);
+    setEditSecondOptions([]);
+    setEditSelectedMesinJO(null);
+    setEditSelectedOperatorJO(null);
+    setEditIdDefect(null);
+    setEditTujuanDepartment('');
+    setEditWasteSelectCode('');
+    setEditWasteSelectLkh('');
+  };
+
+  // Function to save edited data with proper calculations
+  const saveEditedData = async () => {
+    if (!editingPalletData || editingPalletIndex === null) return;
+
+    // Calculate sub_total from all defects
+    const calculatedSubTotal =
+      editingPalletData.inspeksi_barang_rusak_defect_v2?.reduce(
+        (total: number, defect: any) =>
+          total + (parseInt(defect.jumlah_defect) || 0),
+        0,
+      ) || 0;
+
+    // Separate defects by nama_pengecekan for drukAwal and settingAwal
+    const settingAwalDefects =
+      editingPalletData.inspeksi_barang_rusak_defect_v2?.filter(
+        (defect: any) => defect.nama_pengecekan === 'setting awal',
+      ) || [];
+
+    const drukAwalDefects =
+      editingPalletData.inspeksi_barang_rusak_defect_v2?.filter(
+        (defect: any) => defect.nama_pengecekan === 'druk awal',
+      ) || [];
+
+    // Calculate settingAwal and drukAwal totals
+    const calculatedSettingAwal = settingAwalDefects.reduce(
+      (total: number, defect: any) =>
+        total + (parseInt(defect.jumlah_defect) || 0),
+      0,
+    );
+
+    const calculatedDrukAwal = drukAwalDefects.reduce(
+      (total: number, defect: any) =>
+        total + (parseInt(defect.jumlah_defect) || 0),
+      0,
+    );
+
+    // Prepare data with calculated values - try different field name variations
+    const dataToSave = {
+      id: editingPalletData.id,
+      catatan: editingPalletData.catatan,
+      sub_total: calculatedSubTotal,
+      settingAwal: calculatedSettingAwal,
+      drukAwal: calculatedDrukAwal,
+      // Also try these variations in case API expects different names:
+      setting_awal: calculatedSettingAwal,
+      druk_awal: calculatedDrukAwal,
+      inspeksi_barang_rusak_defect_v2:
+        editingPalletData.inspeksi_barang_rusak_defect_v2,
+    };
+
+    setIsLoadingEdit(true);
+    console.log('Data to Save:', dataToSave);
+    try {
+      const response = await axios.put(
+        `${
+          import.meta.env.VITE_API_LINK
+        }/qc/cs/inspeksiBarangRusakPointV2/edit/${editingPalletData.id}`,
+        {
+          data_pengecekan: dataToSave,
+        },
+      );
+      console.log('API Response:', response.data);
+      if (response.data) {
+        getRabutMesin();
+        // Close modal and reset states
+        setIsEditModalOpen(false);
+        setEditingPalletData(null);
+        setEditingPalletIndex(null);
+        // Reset other edit states
+        setEditingDefectIndex(null);
+        setEditSelectedOption(null);
+        setEditSelectedSecondOption(null);
+        setEditSecondOptions([]);
+        setEditSelectedMesinJO(null);
+        setEditSelectedOperatorJO(null);
+        setEditIdDefect(null);
+        setEditTujuanDepartment('');
+        setEditWasteSelectCode('');
+        setEditWasteSelectLkh('');
+      }
+    } catch (error) {
+      console.error('Error saving edited data:', error);
+      console.error('Error response:', error);
+      // Add your error handling here (toast notification, etc.)
+    } finally {
+      setIsLoadingEdit(false);
+    }
+  };
   const [kendalaByJo, setkendalaByJo] = useState<any>([]);
   const [selectedMesinJO, setselectedMesinJO] = useState<any>(null);
   const [selectedOperatorJO, setselectedOperatorJO] = useState<any>(null);
@@ -1433,11 +1896,10 @@ function ChecksheetBarangRS() {
                         </div>
                         <div className="flex flex-col ">
                           <>
-                            <div className="flex flex-col ">
+                            <div className="flex flex-col mb-2">
                               <p className="md:text-[14px] text-[9px] font-semibold">
                                 Upload Foto (Optional):
                               </p>
-
                               <div className="">
                                 <input
                                   disabled
@@ -1448,6 +1910,19 @@ function ChecksheetBarangRS() {
                                 />
                               </div>
                             </div>
+
+                            {/* Add Edit Button */}
+                            {(me?.role == 'admin' ||
+                              me?.role == 'super admin' ||
+                              me?.role == 'section head') && (
+                              <button
+                                type="button"
+                                onClick={() => openEditModal(data, index)}
+                                className="flex w-full rounded-md bg-blue-600 justify-center items-center px-2 py-1 hover:cursor-pointer text-white text-xs font-semibold mt-1"
+                              >
+                                Edit Data
+                              </button>
+                            )}
                           </>
                         </div>
                         <div className="flex flex-col ">
@@ -1680,6 +2155,243 @@ function ChecksheetBarangRS() {
                       </div>
                       <div className="grid col-span-2 items-end justify-center"></div>
                     </div>
+                    {isEditModalOpen && editingPalletData && (
+                      <ModalKosongan
+                        isOpen={isEditModalOpen}
+                        onClose={() => {
+                          setIsEditModalOpen(false);
+                          setEditingPalletData(null);
+                          setEditingPalletIndex(null);
+                          setEditingDefectIndex(null);
+                          setEditSelectedOption(null);
+                          setEditSelectedSecondOption(null);
+                          setEditSecondOptions([]);
+                          setEditSelectedMesinJO(null);
+                          setEditSelectedOperatorJO(null);
+                          setEditIdDefect(null);
+                          setEditTujuanDepartment('');
+                          setEditWasteSelectCode('');
+                          setEditWasteSelectLkh('');
+                        }}
+                        judul={`EDIT DATA INSPEKSI ${editingPalletIndex + 1}`}
+                      >
+                        <div className="flex flex-col gap-4 h-full overflow-y-auto">
+                          {/* Calculate and display sub total based on defects */}
+                          <div className="flex flex-col">
+                            <label className="text-black text-sm font-bold">
+                              SUB TOTAL INSPEKSI KE {editingPalletIndex + 1}
+                            </label>
+                            <div className="px-3 py-2 border-2 rounded border-blue-500 bg-blue-50 text-center">
+                              <span className="text-lg font-bold text-blue-700">
+                                {editingPalletData.inspeksi_barang_rusak_defect_v2?.reduce(
+                                  (total: number, defect: any) =>
+                                    total +
+                                    (parseInt(defect.jumlah_defect) || 0),
+                                  0,
+                                ) || 0}
+                              </span>
+                            </div>
+                            <small className="text-gray-600 text-xs mt-1">
+                              Total calculated from sum of all defect quantities
+                            </small>
+                          </div>
+
+                          {/* Display Periode Information from defects */}
+                          <div className="bg-blue-50 p-3 rounded border">
+                            <label className="text-blue-800 text-sm font-semibold block mb-2">
+                              Periode Information:
+                            </label>
+                            {(() => {
+                              const settingAwalDefects =
+                                editingPalletData.inspeksi_barang_rusak_defect_v2?.filter(
+                                  (defect: any) =>
+                                    defect.nama_pengecekan === 'setting awal',
+                                ) || [];
+
+                              const drukAwalDefects =
+                                editingPalletData.inspeksi_barang_rusak_defect_v2?.filter(
+                                  (defect: any) =>
+                                    defect.nama_pengecekan === 'druk awal',
+                                ) || [];
+
+                              const settingAwalTotal =
+                                settingAwalDefects.reduce(
+                                  (total: number, defect: any) =>
+                                    total +
+                                    (parseInt(defect.jumlah_defect) || 0),
+                                  0,
+                                );
+
+                              const drukAwalTotal = drukAwalDefects.reduce(
+                                (total: number, defect: any) =>
+                                  total + (parseInt(defect.jumlah_defect) || 0),
+                                0,
+                              );
+
+                              return (
+                                <>
+                                  {settingAwalDefects.length > 0 && (
+                                    <div className="text-blue-700 text-sm mb-1">
+                                      <strong>Setting Awal:</strong>{' '}
+                                      {settingAwalTotal}
+                                    </div>
+                                  )}
+                                  {drukAwalDefects.length > 0 && (
+                                    <div className="text-blue-700 text-sm">
+                                      <strong>Druk Awal:</strong>{' '}
+                                      {drukAwalTotal}
+                                    </div>
+                                  )}
+                                  {editingPalletData
+                                    .inspeksi_barang_rusak_defect_v2?.length ===
+                                    0 && (
+                                    <div className="text-blue-700 text-sm">
+                                      No defects found
+                                    </div>
+                                  )}
+                                </>
+                              );
+                            })()}
+                          </div>
+
+                          {/* Edit Problem Codes */}
+                          <div className="flex flex-col">
+                            <label className="text-black text-sm font-bold mb-2">
+                              Problem Codes:
+                            </label>
+                            <div className="grid grid-cols-1 gap-3">
+                              {editingPalletData.inspeksi_barang_rusak_defect_v2?.map(
+                                (defect: any, defectIndex: any) => (
+                                  <div
+                                    key={defectIndex}
+                                    className="border rounded p-3"
+                                  >
+                                    {editingDefectIndex === defectIndex ? (
+                                      // Edit mode for this defect
+                                      <div className="flex flex-col gap-2">
+                                        <label className="text-black text-sm font-semibold">
+                                          Changing Defect:
+                                        </label>
+                                        <Select
+                                          options={options} // This comes from getMasterDefect API
+                                          value={editSelectedOption}
+                                          onChange={
+                                            handleEditChangePointSelect1
+                                          }
+                                          placeholder="Select a Defect"
+                                        />
+                                        <Select
+                                          options={editSecondOptions} // Filtered waste options based on first selection
+                                          value={editSelectedSecondOption}
+                                          onChange={
+                                            handleEditChangePointSelect2
+                                          }
+                                          placeholder="Select Waste Type"
+                                          isDisabled={!editSelectedOption}
+                                        />
+
+                                        <div className="flex gap-2">
+                                          <button
+                                            type="button"
+                                            onClick={applyDefectChanges}
+                                            disabled={
+                                              !editSelectedOption ||
+                                              !editSelectedSecondOption
+                                            }
+                                            className="bg-green-600 rounded-md px-3 py-1 text-white font-semibold text-xs hover:bg-green-700 disabled:opacity-50"
+                                          >
+                                            Apply
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={cancelDefectEditing}
+                                            className="bg-gray-600 rounded-md px-3 py-1 text-white font-semibold text-xs hover:bg-gray-700"
+                                          >
+                                            Cancel
+                                          </button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      // Display mode
+                                      <div>
+                                        <div className="flex justify-between items-start mb-2">
+                                          <div className="flex-1">
+                                            <label className="text-[#6c6b6b] text-sm font-semibold block">
+                                              {defect.kode} - {defect.masalah}
+                                            </label>
+                                            {defect.kode_lkh && (
+                                              <label className="text-[#6c6b6b] text-xs block">
+                                                Dengan: {defect.kode_lkh} -{' '}
+                                                {defect.masalah_lkh}
+                                              </label>
+                                            )}
+                                            <div className="text-[#6c6b6b] text-xs mt-1">
+                                              <strong>Jumlah Defect:</strong>{' '}
+                                              {defect.jumlah_defect || 0}
+                                            </div>
+                                          </div>
+                                          <button
+                                            type="button"
+                                            onClick={() =>
+                                              startEditingDefect(defectIndex)
+                                            }
+                                            className="bg-blue-500 text-white rounded px-2 py-1 text-xs hover:bg-blue-600"
+                                          >
+                                            Change Defect
+                                          </button>
+                                        </div>
+                                        <div className="mt-2">
+                                          <label className="text-black text-xs font-semibold block mb-1">
+                                            Jumlah Defect:
+                                          </label>
+                                          <input
+                                            type="number"
+                                            name="jumlah_defect"
+                                            value={defect.jumlah_defect || ''}
+                                            onChange={(e) =>
+                                              handleEditDataChange(
+                                                e,
+                                                defectIndex,
+                                              )
+                                            }
+                                            className="px-2 py-1 border rounded border-strokedark w-full"
+                                            placeholder="Enter defect quantity..."
+                                          />
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                ),
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Edit Catatan */}
+                          <div className="flex flex-col">
+                            <label className="text-black text-sm font-bold mb-1">
+                              Catatan<span className="text-red-500">*</span>:
+                            </label>
+                            <textarea
+                              name="catatan"
+                              value={editingPalletData.catatan || ''}
+                              onChange={handleEditDataChange}
+                              className="peer h-full min-h-[80px] w-full resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0"
+                              placeholder="Enter notes..."
+                            />
+                          </div>
+
+                          {/* Save Button */}
+                          <button
+                            type="button"
+                            disabled={isLoadingEdit}
+                            onClick={saveEditedData}
+                            className="bg-green-600 rounded-md w-full h-10 text-white font-semibold text-sm hover:bg-green-700 disabled:opacity-50"
+                          >
+                            {isLoadingEdit ? 'Saving...' : 'SAVE CHANGES'}
+                          </button>
+                        </div>
+                      </ModalKosongan>
+                    )}
                   </>
                 );
               },

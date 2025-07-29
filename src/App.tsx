@@ -1332,6 +1332,7 @@ function App() {
             </>
           }
         />
+
         <Route
           path="/qc/qualityinspection/barangrs/:id"
           element={
