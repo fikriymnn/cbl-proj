@@ -6,6 +6,7 @@ import JobOrderTable from './JobOrderTable';
 interface JobOrder {
   id: number;
   no_jo: string;
+  no_io: string;
   item: string;
   qty_druk: number;
   qty_pcs: number;

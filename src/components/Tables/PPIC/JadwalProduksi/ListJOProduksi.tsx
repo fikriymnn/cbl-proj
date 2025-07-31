@@ -707,6 +707,14 @@ function ListJOProduksi() {
                                   </div>
                                   <div className="grid grid-cols-2 gap-2">
                                     <label className="text-black text-sm font-bold">
+                                      Nomor IO
+                                    </label>
+                                    <label className="text-[#016ae6] uppercase text-lg font-semibold">
+                                      : {jo.no_io}
+                                    </label>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <label className="text-black text-sm font-bold">
                                       Item
                                     </label>
                                     <label className="text-[#016ae6] uppercase text-lg font-semibold">

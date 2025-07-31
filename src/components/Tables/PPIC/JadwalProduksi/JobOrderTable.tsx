@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 interface JobOrder {
   id: number;
   no_jo: string;
+  no_io: string;
   item: string;
   qty_druk: number;
   qty_pcs: number;
@@ -344,6 +345,7 @@ const JobOrderTable = ({
             <th className="border border-blue-600 px-4 py-2">
               {activeStatus === 'penjadwalan' ? 'No Booking' : 'No JO'}
             </th>
+            <th className="border border-blue-600 px-4 py-2">No IO</th>
             <th className="border border-blue-600 px-4 py-2">Item</th>
             <th className="border border-blue-600 px-4 py-2">Qty Druk</th>
             <th className="border border-blue-600 px-4 py-2">Qty PCS</th>
@@ -380,6 +382,9 @@ const JobOrderTable = ({
                   {activeStatus === 'penjadwalan'
                     ? jo.no_booking || jo.no_jo || 'N/A'
                     : jo.no_jo || 'N/A'}
+                </td>
+                <td className="border border-blue-200 px-4 py-2 text-center">
+                  {jo.no_io || 'N/A'}
                 </td>
                 <td className="border border-blue-200 px-4 py-2 text-center">
                   {jo.item || 'N/A'}
@@ -490,6 +495,14 @@ const JobOrderTable = ({
                   </label>
                   <label className="text-[#016ae6] uppercase text-xl font-normal">
                     : {selectedJOLocal?.no_jo || 'N/A'}
+                  </label>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="text-black text-xs font-bold">
+                    Nomor IO
+                  </label>
+                  <label className="text-[#016ae6] uppercase text-xl font-normal">
+                    : {selectedJOLocal?.no_io || 'N/A'}
                   </label>
                 </div>
                 <div className="grid grid-cols-2 gap-2">
