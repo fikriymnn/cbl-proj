@@ -6,6 +6,7 @@ import convertTimeStampToDate from '../../../../utils/convertDate';
 import formatInteger from '../../../../utils/formaterInteger';
 import JobOrderTable from './JobOrderTable';
 
+import * as XLSX from 'xlsx';
 interface JobOrder {
   id: number;
   no_jo: string;
@@ -416,6 +417,7 @@ function TampilanMonthlyJO() {
           params: { start_date: tglAwal, end_date: tglAkhir },
           withCredentials: true,
         });
+        console.log('Schedule data fetched successfully:', response.data.data);
         setMapData(response.data.data || []);
       } catch (error) {
         console.error('Error fetching schedule data:', error);
@@ -717,6 +719,246 @@ function TampilanMonthlyJO() {
       </main>
     );
   }
+  const exportToExcel = (data: any, filename = 'production_schedule') => {
+    // Group data by no_jo/no_booking first, then by tahapan, then by date
+    const groupedData = data.reduce((acc: any, item: any) => {
+      const jobNumber = item.no_jo || item.no_booking || 'No Job Number';
+
+      if (!acc[jobNumber]) {
+        acc[jobNumber] = {
+          no_jo: item.no_jo,
+          no_booking: item.no_booking,
+          item: item.item,
+          tahapan_list: {},
+        };
+      }
+
+      // Group by tahapan within each job
+      if (!acc[jobNumber].tahapan_list[item.tahapan]) {
+        acc[jobNumber].tahapan_list[item.tahapan] = {
+          tahapan: item.tahapan,
+          tahapan_ke: item.tahapan_ke,
+          kategori: item.kategori,
+          nama_kategori: item.nama_kategori,
+          dates: {},
+        };
+      }
+
+      const date = new Date(item.tanggal).toLocaleDateString('id-ID');
+
+      if (!acc[jobNumber].tahapan_list[item.tahapan].dates[date]) {
+        acc[jobNumber].tahapan_list[item.tahapan].dates[date] = {
+          tanggal: date,
+          machines: [],
+        };
+      }
+
+      // Add machine info for this date and tahapan
+      acc[jobNumber].tahapan_list[item.tahapan].dates[date].machines.push({
+        mesin: item.mesin,
+        qty_pcs: item.qty_pcs,
+        qty_druk: item.qty_druk,
+        jam: item.jam,
+        total_waktu: item.total_waktu,
+        kapasitas_per_jam: item.kapasitas_per_jam,
+        drying_time: item.drying_time,
+        setting: item.setting,
+      });
+
+      return acc;
+    }, {});
+
+    // Convert grouped data to Excel format
+    const excelData: any = [];
+
+    Object.entries(groupedData).forEach(([jobNumber, jobInfo]: [any, any]) => {
+      // Add job header row
+      excelData.push({
+        'No JO': jobInfo.no_jo || '',
+        'No Booking': jobInfo.no_booking || '',
+        Item: jobInfo.item,
+        Kategori: '',
+        'Nama Kategori': '',
+        Tahapan: '',
+        'Tahapan Ke': '',
+        Tanggal: '',
+        Mesin: '',
+        'Qty Pieces': '',
+        'Qty Druk': '',
+        Jam: '',
+        'Total Waktu ': '',
+        'Kapasitas/Jam': '',
+        'Drying Time': '',
+        Setting: '',
+      });
+
+      // Sort tahapan by tahapan_ke (stage order)
+      const sortedTahapan = Object.entries(jobInfo.tahapan_list).sort(
+        ([, a], [, b]) => {
+          return ((a as any).tahapan_ke || 0) - ((b as any).tahapan_ke || 0);
+        },
+      );
+
+      // Add rows for each tahapan
+      sortedTahapan.forEach(([tahapanName, tahapanInfo]: [any, any]) => {
+        // Add tahapan header
+        excelData.push({
+          'No JO': '',
+          'No Booking': '',
+          Item: '',
+          Kategori: tahapanInfo.kategori,
+          'Nama Kategori': tahapanInfo.nama_kategori,
+          Tahapan: `${tahapanInfo.tahapan} (Stage ${tahapanInfo.tahapan_ke})`,
+          'Tahapan Ke': tahapanInfo.tahapan_ke,
+          Tanggal: '',
+          Mesin: '',
+          'Qty Pieces': '',
+          'Qty Druk': '',
+          Jam: '',
+          'Total Waktu ': '',
+          'Kapasitas/Jam': '',
+          'Drying Time': '',
+          Setting: '',
+        });
+
+        // Sort dates chronologically for this tahapan
+        const sortedDates = Object.keys(tahapanInfo.dates).sort(
+          (a: any, b: any) => {
+            return (
+              new Date(a.split('/').reverse().join('-')).getTime() -
+              new Date(b.split('/').reverse().join('-')).getTime()
+            );
+          },
+        );
+
+        // Add rows for each date within this tahapan
+        sortedDates.forEach((date) => {
+          const dateInfo = tahapanInfo.dates[date];
+
+          // Add all machines for this date
+          dateInfo.machines.forEach((machine: any, index: any) => {
+            excelData.push({
+              'No JO': '',
+              'No Booking': '',
+              Item: '',
+              Kategori: '',
+              'Nama Kategori': '',
+              Tahapan: '',
+              'Tahapan Ke': '',
+              Tanggal: index === 0 ? date : '', // Only show date on first machine
+              Mesin: machine.mesin,
+              'Qty Pieces': machine.qty_pcs,
+              'Qty Druk': machine.qty_druk,
+              Jam: machine.jam,
+              'Total Waktu ': machine.total_waktu,
+              'Kapasitas/Jam': machine.kapasitas_per_jam,
+              'Drying Time': machine.drying_time,
+              Setting: machine.setting,
+            });
+          });
+        });
+      });
+
+      // Add separator row between jobs
+      excelData.push({
+        'No JO': '',
+        'No Booking': '',
+        Item: '',
+        Kategori: '',
+        'Nama Kategori': '',
+        Tahapan: '',
+        'Tahapan Ke': '',
+        Tanggal: '---',
+        Mesin: '---',
+        'Qty Pieces': '',
+        'Qty Druk': '',
+        Jam: '',
+        'Total Waktu': '',
+        'Kapasitas/Jam': '',
+        'Drying Time': '',
+        Setting: '',
+      });
+    });
+
+    // Create workbook and worksheet
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+    // Auto-size columns
+    const colWidths = [
+      { wch: 15 }, // No JO
+      { wch: 15 }, // No Booking
+      { wch: 40 }, // Item
+      { wch: 10 }, // Kategori
+      { wch: 15 }, // Nama Kategori
+      { wch: 15 }, // Tahapan
+      { wch: 10 }, // Tahapan Ke
+      { wch: 12 }, // Tanggal
+      { wch: 10 }, // Mesin
+      { wch: 12 }, // Qty Pieces
+      { wch: 12 }, // Qty Druk
+      { wch: 10 }, // Jam
+      { wch: 15 }, // Total Waktu
+      { wch: 15 }, // Kapasitas/Jam
+      { wch: 12 }, // Drying Time
+      { wch: 10 }, // Setting
+    ];
+    worksheet['!cols'] = colWidths;
+
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Production Schedule');
+
+    // Generate file and download
+    // Get date range from the data
+    const allDates = data
+      .map((item: any) => new Date(item.tanggal))
+      .filter((date: any) => !isNaN(date));
+    const minDate = new Date(Math.min(...allDates));
+    const maxDate = new Date(Math.max(...allDates));
+
+    // Format dates for filename
+    const formatDate = (date: any) => {
+      return date.toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: '2-digit',
+      });
+    };
+
+    const exportDate = new Date()
+      .toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      })
+      .replace(/\//g, '-');
+
+    // Create filename with data period and export date
+    let dataRange;
+    if (
+      minDate.getMonth() === maxDate.getMonth() &&
+      minDate.getFullYear() === maxDate.getFullYear()
+    ) {
+      // Same month
+      dataRange = formatDate(minDate).replace('/', '-');
+    } else {
+      // Different months
+      dataRange = `${formatDate(minDate).replace('/', '-')}_to_${formatDate(
+        maxDate,
+      ).replace('/', '-')}`;
+    }
+
+    const fileName = `${filename}_${dataRange}_exported_${exportDate}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
+  // Usage in your component:
+  const handleExportExcel = () => {
+    if (mapData && mapData.length > 0) {
+      exportToExcel(mapData, 'jadwal_produksi');
+    } else {
+      alert('No data to export');
+    }
+  };
 
   return (
     <main className="overflow-x-scroll">
@@ -766,6 +1008,7 @@ function TampilanMonthlyJO() {
                 >
                   Search
                 </button>
+
                 <button
                   onClick={clearSearch}
                   className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
@@ -798,7 +1041,12 @@ function TampilanMonthlyJO() {
                 </button>
               </div>
             </div>
-
+            <button
+              onClick={handleExportExcel}
+              className="bg-green-600 text-white py-1 px-4 mb-2 rounded hover:bg-green-700 font-medium"
+            >
+              Export to Excel
+            </button>
             {/* Schedule Grid */}
             <div className="overflow-x-auto">
               <div className="flex">
