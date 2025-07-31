@@ -1757,7 +1757,7 @@ function CheckSheetCetakPeriode() {
                         ),
                     ) || [];
 
-                  // Group by kode and sum jumlah_defect
+                  // Group by kode and sum jumlah_defect with improved logic
                   const groupedDefects = allNotOkDefects.reduce(
                     (acc: any, defect: any) => {
                       const key = defect.kode;
@@ -1769,9 +1769,21 @@ function CheckSheetCetakPeriode() {
                           periods: [],
                         };
                       }
-                      acc[key].totalDefect += parseInt(
-                        defect.jumlah_defect || 0,
-                      );
+                      // Improved defect counting logic
+                      let defectValue = 0;
+                      if (
+                        defect.jumlah_defect !== null &&
+                        defect.jumlah_defect !== undefined &&
+                        defect.jumlah_defect !== ''
+                      ) {
+                        defectValue =
+                          parseInt(
+                            String(defect.jumlah_defect).replace(/[^0-9]/g, ''),
+                          ) || 1;
+                      } else if (defect.hasil === 'not ok') {
+                        defectValue = 1;
+                      }
+                      acc[key].totalDefect += defectValue;
                       acc[key].periods.push(defect);
                       return acc;
                     },
@@ -1780,8 +1792,22 @@ function CheckSheetCetakPeriode() {
 
                   const groupedArray = Object.values(groupedDefects);
                   const grandTotal = allNotOkDefects.reduce(
-                    (sum: number, defect: any) =>
-                      sum + parseInt(defect.jumlah_defect || 0),
+                    (sum: number, defect: any) => {
+                      let defectValue = 0;
+                      if (
+                        defect.jumlah_defect !== null &&
+                        defect.jumlah_defect !== undefined &&
+                        defect.jumlah_defect !== ''
+                      ) {
+                        defectValue =
+                          parseInt(
+                            String(defect.jumlah_defect).replace(/[^0-9]/g, ''),
+                          ) || 1;
+                      } else if (defect.hasil === 'not ok') {
+                        defectValue = 1;
+                      }
+                      return sum + defectValue;
+                    },
                     0,
                   );
 
@@ -1862,15 +1888,30 @@ function CheckSheetCetakPeriode() {
                                       (defect: any) =>
                                         defect.hasil === 'not ok',
                                     );
+
+                                  // Check if there are any "not ok" defects, regardless of jumlah_defect value
+                                  const hasNotOkDefects =
+                                    periodNotOk.length > 0;
+
                                   const periodTotal = periodNotOk.reduce(
                                     (sum: number, defect: any) => {
-                                      const defectValue = defect.jumlah_defect
-                                        ? parseInt(defect.jumlah_defect)
-                                        : 0;
-                                      return (
-                                        sum +
-                                        (isNaN(defectValue) ? 0 : defectValue)
-                                      );
+                                      // Handle various formats of jumlah_defect
+                                      let defectValue = 0;
+                                      if (
+                                        defect.jumlah_defect !== null &&
+                                        defect.jumlah_defect !== undefined &&
+                                        defect.jumlah_defect !== ''
+                                      ) {
+                                        defectValue =
+                                          parseInt(
+                                            String(
+                                              defect.jumlah_defect,
+                                            ).replace(/[^0-9]/g, ''),
+                                          ) || 1; // Default to 1 if parsing fails but field exists
+                                      } else if (defect.hasil === 'not ok') {
+                                        defectValue = 1; // If marked as "not ok" but no quantity, count as 1
+                                      }
+                                      return sum + defectValue;
                                     },
                                     0,
                                   );
@@ -1879,7 +1920,7 @@ function CheckSheetCetakPeriode() {
                                     <div
                                       key={periodIndex}
                                       className={`p-3 rounded border ${
-                                        periodTotal > 0
+                                        hasNotOkDefects
                                           ? 'bg-red-100 border-red-300'
                                           : 'bg-green-100 border-green-300'
                                       }`}
@@ -1890,13 +1931,15 @@ function CheckSheetCetakPeriode() {
                                         </span>
                                         <span
                                           className={`text-sm font-bold ${
-                                            periodTotal > 0
+                                            hasNotOkDefects
                                               ? 'text-red-600'
                                               : 'text-green-600'
                                           }`}
                                         >
-                                          {periodTotal > 0
-                                            ? formatInteger(periodTotal)
+                                          {hasNotOkDefects
+                                            ? `${formatInteger(periodTotal)} (${
+                                                periodNotOk.length
+                                              } issues)`
                                             : '✓ OK'}
                                         </span>
                                       </div>

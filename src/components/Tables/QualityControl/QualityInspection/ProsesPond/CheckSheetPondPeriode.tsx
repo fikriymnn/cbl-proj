@@ -1491,6 +1491,217 @@ function CheckSheetPondPeriode() {
                 );
               },
             )}
+            {/* Summary Section for All Periods - Not OK Defects */}
+            <div className="border-8 border-red-300 bg-red-50 mt-4">
+              <div className="px-4 py-4">
+                {(() => {
+                  // Calculate all not ok defects across all periods
+                  const allNotOkDefects =
+                    pondMesinPeriode?.inspeksi_pond_periode[0]?.inspeksi_pond_periode_point?.flatMap(
+                      (period: any) =>
+                        period.inspeksi_pond_periode_defect.filter(
+                          (defect: any) => defect.hasil === 'not ok',
+                        ),
+                    ) || [];
+
+                  // Group by kode and sum jumlah_defect
+                  const groupedDefects = allNotOkDefects.reduce(
+                    (acc: any, defect: any) => {
+                      const key = defect.kode;
+                      if (!acc[key]) {
+                        acc[key] = {
+                          kode: defect.kode,
+                          masalah: defect.masalah,
+                          totalDefect: 0,
+                          periods: [],
+                        };
+                      }
+                      acc[key].totalDefect += parseInt(
+                        defect.jumlah_defect || 0,
+                      );
+                      acc[key].periods.push(defect);
+                      return acc;
+                    },
+                    {},
+                  );
+
+                  const groupedArray = Object.values(groupedDefects);
+                  const grandTotal = allNotOkDefects.reduce(
+                    (sum: number, defect: any) =>
+                      sum + parseInt(defect.jumlah_defect || 0),
+                    0,
+                  );
+
+                  return (
+                    <>
+                      {groupedArray.length > 0 ? (
+                        <>
+                          {/* Individual defect codes summary */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                            {groupedArray.map(
+                              (defectGroup: any, index: number) => (
+                                <div
+                                  key={index}
+                                  className="bg-white p-4 rounded-lg border border-red-200 shadow-sm"
+                                >
+                                  <div className="flex justify-between items-start mb-2">
+                                    <div className="flex-1">
+                                      <div className="text-sm font-bold text-gray-800">
+                                        {defectGroup.kode}
+                                      </div>
+                                      <div className="text-xs text-gray-600 mt-1">
+                                        {defectGroup.masalah}
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="text-lg font-bold text-red-600">
+                                        {formatInteger(defectGroup.totalDefect)}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        {defectGroup.periods.length} Temuan
+                                        {defectGroup.periods.length > 1
+                                          ? ''
+                                          : ''}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ),
+                            )}
+                          </div>
+
+                          {/* Grand Total */}
+                          <div className="bg-red-600 text-white p-4 rounded-lg shadow-lg">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <div className="text-lg font-bold">
+                                  🚨 TOTAL NOT OK DEFECT (POND)
+                                </div>
+                                <div className="text-sm opacity-90">
+                                  {' '}
+                                  {pondMesinPeriode?.inspeksi_pond_periode[0]
+                                    ?.inspeksi_pond_periode_point?.length ||
+                                    0}{' '}
+                                  Periode
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-3xl font-bold">
+                                  {formatInteger(grandTotal)}
+                                </div>
+                                <div className="text-sm opacity-90">
+                                  Total Defects
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Detailed breakdown by period */}
+                          <div className="mt-4">
+                            <h3 className="text-red-600 text-md font-bold mb-2">
+                              📋 Period Breakdown:
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                              {pondMesinPeriode?.inspeksi_pond_periode[0]?.inspeksi_pond_periode_point?.map(
+                                (period: any, periodIndex: number) => {
+                                  const periodNotOk =
+                                    period.inspeksi_pond_periode_defect.filter(
+                                      (defect: any) =>
+                                        defect.hasil === 'not ok',
+                                    );
+
+                                  // Check if there are any "not ok" defects, regardless of jumlah_defect value
+                                  const hasNotOkDefects =
+                                    periodNotOk.length > 0;
+
+                                  const periodTotal = periodNotOk.reduce(
+                                    (sum: number, defect: any) => {
+                                      // Handle various formats of jumlah_defect
+                                      let defectValue = 0;
+                                      if (
+                                        defect.jumlah_defect !== null &&
+                                        defect.jumlah_defect !== undefined &&
+                                        defect.jumlah_defect !== ''
+                                      ) {
+                                        defectValue =
+                                          parseInt(
+                                            String(
+                                              defect.jumlah_defect,
+                                            ).replace(/[^0-9]/g, ''),
+                                          ) || 1; // Default to 1 if parsing fails but field exists
+                                      } else if (defect.hasil === 'not ok') {
+                                        defectValue = 1; // If marked as "not ok" but no quantity, count as 1
+                                      }
+                                      return sum + defectValue;
+                                    },
+                                    0,
+                                  );
+
+                                  return (
+                                    <div
+                                      key={periodIndex}
+                                      className={`p-3 rounded border ${
+                                        hasNotOkDefects
+                                          ? 'bg-red-100 border-red-300'
+                                          : 'bg-green-100 border-green-300'
+                                      }`}
+                                    >
+                                      <div className="flex justify-between items-center mb-1">
+                                        <span className="text-sm font-semibold">
+                                          Period {periodIndex + 1}
+                                        </span>
+                                        <span
+                                          className={`text-sm font-bold ${
+                                            hasNotOkDefects
+                                              ? 'text-red-600'
+                                              : 'text-green-600'
+                                          }`}
+                                        >
+                                          {hasNotOkDefects
+                                            ? `${formatInteger(periodTotal)} (${
+                                                periodNotOk.length
+                                              } issues)`
+                                            : '✓ OK'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                },
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="bg-green-100 p-6 rounded-lg border border-green-300 text-center">
+                          <div className="text-2xl mb-2">✅</div>
+                          <div className="text-green-700 font-bold text-lg">
+                            Tidak Ada Defect Not OK ditemukan pada Pond Periode
+                          </div>
+                          <div className="text-green-600 text-sm mt-2">
+                            Semua hasil inspeksi pond dalam kondisi baik
+                          </div>
+                          {/* Show sampling summary even when no defects */}
+                          <div className="mt-4 text-sm text-gray-600">
+                            <div className="font-semibold mb-2">
+                              Ringkasan Sampling:
+                            </div>
+                            {pondMesinPeriode?.inspeksi_pond_periode[0]?.inspeksi_pond_periode_point?.map(
+                              (period: any, periodIndex: number) => (
+                                <div key={periodIndex}>
+                                  Period {periodIndex + 1}:{' '}
+                                  {period.numerator || 0}/
+                                  {period.jumlah_sampling || 0}
+                                </div>
+                              ),
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
           </div>
           {(!isOnprogres &&
             pondMesinPeriode?.inspeksi_pond_periode[0].status == 'incoming') ||
