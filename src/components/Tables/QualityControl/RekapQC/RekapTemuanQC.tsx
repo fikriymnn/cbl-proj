@@ -63,19 +63,48 @@ function RekapTemuanQC() {
   const [joNumber, setJoNumber] = useState<string>('');
   const [error, setError] = useState<string>('');
 
-  // Remove the useEffect that calls getRekap on component mount
-  // useEffect(() => {
-  //   getRekap();
-  // }, []);
-
   useEffect(() => {
     filterData();
   }, [data, searchTerm]);
 
+  // Improved filter validation function
+  const validateFilters = () => {
+    // Clear previous errors
+    setError('');
+
+    // Case 1: If both dates are empty, JO number is required
+    if (!startDate && !endDate) {
+      if (!joNumber.trim()) {
+        setError('JO Number is required when no date range is specified.');
+        return false;
+      }
+      return true;
+    }
+
+    // Case 2: If one date is filled, both must be filled
+    if ((startDate && !endDate) || (!startDate && endDate)) {
+      setError(
+        'Both Start Date and End Date must be filled when using date filters.',
+      );
+      return false;
+    }
+
+    // Case 3: If both dates are filled, JO number is optional
+    if (startDate && endDate) {
+      // Validate date range
+      if (new Date(startDate) > new Date(endDate)) {
+        setError('Start Date cannot be later than End Date.');
+        return false;
+      }
+      return true;
+    }
+
+    return true;
+  };
+
   async function getRekap() {
-    // Don't make API call if no date range is selected
-    if (!startDate || !endDate) {
-      setError('Please select both start and end dates to load data.');
+    // Validate filters before making API call
+    if (!validateFilters()) {
       return;
     }
 
@@ -94,7 +123,7 @@ function RekapTemuanQC() {
 
       if (startDate) params.start_date = startDate;
       if (endDate) params.end_date = endDate;
-      if (joNumber) params.no_jo = joNumber;
+      if (joNumber.trim()) params.no_jo = joNumber.trim();
 
       const res = await axios.get(url, {
         withCredentials: true,
@@ -134,6 +163,22 @@ function RekapTemuanQC() {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+  };
+
+  // Clear error when user starts typing
+  const handleJoNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setJoNumber(e.target.value);
+    if (error) setError('');
+  };
+
+  const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setStartDate(e.target.value);
+    if (error) setError('');
+  };
+
+  const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEndDate(e.target.value);
+    if (error) setError('');
   };
 
   const getStatusIcon = (hasil: string, sectionName: string) => {
@@ -434,36 +479,34 @@ function RekapTemuanQC() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Start Date *
+                    Start Date {startDate || endDate ? '*' : ''}
                   </label>
                   <input
                     type="date"
                     value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
+                    onChange={handleStartDateChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    End Date *
+                    End Date {startDate || endDate ? '*' : ''}
                   </label>
                   <input
                     type="date"
                     value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
+                    onChange={handleEndDateChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    JO Number
+                    JO Number {!startDate && !endDate ? '*' : ''}
                   </label>
                   <input
                     type="text"
                     value={joNumber}
-                    onChange={(e) => setJoNumber(e.target.value)}
+                    onChange={handleJoNumberChange}
                     placeholder="Enter JO number"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
@@ -478,10 +521,25 @@ function RekapTemuanQC() {
                   </button>
                 </div>
               </div>
+
+              {/* Filter instructions */}
+              <div className="text-sm text-gray-600 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="font-medium text-blue-800 mb-1">
+                  Filter Rules:
+                </div>
+                <ul className="list-disc list-inside space-y-1 text-blue-700">
+                  <li>Filter by JO Number only: Leave both dates empty</li>
+                  <li>
+                    Filter by date range: Fill both Start Date and End Date (JO
+                    Number optional)
+                  </li>
+                  <li>If you fill one date, you must fill both dates</li>
+                </ul>
+              </div>
             </form>
 
             {/* Search */}
-            <div className="relative">
+            <div className="relative mt-4">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
@@ -510,12 +568,9 @@ function RekapTemuanQC() {
           data.length === 0 && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 text-center py-12">
               <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg mb-2">
-                Select Date Range to Load Data
-              </p>
+              <p className="text-gray-500 text-lg mb-2">No data loaded</p>
               <p className="text-gray-400 text-sm">
-                Please select both start and end dates, then click "Apply
-                Filters" to view QC findings.
+                Use the filters above to search for quality control findings
               </p>
             </div>
           )}
