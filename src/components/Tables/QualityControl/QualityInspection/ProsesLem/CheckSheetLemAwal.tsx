@@ -8,6 +8,7 @@ import formatElapsedTime from '../../../../../utils/formatElapsedTime';
 import Loading from '../../../../Loading';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 import formatInteger from '../../../../../utils/formaterInteger';
+import ModalKosonganSmall from '../../../../Modals/ModalKosonganSmall';
 
 function CheckSheetLemAwal() {
   const { id } = useParams();
@@ -27,8 +28,9 @@ function CheckSheetLemAwal() {
   }, []);
 
   async function getMasterKode() {
-    const url = `${import.meta.env.VITE_API_LINK_P1
-      }/api/list-kendala?criteria=true&proses=11`;
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=11`;
 
     try {
       const res = await axios.get(url);
@@ -57,8 +59,9 @@ function CheckSheetLemAwal() {
   }
 
   async function startTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemAwalPoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemAwalPoint/start/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -87,8 +90,9 @@ function CheckSheetLemAwal() {
     bentuk_jadi: any,
     kebersihan: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemAwalPoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemAwalPoint/stop/${id}`;
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
@@ -118,8 +122,9 @@ function CheckSheetLemAwal() {
   }
 
   async function tambahTaskCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemAwalPoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemAwalPoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -138,19 +143,24 @@ function CheckSheetLemAwal() {
       alert(error.response.data.msg);
     }
   }
-
+  const [alasanPending, setalasanPending] = useState<any>();
   async function pendingCekAwal(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemAwal/pending/${id}`;
+    if (alasanPending == null) {
+      alert('Catatan Wajib Diisi');
+      return;
+    }
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemAwal/pending/${id}`;
     try {
       const res = await axios.put(
         url,
-        {},
+        { alasan_pending: alasanPending },
         {
           withCredentials: true,
         },
       );
-
+      closeModalPending();
       getCetakMesinAwal();
     } catch (error: any) {
       console.log(error.data.msg);
@@ -162,8 +172,9 @@ function CheckSheetLemAwal() {
       alert('Jenis Lem Belum Terisi');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemAwal/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemAwal/done/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -194,11 +205,6 @@ function CheckSheetLemAwal() {
   const tanggal = convertTimeStampToDateOnly(cetakMesinAwal?.tanggal);
   const jam = convertDateToTime(cetakMesinAwal?.tanggal);
 
-  const tanggalHistory = convertTimeStampToDateOnly(
-    cetakMesinAwalHistory?.tanggal,
-  );
-  const jamHistory = convertDateToTime(cetakMesinAwalHistory?.tanggal);
-
   const jumlahWaktuCheck = formatElapsedTime(
     cetakMesinAwal?.inspeksi_lem_awal[0].waktu_check,
   );
@@ -210,7 +216,9 @@ function CheckSheetLemAwal() {
   const [showHistory, setShowHistory] = useState(false);
   const openModalHistory = () => setShowHistory(true);
   const closeModalHistory = () => setShowHistory(false);
-
+  const [showPending, setShowPending] = useState(false);
+  const openModalPending = () => setShowPending(true);
+  const closeModalPending = () => setShowPending(false);
   return (
     <>
       {!isMobile && (
@@ -266,8 +274,10 @@ function CheckSheetLemAwal() {
                               : {tanggal}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {formatInteger(parseInt(cetakMesinAwalHistory?.jumlah_pcs))}
-
+                              :{' '}
+                              {formatInteger(
+                                parseInt(cetakMesinAwalHistory?.jumlah_pcs),
+                              )}
                             </label>
 
                             <div className="flex gap-1 font-semibold">
@@ -306,7 +316,8 @@ function CheckSheetLemAwal() {
 
                             <label className="text-neutral-500 text-sm font-semibold"></label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {cetakMesinAwalHistory?.no_jo}
+                              : {cetakMesinAwalHistory?.no_jo} /{' '}
+                              {cetakMesinAwalHistory?.no_io}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
                               : {cetakMesinAwalHistory?.nama_produk}
@@ -479,120 +490,135 @@ function CheckSheetLemAwal() {
               </div>
             </div>
 
-            <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
-              <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Tanggal
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Jumlah
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Jenis Lem
-                </label>
-              </div>
-              <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {tanggal}
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {formatInteger(parseInt(cetakMesinAwal?.jumlah_pcs))}
-                </label>
+            <div className="border-b-8 border-[#D8EAFF] overflow-x-auto">
+              <table className="w-full min-w-max">
+                <tbody>
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Tanggal
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words">
+                      : {tanggal}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Jam
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {jam}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Shift
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {cetakMesinAwal?.shift}
+                    </td>
+                  </tr>
 
-                {cetakMesinAwal?.jenis_lem == null ? (
-                  <div className="flex md:gap-1 font-semibold">
-                    :{' '}
-                    <input
-                      className="border rounded"
-                      type="text"
-                      onChange={(e) => {
-                        setJenisLem(e.target.value);
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex gap-1 font-semibold">
-                    :
-                    <input
-                      type="text"
-                      disabled
-                      defaultValue={cetakMesinAwal.jenis_lem}
-                      onChange={(e) => {
-                        setJenisLem(e.target.value);
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Jumlah
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words">
+                      : {formatInteger(parseInt(cetakMesinAwal?.jumlah_pcs))}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap"></td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words"></td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Mesin
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {cetakMesinAwal?.mesin}
+                    </td>
+                  </tr>
 
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Jam
-                </label>
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Jenis Lem
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2">
+                      {cetakMesinAwal?.jenis_lem == null ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-neutral-700 text-sm font-medium">
+                            :
+                          </span>
+                          <input
+                            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            type="text"
+                            placeholder="Masukkan jenis lem"
+                            onChange={(e) => {
+                              setJenisLem(e.target.value);
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-neutral-700 text-sm font-medium">
+                            :
+                          </span>
+                          <input
+                            type="text"
+                            disabled
+                            defaultValue={cetakMesinAwal.jenis_lem}
+                            className="border border-gray-300 rounded px-2 py-1 text-sm bg-gray-100 text-gray-600 cursor-not-allowed"
+                            onChange={(e) => {
+                              setJenisLem(e.target.value);
+                            }}
+                          />
+                        </div>
+                      )}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      No. JO / IO
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {cetakMesinAwal?.no_jo} / {cetakMesinAwal?.no_io}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Operator
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {cetakMesinAwal?.operator}
+                    </td>
+                  </tr>
 
-                <label className="text-neutral-500 text-sm font-semibold"></label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  No. JO / IO
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Nama Produk
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Customer
-                </label>
-              </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {jam}
-                </label>
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap"></td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words"></td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Nama Produk
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {cetakMesinAwal?.nama_produk}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Status Jo
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {cetakMesinAwal?.status_jo}
+                    </td>
+                  </tr>
 
-                <label className="text-neutral-500 text-sm font-semibold"></label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.no_jo}
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.nama_produk}
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.customer}
-                </label>
-              </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Shift
-                </label>
-
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Mesin
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Operator
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Status Jo
-                </label>
-              </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.shift}
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.mesin}
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.operator}
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {cetakMesinAwal?.status_jo}
-                </label>
-              </div>
+                  <tr>
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap"></td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words"></td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Customer
+                    </td>
+                    <td
+                      className="text-neutral-700 text-sm font-medium px-2 py-2 break-words"
+                      colSpan={3}
+                    >
+                      : {cetakMesinAwal?.customer}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-
             {/* =============================chekcsheet========================= */}
             {cetakMesinAwal?.inspeksi_lem_awal[0].inspeksi_lem_awal_point.map(
               (data: any, index: number) => {
                 const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
-                const waktuMulai = convertDateToTime(data.waktu_mulai)
+                const waktuMulai = convertDateToTime(data.waktu_mulai);
 
                 return (
                   <>
@@ -626,7 +652,7 @@ function CheckSheetLemAwal() {
                             </p>
                             <>
                               {data.status == 'incoming' &&
-                                cetakMesinAwal?.status == 'incoming' ? (
+                              cetakMesinAwal?.status == 'incoming' ? (
                                 <button
                                   onClick={() => startTaskCekAwal(data.id)}
                                   className="flex w-[50%]  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
@@ -933,7 +959,7 @@ function CheckSheetLemAwal() {
                           Catatan<span className="text-red-500">*</span> :
                         </label>
                         {data.status == 'on progress' &&
-                          cetakMesinAwal?.status == 'incoming' ? (
+                        cetakMesinAwal?.status == 'incoming' ? (
                           <textarea
                             name="catatan"
                             defaultValue={data.catatan}
@@ -952,7 +978,7 @@ function CheckSheetLemAwal() {
                       </div>
                       <div className="grid col-span-2 items-end justify-center">
                         {data.status == 'on progress' &&
-                          cetakMesinAwal?.status == 'incoming' ? (
+                        cetakMesinAwal?.status == 'incoming' ? (
                           <button
                             onClick={() =>
                               stopTaskCekAwal(
@@ -983,8 +1009,8 @@ function CheckSheetLemAwal() {
           {(!isOnprogres &&
             cetakMesinAwal?.status == 'incoming' &&
             cetakMesinAwal?.inspeksi_lem_awal[0].status == 'incoming') ||
-            (cetakMesinAwal?.inspeksi_lem_awal[0].status == 'pending' &&
-              cetakMesinAwal?.status == 'incoming') ? (
+          (cetakMesinAwal?.inspeksi_lem_awal[0].status == 'pending' &&
+            cetakMesinAwal?.status == 'incoming') ? (
             <>
               <button
                 disabled={isLoading}
@@ -1009,21 +1035,50 @@ function CheckSheetLemAwal() {
             </label>
             <div className="grid col-span-6 items-end justify-end gap-2">
               {!isOnprogres &&
-                cetakMesinAwal?.inspeksi_lem_awal[0].status == 'incoming' &&
-                cetakMesinAwal?.status == 'incoming' ? (
+              cetakMesinAwal?.inspeksi_lem_awal[0].status == 'incoming' &&
+              cetakMesinAwal?.status == 'incoming' ? (
                 <button
-                  onClick={() =>
-                    pendingCekAwal(cetakMesinAwal?.inspeksi_lem_awal[0].id)
-                  }
+                  onClick={() => openModalPending()}
                   className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                 >
                   PENDING
                 </button>
               ) : null}
+              {showPending == true && (
+                <>
+                  <ModalKosonganSmall
+                    isOpen={showPending}
+                    onClose={() => closeModalPending()}
+                    judul={'Alasan Pending'}
+                  >
+                    <>
+                      <div className="flex flex-col gap-2 px-4 py-4">
+                        <div className="flex gap-2 flex-col w-full">
+                          <input
+                            onChange={(e) => setalasanPending(e.target.value)}
+                            type="text"
+                            className="border-2 border-stroke w-full rounded-sm col-span-2 h-10"
+                          />
+                        </div>
+                        <button
+                          onClick={() =>
+                            pendingCekAwal(
+                              cetakMesinAwal?.inspeksi_lem_awal[0]?.id,
+                            )
+                          }
+                          className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                        >
+                          PENDING
+                        </button>
+                      </div>
+                    </>
+                  </ModalKosonganSmall>
+                </>
+              )}
               {(!isOnprogres &&
                 cetakMesinAwal?.status == 'incoming' &&
                 cetakMesinAwal?.inspeksi_lem_awal[0].status == 'incoming') ||
-                cetakMesinAwal?.inspeksi_lem_awal[0].status == 'pending' ? (
+              cetakMesinAwal?.inspeksi_lem_awal[0].status == 'pending' ? (
                 <button
                   onClick={() =>
                     doneCekAwal(cetakMesinAwal?.inspeksi_lem_awal[0].id)

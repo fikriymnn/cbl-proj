@@ -53,7 +53,7 @@ const BarChartResponMonth = ({ value }: { value: any }) => {
                                             ></div>
 
                                             <div className="w-full text-center text-xs font-medium text-primary">
-                                                {item2?.jumlah_waktu_menit}
+                                                {parseFloat(item2?.jumlah_waktu_jam).toFixed(2)}
                                             </div>
 
                                         </div>

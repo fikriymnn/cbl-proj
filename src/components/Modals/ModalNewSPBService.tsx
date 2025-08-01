@@ -48,6 +48,7 @@ const ModalSPBService = ({
   const [masterSparepart, setMasterSparepart] = useState<any>([]);
   const [StokSparepart, setStokSparepart] = useState<any>([]);
   const [service, setService] = useState<any>([]);
+  const [noSppb, setNoSPB] = useState<any>([]);
   const [StokSparepartRequest, setStokSparepartRequest] = useState<any>([]);
   const [note, setNote] = useState<any>('');
 
@@ -187,6 +188,7 @@ const ModalSPBService = ({
           serviceRequest: service,
           sparepartRequest: StokSparepartRequest,
           note: note,
+          no_spb: noSppb,
         },
         {
           withCredentials: true,
@@ -275,7 +277,11 @@ const ModalSPBService = ({
               id="ticketCode"
               className="text-neutral-500 text-xl font-normal "
             >
-               <input type="text" className='border-2 border-gray p-2 rounded-md'/>
+              <input
+                onChange={(e) => setNoSPB(e.target.value)}
+                type="text"
+                className="border-2 border-gray p-2 rounded-md"
+              />
             </span>
           </div>
           <div className=" flex pt-2 gap-2">

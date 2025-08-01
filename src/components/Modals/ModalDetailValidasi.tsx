@@ -1,4 +1,5 @@
 import React from 'react';
+import convertTimeStampToDateTime from '../../utils/converDateTime';
 
 const ModalDetailValidasi = ({
   children,
@@ -8,7 +9,13 @@ const ModalDetailValidasi = ({
   nama_mesin,
   operator,
   note, status,
-  unit, bagian, nojo, customer, masalah, validator
+  unit, bagian, nojo, customer, masalah, validator,
+  waktuMasuk,
+  waktuSelesai,
+  WaktuBreakdown,
+  waktuBreakdownMTC,
+  waktuVerifikasiQC,
+  data,
 
 }: {
   children: any;
@@ -24,7 +31,13 @@ const ModalDetailValidasi = ({
   nojo: any,
   customer: any,
   masalah: any,
-  validator: any
+  validator: any,
+  waktuMasuk: any,
+  waktuSelesai: any,
+  WaktuBreakdown: any,
+  waktuBreakdownMTC: any,
+  waktuVerifikasiQC: any,
+  data: any
 }) => {
   if (isOpen == null) return null;
 
@@ -87,6 +100,14 @@ const ModalDetailValidasi = ({
           <p className="md:text-base text-xs">{note}</p>
         </div>
         <div>
+          <p className="md:text-sm text-xs font-semibold">Waktu Tiket Dibuat</p>
+          <p className="md:text-base text-xs">{waktuMasuk}</p>
+        </div>
+        <div>
+          <p className="md:text-sm text-xs font-semibold">Waktu Selesai MTC</p>
+          <p className="md:text-base text-xs">{waktuSelesai}</p>
+        </div>
+        <div>
           <p className="md:text-sm text-xs font-semibold">Status Qc</p>
           <p className="md:text-base text-xs">{status}</p>
         </div>
@@ -113,6 +134,23 @@ const ModalDetailValidasi = ({
         <div>
           <p className="md:text-sm text-xs font-semibold">Masalah Dari Kendala</p>
           <p className="md:text-base text-xs">{masalah}</p>
+        </div>
+        <div>
+          <p className="md:text-sm text-xs font-semibold">Breakdown Time</p>
+          <p className="md:text-base text-xs">{WaktuBreakdown}</p>
+        </div>
+
+        <div>
+          <p className="md:text-sm text-xs font-semibold">Waktu Breakdown MTC</p>
+          <p className="md:text-base text-xs">{waktuBreakdownMTC}</p>
+        </div>
+        <div>
+          <p className="md:text-sm text-xs font-semibold">Waktu Verifikasi QC</p>
+          <p className="md:text-base text-xs">{waktuVerifikasiQC}</p>
+        </div>
+        <div>
+          <p className="md:text-sm text-xs font-semibold">Jam Verifikasi QC</p>
+          <p className="md:text-base text-xs">{convertTimeStampToDateTime(data.waktu_selesai)}</p>
         </div>
         {/* <div>
           <p className="md:text-sm text-xs font-semibold">Kode Part</p>

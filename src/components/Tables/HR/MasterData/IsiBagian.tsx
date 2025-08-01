@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ModalKosonganSmall from '../../../Modals/ModalKosonganSmall';
 import Loading from '../../../Loading';
@@ -37,6 +36,9 @@ function IsiBagian() {
     const [showHistory, setShowHistory] = useState(false);
     const openModalHistory = () => setShowHistory(true);
     const closeModalHistory = () => setShowHistory(false);
+
+
+
 
     const [namaDepartment, setnamaDepartment] = useState<any>();
     async function postMasterMesin() {

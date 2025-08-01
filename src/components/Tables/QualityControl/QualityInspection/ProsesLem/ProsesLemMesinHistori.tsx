@@ -36,12 +36,13 @@ function ProsesLemMesinHistory() {
   useEffect(() => {
     getLemMesin();
   }, [page]);
-
+  const [noJo, setNoJo] = useState<any>();
   async function getLemMesin() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiLem`;
     try {
       const res = await axios.get(url, {
         params: {
+          search: noJo,
           status: 'history',
           page: page,
           limit: 15,
@@ -94,23 +95,49 @@ function ProsesLemMesinHistory() {
 
   return (
     <>
-
       <main className="overflow-x-scroll">
         <div className="min-w-[700px] bg-white rounded-xl">
+          <div className="flex w-full justify-end h-full items-center border-b-8 border-[#D8EAFF]">
+            <div className="flex flex-col gap-1 w-[20%] px-4 py-2 ">
+              <p className=" my-auto text-xs text-primary font-semibold ">
+                Cari
+              </p>
+              <input
+                className="rounded-md h-8 bg-[#D8EAFF] px-2 w-full"
+                placeholder="Nomor Jo"
+                type="text"
+                onChange={(e) => setNoJo(e.target.value)}
+              ></input>
+            </div>
+            <div className="flex flex-col  w-[15%] px-4 py-2   gap-4">
+              <p className=" my-auto text-xs text-primary font-semibold "></p>
+              <button
+                onClick={() => {
+                  getLemMesin();
+                }}
+                className="bg-primary text-white  rounded-md px-1 py-1 "
+              >
+                Cari
+              </button>
+            </div>
+          </div>
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
             <div className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-              <label className="text-neutral-500 text-sm font-semibold col-span-2">
+              <label className="text-neutral-500 text-sm font-semibold ">
                 MESIN
               </label>
 
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                No. JO
+                No. JO / IO
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Nama Produk
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Operator
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                Inspektor
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Tanggal
@@ -123,7 +150,7 @@ function ProsesLemMesinHistory() {
                 <>
                   <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center">
                     <div
-                      className={`w-full h-full sticky left-0 z-20  gap-8 col-span-2 flex items-center`}
+                      className={`w-full h-full sticky left-0 z-20  gap-8  flex items-center`}
                     >
                       <div
                         className={`w-2 h-full sticky left-0 z-20 bg-green-600  `}
@@ -134,7 +161,7 @@ function ProsesLemMesinHistory() {
                     </div>
 
                     <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-6">
-                      {data.no_jo}
+                      {data.no_jo} / {data.no_io}
                     </label>
                     <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3 line-clamp-3">
                       {data.nama_produk}
@@ -142,10 +169,26 @@ function ProsesLemMesinHistory() {
                     <label className="text-neutral-500 text-sm font-semibold col-span-2">
                       {data.operator}
                     </label>
+                    <div className="text-neutral-500 text-sm font-semibold flex flex-col col-span-2">
+                      <label>
+                        Awal :
+                        {
+                          data.inspeksi_lem_awal[0]?.inspeksi_lem_awal_point[0]
+                            ?.inspektor?.nama
+                        }
+                      </label>
+                      <label>
+                        Periode :
+                        {
+                          data.inspeksi_lem_periode[0]
+                            ?.inspeksi_lem_periode_point[0]?.inspektor?.nama
+                        }
+                      </label>
+                    </div>
                     <label className="text-neutral-500 text-sm font-semibold col-span-2">
                       {tglTicket}
                     </label>
-                    <div className="justify-end flex pr-2 col-span-2">
+                    <div className="justify-end flex pr-2 ">
                       <>
                         <Link
                           to={`/qc/qualityinspection/lem/jenisLem/${data.id}`}
@@ -160,7 +203,7 @@ function ProsesLemMesinHistory() {
                     </div>
                   </div>
                 </>
-              )
+              );
             })}
           </div>
         </div>
@@ -177,7 +220,6 @@ function ProsesLemMesinHistory() {
           </Stack>
         </div>
       </main>
-
     </>
   );
 }

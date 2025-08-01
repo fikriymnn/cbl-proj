@@ -46,29 +46,30 @@ const TableValidasi = () => {
   const [note, setNote] = useState<any>('');
   const [action, setAction] = useState(false);
 
-  const handleClickDetail = (index: number) => {
-    setShowDetail((prevState) => {
-      const updatedShowDetail = [...prevState]; // Create a copy
-      updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
-      return updatedShowDetail;
-    });
-  };
   const [showDetail, setShowDetail] = useState<boolean[]>(
     new Array(ticketValidasi != null && ticketValidasi.length).fill(false),
   );
 
+  const handleClickDetail = (index: number) => {
+    setShowDetail((prevState) => {
+      const updatedShowDetail = [...prevState];
+      updatedShowDetail[index] = !updatedShowDetail[index]; // Toggle value
+      return updatedShowDetail;
+    });
+  };
+
   useEffect(() => {
     getMTC();
-  }, [page]);
+  }, []);
 
   async function getMTC() {
-    const url = `${import.meta.env.VITE_API_LINK}/ticket?bagian_tiket=qc`;
+    const url = `${import.meta.env.VITE_API_LINK}/validasiQc`;
     try {
       const res = await axios.get(url, {
-        params: {
-          page: page,
-          limit: 10,
-        },
+        // params: {
+        //   page: page,
+        //   limit: 10,
+        // },
         withCredentials: true,
       });
 
@@ -94,7 +95,10 @@ const TableValidasi = () => {
       );
 
       alert('success');
-
+      setShowDetail((prevDetail) =>
+        prevDetail.map((isOpen, idx) => (idx === id ? false : isOpen)),
+      );
+      setNote('');
       getMTC();
     } catch (error: any) {
       console.log(error.response);
@@ -115,7 +119,58 @@ const TableValidasi = () => {
       );
 
       alert('success');
+      setShowDetail((prevDetail) =>
+        prevDetail.map((isOpen, idx) => (idx === id ? false : isOpen)),
+      );
+      setNote('');
+      getMTC();
+    } catch (error: any) {
+      console.log(error.response);
+    }
+  }
 
+  async function validasiTicketAll(id: number) {
+    const url = `${import.meta.env.VITE_API_LINK}/kendalaLkh/validate/${id}`;
+    try {
+      const res = await axios.put(
+        url,
+        {
+          note_qc: note,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      alert('success');
+      setShowDetail((prevDetail) =>
+        prevDetail.map((isOpen, idx) => (idx === id ? false : isOpen)),
+      );
+      setNote('');
+      getMTC();
+    } catch (error: any) {
+      console.log(error.response);
+    }
+  }
+
+  async function tolakTicketAll(id: number) {
+    const url = `${import.meta.env.VITE_API_LINK}/kendalaLkh/reject/${id}`;
+    try {
+      const res = await axios.put(
+        url,
+        {
+          note_qc: note,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+
+      alert('success');
+      setShowDetail((prevDetail) =>
+        prevDetail.map((isOpen, idx) => (idx === id ? false : isOpen)),
+      );
+      setNote('');
       getMTC();
     } catch (error: any) {
       console.log(error.response);
@@ -124,149 +179,204 @@ const TableValidasi = () => {
   return (
     <>
       <div className="flex flex-col gap-2">
-        <div className=" border border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark pb-3">
-          <div className="flex w-full  ">
-            <p className="text-slate-600  text-[14px] font-semibold  dark:text-white w-5 mx-3 ">
-              No
-            </p>
-            <div className="grid grid-cols-10 gap-5 w-full dark:border-strokedark  ">
-              <div className="flex w-full col-span-2 ">
-                <p className="text-slate-600  text-[14px] font-semibold  dark:text-white  ">
-                  Kode Tiket
-                </p>
-              </div>
-              <div className=" text-[14px]  col-span-2 ">
-                <p className="text-slate-600 font-semibold  dark:text-white">
-                  Waktu Masuk
-                </p>
-              </div>
-
-              <div className=" text-[14px]  col-span-2 ">
-                <p className="text-slate-600 font-semibold ">Nama Mesin</p>
-              </div>
-              <div className=" text-[14px]  ">
-                <p className="text-slate-600 font-semibold ">Kendala</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        {ticketValidasi?.data.map((data: any, index: number) => {
-          const tglTicket = convertTimeStampToDate(data.createdAt);
-          return (
-            <div
-              key={index}
-              className="flex w-full  rounded-xl border  border-stroke bg-white py-3 shadow-default dark:border-strokedark dark:bg-boxdark "
-            >
-              <p className="text-neutral-500 text-sm font-light  dark:text-white mx-3 w-5 flex items-center">
-                {index + 1}{' '}
-              </p>
-              <div className="grid grid-cols-10 gap-5 w-full items-center dark:border-strokedark ">
-                <div className="flex w-full justify-start col-span-2 gap-14 ">
-                  <p className="text-neutral-500 text-sm font-light  dark:text-white break-all">
-                    {' '}
+        <table className="min-w-full bg-white dark:bg-boxdark shadow-default">
+          <thead className="border border-stroke dark:border-strokedark">
+            <tr>
+              <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left w-10">
+                No
+              </th>
+              <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+                Kode Tiket
+              </th>
+              <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+                Waktu Masuk
+              </th>
+              <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+                Nama Mesin
+              </th>
+              <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+                No JO
+              </th>
+              <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+                Nama Item
+              </th>
+              <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+                Kendala
+              </th>
+              <th className="py-3 px-2 text-xs font-semibold text-slate-600 dark:text-white text-left">
+                Aksi
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {ticketValidasi?.data.map((data: any, index: number) => {
+              const tglTicket = convertTimeStampToDate(data.createdAt);
+              return (
+                <tr
+                  key={index}
+                  className="border border-stroke dark:border-strokedark hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white">
+                    {index + 1}
+                  </td>
+                  <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white whitespace-nowrap overflow-hidden text-ellipsis max-w-xs">
                     {data.kode_ticket}
-                  </p>
-                </div>
-                <div className="flex w-full  justify-start col-span-2">
-                  <p className="text-neutral-500 text-sm font-light  dark:text-white">
+                  </td>
+                  <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white whitespace-nowrap">
                     {tglTicket}
-                  </p>
-                </div>
-
-                <div className="flex w-full  justify-start col-span-2 ">
-                  <p className="text-neutral-500 text-sm font-light ">
+                  </td>
+                  <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white whitespace-nowrap">
                     {data.mesin}
-                  </p>
-                </div>
-                <div className="flex w-full  justify-start col-span-3">
-                  <p className="text-neutral-500 text-sm font-light ">
-                    {data.kode_lkh + ' - ' + data.nama_kendala}
-                  </p>
-                </div>
-
-                <div>
-                  <button
-                    onClick={() => handleClickDetail(index)}
-                    className="w-20 bg-blue-600 text-white text-sm py-1"
-                  >
-                    Aksi
-                  </button>
-                </div>
-                {showDetail[index] && (
-                  <>
-                    <div className="fixed z-50 inset-0 overflow-y-auto w-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
-                      <div className="flex flex-col gap-1 justify-center w-4/12 bg-white p-3 rounded-xl">
-                        <div className="w-full flex justify-between">
-                          <label
-                            htmlFor="namaPemeriksa"
-                            className="form-label block  text-black text-xs font-extrabold my-2 "
-                          >
-                            CATATAN
-                          </label>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              handleClickDetail(index);
-                            }}
-                            className="text-gray-400 focus:outline-none"
-                          >
-                            <svg
-                              width="22"
-                              height="22"
-                              viewBox="0 0 22 22"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
+                  </td>
+                  <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white whitespace-nowrap">
+                    {data.no_jo}
+                  </td>
+                  <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white overflow-hidden text-ellipsis max-w-xs">
+                    {data.nama_produk}
+                  </td>
+                  <td className="py-3 px-2 text-xs font-light text-neutral-500 dark:text-white overflow-hidden text-ellipsis max-w-xs">
+                    {data.jenis_kendala == 'Mesin' ||
+                    data.jenis_kendala == 'mesin' ? (
+                      <>
+                        {data.kode_lkh +
+                          ' - ' +
+                          data.nama_kendala +
+                          ' - ' +
+                          data.jenis_kendala}
+                      </>
+                    ) : (
+                      <>
+                        {data.kode_kendala +
+                          ' - ' +
+                          data.nama_kendala +
+                          ' - ' +
+                          data.jenis_kendala}
+                      </>
+                    )}
+                  </td>
+                  <td className="py-3 px-2">
+                    <button
+                      onClick={() => handleClickDetail(index)}
+                      className="bg-blue-600 text-white text-xs py-1 px-3 rounded"
+                    >
+                      Aksi
+                    </button>
+                    {showDetail[index] && (
+                      <>
+                        <div className="fixed z-50 inset-0 overflow-y-auto w-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
+                          <div className="flex flex-col gap-1 justify-center w-4/12 bg-white p-3 rounded-xl">
+                            <label
+                              htmlFor="namaPemeriksa"
+                              className="form-label block  text-black text-xs font-bold my-2 uppercase"
                             >
-                              <circle cx="11" cy="11" r="11" fill="#0065DE" />
-                              <rect
-                                x="6.03955"
-                                y="4.23242"
-                                width="17"
-                                height="3"
-                                rx="1.5"
-                                transform="rotate(42.8321 6.03955 4.23242)"
-                                fill="white"
-                              />
-                              <rect
-                                x="4.18213"
-                                y="16.0609"
-                                width="17"
-                                height="3"
-                                rx="1.5"
-                                transform="rotate(-45 4.18213 16.0609)"
-                                fill="white"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                        <textarea
-                          onChange={(e) => setNote(e.target.value)}
-                          className="w-full border border-neutral-600 h-56 p-2 rounded-sm"
-                          name=""
-                          id=""
-                        ></textarea>
+                              KENDALA {data.jenis_kendala}
+                            </label>
+                            <div className="w-full flex justify-between">
+                              <label
+                                htmlFor="namaPemeriksa"
+                                className="form-label block  text-black text-xs font-bold my-2 "
+                              >
+                                CATATAN
+                              </label>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleClickDetail(index);
+                                }}
+                                className="text-gray-400 focus:outline-none"
+                              >
+                                <svg
+                                  width="22"
+                                  height="22"
+                                  viewBox="0 0 22 22"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <circle
+                                    cx="11"
+                                    cy="11"
+                                    r="11"
+                                    fill="#0065DE"
+                                  />
+                                  <rect
+                                    x="6.03955"
+                                    y="4.23242"
+                                    width="17"
+                                    height="3"
+                                    rx="1.5"
+                                    transform="rotate(42.8321 6.03955 4.23242)"
+                                    fill="white"
+                                  />
+                                  <rect
+                                    x="4.18213"
+                                    y="16.0609"
+                                    width="17"
+                                    height="3"
+                                    rx="1.5"
+                                    transform="rotate(-45 4.18213 16.0609)"
+                                    fill="white"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                            {data.jenis_kendala == 'Mesin' ||
+                            data.jenis_kendala == 'mesin' ? (
+                              <>
+                                <textarea
+                                  onChange={(e) => setNote(e.target.value)}
+                                  className="w-full border border-neutral-600 h-56 p-2 rounded-sm"
+                                  name=""
+                                  id=""
+                                ></textarea>
 
-                        <button
-                          onClick={() => validasiTicket(data.id)}
-                          className="text-xs font-bold bg-blue-600 py-2 px-5 text-white  w-full rounded-md"
-                        >
-                          Validasi
-                        </button>
-                        <button
-                          onClick={() => tolakTicket(data.id)}
-                          className="text-xs font-bold bg-red-600 py-2 px-5 text-white  w-full rounded-md"
-                        >
-                          Tolak
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          );
-        })}
-        <div className="w-full flex  mt-5 ">
+                                <button
+                                  onClick={() => validasiTicket(data.id)}
+                                  className="text-xs font-bold bg-blue-600 py-2 px-5 text-white  w-full rounded-md"
+                                >
+                                  Validasi
+                                </button>
+                                <button
+                                  onClick={() => tolakTicket(data.id)}
+                                  className="text-xs font-bold bg-red-600 py-2 px-5 text-white  w-full rounded-md"
+                                >
+                                  Tolak
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <textarea
+                                  onChange={(e) => setNote(e.target.value)}
+                                  className="w-full border border-neutral-600 h-56 p-2 rounded-sm"
+                                  name=""
+                                  id=""
+                                ></textarea>
+
+                                <button
+                                  onClick={() => validasiTicketAll(data.id)}
+                                  className="text-xs font-bold bg-blue-600 py-2 px-5 text-white  w-full rounded-md"
+                                >
+                                  Validasi
+                                </button>
+                                <button
+                                  onClick={() => tolakTicketAll(data.id)}
+                                  className="text-xs font-bold bg-red-600 py-2 px-5 text-white  w-full rounded-md"
+                                >
+                                  Tolak
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+
+        {/* <div className="w-full flex  mt-5 ">
           <Stack spacing={2}>
             <Pagination
               count={ticketValidasi?.total_page}
@@ -277,7 +387,7 @@ const TableValidasi = () => {
               }}
             />
           </Stack>
-        </div>
+        </div> */}
       </div>
     </>
   );

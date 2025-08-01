@@ -14,7 +14,7 @@ const ModalAddPeriode = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed z-50 inset-0 overflow-y-auto backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
+    <div className="fixed z-40 inset-0 overflow-y-auto backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
       <div className="w-full max-w-md bg-white rounded-xl shadow-md">
         <div className="flex w-full items-center pt-4 px-3">
           <svg

@@ -89,7 +89,6 @@ function ProsesCetakMesin() {
 
   return (
     <>
-
       <main className="overflow-x-scroll">
         <div className="min-w-[700px] bg-white rounded-xl">
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
@@ -99,7 +98,7 @@ function ProsesCetakMesin() {
               </label>
 
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                No. JO
+                No. JO / IO
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Nama JO
@@ -129,7 +128,7 @@ function ProsesCetakMesin() {
                     </div>
 
                     <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-6">
-                      {data.no_jo}
+                      {data.no_jo} / {data.no_io}
                     </label>
                     <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
                       {data.nama_produk}
@@ -155,12 +154,11 @@ function ProsesCetakMesin() {
                     </div>
                   </div>
                 </>
-              )
+              );
             })}
           </div>
         </div>
       </main>
-
     </>
   );
 }

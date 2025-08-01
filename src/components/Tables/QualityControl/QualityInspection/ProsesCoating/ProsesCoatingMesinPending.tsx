@@ -89,23 +89,25 @@ function ProsesCoatingMesinPending() {
 
   return (
     <>
-
       <main className="overflow-x-scroll">
         <div className="min-w-[700px] bg-white rounded-xl">
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
             <div className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-              <label className="text-neutral-500 text-sm font-semibold col-span-2">
+              <label className="text-neutral-500 text-sm font-semibold ">
                 MESIN
               </label>
 
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                No. JO
+                No. JO / IO
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                Nama Produk
+                Nama JO
               </label>
-              <label className="text-neutral-500 text-sm font-semibold col-span-2">
+              <label className="text-neutral-500 text-sm font-semibold ">
                 Operator
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold col-span-3">
+                Alasan Pending
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Tanggal
@@ -118,7 +120,7 @@ function ProsesCoatingMesinPending() {
                 return (
                   <>
                     <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center ">
-                      <div className="flex w-full col-span-2 bg-red items-center">
+                      <div className="flex w-full  bg-red items-center">
                         <div
                           className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-6 `}
                         ></div>
@@ -128,18 +130,21 @@ function ProsesCoatingMesinPending() {
                       </div>
 
                       <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-6">
-                        {data.no_jo}
+                        {data.no_jo} / {data.no_io}
                       </label>
                       <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
                         {data.nama_produk}
                       </label>
-                      <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
+                      <label className="text-neutral-500 text-sm font-semibold  pl-3">
                         {data.operator}
+                      </label>
+                      <label className="text-neutral-500 text-sm font-semibold col-span-3">
+                        {data.alasan_pending}
                       </label>
                       <label className="text-neutral-500 text-sm font-semibold col-span-2">
                         {tglTicket}
                       </label>
-                      <div className="justify-end flex pr-2 col-span-2">
+                      <div className="justify-end flex pr-2 ">
                         <>
                           <Link
                             to={`/qc/qualityinspection/coating/jeniscoating/${data.id}`}
@@ -154,12 +159,11 @@ function ProsesCoatingMesinPending() {
                       </div>
                     </div>
                   </>
-                )
+                );
               })}
           </div>
         </div>
       </main>
-
     </>
   );
 }

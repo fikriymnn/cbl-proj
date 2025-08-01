@@ -51,7 +51,7 @@ function CapaHistoryMTC() {
     }, []);
 
     async function getCapa() {
-        const url = `${import.meta.env.VITE_API_LINK}/capa?department=maintenance&bagian_tiket=history
+        const url = `${import.meta.env.VITE_API_LINK}/capa?id_department=27&bagian_tiket=history
         `;
         try {
             const res = await axios.get(url, {

@@ -27,7 +27,7 @@ const ModalEditUser = ({
   };
   useEffect(() => {
     handleResize();
-    getKaryawan()
+    getKaryawan();
     // Event listener for window resize
     window.addEventListener('resize', handleResize);
 
@@ -68,7 +68,7 @@ const ModalEditUser = ({
           role: role,
           password: password1,
           confPassword: confpassword1,
-          id_karyawan: id_karyawan1
+          id_karyawan: id_karyawan1,
         },
         {
           withCredentials: true,
@@ -87,28 +87,20 @@ const ModalEditUser = ({
   const [defectMaster, setDefectMaster] = useState<any>();
 
   async function getKaryawan() {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/hr/karyawan`;
+    const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan`;
     try {
-
-      const res = await axios.get(
-        url,
-        {
-          withCredentials: true,
-        },
-      );
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
       setDefectMaster(res.data.data);
-      console.log(res.data.data)
+      console.log(res.data.data);
       setOptions(
         res.data?.data?.map((item: any) => ({
           value: item.biodata_karyawan[0]?.id_karyawan,
           label: item.biodata_karyawan[0]?.nik + ' - ' + item.name,
-        }))
+        })),
       );
-
-
     } catch (error: any) {
-
       console.log(error);
     }
   }
@@ -122,8 +114,6 @@ const ModalEditUser = ({
     console.log(filteredData?.biodata_karyawan[0]?.id_karyawan);
 
     setId_karyawan(filteredData?.biodata_karyawan[0]?.id_karyawan);
-
-
   };
   return (
     <div className="fixed z-50 inset-0 h-full backdrop-blur-sm bg-white/10 p-4 md:p-8 flex justify-center items-center">
@@ -206,17 +196,14 @@ const ModalEditUser = ({
               </label>
 
               <Select
-                placeholder='Cari...'
+                placeholder="Cari..."
                 options={options}
                 onChange={(selectedId) => {
-
-                  handleChangePointDepatment(selectedId)
+                  handleChangePointDepatment(selectedId);
                 }}
                 className={`relative z-30 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
                   }`}
-              >
-
-              </Select>
+              ></Select>
               <label className="text-black text-xs font-bold pt-4">
                 NOMOR TELEPON
               </label>
@@ -236,8 +223,9 @@ const ModalEditUser = ({
                   changeTextColor();
                 }}
                 defaultValue={bagian}
-                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
-                  }`}
+                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                  isOptionSelected ? 'text-black dark:text-white' : ''
+                }`}
               >
                 <option
                   value=""
@@ -259,11 +247,11 @@ const ModalEditUser = ({
                 >
                   Quality Control
                 </option>
-                <option
-                  value="hr"
-                  className="text-body dark:text-bodydark"
-                >
+                <option value="hr" className="text-body dark:text-bodydark">
                   HR
+                </option>
+                <option value="ppic" className="text-body dark:text-bodydark">
+                  PPIC
                 </option>
               </select>
               <label className="text-black text-xs font-bold pt-4">ROLE</label>
@@ -273,8 +261,9 @@ const ModalEditUser = ({
                   changeTextColor();
                 }}
                 defaultValue={role}
-                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected ? 'text-black dark:text-white' : ''
-                  }`}
+                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                  isOptionSelected ? 'text-black dark:text-white' : ''
+                }`}
               >
                 <option
                   value=""
@@ -324,6 +313,18 @@ const ModalEditUser = ({
                 >
                   Pre-Press
                 </option>
+                <option
+                  value="payroll"
+                  className="text-body dark:text-bodydark"
+                >
+                  Payroll
+                </option>
+                <option
+                  value="inspector"
+                  className="text-body dark:text-bodydark"
+                >
+                  Inspector
+                </option>
               </select>
               <label className="text-black text-xs font-bold pt-4">
                 PASSWORD
@@ -367,7 +368,7 @@ const ModalEditUser = ({
         <div className="px-4 pb-4">
           <div className=" flex w-full pt-4 gap-5">
             <button
-              title='button'
+              title="button"
               type="button"
               onClick={onClose}
               className="absolute top-auto right-auto bottom-3 left-auto transform translate-x-1/2 translate-y-1/2 text-gray-400 focus:outline-none"

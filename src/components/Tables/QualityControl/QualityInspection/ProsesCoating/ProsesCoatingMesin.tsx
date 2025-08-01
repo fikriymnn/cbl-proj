@@ -53,7 +53,6 @@ function ProsesCoatingMesin() {
 
   return (
     <>
-
       <main className="overflow-x-scroll">
         <div className="min-w-[700px] bg-white rounded-xl">
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
@@ -63,7 +62,7 @@ function ProsesCoatingMesin() {
               </label>
 
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                No. JO
+                No. JO / IO
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Nama Produk
@@ -92,7 +91,7 @@ function ProsesCoatingMesin() {
                       </div>
 
                       <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-6">
-                        {data.no_jo}
+                        {data.no_jo} / {data.no_io}
                       </label>
                       <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
                         {data.nama_produk}
@@ -116,12 +115,11 @@ function ProsesCoatingMesin() {
                       </div>
                     </div>
                   </>
-                )
+                );
               })}
           </div>
         </div>
       </main>
-
     </>
   );
 }

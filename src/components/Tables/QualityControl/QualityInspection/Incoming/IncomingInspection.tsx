@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import Loading from '../../../../Loading';
 
 function IncomingInspection() {
   const [isMobile, setIsMobile] = useState(false);
@@ -11,11 +12,18 @@ function IncomingInspection() {
   const date = today.getDate();
   const currentDate = month + '/' + date + '/' + year;
   const navigate = useNavigate();
-
+  const [isLoading, setIsLoading] = useState(false);
   const { id } = useParams();
   const handleResize = () => {
     setIsMobile(window.innerWidth < 768); // Adjust the breakpoint as needed
   };
+
+  const [result1, setResult1] = useState<any>();
+
+  const [result2, setResult2] = useState<any>();
+
+  const [result3, setResult3] = useState<any>();
+
   useEffect(() => {
     handleResize();
 
@@ -32,6 +40,7 @@ function IncomingInspection() {
 
   useEffect(() => {
     getInspection();
+    getMe();
   }, []);
 
   async function getInspection() {
@@ -47,10 +56,24 @@ function IncomingInspection() {
       console.log(error.data.msg);
     }
   }
+  const [me, setMe] = useState<any>();
+  async function getMe() {
+    const url = `${import.meta.env.VITE_API_LINK}/me`;
+    try {
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
 
+      setMe(res.data.nama);
+      console.log('me', res.data);
+    } catch (error: any) {
+      console.log(error.data.msg);
+    }
+  }
   async function startTask(id: any) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahan/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahan/start/${id}`;
 
     try {
       const res = await axios.get(url, {
@@ -85,8 +108,9 @@ function IncomingInspection() {
     }
     const stopTime = new Date();
     const timestamp = convertDatetimeToDate(new Date());
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahan/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahan/stop/${id}`;
 
     try {
       const elapsedSeconds = await calculateElapsedTime(start, stopTime);
@@ -119,8 +143,9 @@ function IncomingInspection() {
     }
   }
   async function sumbitPoint(objek: any) {
-    const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${objek.id
-      }`;
+    const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahanResult/${
+      objek.id
+    }`;
     try {
       const res = await axios.put(
         url,
@@ -146,8 +171,9 @@ function IncomingInspection() {
       alert('Point 1 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -180,8 +206,9 @@ function IncomingInspection() {
       alert('Point 2 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -189,7 +216,6 @@ function IncomingInspection() {
           hasil_kiri: hasilkiri,
           hasil_tengah: hasiltengah,
           hasil_kanan: hasilkanan,
-          hasil_rata_rata: hasilRata,
           keterangan_hasil: kh2,
         },
         {
@@ -217,8 +243,9 @@ function IncomingInspection() {
       alert('Point 3 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -248,8 +275,9 @@ function IncomingInspection() {
       alert('Point 4 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -277,8 +305,9 @@ function IncomingInspection() {
       alert('Point 5 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -307,8 +336,9 @@ function IncomingInspection() {
       alert('Point 6 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -335,8 +365,9 @@ function IncomingInspection() {
       alert('Point 7 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -362,8 +393,9 @@ function IncomingInspection() {
       alert('Point 8 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -389,8 +421,9 @@ function IncomingInspection() {
       alert('Point 9 Belum Terisi Semua');
       return;
     }
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahanResult/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahanResult/${id}`;
     try {
       const res = await axios.put(
         url,
@@ -411,6 +444,7 @@ function IncomingInspection() {
   }
 
   const [no_lot, setNo_lot] = useState<any>();
+  const [jumlahPallet, setjumlahPallet] = useState<any>();
   const [hasil_rumus, setHasil_rumus] = useState<any>();
   const [verifikasi, setVerifikasi] = useState<any>();
   const [ctt, setCtt] = useState<any>();
@@ -420,25 +454,36 @@ function IncomingInspection() {
       no_lot == null ||
       hasil_rumus == null ||
       verifikasi == null ||
-      ctt == null
+      ctt == null ||
+      jumlahPallet == null
     ) {
       // Check if start time is available
       alert('Data Tidak Lengkap');
       return; // Exit function if no start time
     }
 
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiBahan/update/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiBahan/update/${id}`;
     try {
-
+      setIsLoading(true);
       if (verifikasi == 'Diterima') {
         const respon = await axios.post(
-          `https://erp.cbloffset.com/api/approve-incoming-bahan/${incoming?.no_surat_jalan}`,
-          {},
+          `https://erp.cbloffset.com/api/approve-incoming-bahan`,
+          {
+            surat_jalan: incoming?.no_surat_jalan,
+            nama_inspektor: me,
+          },
         );
+        if (respon.data.rc == 404) {
+          alert(respon.data.msg);
+          setIsLoading(false);
+          return;
+        }
         const res = await axios.put(
           url,
           {
+            jumlah_pallet: jumlahPallet,
             catatan: ctt,
             no_lot: no_lot,
             hasil_rumus: hasil_rumus,
@@ -448,11 +493,12 @@ function IncomingInspection() {
             withCredentials: true,
           },
         );
-        console.log(respon);
+        //console.log(respon);
       } else {
         const res = await axios.put(
           url,
           {
+            jumlah_pallet: jumlahPallet,
             catatan: ctt,
             no_lot: no_lot,
             hasil_rumus: hasil_rumus,
@@ -463,10 +509,13 @@ function IncomingInspection() {
           },
         );
       }
+      setIsLoading(false);
       alert('Data Berhasil Di-Update');
       console.log('succes');
       getInspection();
     } catch (error: any) {
+      alert(error);
+      setIsLoading(false);
       console.log(error);
     }
   }
@@ -538,6 +587,7 @@ function IncomingInspection() {
     <>
       {!isMobile && (
         <main className="overflow-x-scroll">
+          {isLoading && <Loading />}
           <div className="min-w-[700px] bg-white rounded-xl">
             <p className="text-[14px] font-semibold w-full flex border-b-8 border-[#D8EAFF] py-4 px-9 md:ps-9 ps-12">
               <svg
@@ -602,7 +652,20 @@ function IncomingInspection() {
                   )}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {incoming?.jumlah_pallet}
+                  {incoming?.status == 'incoming' ? (
+                    <>
+                      :{' '}
+                      <input
+                        type="text"
+                        onChange={(e) => {
+                          setjumlahPallet(e.target.value);
+                        }}
+                        className="rounded-[3px]  border border-zinc-300"
+                      />
+                    </>
+                  ) : (
+                    <>: {incoming?.jumlah_pallet}</>
+                  )}
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {incoming?.no_surat_jalan}
@@ -625,7 +688,9 @@ function IncomingInspection() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   Inspector
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold"></label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  Keterangan JO
+                </label>
 
                 <label className="text-black text-lg font-bold">
                   STANDAR PEMERIKSAAN
@@ -634,6 +699,7 @@ function IncomingInspection() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   Jumlah
                 </label>
+
                 <label className="text-neutral-500 text-sm font-semibold">
                   √N + 1
                 </label>
@@ -645,11 +711,13 @@ function IncomingInspection() {
                 <label className="text-neutral-500 text-sm font-semibold">
                   : {incoming?.inspector}
                 </label>
-                <label className="text-neutral-500 text-sm font-semibold"></label>
+                <label className="text-neutral-500 text-sm font-semibold">
+                  : {incoming?.keterangan}
+                </label>
 
                 <label className="text-black text-lg font-bold mt-12"> </label>
                 <label className="text-neutral-500 text-sm font-semibold">
-                  : {incoming?.jumlah}
+                  : {incoming?.jumlah} LP
                 </label>
                 <label className="text-neutral-500 text-sm font-semibold">
                   {incoming?.status == 'incoming' ? (
@@ -1042,10 +1110,24 @@ function IncomingInspection() {
                                     sethhasilkiri(e.target.value);
                                     setKiri(parseInt(e.target.value));
                                     // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                    const newValue = parseFloat(e.target.value);
+                                    const result = (newValue / 100) * 10000;
+                                    setResult1(result);
                                   }}
                                   type="number"
                                   className="border-2 border-stroke w-[80%] rounded-sm"
                                 />
+                                <div>
+                                  ={' '}
+                                  <input
+                                    name="hasilsample1"
+                                    disabled
+                                    value={result1}
+                                    type="text"
+                                    className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                  />{' '}
+                                  g/m<sup className="">2</sup>
+                                </div>
                                 <label className="text-neutral-500 text-sm font-semibold pt-1">
                                   Tengah
                                 </label>
@@ -1058,11 +1140,25 @@ function IncomingInspection() {
                                     sethhasiltengah(e.target.value);
                                     setTengah(parseInt(e.target.value));
                                     // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                    const newValue = parseFloat(e.target.value);
+                                    const result = (newValue / 100) * 10000;
+                                    setResult2(result);
                                   }}
                                   className="border-2 border-stroke w-[80%] rounded-sm"
                                 />
+                                <div>
+                                  ={' '}
+                                  <input
+                                    name="hasilsample2"
+                                    disabled
+                                    value={result2}
+                                    type="text"
+                                    className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                  />{' '}
+                                  g/m<sup className="">2</sup>
+                                </div>
                                 <label className="text-neutral-500 text-sm font-semibold pt-1">
-                                  Kanan
+                                  Bawah
                                 </label>
                                 <input
                                   type="number"
@@ -1073,13 +1169,25 @@ function IncomingInspection() {
                                     sethhasilkanan(e.target.value);
                                     setKanan(parseInt(e.target.value));
                                     // setIncoming({ ...incoming, inspeksi_bahan_result: array })
+                                    const newValue = parseFloat(e.target.value);
+                                    const result = (newValue / 100) * 10000;
+                                    setResult3(result);
                                   }}
                                   className="border-2 border-stroke w-[80%] rounded-sm"
                                 />
-                                <label className="text-neutral-500 text-sm font-semibold pt-1">
-                                  Rata-Rata
-                                </label>
+                                <div>
+                                  ={' '}
+                                  <input
+                                    name="hasilsample3"
+                                    disabled
+                                    value={result3}
+                                    type="text"
+                                    className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                  />{' '}
+                                  g/m<sup className="">2</sup>
+                                </div>
                                 <input
+                                  hidden
                                   type="number"
                                   value={hasilRata}
                                   onChange={() => {
@@ -1110,6 +1218,20 @@ function IncomingInspection() {
                                     }{' '}
                                     gr
                                   </label>
+                                  <div>
+                                    ={' '}
+                                    <input
+                                      name="hasilsample3"
+                                      disabled
+                                      value={
+                                        incoming?.inspeksi_bahan_result[1]
+                                          .hasil_rumus_kiri
+                                      }
+                                      type="text"
+                                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                    />{' '}
+                                    g/m<sup className="">2</sup>
+                                  </div>
                                   <label className="text-neutral-500 text-sm font-semibold pt-1">
                                     Tengah
                                   </label>
@@ -1120,26 +1242,44 @@ function IncomingInspection() {
                                     }{' '}
                                     gr
                                   </label>
+                                  <div>
+                                    ={' '}
+                                    <input
+                                      name="hasilsample3"
+                                      disabled
+                                      value={
+                                        incoming?.inspeksi_bahan_result[1]
+                                          .hasil_rumus_tengah
+                                      }
+                                      type="text"
+                                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                    />{' '}
+                                    g/m<sup className="">2</sup>
+                                  </div>
                                   <label className="text-neutral-500 text-sm font-semibold pt-1">
-                                    Kanan
+                                    Bawah
                                   </label>
                                   <label className="text-neutral-500 text-sm font-semibold ">
                                     {
                                       incoming?.inspeksi_bahan_result[1]
-                                        .hasil_kanan
+                                        .hasil_bawah
                                     }{' '}
                                     gr
                                   </label>
-                                  <label className="text-neutral-500 text-sm font-semibold pt-1">
-                                    Rata-Rata
-                                  </label>
-                                  <label className="text-neutral-500 text-sm font-semibold ">
-                                    {
-                                      incoming?.inspeksi_bahan_result[1]
-                                        .hasil_rata_rata
-                                    }{' '}
-                                    gr
-                                  </label>
+                                  <div>
+                                    ={' '}
+                                    <input
+                                      name="hasilsample3"
+                                      disabled
+                                      value={
+                                        incoming?.inspeksi_bahan_result[1]
+                                          .hasil_rumus_kanan
+                                      }
+                                      type="text"
+                                      className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                                    />{' '}
+                                    g/m<sup className="">2</sup>
+                                  </div>
                                 </div>
                               </>
                             )}
@@ -2831,6 +2971,20 @@ function IncomingInspection() {
                             <label className="text-neutral-500 text-sm font-semibold ">
                               {incoming?.inspeksi_bahan_result[1].hasil_kiri} gr
                             </label>
+                            <div>
+                              ={' '}
+                              <input
+                                name="hasilsample3"
+                                disabled
+                                value={
+                                  incoming?.inspeksi_bahan_result[1]
+                                    .hasil_rumus_kiri
+                                }
+                                type="text"
+                                className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                              />{' '}
+                              g/m<sup className="">2</sup>
+                            </div>
                             <label className="text-neutral-500 text-sm font-semibold pt-1">
                               Tengah
                             </label>
@@ -2838,23 +2992,41 @@ function IncomingInspection() {
                               {incoming?.inspeksi_bahan_result[1].hasil_tengah}{' '}
                               gr
                             </label>
+                            <div>
+                              ={' '}
+                              <input
+                                name="hasilsample3"
+                                disabled
+                                value={
+                                  incoming?.inspeksi_bahan_result[1]
+                                    .hasil_rumus_tengah
+                                }
+                                type="text"
+                                className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                              />{' '}
+                              g/m<sup className="">2</sup>
+                            </div>
                             <label className="text-neutral-500 text-sm font-semibold pt-1">
-                              Kanan
+                              Bawah
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold ">
-                              {incoming?.inspeksi_bahan_result[1].hasil_kanan}{' '}
+                              {incoming?.inspeksi_bahan_result[1].hasil_bawah}{' '}
                               gr
                             </label>
-                            <label className="text-neutral-500 text-sm font-semibold pt-1">
-                              Rata-Rata
-                            </label>
-                            <label className="text-neutral-500 text-sm font-semibold ">
-                              {
-                                incoming?.inspeksi_bahan_result[1]
-                                  .hasil_rata_rata
-                              }{' '}
-                              gr
-                            </label>
+                            <div>
+                              ={' '}
+                              <input
+                                name="hasilsample3"
+                                disabled
+                                value={
+                                  incoming?.inspeksi_bahan_result[1]
+                                    .hasil_rumus_kanan
+                                }
+                                type="text"
+                                className="border-2 border-stroke w-[40%] rounded-sm col-span-2"
+                              />{' '}
+                              g/m<sup className="">2</sup>
+                            </div>
                           </div>
                         </div>
 

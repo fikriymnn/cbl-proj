@@ -36,12 +36,13 @@ function ProsesCoatingMesinHistory() {
   useEffect(() => {
     getCoatingMesin();
   }, [page]);
-
+  const [noJo, setNoJo] = useState<any>();
   async function getCoatingMesin() {
     const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiCoating`;
     try {
       const res = await axios.get(url, {
         params: {
+          search: noJo,
           status: 'history',
           page: page,
           limit: 15,
@@ -94,23 +95,49 @@ function ProsesCoatingMesinHistory() {
 
   return (
     <>
-
       <main className="overflow-x-scroll">
         <div className="min-w-[700px] bg-white rounded-xl">
+          <div className="flex w-full justify-end h-full items-center border-b-8 border-[#D8EAFF]">
+            <div className="flex flex-col gap-1 w-[20%] px-4 py-2 ">
+              <p className=" my-auto text-xs text-primary font-semibold ">
+                Cari
+              </p>
+              <input
+                className="rounded-md h-8 bg-[#D8EAFF] px-2 w-full"
+                placeholder="Nomor Jo"
+                type="text"
+                onChange={(e) => setNoJo(e.target.value)}
+              ></input>
+            </div>
+            <div className="flex flex-col  w-[15%] px-4 py-2   gap-4">
+              <p className=" my-auto text-xs text-primary font-semibold "></p>
+              <button
+                onClick={() => {
+                  getCoatingMesin();
+                }}
+                className="bg-primary text-white  rounded-md px-1 py-1 "
+              >
+                Cari
+              </button>
+            </div>
+          </div>
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
             <div className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-              <label className="text-neutral-500 text-sm font-semibold col-span-2">
+              <label className="text-neutral-500 text-sm font-semibold 2">
                 MESIN
               </label>
 
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                No. JO
+                No. JO / IO
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Nama Produk
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Operator
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                Inspektor
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Tanggal
@@ -123,7 +150,7 @@ function ProsesCoatingMesinHistory() {
                 return (
                   <>
                     <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center ">
-                      <div className="flex w-full col-span-2 bg-red items-center">
+                      <div className="flex w-full  bg-red items-center">
                         <div
                           className={`w-2 h-full sticky left-0 z-20 bg-green-600  gap-8 py-6 `}
                         ></div>
@@ -133,7 +160,7 @@ function ProsesCoatingMesinHistory() {
                       </div>
 
                       <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-6">
-                        {data.no_jo}
+                        {data.no_jo} / {data.no_io}
                       </label>
                       <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
                         {data.nama_produk}
@@ -141,10 +168,26 @@ function ProsesCoatingMesinHistory() {
                       <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
                         {data.operator}
                       </label>
+                      <div className="text-neutral-500 text-sm font-semibold flex flex-col col-span-2">
+                        <label>
+                          Awal :
+                          {
+                            data.inspeksi_coating_result_awal[0]?.inspektor
+                              ?.nama
+                          }
+                        </label>
+                        <label>
+                          Periode :
+                          {
+                            data.inspeksi_coating_result_periode[0]?.inspektor
+                              ?.nama
+                          }
+                        </label>
+                      </div>
                       <label className="text-neutral-500 text-sm font-semibold col-span-2">
                         {tglTicket}
                       </label>
-                      <div className="justify-end flex pr-2 col-span-2">
+                      <div className="justify-end flex pr-2 ">
                         <>
                           <Link
                             to={`/qc/qualityinspection/coating/jeniscoating/${data.id}`}
@@ -159,7 +202,7 @@ function ProsesCoatingMesinHistory() {
                       </div>
                     </div>
                   </>
-                )
+                );
               })}
           </div>
         </div>
@@ -176,7 +219,6 @@ function ProsesCoatingMesinHistory() {
           </Stack>
         </div>
       </main>
-
     </>
   );
 }

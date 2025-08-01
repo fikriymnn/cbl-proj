@@ -1,24 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import DefaultLayout from '../../../layout/DefaultLayout';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import axios from 'axios';
-import SelectSearch from 'react-select-search';
 
 function AddStockLifetimes() {
-
   const [mesin, setMesin] = useState<any>();
-  const [stokSparepart, setStokSparepart] = useState<any>();
   const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
-
   const changeTextColor = () => {
     setIsOptionSelected(true);
   };
 
   useEffect(() => {
     getMesin();
-
   }, []);
 
   async function getMesin() {
@@ -40,7 +32,6 @@ function AddStockLifetimes() {
   const [umurtSelect, setumurtSelect] = useState<any>();
 
   const [addMasterSparepart, setAddMasterSparepart] = useState({
-
     id_stok: '',
     posisi_part: '',
     tgl_pasang: '',
@@ -83,45 +74,11 @@ function AddStockLifetimes() {
     setAddMasterSparepart(onchangeVal);
   };
 
-  //change value data
-  const handleChangeUmurGrade = (e: any) => {
-    const value = e;
-    const onchangeVal: any = addMasterSparepart;
-    onchangeVal['umur_grade'] = value;
-    setAddMasterSparepart(onchangeVal);
-  };
-
-  //change value data
-  const handleChangeActualUmur = (e: any) => {
-    const value = e;
-    const onchangeVal: any = addMasterSparepart;
-    onchangeVal['actual_umur'] = value;
-    setAddMasterSparepart(onchangeVal);
-  };
-
   const [showModalMsStok, setShowModalMsStok] = useState(false);
   const openModalMsStok = () => setShowModalMsStok(true);
   const closeModalMsStok = () => setShowModalMsStok(false);
 
   const [masterSparepart, setMasterSparepart] = useState<any>(null);
-  const [masterMesin, setmasterMesin] = useState<any>();
-
-
-
-  async function getMasterMesin() {
-    const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
-    try {
-      const res = await axios.get(url, {
-        withCredentials: true,
-      });
-
-      setmasterMesin(res.data);
-      console.log(res.data);
-    } catch (error: any) {
-      console.log(error.data.msg);
-    }
-  }
-
 
   async function getMasterSparepart(id_mesin: any) {
     const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
@@ -147,7 +104,9 @@ function AddStockLifetimes() {
         </p>
         <div className="grid md:grid-cols-3 gap-5 p-3 bg-white text-black">
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-extrabold text-black">Pilih Sparepart<span className='text-red-500'>*</span></p>
+            <p className="text-xs font-extrabold text-black">
+              Pilih Sparepart<span className="text-red-500">*</span>
+            </p>
             <div className="flex justify-center items-center">
               <div className="relative border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <button
@@ -155,7 +114,9 @@ function AddStockLifetimes() {
                   name="rusak"
                   className="w-full h-9 bg-blue-700 rounded text-center text-white md:text-xs text-[9px] md:font-bold font-semibold"
                 >
-                  {namaSparepartSelect == null ? 'PILIH SPAREPART' : namaSparepartSelect}
+                  {namaSparepartSelect == null
+                    ? 'PILIH SPAREPART'
+                    : namaSparepartSelect}
                 </button>
 
                 {showModalMsStok && (
@@ -178,12 +139,7 @@ function AddStockLifetimes() {
                               fill="none"
                               xmlns="http://www.w3.org/2000/svg"
                             >
-                              <circle
-                                cx="11"
-                                cy="11"
-                                r="11"
-                                fill="#0065DE"
-                              />
+                              <circle cx="11" cy="11" r="11" fill="#0065DE" />
                               <rect
                                 x="6.03955"
                                 y="4.23242"
@@ -212,10 +168,11 @@ function AddStockLifetimes() {
                                 getMasterSparepart(e.target.value);
                                 changeTextColor();
                               }}
-                              className={`relative z-20 w-8/12  appearance-none rounded-md  text-xs bg-blue-100 py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${isOptionSelected
-                                ? 'text-gray-800 dark:text-white'
-                                : ''
-                                }`}
+                              className={`relative z-20 w-8/12  appearance-none rounded-md  text-xs bg-blue-100 py-1 px-2 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input ${
+                                isOptionSelected
+                                  ? 'text-gray-800 dark:text-white'
+                                  : ''
+                              }`}
                             >
                               <option
                                 value=""
@@ -226,18 +183,16 @@ function AddStockLifetimes() {
                                 SELECT MESIN
                               </option>
                               {mesin != null &&
-                                mesin?.map(
-                                  (data: any, i: number) => {
-                                    return (
-                                      <option
-                                        value={data.id}
-                                        className="text-gray-800 text-xs font-light dark:text-bodydark"
-                                      >
-                                        {data.nama_mesin}
-                                      </option>
-                                    );
-                                  },
-                                )}
+                                mesin?.map((data: any, i: number) => {
+                                  return (
+                                    <option
+                                      value={data.id}
+                                      className="text-gray-800 text-xs font-light dark:text-bodydark"
+                                    >
+                                      {data.nama_mesin}
+                                    </option>
+                                  );
+                                })}
                             </select>
                             <input
                               type="text"
@@ -303,12 +258,8 @@ function AddStockLifetimes() {
                             </div>
 
                             {masterSparepart?.map(
-                              (
-                                SparepartMaster: any,
-                                ii: number,
-                              ) => {
+                              (SparepartMaster: any, ii: number) => {
                                 return (
-
                                   <div className="grid grid-cols-12 border-b border-stroke dark:border-strokedark">
                                     <div className="flex items-center justify-start  gap-3 p-2.5 ">
                                       <p className="hidden text-xs text-slate-600 font-semibold dark:text-white sm:block pl-5">
@@ -345,12 +296,18 @@ function AddStockLifetimes() {
                                       <button
                                         className="bg-primary w-20 text-white"
                                         onClick={() => {
-                                          setidSparepart(SparepartMaster.id)
-                                          console.log(SparepartMaster.id)
-                                          setnamaSparepartSelect(SparepartMaster.nama_sparepart)
-                                          setgradetSelect(SparepartMaster.grade)
-                                          setumurtSelect(SparepartMaster.umur_sparepart)
-                                          setShowModalMsStok(false)
+                                          setidSparepart(SparepartMaster.id);
+                                          console.log(SparepartMaster.id);
+                                          setnamaSparepartSelect(
+                                            SparepartMaster.nama_sparepart,
+                                          );
+                                          setgradetSelect(
+                                            SparepartMaster.grade,
+                                          );
+                                          setumurtSelect(
+                                            SparepartMaster.umur_sparepart,
+                                          );
+                                          setShowModalMsStok(false);
                                         }}
                                       >
                                         select
@@ -396,7 +353,9 @@ function AddStockLifetimes() {
             </div>
           </div>
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-extrabold text-black">Posisi<span className='text-red-500'>*</span></p>
+            <p className="text-xs font-extrabold text-black">
+              Posisi<span className="text-red-500">*</span>
+            </p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
@@ -409,7 +368,9 @@ function AddStockLifetimes() {
             </div>
           </div>
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-extrabold text-black">Tanggal Pasang<span className='text-red-500'>*</span></p>
+            <p className="text-xs font-extrabold text-black">
+              Tanggal Pasang<span className="text-red-500">*</span>
+            </p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
@@ -432,10 +393,10 @@ function AddStockLifetimes() {
               </div>
             </div>
           </div>
-
-
           <div className="mt-5 flex flex-col justify-center px-2">
-            <p className="text-xs font-extrabold text-black">Keterangan<span className='text-red-500'>*</span></p>
+            <p className="text-xs font-extrabold text-black">
+              Keterangan<span className="text-red-500">*</span>
+            </p>
             <div className="flex justify-center items-center">
               <div className="relative z-20 border-2 border-[#EDEDED] shadow-md rounded-md dark:bg-form-input  w-full mt-2">
                 <input
@@ -450,7 +411,6 @@ function AddStockLifetimes() {
           <div className="flex justify-center items-end col-span-3">
             <button
               onClick={() => {
-
                 addItem(idSparepart);
               }}
               className="bg-green-500 h-9 px-10 text-white font-extrabold rounded-md text-xs"

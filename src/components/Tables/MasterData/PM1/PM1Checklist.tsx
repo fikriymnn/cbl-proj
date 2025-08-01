@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import ModalEditPM1Master from '../../../Modals/Master/PM1/ModalEditPM1Master';
 import ModalKonfirmasi from '../../../Modals/Master/PM1/ModalKonfirmasi';
+import * as XLSX from 'xlsx';
 
 const PM1Checklist = () => {
   const { id } = useParams();
@@ -96,12 +97,87 @@ const PM1Checklist = () => {
     setShowDelete(onchangeVal);
   };
 
+  // Function to export data to Excel
+  const exportToExcel = () => {
+    if (!point || !mesin) return;
+
+    // Prepare the workbook and worksheet
+    const wb = XLSX.utils.book_new();
+
+    // Create worksheet data for PM1 Checklist
+    const wsData = [];
+
+    // Add header information
+    wsData.push(['PM1 Checklist Report']);
+    wsData.push(['Machine Name', mesin.nama_mesin]);
+    wsData.push(['Date Generated', new Date().toLocaleString()]);
+    wsData.push([]); // Empty row
+
+    // Add column headers for inspection points
+    wsData.push(['No.', 'Inspection Point', 'Category']);
+
+    // Add inspection points data
+    point.forEach((data: any, index: number) => {
+      wsData.push([index + 1, data.inspection_point, data.category || '-']);
+
+      // Add task list header for this inspection point
+      wsData.push(['', 'Task List', '', '', '']);
+      wsData.push([
+        '',
+        'No.',
+        'Task',
+        'Inspection Method',
+        'Acceptance Criteria',
+        'Tools',
+      ]);
+
+      // Add tasks data
+      data.ms_inspection_task_pm1s.forEach((task: any, taskIndex: number) => {
+        wsData.push([
+          '',
+          taskIndex + 1,
+          task.task,
+          task.method,
+          task.acceptance_criteria,
+          task.tools,
+        ]);
+      });
+
+      // Add empty row after each inspection point
+      wsData.push([]);
+    });
+
+    // Create worksheet
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Set column widths
+    const colWidths = [
+      { wch: 5 }, // No.
+      { wch: 30 }, // Inspection Point
+      { wch: 20 }, // Category
+      { wch: 30 }, // Task
+      { wch: 25 }, // Inspection Method
+      { wch: 30 }, // Acceptance Criteria
+      { wch: 20 }, // Tools
+    ];
+    ws['!cols'] = colWidths;
+
+    // Add the worksheet to the workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'PM1 Checklist');
+
+    // Generate Excel file and trigger download
+    const fileName = `PM1_Checklist_${mesin.nama_mesin}_${
+      new Date().toISOString().split('T')[0]
+    }.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  };
+
   return (
     <div className="rounded-xl border border-stroke bg-white pt-4 shadow-default dark:border-strokedark dark:bg-boxdark  xl:pb-1">
       {!isMobile && (
         <>
-          <div className="flex w-full  gap-2 pr-8 border-b-6 border-[#D8EAFF] px-4 pb-5">
-            <div className="flex flex-col w-11/12">
+          <div className="flex w-full gap-2 pr-8 border-b-6 border-[#D8EAFF] px-4 pb-5">
+            <div className="flex flex-col w-8/12">
               <label className="text-neutral-500 text-sm font-semibold">
                 Machine Details
               </label>
@@ -109,7 +185,13 @@ const PM1Checklist = () => {
                 Nama Mesin : {mesin != null && mesin.nama_mesin}
               </label>
             </div>
-            <div className="flex w-3/12 justify-end">
+            <div className="flex w-4/12 justify-end gap-2">
+              <button
+                onClick={exportToExcel}
+                className="bg-[#34A853] text-center text-white text-xs font-bold px-6 py-3 rounded-md"
+              >
+                EXPORT EXCEL
+              </button>
               <a
                 href={`/masterdata/masterpm1/pm1checklist/addinspection/${
                   mesin != null && mesin.id
@@ -250,8 +332,8 @@ const PM1Checklist = () => {
       )}
       {isMobile && (
         <>
-          <div className="flex w-full  gap-2 pr-8 border-b-6 border-[#D8EAFF] px-4 pb-5">
-            <div className="flex flex-col w-11/12">
+          <div className="flex w-full gap-2 pr-8 border-b-6 border-[#D8EAFF] px-4 pb-5">
+            <div className="flex flex-col w-8/12">
               <label className="text-neutral-500 text-sm font-semibold">
                 Machine Details
               </label>
@@ -259,14 +341,20 @@ const PM1Checklist = () => {
                 Nama Mesin : {mesin != null && mesin.nama_mesin}
               </label>
             </div>
-            <div className="flex w-3/12 justify-end">
+            <div className="flex w-4/12 justify-end gap-2">
+              <button
+                onClick={exportToExcel}
+                className="bg-[#34A853] text-center text-white text-xs font-bold p-1 rounded-md"
+              >
+                EXCEL
+              </button>
               <a
                 href={`/masterdata/masterpm1/pm1checklist/addinspection/${
                   mesin != null && mesin.id
                 }`}
               >
-                <button className="bg-[#0065DE] text-center text-white text-xs font-bold px-2 py-1 rounded-md">
-                  + INSPECTION POINT
+                <button className="bg-[#0065DE] text-center text-white text-xs font-bold p-1 rounded-md">
+                  + POINT
                 </button>
               </a>
             </div>

@@ -7,6 +7,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import RekapOs2Mtc from './RekapOs2Mtc';
+import RekapWasteQC from '../../QualityControl/RekapQC/RekapWasteQC';
 
 
 interface TabPanelProps {
@@ -126,9 +127,7 @@ export default function TabRekapMtc() {
                         className='bg-white text-[#00499F] font-semibold mb-2 '
                     >
                         <Tab label="OS2" {...a11yProps(0)} className='' />
-
-
-
+                        <Tab label="Waste" {...a11yProps(1)} className='' />
 
                     </Tabs>
                 </ThemeProvider>
@@ -136,7 +135,9 @@ export default function TabRekapMtc() {
             <TabPanel value={value} index={0} dir={theme.direction}>
                 <RekapOs2Mtc />
             </TabPanel>
-
+            <TabPanel value={value} index={1} dir={theme.direction}>
+                <RekapWasteQC />
+            </TabPanel>
 
 
         </Box>

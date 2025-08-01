@@ -13,6 +13,7 @@ import ModalAddPeriode from '../../../../Modals/Qc/ModalAddPeriode';
 import Loading from '../../../../Loading';
 import ModalKosongan from '../../../../Modals/Qc/NCR/NCRResponQC';
 import formatInteger from '../../../../../utils/formaterInteger';
+import ModalKosonganSmall from '../../../../Modals/ModalKosonganSmall';
 
 function CheckSheetLemPeriode() {
   const { id } = useParams();
@@ -30,6 +31,7 @@ function CheckSheetLemPeriode() {
   const [openGuide, setOpenGuide] = useState(null);
   const [LemMesinPeriodeHistory, setLemMesinPeriodeHistory] = useState<any>();
   const [DataDepartment, setDataDepartment] = useState<any>();
+  const [cttPeriode, setcttPeriode] = useState<any>();
 
   const [Department, setDepartment] = useState([
     {
@@ -72,20 +74,21 @@ function CheckSheetLemPeriode() {
   }, []);
   const [isFailed, setIsFailed] = useState(false);
   async function getMasterKode() {
-    const url = `${import.meta.env.VITE_API_LINK_P1
-      }/api/list-kendala?criteria=true&proses=11`;
+    const url = `${
+      import.meta.env.VITE_API_LINK_P1
+    }/api/list-kendala?criteria=true&proses=11`;
 
     try {
       setIsLoading(true);
       const res = await axios.get(url);
       setIsLoading(false);
       setMasterKode(res);
-      setIsFailed(false)
+      setIsFailed(false);
       console.log(res);
     } catch (error: any) {
       setIsLoading(false);
-      setIsFailed(true)
-      alert('Gagal Memanggil Defect, Coba Refresh Halaman!')
+      setIsFailed(true);
+      alert('Gagal Memanggil Defect, Coba Refresh Halaman!');
       console.log(error.data.msg);
     }
   }
@@ -100,7 +103,7 @@ function CheckSheetLemPeriode() {
       setDataDepartment(res.data);
     } catch (error: any) {
       setIsLoading(false);
-      alert('Gagal Memannggil Department, Coba Refresh Halaman!')
+      alert('Gagal Memannggil Department, Coba Refresh Halaman!');
       console.log(error);
     }
   }
@@ -119,32 +122,44 @@ function CheckSheetLemPeriode() {
       console.log(res.data);
     } catch (error: any) {
       setIsLoading(false);
-      alert('Gagal Memannggil Data, Coba Refresh Halaman!')
+      alert('Gagal Memannggil Data, Coba Refresh Halaman!');
       console.log(error.data.msg);
     }
   }
+  const [alasanPending, setalasanPending] = useState<any>();
   async function pendingCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriode/pending/${id}`;
+    if (alasanPending == null) {
+      alert('Catatan Wajib Diisi');
+      return;
+    }
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriode/pending/${id}`;
     try {
       const res = await axios.put(
         url,
-        {},
+        {
+          alasan_pending: alasanPending,
+        },
         {
           withCredentials: true,
         },
       );
-
+      closeModalPending();
       getLemMesinPeriode();
     } catch (error: any) {
       console.log(error.data.msg);
     }
   }
+  const [showPending, setShowPending] = useState(false);
+  const openModalPending = () => setShowPending(true);
+  const closeModalPending = () => setShowPending(false);
   async function startTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriodePoint/start/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriodePoint/start/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.put(
         url,
         {},
@@ -154,19 +169,20 @@ function CheckSheetLemPeriode() {
       );
 
       getLemMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error.data.msg);
-      setIsLoading(false)
+      setIsLoading(false);
       alert(error.response.data.msg);
     }
   }
   async function deletePeriode(id: number) {
     if (window.confirm('Hapus Periode?')) {
-      const url = `${import.meta.env.VITE_API_LINK
-        }/qc/cs/inspeksiLemPeriodePoint/delete/${id}`;
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/qc/cs/inspeksiLemPeriodePoint/delete/${id}`;
       try {
-        setIsLoading(true)
+        setIsLoading(true);
         const res = await axios.delete(
           url,
 
@@ -176,10 +192,10 @@ function CheckSheetLemPeriode() {
         );
 
         getLemMesinPeriode();
-        setIsLoading(false)
+        setIsLoading(false);
       } catch (error: any) {
         console.log(error);
-        setIsLoading(false)
+        setIsLoading(false);
         alert(error);
       }
     }
@@ -192,10 +208,11 @@ function CheckSheetLemPeriode() {
     jumlah_sampling: any,
     data_defect: any,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriodePoint/stop/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriodePoint/stop/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
       const res = await axios.put(
@@ -211,18 +228,19 @@ function CheckSheetLemPeriode() {
           withCredentials: true,
         },
       );
-
+      setcttPeriode(null);
       getLemMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   async function tambahTaskCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriodePoint/create`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriodePoint/create`;
     try {
       setIsLoading(true);
       const res = await axios.post(
@@ -239,7 +257,7 @@ function CheckSheetLemPeriode() {
       setIsLoading(false);
     } catch (error: any) {
       console.log(error.data.msg);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -253,10 +271,11 @@ function CheckSheetLemPeriode() {
     sumberMasalah: any,
     index: number,
   ) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriodePoint/createDefect`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriodePoint/createDefect`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.post(
         url,
 
@@ -290,18 +309,19 @@ function CheckSheetLemPeriode() {
         },
       ]);
       getLemMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
   async function doneCekPeriode(id: number) {
-    const url = `${import.meta.env.VITE_API_LINK
-      }/qc/cs/inspeksiLemPeriode/done/${id}`;
+    const url = `${
+      import.meta.env.VITE_API_LINK
+    }/qc/cs/inspeksiLemPeriode/done/${id}`;
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const res = await axios.put(
         url,
         { catatan: catatan },
@@ -311,10 +331,10 @@ function CheckSheetLemPeriode() {
       );
 
       getLemMesinPeriode();
-      setIsLoading(false)
+      setIsLoading(false);
     } catch (error: any) {
       console.log(error);
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
   //add Point
@@ -459,7 +479,10 @@ function CheckSheetLemPeriode() {
                               : {LemMesinPeriodeHistory?.jumlah}
                             </label>
                             <label className="text-neutral-500 text-sm font-semibold">
-                              : {formatInteger(parseInt(LemMesinPeriodeHistory?.jumlah_pcs))}
+                              :{' '}
+                              {formatInteger(
+                                parseInt(LemMesinPeriodeHistory?.jumlah_pcs),
+                              )}
                             </label>
 
                             <div className="flex gap-1 font-semibold">
@@ -617,38 +640,53 @@ function CheckSheetLemPeriode() {
                                           <div
                                             className={`flex flex-col min-w-[200px] justify-center py-4 
                                             } items-center gap-2 
-                                             ${data2.hasil == 'ok' ? 'bg-blue-300' :
-                                                data2.hasil == 'ok (toleransi)' ? 'bg-yellow-300' :
-                                                  data2.hasil == 'not ok' ? 'bg-red-300' :
-
-                                                    'bg-white'}`}
+                                             ${
+                                               data2.hasil == 'ok'
+                                                 ? 'bg-blue-300'
+                                                 : data2.hasil ==
+                                                   'ok (toleransi)'
+                                                 ? 'bg-yellow-300'
+                                                 : data2.hasil == 'not ok'
+                                                 ? 'bg-red-300'
+                                                 : 'bg-white'
+                                             }`}
                                           >
                                             <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                               {data2.kode}
                                             </label>
 
                                             <div
-
                                               className={`w-[80%] text-center uppercase font-semibold flex gap-4  
 } `}
                                             >
                                               {data2.hasil == 'ok' ? (
                                                 <>
-                                                  <img src={ok} alt="" className="w-4" />
+                                                  <img
+                                                    src={ok}
+                                                    alt=""
+                                                    className="w-4"
+                                                  />
                                                 </>
-                                              ) : data2.hasil == 'ok (toleransi)' ? (
+                                              ) : data2.hasil ==
+                                                'ok (toleransi)' ? (
                                                 <>
-                                                  <img src={oktole} alt="" className="w-4" />
+                                                  <img
+                                                    src={oktole}
+                                                    alt=""
+                                                    className="w-4"
+                                                  />
                                                 </>
                                               ) : data2.hasil == 'not ok' ? (
                                                 <>
-                                                  <img src={notok} alt="" className="w-4" />
+                                                  <img
+                                                    src={notok}
+                                                    alt=""
+                                                    className="w-4"
+                                                  />
                                                 </>
-                                              ) :
-                                                <>
-                                                  -
-                                                </>
-                                              }
+                                              ) : (
+                                                <>-</>
+                                              )}
 
                                               {data2.hasil}
                                             </div>
@@ -668,7 +706,6 @@ function CheckSheetLemPeriode() {
                             );
                           },
                         )}
-
                       </>
                     </ModalKosongan>
                   </>
@@ -676,119 +713,133 @@ function CheckSheetLemPeriode() {
               </div>
             </div>
 
-            <div className="grid grid-cols-12  border-b-8 border-[#D8EAFF]">
-              <div className="grid grid-rows-6 gap-2 col-span-2 pl-6 py-4 ">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Tanggal
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Jumlah
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Jumlah Pcs
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Jenis Lem
-                </label>
-              </div>
-              <div className="grid grid-rows-6 gap-2 col-span-2  py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {tanggal}
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {LemMesinPeriode?.jumlah}
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {formatInteger(parseInt(LemMesinPeriode?.jumlah_pcs))}
-                </label>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-max">
+                <tbody>
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Tanggal
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words">
+                      : {tanggal}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Jam
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {jam}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Shift
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {LemMesinPeriode?.shift}
+                    </td>
+                  </tr>
 
-                {LemMesinPeriode?.jenis_lem == null ? (
-                  <div className="flex md:gap-1 font-semibold">
-                    :{' '}
-                    <input
-                      className="border rounded p-1"
-                      type="text"
-                      onChange={(e) => setJenisLem(e.target.value)}
-                    />
-                  </div>
-                ) : (
-                  <div className="flex gap-1 font-semibold">
-                    :{' '}
-                    <input
-                      type="text"
-                      disabled
-                      defaultValue={LemMesinPeriode?.jenis_lem}
-                      onChange={(e) => setJenisLem(e.target.value)}
-                    />
-                  </div>
-                )}
-              </div>
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Jumlah
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words">
+                      : {LemMesinPeriode?.jumlah}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      No. JO
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {LemMesinPeriode?.no_jo}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Mesin
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {LemMesinPeriode?.mesin}
+                    </td>
+                  </tr>
 
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Jam
-                </label>
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Jumlah Pcs
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words">
+                      : {formatInteger(parseInt(LemMesinPeriode?.jumlah_pcs))}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      No. IO
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {LemMesinPeriode?.no_io}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Operator
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {LemMesinPeriode?.operator}
+                    </td>
+                  </tr>
 
-                <label className="text-neutral-500 text-sm font-semibold">
-                  No. JO
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  No. IO
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Nama Produk
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Customer
-                </label>
-              </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {jam}
-                </label>
+                  <tr className="">
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap">
+                      Jenis Lem
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2">
+                      {LemMesinPeriode?.jenis_lem == null ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-neutral-700 text-sm font-medium">
+                            :
+                          </span>
+                          <input
+                            className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            type="text"
+                            placeholder="Masukkan jenis lem"
+                            onChange={(e) => setJenisLem(e.target.value)}
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span className="text-neutral-700 text-sm font-medium">
+                            :
+                          </span>
+                          <input
+                            type="text"
+                            disabled
+                            defaultValue={LemMesinPeriode?.jenis_lem}
+                            className="border border-gray-300 rounded px-2 py-1 text-sm bg-gray-100 text-gray-600 cursor-not-allowed"
+                            onChange={(e) => setJenisLem(e.target.value)}
+                          />
+                        </div>
+                      )}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Nama Produk
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {LemMesinPeriode?.nama_produk}
+                    </td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Status Jo
+                    </td>
+                    <td className="text-neutral-700 text-sm font-medium px-2 py-2 break-words">
+                      : {LemMesinPeriode?.status_jo}
+                    </td>
+                  </tr>
 
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {LemMesinPeriode?.no_jo}
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {LemMesinPeriode?.no_io}
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {LemMesinPeriode?.nama_produk}
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {LemMesinPeriode?.customer}
-                </label>
-              </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-10 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Shift
-                </label>
-
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Mesin
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Operator
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  Status Jo
-                </label>
-              </div>
-              <div className="grid grid-rows-6  gap-2 col-span-2 justify-between px-2 py-4">
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {LemMesinPeriode?.shift}
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {LemMesinPeriode?.mesin}
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {LemMesinPeriode?.operator}
-                </label>
-                <label className="text-neutral-500 text-sm font-semibold">
-                  : {LemMesinPeriode?.status_jo}
-                </label>
-              </div>
+                  <tr>
+                    <td className="text-neutral-500 text-sm font-semibold px-6 py-2 whitespace-nowrap"></td>
+                    <td className="text-neutral-700 text-sm font-medium px-4 py-2 break-words"></td>
+                    <td className="text-neutral-500 text-sm font-semibold px-10 py-2 whitespace-nowrap">
+                      Customer
+                    </td>
+                    <td
+                      className="text-neutral-700 text-sm font-medium px-2 py-2 break-words"
+                      colSpan={3}
+                    >
+                      : {LemMesinPeriode?.customer}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
 
             {/* =============================chekcsheet========================= */}
@@ -865,12 +916,10 @@ function CheckSheetLemPeriode() {
                         <></>
                       )}
                       {data.status == 'incoming' &&
-                        LemMesinPeriode?.status == 'incoming' ? (
+                      LemMesinPeriode?.status == 'incoming' ? (
                         <>
                           <button
-                            onClick={() =>
-                              deletePeriode(data.id)
-                            }
+                            onClick={() => deletePeriode(data.id)}
                             className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                           >
                             Hapus Periode
@@ -879,9 +928,7 @@ function CheckSheetLemPeriode() {
                       ) : data.status == 'on progress' ? (
                         <>
                           <button
-                            onClick={() =>
-                              deletePeriode(data.id)
-                            }
+                            onClick={() => deletePeriode(data.id)}
                             className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                           >
                             Hapus Periode
@@ -916,7 +963,9 @@ function CheckSheetLemPeriode() {
                             <input
                               type="text"
                               disabled
-                              defaultValue={formatInteger(parseInt(data.numerator))}
+                              defaultValue={formatInteger(
+                                parseInt(data.numerator),
+                              )}
                               name="numerator"
                               onChange={(e) => handleChangePoint(e, index)}
                               className="text-sm font-semibold w-[90%] border-stroke border"
@@ -939,7 +988,9 @@ function CheckSheetLemPeriode() {
                           {data.status == 'done' ? (
                             <input
                               type="text"
-                              defaultValue={formatInteger(parseInt(data.jumlah_sampling))}
+                              defaultValue={formatInteger(
+                                parseInt(data.jumlah_sampling),
+                              )}
                               disabled
                               name="jumlah_sampling"
                               onChange={(e) => handleChangePoint(e, index)}
@@ -975,7 +1026,7 @@ function CheckSheetLemPeriode() {
                               Time : {lamaPengerjaan}
                             </p>
                             {data.status == 'incoming' &&
-                              LemMesinPeriode?.status == 'incoming' ? (
+                            LemMesinPeriode?.status == 'incoming' ? (
                               <>
                                 <p className="font-bold text-[#DE0000]">
                                   Task Belum Dimulai
@@ -1011,7 +1062,7 @@ function CheckSheetLemPeriode() {
                                     stopTaskCekPeriode(
                                       data.id,
                                       data.waktu_mulai,
-                                      data.catatan,
+                                      cttPeriode,
                                       data.numerator,
                                       data.jumlah_sampling,
                                       data.inspeksi_lem_periode_defect,
@@ -1050,18 +1101,21 @@ function CheckSheetLemPeriode() {
                               <div
                                 className={`flex flex-col min-w-[200px] justify-center py-4 
                                   } items-center gap-2 
-                                 ${data2.hasil == 'ok' ? 'bg-blue-300' :
-                                    data2.hasil == 'ok (toleransi)' ? 'bg-yellow-300' :
-                                      data2.hasil == 'not ok' ? 'bg-red-300' :
-
-                                        'bg-white'}`}
+                                 ${
+                                   data2.hasil == 'ok'
+                                     ? 'bg-blue-300'
+                                     : data2.hasil == 'ok (toleransi)'
+                                     ? 'bg-yellow-300'
+                                     : data2.hasil == 'not ok'
+                                     ? 'bg-red-300'
+                                     : 'bg-white'
+                                 }`}
                               >
                                 <label className="text-center text-[#6c6b6b] text-sm font-semibold">
                                   {data2.kode}
                                 </label>
                                 {data.status == 'done' ? (
                                   <div
-
                                     className={`w-[80%] text-center uppercase font-semibold flex gap-4  
                                  } `}
                                   >
@@ -1071,17 +1125,23 @@ function CheckSheetLemPeriode() {
                                       </>
                                     ) : data2.hasil == 'ok (toleransi)' ? (
                                       <>
-                                        <img src={oktole} alt="" className="w-4" />
+                                        <img
+                                          src={oktole}
+                                          alt=""
+                                          className="w-4"
+                                        />
                                       </>
                                     ) : data2.hasil == 'not ok' ? (
                                       <>
-                                        <img src={notok} alt="" className="w-4" />
+                                        <img
+                                          src={notok}
+                                          alt=""
+                                          className="w-4"
+                                        />
                                       </>
-                                    ) :
-                                      <>
-                                        -
-                                      </>
-                                    }
+                                    ) : (
+                                      <>-</>
+                                    )}
 
                                     {data2.hasil}
                                   </div>
@@ -1091,20 +1151,23 @@ function CheckSheetLemPeriode() {
                                       <div className="flex gap-1 w-full">
                                         <input
                                           onChange={(e) => {
-                                            handleChangePointDefect(e, index, i);
+                                            handleChangePointDefect(
+                                              e,
+                                              index,
+                                              i,
+                                            );
 
                                             if (e.target.value == 'not ok') {
                                               handleClickNotOke(i, true);
-
                                             } else {
                                               handleClickNotOke(i, false);
                                             }
-
                                           }}
-                                          className={`  ${(i + 1) % 2 === 0
-                                            ? ' bg-[#F3F3F3]'
-                                            : 'bg-white'
-                                            } `}
+                                          className={`  ${
+                                            (i + 1) % 2 === 0
+                                              ? ' bg-[#F3F3F3]'
+                                              : 'bg-white'
+                                          } `}
                                           type="radio"
                                           id="ok11"
                                           value="ok"
@@ -1116,61 +1179,86 @@ function CheckSheetLemPeriode() {
                                       <div className="flex gap-1 w-full">
                                         <input
                                           onChange={(e) => {
-                                            handleChangePointDefect(e, index, i);
+                                            handleChangePointDefect(
+                                              e,
+                                              index,
+                                              i,
+                                            );
                                             if (e.target.value == 'not ok') {
                                               handleClickNotOke(i, true);
                                             } else {
                                               handleClickNotOke(i, false);
                                             }
                                           }}
-                                          className={`  ${(i + 1) % 2 === 0
-                                            ? ' bg-[#F3F3F3]'
-                                            : 'bg-white'
-                                            } `}
+                                          className={`  ${
+                                            (i + 1) % 2 === 0
+                                              ? ' bg-[#F3F3F3]'
+                                              : 'bg-white'
+                                          } `}
                                           type="radio"
                                           id="ok12"
                                           value="ok (toleransi)"
                                           name={`hasil ${i}`}
                                         />
-                                        <img src={oktole} alt="" className="w-4" />
-                                        <label className="">OK (Toleransi)</label>
+                                        <img
+                                          src={oktole}
+                                          alt=""
+                                          className="w-4"
+                                        />
+                                        <label className="">
+                                          OK (Toleransi)
+                                        </label>
                                       </div>
                                       <div className="flex gap-1 w-full">
                                         <input
                                           onChange={(e) => {
-                                            handleChangePointDefect(e, index, i);
+                                            handleChangePointDefect(
+                                              e,
+                                              index,
+                                              i,
+                                            );
                                             if (e.target.value == 'not ok') {
                                               handleClickNotOke(i, true);
                                             } else {
                                               handleClickNotOke(i, false);
                                             }
                                           }}
-                                          className={`  ${(i + 1) % 2 === 0
-                                            ? ' bg-[#F3F3F3]'
-                                            : 'bg-white'
-                                            } `}
+                                          className={`  ${
+                                            (i + 1) % 2 === 0
+                                              ? ' bg-[#F3F3F3]'
+                                              : 'bg-white'
+                                          } `}
                                           type="radio"
                                           id="ok12"
                                           value="not ok"
                                           name={`hasil ${i}`}
                                         />
-                                        <img src={notok} alt="" className="w-4" />
+                                        <img
+                                          src={notok}
+                                          alt=""
+                                          className="w-4"
+                                        />
                                         <label className="">Not OK</label>
                                       </div>
                                       <div className="flex gap-1 w-full">
                                         <input
                                           onChange={(e) => {
-                                            handleChangePointDefect(e, index, i);
+                                            handleChangePointDefect(
+                                              e,
+                                              index,
+                                              i,
+                                            );
                                             if (e.target.value == 'not ok') {
                                               handleClickNotOke(i, true);
                                             } else {
                                               handleClickNotOke(i, false);
                                             }
                                           }}
-                                          className={`  ${(i + 1) % 2 === 0
-                                            ? ' bg-[#F3F3F3]'
-                                            : 'bg-white'
-                                            } `}
+                                          className={`  ${
+                                            (i + 1) % 2 === 0
+                                              ? ' bg-[#F3F3F3]'
+                                              : 'bg-white'
+                                          } `}
                                           type="radio"
                                           id="ok12"
                                           value="-"
@@ -1182,7 +1270,7 @@ function CheckSheetLemPeriode() {
                                   </div>
                                 ) : null}
                                 {showNotOk[i] == true &&
-                                  data.status == 'on progress' ? (
+                                data.status == 'on progress' ? (
                                   <input
                                     type="text"
                                     name="jumlah_defect"
@@ -1196,7 +1284,9 @@ function CheckSheetLemPeriode() {
                                   <input
                                     type="text"
                                     name="jumlah_defect"
-                                    defaultValue={formatInteger(parseInt(data2.jumlah_defect))}
+                                    defaultValue={formatInteger(
+                                      parseInt(data2.jumlah_defect),
+                                    )}
                                     disabled
                                     onChange={(e) =>
                                       handleChangePointHasil(e, index, i)
@@ -1434,17 +1524,266 @@ function CheckSheetLemPeriode() {
                           </>
                         )}
                       </div>
+                      {data.status == 'done' ? (
+                        <>
+                          <div className="border-b-8 border-[#D8EAFF]">
+                            <div className="px-[1%] py-[1%]">
+                              <label className="text-black text-sm font-bold pt-4 ">
+                                Catatan Periode {index + 1}
+                              </label>
+                              <textarea
+                                readOnly
+                                value={data.catatan}
+                                className=" peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                              ></textarea>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="border-b-8 border-[#D8EAFF]">
+                            <div className="px-[1%] py-[1%]">
+                              <label className="text-black text-sm font-bold pt-4">
+                                Catatan Periode {index + 1}
+                              </label>
+                              <textarea
+                                onChange={(e) => setcttPeriode(e.target.value)}
+                                className="peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
+                              ></textarea>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </>
                   );
                 },
               )}
             </div>
+            {/* Summary Section for All Periods - Not OK Defects */}
+            <div className="border-8 border-red-300 bg-red-50 mt-4">
+              <div className="px-4 py-4">
+                {(() => {
+                  // Calculate all not ok defects across all periods
+                  const allNotOkDefects =
+                    LemMesinPeriode?.inspeksi_lem_periode[0]?.inspeksi_lem_periode_point?.flatMap(
+                      (period: any) =>
+                        period.inspeksi_lem_periode_defect.filter(
+                          (defect: any) => defect.hasil === 'not ok',
+                        ),
+                    ) || [];
+
+                  // Group by kode and sum jumlah_defect
+                  const groupedDefects = allNotOkDefects.reduce(
+                    (acc: any, defect: any) => {
+                      const key = defect.kode;
+                      if (!acc[key]) {
+                        acc[key] = {
+                          kode: defect.kode,
+                          masalah: defect.masalah,
+                          totalDefect: 0,
+                          periods: [],
+                        };
+                      }
+                      // Improved defect counting logic
+                      let defectValue = 0;
+                      if (
+                        defect.jumlah_defect !== null &&
+                        defect.jumlah_defect !== undefined &&
+                        defect.jumlah_defect !== ''
+                      ) {
+                        defectValue =
+                          parseInt(
+                            String(defect.jumlah_defect).replace(/[^0-9]/g, ''),
+                          ) || 1;
+                      } else if (defect.hasil === 'not ok') {
+                        defectValue = 1;
+                      }
+                      acc[key].totalDefect += defectValue;
+                      acc[key].periods.push(defect);
+                      return acc;
+                    },
+                    {},
+                  );
+
+                  const groupedArray = Object.values(groupedDefects);
+                  const grandTotal = allNotOkDefects.reduce(
+                    (sum: number, defect: any) => {
+                      let defectValue = 0;
+                      if (
+                        defect.jumlah_defect !== null &&
+                        defect.jumlah_defect !== undefined &&
+                        defect.jumlah_defect !== ''
+                      ) {
+                        defectValue =
+                          parseInt(
+                            String(defect.jumlah_defect).replace(/[^0-9]/g, ''),
+                          ) || 1;
+                      } else if (defect.hasil === 'not ok') {
+                        defectValue = 1;
+                      }
+                      return sum + defectValue;
+                    },
+                    0,
+                  );
+
+                  return (
+                    <>
+                      {groupedArray.length > 0 ? (
+                        <>
+                          {/* Individual defect codes summary */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                            {groupedArray.map(
+                              (defectGroup: any, index: number) => (
+                                <div
+                                  key={index}
+                                  className="bg-white p-4 rounded-lg border border-red-200 shadow-sm"
+                                >
+                                  <div className="flex justify-between items-start mb-2">
+                                    <div className="flex-1">
+                                      <div className="text-sm font-bold text-gray-800">
+                                        {defectGroup.kode}
+                                      </div>
+                                      <div className="text-xs text-gray-600 mt-1">
+                                        {defectGroup.masalah}
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="text-lg font-bold text-red-600">
+                                        {formatInteger(defectGroup.totalDefect)}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        {defectGroup.periods.length} Temuan
+                                        {defectGroup.periods.length > 1
+                                          ? ''
+                                          : ''}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ),
+                            )}
+                          </div>
+
+                          {/* Grand Total */}
+                          <div className="bg-red-600 text-white p-4 rounded-lg shadow-lg">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <div className="text-lg font-bold">
+                                  🚨 TOTAL NOT OK DEFECT (LEM)
+                                </div>
+                                <div className="text-sm opacity-90">
+                                  {' '}
+                                  {LemMesinPeriode?.inspeksi_lem_periode[0]
+                                    ?.inspeksi_lem_periode_point?.length ||
+                                    0}{' '}
+                                  Periode
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-3xl font-bold">
+                                  {formatInteger(grandTotal)}
+                                </div>
+                                <div className="text-sm opacity-90">
+                                  Total Defects
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Detailed breakdown by period */}
+                          <div className="mt-4">
+                            <h3 className="text-red-600 text-md font-bold mb-2">
+                              📋 Breakdown by Period:
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                              {LemMesinPeriode?.inspeksi_lem_periode[0]?.inspeksi_lem_periode_point?.map(
+                                (period: any, periodIndex: number) => {
+                                  const periodNotOk =
+                                    period.inspeksi_lem_periode_defect.filter(
+                                      (defect: any) =>
+                                        defect.hasil === 'not ok',
+                                    );
+
+                                  // Check if there are any "not ok" defects, regardless of jumlah_defect value
+                                  const hasNotOkDefects =
+                                    periodNotOk.length > 0;
+
+                                  const periodTotal = periodNotOk.reduce(
+                                    (sum: number, defect: any) => {
+                                      // Handle various formats of jumlah_defect
+                                      let defectValue = 0;
+                                      if (
+                                        defect.jumlah_defect !== null &&
+                                        defect.jumlah_defect !== undefined &&
+                                        defect.jumlah_defect !== ''
+                                      ) {
+                                        defectValue =
+                                          parseInt(
+                                            String(
+                                              defect.jumlah_defect,
+                                            ).replace(/[^0-9]/g, ''),
+                                          ) || 1; // Default to 1 if parsing fails but field exists
+                                      } else if (defect.hasil === 'not ok') {
+                                        defectValue = 1; // If marked as "not ok" but no quantity, count as 1
+                                      }
+                                      return sum + defectValue;
+                                    },
+                                    0,
+                                  );
+
+                                  return (
+                                    <div
+                                      key={periodIndex}
+                                      className={`p-3 rounded border ${
+                                        hasNotOkDefects
+                                          ? 'bg-red-100 border-red-300'
+                                          : 'bg-green-100 border-green-300'
+                                      }`}
+                                    >
+                                      <div className="flex justify-between items-center">
+                                        <span className="text-sm font-semibold">
+                                          Period {periodIndex + 1}
+                                        </span>
+                                        <span
+                                          className={`text-sm font-bold ${
+                                            hasNotOkDefects
+                                              ? 'text-red-600'
+                                              : 'text-green-600'
+                                          }`}
+                                        >
+                                          {hasNotOkDefects
+                                            ? `${formatInteger(periodTotal)} (${
+                                                periodNotOk.length
+                                              } issues)`
+                                            : '✓ OK'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                },
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="bg-green-100 p-6 rounded-lg border border-green-300 text-center">
+                          <div className="text-2xl mb-2">✅</div>
+                          <div className="text-green-700 font-bold text-lg">
+                            Tidak Ada Defect Not OK ditemukan pada Lem Periode
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
           </div>
           {(!isOnprogres &&
             LemMesinPeriode?.status == 'incoming' &&
             LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'incoming') ||
-            (LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' &&
-              LemMesinPeriode?.status == 'incoming') ? (
+          (LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' &&
+            LemMesinPeriode?.status == 'incoming') ? (
             <>
               {!isFailed ? (
                 <>
@@ -1460,15 +1799,13 @@ function CheckSheetLemPeriode() {
                     {isLoading ? 'Loading...' : '+ Periode Check'}
                   </button>
                 </>
-              ) :
+              ) : (
                 <>
-                  <button
-
-                    className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer"
-                  >
+                  <button className=" w-[16%] h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-4 py-2 hover:cursor-pointer">
                     Refresh Halaman
                   </button>
-                </>}
+                </>
+              )}
               {isLoading && <Loading />}
             </>
           ) : null}
@@ -1488,8 +1825,8 @@ function CheckSheetLemPeriode() {
               {(!isOnprogres &&
                 LemMesinPeriode?.status == 'incoming' &&
                 LemMesinPeriode?.inspeksi_lem_periode[0]?.status ==
-                'incoming') ||
-                LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' ? (
+                  'incoming') ||
+              LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' ? (
                 <textarea
                   onChange={(e) => setCatatan(e.target.value)}
                   className="peer  resize-none rounded-[7px] border border-stroke bg-transparent px-3 py-2.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
@@ -1507,21 +1844,48 @@ function CheckSheetLemPeriode() {
             <div className="grid col-span-2 items-end justify-end gap-2">
               {!isOnprogres && LemMesinPeriode?.status == 'incoming' ? (
                 <button
-                  onClick={() =>
-                    pendingCekPeriode(
-                      LemMesinPeriode?.inspeksi_lem_periode[0].id,
-                    )
-                  }
+                  onClick={() => openModalPending()}
                   className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
                 >
                   PENDING
                 </button>
               ) : null}
+              {showPending == true && (
+                <>
+                  <ModalKosonganSmall
+                    isOpen={showPending}
+                    onClose={() => closeModalPending()}
+                    judul={'Alasan Pending'}
+                  >
+                    <>
+                      <div className="flex flex-col gap-2 px-4 py-4">
+                        <div className="flex gap-2 flex-col w-full">
+                          <input
+                            onChange={(e) => setalasanPending(e.target.value)}
+                            type="text"
+                            className="border-2 border-stroke w-full rounded-sm col-span-2 h-10"
+                          />
+                        </div>
+                        <button
+                          onClick={() =>
+                            pendingCekPeriode(
+                              LemMesinPeriode?.inspeksi_lem_periode[0].id,
+                            )
+                          }
+                          className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
+                        >
+                          PENDING
+                        </button>
+                      </div>
+                    </>
+                  </ModalKosonganSmall>
+                </>
+              )}
               {(!isOnprogres &&
                 LemMesinPeriode?.status == 'incoming' &&
                 LemMesinPeriode?.inspeksi_lem_periode[0]?.status ==
-                'incoming') ||
-                LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' ? (
+                  'incoming') ||
+              LemMesinPeriode?.inspeksi_lem_periode[0]?.status == 'pending' ? (
                 <button
                   onClick={() => {
                     doneCekPeriode(LemMesinPeriode?.inspeksi_lem_periode[0].id);
@@ -1535,7 +1899,7 @@ function CheckSheetLemPeriode() {
               {/* ) : null} */}
             </div>
 
-            {lemMesinPeriodeDefect?.map((data: any, index: number) => {
+            {/* {lemMesinPeriodeDefect?.map((data: any, index: number) => {
               return (
                 <div className="">
                   <label>kode: </label>
@@ -1544,7 +1908,7 @@ function CheckSheetLemPeriode() {
                   <label>{formatInteger(parseInt(data.total_defect))}</label>
                 </div>
               );
-            })}
+            })} */}
           </div>
         </main>
       )}

@@ -7,7 +7,7 @@ import Tab from '@mui/material/Tab';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import TableSPBRequested from './TableSPBRequested';
-import '../../../../css/style.css'
+import '../../../../css/style.css';
 
 import TableSPBRequestedSparepart from './TableSPBRequestedSparepart';
 import TableSPBHistoryServiceApproved from './TableSPBHistoryServiceApproved';
@@ -58,8 +58,6 @@ export default function TableSPBService() {
         main: '#ffffff',
         dark: '#002884',
         contrastText: '#fff',
-        
-        
       },
       secondary: {
         light: '#0065DE',
@@ -84,10 +82,10 @@ export default function TableSPBService() {
     width: 'w-full',
     borderTopRightRadius: '12px',
     borderTopLeftRadius: '12px',
-    fontSize:'7px'
+    fontSize: '7px',
   };
   return (
-    <Box 
+    <Box
       sx={{
         ...commonStyles,
         '& .MuiPaper-root': {
@@ -95,65 +93,59 @@ export default function TableSPBService() {
           borderTopLeftRadius: '12px',
           background: '#D8EAFF',
           boxShadow: 0,
-          fontSize:'7px'
+          fontSize: '7px',
         },
         '& .MuiBox-root': {
           borderTopRightRadius: '12px',
           borderTopLeftRadius: '12px',
           background: '#D8EAFF',
           boxShadow: 0,
-            fontSize:'7px'
+          fontSize: '7px',
         },
         '& .MuiTabs-root': {
           borderTopRightRadius: '12px',
           borderTopLeftRadius: '12px',
-          fontSize:'7px',
-          overflowX:"auto"
-            
+          fontSize: '7px',
+          overflowX: 'auto',
         },
         '& .MuiTabs-flexcontainer': {
           borderTopRightRadius: '12px',
           borderTopLeftRadius: '12px',
-            fontSize:'7px'
+          fontSize: '7px',
         },
         '& fieldset': {
           borderRadius: '12px',
-            fontSize:'7px'
+          fontSize: '7px',
         },
       }}
-    
     >
       <AppBar position="static" className="">
-        <ThemeProvider theme={theme} >
-          <div className='overflow-x-scroll scroll-tapi-eweh text-xs'>
-
-          <Tabs
-          
-            value={value}
-            onChange={handleChange}
-            indicatorColor="primary"
-            TabIndicatorProps={{
-              style: {
-                backgroundColor: '#00499F',
-                height: '4px',
-                fontSize:'9px'
-              },
-            }}
-            textColor="inherit"
-            variant="standard"
-            aria-label="full width tabs example"
-            
-            className="bg-white text-xs text-[#00499F] font-light mb-2  min-w-[1000px]"
-            scrollButtons={true} 
-            
-          >
-            <Tab label="Service" {...a11yProps(0)} className="text-xs " />
-            <Tab label="Sparepart" {...a11yProps(1)} className="" />
-            <Tab label="Approved  Service " {...a11yProps(2)} />
-            <Tab label="Rejected  Service " {...a11yProps(3)} />
-            <Tab label="  Approved Sparepart" {...a11yProps(4)} />
-            <Tab label="  Rejected Sparepart" {...a11yProps(5)} />
-          </Tabs>
+        <ThemeProvider theme={theme}>
+          <div className="overflow-x-scroll scroll-tapi-eweh text-xs">
+            <Tabs
+              value={value}
+              onChange={handleChange}
+              indicatorColor="primary"
+              TabIndicatorProps={{
+                style: {
+                  backgroundColor: '#00499F',
+                  height: '4px',
+                  fontSize: '9px',
+                },
+              }}
+              textColor="inherit"
+              variant="standard"
+              aria-label="full width tabs example"
+              className="bg-white text-xs text-[#00499F] font-light mb-2  min-w-[1000px]"
+              scrollButtons={true}
+            >
+              <Tab label="Service" {...a11yProps(0)} className="text-xs " />
+              <Tab label="Sparepart" {...a11yProps(1)} className="" />
+              <Tab label="Approved  Service " {...a11yProps(2)} />
+              <Tab label="Rejected  Service " {...a11yProps(3)} />
+              <Tab label="  History SPB Sparepart" {...a11yProps(4)} />
+              {/* <Tab label="  Rejected Sparepart" {...a11yProps(5)} /> */}
+            </Tabs>
           </div>
         </ThemeProvider>
       </AppBar>
@@ -172,9 +164,9 @@ export default function TableSPBService() {
       <TabPanel value={value} index={4} dir={theme.direction}>
         <TableHistorySparepartApproved />
       </TabPanel>
-      <TabPanel value={value} index={5} dir={theme.direction}>
+      {/* <TabPanel value={value} index={5} dir={theme.direction}>
         <TableHistorySparepartRejected />
-      </TabPanel>
+      </TabPanel> */}
     </Box>
   );
 }

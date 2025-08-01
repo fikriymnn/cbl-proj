@@ -148,30 +148,63 @@ import MasterKaryawan from './pages/HR/Personal/MasterKaryawan';
 import AddMasterKaryawan from './pages/HR/Personal/AddMasterKaryawan';
 import KalenderKerja from './pages/HR/Personal/KalenderKerja/KalenderKerja';
 import RekapMtcPage from './pages/Maintenance/RekapMtc';
-import InputSpl from './pages/HR/Pengajuan/InputSPL';
-import CutiHR from './pages/HR/Pengajuan/CutiHr';
-import IzinHR from './pages/HR/Pengajuan/IzinHR';
-import SakitHR from './pages/HR/Pengajuan/SakitHR';
-import PinjamanHR from './pages/HR/Pengajuan/PinjamanHR';
+
 import LengkapiMasterKaryawan from './pages/HR/Personal/LengkapiMasterKaryawan';
 import Absensi from './pages/HR/Personal/KalenderKerja/absensi';
 import MasterGrade from './pages/MasterData/MTC/MasterGrade';
-import SPHR from './pages/HR/Pengajuan/SPHR';
-import DinasHr from './pages/HR/Pengajuan/DinasHr';
-import KaryawanHr from './pages/HR/Pengajuan/KaryawanHR';
-import InputKeSpl from './pages/HR/PengajuanKeHR/InputKeSPL';
-import CutiKeHR from './pages/HR/PengajuanKeHR/CutiKeHr';
-import IzinKeHR from './pages/HR/PengajuanKeHR/IzinKeHR';
-import SakitKeHR from './pages/HR/PengajuanKeHR/SakitKeHR';
-import PinjamanKeHR from './pages/HR/PengajuanKeHR/PinjamanKeHR';
-import DinasKeHr from './pages/HR/PengajuanKeHR/DinasKeHr';
-import SPKeHR from './pages/HR/PengajuanKeHR/SPKeHR';
-import KaryawanKeHr from './pages/HR/PengajuanKeHR/KaryawanKeHR';
+
 import MasterSHiftHR from './pages/HR/MasterDataHR/MastershiftHr';
 import MasterDepartment from './pages/HR/MasterDataHR/MasterDepartment';
 import EditMasterKaryawan from './pages/HR/Personal/EditMasterKaryawan';
 import MasterCutiKhusus from './pages/HR/MasterDataHR/MasterCutiKhusus';
 import MasterGradeHR from './pages/HR/MasterDataHR/MasterGrade';
+import NcrHr from './pages/HR/Ncrhr/Ncrhr';
+import CapaHR from './pages/HR/Capahr/Capahr';
+import AbsenQC from './pages/QualityControl/Absensi/AbsenQC';
+import DetailMasterKaryawan from './pages/HR/Personal/DetailMasterKaryawan';
+import PengajuanKeHR from './pages/HR/PengajuanKeHR/PengajuanKeHR';
+import HistoryPengajuanKeHR from './pages/HR/PengajuanKeHR/HistoryPengajuankeHR';
+import ResponPengajuanHR from './pages/HR/Pengajuan/ResponPengajuan';
+import HistoryResponPengajuan from './pages/HR/Pengajuan/HistoryResponPengajuan';
+import OsQC from './pages/QualityControl/OutstandingQC/OutstandingQC';
+import RekapQC from './pages/QualityControl/RekapQC/RekapQC';
+import PayrollPage from './pages/HR/Payroll/Payrollpage';
+import JadwalPPIC from './pages/PPIC/JadwalPPIC/JadwalPPIC';
+import MasterPayrollHR from './pages/HR/MasterDataHR/MasterPayrollHR';
+import MasterJadwal from './pages/PPIC/MasterPPIC/MasterJadwal';
+import OsMTC from './pages/Maintenance/OutstandingMTC/OSMTC';
+import OsHR from './pages/HR/Outstanding/OsHR';
+import OsPPIC from './pages/PPIC/OutstandingPPIC/OutstandingPPIC';
+import Project from './pages/Maintenance/Project';
+import PengajuanJabatanKeHR from './pages/HR/PengajuanKeHR/PengajuanJabatanKeHR';
+import HistoryPengajuanJabatanKeHR from './pages/HR/PengajuanKeHR/HistoryPengajuanJabatanKeHR';
+import ResponJabatan from './pages/HR/Pengajuan/ResponJabatan';
+import HistoryResponJabatan from './pages/HR/Pengajuan/HistoryResponJabatan';
+import AbsenMTC from './pages/Maintenance/AbsensiMTC/AbsenMTC';
+import MasterUserPageQC from './pages/MasterData/QC/MasterUserPage';
+import MasterUserHR from './pages/HR/MasterDataHR/MasterUserHR';
+import MasterHakAkses from './pages/MasterData/MasterHakAkses';
+import AccPayroll from './pages/HR/Payroll/AccPayroll';
+import MasterSettingHR from './pages/HR/MasterDataHR/MasterSettingHR';
+import MasterUserAll from './pages/MasterData/MasterUserAll';
+import ProduksiBreakdownTtime from './pages/Produksi/ProduksiBreakdown';
+import PengajuanAllDept from './pages/AllDept/PengajuanKeHrAll';
+import PengajuanAllDeptHistory from './pages/AllDept/PengajuanKeHrAllHistory';
+import RekapPPIC from './pages/PPIC/RekapPPIC/RekapPPIC';
+import IncomingChem from './pages/QualityControl/Incoming/IncomingChem';
+import MasterSPTeguran from './pages/HR/MasterDataHR/MasterSPTeguran';
+import ProduksiWaste from './pages/Produksi/ProduksiWaste';
+import RekapHRPage from './pages/HR/Rekap/RekapHR';
+import PayrollBulanPage from './pages/HR/Payroll/PayrollBulanPage';
+import MasterDoc from './pages/MasterData/QC/MasterDoc';
+import JadwalKirimPPIC from './pages/PPIC/JadwalPPIC/JadwalKirim';
+import ProduksiOS2 from './pages/Produksi/ProduksiOS2';
+import JoTerjadwal from './pages/PPIC/JadwalPPIC/JOTerjadwalPPIC';
+import KalibrasiAlatUkur from './pages/QualityControl/Kalibrasi/kalibrasiqc';
+import KalibrasiMaster from './pages/QualityControl/Kalibrasi/KalibrasiMaster';
+import MasterKapasitasArmada from './pages/PPIC/MasterPPIC/MasterKapasitasArmada';
+import PengajuanJabatanAllDept from './pages/AllDept/PengajuanJabatanAll';
+import PengajuanJabatanAllDeptHistory from './pages/AllDept/PengajuanJabatanAllHistory';
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -362,7 +395,7 @@ function App() {
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
-                <ProjectMtc />
+                <Project />
               </ProtectedRoute>
             </>
           }
@@ -523,6 +556,61 @@ function App() {
           }
         />
         <Route
+          path="/qc/outstanding"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OsQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/outstanding"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OsQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/maintenance/outstanding"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OsMTC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/hr/outstanding"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OsHR />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/rekap"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <RekapQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/qc/qualityinspection"
           element={
             <>
@@ -633,12 +721,45 @@ function App() {
           }
         />
         <Route
+          path="/qc/kalibrasi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <KalibrasiAlatUkur />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterdataqc/kalibrasimaster"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <KalibrasiMaster />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
           path="/qc/qualityinspection/list/:id"
           element={
             <>
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <IncomingIns />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/qc/qualityinspectionChemical/list/:id"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <IncomingChem />
               </ProtectedRoute>
             </>
           }
@@ -1211,6 +1332,7 @@ function App() {
             </>
           }
         />
+
         <Route
           path="/qc/qualityinspection/barangrs/:id"
           element={
@@ -1244,7 +1366,17 @@ function App() {
             </>
           }
         />
-
+        <Route
+          path="/masterdataqc/nodoc"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterDoc />
+              </ProtectedRoute>
+            </>
+          }
+        />
         <Route
           path="/masterdataqc/finalinspection"
           element={
@@ -1256,7 +1388,17 @@ function App() {
             </>
           }
         />
-
+        <Route
+          path="/masterdataqc/users"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterUserPageQC />
+              </ProtectedRoute>
+            </>
+          }
+        />
         <Route
           path="/masterdataqc/outsourcing_bj"
           element={
@@ -1342,6 +1484,50 @@ function App() {
               <PageTitle title="PT CBL" />
               <ProtectedRoute>
                 <MasterMonitoring />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/pengajuanallkehr"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanAllDept />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/pengajuanJabatanallkehr"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanJabatanAllDept />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/pengajuanJabatanallkehrhistory"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanJabatanAllDeptHistory />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/pengajuanallkehrhistory"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <PengajuanAllDeptHistory />
               </ProtectedRoute>
             </>
           }
@@ -1544,14 +1730,7 @@ function App() {
             </>
           }
         />
-        <Route
-          path="/hr"
-          element={
-            <>
-
-            </>
-          }
-        />
+        <Route path="/hr" element={<></>} />
         <Route
           path="/hr/pm/masterperusahaan"
           element={
@@ -1585,10 +1764,18 @@ function App() {
           }
         />
         <Route
-          path="/hr/pm/masterkaryawan/lengkapi"
+          path="/hr/pm/masterkaryawan/lengkapi/:id"
           element={
             <>
               <LengkapiMasterKaryawan />
+            </>
+          }
+        />
+        <Route
+          path="/hr/pm/masterkaryawan/detail/:id"
+          element={
+            <>
+              <DetailMasterKaryawan />
             </>
           }
         />
@@ -1609,139 +1796,146 @@ function App() {
           }
         />
         <Route
-          path="/hr/rp/spl"
+          path="/qc/absensi"
           element={
             <>
-              <InputSpl />
+              <AbsenQC />
             </>
           }
         />
         <Route
-          path="/hr/rp/cuti"
+          path="/maintenance/absensi"
           element={
             <>
-              <CutiHR />
+              <AbsenMTC />
             </>
           }
         />
         <Route
-          path="/hr/rp/izin"
+          path="/hr/payroll"
           element={
             <>
-              <IzinHR />
+              <PayrollPage />
             </>
           }
         />
         <Route
-          path="/hr/rp/sakit"
+          path="/hr/payrollbulan"
           element={
             <>
-              <SakitHR />
+              <PayrollBulanPage />
             </>
           }
         />
         <Route
-          path="/hr/rp/pinjaman"
+          path="/hr/accpayroll"
           element={
             <>
-              <PinjamanHR />
+              <AccPayroll />
             </>
           }
         />
         <Route
-          path="/hr/rp/dinas"
+          path="/hr/rp/respon"
           element={
             <>
-              <DinasHr />
+              <ResponPengajuanHR />
             </>
           }
         />
         <Route
-          path="/hr/rp/sp"
+          path="/hr/rp/history"
           element={
             <>
-              <SPHR />
+              <HistoryResponPengajuan />
             </>
           }
         />
         <Route
-          path="/hr/rp/karyawan"
+          path="/hr/pengajuan"
           element={
             <>
-              <KaryawanHr />
+              <PengajuanKeHR />
             </>
           }
         />
         <Route
-          path="/hr/pengajuan/spl"
+          path="/hr/pengajuanJabatan"
           element={
             <>
-              <InputKeSpl />
+              <PengajuanJabatanKeHR />
             </>
           }
         />
         <Route
-          path="/hr/pengajuan/cuti"
+          path="/hr/pengajuanJabatanHistory"
           element={
             <>
-              <CutiKeHR />
+              <HistoryPengajuanJabatanKeHR />
             </>
           }
         />
         <Route
-          path="/hr/pengajuan/izin"
+          path="/hr/rp/jabatan"
           element={
             <>
-              <IzinKeHR />
+              <ResponJabatan />
             </>
           }
         />
         <Route
-          path="/hr/pengajuan/sakit"
+          path="/hr/rp/jabatanHistory"
           element={
             <>
-              <SakitKeHR />
+              <HistoryResponJabatan />
             </>
           }
         />
         <Route
-          path="/hr/pengajuan/pinjaman"
+          path="/hr/rekap"
           element={
             <>
-              <PinjamanKeHR />
+              <RekapHRPage />
             </>
           }
         />
         <Route
-          path="/hr/pengajuan/dinas"
+          path="/hr/pengajuanhistory"
           element={
             <>
-              <DinasKeHr />
+              <HistoryPengajuanKeHR />
             </>
           }
         />
-        <Route
-          path="/hr/pengajuan/sp"
-          element={
-            <>
-              <SPKeHR />
-            </>
-          }
-        />
-        <Route
-          path="/hr/pengajuan/karyawan"
-          element={
-            <>
-              <KaryawanKeHr />
-            </>
-          }
-        />
-
         <Route
           path="/hr/master/shift"
           element={
             <>
               <MasterSHiftHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/master/spteguran"
+          element={
+            <>
+              <MasterSPTeguran />
+            </>
+          }
+        />
+        <Route
+          path="/hr/master/setting"
+          element={
+            <>
+              <MasterSettingHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/master/users"
+          element={
+            <>
+              <MasterUserHR />
             </>
           }
         />
@@ -1769,8 +1963,171 @@ function App() {
             </>
           }
         />
-      </Routes>
+        <Route
+          path="/hr/master/payroll"
+          element={
+            <>
+              <MasterPayrollHR />
+            </>
+          }
+        />
+        <Route
+          path="/hr/lapor/ncr"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <NcrHr />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/hr/lapor/capa"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <CapaHR />
+              </ProtectedRoute>
+            </>
+          }
+        />
 
+        {/* ===============PPIC=========== */}
+        <Route
+          path="/ppic/jadwalProduksi"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JadwalPPIC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/ppic/joterjadwal"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JoTerjadwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/ppic/jadwalKirim"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <JadwalKirimPPIC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/ppic/outstanding"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <OsPPIC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/ppic/rekap"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <RekapPPIC />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/ppic/master/jadwal"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterJadwal />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/ppic/master/kapasitasArmada"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterKapasitasArmada />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masterHakAkses"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterHakAkses />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/masteruserall"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <MasterUserAll />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/produksi/breakdown"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProduksiBreakdownTtime />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/produksi/waste"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProduksiWaste />
+              </ProtectedRoute>
+            </>
+          }
+        />
+        <Route
+          path="/produksi/os2"
+          element={
+            <>
+              <PageTitle title="PT CBL" />
+              <ProtectedRoute>
+                <ProduksiOS2 />
+              </ProtectedRoute>
+            </>
+          }
+        />
+      </Routes>
     </>
   );
 }

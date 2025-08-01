@@ -38,14 +38,21 @@ function ListIncoming2() {
 
     async function getInspection() {
         const url = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiBahan?status=incoming`;
+        const url2 = `${import.meta.env.VITE_API_LINK}/qc/cs/inspeksiChemical?status=incoming`;
         try {
             const res = await axios.get(url, {
 
                 withCredentials: true,
             });
+            const res2 = await axios.get(url2, {
 
-            setIncoming(res.data.data);
-            console.log(res.data.data);
+                withCredentials: true,
+            });
+            let dataIncoming = [];
+            dataIncoming.push(...res.data.data)
+            dataIncoming.push(...res2.data.data)
+            setIncoming(dataIncoming);
+            console.log(dataIncoming);
         } catch (error: any) {
             console.log(error);
         }
@@ -103,19 +110,23 @@ function ListIncoming2() {
                                 <div className='flex flex-col   text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
                                     <p className=''>Gramatur</p>
                                 </div>
-                                <div className='flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
+                                <div className='flex flex-col   text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
                                     <p className=''>No. JO</p>
                                 </div>
                                 <div className='flex flex-col  col-span-2 text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
                                     <p className=''>Tanggal</p>
                                 </div>
+                                <div className='flex flex-col   text-stone-500 text-[16px] font-bold md:ps-0 bg-white'>
+                                    <p className=''>Tipe</p>
+                                </div>
                                 <div className='flex flex-col  justify-end  items-end'>
                                 </div>
                             </section>
-                            {incoming?.map((data: any, i: any) => {
-                                const tglTicket = convertTimeStampToDate(data.createdAt);
-                                return (
-                                    <>
+                            {incoming
+                                ?.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                                .map((data: any, i: any) => {
+                                    const tglTicket = convertTimeStampToDate(data.createdAt);
+                                    return (
                                         <section className=' grid grid-cols-12 px-4 items-center gap-2 border-b-8 border-[#D8EAFF] '>
 
                                             <div className='flex  gap-4  col-span-2   bg-white'>
@@ -131,33 +142,46 @@ function ListIncoming2() {
                                             <div className='flex flex-col     bg-white'>
                                                 <p className='text-stone-500 text-sm font-medium '>{data.gramatur}</p>
                                             </div>
-                                            <div className='flex flex-col  col-span-2  bg-white'>
+                                            <div className='flex flex-col    bg-white'>
                                                 <p className='text-stone-500 text-sm font-medium '>{data.no_jo}</p>
                                             </div>
                                             <div className='flex flex-col col-span-2   bg-white'>
                                                 <p className='text-stone-500 text-sm font-medium '>{tglTicket}</p>
                                             </div>
+                                            <div className='flex flex-col    bg-white'>
+                                                <p className='text-stone-500 text-sm font-medium '>{data.tipe == 'chemical' ? 'Chemical' : 'Bahan'}</p>
+                                            </div>
                                             <div className='flex flex-col  justify-end  items-end'>
+                                                {data.tipe == 'chemical' ?
+                                                    <>
+                                                        <Link to={`/qc/qualityinspectionChemical/list/${data.id}`}>
+                                                            <button
+                                                                className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-green-600 border-blue-600  justify-center`} // Dynamic class assignment
+                                                            >
+                                                                PILIH
+                                                            </button>
+                                                        </Link>
+                                                    </> : <>
 
-                                                <Link to={`/qc/qualityinspection/list/${data.id}`}>
-
-                                                    <button
-                                                        className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
-                                                    >
-                                                        PILIH
-
-                                                    </button>
-                                                </Link>
+                                                        <Link to={`/qc/qualityinspection/list/${data.id}`}>
+                                                            <button
+                                                                className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                                                            >
+                                                                PILIH
+                                                            </button>
+                                                        </Link>
+                                                    </>}
 
                                             </div>
                                         </section>
-                                    </>
-                                )
-                            })}
+
+                                    );
+                                })}
                         </div>
                     </div>
-                </main>
-            )}
+                </main >
+            )
+            }
 
         </>
     )

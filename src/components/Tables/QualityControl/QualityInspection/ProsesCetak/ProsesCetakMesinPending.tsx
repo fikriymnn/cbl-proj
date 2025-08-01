@@ -89,23 +89,25 @@ function ProsesCetakMesinPending() {
 
   return (
     <>
-
       <main className="overflow-x-scroll">
         <div className="min-w-[700px] bg-white rounded-xl">
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
             <div className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF] gap-2 ">
-              <label className="text-neutral-500 text-sm font-semibold col-span-2">
+              <label className="text-neutral-500 text-sm font-semibold ">
                 MESIN
               </label>
 
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
-                No. JO
+                No. JO / IO
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Nama JO
               </label>
-              <label className="text-neutral-500 text-sm font-semibold col-span-2">
+              <label className="text-neutral-500 text-sm font-semibold ">
                 Operator
+              </label>
+              <label className="text-neutral-500 text-sm font-semibold col-span-3">
+                Alasan Pending
               </label>
               <label className="text-neutral-500 text-sm font-semibold col-span-2">
                 Tanggal
@@ -118,7 +120,7 @@ function ProsesCetakMesinPending() {
                 <>
                   <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] gap-2 items-center">
                     <div
-                      className={`w-full h-full sticky left-0 z-20  gap-8 col-span-2 flex items-center`}
+                      className={`w-full h-full sticky left-0 z-20  gap-8  flex items-center`}
                     >
                       <div
                         className={`w-2 h-full sticky left-0 z-20 bg-green-600  `}
@@ -129,24 +131,27 @@ function ProsesCetakMesinPending() {
                     </div>
 
                     <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-6">
-                      {data.no_jo}
+                      {data.no_jo} / {data.no_io}
                     </label>
                     <label className="text-neutral-500 text-sm font-semibold col-span-2 pl-3">
                       {data.nama_produk}
                     </label>
-                    <label className="text-neutral-500 text-sm font-semibold col-span-2">
+                    <label className="text-neutral-500 text-sm font-semibold ">
                       {data.operator}
+                    </label>
+                    <label className="text-neutral-500 text-sm font-semibold col-span-3">
+                      {data.alasan_pending}
                     </label>
                     <label className="text-neutral-500 text-sm font-semibold col-span-2">
                       {tglTicket}
                     </label>
-                    <div className="justify-end flex pr-2 col-span-2">
+                    <div className="justify-end flex pr-2 ">
                       <>
                         <Link
                           to={`/qc/qualityinspection/cetak/jeniscetak/${data.id}`}
                         >
                           <button
-                            className={`uppercase px-14 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
+                            className={`uppercase px-3 inline-flex rounded-[3px] items-center text-white text-xs font-bold  py-2 my-2   hover:bg-blue-400 border bg-blue-600 border-blue-600  justify-center`} // Dynamic class assignment
                           >
                             PILIH
                           </button>
@@ -155,12 +160,11 @@ function ProsesCetakMesinPending() {
                     </div>
                   </div>
                 </>
-              )
+              );
             })}
           </div>
         </div>
       </main>
-
     </>
   );
 }

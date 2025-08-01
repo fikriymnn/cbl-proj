@@ -1,955 +1,1017 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Loading from '../../../Loading';
+import Select from 'react-select';
 import { useParams } from 'react-router-dom';
+import convertTimeStampToDate from '../../../../utils/convertDate';
+import formatInteger from '../../../../utils/formaterInteger';
+import ModalAddPeriode from '../../../Modals/Qc/ModalAddPeriode';
+import LengkapiMasterKaryawanIsi from './LengkapiMasterKaryawanIsi';
 
 function EditMasterKaryawanIsi() {
+  const [isLoading, setIsLoading] = useState(false);
+  const { id } = useParams();
+  useEffect(() => {
+    getDepartment();
+    getBagian();
+    getDivisi();
+    getGradeMaster();
+    getkaryawanStatus();
+    getjabatanMaster();
+    getMasterMesin();
+    getKaryawan();
+  }, []);
+  const convertTimeStampToDate2 = (timestamp: any) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  const [karyawan, setKaryawan] = useState<any>(null);
+  const [bagianMesin, setBagianMesin] = useState([
+    {
+      id: null,
+      id_bagian_mesin: null,
+      nama_bagian_mesin: '',
+    },
+  ]);
+  async function getKaryawan() {
+    const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan/${id}`;
+    try {
+      setIsLoading(true);
+      const res = await axios.get(url, {
+        withCredentials: true,
+      });
+      console.log('karyawan', res.data.data);
+      setjenisKelamin(res.data.data.biodata_karyawan[0]?.jenis_kelamin);
+      seTipeKaryawan(res.data.data.biodata_karyawan[0]?.tipe_karyawan);
+      seidDivisi(res.data.data.biodata_karyawan[0]?.divisi?.id);
+      setidDepartment(res.data.data.biodata_karyawan[0]?.department?.id);
+      setgrade(res.data.data.biodata_karyawan[0]?.grade?.id);
+      sejabatan(res.data.data.biodata_karyawan[0]?.jabatan?.id);
+      setIdStatusKaryawan(res.data.data.biodata_karyawan[0]?.status?.id);
+      setglMasuk(
+        res.data.data.biodata_karyawan[0]?.tgl_masuk == null
+          ? null
+          : convertTimeStampToDate2(
+              res.data.data.biodata_karyawan[0]?.tgl_masuk,
+            ),
+      );
+      setglKeluar(
+        res.data.data.biodata_karyawan[0]?.tgl_keluar == null
+          ? null
+          : convertTimeStampToDate(
+              res.data.data.biodata_karyawan[0]?.tgl_keluar,
+            ),
+      );
+      sestatusPajak(res.data.data.biodata_karyawan[0]?.status_pajak);
+      settipePenggajian(res.data.data.biodata_karyawan[0]?.tipe_penggajian);
+      setBagianMesin(
+        res.data.data.biodata_karyawan[0]?.bagian_mesin_karyawan?.map(
+          (item: any) => ({
+            id: item.id, // Map the ID from the API response
+            id_bagian_mesin: null, // Keep null as per your requirement
+            nama_bagian_mesin: item.nama_bagian_mesin, // Map the name from the API response
+          }),
+        ),
+      );
 
-    const { id } = useParams();
-    const [isLoading, setIsLoading] = useState(false);
-    useEffect(() => {
-        getDepartment();
-        getBagian();
-        getDivisi();
-        getKaryawan()
-    }, []);
+      setGaji(res.data.data.biodata_karyawan[0]?.gaji);
+      setKaryawan(res.data.data);
+      setIsLoading(false);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
 
-    const [karyawan, setKaryawan] = useState<any>([]);
+  const [namaBagianMesin, setNamaBagianMesin] = useState<any>();
+  async function tambahBagian() {
+    const url = `${import.meta.env.VITE_API_LINK}/hr/karyawanBagianMesin`;
+    try {
+      setIsLoading(true);
+      const res = await axios.post(
+        url,
+        {
+          id_biodata_karyawan: karyawan?.biodata_karyawan[0]?.id,
+          id_karyawan: id,
+          id_bagian_mesin: null,
+          nama_bagian_mesin: namaBagianMesin,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+      setIsLoading(false);
+      closeModal1();
+      getKaryawan();
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
 
-    async function getKaryawan() {
-        const url = `${import.meta.env.VITE_API_LINK
-            }/hr/karyawan/${id}`;
-        try {
-            setIsLoading(true)
-            const res = await axios.get(
-                url,
-                {
-                    withCredentials: true,
-                },
-            );
-            console.log(res.data)
-            setKaryawan(res.data)
-            setIsLoading(false)
+  async function deleteBagian(id: number) {
+    if (
+      window.confirm('Apakah Anda yakin ingin Menghapus Bagian Karyawan ini?')
+    ) {
+      const url = `${
+        import.meta.env.VITE_API_LINK
+      }/hr/karyawanBagianMesin/${id}`;
+      try {
+        setIsLoading(true);
+        const res = await axios.delete(url, {
+          withCredentials: true,
+        });
+        setIsLoading(false);
+        alert('Data Berhasil Dihapus');
+        getKaryawan();
+        console.log(res.data);
+      } catch (error: any) {
+        setIsLoading(false);
+        console.log(error);
+      }
+    }
+  }
+  const [department, setDepartment] = useState<any>();
 
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
-        }
+  async function getDepartment() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/hr/department`;
+    try {
+      setIsLoading(true);
+      const res = await axios.get(url, {
+        params: {
+          is_active: true,
+        },
+        withCredentials: true,
+      });
+      setIsLoading(false);
+      setDepartment(res.data);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
+
+  async function getMasterMesin() {
+    const url = `${import.meta.env.VITE_API_LINK_P1}/api/list-mesin`;
+    try {
+      const res = await axios.get(url, {});
+      setMesinMaster(res.data.data);
+      console.log('mesin list', res.data.data);
+      setOptions(
+        res.data.data.map((item: any) => ({
+          value: item.mesin,
+          label: item.mesin,
+        })),
+      );
+      console.log(res.data);
+    } catch (error: any) {
+      console.log(error);
+    }
+  }
+  const [jabatanMaster, setjabatanMaster] = useState<any>();
+
+  async function getjabatanMaster() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/hr/jabatan`;
+    try {
+      setIsLoading(true);
+      const res = await axios.get(
+        url,
+
+        {
+          withCredentials: true,
+        },
+      );
+      setIsLoading(false);
+      setjabatanMaster(res.data);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
+  const [karyawanStatus, setkaryawanStatus] = useState<any>();
+
+  async function getkaryawanStatus() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/statusKaryawan`;
+    try {
+      setIsLoading(true);
+      const res = await axios.get(
+        url,
+
+        {
+          withCredentials: true,
+        },
+      );
+      setIsLoading(false);
+      setkaryawanStatus(res.data);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
+  const [divisi, setDivisi] = useState<any>();
+
+  async function getDivisi() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/hr/divisi`;
+    try {
+      setIsLoading(true);
+      const res = await axios.get(
+        url,
+
+        {
+          withCredentials: true,
+        },
+      );
+
+      setIsLoading(false);
+      setDivisi(res.data);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
+
+  const [bagian, setBagian] = useState<any>();
+
+  const [mesinMaster, setMesinMaster] = useState<any[]>([]);
+  const [options, setOptions] = useState<any[]>([]);
+  const handleAddPoint = () => {
+    setBagianMesin([
+      ...bagianMesin,
+      {
+        id: null,
+        id_bagian_mesin: null,
+        nama_bagian_mesin: '',
+      },
+    ]);
+  };
+  async function getBagian() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/hr/bagian`;
+    try {
+      setIsLoading(true);
+      const res = await axios.get(
+        url,
+
+        {
+          withCredentials: true,
+        },
+      );
+      setIsLoading(false);
+      setBagian(res.data);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
+
+  const [gradeMaster, setGradeMaster] = useState<any>();
+  async function getGradeMaster() {
+    const url = `${import.meta.env.VITE_API_LINK}/master/hr/grade`;
+    try {
+      setIsLoading(true);
+      const res = await axios.get(
+        url,
+
+        {
+          withCredentials: true,
+        },
+      );
+      setIsLoading(false);
+      setGradeMaster(res.data);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
+
+  const [namaKaryawan, setnamaKaryawan] = useState<any>();
+  const [nik, setnik] = useState<any>();
+  const [jenisKelamin, setjenisKelamin] = useState<any>();
+  const [idDivisi, seidDivisi] = useState<any>();
+  const [idDepartment, setidDepartment] = useState<any>();
+  const [idStatusKaryawan, setIdStatusKaryawan] = useState<any>();
+  const [idDagian, setidDagian] = useState<any>();
+  const [grade, setgrade] = useState<any>();
+  const [tglMasuk, setglMasuk] = useState<any>(null);
+  const [tglKeluar, setglKeluar] = useState<any>(null);
+  const [tipePenggajian, settipePenggajian] = useState<any>();
+  const [jabatan, sejabatan] = useState<any>();
+  const [statusPajak, sestatusPajak] = useState<any>();
+  const [level, setlevel] = useState<any>();
+  const [subLevel, setsubLevel] = useState<any>();
+  const [gaji, setGaji] = useState<any>(0);
+  const [tipeKaryawan, seTipeKaryawan] = useState<any>();
+
+  async function tambahKaryawan(iid: any) {
+    const url = `${import.meta.env.VITE_API_LINK}/hr/karyawan/${iid}`;
+    try {
+      setIsLoading(true);
+      const res = await axios.put(
+        url,
+        {
+          id_status_karyawan: idStatusKaryawan,
+          nama_karyawan: namaKaryawan,
+          tipe_karyawan: tipeKaryawan,
+          nik: nik,
+          jenis_kelamin: jenisKelamin,
+          id_divisi: idDivisi,
+          id_department: idDepartment,
+          bagian_mesin: bagianMesin,
+          id_grade: grade,
+          tgl_masuk: tglMasuk,
+          tgl_keluar: tglKeluar,
+          tipe_penggajian: tipePenggajian,
+          id_jabatan: jabatan,
+          status_pajak: statusPajak,
+          level: level,
+          sub_level: subLevel,
+          gaji: gaji,
+          kontrak_dari: null,
+          kontrak_sampai: null,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+      setIsLoading(false);
+      window.location.reload();
+    } catch (error: any) {
+      setIsLoading(false);
+      console.log(error);
+    }
+  }
+  const recalculateWaktuKeluar = (
+    masukDate: string,
+    waktuBulan: number,
+    type: string | null,
+  ) => {
+    if (!masukDate || !waktuBulan) return null; // If no input date or waktuBulan, return empty
+    const date = new Date(masukDate);
+
+    if (type === 'hari') {
+      date.setDate(date.getDate() + waktuBulan); // Add days if type is 'Hari'
+    } else {
+      date.setMonth(date.getMonth() + waktuBulan); // Add months otherwise
     }
 
-    const [department, setDepartment] = useState<any>();
+    return date.toISOString().split('T')[0]; // Format to YYYY-MM-DD
+  };
 
-    async function getDepartment() {
-        const url = `${import.meta.env.VITE_API_LINK
-            }/master/hr/department`;
-        try {
-            setIsLoading(true)
-            const res = await axios.get(
-                url,
+  const handleStatusChange = (e: any) => {
+    const selectedId = e.target.value;
+    setIdStatusKaryawan(selectedId);
 
-                {
-                    withCredentials: true,
-                },
-            );
-            setIsLoading(false)
-            setDepartment(res.data)
-            console.log(res.data)
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
-        }
+    const selectedStatus = karyawanStatus.data.find(
+      (data: any) => data.id === parseInt(selectedId),
+    );
+    if (selectedStatus) {
+      // Use current or default tglMasuk if not set
+      const defaultTglMasuk =
+        tglMasuk || new Date().toISOString().split('T')[0];
+      const recalculatedKeluar = recalculateWaktuKeluar(
+        defaultTglMasuk,
+        selectedStatus.waktu_bulan,
+        selectedStatus.type,
+      );
+      setglKeluar(recalculatedKeluar);
     }
+  };
 
-    const [divisi, setDivisi] = useState<any>();
+  const handleTglMasukChange = (e: any) => {
+    const inputDate = e.target.value;
+    setglMasuk(inputDate);
 
-    async function getDivisi() {
-        const url = `${import.meta.env.VITE_API_LINK
-            }/master/hr/divisi`;
-        try {
-            setIsLoading(true)
-            const res = await axios.get(
-                url,
-
-                {
-                    withCredentials: true,
-                },
-            );
-            setIsLoading(false)
-            setDivisi(res.data)
-            console.log(res.data)
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
-        }
+    const selectedStatus = karyawanStatus.data.find(
+      (data: any) => data.id === parseInt(idStatusKaryawan),
+    );
+    if (selectedStatus) {
+      const recalculatedKeluar = recalculateWaktuKeluar(
+        inputDate,
+        selectedStatus.waktu_bulan,
+        selectedStatus.type,
+      );
+      setglKeluar(recalculatedKeluar);
     }
+  };
+  const handleChangePointDepartment = (selected: any, index: number) => {
+    const updatedBagianMesin = [...bagianMesin];
+    const { value } = selected;
 
-    const [bagian, setBagian] = useState<any>();
+    updatedBagianMesin[index] = {
+      ...updatedBagianMesin[index],
+      nama_bagian_mesin: value,
+    };
 
-    async function getBagian() {
-        const url = `${import.meta.env.VITE_API_LINK
-            }/master/hr/bagian`;
-        try {
-            setIsLoading(true)
-            const res = await axios.get(
-                url,
+    console.log(updatedBagianMesin);
+    setBagianMesin(updatedBagianMesin);
+  };
 
-                {
-                    withCredentials: true,
-                },
-            );
-            setIsLoading(false)
-            setBagian(res.data)
-            console.log(res.data)
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
-        }
-    }
-    const [namaKaryawanEdit, setnamaKaryawanEdit] = useState<any>();
-    const [nikEdit, setnikEdit] = useState<any>();
-    const [jenisKelaminEdit, setjenisKelaminEdit] = useState<any>();
-    const [idDivisiEdit, seidDivisiEdit] = useState<any>();
-    const [idDepartmentEdit, setidDepartmentEdit] = useState<any>();
-    const [idDagianEdit, setidDagianEdit] = useState<any>();
-    const [gradeEdit, setgradeEdit] = useState<any>();
-    const [tglMasukEdit, setglMasukEdit] = useState<any>();
-    const [tglKeluarEdit, setglKeluarEdit] = useState<any>();
-    const [tipePenggajianEdit, settipePenggajianEdit] = useState<any>();
-    const [jabatanEdit, sejabatanEdit] = useState<any>();
-    const [statusKaryawanEdit, setstatusKaryawanEdit] = useState<any>();
-    const [statusPajakEdit, sestatusPajakEdit] = useState<any>();
-    const [levelEdit, setlevelEdit] = useState<any>();
-    const [subLevelEdit, setsubLevelEdit] = useState<any>();
-    const [gaji, setGaji] = useState<any>(0);
-    const [kontrakDari, setKOntrakDari] = useState<any>(null);
-    const [kontrakSampai, setKontrakSampai] = useState<any>(null);
+  const [showModal1, setShowModal1] = useState(false);
+  const openModal1 = () => setShowModal1(true);
+  const closeModal1 = () => setShowModal1(false);
 
-    async function tambahKaryawan() {
-        const url = `${import.meta.env.VITE_API_LINK
-            }/hr/karyawan/${id}`;
-        try {
-            setIsLoading(true)
-            const res = await axios.put(
-                url,
-                {
-                    nama_karyawan: namaKaryawanEdit,
-                    nik: nikEdit,
-                    jenis_kelamin: jenisKelaminEdit,
-                    id_divisi: idDivisiEdit,
-                    id_department: idDepartmentEdit,
-                    id_bagian: idDagianEdit,
-                    grade: gradeEdit,
-                    tgl_masuk: tglMasukEdit,
-                    tgl_keluar: tglKeluarEdit,
-                    tipe_penggajian: tipePenggajianEdit,
-                    jabatan: jabatanEdit,
-                    status_karyawan: statusKaryawanEdit,
-                    status_pajak: statusPajakEdit,
-                    level: levelEdit,
-                    sub_level: subLevelEdit,
-                    gaji: gaji,
-                    kontrak_dari: kontrakDari,
-                    kontrak_sampai: kontrakSampai
-                },
-                {
-                    withCredentials: true,
-                },
-            );
-            setIsLoading(false)
-            alert('Data Berhasil Diubah')
-        } catch (error: any) {
-            setIsLoading(false)
-            console.log(error);
-        }
-    }
+  const handleChangePointDepatment = (selected: any) => {
+    const { value } = selected;
+    const filteredData = mesinMaster.find(
+      (item: any) => item.mesin == value,
+      // item.id.includes(parseInt(value));
+    );
+    setNamaBagianMesin(filteredData?.mesin);
+  };
+  return (
+    <main className="overflow-x-scroll">
+      {isLoading && <Loading />}
+      <div className="min-w-[700px]  bg-white rounded-t-md border-b-8 border-[#D8EAFF] h-12"></div>
+      <div className="min-w-[700px] bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="flex w-full bg-gradient-to-r from-blue-50 to-blue-100 px-8 py-4 rounded-t-lg">
+          <label className="text-[#0065de] text-lg font-bold tracking-wide">
+            BIODATA KARYAWAN
+          </label>
+        </div>
 
-    return (
-        <main className="overflow-x-scroll">
-            {isLoading && <Loading />}
-            <div className="min-w-[700px] bg-white rounded-t-md border-b-8 border-[#D8EAFF] h-12">
+        <div className="w-full bg-white px-8 py-8 grid grid-cols-2 gap-8 rounded-b-lg">
+          {/* Left Column */}
+          <div className="flex flex-col gap-6">
+            {/* NIK and Gender Section */}
+            <div className="space-y-4">
+              <div className="flex items-start gap-8">
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    NIK
+                  </label>
+                  <input
+                    defaultValue={karyawan?.biodata_karyawan[0]?.nik}
+                    onChange={(e) => setnik(e.target.value)}
+                    type="text"
+                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                  />
+                </div>
 
-            </div>
-            <div className="min-w-[700px] bg-white  border-b-8 border-[#D8EAFF] ">
-                <div className='flex w-full bg-[#eeeeee] px-6 py-3'>
-                    <label className='text-[#0065de] text-sm font-semibold'>
-                        BIODATA
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Jenis Kelamin
+                  </label>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        onChange={(e) => setjenisKelamin(e.target.value)}
+                        type="radio"
+                        name="kelamin"
+                        value="Laki-Laki"
+                        checked={jenisKelamin === 'Laki-Laki'}
+                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">Laki-Laki</span>
                     </label>
-
-                </div>
-                <div className=' w-full bg-white px-6 py-4 grid grid-cols-2 gap-3'>
-                    <div className='flex flex-col gap-2 justify-between'>
-                        <div>
-                            <label className=' text-sm font-semibold'>
-                                NIK<span className='text-red-600'>*</span>
-                            </label>
-                            <div className='flex w-full gap-7'>
-                                <input
-                                    defaultValue={karyawan?.data?.biodata_karyawan[0]?.nik}
-                                    onChange={(e) => setnikEdit(e.target.value)}
-                                    type='text' className='border-stroke border-2 rounded-md w-[40%]' />
-                                <div className='flex gap-1'>
-                                    <input
-
-                                        onChange={(e) => setjenisKelaminEdit(e.target.value)}
-                                        type='radio' name='kelamin' id='kelamin1' value={'Laki-Laki'} />Laki-Laki
-                                </div>
-
-                                <div className='flex gap-1'>
-                                    <input
-
-                                        onChange={(e) => setjenisKelaminEdit(e.target.value)}
-                                        type='radio' name='kelamin' id='kelamin2' value={'Perempuan'} />Perempuan
-                                </div>
-
-                            </div>
-                            <div className='flex flex-col gap-1'>
-                                <label className=' text-sm font-semibold'>
-                                    Nama Karyawan<span className='text-red-600'>*</span>
-                                </label>
-                                <input
-                                    defaultValue={karyawan?.data?.name}
-                                    onChange={(e) => setnamaKaryawanEdit(e.target.value)}
-                                    type='text' className='border-stroke border-2 rounded-md w-[40%]' />
-                            </div>
-                        </div>
-                        <div>
-                            <div className='flex flex-col gap-1'>
-                                <label className=' text-sm font-semibold'>
-                                    Divisi<span className='text-red-600'>*</span>
-                                </label>
-                                <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                                    <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                        <svg
-                                            width="20"
-                                            height="20"
-                                            viewBox="0 0 20 20"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-
-                                        </svg>
-                                    </span>
-
-                                    <select
-                                        defaultValue={karyawan?.data?.biodata_karyawan[0]?.divisi?.nama_divisi}
-                                        name='nama_divisi'
-                                        onChange={(e) => seidDivisiEdit(e.target.value)}
-                                        className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
-                                    >
-                                        <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                            Pilih
-                                        </option>
-                                        {divisi?.data?.map((data: any, i: number) => {
-
-                                            return (
-                                                <option
-                                                    value={data.id}
-                                                    className="text-gray-800 text-xs font-light dark:text-bodydark"
-                                                >
-                                                    {data.nama_divisi}
-                                                </option>
-                                            )
-                                        }
-                                        )}
-
-                                    </select>
-
-                                    <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
-                                        <svg
-                                            width="24"
-                                            height="24"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                            <g opacity="0.8">
-                                                <path
-                                                    fillRule="evenodd"
-                                                    clipRule="evenodd"
-                                                    d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                                    fill="#637381"
-                                                ></path>
-                                            </g>
-                                        </svg>
-                                    </span>
-
-                                </div>
-                            </div>
-                            <div className='flex gap-4'>
-                                <div className='flex flex-col gap-1 w-[60%]'>
-                                    <label className=' text-sm font-semibold'>
-                                        Department<span className='text-red-600'>*</span>
-                                    </label>
-                                    <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                                        <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                            <svg
-                                                width="20"
-                                                height="20"
-                                                viewBox="0 0 20 20"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-
-                                            </svg>
-                                        </span>
-
-                                        <select
-                                            defaultValue={karyawan?.data?.biodata_karyawan[0]?.department?.nama_department}
-                                            name='nama_department'
-                                            onChange={(e) => setidDepartmentEdit(e.target.value)}
-                                            className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
-                                        >
-                                            <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                                Pilih
-                                            </option>
-                                            {department?.data?.map((data: any, i: number) => {
-
-                                                return (
-                                                    <option
-                                                        value={data.id}
-                                                        className="text-gray-800 text-xs font-light dark:text-bodydark"
-                                                    >
-                                                        {data.nama_department}
-                                                    </option>
-                                                )
-                                            }
-                                            )}
-
-                                        </select>
-
-                                        <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
-                                            <svg
-                                                width="24"
-                                                height="24"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <g opacity="0.8">
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        clipRule="evenodd"
-                                                        d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                                        fill="#637381"
-                                                    ></path>
-                                                </g>
-                                            </svg>
-                                        </span>
-
-                                    </div>
-                                </div>
-                                <div className='flex flex-col gap-1 w-[40%]'>
-                                    <label className=' text-sm font-semibold'>
-                                        Grade<span className='text-red-600'>*</span>
-                                    </label>
-                                    <input
-                                        defaultValue={karyawan?.data?.biodata_karyawan[0]?.grade}
-                                        onChange={(e) => setgradeEdit(e.target.value)}
-                                        type='text' className='border-stroke border-2 rounded-md w-[40%]' />
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <div className=''>
-                        <div className='flex w-full gap-3'>
-                            <div className='flex flex-col gap-1 w-[50%]'>
-                                <label className=' text-sm font-semibold'>
-                                    Tanggal Masuk<span className='text-red-600'>*</span>
-                                </label>
-                                <input
-                                    onChange={(e) => setglMasukEdit(e.target.value)}
-                                    type="date"
-                                    className='border-2 border-stroke rounded-md'
-                                ></input>
-                            </div>
-                            <div className='flex flex-col gap-1 w-[50%]'>
-                                <label className=' text-sm font-semibold'>
-                                    Status Karyawan<span className='text-red-600'>*</span>
-                                </label>
-                                <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                                    <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                        <svg
-                                            width="20"
-                                            height="20"
-                                            viewBox="0 0 20 20"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-
-                                        </svg>
-                                    </span>
-
-                                    <select
-                                        defaultValue={karyawan?.data?.biodata_karyawan[0]?.status_karyawan}
-                                        onChange={(e) => setstatusKaryawanEdit(e.target.value)}
-                                        className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
-                                    >
-                                        <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                            Pilih
-                                        </option>
-                                        <option value={'Tetap'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            Tetap
-                                        </option>
-
-                                        <option value={'Probation'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            Probation
-                                        </option>
-                                    </select>
-
-                                    <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
-                                        <svg
-                                            width="24"
-                                            height="24"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                            <g opacity="0.8">
-                                                <path
-                                                    fillRule="evenodd"
-                                                    clipRule="evenodd"
-                                                    d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                                    fill="#637381"
-                                                ></path>
-                                            </g>
-                                        </svg>
-                                    </span>
-
-                                </div>
-                            </div>
-                        </div>
-                        {(karyawan?.data?.biodata_karyawan[0]?.status_karyawan == 'tetap' || karyawan?.data?.biodata_karyawan[0]?.status_karyawan == null) ? (
-                            <>
-                            </>
-                        ) :
-                            (
-                                <>
-                                    <div className='flex w-full gap-3'>
-                                        <div className='flex flex-col gap-1 w-[50%]'>
-                                            <label className=' text-sm font-semibold'>
-                                                Tanggal Mulai Kontrak
-                                            </label>
-                                            <input
-
-                                                onChange={(e) => setKOntrakDari(e.target.value)}
-                                                type="date"
-                                                className='border-2 border-stroke rounded-md'
-                                            ></input>
-                                        </div>
-                                        <div className='flex flex-col gap-1 w-[50%]'>
-                                            <label className=' text-sm font-semibold'>
-                                                Tanggal Akhir Kontrak
-                                            </label>
-                                            <input
-                                                onChange={(e) => setKontrakSampai(e.target.value)}
-                                                type="date"
-                                                className='border-2 border-stroke rounded-md'
-                                            ></input>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-
-                        <div className='flex w-full gap-3'>
-                            <div className='flex flex-col gap-1 w-[50%]'>
-                                <label className=' text-sm font-semibold'>
-                                    Tanggal Keluar
-                                </label>
-                                <input
-                                    onChange={(e) => setglKeluarEdit(e.target.value)}
-                                    type="date"
-                                    className='border-2 border-stroke rounded-md'
-                                ></input>
-                            </div>
-                            <div className='flex flex-col gap-1 w-[50%]'>
-                                <label className=' text-sm font-semibold'>
-                                    Status Pajak<span className='text-red-600'>*</span>
-                                </label>
-                                <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                                    <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                        <svg
-                                            width="20"
-                                            height="20"
-                                            viewBox="0 0 20 20"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-
-                                        </svg>
-                                    </span>
-
-                                    <select
-                                        defaultValue={karyawan?.data?.biodata_karyawan[0]?.status_pajak}
-                                        onChange={(e) => sestatusPajakEdit(e.target.value)}
-                                        className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
-                                    >
-                                        <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                            Pilih
-                                        </option>
-                                        <option value={'TK0'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            TK0
-                                        </option>
-                                        <option value={'TK1'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            TK1
-                                        </option>
-                                        <option value={'TK2'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            TK2
-                                        </option>
-                                        <option value={'TK3'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            TK3
-                                        </option>
-                                        <option value={'K0'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            K0
-                                        </option>
-                                        <option value={'K1'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            K1
-                                        </option>
-                                        <option value={'K2'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            K2
-                                        </option>
-                                        <option value={'K3'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            K3
-                                        </option>
-                                        <option value={'KI0'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            KI0
-                                        </option>
-                                        <option value={'KI1'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            KI1
-                                        </option>
-                                        <option value={'KI2'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            KI2
-                                        </option>
-                                        <option value={'KI3'} className="text-[#646464] text-xs dark:text-bodydark">
-                                            KI3
-                                        </option>
-
-                                    </select>
-
-                                    <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
-                                        <svg
-                                            width="24"
-                                            height="24"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                        >
-                                            <g opacity="0.8">
-                                                <path
-                                                    fillRule="evenodd"
-                                                    clipRule="evenodd"
-                                                    d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                                    fill="#637381"
-                                                ></path>
-                                            </g>
-                                        </svg>
-                                    </span>
-
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className='flex flex-col gap-1 w-[50%]'>
-                            <label className=' text-sm font-semibold'>
-                                Tipe Penggajian<span className='text-red-600'>*</span>
-                            </label>
-                            <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                                <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                    <svg
-                                        width="20"
-                                        height="20"
-                                        viewBox="0 0 20 20"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-
-                                    </svg>
-                                </span>
-
-                                <select
-                                    defaultValue={karyawan?.data?.biodata_karyawan[0]?.tipe_penggajian}
-                                    onChange={(e) => settipePenggajianEdit(e.target.value)}
-                                    className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
-                                >
-                                    <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                        Pilih
-                                    </option>
-                                    <option value={'mingguan'} className="text-[#646464] text-xs dark:text-bodydark">
-                                        MINGGUAN
-                                    </option>
-                                    <option value={'bulanan'} className="text-[#646464] text-xs dark:text-bodydark">
-                                        BULANAN
-                                    </option>
-
-                                </select>
-
-                                <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
-                                    <svg
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <g opacity="0.8">
-                                            <path
-                                                fillRule="evenodd"
-                                                clipRule="evenodd"
-                                                d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                                fill="#637381"
-                                            ></path>
-                                        </g>
-                                    </svg>
-                                </span>
-
-                            </div>
-                        </div>
-
-                        <div className='flex flex-col  '>
-                            <div className='flex gap-3'>
-                                <div className='flex flex-col gap-1 w-[50%]'>
-                                    <label className=' text-sm font-semibold'>
-                                        Bagian<span className='text-red-600'>*</span>
-                                    </label>
-                                    <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                                        <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                            <svg
-                                                width="20"
-                                                height="20"
-                                                viewBox="0 0 20 20"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-
-                                            </svg>
-                                        </span>
-
-                                        <select
-                                            defaultValue={karyawan?.data?.biodata_karyawan[0]?.bagian?.nama_bagian}
-                                            onChange={(e) => setidDagianEdit(e.target.value)}
-                                            className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
-                                        >
-                                            <option value={''} disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                                Pilih
-                                            </option>
-                                            {bagian?.data?.map((data: any, i: number) => {
-
-                                                return (
-                                                    <option
-                                                        value={data.id}
-                                                        className="text-gray-800 text-xs font-light dark:text-bodydark"
-                                                    >
-                                                        {data.nama_bagian}
-                                                    </option>
-                                                )
-                                            }
-                                            )}
-
-
-
-                                        </select>
-
-                                        <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
-                                            <svg
-                                                width="24"
-                                                height="24"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <g opacity="0.8">
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        clipRule="evenodd"
-                                                        d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                                        fill="#637381"
-                                                    ></path>
-                                                </g>
-                                            </svg>
-                                        </span>
-
-                                    </div>
-                                </div>
-                                <div className='flex flex-col gap-1 w-[50%]'>
-                                    <label className=' text-sm font-semibold'>
-                                        Level
-                                    </label>
-                                    <input
-                                        defaultValue={karyawan?.data?.biodata_karyawan[0]?.level}
-                                        onChange={(e) => setlevelEdit(e.target.value)}
-                                        type='text' className='border-stroke border-2 rounded-md w-[50%]' />
-                                </div>
-                            </div>
-                            <div className='flex gap-3'>
-                                <div className='flex flex-col gap-1 w-[50%]'>
-                                    <label className=' text-sm font-semibold'>
-                                        Jabatan<span className='text-red-600'>*</span>
-                                    </label>
-                                    <input
-                                        defaultValue={karyawan?.data?.biodata_karyawan[0]?.jabatan}
-                                        onChange={(e) => sejabatanEdit(e.target.value)}
-                                        type='text' className='border-stroke border-2 rounded-md w-[50%]' />
-                                </div>
-                                <div className='flex flex-col gap-1 w-[50%]'>
-                                    <label className=' text-sm font-semibold'>
-                                        Sub-Level
-                                    </label>
-                                    <input
-                                        defaultValue={karyawan?.data?.biodata_karyawan[0]?.sub_level}
-                                        onChange={(e) => setsubLevelEdit(e.target.value)}
-                                        type='text' className='border-stroke border-2 rounded-md w-[50%]' />
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-                {/* <div className='flex w-full bg-[#eeeeee] px-6 py-3'>
-                    <label className='text-[#0065de] text-sm font-semibold'>
-                        DETAIL INFORMASI
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        onChange={(e) => setjenisKelamin(e.target.value)}
+                        type="radio"
+                        name="kelamin"
+                        value="Perempuan"
+                        checked={jenisKelamin === 'Perempuan'}
+                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">Perempuan</span>
                     </label>
-
+                  </div>
                 </div>
-                <div className=' w-full bg-white px-6 py-4 grid grid-cols-2 gap-3'>
-                    <div className='flex gap-4 '>
-                        <div className='flex flex-col gap-2  w-full'>
-                            <label className=' text-sm font-semibold'>
-                                Tempat / Tanggal Lahir<span className='text-red-600'>*</span>
-                            </label>
-                            <div className='flex gap-3 '>
-                                <input type='text' className='border-stroke border-2 rounded-md w-[65%]' /> /
-                                <input
-                                    type="date"
-                                    className='border-2 border-stroke rounded-md w-[35%]'
-                                ></input>
-                            </div>
-                            <label className=' text-sm font-semibold'>
-                                Agama
-                            </label>
-                            <input type='text' className='border-stroke border-2 rounded-md w-full' />
-                            <label className=' text-sm font-semibold'>
-                                Kewarganegaraan<span className='text-red-600'>*</span>
-                            </label>
-                            <input type='text' className='border-stroke border-2 rounded-md w-full' />
-                            <label className=' text-sm font-semibold'>
-                                Golongan Darah<span className='text-red-600'>*</span>
-                            </label>
-                            <input type='text' className='border-stroke border-2 rounded-md w-full' />
-                            <label className=' text-sm font-semibold'>
-                                Alamat<span className='text-red-600'>*</span>
-                            </label>
-                            <textarea
+              </div>
 
-                                name=""
-                                rows={3}
-                                cols={6}
-                                id=""
-                                className="w-full p-2 bg-white border border-zinc-400 rounded-sm  resize-none"
-                            ></textarea>
-                            <label className=' text-sm font-semibold'>
-                                Telepon
-                            </label>
-                            <input type='text' className='border-stroke border-2 rounded-md w-full' />
-                            <label className=' text-sm font-semibold'>
-                                Handphone
-                            </label>
-                            <input type='text' className='border-stroke border-2 rounded-md w-full' />
-                            <label className=' text-sm font-semibold'>
-                                Email
-                            </label>
-                            <input type='text' className='border-stroke border-2 rounded-md w-full' />
-                        </div>
-                    </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Nama Karyawan
+                </label>
+                <input
+                  defaultValue={karyawan?.name}
+                  onChange={(e) => setnamaKaryawan(e.target.value)}
+                  type="text"
+                  className="w-3/5 px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                />
+              </div>
 
-                    <div className='flex gap-4'>
-                        <div className='flex flex-col gap-2 w-full pt-9'>
-                            <label className='text-[#0065de] text-sm font-semibold'>
-                                NPWP
-                            </label>
-                            <label className=' text-sm font-semibold'>
-                                Nomor<span className='text-red-600'>*</span>
-                            </label>
-                            <input type='text' className='border-stroke border-2 rounded-md w-full' />
-
-                            <label className=' text-sm font-semibold'>
-                                Nama<span className='text-red-600'>*</span>
-                            </label>
-                            <input type='text' className='border-stroke border-2 rounded-md w-full' />
-
-                            <label className=' text-sm font-semibold'>
-                                Alamat<span className='text-red-600'>*</span>
-                            </label>
-                            <textarea
-
-                                name=""
-                                rows={3}
-                                cols={6}
-                                id=""
-                                className="w-full p-2 bg-white border border-zinc-400 rounded-sm  resize-none"
-                            ></textarea>
-
-                            <label className=' text-sm font-semibold'>
-                                Tanggal Pendaftaran<span className='text-red-600'>*</span>
-                            </label>
-                            <input type='date' className='border-stroke border-2 rounded-md w-[50%]' />
-
-                            <div className='flex  w-full gap-4'>
-                                <div className='flex flex-col w-[50%]'>
-                                    <label className=' text-sm font-semibold'>
-                                        No. KTP<span className='text-red-600'>*</span>
-                                    </label>
-                                    <input type='text' className='border-stroke border-2 rounded-md w-full' />
-                                </div>
-                                <div className='flex flex-col w-[50%]'>
-                                    <label className=' text-sm font-semibold'>
-                                        Berlaku s/d<span className='text-red-600'>*</span>
-                                    </label>
-                                    <input type='date' className='border-stroke border-2 rounded-md w-full' />
-                                </div>
-                            </div>
-                            <label className=' text-sm font-semibold'>
-                                No. BPJS<span className='text-red-600'>*</span>
-                            </label>
-
-                            <input type='text' className='border-stroke border-2 rounded-md w-full' />
-                            <label className=' text-sm font-semibold'>
-                                SIM 1
-                            </label>
-                            <div className='flex w-full gap-3'>
-                                <div className='flex flex-col w-[20%]'>
-
-                                    <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                                        <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                            <svg
-                                                width="20"
-                                                height="20"
-                                                viewBox="0 0 20 20"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-
-                                            </svg>
-                                        </span>
-
-                                        <select
-
-                                            className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
-                                        >
-                                            <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                                A
-                                            </option>
-
-
-
-                                        </select>
-
-                                        <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
-                                            <svg
-                                                width="24"
-                                                height="24"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <g opacity="0.8">
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        clipRule="evenodd"
-                                                        d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                                        fill="#637381"
-                                                    ></path>
-                                                </g>
-                                            </svg>
-                                        </span>
-
-                                    </div>
-                                </div>
-                                <div className='w-full'>
-                                    <input type='text' className='border-stroke border-2 rounded-md w-full' />
-                                </div>
-
-                            </div>
-                            <label className=' text-sm font-semibold'>
-                                SIM 2
-                            </label>
-                            <div className='flex w-full gap-3'>
-                                <div className='flex flex-col w-[20%]'>
-
-                                    <div className="relative z-20 h-10 bg-white dark:bg-form-input  w-full">
-                                        <span className="absolute top-1/2 left-4 z-30 -translate-y-1/2">
-                                            <svg
-                                                width="20"
-                                                height="20"
-                                                viewBox="0 0 20 20"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-
-                                            </svg>
-                                        </span>
-
-                                        <select
-
-                                            className={`relative z-20 w-full bg-[#64646424] appearance-none rounded-md h-7 py-1 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input  
-                                    }`}
-                                        >
-                                            <option selected disabled className="text-[#646464] text-xs dark:text-bodydark">
-                                                B
-                                            </option>
-
-
-
-                                        </select>
-
-                                        <span className="absolute top-[15px] right-4 z-10 -translate-y-1/2">
-                                            <svg
-                                                width="24"
-                                                height="24"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <g opacity="0.8">
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        clipRule="evenodd"
-                                                        d="M5.29289 8.29289C5.68342 7.90237 6.31658 7.90237 6.70711 8.29289L12 13.5858L17.2929 8.29289C17.6834 7.90237 18.3166 7.90237 18.7071 8.29289C19.0976 8.68342 19.0976 9.31658 18.7071 9.70711L12.7071 15.7071C12.3166 16.0976 11.6834 16.0976 11.2929 15.7071L5.29289 9.70711C4.90237 9.31658 4.90237 8.68342 5.29289 8.29289Z"
-                                                        fill="#637381"
-                                                    ></path>
-                                                </g>
-                                            </svg>
-                                        </span>
-
-                                    </div>
-                                </div>
-                                <div className='w-full'>
-                                    <input type='text' className='border-stroke border-2 rounded-md w-full' />
-                                </div>
-
-                            </div>
-                        </div>
-
-                    </div>
-
-                </div> */}
-                <div className='flex w-full justify-end items-end px-8 py-5'>
-                    <button
-                        onClick={() => tambahKaryawan()}
-                        className='bg-blue-500 text-white text-md px-4 py-1 rounded-md font-semibold'>
-                        SIMPAN
-                    </button>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tipe Karyawan
+                </label>
+                <div className="flex gap-8">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      onChange={(e) => seTipeKaryawan(e.target.value)}
+                      type="radio"
+                      name="tipeKryawan"
+                      value="produksi"
+                      checked={tipeKaryawan === 'produksi'}
+                      className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700">Produksi</span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      onChange={(e) => seTipeKaryawan(e.target.value)}
+                      type="radio"
+                      name="tipeKryawan"
+                      value="staff"
+                      checked={tipeKaryawan === 'staff'}
+                      className="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="text-sm text-gray-700">Staff</span>
+                  </label>
                 </div>
+              </div>
             </div>
-        </main>
-    )
+
+            {/* Department Section */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Department
+                </label>
+                <div className="relative">
+                  <select
+                    value={idDepartment}
+                    name="nama_department"
+                    onChange={(e) => setidDepartment(e.target.value)}
+                    className="w-full px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors appearance-none"
+                  >
+                    <option selected disabled className="text-gray-500">
+                      Pilih Department
+                    </option>
+                    {department?.data?.map((data: any, i: any) => (
+                      <option key={i} value={data.id} className="text-gray-800">
+                        {data.nama_department}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Divisi
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={idDivisi}
+                      name="nama_divisi"
+                      onChange={(e) => seidDivisi(e.target.value)}
+                      className="w-full px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors appearance-none"
+                    >
+                      <option selected disabled className="text-gray-500">
+                        Pilih Divisi
+                      </option>
+                      {divisi?.data?.map((data: any, i: any) => (
+                        <option
+                          key={i}
+                          value={data.id}
+                          className="text-gray-800"
+                        >
+                          {data.nama_divisi}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                      <svg
+                        className="w-5 h-5 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 9l-7 7-7-7"
+                        ></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Jabatan
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={jabatan}
+                      onChange={(e) => sejabatan(e.target.value)}
+                      className="w-full px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors appearance-none"
+                    >
+                      <option selected disabled className="text-gray-500">
+                        Pilih Jabatan
+                      </option>
+                      {jabatanMaster?.data?.map((data: any, i: any) => (
+                        <option
+                          key={i}
+                          value={data.id}
+                          className="text-gray-800"
+                        >
+                          {data.nama_jabatan}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                      <svg
+                        className="w-5 h-5 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M19 9l-7 7-7-7"
+                        ></path>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Grade
+                </label>
+                <div className="relative">
+                  <select
+                    value={grade}
+                    name="grade"
+                    onChange={(e) => setgrade(e.target.value)}
+                    className="w-full px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors appearance-none"
+                  >
+                    <option selected disabled className="text-gray-500">
+                      Pilih Grade
+                    </option>
+                    {gradeMaster?.data?.map((data: any, i: any) => (
+                      <option key={i} value={data.id} className="text-gray-800">
+                        {data.kategori}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tanggal Masuk
+                </label>
+                <input
+                  value={tglMasuk}
+                  onChange={handleTglMasukChange}
+                  type="date"
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Status Karyawan
+                </label>
+                <div className="relative">
+                  <select
+                    value={idStatusKaryawan}
+                    name="nama_department"
+                    onChange={handleStatusChange}
+                    className="w-full px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors appearance-none"
+                  >
+                    <option selected disabled className="text-gray-500">
+                      Pilih Status Karyawan
+                    </option>
+                    {karyawanStatus?.data?.map((data: any, i: any) => (
+                      <option key={i} value={data.id} className="text-gray-800">
+                        {data.nama_status === 'tetap' ||
+                        data.nama_status === 'keluar'
+                          ? data.nama_status
+                          : `${data.nama_status} - ${data.waktu_bulan} - ${
+                              data.type === null ? 'Bulan' : data.type
+                            }`}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tanggal Keluar
+                </label>
+                <div className="px-4 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg text-gray-700">
+                  {tglKeluar || '-'}
+                </div>
+              </div>
+
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Status Pajak
+                </label>
+                <div className="relative">
+                  <select
+                    value={statusPajak}
+                    onChange={(e) => sestatusPajak(e.target.value)}
+                    className="w-full px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors appearance-none"
+                  >
+                    <option selected disabled className="text-gray-500">
+                      Pilih Status Pajak
+                    </option>
+                    {[
+                      'TK0',
+                      'TK1',
+                      'TK2',
+                      'TK3',
+                      'K0',
+                      'K1',
+                      'K2',
+                      'K3',
+                      'KI0',
+                      'KI1',
+                      'KI2',
+                      'KI3',
+                    ].map((status) => (
+                      <option
+                        key={status}
+                        value={status}
+                        className="text-gray-800"
+                      >
+                        {status}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Tipe Penggajian
+                </label>
+                <div className="relative">
+                  <select
+                    value={tipePenggajian}
+                    onChange={(e) => settipePenggajian(e.target.value)}
+                    className="w-full px-4 py-2 bg-white border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors appearance-none"
+                  >
+                    <option selected disabled className="text-gray-500">
+                      Pilih Tipe Penggajian
+                    </option>
+                    <option value="mingguan" className="text-gray-800">
+                      Mingguan
+                    </option>
+                    <option value="bulanan" className="text-gray-800">
+                      Bulanan
+                    </option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Gaji
+                </label>
+                <input
+                  value={gaji}
+                  onChange={(e) => setGaji(e.target.value)}
+                  type="number"
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                  placeholder="Masukkan gaji"
+                />
+              </div>
+            </div>
+
+            {/* Bagian Section */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  Bagian
+                </label>
+                <div className="space-y-3">
+                  {bagianMesin?.map((item: any, index: any) => (
+                    <div key={index} className="flex items-center gap-3">
+                      <div className="flex-1">
+                        <Select
+                          options={options}
+                          onChange={(selected) =>
+                            handleChangePointDepartment(selected, index)
+                          }
+                          value={
+                            item.nama_bagian_mesin
+                              ? options.find(
+                                  (option) =>
+                                    option.value === item.nama_bagian_mesin,
+                                )
+                              : null
+                          }
+                          placeholder="Pilih Bagian Mesin"
+                          className="w-full"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className="p-2 text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+                        onClick={() => deleteBagian(item.id)}
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M6 18L18 6M6 6l12 12"
+                          ></path>
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={openModal1}
+                    className="inline-flex items-center gap-2 px-4 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                      ></path>
+                    </svg>
+                    Tambah Bagian
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Level
+                  </label>
+                  <input
+                    defaultValue={karyawan?.biodata_karyawan[0]?.level}
+                    onChange={(e) => setlevel(e.target.value)}
+                    type="text"
+                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                    placeholder="Masukkan level"
+                  />
+                </div>
+
+                <div className="flex-1">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Sub-Level
+                  </label>
+                  <input
+                    defaultValue={karyawan?.biodata_karyawan[0]?.sub_level}
+                    onChange={(e) => setsubLevel(e.target.value)}
+                    type="text"
+                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                    placeholder="Masukkan sub-level"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Modal */}
+        {showModal1 && (
+          <ModalAddPeriode
+            isOpen={showModal1}
+            onClose={closeModal1}
+            judul="TAMBAH BAGIAN MESIN"
+          >
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Pilih Bagian Mesin
+                </label>
+                <Select
+                  options={options}
+                  onChange={(selected) => handleChangePointDepatment(selected)}
+                  placeholder="Pilih Bagian Mesin"
+                  className="w-full"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => tambahBagian()}
+                className="w-full px-4 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors"
+              >
+                Tambah Bagian
+              </button>
+            </div>
+          </ModalAddPeriode>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex justify-end items-center px-8 py-6 bg-gray-50 border-t border-gray-200 rounded-b-lg">
+          <button
+            onClick={() => {
+              tambahKaryawan(karyawan?.userid);
+              console.log(tglKeluar);
+            }}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-sm"
+          >
+            SIMPAN DATA
+          </button>
+        </div>
+      </div>
+      <LengkapiMasterKaryawanIsi />
+    </main>
+  );
 }
 
-export default EditMasterKaryawanIsi
+export default EditMasterKaryawanIsi;

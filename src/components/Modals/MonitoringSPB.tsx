@@ -30,86 +30,99 @@ const MonitoringSPB = ({
   if (isOpen == null) return null;
 
   return (
-    <div className="absolute z-50 rounded-md  bg-white shadow-2xl md:w-96 w-11/12 p-2  md:translate-y-10 translate-y-7 right-5  border border-gray">
-      <div className="flex justify-end gap-5 px-4 py-2 z-50">
-        <label className=" text-center text-blue-700 text-[28px] font-semibold">
-          MONITORING SPB
-        </label>
+    <div className="fixed inset-0 flex items-start justify-end z-50">
+      {/* Overlay background to prevent clicking underneath */}
+      <div
+        className="absolute inset-0 bg-black bg-opacity-30"
+        onClick={onClose}
+      ></div>
 
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-gray-400 focus:outline-none justify-end"
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 22 22"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+      {/* Modal Content */}
+      <div className="relative bg-white shadow-2xl md:w-96 w-11/12 p-2 mt-16 mr-5 rounded-md border border-gray overflow-y-auto max-h-[90vh]">
+        <div className="flex justify-between items-center px-4 py-2 sticky top-0 bg-white">
+          <label className="text-center text-blue-700 text-[20px] md:text-[28px] font-semibold">
+            MONITORING SPB
+          </label>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-gray-400 focus:outline-none"
           >
-            <circle cx="11" cy="11" r="11" fill="#0065DE" />
-            <rect
-              x="6.03955"
-              y="4.23242"
-              width="17"
-              height="3"
-              rx="1.5"
-              transform="rotate(42.8321 6.03955 4.23242)"
-              fill="white"
-            />
-            <rect
-              x="4.18213"
-              y="16.0609"
-              width="17"
-              height="3"
-              rx="1.5"
-              transform="rotate(-45 4.18213 16.0609)"
-              fill="white"
-            />
-          </svg>
-        </button>
-      </div>
-      <div className="mt-5 gap-y-2 flex flex-col justify-center px-2">
-        <div>
-          <p className="md:text-sm text-xs font-semibold">Status</p>
-          <p className="md:text-base text-xs">{status}</p>
-        </div>
-        <div>
-          <p className="md:text-sm text-xs font-semibold">Waktu Tiket Masuk</p>
-          <p className="md:text-base text-xs">{waktu_tiket_masuk}</p>
-        </div>
-        <div>
-          <p className="md:text-sm text-xs font-semibold">Pelapor</p>
-          <p className="md:text-base text-xs">{pelapor}</p>
-        </div>
-        <div>
-          <p className="md:text-sm text-xs font-semibold">Kode Part</p>
-          <p className="md:text-base text-xs">{kode_part}</p>
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 22 22"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="11" cy="11" r="11" fill="#0065DE" />
+              <rect
+                x="6.03955"
+                y="4.23242"
+                width="17"
+                height="3"
+                rx="1.5"
+                transform="rotate(42.8321 6.03955 4.23242)"
+                fill="white"
+              />
+              <rect
+                x="4.18213"
+                y="16.0609"
+                width="17"
+                height="3"
+                rx="1.5"
+                transform="rotate(-45 4.18213 16.0609)"
+                fill="white"
+              />
+            </svg>
+          </button>
         </div>
 
-        <div>
-          <p className="md:text-sm text-xs font-semibold">Nama Barang</p>
-          <p className="md:text-base text-xs">{nama_barang}</p>
-        </div>
-        <div>
-          <p className="md:text-sm text-xs font-semibold">Mesin</p>
-          <p className="md:text-base text-xs">{mesin}</p>
-        </div>
+        <div className="mt-5 gap-y-4 flex flex-col justify-center px-4">
+          <div>
+            <p className="md:text-sm text-xs font-semibold">Status</p>
+            <p className="md:text-base text-xs">{status}</p>
+          </div>
+          <div>
+            <p className="md:text-sm text-xs font-semibold">
+              Waktu Tiket Masuk
+            </p>
+            <p className="md:text-base text-xs">{waktu_tiket_masuk}</p>
+          </div>
+          <div>
+            <p className="md:text-sm text-xs font-semibold">Pelapor</p>
+            <p className="md:text-base text-xs">{pelapor}</p>
+          </div>
+          <div>
+            <p className="md:text-sm text-xs font-semibold">Kode Part</p>
+            <p className="md:text-base text-xs">{kode_part}</p>
+          </div>
 
-        <div>
-          <p className="md:text-sm text-xs font-semibold">Qty</p>
-          <p className="md:text-base text-xs">{qty}</p>
+          <div>
+            <p className="md:text-sm text-xs font-semibold">Nama Barang</p>
+            <p className="md:text-base text-xs">{nama_barang}</p>
+          </div>
+          <div>
+            <p className="md:text-sm text-xs font-semibold">Mesin</p>
+            <p className="md:text-base text-xs">{mesin}</p>
+          </div>
+
+          <div>
+            <p className="md:text-sm text-xs font-semibold">Qty</p>
+            <p className="md:text-base text-xs">{qty}</p>
+          </div>
+          <div>
+            <p className="md:text-sm text-xs font-semibold">Tanggal Estimasi</p>
+            <p className="md:text-base text-xs">{tanggal_estimasi}</p>
+          </div>
+          <div className="mb-4">
+            <p className="md:text-sm text-xs font-semibold">Catatan</p>
+            <p className="md:text-base text-xs">{catatan || '-'}</p>
+          </div>
+
+          <div className="mb-4">{children}</div>
         </div>
-        <div>
-          <p className="md:text-sm text-xs font-semibold">Tanggal Estimasi</p>
-          <p className="md:text-base text-xs">{tanggal_estimasi}</p>
-        </div>
-        <div>
-          <p className="md:text-sm text-xs font-semibold">Catatan</p>
-          <p className="md:text-base text-xs">{catatan}</p>
-        </div>
-        {children}
       </div>
     </div>
   );

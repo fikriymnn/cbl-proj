@@ -9,6 +9,8 @@ import Box from '@mui/material/Box';
 import IsiDepartment from './IsiDepartment';
 import IsiDivisi from './IsiDivisi';
 import IsiBagian from './IsiBagian';
+import IsiStatusKaryawan from './IsiStatusKaryawan';
+import IsiJabatan from './IsiJabatan';
 
 
 
@@ -144,7 +146,9 @@ export default function TabDepartmentMaster() {
                         >
                             <Tab label="Department" {...a11yProps(0)} />
                             <Tab label="Divisi" {...a11yProps(1)} />
-                            <Tab label="Bagian" {...a11yProps(2)} />
+                            {/* <Tab label="Bagian" {...a11yProps(2)} /> */}
+                            <Tab label="Status Karyawan" {...a11yProps(2)} />
+                            <Tab label="Jabatan" {...a11yProps(3)} />
                             <div className="flex w-full justify-end pr-4">
                                 <p className="text-[#6D6C6C] text-sm font-semibold items-center flex ">
                                     {tanggal}
@@ -160,8 +164,14 @@ export default function TabDepartmentMaster() {
                 <TabPanel value={value} index={1} dir={theme.direction}>
                     <IsiDivisi />
                 </TabPanel>
-                <TabPanel value={value} index={2} dir={theme.direction}>
+                {/* <TabPanel value={value} index={2} dir={theme.direction}>
                     <IsiBagian />
+                </TabPanel> */}
+                <TabPanel value={value} index={2} dir={theme.direction}>
+                    <IsiStatusKaryawan />
+                </TabPanel>
+                <TabPanel value={value} index={3} dir={theme.direction}>
+                    <IsiJabatan />
                 </TabPanel>
             </Box>
         </>

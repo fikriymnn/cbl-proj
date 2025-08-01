@@ -41,7 +41,6 @@ function ProsesLipat() {
       const res = await axios.get(url, {
         params: {
           status: 'incoming',
-
         },
         withCredentials: true,
       });
@@ -68,13 +67,12 @@ function ProsesLipat() {
 
   return (
     <>
-
       <main className="overflow-x-scroll">
         <div className="min-w-[700px] bg-white rounded-xl">
           <div className=" w-full h-full flex-col border-b-8 border-[#D8EAFF]">
             <div className="grid grid-cols-12 px-10 py-4 border-b-8 border-[#D8EAFF]">
               <label className="text-neutral-500 text-sm font-semibold col-span-2 ">
-                No. JO
+                No. JO / IO
               </label>
 
               <label className="text-neutral-500 text-sm font-semibold col-span-2 ">
@@ -105,16 +103,16 @@ function ProsesLipat() {
                     <div className="grid grid-cols-12 border-b-8 border-[#D8EAFF] justify-center  items-center gap-1">
                       <div className="flex w-full col-span-2 bg-red items-center gap-3">
                         <div
-                          className={`w-2 h-full sticky left-0 z-20  gap-8 py-6 ${data.mesin == 'LIPAT'
-                            ? 'bg-green-600'
-                            : 'bg-blue-600'
-                            }`}
+                          className={`w-2 h-full sticky left-0 z-20  gap-8 py-6 ${
+                            data.mesin == 'LIPAT'
+                              ? 'bg-green-600'
+                              : 'bg-blue-600'
+                          }`}
                         ></div>
 
                         <label className="text-neutral-500 text-sm font-semibold ">
-                          {data.no_jo}
+                          {data.no_jo} / {data.no_io}
                         </label>
-
                       </div>
                       <label className="text-neutral-500 text-sm font-semibold col-span-2 line-clamp-3 md:pl-4 pl-10 ">
                         {data.item}
@@ -147,13 +145,11 @@ function ProsesLipat() {
                       </div>
                     </div>
                   </>
-                )
+                );
               })}
           </div>
         </div>
-
       </main>
-
     </>
   );
 }
