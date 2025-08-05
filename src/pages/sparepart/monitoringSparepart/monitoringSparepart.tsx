@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import DefaultLayout from '../../../layout/DefaultLayout';
-import { Link } from 'react-router-dom';
 import axios from 'axios';
 import formatInteger from '../../../utils/formaterInteger';
 
@@ -50,7 +49,7 @@ function MonitoringSparepart() {
         },
         withCredentials: true,
       });
-
+      console.log(res);
       setMasterSparepart(res.data);
     } catch (error) {
       console.error('Error fetching sparepart data:', error);
@@ -103,7 +102,15 @@ function MonitoringSparepart() {
 
     return sorted;
   };
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
+  const openFullscreen = () => {
+    setIsFullscreen(true);
+  };
+
+  const closeFullscreen = () => {
+    setIsFullscreen(false);
+  };
   // Filter function
   const filteredData = sortedData(
     masterSparepart?.filter(
@@ -250,7 +257,7 @@ function MonitoringSparepart() {
                 </tr>
               ) : (
                 <>
-                  {filteredData.map((data, index) => {
+                  {filteredData.map((data: any, index) => {
                     // Calculate if the row should be red (sisa_umur <= 10% of actual_umur)
                     const sisaUmur = parseInt(data.sisa_umur.toString()) || 0;
                     const actualUmur =
@@ -306,6 +313,49 @@ function MonitoringSparepart() {
                           {formatInteger(data.sisa_umur)}
                         </td>
                         <td className="py-2 px-2 text-xs">{data.keterangan}</td>
+                        <td className="py-2 px-2 text-xs">
+                          {data.file ? (
+                            <div className="flex items-center">
+                              <img
+                                src={`${import.meta.env.VITE_API_LINK}/images/${
+                                  data.file
+                                }`}
+                                alt="File"
+                                className="object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                                onClick={openFullscreen}
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 text-sm">-</span>
+                          )}
+                          {/* Full Screen Modal */}
+                          {isFullscreen && (
+                            <div
+                              className="fixed inset-0 bg-black bg-opacity-90 z-50 overflow-auto"
+                              onClick={closeFullscreen}
+                            >
+                              <div className="relative w-full min-h-screen flex justify-center p-4">
+                                <img
+                                  src={`${
+                                    import.meta.env.VITE_API_LINK
+                                  }/images/${data.file}`}
+                                  alt="File"
+                                  className="max-w-full h-auto block"
+                                  onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on image
+                                />
+                                <button
+                                  className="fixed top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors text-xl font-bold"
+                                  onClick={closeFullscreen}
+                                >
+                                  ×
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </td>
                       </tr>
                     );
                   })}
@@ -371,7 +421,15 @@ function AddStockLifetimeModal({
   useEffect(() => {
     getMesin();
   }, []);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
+  const openFullscreen = () => {
+    setIsFullscreen(true);
+  };
+
+  const closeFullscreen = () => {
+    setIsFullscreen(false);
+  };
   async function getMesin() {
     setLoading(true);
     const url = `${import.meta.env.VITE_API_LINK}/master/mesin`;
@@ -748,6 +806,52 @@ function AddStockLifetimeModal({
                               <td className="px-3 py-2 text-xs text-center">
                                 {item.lokasi}
                               </td>
+                              <div className="px-6 py-4">
+                                {item.file ? (
+                                  <div className="flex items-center">
+                                    <img
+                                      src={`${
+                                        import.meta.env.VITE_API_LINK
+                                      }/images/${item.file}`}
+                                      alt="File"
+                                      className="object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                                      onClick={openFullscreen}
+                                      onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                      }}
+                                    />
+                                  </div>
+                                ) : (
+                                  <span className="text-gray-400 text-sm">
+                                    -
+                                  </span>
+                                )}
+                                {/* Full Screen Modal */}
+                                {isFullscreen && (
+                                  <div
+                                    className="fixed inset-0 bg-black bg-opacity-90 z-50 overflow-auto"
+                                    onClick={closeFullscreen}
+                                  >
+                                    <div className="relative w-full min-h-screen flex justify-center p-4">
+                                      <img
+                                        src={`${
+                                          import.meta.env.VITE_API_LINK
+                                        }/images/${item.file}`}
+                                        alt="File"
+                                        className="max-w-full h-auto block"
+                                        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking on image
+                                      />
+                                      <button
+                                        className="fixed top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors text-xl font-bold"
+                                        onClick={closeFullscreen}
+                                      >
+                                        ×
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+
                               <td className="px-3 py-2 text-xs text-center">
                                 <button
                                   onClick={() => selectSparepart(item)}

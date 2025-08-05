@@ -797,7 +797,7 @@ function TableOS() {
               <p className="text-sm text-primary font-semibold">Cari</p>
               <input
                 className="rounded-lg bg-blue-50 border border-blue-200 px-3 h-10 w-full focus:ring-2 focus:ring-blue-300 focus:outline-none"
-                placeholder="Kendala / No Jo"
+                placeholder="Kendala / No Jo / Unit"
                 type="text"
                 onChange={(e) => setNoJo(e.target.value)}
               />
@@ -935,8 +935,12 @@ function TableOS() {
                 <p className="text-xs font-bold ">Mesin </p>
                 <img className="w-2" src={Polygon6} alt="" />
               </div>
-              <div className="flex gap-2 col-span-3">
+              <div className="flex gap-2 col-span-2">
                 <p className="text-xs font-bold ">Jenis Kendala</p>
+                <img className="w-2" src={Polygon6} alt="" />
+              </div>
+              <div className="flex gap-2">
+                <p className="text-xs font-bold ">Unit</p>
                 <img className="w-2" src={Polygon6} alt="" />
               </div>
               <div className="flex gap-2">
@@ -1068,10 +1072,17 @@ function TableOS() {
                                 </p>
                               </div>
                             </div>
-                            <div className="flex flex-col md:gap-5 gap-1 col-span-3">
+                            <div className="flex flex-col md:gap-5 gap-1 col-span-2">
                               <div className="my-auto w-full">
                                 <p className="text-xs font-light">
                                   {data.kode_lkh} - {data.nama_kendala}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex flex-col md:gap-5 gap-1 ">
+                              <div className="my-auto">
+                                <p className="text-xs font-light">
+                                  {data.unit}
                                 </p>
                               </div>
                             </div>

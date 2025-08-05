@@ -12,6 +12,18 @@ function Stockmaster() {
   const [isEditLoading, setIsEditLoading] = useState<boolean>(false);
   const [isAddLoading, setIsAddLoading] = useState<boolean>(false);
 
+  // Image upload states
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string>('');
+  const [uploading, setUploading] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string>('');
+
+  // Edit modal image states
+  const [editSelectedFile, setEditSelectedFile] = useState<File | null>(null);
+  const [editFilePreview, setEditFilePreview] = useState<string>('');
+  const [editUploading, setEditUploading] = useState<boolean>(false);
+  const [editUploadError, setEditUploadError] = useState<string>('');
+
   useEffect(() => {
     getStokSparepart();
     getMesin();
@@ -26,6 +38,7 @@ function Stockmaster() {
         withCredentials: true,
       });
       setStokSparepart(res.data);
+      console.log(res);
       setIsLoading(false);
     } catch (error: any) {
       setIsLoading(false);
@@ -51,16 +64,32 @@ function Stockmaster() {
   }
 
   const [showEdit, setShowEdit] = useState<any>([]);
-  const openEdit = (i: any) => {
+  const openEdit = (i: any, data: any) => {
     const onchangeVal: any = [...showEdit];
     onchangeVal[i] = true;
     setShowEdit(onchangeVal);
+
+    // Reset edit form states
+    setKode(data.kode);
+    setPartNumber(data.part_number);
+    setNamaSparePart(data.nama_sparepart);
+    setLokasi(data.lokasi);
+    setMesinEdit(data.mesin?.id);
+    setumurEdit(data.umur_sparepart);
+    setLimitStokEdit(data.limit_stok);
+    setEditfile(data.file || '');
+    setEditSelectedFile(null);
+    setEditFilePreview('');
+    setEditUploadError('');
   };
 
   const closeEdit = (i: any) => {
     const onchangeVal: any = [...showEdit];
     onchangeVal[i] = false;
     setShowEdit(onchangeVal);
+
+    // Clear edit states
+    clearEditFileSelection();
   };
 
   const [kode, setKode] = useState<any>();
@@ -70,6 +99,157 @@ function Stockmaster() {
   const [mesinEdit, setMesinEdit] = useState<any>();
   const [umurEdit, setumurEdit] = useState<any>();
   const [limitStokEdit, setLimitStokEdit] = useState<any>();
+  const [editfile, setEditfile] = useState<any>('');
+
+  // Image upload functions
+  async function handleFileUpload(file: File): Promise<string> {
+    setUploading(true);
+    setUploadError('');
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_LINK}/images`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+
+      const fileName =
+        response.data.fileName || response.data.filename || response.data.file;
+      return fileName;
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      setUploadError('Failed to upload file');
+      throw error;
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleEditFileUpload(file: File): Promise<string> {
+    setEditUploading(true);
+    setEditUploadError('');
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_LINK}/images`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+
+      const fileName =
+        response.data.fileName || response.data.filename || response.data.file;
+      return fileName;
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      setEditUploadError('Failed to upload file');
+      throw error;
+    } finally {
+      setEditUploading(false);
+    }
+  }
+
+  async function handleFileDelete(fileName: string): Promise<void> {
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_LINK}/images/${fileName}`,
+        { withCredentials: true },
+      );
+    } catch (error: any) {
+      console.error('Error deleting file:', error);
+      throw error;
+    }
+  }
+
+  function handleFileSelect(event: React.ChangeEvent<HTMLInputElement>): void {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        setUploadError('Please select an image file');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError('File size must be less than 5MB');
+        return;
+      }
+
+      setSelectedFile(file);
+      setUploadError('');
+
+      const previewUrl = URL.createObjectURL(file);
+      setFilePreview(previewUrl);
+    }
+  }
+
+  function handleEditFileSelect(
+    event: React.ChangeEvent<HTMLInputElement>,
+  ): void {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        setEditUploadError('Please select an image file');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        setEditUploadError('File size must be less than 5MB');
+        return;
+      }
+
+      setEditSelectedFile(file);
+      setEditUploadError('');
+
+      const previewUrl = URL.createObjectURL(file);
+      setEditFilePreview(previewUrl);
+    }
+  }
+
+  function clearFileSelection(): void {
+    setSelectedFile(null);
+    setFilePreview('');
+    setUploadError('');
+
+    if (filePreview) {
+      URL.revokeObjectURL(filePreview);
+    }
+  }
+
+  function clearEditFileSelection(): void {
+    setEditSelectedFile(null);
+    setEditFilePreview('');
+    setEditUploadError('');
+
+    if (editFilePreview) {
+      URL.revokeObjectURL(editFilePreview);
+    }
+  }
+
+  async function removeExistingEditFile(): Promise<void> {
+    if (editfile) {
+      try {
+        await handleFileDelete(editfile);
+        setEditfile('');
+      } catch (error) {
+        console.error('Error removing file:', error);
+      }
+    }
+  }
 
   async function editStock(id: any, i: any) {
     if (isEditLoading) return; // Prevent multiple clicks
@@ -77,6 +257,14 @@ function Stockmaster() {
     const url = `${import.meta.env.VITE_API_LINK}/stokSparepart/${id}`;
     try {
       setIsEditLoading(true);
+
+      let photoFileName = editfile;
+
+      // Upload new file if selected
+      if (editSelectedFile) {
+        photoFileName = await handleEditFileUpload(editSelectedFile);
+      }
+
       const res = await axios.put(
         url,
         {
@@ -87,6 +275,7 @@ function Stockmaster() {
           id_mesin: mesinEdit,
           umur_sparepart: umurEdit,
           limit_stok: limitStokEdit,
+          file: photoFileName,
         },
         {
           withCredentials: true,
@@ -99,6 +288,7 @@ function Stockmaster() {
       setMesinEdit('');
       setumurEdit('');
       setLimitStokEdit('');
+      setEditfile('');
       setIsEditLoading(false);
       closeEdit(i);
       getStokSparepart();
@@ -119,7 +309,7 @@ function Stockmaster() {
     limit_stok: 0,
     id_grade: '',
     type_part: '',
-    foto: '',
+    file: '',
     keterangan: '',
     umur_sparepart: 0,
     stok: 0,
@@ -148,6 +338,14 @@ function Stockmaster() {
     const url = `${import.meta.env.VITE_API_LINK}/stokSparepart`;
     try {
       setIsAddLoading(true);
+
+      let photoFileName = '';
+
+      // Upload file if selected
+      if (selectedFile) {
+        photoFileName = await handleFileUpload(selectedFile);
+      }
+
       const res = await axios.post(
         url,
         {
@@ -160,7 +358,7 @@ function Stockmaster() {
           id_grade: addItem.id_grade,
           type_part: addItem.type_part,
           stok: addItem.stok,
-          foto: addItem.foto,
+          file: photoFileName,
           keterangan: addItem.keterangan,
           umur_sparepart: addItem.umur_sparepart,
         },
@@ -172,6 +370,22 @@ function Stockmaster() {
       alert('Add Success');
       getStokSparepart();
       closeModalHistory();
+      // Reset form and file states
+      setAddItem({
+        kode: '',
+        nama_sparepart: '',
+        id_mesin: 0,
+        part_number: '',
+        lokasi: '',
+        limit_stok: 0,
+        id_grade: '',
+        type_part: '',
+        file: '',
+        keterangan: '',
+        umur_sparepart: 0,
+        stok: 0,
+      });
+      clearFileSelection();
     } catch (error: any) {
       setIsAddLoading(false);
       alert(error.response.data.msg);
@@ -189,7 +403,10 @@ function Stockmaster() {
 
   const [showHistory, setShowHistory] = useState(false);
   const openModalHistory = () => setShowHistory(true);
-  const closeModalHistory = () => setShowHistory(false);
+  const closeModalHistory = () => {
+    setShowHistory(false);
+    clearFileSelection();
+  };
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredData = stokSparepart
@@ -383,17 +600,74 @@ function Stockmaster() {
                               placeholder="Enter buffer stock"
                             />
                           </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium text-gray-700">
-                              Photo
+                          <div className="col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Upload Image
                             </label>
-                            <input
-                              name="foto"
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => handleChangeData(e)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
+
+                            {/* File Input */}
+                            <div className="mb-4">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileSelect}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              />
+                              {uploadError && (
+                                <p className="text-red-500 text-sm mt-1">
+                                  {uploadError}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* File Preview Section */}
+                            <div className="space-y-4">
+                              {/* New File Preview */}
+                              {filePreview && (
+                                <div className="border border-gray-200 rounded-lg p-4">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm font-medium text-gray-700">
+                                      New Image Preview:
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={clearFileSelection}
+                                      className="text-red-500 hover:text-red-700 text-sm"
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                  <img
+                                    src={filePreview}
+                                    alt="Preview"
+                                    className="max-w-full h-48 object-contain border border-gray-200 rounded"
+                                  />
+                                  {selectedFile && (
+                                    <p className="text-sm text-gray-500 mt-2">
+                                      {selectedFile.name} (
+                                      {(
+                                        selectedFile.size /
+                                        1024 /
+                                        1024
+                                      ).toFixed(2)}{' '}
+                                      MB)
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Upload Progress */}
+                            {uploading && (
+                              <div className="mt-2">
+                                <div className="flex items-center">
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                                  <span className="text-sm text-gray-600">
+                                    Uploading...
+                                  </span>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="flex justify-end gap-3 mt-8 pt-6 border-t">
@@ -407,14 +681,18 @@ function Stockmaster() {
                             onClick={() => {
                               addStok();
                             }}
-                            disabled={isAddLoading}
+                            disabled={isAddLoading || uploading}
                             className={`px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${
-                              isAddLoading
+                              isAddLoading || uploading
                                 ? 'bg-gray-400 cursor-not-allowed'
                                 : 'bg-green-600 hover:bg-green-700 shadow-md hover:shadow-lg'
                             } text-white`}
                           >
-                            {isAddLoading ? 'Saving...' : 'Save Item'}
+                            {isAddLoading
+                              ? 'Saving...'
+                              : uploading
+                              ? 'Uploading...'
+                              : 'Save Item'}
                           </button>
                         </div>
                       </div>
@@ -479,7 +757,7 @@ function Stockmaster() {
                     <p className="text-xs">{data.limit_stok}</p>
                     <div className="flex flex-col gap-1">
                       <button
-                        onClick={() => openEdit(i)}
+                        onClick={() => openEdit(i, data)}
                         disabled={isEditLoading}
                         className={`rounded-lg text-white text-xs font-semibold px-4 py-1 transition-all duration-200 ${
                           isEditLoading
@@ -496,7 +774,7 @@ function Stockmaster() {
                           judul={'Edit Stock Master'}
                         >
                           <>
-                            <div className="p-6 bg-white">
+                            <div className="p-6 bg-white max-h-[80vh] overflow-y-auto">
                               <h3 className="text-lg font-semibold text-gray-800 mb-6 border-b pb-3">
                                 Edit Sparepart Information
                               </h3>
@@ -614,6 +892,102 @@ function Stockmaster() {
                                     />
                                   </div>
                                 </div>
+
+                                {/* Image Upload Section for Edit */}
+                                <div className="space-y-2">
+                                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Upload Image
+                                  </label>
+
+                                  {/* File Input */}
+                                  <div className="mb-4">
+                                    <input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={handleEditFileSelect}
+                                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    />
+                                    {editUploadError && (
+                                      <p className="text-red-500 text-sm mt-1">
+                                        {editUploadError}
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  {/* File Preview Section */}
+                                  <div className="space-y-4">
+                                    {/* New File Preview */}
+                                    {editFilePreview && (
+                                      <div className="border border-gray-200 rounded-lg p-4">
+                                        <div className="flex justify-between items-center mb-2">
+                                          <span className="text-sm font-medium text-gray-700">
+                                            New Image Preview:
+                                          </span>
+                                          <button
+                                            type="button"
+                                            onClick={clearEditFileSelection}
+                                            className="text-red-500 hover:text-red-700 text-sm"
+                                          >
+                                            Remove
+                                          </button>
+                                        </div>
+                                        <img
+                                          src={editFilePreview}
+                                          alt="Preview"
+                                          className="max-w-full h-48 object-contain border border-gray-200 rounded"
+                                        />
+                                        {editSelectedFile && (
+                                          <p className="text-sm text-gray-500 mt-2">
+                                            {editSelectedFile.name} (
+                                            {(
+                                              editSelectedFile.size /
+                                              1024 /
+                                              1024
+                                            ).toFixed(2)}{' '}
+                                            MB)
+                                          </p>
+                                        )}
+                                      </div>
+                                    )}
+
+                                    {/* Existing File Preview */}
+                                    {editfile && !editFilePreview && (
+                                      <div className="border border-gray-200 rounded-lg p-4">
+                                        <div className="flex justify-between items-center mb-2">
+                                          <span className="text-sm font-medium text-gray-700">
+                                            Current Image:
+                                          </span>
+                                        </div>
+                                        <img
+                                          src={`${
+                                            import.meta.env.VITE_API_LINK
+                                          }/images/${editfile}`}
+                                          alt="Current file"
+                                          className="max-w-full h-48 object-contain border border-gray-200 rounded"
+                                          onError={(e) => {
+                                            e.currentTarget.style.display =
+                                              'none';
+                                          }}
+                                        />
+                                        <p className="text-sm text-gray-500 mt-2">
+                                          {editfile}
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Upload Progress */}
+                                  {editUploading && (
+                                    <div className="mt-2">
+                                      <div className="flex items-center">
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                                        <span className="text-sm text-gray-600">
+                                          Uploading...
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                               <div className="flex justify-end gap-3 mt-8 pt-6 border-t">
                                 <button
@@ -624,14 +998,18 @@ function Stockmaster() {
                                 </button>
                                 <button
                                   onClick={() => editStock(data.id, i)}
-                                  disabled={isEditLoading}
+                                  disabled={isEditLoading || editUploading}
                                   className={`px-6 py-2 rounded-lg font-semibold transition-all duration-200 ${
-                                    isEditLoading
+                                    isEditLoading || editUploading
                                       ? 'bg-gray-400 cursor-not-allowed'
                                       : 'bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg'
                                   } text-white`}
                                 >
-                                  {isEditLoading ? 'Saving...' : 'Save Changes'}
+                                  {isEditLoading
+                                    ? 'Saving...'
+                                    : editUploading
+                                    ? 'Uploading...'
+                                    : 'Save Changes'}
                                 </button>
                               </div>
                             </div>
