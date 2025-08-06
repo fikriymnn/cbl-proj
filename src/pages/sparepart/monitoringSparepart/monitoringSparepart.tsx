@@ -257,7 +257,7 @@ function MonitoringSparepart() {
                 </tr>
               ) : (
                 <>
-                  {filteredData.map((data: any, index) => {
+                  {filteredData?.map((data: any, index) => {
                     // Calculate if the row should be red (sisa_umur <= 10% of actual_umur)
                     const sisaUmur = parseInt(data.sisa_umur.toString()) || 0;
                     const actualUmur =
