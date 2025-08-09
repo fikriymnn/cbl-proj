@@ -469,7 +469,7 @@ function IncomingInspection() {
       setIsLoading(true);
       if (verifikasi == 'Diterima') {
         const respon = await axios.post(
-          `https://erp.cbloffset.com/api/approve-incoming-bahan`,
+          `${import.meta.env.VITE_API_LINK_P1}/api/approve-incoming-bahan`,
           {
             surat_jalan: incoming?.no_surat_jalan,
             nama_inspektor: me,

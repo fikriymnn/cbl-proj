@@ -321,7 +321,7 @@ function MonitoringService() {
                                   data.file
                                 }`}
                                 alt="File"
-                                className="object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                                className="w-32 rounded border cursor-pointer hover:opacity-80 transition-opacity"
                                 onClick={openFullscreen}
                                 onError={(e) => {
                                   e.currentTarget.style.display = 'none';

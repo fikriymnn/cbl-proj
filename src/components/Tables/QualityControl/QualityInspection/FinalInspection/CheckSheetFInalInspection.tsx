@@ -63,7 +63,9 @@ function ChecksheetFinalInspection() {
       console.log(formattedTime);
       if (status == 'bisa kirim') {
         const respon = await axios.post(
-          `https://erp.cbloffset.com/api/approve-final-inspection?no_jo=${FinalInspection?.no_jo}`,
+          `${
+            import.meta.env.VITE_API_LINK_P1
+          }/api/approve-final-inspection?no_jo=${FinalInspection?.no_jo}`,
           {},
         );
         const res = await axios.put(
