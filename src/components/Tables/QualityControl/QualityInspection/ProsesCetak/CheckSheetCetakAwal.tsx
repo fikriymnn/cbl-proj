@@ -23,7 +23,10 @@ function CheckSheetCetakAwal() {
   const [masterKodeCetak2, setMasterKodeCetak2] = useState<any>();
   const [currentPeriod, setCurrentPeriod] = useState(1);
   const [eyeC, setEyeC] = useState<any>();
-
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string>('');
   useEffect(() => {
     getCetakMesinAwal();
     getMasterKode();
@@ -41,6 +44,78 @@ function CheckSheetCetakAwal() {
     'EC9',
     'EC10',
   ];
+  async function handleFileUpload(file: File): Promise<string> {
+    setUploading(true);
+    setUploadError('');
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_LINK}/images`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+
+      const fileName =
+        response.data.fileName || response.data.filename || response.data.file;
+      return fileName;
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      setUploadError('Failed to upload file');
+      throw error;
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleFileDelete(fileName: string): Promise<void> {
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_LINK}/images/${fileName}`,
+        { withCredentials: true },
+      );
+    } catch (error: any) {
+      console.error('Error deleting file:', error);
+      throw error;
+    }
+  }
+
+  function handleFileSelect(event: React.ChangeEvent<HTMLInputElement>): void {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        setUploadError('Please select an image file');
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError('File size must be less than 5MB');
+        return;
+      }
+
+      setSelectedFile(file);
+      setUploadError('');
+
+      const previewUrl = URL.createObjectURL(file);
+      setFilePreview(previewUrl);
+    }
+  }
+
+  function clearFileSelection(): void {
+    setSelectedFile(null);
+    if (filePreview) {
+      URL.revokeObjectURL(filePreview);
+      setFilePreview(null);
+    }
+    setUploadError('');
+  }
 
   const getAvailableECs = (
     cetakMesinAwal?: any,
@@ -154,9 +229,22 @@ function CheckSheetCetakAwal() {
     const url = `${
       import.meta.env.VITE_API_LINK
     }/qc/cs/inspeksiCetakAwalPoint/stop/${id}`;
+
     try {
       const elapsedSeconds = calculateElapsedTime(startTime, new Date());
       console.log(elapsedSeconds);
+
+      // Handle file upload if a file is selected
+      let uploadedFileName = '';
+      if (selectedFile) {
+        try {
+          uploadedFileName = await handleFileUpload(selectedFile);
+        } catch (error) {
+          alert('Failed to upload image. Please try again.');
+          return;
+        }
+      }
+
       const res = await axios.put(
         url,
         {
@@ -171,19 +259,21 @@ function CheckSheetCetakAwal() {
           gramatur: gramatur,
           layout_pisau: layout_pisau,
           acc_warna_awal_jalan: acc_warna_awal_jalan,
+          file: uploadedFileName, // Use the uploaded file name
         },
         {
           withCredentials: true,
         },
       );
+
       setEyeC('');
+      clearFileSelection(); // Clear the file selection after successful upload
       getCetakMesinAwal();
     } catch (error: any) {
       console.log(error.response.data.msg);
       alert(error.response.data.msg);
     }
   }
-
   async function tambahTaskCekAwal(id: number) {
     const url = `${
       import.meta.env.VITE_API_LINK
@@ -811,16 +901,98 @@ function CheckSheetCetakAwal() {
                                 Upload Foto (Optional):
                               </p>
 
-                              <div className="">
+                              <div className="space-y-2">
                                 <input
-                                  disabled
                                   type="file"
-                                  name=""
-                                  id=""
+                                  accept="image/*"
+                                  onChange={handleFileSelect}
+                                  disabled={
+                                    data.status !== 'on progress' ||
+                                    cetakMesinAwal?.status !== 'incoming'
+                                  }
                                   className="w-60"
                                 />
+
+                                {uploadError && (
+                                  <p className="text-red-500 text-xs">
+                                    {uploadError}
+                                  </p>
+                                )}
+
+                                {uploading && (
+                                  <div className="flex items-center">
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                                    <span className="text-xs text-gray-600">
+                                      Uploading...
+                                    </span>
+                                  </div>
+                                )}
+
+                                {/* Preview for new file selection (when input is enabled) */}
+                                {filePreview &&
+                                  data.status === 'on progress' &&
+                                  cetakMesinAwal?.status === 'incoming' && (
+                                    <div className="border border-gray-200 rounded p-2">
+                                      <div className="flex justify-between items-center mb-2">
+                                        <span className="text-xs font-medium">
+                                          Preview:
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={clearFileSelection}
+                                          className="text-red-500 hover:text-red-700 text-xs"
+                                        >
+                                          Remove
+                                        </button>
+                                      </div>
+                                      <img
+                                        src={filePreview}
+                                        alt="Preview"
+                                        className="max-w-full h-24 object-contain border rounded"
+                                      />
+                                      {selectedFile && (
+                                        <p className="text-xs text-gray-500 mt-1">
+                                          {selectedFile.name} (
+                                          {(
+                                            selectedFile.size /
+                                            1024 /
+                                            1024
+                                          ).toFixed(2)}{' '}
+                                          MB)
+                                        </p>
+                                      )}
+                                    </div>
+                                  )}
+
+                                {/* Preview for existing uploaded file (when input is disabled) */}
+                                {data.file &&
+                                  (data.status !== 'on progress' ||
+                                    cetakMesinAwal?.status !== 'incoming') && (
+                                    <div className="border border-gray-200 rounded p-2">
+                                      <div className="flex justify-between items-center mb-2">
+                                        <span className="text-xs font-medium">
+                                          Uploaded Image:
+                                        </span>
+                                      </div>
+                                      <img
+                                        src={`${
+                                          import.meta.env.VITE_API_LINK
+                                        }/images/${data.file}`}
+                                        alt="Uploaded file"
+                                        className="min-w-full h-24 object-contain border rounded"
+                                        onError={(e) => {
+                                          e.currentTarget.style.display =
+                                            'none';
+                                        }}
+                                      />
+                                      <p className="text-xs text-gray-500 mt-1">
+                                        {data.file}
+                                      </p>
+                                    </div>
+                                  )}
                               </div>
                             </div>
+
                             {data.status == 'on progress' &&
                             cetakMesinAwal?.status == 'incoming' ? (
                               <>
