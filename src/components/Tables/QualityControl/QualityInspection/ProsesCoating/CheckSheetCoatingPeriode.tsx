@@ -83,10 +83,25 @@ function CheckSheetCoatingPeriode() {
     getCoatingMesinPeriode();
     getDepartment();
     getMasterKode();
+    fetchMasterWaste();
   }, []);
 
   const [isFailed, setIsFailed] = useState(false);
+  const [masterWaste, setMasterWaste] = useState<any>();
+  async function fetchMasterWaste() {
+    const url2 = `${import.meta.env.VITE_API_LINK_P1}/api/master-waste`;
 
+    try {
+      setIsLoading(true);
+      const res = await axios.get(url2);
+      setIsLoading(false);
+      setMasterWaste(res.data.waste); // Save raw data for filtering
+      console.log('Master Waste Data:', res.data.waste);
+    } catch (error: any) {
+      setIsLoading(false);
+      console.error('Error fetching master waste:', error);
+    }
+  }
   async function getMasterKode() {
     const url = `${
       import.meta.env.VITE_API_LINK_P1
@@ -403,14 +418,144 @@ function CheckSheetCoatingPeriode() {
     ].inspeksi_coating_result_point_periode[ii]['hasil'] = value;
     setCoatingMesinPeriode(onchangeVal);
   };
-  const handleChangePointHasil = (e: any, i: number, ii: number) => {
+  const handleChangePointHasil = (
+    e: any,
+    i: number,
+    ii: number,
+    kodeData: string,
+  ) => {
     const { name, value } = e.target;
-    const onchangeVal: any = CoatingMesinPeriode;
-    onchangeVal.inspeksi_coating_result_periode[
-      i
-    ].inspeksi_coating_result_point_periode[ii][name] = value;
+    const onchangeVal: any = { ...CoatingMesinPeriode };
+
+    // Handle dropdown selection for kendala
+    if (name === 'kode_lkh') {
+      // Find the selected kendala from masterWaste
+      const matchedWaste = masterWaste?.find(
+        (waste: any) => waste.kode_waste === kodeData,
+      );
+      const selectedKendala = matchedWaste?.waste?.find(
+        (w: any) => w.kode_kendala === value,
+      );
+
+      if (selectedKendala) {
+        onchangeVal.inspeksi_coating_result_periode[
+          i
+        ].inspeksi_coating_result_point_periode[ii]['kode_lkh'] = value;
+        onchangeVal.inspeksi_coating_result_periode[
+          i
+        ].inspeksi_coating_result_point_periode[ii]['masalah_lkh'] =
+          selectedKendala.kendala_desc;
+      }
+    } else {
+      onchangeVal.inspeksi_coating_result_periode[
+        i
+      ].inspeksi_coating_result_point_periode[ii][name] = value;
+    }
+
     setCoatingMesinPeriode(onchangeVal);
   };
+
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
+  // Base file upload function (from your original code)
+  async function handleFileUpload(file: File): Promise<string> {
+    setUploading(true);
+    setUploadError('');
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_LINK}/images`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+
+      const fileName =
+        response.data.fileName || response.data.filename || response.data.file;
+      return fileName;
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      setUploadError('Failed to upload file');
+      throw error;
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  // Base file delete function (from your original code)
+  async function handleFileDelete(fileName: string): Promise<void> {
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_LINK}/images/${fileName}`,
+        { withCredentials: true },
+      );
+    } catch (error: any) {
+      console.error('Error deleting file:', error);
+      throw error;
+    }
+  }
+
+  // Image upload handler for specific defect - ADJUSTED FOR CORRECT MAPPING
+  const handleImageUpload = async (file: File, i: number, ii: number) => {
+    try {
+      const fileName = await handleFileUpload(file);
+      const onchangeVal: any = { ...CoatingMesinPeriode };
+
+      // Correct path based on the mapping structure
+      onchangeVal.inspeksi_coating_result_periode[
+        i
+      ].inspeksi_coating_result_point_periode[ii]['file'] = fileName;
+
+      setCoatingMesinPeriode(onchangeVal);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
+  };
+
+  // Image delete handler for specific defect - ADJUSTED FOR CORRECT MAPPING
+  const handleImageDelete = async (i: number, ii: number) => {
+    try {
+      const currentFile =
+        CoatingMesinPeriode.inspeksi_coating_result_periode[i]
+          ?.inspeksi_coating_result_point_periode[ii]?.file;
+
+      if (currentFile) {
+        await handleFileDelete(currentFile);
+        const onchangeVal: any = { ...CoatingMesinPeriode };
+
+        // Correct path based on the mapping structure
+        onchangeVal.inspeksi_coating_result_periode[
+          i
+        ].inspeksi_coating_result_point_periode[ii]['file'] = '';
+
+        setCoatingMesinPeriode(onchangeVal);
+      }
+    } catch (error) {
+      console.error('Error deleting image:', error);
+    }
+  };
+
+  // Get matching waste data for dropdown options
+  const getWasteOptions = (kode: string) => {
+    const matchedWaste = masterWaste?.find(
+      (waste: any) => waste.kode_waste === kode,
+    );
+    return matchedWaste?.waste || [];
+  };
+
+  // Format integer helper (if not already defined)
+  const formatInteger = (value: number) => {
+    return new Intl.NumberFormat().format(value);
+  };
+
   const tanggal = convertTimeStampToDateOnly(CoatingMesinPeriode?.createdAt);
   const jam = convertDateToTime(CoatingMesinPeriode?.createdAt);
 
@@ -435,7 +580,18 @@ function CheckSheetCoatingPeriode() {
     CoatingMesinPeriode?.inspeksi_coating_result_periode?.some(
       (data: { status: any }) => data?.status === 'on progress',
     );
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [fullscreenImage, setFullscreenImage] = useState('');
 
+  const openFullscreen = (imageSrc: string) => {
+    setFullscreenImage(imageSrc);
+    setIsFullscreen(true);
+  };
+
+  const closeFullscreen = () => {
+    setIsFullscreen(false);
+    setFullscreenImage('');
+  };
   return (
     <>
       {!isMobile && (
@@ -963,733 +1119,960 @@ function CheckSheetCoatingPeriode() {
             </div>
 
             {/* =============================chekcsheet========================= */}
+            {/* =============================checksheet========================= */}
 
             {CoatingMesinPeriode?.inspeksi_coating_result_periode?.map(
               (data: any, index: number) => {
                 const waktuSampling = convertDateToTime(data.waktu_mulai);
                 const lamaPengerjaan = formatElapsedTime(data.lama_pengerjaan);
                 return (
-                  <>
-                    <label
-                      className="text-blue-400 text-sm font-semibold w-full flex justify-end px-4 py-2"
-                      onClick={() => handleClickGuide(index)}
-                    >
-                      FILLING GUIDE
-                    </label>
-                    {openGuide == index ? (
-                      <div className="  rounded-md bg-[#F3F3F3] border-gray flex px-5 mx-5 py-6 justify-between">
-                        <div className="grid grid-cols-2">
-                          <div className="flex flex-col">
-                            <label className="text-blue-600 text-sm font-semibold pb-6">
-                              KODE-MASALAH
+                  <div
+                    key={index}
+                    className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200"
+                  >
+                    {/* Filling Guide Button */}
+                    <div className="flex justify-end p-4 border-b border-gray-100">
+                      <label
+                        className="text-blue-500 text-sm font-semibold cursor-pointer hover:text-blue-600 transition-colors px-4 py-2 rounded-md hover:bg-blue-50"
+                        onClick={() => handleClickGuide(index)}
+                      >
+                        FILLING GUIDE
+                      </label>
+                    </div>
+
+                    {/* Guide Content */}
+                    {openGuide == index && (
+                      <div className="mx-4 mb-4 rounded-lg bg-gray-50 border border-gray-200">
+                        <div className="p-6 flex flex-col lg:flex-row justify-between gap-6">
+                          {/* Problem Codes Section */}
+                          <div className="flex-1">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="flex flex-col">
+                                <label className="text-blue-600 text-sm font-semibold mb-4">
+                                  KODE-MASALAH
+                                </label>
+                                <div className="space-y-2">
+                                  {data.inspeksi_coating_result_point_periode.map(
+                                    (data3: any, iii: number) => (
+                                      <label
+                                        key={iii}
+                                        className="text-neutral-600 text-sm font-medium block"
+                                      >
+                                        {data3.kode} - {data3.masalah}
+                                      </label>
+                                    ),
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Form Filling Guide */}
+                          <div className="flex flex-col lg:flex-row items-start gap-6 lg:w-auto w-full">
+                            <div className="flex flex-col gap-3 min-w-[200px]">
+                              <label className="text-blue-600 text-sm font-semibold mb-2">
+                                FORM FILLING GUIDE
+                              </label>
+                              <div className="space-y-3">
+                                <label className="text-gray-800 text-sm font-medium flex items-center gap-2">
+                                  <img src={ok} alt="OK" className="w-5 h-5" />
+                                  OK
+                                </label>
+                                <label className="text-gray-800 text-sm font-medium flex items-center gap-2">
+                                  <img
+                                    src={oktole}
+                                    alt="OK Toleransi"
+                                    className="w-5 h-5"
+                                  />
+                                  OK (Toleransi)
+                                </label>
+                                <label className="text-gray-800 text-sm font-medium flex items-center gap-2">
+                                  <img
+                                    src={notok}
+                                    alt="Not OK"
+                                    className="w-5 h-5"
+                                  />
+                                  NOT OK
+                                </label>
+                              </div>
+                            </div>
+
+                            {/* Close Button */}
+                            <button
+                              onClick={() => handleClickGuide(index)}
+                              className="p-2 bg-blue-600 hover:bg-blue-700 rounded-full transition-colors self-start lg:self-center"
+                            >
+                              <img
+                                src={X}
+                                alt="Close"
+                                className="w-4 h-4 filter brightness-0 invert"
+                              />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Delete Button */}
+                    {((data.status == 'incoming' &&
+                      CoatingMesinPeriode?.status == 'incoming') ||
+                      data.status == 'on progress') && (
+                      <div className="px-4 pb-4 mt-3">
+                        <button
+                          onClick={() => deletePeriode(data.id)}
+                          className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold rounded-md transition-colors"
+                        >
+                          Hapus Periode
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Main Info Section */}
+                    <div className="p-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-8 gap-4 mb-6">
+                        {/* Period Number */}
+                        <div className="flex flex-col">
+                          <label className="text-sm font-semibold text-gray-600 mb-1">
+                            PERIODE
+                          </label>
+                          <span className="text-lg font-bold text-gray-800">
+                            {index + 1}
+                          </span>
+                        </div>
+
+                        {/* Inspector */}
+                        <div className="flex flex-col">
+                          <label className="text-sm font-semibold text-gray-600 mb-1">
+                            INSPEKTOR
+                          </label>
+                          <span className="text-sm font-semibold text-gray-800">
+                            {data.inspektor?.nama}
+                          </span>
+                        </div>
+
+                        {/* Sampling Time */}
+                        <div className="flex flex-col">
+                          <label className="text-sm font-semibold text-gray-600 mb-1">
+                            WAKTU SAMPLING
+                          </label>
+                          <span className="text-sm font-semibold text-gray-800">
+                            {waktuSampling}
+                          </span>
+                        </div>
+
+                        {/* Numerator */}
+                        <div className="flex flex-col">
+                          <label className="text-sm font-semibold text-gray-600 mb-1">
+                            NUMERATOR<span className="text-red-500">*</span>
+                          </label>
+                          {data.status == 'done' ? (
+                            <input
+                              type="text"
+                              disabled
+                              defaultValue={formatInteger(
+                                parseInt(data.numerator),
+                              )}
+                              name="numerator"
+                              className="text-sm font-semibold p-2 border border-gray-300 rounded-md bg-gray-100"
+                            />
+                          ) : data.status == 'on progress' ? (
+                            <input
+                              type="text"
+                              name="numerator"
+                              onChange={(e) => handleChangePoint(e, index)}
+                              className="text-sm font-semibold p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                            />
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
+                        </div>
+
+                        {/* Jumlah Sampling */}
+                        <div className="flex flex-col">
+                          <label className="text-sm font-semibold text-gray-600 mb-1">
+                            JUMLAH SAMPLING
+                            <span className="text-red-500">*</span>
+                          </label>
+                          {data.status == 'done' ? (
+                            <input
+                              type="text"
+                              defaultValue={formatInteger(
+                                parseInt(data.jumlah_sampling),
+                              )}
+                              disabled
+                              name="jumlah_sampling"
+                              className="text-sm font-semibold p-2 border border-gray-300 rounded-md bg-gray-100"
+                            />
+                          ) : data.status == 'on progress' ? (
+                            <input
+                              type="text"
+                              name="jumlah_sampling"
+                              onChange={(e) => handleChangePoint(e, index)}
+                              className="text-sm font-semibold p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                            />
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
+                        </div>
+
+                        {/* Glossy Kiri */}
+                        <div className="flex flex-col">
+                          <label className="text-sm font-semibold text-gray-600 mb-1">
+                            GLOSSY KIRI
+                            <span className="text-red-500">*</span>
+                          </label>
+                          {data.status == 'done' ? (
+                            <input
+                              type="text"
+                              defaultValue={formatInteger(
+                                parseInt(data.nilai_glossy_kiri),
+                              )}
+                              disabled
+                              name="nilai_glossy_kiri"
+                              className="text-sm font-semibold p-2 border border-gray-300 rounded-md bg-gray-100"
+                            />
+                          ) : data.status == 'on progress' ? (
+                            <input
+                              type="text"
+                              name="nilai_glossy_kiri"
+                              onChange={(e) => handleChangePoint(e, index)}
+                              className="text-sm font-semibold p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                            />
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
+                        </div>
+
+                        {/* Glossy Tengah */}
+                        <div className="flex flex-col">
+                          <label className="text-sm font-semibold text-gray-600 mb-1">
+                            GLOSSY TENGAH
+                            <span className="text-red-500">*</span>
+                          </label>
+                          {data.status == 'done' ? (
+                            <input
+                              type="text"
+                              defaultValue={formatInteger(
+                                parseInt(data.nilai_glossy_tengah),
+                              )}
+                              disabled
+                              name="nilai_glossy_tengah"
+                              className="text-sm font-semibold p-2 border border-gray-300 rounded-md bg-gray-100"
+                            />
+                          ) : data.status == 'on progress' ? (
+                            <input
+                              type="text"
+                              name="nilai_glossy_tengah"
+                              onChange={(e) => handleChangePoint(e, index)}
+                              className="text-sm font-semibold p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                            />
+                          ) : (
+                            <span className="text-sm text-gray-400">-</span>
+                          )}
+                        </div>
+
+                        {/* Glossy Kanan and Task Status */}
+                        <div className="flex flex-col justify-between">
+                          {/* Glossy Kanan */}
+                          <div className="flex flex-col mb-4">
+                            <label className="text-sm font-semibold text-gray-600 mb-1">
+                              GLOSSY KANAN
+                              <span className="text-red-500">*</span>
                             </label>
-                            {data.inspeksi_coating_result_point_periode.map(
-                              (data3: any, iii: number) => {
-                                return (
-                                  <label className="text-neutral-500 text-sm font-semibold">
-                                    {data3.kode} -{data3.masalah}
-                                  </label>
-                                );
-                              },
+                            {data.status == 'done' ? (
+                              <input
+                                type="text"
+                                defaultValue={formatInteger(
+                                  parseInt(data.nilai_glossy_kanan),
+                                )}
+                                disabled
+                                name="nilai_glossy_kanan"
+                                className="text-sm font-semibold p-2 border border-gray-300 rounded-md bg-gray-100"
+                              />
+                            ) : data.status == 'on progress' ? (
+                              <input
+                                type="text"
+                                name="nilai_glossy_kanan"
+                                onChange={(e) => handleChangePoint(e, index)}
+                                className="text-sm font-semibold p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                              />
+                            ) : (
+                              <span className="text-sm text-gray-400">-</span>
+                            )}
+                          </div>
+
+                          {/* Task Status and Controls */}
+                          <div className="flex flex-col gap-2">
+                            <p className="text-xs text-gray-600">
+                              Time: {lamaPengerjaan}
+                            </p>
+
+                            {data.status == 'incoming' &&
+                            CoatingMesinPeriode?.status == 'incoming' ? (
+                              <>
+                                <p className="text-xs font-bold text-red-600 mb-1">
+                                  Task Belum Dimulai
+                                </p>
+                                <button
+                                  onClick={() => startTaskCekPeriode(data.id)}
+                                  className="flex items-center justify-center w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded-md transition-colors"
+                                >
+                                  <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 14 14"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                      fill="white"
+                                    />
+                                  </svg>
+                                </button>
+                              </>
+                            ) : data.status == 'on progress' ? (
+                              <>
+                                <p className="text-xs font-bold text-green-600 mb-1">
+                                  Task Dimulai
+                                </p>
+                                <button
+                                  onClick={() => {
+                                    console.log(data);
+                                    stopTaskCekPeriode(
+                                      data.id,
+                                      data.waktu_mulai,
+                                      cttPeriode,
+                                      data.numerator,
+                                      data.jumlah_sampling,
+                                      data.nilai_glossy_kiri,
+                                      data.nilai_glossy_tengah,
+                                      data.nilai_glossy_kanan,
+                                      data.inspeksi_coating_result_point_periode,
+                                    );
+                                    setShowNotOk(
+                                      new Array(add != null && add.length).fill(
+                                        false,
+                                      ),
+                                    );
+                                  }}
+                                  className="flex items-center justify-center w-full bg-red-600 hover:bg-red-700 text-white p-2 rounded-md transition-colors"
+                                >
+                                  <svg
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 14 14"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <path
+                                      d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
+                                      fill="white"
+                                    />
+                                  </svg>
+                                </button>
+                              </>
+                            ) : (
+                              <p className="text-xs font-bold text-blue-600">
+                                Task Selesai
+                              </p>
                             )}
                           </div>
                         </div>
-                        <div className="flex justify-between items-start w-[30%]">
-                          <div className="flex flex-col gap-3">
-                            <label className="text-blue-600 text-sm font-semibold pb-6">
-                              FORM FILLING GUIDE
-                            </label>
-                            <label className="text-black text-sm font-semibold flex gap-2">
-                              <img alt="" src={ok} className="w-5"></img>OK
-                            </label>
-                            <label className="text-black text-sm font-semibold flex gap-2">
-                              <img alt="" src={oktole} className="w-5"></img>OK
-                              (Toleransi)
-                            </label>
-                            <label className="text-black text-sm font-semibold flex gap-2">
-                              <img alt="" src={notok} className="w-5"></img>NOT
-                              OK
-                            </label>
-                          </div>
-
-                          <img
-                            onClick={() => handleClickGuide(index)}
-                            src={X}
-                            alt=""
-                            className="mx-3 w-7  text-blue-600 bg-blue-600 px-1 py-1 rounded-full"
-                          />
-                        </div>
                       </div>
-                    ) : (
-                      <></>
-                    )}
-                    {data.status == 'incoming' &&
-                    CoatingMesinPeriode?.status == 'incoming' ? (
-                      <>
-                        <button
-                          onClick={() => deletePeriode(data.id)}
-                          className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
-                        >
-                          Hapus Periode
-                        </button>
-                      </>
-                    ) : data.status == 'on progress' ? (
-                      <>
-                        <button
-                          onClick={() => deletePeriode(data.id)}
-                          className=" w-[15%] h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
-                        >
-                          Hapus Periode
-                        </button>
-                      </>
-                    ) : null}
-                    <div className="flex min-w-screen justify-between px-2 py-4">
-                      <label className="text-sm font-semibold">
-                        {index + 1}
-                      </label>
-                      <div className="flex flex-col justify-between">
-                        <label className="text-sm font-semibold">
-                          INSPEKTOR
-                        </label>
-                        <label className="text-sm font-semibold">
-                          {data.inspektor?.nama}
-                        </label>
-                      </div>
-                      <div className="flex flex-col justify-between">
-                        <label className="text-sm font-semibold">
-                          WAKTU SAMPLING
-                        </label>
-                        <label className="text-sm font-semibold">
-                          {waktuSampling}
-                        </label>
-                      </div>
-                      <div className="flex flex-col justify-between">
-                        <label className="text-sm font-semibold">
-                          NUMERATOR<span className="text-red-600">*</span>
-                        </label>
-                        {data.status == 'done' ? (
-                          <input
-                            type="text"
-                            disabled
-                            defaultValue={data.numerator}
-                            name="numerator"
-                            onChange={(e) => handleChangePoint(e, index)}
-                            className="text-sm font-semibold w-full border-stroke border"
-                          ></input>
-                        ) : data.status == 'on progress' ? (
-                          <input
-                            type="text"
-                            name="numerator"
-                            onChange={(e) => handleChangePoint(e, index)}
-                            className="text-sm font-semibold w-full border-stroke border"
-                          ></input>
-                        ) : null}
-                      </div>
-
-                      <div className="flex flex-col justify-between">
-                        <label className="text-sm font-semibold">
-                          JUMLAH SAMPLING<span className="text-red-600">*</span>
-                        </label>
-                        {data.status == 'done' ? (
-                          <input
-                            type="text"
-                            disabled
-                            defaultValue={data.jumlah_sampling}
-                            name="jumlah_sampling"
-                            onChange={(e) => handleChangePoint(e, index)}
-                            className="text-sm font-semibold w-full border-stroke border"
-                          ></input>
-                        ) : data.status == 'on progress' ? (
-                          <input
-                            type="text"
-                            name="jumlah_sampling"
-                            onChange={(e) => handleChangePoint(e, index)}
-                            className="text-sm font-semibold w-full border-stroke border"
-                          ></input>
-                        ) : null}
-                      </div>
-                      <div className="flex flex-col justify-between">
-                        <label className="text-sm font-semibold">
-                          JUMLAH GLOSSY KIRI
-                          <span className="text-red-600">*</span>
-                        </label>
-                        {data.status == 'done' ? (
-                          <input
-                            type="text"
-                            disabled
-                            defaultValue={data.nilai_glossy_kiri}
-                            name="nilai_glossy_kiri"
-                            onChange={(e) => handleChangePoint(e, index)}
-                            className="text-sm font-semibold w-[90%] border-stroke border"
-                          ></input>
-                        ) : data.status == 'on progress' ? (
-                          <input
-                            type="text"
-                            name="nilai_glossy_kiri"
-                            onChange={(e) => handleChangePoint(e, index)}
-                            className="text-sm font-semibold w-[90%] border-stroke border"
-                          ></input>
-                        ) : null}
-                      </div>
-                      <div className="flex flex-col justify-between">
-                        <label className="text-sm font-semibold">
-                          JUMLAH GLOSSY TENGAH
-                          <span className="text-red-600">*</span>
-                        </label>
-                        {data.status == 'done' ? (
-                          <input
-                            type="text"
-                            disabled
-                            defaultValue={data.nilai_glossy_tengah}
-                            name="nilai_glossy_tengah"
-                            onChange={(e) => handleChangePoint(e, index)}
-                            className="text-sm font-semibold w-[90%] border-stroke border"
-                          ></input>
-                        ) : data.status == 'on progress' ? (
-                          <input
-                            type="text"
-                            name="nilai_glossy_tengah"
-                            onChange={(e) => handleChangePoint(e, index)}
-                            className="text-sm font-semibold w-[90%] border-stroke border"
-                          ></input>
-                        ) : null}
-                      </div>
-                      <div className="flex flex-col justify-between">
-                        <label className="text-sm font-semibold">
-                          JUMLAH GLOSSY KANAN
-                          <span className="text-red-600">*</span>
-                        </label>
-                        {data.status == 'done' ? (
-                          <input
-                            type="text"
-                            disabled
-                            defaultValue={data.nilai_glossy_kanan}
-                            name="nilai_glossy_kanan"
-                            onChange={(e) => handleChangePoint(e, index)}
-                            className="text-sm font-semibold w-[90%] border-stroke border"
-                          ></input>
-                        ) : data.status == 'on progress' ? (
-                          <input
-                            type="text"
-                            name="nilai_glossy_kanan"
-                            onChange={(e) => handleChangePoint(e, index)}
-                            className="text-sm font-semibold w-[90%] border-stroke border"
-                          ></input>
-                        ) : null}
-                      </div>
-                      <>
-                        <div className="flex flex-col ">
-                          <p className="md:text-[14px] text-[9px] font-semibold">
-                            Upload Foto (Optional):
-                          </p>
-                          <div className="">
-                            <input
-                              type="file"
-                              name=""
-                              id=""
-                              className="w-full"
-                            />
-                          </div>
-                        </div>
-                      </>
-                      <>
-                        <div className="w-[30%]">
-                          <p className="md:text-[14px] text-[9px] font-semibold">
-                            Time : {lamaPengerjaan}
-                          </p>
-                          {data.status == 'incoming' ? (
-                            <>
-                              <p className="font-bold text-[#DE0000]">
-                                Task Belum Dimulai
-                              </p>
-                              <button
-                                onClick={() => {
-                                  startTaskCekPeriode(data.id);
-                                }}
-                                className="flex w-full  rounded-md bg-[#00B81D] justify-center items-center px-2 py-2 hover:cursor-pointer"
-                              >
-                                <svg
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 14 14"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                    fill="white"
-                                  />
-                                </svg>
-                              </button>
-                            </>
-                          ) : data.status == 'on progress' ? (
-                            <>
-                              <p className="font-bold text-green-600">
-                                Task Dimulai
-                              </p>
-                              <button
-                                onClick={() => {
-                                  console.log(data);
-                                  stopTaskCekPeriode(
-                                    data.id,
-                                    data.waktu_mulai,
-                                    cttPeriode,
-                                    data.numerator,
-                                    data.jumlah_sampling,
-                                    data.nilai_glossy_kiri,
-                                    data.nilai_glossy_tengah,
-                                    data.nilai_glossy_kanan,
-                                    data.inspeksi_coating_result_point_periode,
-                                  );
-                                  setShowNotOk(
-                                    new Array(add != null && add.length).fill(
-                                      false,
-                                    ),
-                                  );
-                                }}
-                                className="flex w-full  rounded-md bg-red-600 justify-center items-center px-2 py-2 hover:cursor-pointer"
-                              >
-                                <svg
-                                  width="14"
-                                  height="14"
-                                  viewBox="0 0 14 14"
-                                  fill="none"
-                                  xmlns="http://www.w3.org/2000/svg"
-                                >
-                                  <path
-                                    d="M12.7645 4.95136L3.63887 0.27536C1.96704 -0.581285 0 0.664567 0 2.58008V11.4199C0 13.3354 1.96704 14.5813 3.63887 13.7246L12.7645 9.04864C14.4118 8.20456 14.4118 5.79544 12.7645 4.95136Z"
-                                    fill="white"
-                                  />
-                                </svg>
-                              </button>
-                            </>
-                          ) : null}
-                        </div>
-                      </>
                     </div>
 
-                    <div className="flex overflow-x-scroll max-w-screen border-b-8 border-[#D8EAFF]  gap-1 rounded-sm">
-                      {data?.inspeksi_coating_result_point_periode?.map(
-                        (data2: any, i: number) => {
-                          return (
-                            <div
-                              className={`flex flex-col min-w-[200px] justify-center py-4 
-                                } items-center gap-2 
-                                 ${
-                                   data2.hasil == 'ok'
-                                     ? 'bg-blue-300'
-                                     : data2.hasil == 'ok (toleransi)'
-                                     ? 'bg-yellow-300'
-                                     : data2.hasil == 'not ok'
-                                     ? 'bg-red-300'
-                                     : 'bg-white'
-                                 }`}
+                    {/* Defect Inspection Section */}
+                    <div className="border-t border-gray-200">
+                      <div className="p-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-semibold text-gray-800">
+                            Inspection Points
+                          </h3>
+                          {data.status == 'on progress' && (
+                            <button
+                              onClick={() => handleClickAdd(index)}
+                              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-md transition-colors"
                             >
-                              <label className="text-center text-[#6c6b6b] text-sm font-semibold">
-                                {data2.kode}
-                              </label>
-                              {data.status == 'done' ? (
+                              Add Problem Code
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Horizontally scrollable inspection points */}
+                        <div className="overflow-x-auto pb-4">
+                          <div className="flex gap-4 min-w-max">
+                            {data?.inspeksi_coating_result_point_periode?.map(
+                              (data2: any, i: number) => (
                                 <div
-                                  className={`w-[80%] text-center uppercase font-semibold flex gap-4  
-                                 } `}
+                                  key={i}
+                                  className={`flex flex-col rounded-lg border-2 transition-all duration-200 w-[200px] h-[400px] ${
+                                    data2.hasil == 'ok'
+                                      ? 'bg-blue-50 border-blue-200'
+                                      : data2.hasil == 'ok (toleransi)'
+                                      ? 'bg-yellow-50 border-yellow-200'
+                                      : data2.hasil == 'not ok'
+                                      ? 'bg-red-50 border-red-200'
+                                      : 'bg-gray-50 border-gray-200'
+                                  }`}
                                 >
-                                  {data2.hasil == 'ok' ? (
-                                    <>
-                                      <img src={ok} alt="" className="w-4" />
-                                    </>
-                                  ) : data2.hasil == 'ok (toleransi)' ? (
-                                    <>
-                                      <img
-                                        src={oktole}
-                                        alt=""
-                                        className="w-4"
-                                      />
-                                    </>
-                                  ) : data2.hasil == 'not ok' ? (
-                                    <>
-                                      <img src={notok} alt="" className="w-4" />
-                                    </>
-                                  ) : (
-                                    <>-</>
-                                  )}
+                                  {/* Code Label */}
+                                  <div className="text-center p-3 border-b border-gray-200 flex-shrink-0">
+                                    <label className="text-gray-700 text-sm font-semibold bg-white px-2 py-1 rounded">
+                                      {data2.kode}
+                                    </label>
+                                  </div>
 
-                                  {data2.hasil}
-                                </div>
-                              ) : data.status == 'on progress' ? (
-                                <div className="flex flex-col  w-full px-2 py-2">
-                                  <div className={`flex flex-col w-full`}>
-                                    <div className="flex gap-1 w-full">
-                                      <input
-                                        onChange={(e) => {
-                                          handleChangePointDefect(e, index, i);
+                                  {/* Scrollable Content Area */}
+                                  <div className="flex-1 overflow-y-auto p-3">
+                                    {/* Status Display or Input */}
+                                    {data.status == 'done' ? (
+                                      <div className="flex items-center justify-center gap-2 mb-3">
+                                        {data2.hasil == 'ok' ? (
+                                          <img
+                                            src={ok}
+                                            alt="OK"
+                                            className="w-5 h-5"
+                                          />
+                                        ) : data2.hasil == 'ok (toleransi)' ? (
+                                          <img
+                                            src={oktole}
+                                            alt="OK Toleransi"
+                                            className="w-5 h-5"
+                                          />
+                                        ) : data2.hasil == 'not ok' ? (
+                                          <img
+                                            src={notok}
+                                            alt="Not OK"
+                                            className="w-5 h-5"
+                                          />
+                                        ) : (
+                                          <span>-</span>
+                                        )}
+                                        <span className="text-xs font-semibold capitalize">
+                                          {data2.hasil}
+                                        </span>
+                                      </div>
+                                    ) : data.status == 'on progress' ? (
+                                      <div className="space-y-2 mb-3">
+                                        {[
+                                          'ok',
+                                          'ok (toleransi)',
+                                          'not ok',
+                                          '-',
+                                        ].map((option, optionIndex) => (
+                                          <label
+                                            key={optionIndex}
+                                            className="flex items-center gap-2 cursor-pointer text-xs"
+                                          >
+                                            <input
+                                              onChange={(e) => {
+                                                handleChangePointDefect(
+                                                  e,
+                                                  index,
+                                                  i,
+                                                );
+                                                if (
+                                                  e.target.value == 'not ok'
+                                                ) {
+                                                  handleClickNotOke(i, true);
+                                                } else {
+                                                  handleClickNotOke(i, false);
+                                                }
+                                              }}
+                                              type="radio"
+                                              value={option}
+                                              name={`hasil ${i}`}
+                                              className="w-3 h-3"
+                                            />
+                                            {option !== '-' && (
+                                              <img
+                                                src={
+                                                  option === 'ok'
+                                                    ? ok
+                                                    : option ===
+                                                      'ok (toleransi)'
+                                                    ? oktole
+                                                    : notok
+                                                }
+                                                alt={option}
+                                                className="w-3 h-3"
+                                              />
+                                            )}
+                                            <span className="font-medium capitalize">
+                                              {option}
+                                            </span>
+                                          </label>
+                                        ))}
+                                      </div>
+                                    ) : null}
 
-                                          if (e.target.value == 'not ok') {
-                                            handleClickNotOke(i, true);
-                                          } else {
-                                            handleClickNotOke(i, false);
-                                          }
-                                        }}
-                                        className={`  ${
-                                          (i + 1) % 2 === 0
-                                            ? ' bg-[#F3F3F3]'
-                                            : 'bg-white'
-                                        } `}
-                                        type="radio"
-                                        id="ok11"
-                                        value="ok"
-                                        name={`hasil ${i}`}
-                                      />
-                                      <img src={ok} alt="" className="w-4" />
-                                      <label className="">OK</label>
-                                    </div>
-                                    <div className="flex gap-1 w-full">
-                                      <input
-                                        onChange={(e) => {
-                                          handleChangePointDefect(e, index, i);
-                                          if (e.target.value == 'not ok') {
-                                            handleClickNotOke(i, true);
-                                          } else {
-                                            handleClickNotOke(i, false);
-                                          }
-                                        }}
-                                        className={`  ${
-                                          (i + 1) % 2 === 0
-                                            ? ' bg-[#F3F3F3]'
-                                            : 'bg-white'
-                                        } `}
-                                        type="radio"
-                                        id="ok12"
-                                        value="ok (toleransi)"
-                                        name={`hasil ${i}`}
-                                      />
-                                      <img
-                                        src={oktole}
-                                        alt=""
-                                        className="w-4"
-                                      />
-                                      <label className="">OK (Toleransi)</label>
-                                    </div>
-                                    <div className="flex gap-1 w-full">
-                                      <input
-                                        onChange={(e) => {
-                                          handleChangePointDefect(e, index, i);
-                                          if (e.target.value == 'not ok') {
-                                            handleClickNotOke(i, true);
-                                          } else {
-                                            handleClickNotOke(i, false);
-                                          }
-                                        }}
-                                        className={`  ${
-                                          (i + 1) % 2 === 0
-                                            ? ' bg-[#F3F3F3]'
-                                            : 'bg-white'
-                                        } `}
-                                        type="radio"
-                                        id="ok12"
-                                        value="not ok"
-                                        name={`hasil ${i}`}
-                                      />
-                                      <img src={notok} alt="" className="w-4" />
-                                      <label className="">Not OK</label>
-                                    </div>
-                                    <div className="flex gap-1 w-full">
-                                      <input
-                                        onChange={(e) => {
-                                          handleChangePointDefect(e, index, i);
-                                          if (e.target.value == 'not ok') {
-                                            handleClickNotOke(i, true);
-                                          } else {
-                                            handleClickNotOke(i, false);
-                                          }
-                                        }}
-                                        className={`  ${
-                                          (i + 1) % 2 === 0
-                                            ? ' bg-[#F3F3F3]'
-                                            : 'bg-white'
-                                        } `}
-                                        type="radio"
-                                        id="ok12"
-                                        value="-"
-                                        name={`hasil ${i}`}
-                                      />
-                                      <label className="">-</label>
-                                    </div>
+                                    {/* Additional fields for NOT OK status */}
+                                    {showNotOk[i] == true &&
+                                      data.status == 'on progress' && (
+                                        <div className="space-y-2">
+                                          <input
+                                            type="text"
+                                            name="jumlah_defect"
+                                            placeholder="Jumlah Defect"
+                                            onChange={(e) =>
+                                              handleChangePointHasil(
+                                                e,
+                                                index,
+                                                i,
+                                                data2.kode,
+                                              )
+                                            }
+                                            className="w-full text-xs p-2 border border-gray-300 rounded focus:border-red-500 focus:outline-none"
+                                          />
+
+                                          <select
+                                            name="kode_lkh"
+                                            onChange={(e) =>
+                                              handleChangePointHasil(
+                                                e,
+                                                index,
+                                                i,
+                                                data2.kode,
+                                              )
+                                            }
+                                            className="w-full text-xs p-2 border border-gray-300 rounded focus:border-red-500 focus:outline-none"
+                                            defaultValue=""
+                                          >
+                                            <option value="">
+                                              Pilih Kendala
+                                            </option>
+                                            {getWasteOptions &&
+                                              getWasteOptions(data2.kode).map(
+                                                (kendala: any) => (
+                                                  <option
+                                                    key={kendala.i_kendala}
+                                                    value={kendala.kode_kendala}
+                                                  >
+                                                    {kendala.kode_kendala} -{' '}
+                                                    {kendala.kendala_desc}
+                                                  </option>
+                                                ),
+                                              )}
+                                          </select>
+
+                                          <input
+                                            type="number"
+                                            name="jumlah_up_defect"
+                                            placeholder="Jumlah UP Defect"
+                                            onChange={(e) =>
+                                              handleChangePointHasil(
+                                                e,
+                                                index,
+                                                i,
+                                                data2.kode,
+                                              )
+                                            }
+                                            className="w-full text-xs p-2 border border-gray-300 rounded focus:border-red-500 focus:outline-none"
+                                          />
+
+                                          {/* Image Upload Section */}
+                                          <div className="space-y-2">
+                                            <label className="text-xs font-semibold text-gray-700">
+                                              Upload Gambar:
+                                            </label>
+
+                                            {data2?.file ? (
+                                              <div className="space-y-2">
+                                                <div className="relative">
+                                                  <img
+                                                    src={`${
+                                                      import.meta.env
+                                                        .VITE_API_LINK
+                                                    }/images/${data2.file}`}
+                                                    alt="Uploaded"
+                                                    className="w-full h-16 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                                                    onClick={() =>
+                                                      openFullscreen(
+                                                        `${
+                                                          import.meta.env
+                                                            .VITE_API_LINK
+                                                        }/images/${data2.file}`,
+                                                      )
+                                                    }
+                                                  />
+                                                  <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                      handleImageDelete(
+                                                        index,
+                                                        i,
+                                                      )
+                                                    }
+                                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs hover:bg-red-600"
+                                                  >
+                                                    ×
+                                                  </button>
+                                                </div>
+                                                <label className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 py-1 rounded cursor-pointer block text-center">
+                                                  Change Image
+                                                  <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="hidden"
+                                                    onChange={(e) => {
+                                                      const file =
+                                                        e.target.files?.[0];
+                                                      if (file) {
+                                                        if (
+                                                          !file.type.startsWith(
+                                                            'image/',
+                                                          )
+                                                        ) {
+                                                          alert(
+                                                            'Please select an image file',
+                                                          );
+                                                          return;
+                                                        }
+                                                        if (
+                                                          file.size >
+                                                          5 * 1024 * 1024
+                                                        ) {
+                                                          alert(
+                                                            'File size must be less than 5MB',
+                                                          );
+                                                          return;
+                                                        }
+                                                        handleImageDelete(
+                                                          index,
+                                                          i,
+                                                        ).then(() => {
+                                                          handleImageUpload(
+                                                            file,
+                                                            index,
+                                                            i,
+                                                          );
+                                                        });
+                                                      }
+                                                      e.target.value = '';
+                                                    }}
+                                                  />
+                                                </label>
+                                              </div>
+                                            ) : (
+                                              <input
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={(e) => {
+                                                  const file =
+                                                    e.target.files?.[0];
+                                                  if (file) {
+                                                    if (
+                                                      !file.type.startsWith(
+                                                        'image/',
+                                                      )
+                                                    ) {
+                                                      alert(
+                                                        'Please select an image file',
+                                                      );
+                                                      return;
+                                                    }
+                                                    if (
+                                                      file.size >
+                                                      5 * 1024 * 1024
+                                                    ) {
+                                                      alert(
+                                                        'File size must be less than 5MB',
+                                                      );
+                                                      return;
+                                                    }
+                                                    handleImageUpload(
+                                                      file,
+                                                      index,
+                                                      i,
+                                                    );
+                                                  }
+                                                  e.target.value = '';
+                                                }}
+                                                className="w-full text-xs border border-gray-300 rounded p-1"
+                                              />
+                                            )}
+
+                                            {uploading && (
+                                              <div className="text-xs text-blue-600">
+                                                Uploading...
+                                              </div>
+                                            )}
+                                            {uploadError && (
+                                              <div className="text-xs text-red-600">
+                                                {uploadError}
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                    {/* Display fields for completed NOT OK status */}
+                                    {data.status == 'done' &&
+                                      data2.hasil == 'not ok' && (
+                                        <div className="space-y-2">
+                                          <input
+                                            type="text"
+                                            defaultValue={formatInteger(
+                                              parseInt(data2.jumlah_defect),
+                                            )}
+                                            disabled
+                                            className="w-full text-xs p-2 border border-gray-300 rounded bg-gray-100"
+                                          />
+
+                                          {data2.kode_lkh && (
+                                            <input
+                                              type="text"
+                                              defaultValue={`${
+                                                data2.kode_lkh
+                                              } - ${data2.masalah_lkh || ''}`}
+                                              disabled
+                                              className="w-full text-xs p-2 border border-gray-300 rounded bg-gray-100"
+                                            />
+                                          )}
+
+                                          {data2.jumlah_up_defect && (
+                                            <input
+                                              type="text"
+                                              defaultValue={formatInteger(
+                                                parseInt(
+                                                  data2.jumlah_up_defect,
+                                                ),
+                                              )}
+                                              disabled
+                                              className="w-full text-xs p-2 border border-gray-300 rounded bg-gray-100"
+                                            />
+                                          )}
+
+                                          {data2.file && (
+                                            <>
+                                              <div>
+                                                <label className="text-xs font-semibold text-gray-700 block mb-1">
+                                                  Gambar:
+                                                </label>
+                                                <img
+                                                  src={`${
+                                                    import.meta.env
+                                                      .VITE_API_LINK
+                                                  }/images/${data2.file}`}
+                                                  alt="File"
+                                                  className="w-full h-16 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                                                  onClick={() => openFullscreen}
+                                                  onError={(e) => {
+                                                    e.currentTarget.style.display =
+                                                      'none';
+                                                  }}
+                                                />
+                                              </div>
+
+                                              {/* Full Screen Modal */}
+                                              {isFullscreen && (
+                                                <div
+                                                  className="fixed inset-0 bg-black bg-opacity-90 z-50 overflow-auto"
+                                                  onClick={closeFullscreen}
+                                                >
+                                                  <div className="relative w-full min-h-screen flex justify-center p-4">
+                                                    <img
+                                                      src={`${
+                                                        import.meta.env
+                                                          .VITE_API_LINK
+                                                      }/images/${data2.file}`}
+                                                      alt="File"
+                                                      className="max-w-full h-auto block"
+                                                      onClick={(e) =>
+                                                        e.stopPropagation()
+                                                      } // Prevent closing when clicking on image
+                                                    />
+                                                    <button
+                                                      className="fixed top-4 right-4 text-white bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-70 transition-colors text-xl font-bold"
+                                                      onClick={closeFullscreen}
+                                                    >
+                                                      ×
+                                                    </button>
+                                                  </div>
+                                                </div>
+                                              )}
+                                            </>
+                                          )}
+                                        </div>
+                                      )}
                                   </div>
                                 </div>
-                              ) : null}
-                              {showNotOk[i] == true &&
-                              data.status == 'on progress' ? (
-                                <input
-                                  type="text"
-                                  name="jumlah_defect"
-                                  onChange={(e) =>
-                                    handleChangePointHasil(e, index, i)
-                                  }
-                                  className="text-sm font-semibold w-[90%] border-stroke border"
-                                ></input>
-                              ) : data.status == 'done' &&
-                                data2.hasil == 'not ok' ? (
-                                <input
-                                  type="text"
-                                  name="jumlah_defect"
-                                  defaultValue={data2.jumlah_defect}
-                                  disabled
-                                  onChange={(e) =>
-                                    handleChangePointHasil(e, index, i)
-                                  }
-                                  className="text-sm font-semibold w-[90%] border-stroke border"
-                                ></input>
-                              ) : null}
-                            </div>
-                          );
-                        },
-                      )}
-
-                      {data.status == 'on progress' ? (
-                        <div className="flex gap-2 pl-2 items-center">
-                          <button
-                            onClick={() => handleClickAdd(index)}
-                            className=" h-10 rounded-sm bg-blue-600 text-white text-sm font-bold justify-center items-center px-2 py-1 hover:cursor-pointer"
-                          >
-                            Add
-                          </button>
+                              ),
+                            )}
+                          </div>
                         </div>
-                      ) : null}
-
-                      {showDetail[index] == true && (
-                        <>
-                          <ModalAddPeriode
-                            isOpen={showDetail[index]}
-                            onClose={() => handleClickAdd(index)}
-                            judul={'ADD PROBLEM CODE'}
-                          >
-                            <div className="flex flex-col gap-2">
-                              <label className="text-black font-semibold text-sm pt-4 ">
-                                Kode <span className="text-red-600">*</span>
-                              </label>
-                              <input
-                                onChange={(e) => setKode(e.target.value)}
-                                type="text"
-                                className="text-sm font-semibold w-full h-10 border-stroke border"
-                              ></input>
-                              <label className="text-black font-semibold text-sm pt-2 ">
-                                Masalah <span className="text-red-600">*</span>
-                              </label>
-                              <input
-                                type="text"
-                                onChange={(e) => setMasalah(e.target.value)}
-                                className="text-sm font-semibold w-full h-10 border-stroke border mb-2"
-                              ></input>
-                              <label className="text-black text-sm font-bold pt-4">
-                                Kriteria
-                              </label>
-                              <select
-                                onChange={(e) => {
-                                  setKriteria(e.target.value);
-                                }}
-                                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
-                  }`}
-                              >
-                                <option
-                                  value=""
-                                  disabled
-                                  selected
-                                  className="text-body dark:text-bodydark"
-                                >
-                                  Pilih kriteria
-                                </option>
-
-                                <option
-                                  value="critical"
-                                  className="text-body dark:text-bodydark"
-                                >
-                                  Critical
-                                </option>
-                                <option
-                                  value="major"
-                                  className="text-body dark:text-bodydark"
-                                >
-                                  Major
-                                </option>
-                                <option
-                                  value="minor"
-                                  className="text-body dark:text-bodydark"
-                                >
-                                  Minor
-                                </option>
-                              </select>
-                              <label className="text-black text-sm font-bold pt-4">
-                                % Kriteria
-                              </label>
-                              <input
-                                onChange={(e) =>
-                                  setPersenKriteria(e.target.value)
-                                }
-                                type="text"
-                                className="w-full h-7 self-stretch p-4 bg-white rounded-md  border-2 border-stroke justify-start items-center gap-4 inline-flex"
-                              />
-                              <label className="text-black text-sm font-bold pt-4">
-                                Sumber Masalah
-                              </label>
-                              <select
-                                onChange={(e) => {
-                                  setSumberMasalah(e.target.value);
-                                }}
-                                className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
-                  }`}
-                              >
-                                <option
-                                  value=""
-                                  disabled
-                                  selected
-                                  className="text-body dark:text-bodydark"
-                                >
-                                  Pilih Sumber Masalah
-                                </option>
-
-                                <option
-                                  value="Mesin"
-                                  className="text-body dark:text-bodydark"
-                                >
-                                  Mesin
-                                </option>
-                                <option
-                                  value="Man"
-                                  className="text-body dark:text-bodydark"
-                                >
-                                  Man
-                                </option>
-                                <option
-                                  value="Material"
-                                  className="text-body dark:text-bodydark"
-                                >
-                                  Material
-                                </option>
-                                <option
-                                  value="Persiapan"
-                                  className="text-body dark:text-bodydark"
-                                >
-                                  Persiapan
-                                </option>
-                                <option
-                                  value="Design"
-                                  className="text-body dark:text-bodydark"
-                                >
-                                  Design
-                                </option>
-                              </select>
-
-                              <label className="text-black text-sm font-bold pt-4">
-                                Tujuan Department
-                              </label>
-                              {Department?.map((dt: any, indx: number) => {
-                                return (
-                                  <>
-                                    <select
-                                      onChange={(e) => {
-                                        handleChangePointDepatment(e, indx);
-                                      }}
-                                      defaultValue={dt.department}
-                                      className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent py-2 px-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input 'text-black dark:text-white' 
-                  }`}
-                                    >
-                                      <option
-                                        value=""
-                                        disabled
-                                        selected
-                                        className="text-body dark:text-bodydark"
-                                      >
-                                        Pilih Tujuan Department
-                                      </option>
-
-                                      {DataDepartment?.map(
-                                        (
-                                          dataDef: any,
-                                          indexDepartment: number,
-                                        ) => {
-                                          return (
-                                            <option
-                                              value={dataDef.id}
-                                              className="text-body dark:text-bodydark"
-                                            >
-                                              {dataDef.name}
-                                            </option>
-                                          );
-                                        },
-                                      )}
-                                    </select>
-                                    <button
-                                      onClick={() => {
-                                        handleDeletePointDepartment(indx);
-                                      }}
-                                      className="bg-red-600 rounded-md w-22 h-10 text-white font-semibold text-sm"
-                                    >
-                                      X
-                                    </button>
-                                  </>
-                                );
-                              })}
-                              <button
-                                onClick={() => {
-                                  handleAddPointDepartment();
-                                }}
-                                className="bg-green-600 rounded-md w-22 h-10 text-white font-semibold text-sm"
-                              >
-                                TAMBAH DEPARTMENT
-                              </button>
-                              <button
-                                onClick={() => {
-                                  tambahDefectPeriode(
-                                    data.id,
-                                    kode,
-                                    masalah,
-                                    kriteria,
-                                    persenKriteria,
-                                    sumberMasalah,
-                                    index,
-                                  ),
-                                    console.log(data.id);
-                                }}
-                                className="bg-blue-600 rounded-md w-full h-10 text-white font-semibold text-sm"
-                              >
-                                TAMBAH DEFECT
-                              </button>
-                            </div>
-                          </ModalAddPeriode>
-                        </>
-                      )}
+                      </div>
                     </div>
-                    {data.status == 'done' ? (
-                      <>
-                        <div className="border-b-8 border-[#D8EAFF]">
-                          <div className="px-[1%] py-[1%]">
-                            <label className="text-black text-sm font-bold pt-4 ">
-                              Catatan Periode {index + 1}
+
+                    {/* Modal for Adding Problem Code */}
+                    {showDetail[index] == true && (
+                      <ModalAddPeriode
+                        isOpen={showDetail[index]}
+                        onClose={() => handleClickAdd(index)}
+                        judul={'ADD PROBLEM CODE'}
+                      >
+                        <div className="flex flex-col gap-4 p-4">
+                          <div>
+                            <label className="text-gray-800 font-semibold text-sm block mb-1">
+                              Kode <span className="text-red-500">*</span>
                             </label>
-                            <textarea
-                              readOnly
-                              value={data.catatan}
-                              className=" peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                            ></textarea>
+                            <input
+                              onChange={(e) => setKode(e.target.value)}
+                              type="text"
+                              className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-gray-800 font-semibold text-sm block mb-1">
+                              Masalah <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              onChange={(e) => setMasalah(e.target.value)}
+                              className="w-full text-sm p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-gray-800 text-sm font-semibold block mb-1">
+                              Kriteria
+                            </label>
+                            <select
+                              onChange={(e) => setKriteria(e.target.value)}
+                              className="w-full p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                            >
+                              <option value="" disabled selected>
+                                Pilih kriteria
+                              </option>
+                              <option value="critical">Critical</option>
+                              <option value="major">Major</option>
+                              <option value="minor">Minor</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="text-gray-800 text-sm font-semibold block mb-1">
+                              % Kriteria
+                            </label>
+                            <input
+                              onChange={(e) =>
+                                setPersenKriteria(e.target.value)
+                              }
+                              type="text"
+                              className="w-full p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="text-gray-800 text-sm font-semibold block mb-1">
+                              Sumber Masalah
+                            </label>
+                            <select
+                              onChange={(e) => setSumberMasalah(e.target.value)}
+                              className="w-full p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                            >
+                              <option value="" disabled selected>
+                                Pilih Sumber Masalah
+                              </option>
+                              <option value="Mesin">Mesin</option>
+                              <option value="Man">Man</option>
+                              <option value="Material">Material</option>
+                              <option value="Persiapan">Persiapan</option>
+                              <option value="Design">Design</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="text-gray-800 text-sm font-semibold block mb-2">
+                              Tujuan Department
+                            </label>
+                            {Department?.map((dt: any, indx: number) => (
+                              <div key={indx} className="flex gap-2 mb-2">
+                                <select
+                                  onChange={(e) =>
+                                    handleChangePointDepatment(e, indx)
+                                  }
+                                  defaultValue={dt.department}
+                                  className="flex-1 p-2 border border-gray-300 rounded-md focus:border-blue-500 focus:outline-none"
+                                >
+                                  <option value="" disabled>
+                                    Pilih Tujuan Department
+                                  </option>
+                                  {DataDepartment?.map(
+                                    (dataDef: any, indexDepartment: number) => (
+                                      <option
+                                        key={indexDepartment}
+                                        value={dataDef.id}
+                                      >
+                                        {dataDef.name}
+                                      </option>
+                                    ),
+                                  )}
+                                </select>
+                                <button
+                                  onClick={() =>
+                                    handleDeletePointDepartment(indx)
+                                  }
+                                  className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold text-sm rounded-md"
+                                >
+                                  X
+                                </button>
+                              </div>
+                            ))}
+
+                            <button
+                              onClick={() => handleAddPointDepartment()}
+                              className="w-full mb-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold text-sm rounded-md"
+                            >
+                              TAMBAH DEPARTMENT
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                tambahDefectPeriode(
+                                  data.id,
+                                  kode,
+                                  masalah,
+                                  kriteria,
+                                  persenKriteria,
+                                  sumberMasalah,
+                                  index,
+                                );
+                                console.log(data.id);
+                              }}
+                              className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm rounded-md"
+                            >
+                              TAMBAH MASALAH
+                            </button>
                           </div>
                         </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="border-b-8 border-[#D8EAFF]">
-                          <div className="px-[1%] py-[1%]">
-                            <label className="text-black text-sm font-bold pt-4">
-                              Catatan Periode {index + 1}
-                            </label>
-                            <textarea
-                              onChange={(e) => setcttPeriode(e.target.value)}
-                              className="peer w-full resize-none rounded-[7px] border border-stroke bg-transparent font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 focus:border-2 focus:border-gray-900 focus:outline-0 disabled:resize-none disabled:border-0 disabled:bg-blue-gray-50"
-                            ></textarea>
-                          </div>
-                        </div>
-                      </>
+                      </ModalAddPeriode>
                     )}
-                  </>
+
+                    {/* Notes Section */}
+                    <div className="border-t-8 border-blue-100 bg-gray-50">
+                      <div className="p-4">
+                        <label className="text-gray-800 text-sm font-semibold block mb-2">
+                          Catatan Periode {index + 1}
+                        </label>
+                        {data.status == 'done' ? (
+                          <textarea
+                            readOnly
+                            value={data.catatan}
+                            className="w-full min-h-[80px] p-3 border border-gray-300 rounded-md bg-white resize-none focus:border-blue-500 focus:outline-none"
+                          />
+                        ) : (
+                          <textarea
+                            onChange={(e) => setcttPeriode(e.target.value)}
+                            className="w-full min-h-[80px] p-3 border border-gray-300 rounded-md bg-white resize-none focus:border-blue-500 focus:outline-none"
+                            placeholder="Masukkan catatan untuk periode ini..."
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 );
               },
             )}
@@ -1706,7 +2089,7 @@ function CheckSheetCoatingPeriode() {
                         ),
                     ) || [];
 
-                  // Group by kode and sum jumlah_defect
+                  // Group by kode and sum jumlah_defect and jumlah_up_defect with improved logic
                   const groupedDefects = allNotOkDefects.reduce(
                     (acc: any, defect: any) => {
                       const key = defect.kode;
@@ -1715,9 +2098,11 @@ function CheckSheetCoatingPeriode() {
                           kode: defect.kode,
                           masalah: defect.masalah,
                           totalDefect: 0,
+                          totalUpDefect: 0,
                           periods: [],
                         };
                       }
+
                       // Improved defect counting logic
                       let defectValue = 0;
                       if (
@@ -1732,7 +2117,25 @@ function CheckSheetCoatingPeriode() {
                       } else if (defect.hasil === 'not ok') {
                         defectValue = 1;
                       }
+
+                      // UP defect counting logic
+                      let upDefectValue = 0;
+                      if (
+                        defect.jumlah_up_defect !== null &&
+                        defect.jumlah_up_defect !== undefined &&
+                        defect.jumlah_up_defect !== ''
+                      ) {
+                        upDefectValue =
+                          parseInt(
+                            String(defect.jumlah_up_defect).replace(
+                              /[^0-9]/g,
+                              '',
+                            ),
+                          ) || 0;
+                      }
+
                       acc[key].totalDefect += defectValue;
+                      acc[key].totalUpDefect += upDefectValue;
                       acc[key].periods.push(defect);
                       return acc;
                     },
@@ -1740,6 +2143,7 @@ function CheckSheetCoatingPeriode() {
                   );
 
                   const groupedArray = Object.values(groupedDefects);
+
                   const grandTotal = allNotOkDefects.reduce(
                     (sum: number, defect: any) => {
                       let defectValue = 0;
@@ -1756,6 +2160,27 @@ function CheckSheetCoatingPeriode() {
                         defectValue = 1;
                       }
                       return sum + defectValue;
+                    },
+                    0,
+                  );
+
+                  const grandTotalUp = allNotOkDefects.reduce(
+                    (sum: number, defect: any) => {
+                      let upDefectValue = 0;
+                      if (
+                        defect.jumlah_up_defect !== null &&
+                        defect.jumlah_up_defect !== undefined &&
+                        defect.jumlah_up_defect !== ''
+                      ) {
+                        upDefectValue =
+                          parseInt(
+                            String(defect.jumlah_up_defect).replace(
+                              /[^0-9]/g,
+                              '',
+                            ),
+                          ) || 0;
+                      }
+                      return sum + upDefectValue;
                     },
                     0,
                   );
@@ -1784,6 +2209,12 @@ function CheckSheetCoatingPeriode() {
                                     <div className="text-right">
                                       <div className="text-lg font-bold text-red-600">
                                         {formatInteger(defectGroup.totalDefect)}
+                                      </div>
+                                      <div className="text-sm font-semibold text-orange-600">
+                                        Jumlah UP:{' '}
+                                        {formatInteger(
+                                          defectGroup.totalUpDefect,
+                                        )}
                                       </div>
                                       <div className="text-xs text-gray-500">
                                         {defectGroup.periods.length} Temuan
@@ -1816,6 +2247,9 @@ function CheckSheetCoatingPeriode() {
                               <div className="text-right">
                                 <div className="text-3xl font-bold">
                                   {formatInteger(grandTotal)}
+                                </div>
+                                <div className="text-lg font-semibold text-orange-200">
+                                  Jumlah UP: {formatInteger(grandTotalUp)}
                                 </div>
                                 <div className="text-sm opacity-90">
                                   Total Defects
@@ -1865,6 +2299,27 @@ function CheckSheetCoatingPeriode() {
                                     0,
                                   );
 
+                                  const periodUpTotal = periodNotOk.reduce(
+                                    (sum: number, defect: any) => {
+                                      // Handle various formats of jumlah_up_defect
+                                      let upDefectValue = 0;
+                                      if (
+                                        defect.jumlah_up_defect !== null &&
+                                        defect.jumlah_up_defect !== undefined &&
+                                        defect.jumlah_up_defect !== ''
+                                      ) {
+                                        upDefectValue =
+                                          parseInt(
+                                            String(
+                                              defect.jumlah_up_defect,
+                                            ).replace(/[^0-9]/g, ''),
+                                          ) || 0;
+                                      }
+                                      return sum + upDefectValue;
+                                    },
+                                    0,
+                                  );
+
                                   return (
                                     <div
                                       key={periodIndex}
@@ -1874,23 +2329,34 @@ function CheckSheetCoatingPeriode() {
                                           : 'bg-green-100 border-green-300'
                                       }`}
                                     >
-                                      <div className="flex justify-between items-center mb-1">
+                                      <div className="flex justify-between items-center">
                                         <span className="text-sm font-semibold">
                                           Period {periodIndex + 1}
                                         </span>
-                                        <span
-                                          className={`text-sm font-bold ${
-                                            hasNotOkDefects
-                                              ? 'text-red-600'
-                                              : 'text-green-600'
-                                          }`}
-                                        >
-                                          {hasNotOkDefects
-                                            ? `${formatInteger(periodTotal)} (${
-                                                periodNotOk.length
-                                              } issues)`
-                                            : '✓ OK'}
-                                        </span>
+                                        <div className="text-right">
+                                          <div
+                                            className={`text-sm font-bold ${
+                                              hasNotOkDefects
+                                                ? 'text-red-600'
+                                                : 'text-green-600'
+                                            }`}
+                                          >
+                                            {hasNotOkDefects
+                                              ? `${formatInteger(
+                                                  periodTotal,
+                                                )} (${
+                                                  periodNotOk.length
+                                                } issues)`
+                                              : '✓ OK'}
+                                          </div>
+                                          {hasNotOkDefects &&
+                                            periodUpTotal > 0 && (
+                                              <div className="text-xs font-semibold text-orange-600">
+                                                Jumlah UP:{' '}
+                                                {formatInteger(periodUpTotal)}
+                                              </div>
+                                            )}
+                                        </div>
                                       </div>
                                     </div>
                                   );
