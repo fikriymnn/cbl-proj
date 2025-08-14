@@ -331,8 +331,8 @@ function CheckSheetCetakAwal() {
   }
   const [alasanPending, setalasanPending] = useState<any>();
 
-  async function pendingCekAwal(id: number) {
-    if (alasanPending == null) {
+  async function pendingCekAwal(id: number, alasan: any) {
+    if (alasan == null) {
       alert('Catatan Wajib Diisi');
       return;
     }
@@ -343,7 +343,7 @@ function CheckSheetCetakAwal() {
       const res = await axios.put(
         url,
         {
-          alasan_pending: alasanPending,
+          alasan_pending: alasan,
         },
         {
           withCredentials: true,
@@ -1617,6 +1617,7 @@ function CheckSheetCetakAwal() {
                           onClick={() =>
                             pendingCekAwal(
                               cetakMesinAwal?.inspeksi_cetak_awal[0]?.id,
+                              alasanPending,
                             )
                           }
                           className=" w-full h-10 rounded-md bg-red-600 text-white text-xs font-bold justify-center items-center px-10 py-2 hover:cursor-pointer"
