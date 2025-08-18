@@ -179,7 +179,7 @@ function MonitoringService() {
                     d="M12 4v16m8-8H4"
                   />
                 </svg>
-                ADD ITEM
+                ADD SERVICE
               </button>
             </div>
           </div>
@@ -220,9 +220,7 @@ function MonitoringService() {
                 <th className="py-3 px-2 text-xs font-semibold text-left">
                   Posisi
                 </th>
-                <th className="py-3 px-2 text-xs font-semibold text-left">
-                  Tgl Rusak
-                </th>
+
                 <th className="py-3 px-2 text-xs font-semibold text-left">
                   Tgl Pasang
                 </th>
@@ -302,9 +300,7 @@ function MonitoringService() {
                         <td className="py-2 px-2 text-xs">
                           {data.posisi_part}
                         </td>
-                        <td className="py-2 px-2 text-xs">
-                          {convertDatetimeToDate(data.tgl_rusak)}
-                        </td>
+
                         <td className="py-2 px-2 text-xs">
                           {convertDatetimeToDate(data.tgl_pasang)}
                         </td>
@@ -506,10 +502,7 @@ function AddStockLifetimeModal({
       alert('Installation date is required');
       return false;
     }
-    if (!formValues.tgl_rusak) {
-      alert('Broken date is required');
-      return false;
-    }
+
     if (!formValues.keterangan) {
       alert('Description is required');
       return false;
@@ -546,7 +539,7 @@ function AddStockLifetimeModal({
       <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center border-b p-4">
           <h2 className="text-lg font-semibold text-primary">
-            Add Sparepart Item
+            Add Service Item
           </h2>
           <button
             onClick={onClose}
@@ -574,7 +567,7 @@ function AddStockLifetimeModal({
             {/* Sparepart Selection */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Pilih Sparepart<span className="text-red-500">*</span>
+                Add Service Item<span className="text-red-500">*</span>
               </label>
               <button
                 onClick={() => setShowSparepartModal(true)}
@@ -626,7 +619,7 @@ function AddStockLifetimeModal({
               />
             </div>
 
-            {/* Tanggal Rusak */}
+            {/* Tanggal Rusak
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Tanggal Rusak<span className="text-red-500">*</span>
@@ -639,11 +632,11 @@ function AddStockLifetimeModal({
                 className="w-full h-10 px-3 rounded border border-gray-300"
                 disabled={isSubmitting}
               />
-            </div>
+            </div> */}
             {/* Tanggal Pasang */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tanggal Pasang<span className="text-red-500">*</span>
+                Tanggal Service<span className="text-red-500">*</span>
               </label>
               <input
                 name="tgl_pasang"
